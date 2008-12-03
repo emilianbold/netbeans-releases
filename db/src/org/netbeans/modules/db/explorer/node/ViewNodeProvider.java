@@ -69,15 +69,14 @@ public class ViewNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ViewNodeProvider createInstance(Lookup lookup) {
                 ViewNodeProvider provider = new ViewNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private MetadataElementHandle<Schema> schemaHandle;
-    private Metadata metaData;
+    private final MetadataElementHandle<Schema> schemaHandle;
+    private final Metadata metaData;
 
     private ViewNodeProvider(Lookup lookup) {
         super(lookup, new ViewComparator());
@@ -86,14 +85,14 @@ public class ViewNodeProvider extends NodeProvider {
         metaData = getLookup().lookup(Metadata.class);
     }
 
-    private void setup() {
-        update();
-    }
+    protected synchronized void initialize() {
+        // TODO this should just refresh the schema, not the
+        // entire metadata
+        metaData.refresh();
+        Schema schema = schemaHandle.resolve(metaData);
 
-    private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
-        Schema schema = schemaHandle.resolve(metaData);
         Collection<View> views = schema.getViews();
         for (View view : views) {
             Collection<Node> matches = getNodes(view);

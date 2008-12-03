@@ -131,12 +131,18 @@ public class NodeRegistry implements ChangeListener {
         }
     }
 
+    public void refresh() {
+        for (NodeProvider provider : providers) {
+            provider.refresh();
+        }
+    }
+
     /**
      * Get the nodes from all of the registered providers.
      * 
      * @return the nodes
      */
-    public Collection<? extends Node> getNodes() {
+    public synchronized Collection<? extends Node> getNodes() {
         List<Node> results = new ArrayList<Node>();
 
         for (NodeProvider provider : providers) {

@@ -67,5 +67,7 @@ public class DriverListNodeProvider extends NodeProvider {
         super(lookup);
         addNode(DriverListNode.create(new NodeDataLookup(), this));
     }
-    
+
+    protected synchronized void initialize() {
+    }
 }

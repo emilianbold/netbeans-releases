@@ -49,6 +49,11 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,6 +80,7 @@ public class ConnectionNode extends BaseNode {
     
     // the connection
     private DatabaseConnection connection;
+    private MetadataModel model;
 
     /**
      * Constructor
@@ -93,8 +99,50 @@ public class ConnectionNode extends BaseNode {
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    // just ask the node to update itself
-                    update();
+                    buildModel();
+                }
+            }
+        );
+
+        buildModel();
+    }
+
+    private void buildModel() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    Connection conn = connection.getConnection();
+                    boolean connected = false;
+
+                    if (conn != null) {
+                        try {
+                            connected = !conn.isClosed();
+                        } catch (SQLException e) {
+
+                        }
+                    }
+
+                    if (connected) {
+                        try {
+                            model = MetadataModelManager.get(connection.getDatabaseConnection());
+
+                            NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                            lookup.add(model);
+
+                            model.runReadAction(
+                                new Action<Metadata>() {
+                                    public void run(Metadata parameter) {
+                                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                                        lookup.add(parameter);
+                                        refresh();
+                                    }
+                                }
+                            );
+                        } catch (MetadataModelException e) {
+                        }
+                    } else {
+                        refresh();
+                    }
                 }
             }
         );

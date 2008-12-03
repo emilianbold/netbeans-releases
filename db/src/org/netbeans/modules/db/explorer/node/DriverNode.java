@@ -125,6 +125,7 @@ public class DriverNode extends BaseNode {
         return databaseDriver.getName();
     }
 
+    @Override
     public String getDisplayName() {
         return databaseDriver.getName();
     }

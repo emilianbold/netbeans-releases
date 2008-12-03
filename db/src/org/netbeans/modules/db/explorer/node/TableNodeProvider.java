@@ -52,11 +52,10 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class TableNodeProvider extends NodeProvider {
 
@@ -70,7 +69,6 @@ public class TableNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public TableNodeProvider createInstance(Lookup lookup) {
                 TableNodeProvider provider = new TableNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
@@ -88,25 +86,14 @@ public class TableNodeProvider extends NodeProvider {
     }
 
     @Override
-    public void refresh() {
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    metaData.refresh();
-                    update();
-                }
-            }
-        );
-    }
+    protected void initialize() {
+        // TODO this should just refresh the schema, not the
+        // entire metadata
+        metaData.refresh();
+        Schema schema = schemaHandle.resolve(metaData);
 
-    private void setup() {
-        update();
-    }
-
-    private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
-        Schema schema = schemaHandle.resolve(metaData);
         Collection<Table> tables = schema.getTables();
         for (Table table : tables) {
             Collection<Node> matches = getNodes(table);
@@ -129,8 +116,8 @@ public class TableNodeProvider extends NodeProvider {
 
     static class TableComparator implements Comparator<Node> {
 
-        public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+        public int compare(Node node1, Node node2) {
+            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
 
     }

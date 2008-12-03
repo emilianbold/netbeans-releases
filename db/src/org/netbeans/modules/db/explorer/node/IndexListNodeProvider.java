@@ -45,7 +45,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class IndexListNodeProvider extends ConnectedNodeProvider {
 
@@ -59,7 +59,6 @@ public class IndexListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public IndexListNodeProvider createInstance(Lookup lookup) {
                 IndexListNodeProvider provider = new IndexListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };

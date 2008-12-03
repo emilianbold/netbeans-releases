@@ -59,7 +59,6 @@ public class ProcedureListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ProcedureListNodeProvider createInstance(Lookup lookup) {
                 ProcedureListNodeProvider provider = new ProcedureListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };

@@ -69,7 +69,6 @@ public class ProcedureNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ProcedureNodeProvider createInstance(Lookup lookup) {
                 ProcedureNodeProvider provider = new ProcedureNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
@@ -86,14 +85,14 @@ public class ProcedureNodeProvider extends NodeProvider {
         metaData = getLookup().lookup(Metadata.class);
     }
 
-    private void setup() {
-        update();
-    }
+    protected synchronized void initialize() {
+        // TODO this should just refresh the schema, not the
+        // entire metadata
+        metaData.refresh();
+        Schema schema = schemaHandle.resolve(metaData);
 
-    private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
-        Schema schema = schemaHandle.resolve(metaData);
         Collection<Procedure> procedures = schema.getProcedures();
         for (Procedure procedure : procedures) {
             Collection<Node> matches = getNodes(procedure);

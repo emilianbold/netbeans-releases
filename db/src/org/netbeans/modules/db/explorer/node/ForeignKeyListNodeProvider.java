@@ -59,7 +59,6 @@ public class ForeignKeyListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ForeignKeyListNodeProvider createInstance(Lookup lookup) {
                 ForeignKeyListNodeProvider provider = new ForeignKeyListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };

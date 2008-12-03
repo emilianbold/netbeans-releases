@@ -67,7 +67,6 @@ public class ViewNode extends BaseNode {
         return node;
     }
 
-    private DatabaseConnection connection;
     private Metadata metaData;
     private MetadataElementHandle<View> viewHandle;
 
@@ -76,8 +75,6 @@ public class ViewNode extends BaseNode {
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
         metaData = getLookup().lookup(Metadata.class);
         viewHandle = getLookup().lookup(MetadataElementHandle.class);
     }

@@ -45,7 +45,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ForeignKeyListNode extends BaseNode {
     private static final String NAME = "Foreign Keys"; // NOI18N

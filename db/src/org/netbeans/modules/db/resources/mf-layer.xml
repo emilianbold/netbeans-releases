@@ -113,8 +113,8 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Connection">
                 <folder name="NodeProviders">
-                    <file name="SchemaNodeProviderFactory.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.SchemaNodeProvider.getFactory"/>
+                    <file name="CatalogNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.CatalogNodeProvider.getFactory"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
                         <attr name="position" intvalue="400"/>
                     </file>
@@ -149,6 +149,20 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="Catalog">
+                <folder name="NodeProviders">
+                    <file name="SchemaNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.SchemaNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="Schema">
                 <folder name="NodeProviders">
                     <file name="TableListNodeProviderFactory.instance">
@@ -168,6 +182,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="TableList">

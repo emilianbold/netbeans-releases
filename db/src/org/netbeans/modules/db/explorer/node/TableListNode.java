@@ -42,9 +42,6 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
@@ -68,16 +65,11 @@ public class TableListNode extends BaseNode {
         return node;
     }
 
-    private MetadataElementHandle<Schema> schemaHandle;
-    private Metadata metaData;
-
     private TableListNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
     
     protected void initialize() {
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaData = getLookup().lookup(Metadata.class);
     }
     
     @Override

@@ -53,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
  */
 public class SchemaNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
+    private static final String DEFAULTICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "Schema"; //NOI18N
 
     /**
@@ -67,7 +68,6 @@ public class SchemaNode extends BaseNode {
         return node;
     }
 
-    private DatabaseConnection connection;
     private MetadataElementHandle<Schema> schemaHandle;
     private Metadata metaData;
 
@@ -76,8 +76,6 @@ public class SchemaNode extends BaseNode {
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
         metaData = getLookup().lookup(Metadata.class);
     }
@@ -108,6 +106,14 @@ public class SchemaNode extends BaseNode {
 
     @Override
     public String getIconBase() {
-        return ICONBASE;
+        Schema schema = schemaHandle.resolve(metaData);
+        String base = ICONBASE;
+        if (schema != null) {
+            if (schema.isDefault()) {
+                base = DEFAULTICONBASE;
+            }
+        }
+
+        return base;
     }
 }

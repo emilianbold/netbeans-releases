@@ -59,7 +59,6 @@ public class TableListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public TableListNodeProvider createInstance(Lookup lookup) {
                 TableListNodeProvider provider = new TableListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };

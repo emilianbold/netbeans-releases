@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.action;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -64,8 +65,14 @@ public class RefreshAction extends BaseAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
-        baseNode.refresh();
+        final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    baseNode.refresh();
+                }
+            }
+        );
     }
 
 }

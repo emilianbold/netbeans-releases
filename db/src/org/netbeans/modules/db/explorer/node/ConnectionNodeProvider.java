@@ -85,15 +85,13 @@ public class ConnectionNodeProvider extends NodeProvider {
         connectionList.addConnectionListener(
             new ConnectionListener() {
                 public void connectionsChanged() {
-                    update();
+                    initialize();
                 }
             }
         );
-
-        update();
     }
-    
-    private synchronized void update() {
+
+    protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {
@@ -109,7 +107,7 @@ public class ConnectionNodeProvider extends NodeProvider {
 
         setNodes(newList);
     }
-    
+
     static class ConnectionComparator implements Comparator<Node> {
 
         public int compare(Node model1, Node model2) {

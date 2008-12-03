@@ -42,14 +42,13 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ProcedureNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/procedure.gif";
@@ -67,7 +66,6 @@ public class ProcedureNode extends BaseNode {
         return node;
     }
 
-    private DatabaseConnection connection;
     private Metadata metaData;
     private MetadataElementHandle<Procedure> procedureHandle;
 
@@ -76,8 +74,6 @@ public class ProcedureNode extends BaseNode {
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
         metaData = getLookup().lookup(Metadata.class);
         procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }

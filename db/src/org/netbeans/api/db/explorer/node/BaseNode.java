@@ -109,6 +109,7 @@ public abstract class BaseNode extends AbstractNode {
     protected abstract void initialize();
 
     public void refresh() {
+        nodeRegistry.refresh();
         update();
     }
 
@@ -135,7 +136,7 @@ public abstract class BaseNode extends AbstractNode {
         );
 
         initialize();
-        update();
+        updateProperties();
     }
 
     protected void remove() {
@@ -153,19 +154,25 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     /**
-     * Updates the node
+     * Updates the node.
      */
     public void update() { 
+        updateProperties();
+
+        if (childNodeFactory != null) {
+            childNodeFactory.refresh();
+        }
+    }
+
+    /**
+     * Updates the basic node properties.
+     */
+    private void updateProperties() {
         setName(getName());
         setDisplayName(getDisplayName());
-
         String iconBase = getIconBase();
         if (iconBase != null) {
             setIconBaseWithExtension(iconBase);
-        }
-        
-        if (childNodeFactory != null) {
-            childNodeFactory.refresh();
         }
     }
 

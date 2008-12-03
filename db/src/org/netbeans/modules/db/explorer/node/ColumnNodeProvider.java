@@ -53,7 +53,6 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -71,15 +70,14 @@ public class ColumnNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ColumnNodeProvider createInstance(Lookup lookup) {
                 ColumnNodeProvider provider = new ColumnNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private MetadataElementHandle handle = null;
-    private Metadata metaData;
+    private final MetadataElementHandle handle;
+    private final Metadata metaData;
 
     private ColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
@@ -89,40 +87,24 @@ public class ColumnNodeProvider extends NodeProvider {
     }
 
     @Override
-    public void refresh() {
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    try {
-                        Table table = (Table)handle.resolve(metaData);
-                        table.refresh();
-                    } catch (ClassCastException e) {
-                        View view = (View)handle.resolve(metaData);
-                        view.refresh();
-                    }
-
-                    update();
-                }
-            }
-        );
-    }
-
-    private void setup() {
-        update();
-    }
-
-    private synchronized void update() {
+    protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
         Collection<Column> columns;
         try {
             Table table = (Table)handle.resolve(metaData);
+            if (table == null) {
+                return;
+            }
             columns = table.getColumns();
         } catch (ClassCastException e) {
             View view = (View)handle.resolve(metaData);
+            if (view == null) {
+                return;
+            }
             columns = view.getColumns();
         }
-        
+
         for (Column column : columns) {
             Collection<Node> matches = getNodes(column);
             if (matches.size() > 0) {
@@ -134,9 +116,9 @@ public class ColumnNodeProvider extends NodeProvider {
 
                 MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
                 lookup.add(h);
-
                 newList.add(ColumnNode.create(lookup, this));
             }
+
         }
 
         setNodes(newList);
@@ -144,8 +126,14 @@ public class ColumnNodeProvider extends NodeProvider {
 
     static class ColumnComparator implements Comparator<Node> {
 
-        public int compare(Node model1, Node model2) {
-            return 1;
+        public int compare(Node node1, Node node2) {
+            ColumnNode n1 = (ColumnNode)node1;
+            ColumnNode n2 = (ColumnNode)node2;
+            int result = 1;
+            if (n1.getOrdinalPosition() < n2.getOrdinalPosition()) {
+                result = -1;
+            }
+            return result;
         }
 
     }
