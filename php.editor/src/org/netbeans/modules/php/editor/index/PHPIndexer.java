@@ -118,6 +118,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
+    static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
     static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
     static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
@@ -195,7 +196,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.6"; // NOI18N
+        return "0.5.7"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -389,8 +390,9 @@ public class PHPIndexer implements Indexer {
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
             StringBuilder classSignature = new StringBuilder();
-            classSignature.append(classDeclaration.getName().getName().toLowerCase() + ";"); //NOI18N
-            classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
+            String className = classDeclaration.getName().getName();
+            classSignature.append(className.toLowerCase() + ";"); //NOI18N
+            classSignature.append(className + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
 
             String superClass = ""; //NOI18N
@@ -403,11 +405,18 @@ public class PHPIndexer implements Indexer {
             classSignature.append(superClass + ";"); //NOI18N
             document.addPair(FIELD_CLASS, classSignature.toString(), true);
             document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true);
-
+            boolean isConstructor = false;
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                    String methName = CodeUtils.extractMethodName(methodDeclaration);
+                    if (PredefinedSymbols.MAGIC_METHODS.keySet().contains(methName) &&
+                            "__construct".equalsIgnoreCase(methName)) {//NOI18N
+                        isConstructor = true;
+                        indexConstructor(classDeclaration, methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
+                    } 
                     indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
+                    
                 } else if (statement instanceof FieldsDeclaration) {
                     FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
                     indexFieldsDeclaration(fieldsDeclaration, document);
@@ -421,6 +430,10 @@ public class PHPIndexer implements Indexer {
                         document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
                     }
                 }
+            }
+            if (!isConstructor) {
+                isConstructor = true;
+                indexConstructor(classDeclaration, null, BodyDeclaration.Modifier.PUBLIC, document);
             }
             for (PHPDocVarTypeTag tag : Utils.getPropertyTags(root, classDeclaration)) {
                 String name = tag.getVariable().getValue();
@@ -548,6 +561,24 @@ public class PHPIndexer implements Indexer {
             document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true);
         }
 
+        /**
+         * @param classDeclaration
+         * @param functionDeclaration maybe be null (actually for fake - if
+         * constructor doesn't exists then indexed as if existed with no parameters)
+         * @param modifiers
+         * @param document
+         */
+        private void indexConstructor(ClassDeclaration classDeclaration,FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
+            String className = CodeUtils.extractClassName(classDeclaration);
+            StringBuilder signature = new StringBuilder();
+            int paramCount = (functionDeclaration != null) ? functionDeclaration.getFormalParameters().size() : 0;
+            int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : classDeclaration.getStartOffset();
+            signature.append(getBaseSignatureForFunctionDeclaration(className,paramCount, offset, functionDeclaration));
+            signature.append(modifiers + ";"); //NOI18N
+
+            document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false);
+        }
+
         private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
             StringBuilder signature = new StringBuilder();
             signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
@@ -557,42 +588,48 @@ public class PHPIndexer implements Indexer {
         }
 
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
-            StringBuilder signature = new StringBuilder();
-            signature.append(functionDeclaration.getFunctionName().getName() + ";");
-            StringBuilder defaultArgs = new StringBuilder();
+            String fncName = functionDeclaration.getFunctionName().getName();
             int paramCount = functionDeclaration.getFormalParameters().size();
+            int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : 0;
+            return getBaseSignatureForFunctionDeclaration(fncName, paramCount, offset, functionDeclaration);
+        }
 
+        /**
+         * @param fncName
+         * @param paramCount
+         * @param offset
+         * @param functionDeclaration maybe null just in case when paramCount == 0
+         * @return
+         */
+        private String getBaseSignatureForFunctionDeclaration(String fncName, int paramCount, int offset,
+                FunctionDeclaration functionDeclaration) {
+            assert functionDeclaration != null || paramCount == 0;
+            StringBuilder signature = new StringBuilder();
+            signature.append(fncName + ";");
+            StringBuilder defaultArgs = new StringBuilder();
             for (int i = 0; i < paramCount; i++) {
+                assert functionDeclaration != null;
                 FormalParameter param = functionDeclaration.getFormalParameters().get(i);
-
                 String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
-
                 if (i < paramCount - 1) {
                     signature.append(",");
                 }
-
-                if (param.getDefaultValue() != null){
-                    if (defaultArgs.length() > 0){
+                if (param.getDefaultValue() != null) {
+                    if (defaultArgs.length() > 0) {
                         defaultArgs.append(',');
                     }
-
                     defaultArgs.append(Integer.toString(i));
                 }
             }
-
             signature.append(';');
-            signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
+            signature.append(offset + ";"); //NOI18N
             signature.append(defaultArgs + ";");
-
-            String type = getReturnTypeFromPHPDoc(functionDeclaration);
-
-            if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)){
+            String type = functionDeclaration != null ? getReturnTypeFromPHPDoc(functionDeclaration) : null;
+            if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
                 signature.append(type);
             }
-
             signature.append(";"); //NOI18N
-
             return signature.toString();
         }
 

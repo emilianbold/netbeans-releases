@@ -353,7 +353,6 @@ public class PUDataObject extends XmlMultiViewDataObject {
     }
     
     public void modelUpdatedFromUI() {
-        setModified(true);
         modelSynchronizer.requestUpdateData();
     }
     

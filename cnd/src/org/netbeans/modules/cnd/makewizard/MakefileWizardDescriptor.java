@@ -41,7 +41,6 @@
 
 package  org.netbeans.modules.cnd.makewizard;
 
-import java.util.Iterator;
 import javax.swing.JButton;
 import org.openide.WizardDescriptor;
 
@@ -50,23 +49,22 @@ public class MakefileWizardDescriptor extends WizardDescriptor {
     private JButton finishButton;
     private boolean finishEnabled;
 
-    public MakefileWizardDescriptor(Iterator it) {
-	super(it);
-
-	finishButton = null;
-	finishEnabled = false;
+    public MakefileWizardDescriptor(Iterator<WizardDescriptor> it) {
+        super(it);
+        finishButton = null;
+        finishEnabled = false;
     }
 
-
+    @Override
     protected void updateState() {
-	super.updateState();
+        super.updateState();
 
-	if (finishButton == null) {
-	    finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
-	}
-	if (finishButton != null) {
-	    finishButton.setEnabled(finishEnabled);
-	}
+        if (finishButton == null) {
+            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
+        }
+        if (finishButton != null) {
+            finishButton.setEnabled(finishEnabled);
+        }
     }
 
     /**
@@ -74,10 +72,10 @@ public class MakefileWizardDescriptor extends WizardDescriptor {
      *  Finish button.
      */
     public void setFinishEnabled(boolean tf) {
-	finishEnabled = tf;
-	if (finishButton == null) {
-	    finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
-	}
-	finishButton.setEnabled(tf);
+        finishEnabled = tf;
+        if (finishButton == null) {
+            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
+        }
+        finishButton.setEnabled(tf);
     }
 }
