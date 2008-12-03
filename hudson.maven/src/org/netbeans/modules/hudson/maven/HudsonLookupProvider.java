@@ -34,6 +34,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author mkleint
  */
+@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class HudsonLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

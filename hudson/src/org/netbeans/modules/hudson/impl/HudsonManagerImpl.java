@@ -45,12 +45,14 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Implementation of the HudsonManager
  *
  * @author Michal Mocnak
  */
+@ServiceProvider(service=HudsonManager.class)
 public class HudsonManagerImpl extends HudsonManager {
     
     /** Startup flag property */

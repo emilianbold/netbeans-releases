@@ -21,6 +21,7 @@ package org.netbeans.modules.hudson.ui.notification;
 
 import java.awt.Component;
 import org.openide.awt.StatusLineElementProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Implementation of StatusLineElementProvider which allows to dock the notification
@@ -28,6 +29,7 @@ import org.openide.awt.StatusLineElementProvider;
  * 
  * @author Michal Mocnak
  */
+@ServiceProvider(service=StatusLineElementProvider.class)
 public class HudsonStatusLineElementProvider implements StatusLineElementProvider {
     
     public Component getStatusLineElement() {
