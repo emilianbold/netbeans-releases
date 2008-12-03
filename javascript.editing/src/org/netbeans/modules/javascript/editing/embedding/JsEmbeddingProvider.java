@@ -76,7 +76,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         if (sourceMimeType.equals(snapshot.getMimeType())) {
             List<Embedding> embeddings = translator.translate(snapshot);
             if(embeddings.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.<Embedding>emptyList();
             } else {
                 return Collections.singletonList(Embedding.create(embeddings));
             }

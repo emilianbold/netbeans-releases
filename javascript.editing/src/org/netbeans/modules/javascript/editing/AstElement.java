@@ -43,15 +43,20 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
  *
@@ -310,4 +315,41 @@ public class AstElement extends JsElement {
         
         return type;
     }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        Element object = JsParser.resolveHandle(jspr, this);
+
+        if (object instanceof AstElement) {
+            Node target = ((AstElement)object).getNode();
+            if (target != null) {
+                return LexUtilities.getLexerOffsets(jspr, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
+            } else {
+                return OffsetRange.NONE;
+            }
+            
+        } else if (object != null) {
+            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
+                ((object != null) ? object.getClass().getName() : "null")); //NOI18N
+            
+        } else {
+            if (getNode() != null) {
+                OffsetRange astRange = AstUtilities.getRange(getNode());
+                if (astRange != OffsetRange.NONE) {
+                    JsParseResult oldInfo = info;
+                    if (oldInfo == null) {
+                        oldInfo = jspr;
+                    }
+                    return LexUtilities.getLexerOffsets(oldInfo, astRange);
+                } else {
+                    return OffsetRange.NONE;
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
+
+
 }

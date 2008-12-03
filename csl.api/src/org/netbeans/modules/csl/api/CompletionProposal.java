@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.csl.api;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.swing.ImageIcon;

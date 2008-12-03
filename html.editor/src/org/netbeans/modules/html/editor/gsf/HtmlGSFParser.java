@@ -38,32 +38,23 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -130,88 +121,67 @@ public class HtmlGSFParser extends Parser {
     }
 
 
-//xxx looks like PositionManager has been deleted in CSL but I belive we need this
-//to resolve elements between parser results
+    public static ElementHandle resolveHandle(ParserResult info, ElementHandle oldElementHandle) {
+        if (oldElementHandle instanceof HtmlElementHandle) {
+           HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
+            AstNode oldNode = element.node();
 
-//    public PositionManager getPositionManager() {
-//        return this;
-//    }
-//
-//    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle handle) {
-//      ElementHandle object = resolveHandle(info, handle);
-//        if (object instanceof HtmlElementHandle) {
-//            ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
-//            final TranslatedSource source = presult.getTranslatedSource();
-//            AstNode node = ((HtmlElementHandle) object).node();
-//            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
-//
-//        } else {
-//            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
-//                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
-//        }
-//    }
-//
-//    public static ElementHandle resolveHandle(CompilationInfo info, ElementHandle oldElementHandle) {
-//        if (oldElementHandle instanceof HtmlElementHandle) {
-//           HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
-//            AstNode oldNode = element.node();
-//
-//            AstNode oldRoot = AstNodeUtils.getRoot(oldNode);
-//
-//            HtmlParserResult newResult = (HtmlParserResult)info.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
-//
-//            AstNode newRoot = newResult.root();
-//
-//            if (newRoot == null) {
-//                return null;
-//            }
-//
-//            // Find newNode
-//            AstNode newNode = find(oldRoot, oldNode, newRoot);
-//
-//            if (newNode != null) {
-//                return new HtmlElementHandle(newNode, info.getFileObject());
-//            }
-//        }
-//
-//        return null;
-//    }
-//
-//    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
-//        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
-//        if (oldRoot == oldObject) {
-//            // Found it!
-//            return newRoot;
-//        }
-//
-//        List<AstNode> oChildren = oldRoot.children();
-//        List<AstNode> nChildren = newRoot.children();
-//
-//        for(int i = 0; i < oChildren.size(); i++) {
-//
-//            AstNode oCh = oChildren.get(i);
-//
-//            if(i == nChildren.size()) {
-//                //no more new children
-//                return null;
-//            }
-//            AstNode nCh = nChildren.get(i);
-//
-//            if (oCh == oldObject) {
-//                // Found it!
-//                return nCh;
-//            }
-//
-//            // Recurse
-//            AstNode match = find(oCh, oldObject, nCh);
-//
-//            if (match != null) {
-//                return match;
-//            }
-//
-//        }
-//
-//        return null;
-//    }
-//
+            AstNode oldRoot = AstNodeUtils.getRoot(oldNode);
+
+            HtmlParserResult newResult = (HtmlParserResult)info;
+
+            AstNode newRoot = newResult.root();
+
+            if (newRoot == null) {
+                return null;
+            }
+
+            // Find newNode
+            AstNode newNode = find(oldRoot, oldNode, newRoot);
+
+            if (newNode != null) {
+                return new HtmlElementHandle(newNode, info.getSnapshot().getSource().getFileObject());
+            }
+        }
+
+        return null;
+    }
+
+    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
+        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
+        if (oldRoot == oldObject) {
+            // Found it!
+            return newRoot;
+        }
+
+        List<AstNode> oChildren = oldRoot.children();
+        List<AstNode> nChildren = newRoot.children();
+
+        for(int i = 0; i < oChildren.size(); i++) {
+
+            AstNode oCh = oChildren.get(i);
+
+            if(i == nChildren.size()) {
+                //no more new children
+                return null;
+            }
+            AstNode nCh = nChildren.get(i);
+
+            if (oCh == oldObject) {
+                // Found it!
+                return nCh;
+            }
+
+            // Recurse
+            AstNode match = find(oCh, oldObject, nCh);
+
+            if (match != null) {
+                return match;
+            }
+
+        }
+
+        return null;
+    }
+
 }

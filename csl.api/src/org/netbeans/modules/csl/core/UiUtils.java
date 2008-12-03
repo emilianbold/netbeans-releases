@@ -42,31 +42,27 @@ package org.netbeans.modules.csl.core;
 
 import org.netbeans.modules.csl.api.Phase;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.navigation.Icons;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 
@@ -87,28 +83,11 @@ import org.openide.text.NbDocument;
  */
 public final class UiUtils {
 
-    private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
-    
-    private UiUtils() {
-    }
+    public static boolean open(Source source, ElementHandle handle) {
+        assert source != null;
+        assert handle != null; // Only one should be set
 
-    /** Gets correct icon for given ElementKind.
-     *@param modifiers Can be null for empty modifiers collection
-     */
-    public static Icon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
-        return Icons.getElementIcon(elementKind, modifiers);
-    }
-
-    /**
-     * Opens given {@link ComObject}.
-     *
-     * @param cpInfo fileobject whose {@link ClasspathInfo} will be used
-     * @param el    declaration to open
-     * @return true if and only if the declaration was correctly opened,
-     *                false otherwise
-     */
-    public static boolean open(Source js, final ElementHandle handle) {
-        DeclarationLocation location = getOpenInfo(js, handle);
+        DeclarationLocation location = getElementLocation(source, handle);
 
         if (location != DeclarationLocation.NONE) {
             return doOpen(location.getFileObject(), location.getOffset());
@@ -117,21 +96,9 @@ public final class UiUtils {
         return false;
     }
 
-    private static DeclarationLocation getOpenInfo(final Source js, final ElementHandle handle) {
-        assert js != null;
-        assert handle != null; // Only one should be set
-
-        try {
-            FileObject fo = js.getFileObject();
-            return getElementLocation(fo, handle);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-
-            return DeclarationLocation.NONE;
-        }
-    }
-
     public static boolean open(final FileObject fo, final int offset) {
+        assert fo != null;
+        
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -145,11 +112,16 @@ public final class UiUtils {
     }
     
     // Private methods ---------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
+
+    private UiUtils() {
+    }
+
     private static boolean doOpen(FileObject fo, int offset) {
         try {
-            DataObject od = DataObject.find(fo);
-            EditorCookie ec = od.getCookie(EditorCookie.class);
-            LineCookie lc = od.getCookie(LineCookie.class);
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fo, EditorCookie.class);
+            LineCookie lc = DataLoadersBridge.getDefault().getCookie(fo, LineCookie.class);
 
             if ((ec != null) && (lc != null) && (offset != -1)) {
                 StyledDocument doc = ec.openDocument();
@@ -164,73 +136,60 @@ public final class UiUtils {
 
                         if (l != null) {
                             l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-
                             return true;
                         }
                     }
                 }
             }
 
-            OpenCookie oc = od.getCookie(OpenCookie.class);
+            OpenCookie oc = DataLoadersBridge.getDefault().getCookie(fo, OpenCookie.class);
 
             if (oc != null) {
                 oc.open();
-
                 return true;
             }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
         }
 
         return false;
     }
 
-    private static DeclarationLocation getElementLocation(final FileObject fo, final ElementHandle handle)
-        throws IOException {
-        assert handle != null;
-        final DeclarationLocation[] result = new DeclarationLocation[] { DeclarationLocation.NONE };
+    private static DeclarationLocation getElementLocation(Source source, final ElementHandle handle) {
+        if (source.getFileObject() == null) {
+            return DeclarationLocation.NONE;
+        }
 
-        Source js = Source.create(fo);
+        FileObject fileObject = handle.getFileObject();
+        if (fileObject != null && fileObject != source.getFileObject()) {
+            // The element is not in the parse tree for this parse job; it is
+            // probably something like an indexed element
+            return new DeclarationLocation(fileObject, -1);
+        }
+
+        final DeclarationLocation[] result = new DeclarationLocation[] { null };
         try {
-            ParserManager.parse(Collections.singleton(js), new UserTask() {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
                 public void run(ResultIterator resultIterator) throws ParseException {
-                    Parser.Result r = resultIterator.getParserResult();
-                    if (!(r instanceof ParserResult)) {
-                        return;
+                    if (resultIterator.getSnapshot().getMimeType().equals(handle.getMimeType())) {
+                        Parser.Result r = resultIterator.getParserResult();
+                        if (r instanceof ParserResult) {
+                            ParserResult info = (ParserResult) r;
+                            info.toPhase(Phase.RESOLVED);
+
+                            OffsetRange range = handle.getOffsetRange(info);
+                            if (range != OffsetRange.NONE && range != null) {
+                                result[0] = new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), range.getStart());
+                                return;
+                            }
+                        }
                     }
 
-                    ParserResult info = (ParserResult) r;
-                    info.toPhase(Phase.RESOLVED);
-
-                    FileObject fileObject;
-                    if (handle != null) {
-                        fileObject = handle.getFileObject();
-                    } else {
-                        fileObject = fo;
-                    }
-
-                    if (fileObject == fo) {
-// XXX: parsingapi
-//                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(handle.getMimeType());
-//                        Parser parser = language.getParser();
-//                        //ParserResult pr = handle.getResult();
-//                        //ElementHandle file = pr.getRoot();
-//                        //if (file != null) {
-//                            try {
-//                                OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
-//
-//                                if (range != OffsetRange.NONE && range != null) {
-//                                    result[0] = new DeclarationLocation(fileObject, range.getStart());
-//                                }
-//                            } catch (IllegalArgumentException iae) {
-//                                result[0] = new DeclarationLocation(fileObject, 0);
-//                            }
-//                        //}
-                        result[0] = new DeclarationLocation(fileObject, -1);
-                    } else {
-                        // The element is not in the parse tree for this parse job; it is
-                        // probably something like an indexed element
-                        result[0] = new DeclarationLocation(fileObject, -1);
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        run(resultIterator.getResultIterator(e));
+                        if (result[0] != null) {
+                            break;
+                        }
                     }
                 }
             });
@@ -238,6 +197,6 @@ public final class UiUtils {
             LOG.log(Level.WARNING, null, e);
         }
 
-        return result[0];
+        return result[0] == null ? DeclarationLocation.NONE : result[0];
     }
 }

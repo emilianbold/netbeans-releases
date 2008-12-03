@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,14 +84,12 @@ public interface ElementHandle {
     
     /** 
      * Tests if the handle has the same signature as the parameter.
-     * The handles with the same signatures are resolved into the same
-     * element in the same {@link javax.tools.JavaCompiler} task, but may be resolved into
-     * the different {@link Element}s in the different {@link javax.tools.JavaCompiler} tasks.
      * @param handle to be checked
-     * @return true if the handles resolve into the same {@link Element}s
-     * in the same {@link javax.tools.JavaCompiler} task.
+     * @return true if the handles refer to elements with the same signature
      */
     boolean signatureEquals (@NonNull final ElementHandle handle);
+
+    OffsetRange getOffsetRange(@NonNull ParserResult result);
 
     /** 
      * A special handle which holds URL. Can be used to handle documentation
@@ -117,6 +116,10 @@ public interface ElementHandle {
             }
             
             return false;
+        }
+
+        public OffsetRange getOffsetRange(@NonNull ParserResult result) {
+            return null;
         }
 
         @NonNull
