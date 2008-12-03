@@ -189,12 +189,7 @@ public class IDEValidation extends JellyTestCase {
     
     
     public void testWriteAccess() throws Exception {
-//stupid test for commit validation,
-// feel free to reanable and run somehwere else but please do not
-// use this as a mechanism to prevent pushing to main-golden        
-// thanks.        
-//        - mkleint
-//        CountingSecurityManager.assertCounts("No writes during startup", 0);
+        CountingSecurityManager.assertCounts("No writes during startup", 0);
     }
 
     /** Test creation of java project. 

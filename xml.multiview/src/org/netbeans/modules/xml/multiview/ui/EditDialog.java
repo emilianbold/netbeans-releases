@@ -40,27 +40,30 @@
  */
 
 package org.netbeans.modules.xml.multiview.ui;
-import org.openide.DialogDescriptor;
 
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 
 /** EditDialog.java
  *
  * Created on November 28, 2004, 7:18 PM
  * @author mkuchtiak
+ * @author Petr Slechta
  */
 public abstract class EditDialog extends DialogDescriptor {
     private javax.swing.JPanel panel;
+    private NotificationLineSupport statusLine;
 
     /** Creates a new instance of EditDialog */
     public EditDialog(javax.swing.JPanel panel, String title, boolean adding) {
-        super (new InnerPanel(panel),getTitle(title,adding),true,
+        super (panel, getTitle(title, adding), true,
               DialogDescriptor.OK_CANCEL_OPTION,
               DialogDescriptor.OK_OPTION,
               DialogDescriptor.BOTTOM_ALIGN,
-              null,
-              null);
-        this.panel=panel;
+              null, null);
+        this.panel = panel;
+        statusLine = createNotificationLineSupport();
     }
    
     /** Creates a new instance of EditDialog */
@@ -84,39 +87,17 @@ public abstract class EditDialog extends DialogDescriptor {
     */
     public final void checkValues() {
         String errorMessage = validate();
-        if (errorMessage==null) {
+        if (errorMessage == null) {
+            statusLine.clearMessages();
             setValid(true);
         } else {
+            statusLine.setErrorMessage(errorMessage);
             setValid(false);
         }
-        javax.swing.JLabel errorLabel = ((InnerPanel)getMessage()).getErrorLabel();
-        errorLabel.setText(errorMessage==null?" ":errorMessage);
     }
     
     /** Provides validation for panel components */
     protected abstract String validate();
-    
-    private static class InnerPanel extends javax.swing.JPanel {
-        javax.swing.JLabel errorLabel;
-        InnerPanel(javax.swing.JPanel panel) {
-            super(new java.awt.BorderLayout());
-            errorLabel = new javax.swing.JLabel(" ");
-            errorLabel.setBorder(new javax.swing.border.EmptyBorder(12,12,0,0));
-            errorLabel.setForeground(SectionVisualTheme.getErrorLabelColor());
-            add(panel, java.awt.BorderLayout.CENTER);
-            add(errorLabel, java.awt.BorderLayout.SOUTH);
-            getAccessibleContext().setAccessibleName(panel.getAccessibleContext().getAccessibleName());
-            getAccessibleContext().setAccessibleDescription(panel.getAccessibleContext().getAccessibleDescription());
-        }
-        
-        void setErrorMessage(String message) {
-            errorLabel.setText(message);
-        }
-        
-        javax.swing.JLabel getErrorLabel() {
-            return errorLabel;
-        }
-    }
     
     /** Useful DocumentListener class that can be added to the panel's text compoents */
     public static class DocListener implements javax.swing.event.DocumentListener {
@@ -125,6 +106,7 @@ public abstract class EditDialog extends DialogDescriptor {
         public DocListener(EditDialog dialog) {
             this.dialog=dialog;
         }
+
         /**
          * Method from DocumentListener
          */

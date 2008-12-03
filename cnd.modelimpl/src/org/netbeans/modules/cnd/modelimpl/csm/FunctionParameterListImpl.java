@@ -75,7 +75,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
 
     @Override
     public String toString() {
-        return "Fun " + super.toString();
+        return "Fun " + super.toString(); // NOI18N
     }
 
     /*package*/ static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope) {
@@ -165,7 +165,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
 
         @Override
         public String toString() {
-            return "K&R " + super.toString();
+            return "K&R " + super.toString(); // NOI18N
         }
 
         ////////////////////////////////////////////////////////////////////////////

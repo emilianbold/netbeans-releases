@@ -17,6 +17,14 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.actions.BuildConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.CleanAndBuildConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.CleanConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.DebugConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.DeployConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.RemoveConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.RunConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.SetConfigurationAction;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualConfigSupport;
@@ -99,17 +107,17 @@ final class OneConfigurationNode extends DecoratedNode implements PropertyChange
         ProjectConfiguration defCfg = cfgHelper.getDefaultConfiguration();
         boolean isDefault = defCfg.equals(config);
         return new Action[]{
-            NodeActions.RunConfigurationAction.getStaticInstance(),
-            NodeActions.DebugConfigurationAction.getStaticInstance(),
-            NodeActions.BuildConfigurationAction.getStaticInstance(),
-            NodeActions.CleanAndBuildConfigurationAction.getStaticInstance(),
-            NodeActions.CleanConfigurationAction.getStaticInstance(),
-            NodeActions.DeployConfigurationAction.getStaticInstance(),
+            RunConfigurationAction.getStaticInstance(),
+            DebugConfigurationAction.getStaticInstance(),
+            BuildConfigurationAction.getStaticInstance(),
+            CleanAndBuildConfigurationAction.getStaticInstance(),
+            CleanConfigurationAction.getStaticInstance(),
+            DeployConfigurationAction.getStaticInstance(),
             null,
             SystemAction.get(CopyAction.class),
             null,
-            NodeActions.SetConfigurationAction.getStaticInstance(),
-            isDefault ? null : NodeActions.RemoveConfigurationAction.getStaticInstance()
+            SetConfigurationAction.getStaticInstance(),
+            isDefault ? null : RemoveConfigurationAction.getStaticInstance()
         };
     }
 
