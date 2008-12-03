@@ -160,27 +160,21 @@ public class CsmRefactoringUtils {
         return container == null ? null : CsmUtilities.getFileObject(container);
     }
     
-    public static CsmReference findReference(Lookup lookup) {
-        CsmReference ref = lookup.lookup(CsmReference.class);
-        if (ref == null) {
-            CsmObject csmObj = lookup.lookup(CsmObject.class);
-            if (csmObj == null) {
-                CsmUID uid = lookup.lookup(CsmUID.class);
-                if (uid != null) {
-                    csmObj = (CsmObject) uid.getObject();
-                }
+    public static CsmObject findContextObject(Lookup lookup) {
+        CsmObject out = lookup.lookup(CsmObject.class);
+        if (out == null) {
+            CsmUID uid = lookup.lookup(CsmUID.class);
+            if (uid != null) {
+                out = (CsmObject) uid.getObject();
             }
-            if (csmObj != null) {
-                ref = CsmReferenceSupport.createObjectReference((CsmOffsetable)csmObj);
-            }
-            if (ref == null) {
+            if (out == null) {
                 Node node = lookup.lookup(Node.class);
                 if (node != null) {
-                    ref = CsmReferenceResolver.getDefault().findReference(node);
+                    out = CsmReferenceResolver.getDefault().findReference(node);
                 }
             }
         }
-        return ref;
+        return out;
     }
     
     @SuppressWarnings("unchecked")
@@ -215,7 +209,7 @@ public class CsmRefactoringUtils {
         return handler == null ? null : handler.getObject();
     }
     
-    public static boolean isSupportedReference(CsmReference ref) {
+    public static boolean isSupportedReference(CsmObject ref) {
         return ref != null;
     }    
     

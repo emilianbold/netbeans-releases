@@ -52,9 +52,6 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -81,7 +78,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
         if (CsmRefactoringUtils.isSupportedReference(ctx)) {
             return true;
         }        
@@ -98,15 +95,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                      return new WhereUsedQueryUI(selectedElement);
                 }
             };
-        } else if (isFromCsmObject(lookup)) {
-            task = new ElementTask(CsmRefactoringUtils.findReference(lookup)) {
-
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return new WhereUsedQueryUI(selectedElement);
-                }
-            };
         } else {
-            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToElementTask(lookup) {
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     return new WhereUsedQueryUI(selectedElement);
                 }
@@ -125,15 +115,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                     return new RenameRefactoringUI(selectedElement);
                 }
             };
-        } else if (isFromCsmObject(lookup)) {
-            task = new ElementTask(CsmRefactoringUtils.findReference(lookup)) {
-                @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return new RenameRefactoringUI(selectedElement);
-                }
-            };
         } else {
-            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     return new RenameRefactoringUI(selectedElement);
@@ -163,7 +146,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         if (nodes.size() > 1) {
             return false;
         }        
-        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
         if (CsmRefactoringUtils.isSupportedReference(ctx)) {
             return true;
         }        
@@ -190,7 +173,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
         
         public final void run() {
-            CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
             if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
                 return;
             }
@@ -208,19 +191,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
     
     public static abstract class NodeToElementTask implements Runnable/*, CancellableTask<CompilationController>*/  {
-        private Node node;
+        private Lookup context;
         private RefactoringUI ui;
         
-        public NodeToElementTask(Collection<? extends Node> nodes) {
-            assert nodes.size() == 1;
-            this.node = nodes.iterator().next();
+        public NodeToElementTask(Lookup context) {
+            this.context = context;
         }
         
         public void cancel() {
         }
         
         public final void run() {
-            CsmReference ctx = CsmReferenceResolver.getDefault().findReference(node);
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(context);
             if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
                 return;
             }
@@ -239,8 +221,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     public static abstract class ElementTask implements Runnable {
 
         private RefactoringUI ui;
-        private final CsmReference ctx;
-        public ElementTask(CsmReference ctx) {
+        private final CsmObject ctx;
+        public ElementTask(CsmObject ctx) {
             this.ctx = ctx;
         }
 
@@ -321,9 +303,5 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
 
         return false;
-    }
-
-    static boolean isFromCsmObject(Lookup lookup) {
-        return lookup.lookup(CsmObject.class) != null || lookup.lookup(CsmUID.class) != null;
     }
 }
