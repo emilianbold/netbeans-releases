@@ -140,12 +140,6 @@ abstract class LazyInitFilterNode extends FilterNode {
             }
         }
 
-        @Override
-        protected void removeNotify() {
-            super.removeNotify();
-            setChildren (new LazyChildren());
-        }
-
         public void run() {
             setChildren (createRealChildren());
         }

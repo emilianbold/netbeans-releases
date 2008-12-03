@@ -1608,7 +1608,9 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                return diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                copyTo(pos, bounds[1]);
+                return bounds[1];
             } else {
                 int pos = diffVarGroup(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.GROUP_VAR_MEASURE);
                 copyTo(pos, bounds[1]);

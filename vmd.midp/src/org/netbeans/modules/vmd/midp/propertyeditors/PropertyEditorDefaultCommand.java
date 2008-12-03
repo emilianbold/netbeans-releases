@@ -145,6 +145,11 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     }
 
     @Override
+    public void setAsText(String text) {
+        saveValue(text);
+    }
+
+    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;

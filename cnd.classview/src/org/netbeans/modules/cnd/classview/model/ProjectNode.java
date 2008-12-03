@@ -63,6 +63,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProjectNode extends NPNode {
     public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N
+    protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
     private boolean isLibrary;
     
     public ProjectNode(final CsmProject project, Children.Array key) {
@@ -163,17 +164,16 @@ public class ProjectNode extends NPNode {
     @Override
     public Action[] getActions(boolean context) {
         List<? extends Action> list = Utilities.actionsForPath("NativeProjects/Actions"); // NOI18N
-        NodeAction failedIncludes = null;
+        List<Action> res = new ArrayList<Action>();
         for(Action action : list){
             if (action instanceof NodeAction){
+                NodeAction nodeAction = (NodeAction) action;
                 if ("org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction".equals(action.getClass().getName())){ // NOI18N
-                    failedIncludes = (NodeAction) action;
+                    res.add(new NodeActionImpl(nodeAction, this));
+                } else if( TEST_XREF) {
+                    res.add(new NodeActionImpl(nodeAction, this));
                 }
             }
-        }
-        List<Action> res = new ArrayList<Action>();
-        if (failedIncludes != null) {
-            res.add(new NodeActionImpl(failedIncludes, this));
         }
         if( Diagnostic.DEBUG || EXPORT) {
             res.add(new TraverseAction());

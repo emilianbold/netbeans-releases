@@ -47,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -314,12 +315,9 @@ final class SelectionPanel extends JPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
-        JFileChooser chooser = new JFileChooser(projectDestDir.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        int ret = chooser.showOpenDialog(this);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            projectDestDir.setText(chooser.getSelectedFile().getAbsolutePath());
+        File dir = new FileChooserBuilder(SelectionPanel.class).setDirectoriesOnly(true).showOpenDialog();
+        if (dir != null) {
+            projectDestDir.setText(dir.getAbsolutePath());
         }//GEN-LAST:event_projectDestBrowseActionPerformed
     }                                                 
             
@@ -350,22 +348,16 @@ final class SelectionPanel extends JPanel {
     }
     
     private void projectBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectBrowseActionPerformed
-        JFileChooser chooser = new JFileChooser(projectDir.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        int ret = chooser.showOpenDialog(this);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            projectDir.setText(chooser.getSelectedFile().getAbsolutePath());
+        File file = new FileChooserBuilder(SelectionPanel.class).setDirectoriesOnly(true).forceUseOfDefaultWorkingDirectory(true).showOpenDialog();
+        if (file != null) {
+            projectDir.setText (file.getAbsolutePath());
         }//GEN-LAST:event_projectBrowseActionPerformed
     }                                             
     
     private void worskpaceBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_worskpaceBrowseActionPerformed
-        JFileChooser chooser = new JFileChooser(getWorkspaceDir());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        int ret = chooser.showOpenDialog(this);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            workspaceDir.setText(chooser.getSelectedFile().getAbsolutePath());
+        File file = new FileChooserBuilder(SelectionPanel.class + "_wksp").setDirectoriesOnly(true).showOpenDialog(); //NOI18N
+        if (file != null) {
+            workspaceDir.setText(file.getAbsolutePath());
         }//GEN-LAST:event_worskpaceBrowseActionPerformed
     }                                               
     

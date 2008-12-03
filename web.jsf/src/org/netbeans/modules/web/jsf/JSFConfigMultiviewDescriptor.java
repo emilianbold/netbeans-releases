@@ -68,7 +68,7 @@ import org.openide.windows.TopComponent;
  */
 
 public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Serializable{
-    static final long serialVersionUID = -6305897237371751564L;
+    static final long serialVersionUID = -6551916877064602276L;
     private final static String XML_CONSTANT = "XML"; //NOI18N
     
     private JSFConfigEditorContext context;
@@ -112,14 +112,16 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
     }
     
     
-    
-    class JSFConfigMultiviewElement extends CloneableEditor implements MultiViewElement, Serializable {
-        static final long serialVersionUID = -6305897237371751564L;
+    static class JSFConfigMultiviewElement extends CloneableEditor implements MultiViewElement, Serializable {
+        static final long serialVersionUID = 8106347205077610597L;
         
         private JSFConfigEditorContext context;
         private transient JComponent toolbar;
         private transient JSFConfigDataObject jsfDataObject;
         
+        // Default constructor needed for org.openide.windows.TopComponent
+        public JSFConfigMultiviewElement() {}
+
         public JSFConfigMultiviewElement(JSFConfigEditorContext context, JSFConfigEditorSupport support) {
             super(support);
             support.initializeCloneableEditor(this);
@@ -194,7 +196,9 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         }
         
         public void setMultiViewCallback(MultiViewElementCallback callback) {
-            context.setMultiViewTopComponent(callback.getTopComponent());
+            if (context != null && callback != null) {
+                context.setMultiViewTopComponent(callback.getTopComponent());
+            }
         }
         
         public CloseOperationState canCloseElement() {
