@@ -169,7 +169,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
     public abstract static class SVGFormComponent {
 
-        public static SVGFormComponent create(final String id, final TypeID type, Float position) {
+        /*public static SVGFormComponent create(final String id, final TypeID type, Float position) {
             return new SVGFormComponent(id, type, position) {
 
                 @Override
@@ -179,7 +179,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                     return dc;
                 }
             };
-        }
+        }*/
 
         public static SVGFormComponent createComponent(final String id, 
                 final TypeID type, final TypeID eventTypeId , Float position) 
