@@ -536,12 +536,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
-        callUninitialize ();
+        //callUninitialize ();
         data = data.clone(panels);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
-        callInitialize ();
+        //callInitialize ();
 
         updateState();
     }
@@ -557,12 +557,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
-        callUninitialize ();
+        //callUninitialize ();
         data = new SettingsAndIterator<Data>(panels, settings);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
-        callInitialize ();
+        //callInitialize ();
 
         updateState();
     }
