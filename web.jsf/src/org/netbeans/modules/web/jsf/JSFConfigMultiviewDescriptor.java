@@ -42,6 +42,9 @@
 package org.netbeans.modules.web.jsf;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -102,8 +105,7 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
     public MultiViewElement createElement() {
         MultiViewElement element = null;
         try {
-            DataObject dObject = DataObject.find(context.getFacesConfigFile());
-            JSFConfigDataObject jsfDataObject = (JSFConfigDataObject) dObject;
+            JSFConfigDataObject jsfDataObject = (JSFConfigDataObject) DataObject.find(context.getFacesConfigFile());
             element =  new JSFConfigMultiviewElement(context, jsfDataObject.getEditorSupport());
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -117,29 +119,16 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         
         private JSFConfigEditorContext context;
         private transient JComponent toolbar;
-        private transient JSFConfigDataObject jsfDataObject;
         
-        // Default constructor needed for org.openide.windows.TopComponent
-        public JSFConfigMultiviewElement() {}
+        // Constructor for deserialization only
+        public JSFConfigMultiviewElement() {
+            super();
+        }
 
         public JSFConfigMultiviewElement(JSFConfigEditorContext context, JSFConfigEditorSupport support) {
             super(support);
             support.initializeCloneableEditor(this);
             this.context = context;
-            init();
-        }
-        
-        private void init() {            
-            try {
-                DataObject dObject = DataObject.find(context.getFacesConfigFile());
-
-                jsfDataObject = (org.netbeans.modules.web.jsf.JSFConfigDataObject) dObject;
-            }
-            catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                                                                 ex.getMessage(),
-                                                                 ex);
-            }
         }
         
         public JComponent getVisualRepresentation() {
@@ -209,6 +198,20 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         @Override
         public javax.swing.Action[] getActions() {
             return super.getActions();
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            super.readExternal(in);
+
+            context = (JSFConfigEditorContext)in.readObject();
+        }
+
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            super.writeExternal(out);
+
+            out.writeObject(context);
         }
     }
 }
