@@ -39,14 +39,12 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
-
 /**
+ *
  * @author Radek Matous
  */
-public interface FunctionScope extends Scope, VariableScope {
-    List<? extends String> getParameterNames();
-    List<? extends Parameter> getParameters();
-    List<? extends TypeScope> getReturnTypes();
-
+public interface Parameter {
+    String getName();
+    String getDefaultValue();
+    boolean isMandatory();
 }

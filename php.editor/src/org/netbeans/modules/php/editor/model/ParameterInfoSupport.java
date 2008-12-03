@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
@@ -84,6 +85,7 @@ public class ParameterInfoSupport {
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
             PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE);
+
 
     private enum State {
 
@@ -234,8 +236,7 @@ public class ParameterInfoSupport {
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {
-                    FunctionScope functionScope = (FunctionScope) element;
-                    return new ParameterInfo(new ArrayList<String>(functionScope.getParameters()), commasCount, offset);
+                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, offset);
                 }
             }
         }
@@ -380,7 +381,7 @@ public class ParameterInfoSupport {
                         ModelElement declaration = occurence.getDeclaration();
                         if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
                             FunctionScope functionScope = (FunctionScope) declaration;
-                            return new ParameterInfo(new ArrayList<String>(functionScope.getParameters()), idx, anchor);
+                            return new ParameterInfo(toParamNames(functionScope), idx, anchor);
                         }
                     }
                 }
@@ -397,4 +398,17 @@ public class ParameterInfoSupport {
         return ParameterInfo.NONE;
     }
 
+    @CheckForNull
+    private static List<String> toParamNames(FunctionScope functionScope) {
+        List<String> paramNames = new ArrayList<String>();
+        List<? extends Parameter> parameters = functionScope.getParameters();
+        for (Parameter parameter : parameters) {
+            if (parameter.isMandatory()) {
+                paramNames.add(parameter.getName());
+            } else {
+                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue());
+            }
+        }
+        return paramNames;
+    }
 }
