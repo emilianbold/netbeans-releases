@@ -69,6 +69,7 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
@@ -113,7 +114,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public static final DesignPropertyEditor createTickerPropertyEditor() {
-        return new PropertyEditorResourceLazyInit( TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) {
+        return new PropertyEditorResourceLazyInit(TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) {
 
             @Override
             protected PropertyEditorResourceElement createElement() {
@@ -123,7 +124,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public static final DesignPropertyEditor createImagePropertyEditor() {
-        return new PropertyEditorResourceLazyInit( ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) {
+        return new PropertyEditorResourceLazyInit(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) {
 
             @Override
             protected PropertyEditorResourceElement createElement() {
@@ -371,20 +372,16 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     private void setValue(PropertyValue value) {
         super.setValue(value);
         final DesignComponent component_ = component.get();
-        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+        if (!NULL_VALUE.equals(value) && perElement != null && perElement.isPostSetValueSupported(component_)) {
             perElement.postSetValue(component_, value.getComponent());
         } else if (NULL_VALUE.equals(value)) {
             perElement.nullValueSet(component_);
-        }
+        } 
     }
 
     // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
-//        //TODO This is extremely incorrect! Because of stupid API in some cases UI of custom editor needs to be create it befor it's time!!
-//        if (perElement == null) {
-//            getCustomEditor();
-//        }
-        String nameToBeCreated = perElement.getResourceNameSuggestion();
+        String nameToBeCreated = ClassCode.getSuggestedMainName (componentTypeID);
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);
         component.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
     }

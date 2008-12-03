@@ -94,7 +94,8 @@ public class MergeAction extends ContextAction {
         }
         
         Context ctx = getContext(nodes);        
-        final File root = ctx.getRootFiles()[0];
+        final File root = SvnUtils.getActionRoot(ctx);
+        if(root == null) return;
         SVNUrl rootUrl;
         SVNUrl url;
         try {            

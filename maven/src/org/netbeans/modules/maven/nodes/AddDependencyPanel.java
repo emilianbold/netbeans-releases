@@ -71,6 +71,8 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -108,9 +110,14 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private static final String DELIMITER = " : ";
 
+    private NotificationLineSupport nls;
+
     /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject project) {
-        this.project = project;
+    public AddDependencyPanel(MavenProject mavenProject) {
+        this(mavenProject, true);
+    }
+    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan) {
+        this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -192,9 +199,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         defaultProgressC = progressLabel.getForeground();
         defaultVersionC = txtVersion.getForeground();
         setSearchInProgressUI(false);
-
-        artifactList = new DMListPanel(this, project);
-        artifactPanel.add(artifactList, BorderLayout.CENTER);
+        if (showDepMan) {
+            artifactList = new DMListPanel(this, project);
+            artifactPanel.add(artifactList, BorderLayout.CENTER);
+        } else {
+            tabPane.setEnabledAt(1, false);
+        }
 
     }
 
@@ -223,31 +233,61 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         return scope;
     }
 
+    /** For gaining access to DialogDisplayer instance to manage
+     * warning messages
+     */
+    public void attachDialogDisplayer(DialogDescriptor dd) {
+        nls = dd.getNotificationLineSupport();
+        if (nls == null) {
+            nls = dd.createNotificationLineSupport();
+        }
+    }
+
+    void setSelectedScope(String type) {
+        comScope.setSelectedItem(type);
+    }
+
     private void checkValidState() {
         String gId = txtGroupId.getText().trim();
+        if (gId.length() <= 0) {
+            gId = null;
+        }
         String aId = txtArtifactId.getText().trim();
+        if (aId.length() <= 0) {
+            aId = null;
+        }
         String version = txtVersion.getText().trim();
+        if (version.length() <= 0) {
+            version = null;
+        }
 
         boolean dmDefined = tabPane.isEnabledAt(1);
         if (artifactList != null) {
             Color c = defaultVersionC;
+            String warn = null;
             if (dmDefined) {
                 if (findConflict(artifactList.getDMDeps(), gId, aId, version, null) == 1) {
                     c = Color.RED;
+                    warn = NbBundle.getMessage(AddDependencyPanel.class, "MSG_VersionConflict");
                 }
             }
             txtVersion.setForeground(c);
+            if (warn != null) {
+                nls.setWarningMessage(warn);
+            } else {
+                nls.clearMessages();
+            }
         }
 
-        if (gId.length() <= 0) {
+        if (gId == null) {
             okButton.setEnabled(false);
             return;
         }
-        if (aId.length() <= 0) {
+        if (aId == null) {
             okButton.setEnabled(false);
             return;
         }
-        if (version.length() <= 0 && !dmDefined) {
+        if (version == null && !dmDefined) {
             okButton.setEnabled(false);
             return;
         }
@@ -586,21 +626,21 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
 
-        while (localProj.hasParent()) {
-            localProj = localProj.getParent();
+        while (localProj != null) {
             curDM = localProj.getDependencyManagement();
             if (curDM != null) {
                 @SuppressWarnings("unchecked")
                 List<Dependency> ds = curDM.getDependencies();
                 result.addAll(ds);
             }
+            localProj = localProj.getParent();
         }
 
         return result;
     }
 
     /**
-     * @return 0 -> no conflicts, 1 -> conflict in version, 2 -> conflict in scope 
+     * @return 0 -> no conflicts, 1 -> conflict in version, 2 -> conflict in scope
      */
     private static int findConflict (List<Dependency> deps, String groupId, String artifactId, String version, String scope) {
         if (deps == null) {
@@ -664,8 +704,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     public void actionPerformed(ActionEvent e) {
                         if (curTypedText.length() < 3) {
                             depPanel.searchField.setForeground(Color.RED);
+                            depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_QueryTooShort"));
                         } else {
                             depPanel.searchField.setForeground(defSearchC);
+                            depPanel.nls.clearMessages();
                             find(curTypedText);
                         }
                     }
@@ -839,10 +881,22 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     depPanel.txtGroupId.setText(vi.getGroupId());
                     depPanel.txtArtifactId.setText(vi.getArtifactId());
                     depPanel.txtVersion.setText(vi.getVersion());
+                    //reset completion.
+                    depPanel.artifactCompleter.setLoading(true);
+                    depPanel.versionCompleter.setLoading(true);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            depPanel.populateArtifact();
+                            depPanel.populateVersion();
+                        }
+                    });
                 } else {
                     depPanel.txtGroupId.setText("");
                     depPanel.txtArtifactId.setText("");
                     depPanel.txtVersion.setText("");
+                    //reset completion.
+                    depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                    depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
                 }
             }
         }
@@ -987,11 +1041,23 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 NBVersionInfo vi = ((VersionNode)selNodes[0]).getNBVersionInfo();
                 depPanel.txtGroupId.setText(vi.getGroupId());
                 depPanel.txtArtifactId.setText(vi.getArtifactId());
-                depPanel.txtVersion.setText("");
+                depPanel.txtVersion.setText(""); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setLoading(true);
+                depPanel.versionCompleter.setLoading(true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        depPanel.populateArtifact();
+                        depPanel.populateVersion();
+                    }
+                });
             } else {
-                depPanel.txtGroupId.setText("");
-                depPanel.txtArtifactId.setText("");
-                depPanel.txtVersion.setText("");
+                depPanel.txtGroupId.setText(""); //NOI18N
+                depPanel.txtArtifactId.setText(""); //NOI18N
+                depPanel.txtVersion.setText(""); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
             }
         }
 

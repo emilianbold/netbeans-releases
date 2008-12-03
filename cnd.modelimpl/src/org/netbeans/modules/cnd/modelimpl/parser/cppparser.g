@@ -1963,9 +1963,9 @@ direct_declarator
 		(options {greedy=true;} :function_attribute_specification)?
 		id = idInBalanceParensHard                                                     
 		{declaratorID(id, qiFun);}                
-		LPAREN! //{declaratorParameterList(false);}
+		LPAREN //{declaratorParameterList(false);}
 		(parameter_list)?
-		RPAREN! //{declaratorEndParameterList(false);}                
+		RPAREN //{declaratorEndParameterList(false);}                
 		(tq = cv_qualifier)*
 		(exception_specification)?
 		(options {greedy=true;} :function_attribute_specification)?
@@ -2183,7 +2183,7 @@ ctor_declarator[boolean definition]
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
-	LPAREN! (parameter_list)? RPAREN!
+	LPAREN (parameter_list)? RPAREN
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor

@@ -72,6 +72,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -302,13 +303,26 @@ public class CsmContextUtilities {
         CsmScope scope = entry.getScope();
         int offsetInScope = entry.getOffset();
         List<CsmDeclaration> resList = new ArrayList<CsmDeclaration>();
+        boolean stoppedBeforeFirst = true;
         for (Iterator it = scope.getScopeElements().iterator(); it.hasNext();) {
             CsmScopeElement scpElem = (CsmScopeElement) it.next();
             if (canBreak(offsetInScope, scpElem, fullContext)) {
                 break;
             }
+            stoppedBeforeFirst = false;
             List<CsmDeclaration> declList = extractDeclarations(scpElem, strPrefix, match, caseSensitive);
             resList.addAll(declList);
+        }
+        if (stoppedBeforeFirst && CsmKindUtilities.isFunction(scope)) {
+            // check if in K&R list
+            CsmFunctionParameterList paramList = ((CsmFunction)scope).getParameterList();
+            if (CsmOffsetUtilities.isInObject(paramList, offsetInScope)) {
+                // add all parameters
+                for (CsmParameter csmParameter : paramList.getParameters()) {
+                    List<CsmDeclaration> declList = extractDeclarations(csmParameter, strPrefix, match, caseSensitive);
+                    resList.addAll(declList);
+                }
+            }
         }
         return resList;
     }
@@ -560,7 +574,7 @@ public class CsmContextUtilities {
     public static boolean isInFunctionBodyOrInitializerList(CsmContext context, int offset) {
         return isInFunctionBody(context, offset) || isInInitializerList(context, offset);
     }
-
+    
     public static boolean isInFunctionBody(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         return (funDef == null) ? false : CsmOffsetUtilities.isInObject(funDef.getBody(), offset);

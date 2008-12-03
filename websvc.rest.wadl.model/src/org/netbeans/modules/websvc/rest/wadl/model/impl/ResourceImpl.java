@@ -30,7 +30,7 @@ public class ResourceImpl extends NamedImpl implements Resource {
     }
 
     public void addParam(Param param) {
-        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_RESOURCE.types());
+        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_PARAM.types());
     }
 
     public void removeParam(Param param) {
@@ -42,7 +42,7 @@ public class ResourceImpl extends NamedImpl implements Resource {
     }
 
     public void addMethod(Method method) {
-        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_RESOURCE.types());
+        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_METHOD.types());
     }
 
     public void removeMethod(Method method) {

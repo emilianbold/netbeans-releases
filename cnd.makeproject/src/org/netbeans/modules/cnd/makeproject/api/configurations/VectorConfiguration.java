@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
@@ -111,12 +112,15 @@ public class VectorConfiguration<E> {
         value = new ArrayList<E>();
     }
 
-    public String getOption(String prependOption) {
+    public String getOption(CompilerSet cs, String prependOption) {
         StringBuilder option = new StringBuilder();
         List<E> values = getValue();
         for (E val : values) {
             String s = val.toString();
             if (s.length() > 0) { // See IZ 151364
+                if (cs != null) {
+                    s = cs.normalizeDriveLetter(s);
+                }
                 option.append(prependOption + IpeUtils.escapeOddCharacters(s) + " "); // NOI18N
             }
         }

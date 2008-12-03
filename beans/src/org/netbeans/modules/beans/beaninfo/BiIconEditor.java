@@ -77,6 +77,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -148,6 +149,10 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
         if (old == value || old != null && old.equals(value)) {
             return;
         }
+        if (env != null) {
+            BiImageIcon newval = (BiImageIcon) value;
+            env.setState(newval != null && newval.url == null ? PropertyEnv.STATE_INVALID : PropertyEnv.STATE_VALID);
+        }
         super.setValue(value);
     }
 
@@ -178,7 +183,13 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
     @Override
     public void setAsText(String string) throws IllegalArgumentException {
         try { 
-            setValue(iconFromText(string));
+            BiImageIcon iconFromText = iconFromText(string);
+            if (iconFromText == null || iconFromText.url != null) {
+                setValue(iconFromText);
+            } else {
+                String msg = NbBundle.getMessage(IconPanel.class, "CTL_Icon_not_exists", string);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+            }
         }
         catch ( IllegalArgumentException e ) {
             // User inserted incorrect path either report or
@@ -201,9 +212,13 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
             }
             else {
                 ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );                
-                
-                URL url = cp.findResource( string.substring(1) ).getURL();
-                ii = new BiImageIcon(url, string);
+                FileObject res = cp.findResource(string.substring(1));
+                if (res == null) {
+                    ii = new BiImageIcon(null, string);
+                } else {
+                    URL url = res.getURL();
+                    ii = new BiImageIcon(url, string);
+                }
             }
         } catch (Throwable e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
@@ -249,6 +264,10 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
 
     public void attachEnv(PropertyEnv env) {
         this.env = env;
+        BiImageIcon val = getValue();
+        if (val != null && val.url == null) {
+            env.setState(PropertyEnv.STATE_INVALID);
+        }
     }
     
     public static final class BiImageIcon {
@@ -270,6 +289,9 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
 
         public Icon getIcon() {
             if (icon == null) {
+                if (url == null) {
+                    return icon;
+                }
                 try {
                     Image image = ImageIO.read(url);
                     icon = new ImageIcon(image);

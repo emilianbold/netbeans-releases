@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -84,10 +85,30 @@ public class POHImpl extends ProjectOpenedHook {
     }
     
     public void hackModuleServerChange() {
-        provider.hackModuleServerChange();
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            public void run() {
+                refreshAppServerAssignment();
+            }
+        });
     }
     
     protected void projectOpened() {
+        refreshAppServerAssignment();
+        if (refreshListener == null) {
+            //#121148 when the user edits the file we need to reset the server instance
+            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+            refreshListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        hackModuleServerChange();
+                    }
+                }
+            };
+            watcher.addPropertyChangeListener(refreshListener);
+        }
+    }
+
+    protected synchronized void refreshAppServerAssignment() {
         provider.hackModuleServerChange();
 
         String instanceFound = null;
@@ -149,18 +170,6 @@ public class POHImpl extends ProjectOpenedHook {
                     new AddServerAction(project));
             report.addReport(rep);
             
-        }
-        if (refreshListener == null) {
-            //#121148 when the user edits the file we need to reset the server instance
-            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-            refreshListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        projectOpened();
-                    }
-                }
-            };
-            watcher.addPropertyChangeListener(refreshListener);
         }
     }
 

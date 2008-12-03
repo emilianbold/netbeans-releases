@@ -59,6 +59,7 @@ import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.CommentNode;
+import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.ConstNode;
 import org.jruby.nb.ast.DefnNode;
 import org.jruby.nb.ast.DefsNode;
@@ -100,6 +101,7 @@ import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -550,8 +552,29 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case CONSTDECLNODE: {
+            ConstDeclNode constNode = (ConstDeclNode) node;
+            Node valueNode = constNode.getValueNode();
+
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
+
+            if (info != null) {
+                int astOffset = node.getPosition().getStartOffset();
+                BaseDocument doc = (BaseDocument) info.getDocument();
+                FileObject fileObject = info.getFileObject();
+                // pass RubyIndex cautiously to prevent dangerous mutual recursion between
+                // RubyIndexer, RubyTypeAnalyzer and few other. Be sure to run ruby.hints tests
+                RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(null, constNode, valueNode, astOffset, -1, doc, fileObject);
+                Set<? extends String> types = analyzer.getTypes(constNode.getName());
+                if (types != null) {
+                    for (String type : types) {
+                        if (type != null) {
+                            co.setType(type); // TODO should *add* type
+                        }
+                    }
+                }
+            }
+
             co.setIn(in);
 
             if (parent != null) {
@@ -976,6 +999,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
     private class RubyStructureItem implements StructureItem {
+        
         AstElement node;
         ElementKind kind;
         CompilationInfo info;
@@ -1018,6 +1042,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     formatter.parameters(false);
                     formatter.appendHtml(")");
                 }
+            }
+
+            if (node.getType() != null) {
+                formatter.appendHtml(" : ");
+                formatter.appendText(node.getType());
             }
 
             return formatter.getText();
