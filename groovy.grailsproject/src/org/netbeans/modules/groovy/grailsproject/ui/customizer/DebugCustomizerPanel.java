@@ -43,31 +43,32 @@
  * Created on Jul 12, 2008, 11:15:15 AM
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui;
+package org.netbeans.modules.groovy.grailsproject.ui.customizer;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author sc32560
  */
 public class DebugCustomizerPanel extends javax.swing.JPanel {
-    private GrailsProjectConfig prjConfig;
+    
+    private GrailsProjectProperties uiProperties;
+
     private final boolean ieBrowserSupported;
+
     private final boolean ffBrowserSupported;
 
     /** Creates new form DebugCustomizerPanel */
-    public DebugCustomizerPanel(Project project) {
-        prjConfig = GrailsProjectConfig.forProject(project);
+    public DebugCustomizerPanel(GrailsProjectProperties uiProperties) {
+        this.uiProperties = uiProperties;
+        
         initComponents();
         
         ieBrowserSupported = WebClientToolsProjectUtils.isInternetExplorerSupported();
         ffBrowserSupported = WebClientToolsProjectUtils.isFirefoxSupported();
         
-        String browserString = prjConfig.getDebugBrowser();
+        String browserString = uiProperties.getDebugBrowser();
         WebClientToolsProjectUtils.Browser selectedBrowser = null;
         if (browserString == null) {
             browserString = (ffBrowserSupported || !ieBrowserSupported) ? WebClientToolsProjectUtils.Browser.FIREFOX.name() :
@@ -170,7 +171,7 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void setBrowser() {
-        prjConfig.setDebugBrowser(internetExplorerRadioButton.isSelected() ?
+        uiProperties.setDebugBrowser(internetExplorerRadioButton.isSelected() ?
                 WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name() :
                 WebClientToolsProjectUtils.Browser.FIREFOX.name());
     }
