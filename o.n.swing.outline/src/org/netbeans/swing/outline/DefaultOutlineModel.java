@@ -264,7 +264,7 @@ public class DefaultOutlineModel implements OutlineModel {
     }
     
     public final boolean isLeaf(Object node) {
-        return treeModel.isLeaf(node);
+        return null != node && treeModel.isLeaf(node);
     }
 
     /** Delegates to the EventBroadcaster for this model */
