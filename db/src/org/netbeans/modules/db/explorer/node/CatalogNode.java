@@ -40,9 +40,10 @@
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 
@@ -50,57 +51,56 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
  *
  * @author Rob Englander
  */
-public class ColumnNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/column.gif";
-    private static final String FOLDER = "Column"; //NOI18N
+public class CatalogNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/database.gif";
+    private static final String FOLDER = "Catalog"; //NOI18N
 
     /**
-     * Create an instance of ColumnNode.
+     * Create an instance of CatalogNode.
      *
      * @param dataLookup the lookup to use when creating node providers
-     * @return the ColumnNode instance
+     * @return the CatalogNode instance
      */
-    public static ColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        ColumnNode node = new ColumnNode(dataLookup, provider);
+    public static CatalogNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        CatalogNode node = new CatalogNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
+    private MetadataElementHandle<Catalog> catalogHandle;
     private Metadata metaData;
-    private MetadataElementHandle<Column> columnHandle;
 
-    private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
-        super(lookup, FOLDER, provider);
+    private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
+        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
         metaData = getLookup().lookup(Metadata.class);
-        columnHandle = getLookup().lookup(MetadataElementHandle.class);
-    }
-
-    public int getOrdinalPosition() {
-        Column column = columnHandle.resolve(metaData);
-        return column.getOrdinalPosition();
     }
 
     @Override
     public String getName() {
-        Column column = columnHandle.resolve(metaData);
-        if (column == null) {
-            return "";
-        }
-
-        return column.getName();
+        return renderName();
     }
 
     @Override
     public String getDisplayName() {
-        Column column = columnHandle.resolve(metaData);
-        if (column == null) {
+        return renderName();
+    }
+
+    private String renderName() {
+        Catalog catalog = catalogHandle.resolve(metaData);
+        if (catalog == null) {
             return "";
         }
 
-        return column.getName();
+        String name = catalog.getName();
+        if (name == null) {
+            name = metaData.getDefaultSchema().getName();
+        }
+        
+        return name;
     }
 
     @Override

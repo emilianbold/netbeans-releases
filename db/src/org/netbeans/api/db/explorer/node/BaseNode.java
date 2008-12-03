@@ -40,7 +40,6 @@
 package org.netbeans.api.db.explorer.node;
 
 import java.util.Collection;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,14 +62,17 @@ public abstract class BaseNode extends AbstractNode {
     private final ActionRegistry actionRegistry;
     private final NodeRegistry nodeRegistry;
     private final ChildNodeFactory childNodeFactory;
-    
+    private final NodeProvider nodeProvider;
+
+    public boolean isRemoved = false;
+
     /**
      * Constructor for nodes without children.
      * 
      * @param dataLookup the data lookup for this node
      */
-    public BaseNode(NodeDataLookup dataLookup, String layerEntry) {
-        this(Children.LEAF, null, dataLookup, layerEntry);
+    public BaseNode(NodeDataLookup dataLookup, String layerEntry, NodeProvider provider) {
+        this(Children.LEAF, null, dataLookup, layerEntry, provider);
     }
 
     /**
@@ -79,8 +81,8 @@ public abstract class BaseNode extends AbstractNode {
      * @param childFactory the child factory used to create children of this node
      * @param dataLookup the data lookup for this node
      */
-    public BaseNode(ChildNodeFactory childFactory, NodeDataLookup dataLookup, String layerEntry) {
-        this(Children.create(childFactory, true), childFactory, dataLookup, layerEntry);
+    public BaseNode(ChildNodeFactory childFactory, NodeDataLookup dataLookup, String layerEntry, NodeProvider provider) {
+        this(Children.create(childFactory, true), childFactory, dataLookup, layerEntry, provider);
     }
 
     /**
@@ -91,12 +93,13 @@ public abstract class BaseNode extends AbstractNode {
      * @param lookup the associated lookup
      * @param layerEntry the name of the folder in the xml layer
      */
-    private BaseNode(Children children, ChildNodeFactory factory, NodeDataLookup lookup, String layerEntry) {
+    private BaseNode(Children children, ChildNodeFactory factory, NodeDataLookup lookup, String layerEntry, NodeProvider provider) {
         super(children, lookup);
         dataLookup = lookup;
         childNodeFactory = factory;
         actionRegistry = new ActionRegistry(layerEntry);
         nodeRegistry = NodeRegistry.create(layerEntry, dataLookup);
+        nodeProvider = provider;
     }
     
     /**
@@ -105,8 +108,9 @@ public abstract class BaseNode extends AbstractNode {
      */
     protected abstract void initialize();
 
-    public boolean canRefresh() {
-        return false;
+    public void refresh() {
+        nodeRegistry.refresh();
+        update();
     }
 
     /**
@@ -132,7 +136,12 @@ public abstract class BaseNode extends AbstractNode {
         );
 
         initialize();
-        update();
+        updateProperties();
+    }
+
+    protected void remove() {
+        isRemoved = true;
+        nodeProvider.removeNode(this);
     }
 
     /**
@@ -145,19 +154,25 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     /**
-     * Updates the node
+     * Updates the node.
      */
     public void update() { 
+        updateProperties();
+
+        if (childNodeFactory != null) {
+            childNodeFactory.refresh();
+        }
+    }
+
+    /**
+     * Updates the basic node properties.
+     */
+    private void updateProperties() {
         setName(getName());
         setDisplayName(getDisplayName());
-
         String iconBase = getIconBase();
         if (iconBase != null) {
             setIconBaseWithExtension(iconBase);
-        }
-        
-        if (childNodeFactory != null) {
-            childNodeFactory.refresh();
         }
     }
 

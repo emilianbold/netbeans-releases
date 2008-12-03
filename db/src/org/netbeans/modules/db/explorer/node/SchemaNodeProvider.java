@@ -39,10 +39,6 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -50,15 +46,13 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -76,87 +70,54 @@ public class SchemaNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public SchemaNodeProvider createInstance(Lookup lookup) {
                 SchemaNodeProvider provider = new SchemaNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Catalog catalog;
+    private final MetadataElementHandle<Catalog> catalogHandle;
+    private Metadata metaData;
 
     private SchemaNodeProvider(Lookup lookup) {
         super(lookup, new SchemaComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        catalog = getLookup().lookup(Catalog.class);
+        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
-    private void setup() {
-        // listen for change events
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    // just ask the node to update itself
-                    update();
-                }
-            }
-        );
+    protected synchronized void initialize() {
+        Catalog cat = catalogHandle.resolve(metaData);
 
-        update();
-    }
+        List<Node> newList = new ArrayList<Node>();
 
-    private synchronized void update() {
-        Connection conn = connection.getConnection();
-        boolean connected = false;
+        Schema syntheticSchema = cat.getSyntheticSchema();
 
-        if (conn != null) {
-            try {
-                connected = !conn.isClosed();
-            } catch (SQLException e) {
-
+        if (syntheticSchema != null) {
+            updateNode(newList, syntheticSchema, metaData);
+        } else {
+            Collection<Schema> schemas = cat.getSchemas();
+            for (Schema schema : schemas) {
+                updateNode(newList, schema, metaData);
             }
         }
 
-        if (connected) {
-            MetadataModel model = MetadataModels.createModel(connection.getConnection(), null);
+        setNodes(newList);
+    }
 
-            try {
-                model.runReadAction(
-                    new Action<Metadata>() {
-                        public void run(Metadata parameter) {
-                            List<Node> newList = new ArrayList<Node>();
-
-                            Catalog cat = parameter.getDefaultCatalog();
-                            Schema syntheticSchema = cat.getSyntheticSchema();
-                            if (syntheticSchema != null) {
-                                updateNode(newList, syntheticSchema);
-                            } else {
-                                Collection<Schema> schemas = cat.getSchemas();
-                                for (Schema schema : schemas) {
-                                    updateNode(newList, schema);
-                                }
-                            }
-
-                            setNodes(newList);
-                        }
-
-                        private void updateNode(List<Node> newList, Schema schema) {
-                            Collection<Node> matches = SchemaNodeProvider.this.getNodes(schema);
-                            if (matches.size() > 0) {
-                                newList.addAll(matches);
-                            } else {
-                                NodeDataLookup lookup = new NodeDataLookup();
-                                lookup.add(connection);
-                                lookup.add(schema);
-                                newList.add(SchemaNode.create(lookup));
-                            }
-                        }
-                    }
-                );
-            } catch (MetadataModelException e) {
-            }
+    private void updateNode(List<Node> newList, Schema schema, Metadata metadata) {
+        Collection<Node> matches = getNodes(schema);
+        if (matches.size() > 0) {
+            newList.addAll(matches);
         } else {
-            removeAllNodes();
+            NodeDataLookup lookup = new NodeDataLookup();
+            lookup.add(connection);
+
+            MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
+            lookup.add(schemaHandle);
+            lookup.add(metadata);
+
+            newList.add(SchemaNode.create(lookup, SchemaNodeProvider.this));
         }
     }
 

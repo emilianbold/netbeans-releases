@@ -46,6 +46,8 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
@@ -53,7 +55,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class TableNodeProvider extends NodeProvider {
 
@@ -67,26 +69,29 @@ public class TableNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public TableNodeProvider createInstance(Lookup lookup) {
                 TableNodeProvider provider = new TableNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
     private TableNodeProvider(Lookup lookup) {
         super(lookup, new TableComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
-    private void setup() {
-        update();
-    }
+    @Override
+    protected void initialize() {
+        // TODO this should just refresh the schema, not the
+        // entire metadata
+        metaData.refresh();
+        Schema schema = schemaHandle.resolve(metaData);
 
-    private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
         Collection<Table> tables = schema.getTables();
@@ -97,9 +102,12 @@ public class TableNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(table);
-                
-                newList.add(TableNode.create(lookup));
+                lookup.add(metaData);
+
+                MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
+                lookup.add(handle);
+
+                newList.add(TableNode.create(lookup, this));
             }
         }
 
@@ -108,8 +116,8 @@ public class TableNodeProvider extends NodeProvider {
 
     static class TableComparator implements Comparator<Node> {
 
-        public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+        public int compare(Node node1, Node node2) {
+            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
 
     }

@@ -81,7 +81,7 @@ public class RootNode extends BaseNode {
      * @param lookup the associated lookup
      */
     private RootNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, null);
     }
     
     protected void initialize() {

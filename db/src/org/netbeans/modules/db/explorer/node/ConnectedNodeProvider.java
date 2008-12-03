@@ -39,14 +39,17 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -71,23 +74,8 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
      * @return the created baseNode
      */
     protected abstract BaseNode createNode(NodeDataLookup lookup);
-    
-    protected void setup() {
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("connected") ||
-                            evt.getPropertyName().equals("failed")) {
-                        updateState();
-                    }
-                }
-            }
-        );
 
-        updateState();
-    }
-    
-    private void updateState() {
+    protected synchronized void initialize() {
         Connection conn = connection.getConnection();
         boolean disconnected = true;
 
@@ -102,16 +90,22 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
         if (disconnected) {
             removeAllNodes();
         } else {
-            removeAllNodes();
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
 
-            Schema schema = getLookup().lookup(Schema.class);
-            if (schema != null) {
-                lookup.add(schema);
+            Metadata metaData = getLookup().lookup(Metadata.class);
+            if (metaData != null) {
+                lookup.add(metaData);
             }
-            
-            addNode(createNode(lookup));
+
+            MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+            if (schemaHandle != null) {
+                lookup.add(schemaHandle);
+            }
+
+            List<Node> newList = new ArrayList<Node>();
+            newList.add(createNode(lookup));
+            setNodes(newList);
         }
     }
 }
