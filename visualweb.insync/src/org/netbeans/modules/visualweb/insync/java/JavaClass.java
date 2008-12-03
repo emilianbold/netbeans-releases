@@ -135,7 +135,12 @@ public class JavaClass {
          Boolean result = (Boolean)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 TypeElement typeElement = typeElementHandle.resolve(cinfo);
-                TypeMirror superType = cinfo.getElements().getTypeElement(typeName).asType();
+                TypeElement superElement = cinfo.getElements().getTypeElement(typeName);
+                if (superElement == null) {
+                    // XXX #153978 Possible NPE.
+                    return Boolean.FALSE;
+                }
+                TypeMirror superType = superElement.asType();
                 if(superType.getKind() == TypeKind.DECLARED &&
                    cinfo.getTypes().isSubtype(typeElement.asType(), superType)) {
                         return Boolean.TRUE;

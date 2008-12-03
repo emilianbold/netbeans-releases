@@ -41,7 +41,7 @@ package org.netbeans.modules.mobility.project.ui.actions;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 
-public class RunConfigurationAction extends AntSingleAction {
+public final class RunConfigurationAction extends AntSingleAction {
 
     private RunConfigurationAction() {
         super(NbBundle.getMessage(RunConfigurationAction.class, "LBL_RunConfigurationAction_Name"), "run"); //NO18N

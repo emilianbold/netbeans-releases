@@ -22,7 +22,11 @@ testresult() {
     echo '<testsuite errors="0" failures="'$FAILURES'" name="hg.'$2'" tests="1" time="1">' >>$FILE
     echo '  <properties>' >>$FILE
     echo '  </properties>' >>$FILE
-    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
+    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1">' >>$FILE
+    if [ "$FAILURES" -gt "0" ]; then
+        echo '  <failure message="Failed"/>' >>$FILE
+    fi
+    echo '  </testcase>' >>$FILE
     echo '  <system-out><![CDATA[' >>$FILE
     echo "$3" >>$FILE
     echo ']]></system-out>' >>$FILE
@@ -83,7 +87,7 @@ if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
 else
     echo Build is not stable, exiting
     testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
-    echo >"nbbuild/no-outgoing-changes-no-build.zip"
+    echo >"nbbuild/downstream-builder-not-stable-no-push.zip"
     exit 0
 fi
 

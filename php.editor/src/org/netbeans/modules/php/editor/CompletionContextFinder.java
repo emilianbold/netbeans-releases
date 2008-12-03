@@ -174,7 +174,7 @@ class CompletionContextFinder {
 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -206,7 +206,7 @@ class CompletionContextFinder {
         }
 
         if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
-            return CompletionContext.CLASS_NAME;
+            return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
@@ -309,13 +309,24 @@ class CompletionContextFinder {
     private static Token[] getPreceedingTokens(TokenSequence tokenSequence, int maxNumberOfTokens){
         int orgOffset = tokenSequence.offset();
         LinkedList<Token> tokens = new LinkedList<Token>();
+        
+        boolean success = true;
 
-        for (int i = 0; i < maxNumberOfTokens; i++) {
-            if (!tokenSequence.movePrevious()){
-                break;
+        // in case we are at the last token
+        // include it in the result, see #154055
+        if (tokenSequence.moveNext()){
+            success = tokenSequence.movePrevious()
+                && tokenSequence.movePrevious();
+        }
+
+        if (success) {
+            for (int i = 0; i < maxNumberOfTokens; i++) {
+                tokens.addFirst(tokenSequence.token());
+
+                if (i == maxNumberOfTokens - 1 || !tokenSequence.movePrevious()) {
+                    break;
+                }
             }
-
-            tokens.addFirst(tokenSequence.token());
         }
 
         tokenSequence.move(orgOffset);
