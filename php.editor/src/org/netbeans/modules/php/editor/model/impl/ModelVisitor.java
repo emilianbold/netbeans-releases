@@ -646,6 +646,9 @@ public final class ModelVisitor extends DefaultVisitor {
 
         }
         if (atOffset == null) {
+            while (scope != null && !(scope instanceof VariableScope)) {
+                scope = scope.getInScope();
+            }
             atOffset = (VariableScope) scope;
         }
         return atOffset;

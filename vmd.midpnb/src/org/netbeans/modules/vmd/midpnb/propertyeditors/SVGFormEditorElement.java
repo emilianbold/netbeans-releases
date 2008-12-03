@@ -905,7 +905,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         private String COLUMN_NAME_I = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_Type_Column"); //NOI18N
         private String COLUMN_NAME_II = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_ID_Column"); //NOI18N
-        private String[][] values;
+        private Object[][] values;
 
         public Model() {
             if (svgFormReferences == null || svgFormReferences.get() == null) {
@@ -917,7 +917,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
                 public void run() {
                     Collection<PropertyValue> svgComponents = svgForm.readProperty(SVGFormCD.PROP_COMPONENTS).getArray();
-                    values = new String[svgComponents.size()][2];
+                    values = new Object[svgComponents.size()][2];
                     int i = 0;
                     for (PropertyValue value : svgComponents) {
                         String id = (String) value.getComponent().readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
@@ -932,7 +932,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         public Model(InputStream inputStream) {
             if (inputStream == null) {
-                values = new String[0][0];
+                values = new Object[0][0];
                 return;
             }
             this.values = SVGFormImageParser.getComponentsInformation(inputStream);

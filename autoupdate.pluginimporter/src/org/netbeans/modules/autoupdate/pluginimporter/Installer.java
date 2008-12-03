@@ -86,7 +86,7 @@ public class Installer extends ModuleInstall {
         WindowManager.getDefault ().invokeWhenUIReady (new Runnable () {
 
             public void run () {
-                RequestProcessor.getDefault ().post (doCheck, 50000); // XXX: Need to wait until UC downloaded&parsed
+                RequestProcessor.getDefault ().post (doCheck, getImportDelay ()); // XXX: Need to wait until UC downloaded&parsed
             }
         });
     }
@@ -205,5 +205,16 @@ public class Installer extends ModuleInstall {
             }
         }
         return null;
+    }
+
+    private int getImportDelay () {
+        int delay = 50000; // the defalut value
+        String delay_prop = System.getProperty ("plugin.managet.import.delay");
+        try {
+            delay = Integer.parseInt (delay_prop);
+        } catch (NumberFormatException x) {
+            // ignore, use the default value
+        }
+        return delay;
     }
 }
