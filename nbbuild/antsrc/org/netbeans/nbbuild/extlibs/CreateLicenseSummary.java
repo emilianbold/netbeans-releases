@@ -190,7 +190,7 @@ public class CreateLicenseSummary extends Task {
         } catch (IOException x) {
             throw new BuildException(x, getLocation());
         }
-        JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+        JUnitReportWriter.writeReport(this, null, reportFile, pseudoTests);
     }
     private String getMaybeMissing(Map<String,String> headers, String headerName) {
         if (headers.containsKey(headerName)) {
