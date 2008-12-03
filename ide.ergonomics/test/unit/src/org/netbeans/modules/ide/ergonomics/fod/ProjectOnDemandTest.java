@@ -193,6 +193,11 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertEquals("Info delegates", "x", info.getName());
         assertEquals("Info delegates2", "y", info.getDisplayName());
         assertEquals("Info delegates icon", null, info.getIcon());
+
+        OpenProjects.getDefault().close (new Project[] { newP });
+        if (OpenProjects.getDefault().getOpenProjects().length != 0) {
+            fail("All projects shall be closed: " + Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

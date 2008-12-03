@@ -39,19 +39,16 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
 import javax.swing.Icon;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -61,7 +58,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -93,6 +89,7 @@ public class FeatureProjectFactory implements ProjectFactory {
 
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
+
 
     private static final class FeatureNonProject extends ProjectOpenedHook
     implements Project, Runnable {
@@ -161,8 +158,22 @@ public class FeatureProjectFactory implements ProjectFactory {
                 success = true;
             }
         }
-    } // end of FeatureNonProject
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Project) {
+                return ((Project)obj).getProjectDirectory().equals(getProjectDirectory());
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return getProjectDirectory().hashCode();
+        }
+
+
+    } // end of FeatureNonProject
     private static final class FeatureDelegate 
     implements Lookup.Provider, ProjectInformation {
         private final FileObject dir;
