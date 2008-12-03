@@ -319,7 +319,10 @@ public final class EmbedderFactory {
 
 
         ClassWorld world = new ClassWorld();
-        File rootPackageFolder = FileUtil.normalizeFile(InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false)); //NOI18N
+        File rootPackageFolder = InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false); //NOI18N
+        if (rootPackageFolder != null) {
+            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
+        }
         // kind of separation layer between the netbeans classloading world and maven classworld.
         try {
             ClassRealm nbRealm = world.newRealm("netbeans", loader); //NOI18N
@@ -350,8 +353,10 @@ public final class EmbedderFactory {
             //have custom lifecycle executor to collect all projects in reactor..
             plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.embedder.exec"); //NOI18N
 
-            //hack to enable reports, default package is EVIL!
-            plexusRealm.addURL(rootPackageFolder.toURI().toURL());
+            if (rootPackageFolder != null) { //#154108 well, the broken embedder is more broken in jnlp based netbeans..
+                //hack to enable reports, default package is EVIL!
+                plexusRealm.addURL(rootPackageFolder.toURI().toURL());
+            }
         } catch (NoSuchRealmException ex) {
             ex.printStackTrace();
         } catch (DuplicateRealmException ex) {
