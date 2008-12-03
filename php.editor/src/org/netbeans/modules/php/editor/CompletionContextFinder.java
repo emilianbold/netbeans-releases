@@ -309,13 +309,24 @@ class CompletionContextFinder {
     private static Token[] getPreceedingTokens(TokenSequence tokenSequence, int maxNumberOfTokens){
         int orgOffset = tokenSequence.offset();
         LinkedList<Token> tokens = new LinkedList<Token>();
+        
+        boolean success = true;
 
-        for (int i = 0; i < maxNumberOfTokens; i++) {
-            if (!tokenSequence.movePrevious()){
-                break;
+        // in case we are at the last token
+        // include it in the result, see #154055
+        if (tokenSequence.moveNext()){
+            success = tokenSequence.movePrevious()
+                && tokenSequence.movePrevious();
+        }
+
+        if (success) {
+            for (int i = 0; i < maxNumberOfTokens; i++) {
+                tokens.addFirst(tokenSequence.token());
+
+                if (i == maxNumberOfTokens - 1 || !tokenSequence.movePrevious()) {
+                    break;
+                }
             }
-
-            tokens.addFirst(tokenSequence.token());
         }
 
         tokenSequence.move(orgOffset);
