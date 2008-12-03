@@ -41,16 +41,13 @@
 
 package org.netbeans.modules.j2ee.common;
 
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.UIManager;
+import java.util.ResourceBundle;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -59,18 +56,22 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Libor Kotouc
+ * @author  Petr Slechta
  */
 class DatasourceCustomizer extends javax.swing.JPanel {
-    
+
+    private static final ResourceBundle bundle = NbBundle.getBundle(DatasourceCustomizer.class);
+
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
+    private NotificationLineSupport statusLine;
     private boolean dialogOK = false;
     private HashMap<String, Datasource> datasources;
     private String jndiName;
@@ -78,7 +79,6 @@ class DatasourceCustomizer extends javax.swing.JPanel {
     private String username;
     private String password;
     private String driverClassName;
-    private MsgHelper msgHelper;
 
     public DatasourceCustomizer(List<Datasource> datasources) {
         if (datasources != null) { // transform Set to Map for faster searching
@@ -90,7 +90,6 @@ class DatasourceCustomizer extends javax.swing.JPanel {
             }
         }
         initComponents();
-        msgHelper = new MsgHelper(errorLabel, DatasourceCustomizer.class);
 
         DatabaseExplorerUIs.connect(connCombo, ConnectionManager.getDefault());
         
@@ -99,7 +98,6 @@ class DatasourceCustomizer extends javax.swing.JPanel {
                 verify();
             }
         });
-        
         jndiNameField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 verify();
@@ -135,6 +133,7 @@ class DatasourceCustomizer extends javax.swing.JPanel {
 		 } 
                 );
         descriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+        statusLine = descriptor.createNotificationLineSupport();
         
         verify();
 
@@ -153,7 +152,7 @@ class DatasourceCustomizer extends javax.swing.JPanel {
         }
         if (conn.getPassword() == null) {
             //user did not provide the password
-            msgHelper.setErrorMsg("ERR_NoPassword");  //NOI18N
+            statusLine.setErrorMessage(bundle.getString("ERR_NoPassword"));  //NOI18N
             return false;
         }
         url = conn.getDatabaseURL();
@@ -175,15 +174,15 @@ class DatasourceCustomizer extends javax.swing.JPanel {
         
         String jndiNameFromField = jndiNameField.getText().trim();
         if (jndiNameFromField.length() == 0) {
-            msgHelper.setInfoMsg("ERR_JNDI_NAME_EMPTY");  // NOI18N
+            statusLine.setInformationMessage(bundle.getString("ERR_JNDI_NAME_EMPTY"));  // NOI18N
             valid = false;
         }
         else if (datasourceAlreadyExists(jndiNameFromField)) {
-            msgHelper.setErrorMsg("ERR_DS_EXISTS"); // NOI18N
+            statusLine.setErrorMessage(bundle.getString("ERR_DS_EXISTS")); // NOI18N
             valid = false;
         }
         else {
-            msgHelper.setErrorMsg(null);
+            statusLine.clearMessages();
         }
         descriptor.setValid(valid);
         return valid;
@@ -193,11 +192,11 @@ class DatasourceCustomizer extends javax.swing.JPanel {
         boolean valid = true;
         
         if (!(connCombo.getSelectedItem() instanceof DatabaseConnection)) {
-            msgHelper.setInfoMsg("ERR_NO_CONN_SELECTED");  // NOI18N
+            statusLine.setInformationMessage(bundle.getString("ERR_NO_CONN_SELECTED"));  // NOI18N
             valid = false;
         }
         else {
-            msgHelper.setErrorMsg(null);
+            statusLine.clearMessages();
         }
         descriptor.setValid(valid);
         return valid;
@@ -238,7 +237,6 @@ class DatasourceCustomizer extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jndiNameField = new javax.swing.JTextField();
-        errorLabel = new javax.swing.JLabel();
         connCombo = new javax.swing.JComboBox();
 
         setForeground(new java.awt.Color(255, 0, 0));
@@ -255,15 +253,12 @@ class DatasourceCustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                            .add(connCombo, 0, 327, Short.MAX_VALUE)))
-                    .add(errorLabel))
+                    .add(jLabel1)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
+                    .add(connCombo, 0, 327, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -275,10 +270,7 @@ class DatasourceCustomizer extends javax.swing.JPanel {
                     .add(jndiNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 39, Short.MAX_VALUE)
-                        .add(errorLabel))
+                    .add(jLabel2)
                     .add(layout.createSequentialGroup()
                         .add(connCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -288,102 +280,9 @@ class DatasourceCustomizer extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox connCombo;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField jndiNameField;
     // End of variables declaration//GEN-END:variables
-    
-    
-    
-    // TODO: generalize and make an API from it
-    /**
-     * Helper class to simplify setting of error/warning/info messages
-     * @author  Petr Slechta
-     */
-    private static class MsgHelper {
-        
-        private JLabel label;
-        private Class<?> clazz;
-        private Color nbErrorForeground;
-        private Color nbWarningForeground;
-        private Color nbInfoForeground;
-        private ImageIcon errorIcon;
-        private ImageIcon warningIcon;
-        private ImageIcon infoIcon;
 
-        /**
-         * Creates new instance of MsgHelper
-         * @param label JLabel component that is used for presentation of messages
-         * @param clazz class that is used to localize message bundle used to get localized
-         * version of messages
-         */
-        MsgHelper(JLabel label, Class<?> clazz) {
-            this.label = label;
-            this.clazz = clazz;
-            
-            nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
-            if (nbErrorForeground == null)
-                nbErrorForeground = new Color(255, 0, 0);
-
-            nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
-            if (nbWarningForeground == null)
-                nbWarningForeground = new Color(0, 0, 0);
-            
-            nbInfoForeground = nbWarningForeground;
-
-            errorIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/common/resources/errorIcon.png"));  //NOI18N
-            warningIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/common/resources/warningIcon.png"));  //NOI18N
-            infoIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/common/resources/infoIcon.png"));  //NOI18N
-        }
-        
-        /**
-         * Set an error message
-         * @param msgKey key from bundle that contains text of error message
-         */
-        void setErrorMsg(String msgKey) {
-            label.setForeground(nbErrorForeground);
-            if (msgKey != null) {
-                label.setText(NbBundle.getMessage(clazz, msgKey));
-                label.setIcon(errorIcon);
-            }
-            else {
-                label.setText("");  //NOI18N
-                label.setIcon(null);
-            }
-        }
-
-        /**
-         * Set an warning message
-         * @param msgKey key from bundle that contains text of warning message
-         */
-        void setWarningMsg(String msgKey) {
-            label.setForeground(nbWarningForeground);
-            if (msgKey != null) {
-                label.setText(NbBundle.getMessage(clazz, msgKey));
-                label.setIcon(warningIcon);
-            }
-            else {
-                label.setText("");  //NOI18N
-                label.setIcon(null);
-            }
-        }
-
-        /**
-         * Set an informational message
-         * @param msgKey key from bundle that contains text of info message
-         */
-        void setInfoMsg(String msgKey) {
-            label.setForeground(nbInfoForeground);
-            if (msgKey != null) {
-                label.setText(NbBundle.getMessage(clazz, msgKey));
-                label.setIcon(infoIcon);
-            }
-            else {
-                label.setText("");  //NOI18N
-                label.setIcon(null);
-            }
-        }
-    }
-    
 }

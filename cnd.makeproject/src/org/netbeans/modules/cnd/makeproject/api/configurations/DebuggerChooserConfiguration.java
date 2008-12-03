@@ -167,7 +167,7 @@ public class DebuggerChooserConfiguration {
     }
 
     @Override
-    public Object clone() {
+    public DebuggerChooserConfiguration clone() {
         return new DebuggerChooserConfiguration(this);
     }
 }

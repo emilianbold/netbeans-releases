@@ -64,6 +64,7 @@ import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.*;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
@@ -72,7 +73,6 @@ import java.io.*;
 public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel.ComponentDescriptor {
     
     protected WizardPanel wizardPanel;
-    private String fileChooserValue;
     private static final Set<Character> INVALID_CHARACTERS = new HashSet();
     {
         for (char c : "\\^$?*+-!.;:,=<>|/\"'[]{}()".toCharArray()) INVALID_CHARACTERS.add(c); //NOI18N
@@ -472,26 +472,21 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         return false;
     }
     
-    
+    private static final class FolderFilter extends FileFilter {
+        public boolean accept(File f) {
+            return f.exists() && f.canRead() && f.isDirectory();
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(CommandLinesPanel.class, "TXT_FolderFilter"); // NOI18N
+        }
+    }
+
     private String browseFolder(final String title) {
-        final String oldValue = fileChooserValue;
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return f.exists() && f.canRead() && f.isDirectory();
-            }
-            
-            public String getDescription() {
-                return NbBundle.getMessage(CommandLinesPanel.class, "TXT_FolderFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            fileChooserValue = chooser.getSelectedFile().getAbsolutePath();
-            return fileChooserValue;
+        File f;
+        if ((f = new FileChooserBuilder(CommandLinesPanel.class).setTitle(title).
+                setDirectoriesOnly(true).setFileFilter(new FolderFilter()).showOpenDialog()) != null) {
+            return f.getAbsolutePath();
         }
         return null;
     }

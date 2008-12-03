@@ -59,8 +59,10 @@ import org.openide.util.NbBundle;
  */
 public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPreferences {
     private static final String INCL_WHILE_PREFS_KEY = "php.verification.accidental.assignment.include.while"; //NOI18N
+    private static final String TOP_LEVEL_STMT_ONLY = "php.verification.accidental.assignment.top.lvl.stmt.only"; //NOI18N
     private Preferences prefs = null;
     private boolean inclWhile = false;
+    private boolean topLvlStmtsOnly = true;
     
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
@@ -78,6 +80,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
     public void visit(Program program) {
         // avoid searching the prefs every time
         inclWhile = includeAssignementsInWhile(prefs);
+        topLvlStmtsOnly = topLevelStmtsOnly(prefs);
         super.visit(program);
     }
     
@@ -115,7 +118,14 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
     }
 
     private void check(Expression expr) {
-        expr.accept(new ExpressionFinder());
+        if (topLvlStmtsOnly){
+            if (expr instanceof Assignment) {
+                Assignment assignment = (Assignment) expr;
+                createWarning(assignment);
+            }
+        } else {
+            expr.accept(new ExpressionFinder());
+        }
     }
 
     public String getDisplayName() {
@@ -135,20 +145,32 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         prefs.putBoolean(INCL_WHILE_PREFS_KEY, value);
     }
 
+    public static final boolean topLevelStmtsOnly(Preferences prefs){
+        return prefs.getBoolean(TOP_LEVEL_STMT_ONLY, true);
+    }
+
+    public static final void setTopLevelStmtsOnly(Preferences prefs, boolean value){
+        prefs.putBoolean(TOP_LEVEL_STMT_ONLY, value);
+    }
+
     public void setPreferences(Preferences prefs) {
         this.prefs = prefs;
+    }
+
+    private void createWarning(Assignment node){
+        OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+
+        Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
+                context.compilationInfo.getFileObject(), range, null, 500);
+
+        addResult(hint);
+        super.visit(node);
     }
     
     private class ExpressionFinder extends DefaultVisitor{
         @Override
         public void visit(Assignment node) {
-            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-
-            Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
-                    context.compilationInfo.getFileObject(), range, null, 500);
-
-            addResult(hint);
-            super.visit(node);
+            createWarning(node);
         }
     }
 }

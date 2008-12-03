@@ -57,6 +57,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
@@ -67,8 +68,10 @@ import org.openide.util.NbBundle;
  */
 public class EqualsMethodHint extends AbstractHint {
 
+    private static final String SUPPRESS_KEY = "EqualsWhichDoesntCheckParameterClass";
+
     public EqualsMethodHint() {
-        super(true, false, HintSeverity.WARNING);
+        super(true, false, HintSeverity.WARNING, SUPPRESS_KEY);
     }
 
     @Override
@@ -141,8 +144,15 @@ public class EqualsMethodHint extends AbstractHint {
         if (span == null) {
             return null;
         }
-        
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), NbBundle.getMessage(EqualsMethodHint.class, "ERR_EQUALS_NOT_CHECKING_TYPE"), info.getFileObject(), span[0], span[1]));
+
+        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(),
+                NbBundle.getMessage(EqualsMethodHint.class, "ERR_EQUALS_NOT_CHECKING_TYPE"),
+                FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_KEY),
+                info.getFileObject(),
+                span[0],
+                span[1]);
+
+        return Collections.singletonList(ed);
     }
 
     public String getId() {

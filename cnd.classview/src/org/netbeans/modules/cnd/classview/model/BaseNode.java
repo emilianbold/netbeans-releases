@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview.model;
 import java.util.Enumeration;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.modelutil.*;
+import org.openide.util.Lookup;
 
 /**
  * @author Vladimir Kvasihn
@@ -57,6 +58,11 @@ public abstract class BaseNode extends AbstractCsmNode {
     public BaseNode(Children children) {
         super(children);
     }
+
+    public BaseNode(Children children, Lookup lookup) {
+        super(children, lookup);
+    }
+
 
     protected interface Callback {
         void call(BaseNode node);

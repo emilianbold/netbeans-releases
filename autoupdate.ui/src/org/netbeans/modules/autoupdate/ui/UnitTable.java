@@ -170,11 +170,10 @@ public class UnitTable extends JTable {
             JComponent jc = (JComponent)c;
             jc.setBorder(BorderFactory.createEmptyBorder());
         }
-        if (rowHeight < 0) {
-            Font font =  c.getFont();
-            FontMetrics fontMetrics = c.getFontMetrics(font);
+        int fontHeight = c.getFontMetrics(c.getFont()).getHeight();
+        if (rowHeight < 0 || rowHeight < fontHeight) {
             int def = new JTable().getRowHeight();
-            rowHeight = Math.max(def, fontMetrics.getHeight());
+            rowHeight = Math.max(def, fontHeight);
             setRowHeight(rowHeight);
         }
         

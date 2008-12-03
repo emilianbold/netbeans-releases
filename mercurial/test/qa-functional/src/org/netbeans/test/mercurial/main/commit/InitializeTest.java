@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -112,11 +113,11 @@ public class InitializeTest extends JellyTestCase {
             
             TestKit.showStatusLabels();
             f = TestKit.prepareProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             String s = f.getAbsolutePath() + File.separator + TestKit.PROJECT_NAME;
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
 
             MessageHandler mh = new MessageHandler("Initializing");
             TestKit.TIME_OUT = 25;
@@ -132,7 +133,7 @@ public class InitializeTest extends JellyTestCase {
             TestKit.waitText(mh);
             TestKit.waitText(mh2);
 
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
 
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
@@ -141,7 +142,7 @@ public class InitializeTest extends JellyTestCase {
 
             TestKit.waitText(mh);
 
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             VersioningOperator vo = VersioningOperator.invoke();
             table = vo.tabFiles();
             assertEquals("Wrong row count of table.", 8, table.getRowCount());
@@ -163,7 +164,7 @@ public class InitializeTest extends JellyTestCase {
 
             TestKit.TIME_OUT = 15;
 
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             vo = VersioningOperator.invoke();
             TimeoutExpiredException tee = null;
             try {

@@ -224,20 +224,20 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     @Override
-    public Object clone() {
+    public LinkerConfiguration clone() {
         LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
         // LinkerConfiguration
-        clone.setOutput((StringConfiguration) getOutput().clone());
+        clone.setOutput(getOutput().clone());
         clone.setAdditionalLibs(getAdditionalLibs().cloneConf());
         clone.setDynamicSearch(getDynamicSearch().cloneConf());
-        clone.setCommandLineConfiguration((OptionsConfiguration) getCommandLineConfiguration().clone());
-        clone.setAdditionalDependencies((OptionsConfiguration) getAdditionalDependencies().clone());
-        clone.setStripOption((BooleanConfiguration) getStripOption().clone());
-        clone.setPICOption((BooleanConfiguration) getPICOption().clone());
-        clone.setNorunpathOption((BooleanConfiguration) getNorunpathOption().clone());
-        clone.setNameassignOption((BooleanConfiguration) getNameassignOption().clone());
+        clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
+        clone.setAdditionalDependencies(getAdditionalDependencies().clone());
+        clone.setStripOption(getStripOption().clone());
+        clone.setPICOption(getPICOption().clone());
+        clone.setNorunpathOption(getNorunpathOption().clone());
+        clone.setNameassignOption(getNameassignOption().clone());
         clone.setLibrariesConfiguration(getLibrariesConfiguration().cloneConf());
-        clone.setTool((StringConfiguration) getTool().clone());
+        clone.setTool(getTool().clone());
         return clone;
     }
 
@@ -308,8 +308,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
             dynSearchPrefix = ""; // NOI18N
         }
         String options = ""; // NOI18N
-        options += getAdditionalLibs().getOption(libPrefix) + " "; // NOI18N
-        options += getDynamicSearch().getOption(dynSearchPrefix) + " "; // NOI18N
+        options += getAdditionalLibs().getOption(cs, libPrefix) + " "; // NOI18N
+        options += getDynamicSearch().getOption(cs, dynSearchPrefix) + " "; // NOI18N
         options += getLibrariesConfiguration().getOptions(getMakeConfiguration()) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }

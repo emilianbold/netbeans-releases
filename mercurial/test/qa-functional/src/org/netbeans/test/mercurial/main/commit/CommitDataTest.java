@@ -126,17 +126,17 @@ public class CommitDataTest extends JellyTestCase {
             //System.out.println("Duration of invoking Commit dialog: " + (end - start));
             //print message to log file.
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
-            Thread.sleep(2000);
+            new EventTool().waitNoEvent(2000);
             cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
             TimeoutExpiredException tee = null;
             assertFalse(cmo.btCommit().isEnabled());
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             cmo.cancel();
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             table = vo.tabFiles();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             assertEquals("Wrong row count of table.", 1, table.getRowCount());
             assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
             assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
@@ -147,7 +147,7 @@ public class CommitDataTest extends JellyTestCase {
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             cmo = CommitOperator.invoke(nodeFile);
             TestKit.waitText(mh);
-            Thread.sleep(2000);
+            new EventTool().waitNoEvent(2000);
             cmo.selectCommitAction("NewClass.java", "Commit");
             start = System.currentTimeMillis();
 
@@ -165,7 +165,7 @@ public class CommitDataTest extends JellyTestCase {
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
             //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             vo = VersioningOperator.invoke();
             //        TimeoutExpiredException tee = null;
             try {
@@ -230,7 +230,7 @@ public class CommitDataTest extends JellyTestCase {
             
             nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             CommitOperator cmo = CommitOperator.invoke(nodeSrc);
-            Thread.sleep(1500);
+            new EventTool().waitNoEvent(1500);
             table = cmo.tabFiles();
             model = table.getModel();
             actual = new String[model.getRowCount()];
