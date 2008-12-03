@@ -39,6 +39,7 @@ import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.api.Phase;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -52,6 +53,7 @@ public class GsfReformatTask implements ReformatTask {
     private final Context context;
     private final Source source;
     private Formatter formatter;
+    private String mimeType;
     
     
     GsfReformatTask(Source source, Context context) {
@@ -73,7 +75,7 @@ public class GsfReformatTask implements ReformatTask {
             // Therefore with the __current__ implementation of MimeLookupInitializerImpl
             // we can simply take the last component of Context.mimePath().
             MimePath mimePath = MimePath.parse(context.mimePath());
-            String mimeType = mimePath.size() > 1 ? mimePath.getMimeType(mimePath.size() - 1) : mimePath.getPath();
+            mimeType = mimePath.size() > 1 ? mimePath.getMimeType(mimePath.size() - 1) : mimePath.getPath();
             Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
             formatter = language.getFormatter();
         }
@@ -90,9 +92,17 @@ public class GsfReformatTask implements ReformatTask {
                         Collections.<Source> singleton (source),
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws ParseException {
-                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult(context.startOffset());
-                                parserResult.toPhase (Phase.PARSED);
-                                f.reformat (context, parserResult);
+                                if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
+                                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
+                                    parserResult.toPhase (Phase.PARSED);
+                                    f.reformat (context, parserResult);
+                                }
+
+                                for(Embedding e : resultIterator.getEmbeddings()) {
+                                    if (e.getMimeType().equals(mimeType)) {
+                                        run(resultIterator.getResultIterator(e));
+                                    }
+                                }
                             }
                         }
                     );
