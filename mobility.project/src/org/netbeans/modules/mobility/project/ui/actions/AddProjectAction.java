@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class AddProjectAction extends NodeAction<ArtifactItem> {
+public final class AddProjectAction extends NodeAction<ArtifactItem> {
 
     private AddProjectAction() {
         super(NbBundle.getMessage(AddProjectAction.class, "LBL_CustLibs_Add_Project")); //NO18N

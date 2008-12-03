@@ -446,7 +446,7 @@ public class FileChooserBuilder {
          * Get the y offset for badges produced by this provider.  This is
          * the location of the badge icon relative to the real icon for the
          * file.
-         * @return  a rightward pixel offset
+         * @return  a downward pixel offset
          */
         public int getYOffset();
     }

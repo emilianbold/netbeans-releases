@@ -293,7 +293,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 catch (DataObjectNotFoundException e) {
                 }
             }
-            Iterator importantItemsIterator = importantItems.iterator();
+            Iterator<String> importantItemsIterator = importantItems.iterator();
             if (!importantItemsIterator.hasNext()) {
                 importantItemsIterator = null;
             }

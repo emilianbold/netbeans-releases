@@ -137,5 +137,9 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     void setListeningSearchTask(SearchTask searchTask) {
         listeningSearchTask = searchTask;
     }
+
+    SearchScope getSearchScope(){
+        return searchScope;
+    }
     
 }
