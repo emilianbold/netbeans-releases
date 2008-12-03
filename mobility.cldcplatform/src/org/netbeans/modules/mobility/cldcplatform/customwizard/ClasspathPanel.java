@@ -50,11 +50,12 @@ import javax.swing.*;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.mobility.cldcplatform.ArchiveFilter;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
@@ -66,7 +67,6 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
     
     final private DefaultListModel classpathListModel = new DefaultListModel();
     private WizardPanel wizardPanel;
-    private String fileChooserValue;
     private J2MEPlatform.J2MEProfile[] profiles;
     
     /** Creates new form ClasspathPanel */
@@ -221,7 +221,6 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
     
     public void readSettings(final WizardDescriptor wizardDescriptor) {
         final J2MEPlatform platform = (J2MEPlatform) wizardDescriptor.getProperty(DetectPanel.PLATFORM);
-        fileChooserValue = platform.getHomePath();
         final J2MEPlatform.Device previous = platform.getDevices()[0];
         final J2MEPlatform.J2MEProfile[] profiles = previous.getProfiles();
         if (profiles.length > 0) {
@@ -360,26 +359,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
     }
     
     private File[] browse(final String title) {
-        final String oldValue = fileChooserValue;
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setMultiSelectionEnabled(true);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar")))); //NOI18N
-            }
-            
-            public String getDescription() {
-                return NbBundle.getMessage(CommandLinesPanel.class, "TXT_ZipFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            fileChooserValue = chooser.getSelectedFile().getAbsolutePath();
-            return chooser.getSelectedFiles();
-        }
-        return null;
+        return new FileChooserBuilder(ClasspathPanel.class).setTitle(title).
+                setFileFilter(new ArchiveFilter()).showMultiOpenDialog();
     }
 }

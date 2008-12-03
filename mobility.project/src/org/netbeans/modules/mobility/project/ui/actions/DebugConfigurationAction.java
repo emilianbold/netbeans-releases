@@ -41,7 +41,7 @@ package org.netbeans.modules.mobility.project.ui.actions;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 
-public class DebugConfigurationAction extends AntSingleAction {
+public final class DebugConfigurationAction extends AntSingleAction {
 
     private DebugConfigurationAction() {
         super(NbBundle.getMessage(DebugConfigurationAction.class, "LBL_DebugConfigurationAction_Name"), "debug"); //NO18N

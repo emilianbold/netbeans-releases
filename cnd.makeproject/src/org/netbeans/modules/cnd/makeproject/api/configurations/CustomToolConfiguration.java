@@ -53,85 +53,82 @@ public class CustomToolConfiguration {
     private StringConfiguration additionalDependencies;
 
     public CustomToolConfiguration() {
-	// Custom Tool
-	commandLine = new StringConfiguration(null, ""); // NOI18N
-	description = new StringConfiguration(null, getString("PerformingStepTxt"));
-	outputs = new StringConfiguration(null, ""); // NOI18N
-	additionalDependencies = new StringConfiguration(null, ""); // NOI18N
+        // Custom Tool
+        commandLine = new StringConfiguration(null, ""); // NOI18N
+        description = new StringConfiguration(null, getString("PerformingStepTxt"));
+        outputs = new StringConfiguration(null, ""); // NOI18N
+        additionalDependencies = new StringConfiguration(null, ""); // NOI18N
     }
 
     public boolean getModified() {
-	return commandLine.getModified() || description.getModified() || outputs.getModified() || additionalDependencies.getModified();
+        return commandLine.getModified() || description.getModified() || outputs.getModified() || additionalDependencies.getModified();
     }
 
-
     public void setCommandLine(StringConfiguration commandLine) {
-	this.commandLine = commandLine;
+        this.commandLine = commandLine;
     }
 
     public StringConfiguration getCommandLine() {
-	return commandLine;
+        return commandLine;
     }
 
     public void setDescription(StringConfiguration description) {
-	this.description = description;
+        this.description = description;
     }
 
     public StringConfiguration getDescription() {
-	return description;
+        return description;
     }
 
     public void setOutputs(StringConfiguration outputs) {
-	this.outputs = outputs;
+        this.outputs = outputs;
     }
 
     public StringConfiguration getOutputs() {
-	return outputs;
+        return outputs;
     }
 
     public void setAdditionalDependencies(StringConfiguration additionalDependencies) {
-	this.additionalDependencies = additionalDependencies;
+        this.additionalDependencies = additionalDependencies;
     }
 
     public StringConfiguration getAdditionalDependencies() {
-	return additionalDependencies;
+        return additionalDependencies;
     }
 
     public void assign(CustomToolConfiguration conf) {
-	getCommandLine().assign(conf.getCommandLine());
-	getDescription().assign(conf.getDescription());
-	getOutputs().assign(conf.getOutputs());
-	getAdditionalDependencies().assign(conf.getAdditionalDependencies());
+        getCommandLine().assign(conf.getCommandLine());
+        getDescription().assign(conf.getDescription());
+        getOutputs().assign(conf.getOutputs());
+        getAdditionalDependencies().assign(conf.getAdditionalDependencies());
     }
 
-    public Object clone() {
-	CustomToolConfiguration i = new CustomToolConfiguration();
-
-	i.setCommandLine((StringConfiguration)getCommandLine().clone());
-	i.setDescription((StringConfiguration)getDescription().clone());
-	i.setOutputs((StringConfiguration)getOutputs().clone());
-	i.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-
-	return i;
+    @Override
+    public CustomToolConfiguration clone() {
+        CustomToolConfiguration i = new CustomToolConfiguration();
+        i.setCommandLine(getCommandLine().clone());
+        i.setDescription(getDescription().clone());
+        i.setOutputs(getOutputs().clone());
+        i.setAdditionalDependencies(getAdditionalDependencies().clone());
+        return i;
     }
 
     public Sheet getSheet() {
-	Sheet sheet = new Sheet();
+        Sheet sheet = new Sheet();
 
-	Sheet.Set set = new Sheet.Set();
-	set.setName("CustomBuild"); // NOI18N
-	set.setDisplayName(getString("CustomBuildTxt"));
-	set.setShortDescription(getString("CustomBuildHint"));
-	set.put(new StringNodeProp(getCommandLine(), "Command Line", getString("CommandLineTxt2"), getString("CommandLineHint2"))); // NOI18N
-	set.put(new StringNodeProp(getDescription(), "Description", getString("DescriptionTxt"), getString("DescriptionHint"))); // NOI18N
-	set.put(new StringNodeProp(getOutputs(), "Outputs", getString("OutputsTxt"), getString("OutputsNint"))); // NOI18N
-	set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"))); // NOI18N
-	sheet.put(set);
+        Sheet.Set set = new Sheet.Set();
+        set.setName("CustomBuild"); // NOI18N
+        set.setDisplayName(getString("CustomBuildTxt"));
+        set.setShortDescription(getString("CustomBuildHint"));
+        set.put(new StringNodeProp(getCommandLine(), "Command Line", getString("CommandLineTxt2"), getString("CommandLineHint2"))); // NOI18N
+        set.put(new StringNodeProp(getDescription(), "Description", getString("DescriptionTxt"), getString("DescriptionHint"))); // NOI18N
+        set.put(new StringNodeProp(getOutputs(), "Outputs", getString("OutputsTxt"), getString("OutputsNint"))); // NOI18N
+        set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"))); // NOI18N
+        sheet.put(set);
 
-	return sheet;
+        return sheet;
     }
-    
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CustomToolConfiguration.class, s);

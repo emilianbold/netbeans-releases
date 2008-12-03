@@ -47,7 +47,7 @@ import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class RemoveResourceAction extends NodeAction<Object> {
+public final class RemoveResourceAction extends NodeAction<Object> {
 
     private RemoveResourceAction() {
         super(NbBundle.getMessage(RemoveResourceAction.class, "LBL_CustLibs_Remove")); //NO18N

@@ -65,6 +65,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedConstant;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.IndexedVariable;
@@ -618,7 +619,38 @@ public final class RubyIndex {
 
         return m;
     }
-    
+
+    public IndexedConstant createConstant(String signature, SearchResult map) {
+        String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
+        String module = map.getValue(RubyIndexer.FIELD_IN);
+
+        if (clz == null) {
+            // Module method?
+            clz = module;
+        } else if ((module != null) && (module.length() > 0)) {
+            clz = module + "::" + clz;
+        }
+
+        String fileUrl = map.getPersistentUrl();
+
+        String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
+        String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
+
+        int typeIndex = signature.indexOf(';');
+        String name = typeIndex == -1 ? signature : signature.substring(0, typeIndex);
+        int flags = 0;
+
+        // TODO: use the type, once properly indexed
+//        if (typeIndex != -1) {
+//             String type = signature.substring(typeIndex + 1);
+//        }
+
+        IndexedConstant m =
+            IndexedConstant.create(this, name, fqn, clz, fileUrl, require, flags, context);
+
+        return m;
+    }
+
     public IndexedClass createClass(String fqn, String clz, SearchResult map) {
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -1348,7 +1380,7 @@ public final class RubyIndex {
 
     public Set<IndexedVariable> getGlobals(String prefix, NameKind kind) {
         // Query index for database related properties
-        
+
         String searchField = RubyIndexer.FIELD_GLOBAL_NAME;
         Set<SearchResult> result = new HashSet<SearchResult>();
         // Only include globals from the user's sources, not in the libraries!
@@ -1368,10 +1400,67 @@ public final class RubyIndex {
                 }
             }
         }
-        
+
         return globals;
     }
-    
+
+    public Set<IndexedConstant> getConstants(String classFqn, String prefix) {
+        boolean haveRedirected = false;
+
+        if ((classFqn == null) || classFqn.equals(OBJECT)) {
+            // Redirect inheritance tree to Class to pick up methods in Class and Module
+            classFqn = CLASS;
+            haveRedirected = true;
+        } else if (MODULE.equals(classFqn) || CLASS.equals(classFqn)) {
+            haveRedirected = true;
+        }
+
+        //String field = RubyIndexer.FIELD_FQN_NAME;
+        Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
+
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        addConstantsFromClass(prefix, classFqn, constants, haveRedirected);
+
+        return constants;
+    }
+
+    private boolean addConstantsFromClass(
+            final String prefix,
+            final String classFqn,
+            final Set<? super IndexedConstant> constants,
+            final boolean haveRedirected) {
+
+        String searchField = RubyIndexer.FIELD_FQN_NAME;
+        Set<SearchResult> result = new HashSet<SearchResult>();
+        search(searchField, classFqn, NameKind.EXACT_NAME, result);
+
+        // If this is a bogus class entry (no search rsults) don't continue
+        if (result.size() <= 0) {
+            return false;
+        }
+
+        for (SearchResult map : result) {
+            assert map != null;
+
+            String[] indexedConstants = map.getValues(RubyIndexer.FIELD_CONSTANT_NAME);
+
+            if (indexedConstants != null) {
+                for (String constant : indexedConstants) {
+                    if (prefix.length() == 0 || constant.startsWith(prefix)) {
+                        IndexedConstant c = createConstant(constant, map);
+                        c.setSmart(!haveRedirected);
+                        constants.add(c);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     public Set<IndexedField> getInheritedFields(String classFqn, String prefix, NameKind kind, boolean inherited) {
         boolean haveRedirected = false;
 

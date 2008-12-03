@@ -50,13 +50,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
@@ -98,6 +98,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     
     private static final Pattern LABEL_TEXT_PROP = Pattern.compile(PREFIX + 
             SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS +"_text$"); // NOI18N
+    private static final Pattern RADIO_TEXT_PROP = Pattern.compile(PREFIX + 
+            SVGComponentsSupport.ID_PREFIX_RADIOBUTTON + DIGITS +"_text$"); // NOI18N
 
     public synchronized static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgForm) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
@@ -134,9 +136,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                                         SVGButtonGroupCD.PROP_BUTTONS, desComp );
                                 desComp.writeProperty( 
                                         SVGRadioButtonCD.PROP_BUTTON_GROUP, 
-                                        MidpTypes.createJavaCodeValue(
-                                                CodeReferencePresenter.generateAccessCode( 
-                                                        entry.getValue())));
+                                        MidpTypes.createJavaCodeValue( entry.
+                                                getValue().readProperty(
+                                                        ClassCD.PROP_INSTANCE_NAME).
+                                                        getPrimitiveValue().toString()));
                             }
                         }
                     }
@@ -305,7 +308,9 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             final String id = atts.getValue("id"); // NOI18N
             final String transform = atts.getValue("transform");
             
-            if (id != null && LABEL_TEXT_PROP.matcher( id ).find()) {
+            if (id != null && ( LABEL_TEXT_PROP.matcher( id ).find() 
+                    || RADIO_TEXT_PROP.matcher( id ).find())) 
+            {
                 myPropName = SVGLabelCD.PROP_TEXT;    // NOI18N
                 return;
             }
