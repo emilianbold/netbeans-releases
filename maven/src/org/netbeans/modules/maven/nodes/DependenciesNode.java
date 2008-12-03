@@ -349,6 +349,7 @@ public class DependenciesNode extends AbstractNode {
                 pnl.getOkButton(),
                 DialogDescriptor.CANCEL_OPTION
             });
+            pnl.attachDialogDisplayer(dd);
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (pnl.getOkButton() == ret) {
                 String version = pnl.getVersion();

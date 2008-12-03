@@ -59,7 +59,7 @@ public final class RunAsValidator {
 
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
-     * @param url URL to validate, must end with "/" (slash).
+     * @param url URL to validate, must end with "/" (slash), can be <code>null</code>.
      * @param webRoot parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.

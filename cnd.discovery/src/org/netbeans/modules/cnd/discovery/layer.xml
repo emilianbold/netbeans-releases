@@ -39,11 +39,29 @@ Contributor(s):
 
     <folder name="Actions">
         <folder name="View">
-	    <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance">
-		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
-	    </file>
-	</folder>
+            <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
+            </file>
+        </folder>
     </folder>
+
+    <!--folder name="Menu">
+        <folder name="File">
+            <folder name="Import">
+                <attr name="position" intvalue="1426"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.discovery.projectimport.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+                <file name="org-netbeans-modules-cnd-discovery-projectimport-ImportProjectWizardAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardAction"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <file name="ImporterSeparator1.instance">
+                <attr name="position" intvalue="1430"/>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+        </folder>
+    </folder-->
     
     <folder name="NativeProjects">
         <folder name="Actions">
@@ -51,7 +69,7 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            </folder>
-   </folder>     
+        </folder>
+    </folder>
 
 </filesystem>

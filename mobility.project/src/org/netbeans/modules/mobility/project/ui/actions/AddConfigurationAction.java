@@ -59,7 +59,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class AddConfigurationAction extends Single<Node> {
+public final class AddConfigurationAction extends Single<Node> {
 
     private AddConfigurationAction() {
         super(Node.class);

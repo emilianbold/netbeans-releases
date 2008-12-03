@@ -140,7 +140,7 @@ public final class ImportAction extends NodeAction {
                                final String message)
     {                        
         SVNUrl repository;
-        try {            
+        try {
             repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
