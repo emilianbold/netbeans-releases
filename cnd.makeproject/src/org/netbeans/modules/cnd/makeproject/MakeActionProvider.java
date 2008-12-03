@@ -502,7 +502,7 @@ public class MakeActionProvider implements ActionProvider {
                     RunProfile runProfile = null;
                     if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().cloneProfile();
+                        runProfile = conf.getProfile().clone();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
                         // Add paths from subprojetcs
@@ -548,7 +548,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
@@ -573,7 +573,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
@@ -587,7 +587,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
-                                runProfile = conf.getProfile().cloneProfile();
+                                runProfile = conf.getProfile().clone();
                             }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }
@@ -622,6 +622,8 @@ public class MakeActionProvider implements ActionProvider {
                             false);
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
+                } else if (conf.isQmakeConfiguration()) {
+                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
                 } else {
                     assert false;
                 }

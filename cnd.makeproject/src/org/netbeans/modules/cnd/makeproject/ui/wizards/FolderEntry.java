@@ -41,14 +41,15 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
-public class FolderEntry {
+public class FolderEntry implements SourceFolderInfo {
     private File file;
     private String folderName;
     private boolean addSubfolders;
-    private static FileFilter fileFilter;
+    private FileFilter fileFilter;
 
     public FolderEntry(File file, String folderName) {
         this.file = file;
@@ -80,11 +81,12 @@ public class FolderEntry {
         this.file = file;
     }
     
-    public static FileFilter getFileFilter() {
+    public FileFilter getFileFilter() {
         return fileFilter;
     }
     
-    public static void setFileFilter(FileFilter ff) {
+    public void setFileFilter(FileFilter ff) {
         fileFilter = ff;
     }
+
 }

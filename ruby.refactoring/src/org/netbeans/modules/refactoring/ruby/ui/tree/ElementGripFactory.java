@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,12 +46,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * Based on the Java refactoring one, but hacked for Ruby (plus I didn't fully understand
  * what this class was for so it probably needs some cleanup and some work)
  * 

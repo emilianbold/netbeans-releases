@@ -536,10 +536,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        callUninitialize ();
         data = data.clone(panels);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        callInitialize ();
 
         updateState();
     }
@@ -555,10 +557,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        callUninitialize ();
         data = new SettingsAndIterator<Data>(panels, settings);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        callInitialize ();
 
         updateState();
     }
@@ -2551,6 +2555,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 m_lblMessage.setToolTipText (msg);
             } else {
                 prepareMessage(m_lblMessage, null, null);
+                m_lblMessage.setToolTipText (null);
             }
             m_lblMessage.setText(msg);
         }

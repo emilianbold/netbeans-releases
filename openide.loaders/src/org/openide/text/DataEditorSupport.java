@@ -61,10 +61,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -72,6 +72,7 @@ import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -311,11 +313,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
         StyledDocument doc = super.createStyledDocument (kit);
             
         // set document name property
-        doc.putProperty(javax.swing.text.Document.TitleProperty,
+        doc.putProperty(Document.TitleProperty,
             FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
         // set dataobject to stream desc property
-        doc.putProperty(javax.swing.text.Document.StreamDescriptionProperty,
+        doc.putProperty(Document.StreamDescriptionProperty,
             obj
         );
         
@@ -628,7 +630,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         protected final void changeFile () {
             FileObject newFile = getFile ();
-            
             if (newFile.equals (fileObject)) {
                 // the file has not been updated
                 return;
@@ -804,6 +805,28 @@ public class DataEditorSupport extends CloneableEditorSupport {
             firePropertyChange(Env.PROP_VALID, Boolean.TRUE, Boolean.FALSE);            
              */
         }
+
+        /**
+         * Called from the <code>EnvListener</code>.
+         */
+        final void updateDocumentProperty () {
+            //Update document TitleProperty
+            EditorCookie ec = getDataObject().getCookie(EditorCookie.class);
+            if (ec != null) {
+                StyledDocument doc = ec.getDocument();
+                if (doc != null) {
+                    doc.putProperty(Document.TitleProperty,
+                    FileUtil.getFileDisplayName(getDataObject().getPrimaryFile()));
+                }
+            }
+        }
+        
+        /** Called from the <code>EnvListener</code>.
+         */
+        final void fileRenamed () {
+            //#151787: Sync timestamp when svn client changes timestamp externally during rename.
+            firePropertyChange("expectedTime", null, getTime()); // NOI18N
+        }
         
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
@@ -879,6 +902,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
         public void fileDeleted(FileEvent fe) {
             Env myEnv = this.env.get();
             FileObject fo = fe.getFile();
+            if (myEnv != null) {
+                myEnv.updateDocumentProperty();
+            }
             if(myEnv == null || myEnv.getFileImpl() != fo) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
@@ -921,7 +947,16 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 myEnv.fileChanged (fe.isExpected (), fe.getTime ());
             }
         }
-                
+        
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            Env myEnv = this.env.get();
+            if (myEnv != null) {
+                myEnv.updateDocumentProperty();
+                myEnv.fileRenamed();
+            }
+        }
+        
     }
     
     /** Listener on node representing associated data object, listens to the

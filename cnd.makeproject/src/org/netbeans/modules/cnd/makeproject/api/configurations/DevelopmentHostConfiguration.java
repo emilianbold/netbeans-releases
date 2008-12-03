@@ -162,7 +162,7 @@ public class DevelopmentHostConfiguration {
     }
 
     @Override
-    public Object clone() {
+    public DevelopmentHostConfiguration clone() {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
         // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());

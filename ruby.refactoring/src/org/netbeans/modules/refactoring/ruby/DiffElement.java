@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,14 +42,12 @@ package org.netbeans.modules.refactoring.ruby;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import javax.swing.text.StyledDocument;
 import org.netbeans.napi.gsfret.source.ModificationResult;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.ruby.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import static org.netbeans.modules.refactoring.ruby.RetoucheUtils.*;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -60,6 +58,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Becicka
  */
  public class DiffElement extends SimpleRefactoringElementImplementation {
+     
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
@@ -129,7 +128,6 @@ import org.openide.util.lookup.Lookups;
     public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
         PositionRef start = diff.getStartPosition();
         PositionRef end = diff.getEndPosition();
-        StyledDocument doc = null;
         PositionBounds bounds = new PositionBounds(start, end);
         return new DiffElement(diff, bounds, fileObject, modification);
     }    

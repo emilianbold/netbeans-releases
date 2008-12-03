@@ -94,7 +94,12 @@ public class RunScript extends Command implements Displayable {
                         }
                     };
                 }
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(true).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                        .controllable(isControllable())
+                        .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
+                        .inputVisible(true)
+                        .showProgress(true)
+                        .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
@@ -189,7 +194,7 @@ public class RunScript extends Command implements Displayable {
             try {
                 PhpOptions options = PhpOptions.getInstance();
                 if (options.isOpenResultInBrowser()) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURI().toURL());
                 }
                 if (options.isOpenResultInEditor()) {
                     FileObject fo = FileUtil.toFileObject(tmpFile);

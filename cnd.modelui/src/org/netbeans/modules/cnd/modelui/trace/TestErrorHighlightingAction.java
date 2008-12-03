@@ -54,13 +54,11 @@ import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -79,9 +77,9 @@ import org.openide.windows.OutputWriter;
 public class TestErrorHighlightingAction extends TestProjectActionBase {
 
     @Override
-    protected void performAction(Collection<NativeProject> projects) {
+    protected void performAction(Collection<CsmProject> projects) {
         if (projects != null) {
-            for (NativeProject p : projects) {
+            for (CsmProject p : projects) {
                 try {
                     testProject(p);
                 } catch (Exception e) {
@@ -100,8 +98,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         return SharedClassObject.findObject(TestErrorHighlightingAction.class, true);
     }
 
-    private void testProject(NativeProject project) {
-        String taskName = "Testing Error Highlighting - " + project.getProjectDisplayName(); // NOI18N
+    private void testProject(CsmProject csmProject) {
+        String taskName = "Testing Error Highlighting - " + csmProject.getName(); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
         io.select();
         final OutputWriter out = io.getOut();
@@ -119,7 +117,6 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         long time = System.currentTimeMillis();
 
-        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
         BaseStatistics statistics[] = new BaseStatistics[] {
             new MessageStatistics(),
             new FileStatistics(csmProject)

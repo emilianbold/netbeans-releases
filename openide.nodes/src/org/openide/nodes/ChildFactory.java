@@ -109,11 +109,11 @@ public abstract class ChildFactory <T> {
      *
      * @param key An object from the list returned by
      *        <code>asynchCreateKeys()</code>
-     * @return zero or more Nodes to represent this key
+     * @return null if no nodes, or zero or more Nodes to represent this key
      */
     protected Node[] createNodesForKey(T key) {
         Node n = createNodeForKey(key);
-        return n == null ? new Node[0] : new Node[] { n };
+        return n == null ? null : new Node[] { n };
     }
     /**
      * Create a list of keys which can be individually passed to
@@ -198,6 +198,14 @@ public abstract class ChildFactory <T> {
         }
         this.observer = new WeakReference <Observer> (observer);
     }
+
+    void removeNotify() {
+        //do nothing
+    }
+
+    void addNotify() {
+        //do nothing
+    }
     
     interface Observer {
         public void refresh(boolean immediate);
@@ -216,5 +224,33 @@ public abstract class ChildFactory <T> {
         public WaitFilterNode(Node orig) {
             super(orig);
         }
+    }
+
+    /**
+     * Subclass of ChildFactory with lifecycle methods which will be called
+     * on first use and last use.
+     *
+     * @param <T> The key type for this child factory
+     */
+    public static abstract class Detachable<T> extends ChildFactory<T>{
+        /**
+         * Called immediately before the first call to createKeys().  Override
+         * to set up listening for changes, allocating expensive-to-create
+         * resources, etc.
+         */
+        @Override
+        protected void addNotify() {
+            //do nothing
+        }
+        /**
+         * Called when this child factory is no longer in use, to dispose of
+         * resources, detach listeners, etc.  Does nothing by default;  override
+         * if you need notification when not in use anymore.
+         */
+        @Override
+        protected void removeNotify() {
+            //do nothing
+        }
+
     }
 }

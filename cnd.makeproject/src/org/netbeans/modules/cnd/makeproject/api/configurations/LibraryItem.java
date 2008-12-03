@@ -116,7 +116,7 @@ public class LibraryItem {
 
     // Should be overridden
     @Override
-    public Object clone() {
+    public LibraryItem clone() {
 	return this;
     }
 
@@ -155,8 +155,9 @@ public class LibraryItem {
         @Override
 	public String getToolTip() {
             String ret = getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation(); // NOI18N
-            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
+            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            }
             return ret;
 	}
 
@@ -166,23 +167,25 @@ public class LibraryItem {
 	}
 
         @Override
-	public String toString() {
+        public String toString() {
             String ret = IpeUtils.getBaseName(getMakeArtifact().getProjectLocation());
-            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
+            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            }
             return ret;
-	}
+        }
 
         @Override
-	public void setValue(String value) {
-	    // Can't do
-	}
+        public void setValue(String value) {
+            // Can't do
+        }
 
         @Override
         public String getPath() {
             String libPath = getMakeArtifact().getOutput();
-            if (!IpeUtils.isPathAbsolute(libPath))
+            if (!IpeUtils.isPathAbsolute(libPath)) {
                 libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
+            }
             return libPath;
         }
 
@@ -202,7 +205,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public Object clone() {
+	public ProjectItem clone() {
 	    ProjectItem clone = new ProjectItem(getMakeArtifact());
 	    return clone;
 	}
@@ -265,16 +268,17 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
-	    StringBuilder options = new StringBuilder();
-	    for (int i = 0; i < libs.length; i++) {
-		if (libs[i].charAt(0) != '-')
-		    options.append("-l" + libs[i] + " "); // NOI18N
-		else
-		    options.append(libs[i] + " "); // NOI18N
-	    }
-	    return options.toString();
-	}
+        public String getOption() {
+            StringBuilder options = new StringBuilder();
+            for (int i = 0; i < libs.length; i++) {
+                if (libs[i].charAt(0) != '-') {
+                    options.append("-l" + libs[i] + " "); // NOI18N
+                } else {
+                    options.append(libs[i] + " "); // NOI18N
+                }
+            }
+            return options.toString();
+        }
 
         @Override
 	public boolean canEdit() {
@@ -282,7 +286,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public Object clone() {
+	public StdLibItem clone() {
 	    StdLibItem clone = new StdLibItem(getName(), getDisplayName(), getLibs());
 	    return clone;
 	}
@@ -335,7 +339,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public Object clone() {
+	public LibItem clone() {
 	    return new LibItem(getLibName());
 	}
     }
@@ -363,14 +367,15 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getIconName() {
-	    if (getPath().endsWith(".so") || getPath().endsWith(".dll") || getPath().endsWith(".dylib")) // NOI18N
-		return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
-	    else if (getPath().endsWith(".a")) // NOI18N
-		return "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N
-	    else
-		return "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
-	}
+        public String getIconName() {
+            if (getPath().endsWith(".so") || getPath().endsWith(".dll") || getPath().endsWith(".dylib")) { // NOI18N
+                return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
+            } else if (getPath().endsWith(".a")) { // NOI18N
+                return "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N
+            } else {
+                return "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
+            }
+        }
 
         @Override
 	public String toString() {
@@ -393,7 +398,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public Object clone() {
+	public LibFileItem clone() {
 	    return new LibFileItem(getPath());
 	}
     }
@@ -445,7 +450,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public Object clone() {
+	public OptionItem clone() {
 	    return new OptionItem(getLibraryOption());
 	}
     }
