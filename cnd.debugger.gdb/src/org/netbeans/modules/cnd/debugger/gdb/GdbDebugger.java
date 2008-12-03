@@ -315,6 +315,7 @@ public class GdbDebugger implements PropertyChangeListener {
                             finish(false);
                         }
                     });
+                    return; // since we've failed, a return here keeps us from sending more gdb commands
                 } else {
                     if (isSharedLibrary) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
@@ -439,6 +440,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         } catch (Exception ex) {
+            log.warning("GdbDebugger.startDebugger: Exception during start [" + ex.getClass().getName() + "]");
             if (startupTimer != null) {
                 startupTimer.cancel();
             }
@@ -449,9 +451,15 @@ public class GdbDebugger implements PropertyChangeListener {
             if (msg == null || msg.length() == 0) {
                 msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnSpecifiedStartError");
             }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-            setExited();
-            finish(false);
+            final String fmsg = msg;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(fmsg));
+                    setExited();
+                    finish(false);
+                }
+            });
         }
     }
 
@@ -628,15 +636,6 @@ public class GdbDebugger implements PropertyChangeListener {
             }
         }
         return pathMap.getRemotePath(programName.toString());
-    }
-
-    /**
-     * Get the gdb version
-     * Should not be used directly, 
-     * use versionPeculiarity for action dependent on gdb version
-     */
-    private double getGdbVersion() {
-        return gdbVersion;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
