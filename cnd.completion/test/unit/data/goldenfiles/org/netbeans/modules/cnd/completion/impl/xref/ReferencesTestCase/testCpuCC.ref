@@ -1,3 +1,9 @@
+'include', tokenID=preprocessor_include, offset=2145 [44:2/2145-44:9/2152]
+--OWNER:
+    INCLUDE "cpu.h" [44:1/2144-44:17/2160]
+--RESOLVED TO:
+    INCLUDE "cpu.h" [44:1/2144-44:17/2160]
+==============================================================
 '"cpu.h"', tokenID=preprocessor_user_include, offset=2153 [44:10/2153-44:17/2160]
 --OWNER:
     INCLUDE "cpu.h" [44:1/2144-44:17/2160]
