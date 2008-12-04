@@ -78,8 +78,11 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Exceptions;
@@ -287,7 +290,23 @@ public class SQLEditorSupport extends DataEditorSupport
         }
         execute(sql, 0, sql.length());
     }
-    
+
+    @Override
+    public void saveAs( FileObject folder, String fileName ) throws IOException {
+        FileObject existingFo = FileUtil.createData(folder, fileName);
+        if (existingFo != null) {
+            NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplace", fileName),
+                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"));
+            DialogDisplayer.getDefault().notify(confirm);
+            if (confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                super.saveAs(folder, fileName);
+            }
+        } else {
+            super.saveAs(folder, fileName);
+        }
+    }
+
     /**
      * Executes either all or a part of the given sql string (which can contain
      * zero or more SQL statements). If startOffset &lt; endOffset, the part of

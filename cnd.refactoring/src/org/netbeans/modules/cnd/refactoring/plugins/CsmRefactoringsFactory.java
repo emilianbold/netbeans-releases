@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;
@@ -57,12 +57,12 @@ public class CsmRefactoringsFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
         if (refactoring instanceof WhereUsedQuery) {
-            CsmReference ref = CsmRefactoringUtils.findReference(look);
+            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
             if (CsmRefactoringUtils.isSupportedReference(ref)) {
                 return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            CsmReference ref = CsmRefactoringUtils.findReference(look);
+            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
             if (CsmRefactoringUtils.isSupportedReference(ref)) {
                 return new CsmRenameRefactoringPlugin((RenameRefactoring)refactoring);
             }            

@@ -1,0 +1,245 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.netbeans.modules.python.api;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.openide.util.Exceptions;
+
+/**
+ *
+ * @author Allan Davis
+ * @author Jean-Yves
+ */
+public class PythonExecution {
+    // execution commands
+    private String command;
+    private String workingDirectory;
+    private String commandArgs;
+    private String path;
+    private String javapath;
+    private String script;
+    private String scriptArgs;
+    private String displayName;    
+    private boolean redirect;
+    
+    
+    //internal process control    
+    private ExecutionDescriptor descriptor = new ExecutionDescriptor()
+            .frontWindow(true).controllable(true).inputVisible(true)
+                .showProgress(true).showSuspended(true);
+    
+    //private InputOutput io;
+
+    /**
+     * Execute the process described by this object
+     * @return a Future object that provides the status of the running process
+     */
+    public synchronized Future<Integer> run(){
+        try {
+            // Setup process Information
+            
+            
+            // Setup Descriptor Information
+            //descriptor = buildDescriptor();
+            //process.
+            //build Service
+            ExecutionService service = 
+                    ExecutionService.newService(
+                    buildProcess(),
+                    descriptor, displayName);
+            //io = descriptor.getInputOutput();
+            // Start Service
+           return service.run();
+            //io = InputOutputManager.getInputOutput(displayName, true, path).getInputOutput();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        
+    }
+
+
+    private ExternalProcessBuilder buildProcess() throws IOException{
+        ExternalProcessBuilder processBuilder =
+                    new ExternalProcessBuilder(command);
+            processBuilder = processBuilder.workingDirectory(new File(workingDirectory));
+            // @@@Jean-Yves check for empty arguments as well as null
+            if ( (commandArgs != null) && ( commandArgs.trim().length() > 0 )  )
+               processBuilder = processBuilder.addArgument(commandArgs);
+            if(script != null)
+                processBuilder = processBuilder.addArgument(script);
+            if(scriptArgs != null) {
+               // @@@jean-Yves populate arguments one by one in order to get
+               // a natural python tuple on python side
+               String args[] = org.openide.util.Utilities.parseParameters(scriptArgs) ;
+               for ( int ii = 0 ; ii < args.length ; ii++)
+                 processBuilder = processBuilder.addArgument( args[ii] )  ;
+            }
+            processBuilder = processBuilder.redirectErrorStream(redirect);
+            if(path != null){
+                if(command.toLowerCase().contains("jython")){
+//                    String commandPath = "-Dpython.path=" + path;
+//                    processBuilder = processBuilder.addArgument(commandPath);
+                     processBuilder =
+                            processBuilder.addEnvironmentVariable("JYTHONPATH", path);
+                     processBuilder =
+                            processBuilder.addEnvironmentVariable("CLASSPATH", javapath);
+                }else{
+                    processBuilder =
+                            processBuilder.addEnvironmentVariable("PYTHONPATH", path);
+                }                
+            }
+
+            return processBuilder;
+    }
+    
+    private ExecutionDescriptor buildDescriptor(){
+        
+            return descriptor;
+    }
+    public synchronized String getCommand() {
+        return command;
+    }
+
+    public synchronized void setCommand(String command) {
+        this.command = command;
+    }
+
+    public synchronized String getCommandArgs() {
+        return commandArgs;
+    }
+
+    public synchronized void setCommandArgs(String commandArgs) {
+        this.commandArgs = commandArgs;
+    }
+
+    public synchronized String getPath() {
+        return path;
+    }
+
+    public synchronized void setJavaPath(String javapath) {
+        this.javapath = javapath;
+    }
+
+    public synchronized String getJavaPath() {
+        return javapath;
+    }
+
+    public synchronized void setPath(String path) {
+        this.path = path;
+    }
+
+    public synchronized String getScript() {
+        return script;
+    }
+
+    public synchronized void setScript(String script) {
+        this.script = script;
+    }
+
+    public synchronized String getScriptArgs() {
+        return scriptArgs;
+    }
+
+    public synchronized void setScriptArgs(String scriptArgs) {
+        this.scriptArgs = scriptArgs;
+    }
+
+    public synchronized String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public synchronized void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
+
+    public synchronized String getDisplayName() {
+        return displayName;
+    }
+
+    public synchronized void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+    
+
+    public synchronized void setShowControls(boolean showControls) {
+       descriptor = descriptor.controllable(showControls);
+    }
+
+    
+
+    public synchronized void setShowInput(boolean showInput) {
+        descriptor = descriptor.inputVisible(showInput);
+    }
+
+    public synchronized void setRedirectError(boolean redirect){
+        this.redirect = redirect;
+    }
+
+    public synchronized void setShowProgress(boolean showProgress) {
+        descriptor = descriptor.showProgress(showProgress);
+    }
+    /**
+     * Can the process be suppended
+     * @param showSuspended boolean to set the status 
+     */
+    public synchronized void setShowSuspended(boolean showSuspended) {
+        descriptor = descriptor.showSuspended(showSuspended);
+    }    
+    /**
+     * Show the window of the running process
+     * @param showWindow display the windown or not?
+     */
+    public synchronized void setShowWindow(boolean showWindow) {
+        descriptor = descriptor.frontWindow(showWindow);
+    }
+    
+    private final PythonOutputProcessor outProcessor = new PythonOutputProcessor();
+    /**
+     * Attach a Processor to collect the output of the running process
+     */
+    public void attachOutputProcessor(){
+        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+            public InputProcessor newInputProcessor() {
+                return outProcessor;
+            }
+
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return null;
+            }
+        });
+    }
+    /**
+     * Retive the output form the running process
+     * @return a string reader for the process
+     */
+    public Reader getOutput(){
+        return new StringReader(outProcessor.getData());
+    }
+    /**
+     * Attach input processor to the running process
+     */
+    public void attachInputProcessor(){
+        //descriptor = descriptor.
+    }
+    /**
+     * Writes data to the running process
+     * @return StringWirter
+     */
+    public Writer getInput(){
+        return null;
+    }
+}

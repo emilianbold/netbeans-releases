@@ -69,8 +69,8 @@ public class SVGTextField extends AbstractTextRenderingComponent {
         initNestedElements();
         verify();
 
-        SVGRect outlineBox = getElement().getBBox();
-        SVGRect textBox    = myTextElement.getBBox();
+        SVGRect outlineBox = getElement().getScreenBBox();
+        SVGRect textBox    = myTextElement.getScreenBBox();
         
         if (textBox != null) {
             elemWidth = (int) (outlineBox.getWidth() + 0.5f - 
@@ -78,7 +78,7 @@ public class SVGTextField extends AbstractTextRenderingComponent {
         } else {
             elemWidth = 0;
         }
-
+        
         addHiddenElement(form);
         
         if (myCaretElement != null) {
@@ -90,8 +90,10 @@ public class SVGTextField extends AbstractTextRenderingComponent {
         
         setCaretPosition(0);
         showCaret( false);
-        setText( getTextTrait());
         readMeta();
+        
+        myTextElement.setTrait(TRAIT_TEXT , getTextTrait()) ;
+            
     }
 
     public SVGTextField( SVGForm form, String elemId ) {

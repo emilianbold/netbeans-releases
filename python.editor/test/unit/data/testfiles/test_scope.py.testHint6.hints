@@ -1,0 +1,35 @@
+from test_support import verify, TestFailed, check_syntax
+
+HINT:Name "test_scope" is not a valid module name according to your code style (lowercase)
+FIX:Ignore name violations for "test_scope"
+FIX:Change preferred module name style to lowercase_with_underscores
+def errorInOuter():
+    ------------
+HINT:Name "errorInOuter" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "errorInOuter"
+FIX:Change preferred function name style to mixedCase
+def errorInInner():
+    ------------
+HINT:Name "errorInInner" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "errorInInner"
+FIX:Change preferred function name style to mixedCase
+def makeReturner(*lst):
+    ------------
+HINT:Name "makeReturner" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "makeReturner"
+FIX:Change preferred function name style to mixedCase
+def makeReturner2(**kwargs):
+    -------------
+HINT:Name "makeReturner2" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "makeReturner2"
+FIX:Change preferred function name style to mixedCase
+def makeAddPair((a, b)):
+    -----------
+HINT:Name "makeAddPair" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "makeAddPair"
+FIX:Change preferred function name style to mixedCase
+    def addPair((c, d)):
+        -------
+HINT:Name "addPair" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "addPair"
+FIX:Change preferred function name style to mixedCase

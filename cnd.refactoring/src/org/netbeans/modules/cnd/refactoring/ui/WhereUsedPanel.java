@@ -620,11 +620,13 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
     }
     
     private CsmObject getReferencedElement(CsmObject csmObject) {
+        CsmObject out;
         if (csmObject instanceof CsmReference) {
-            return getReferencedElement(((CsmReference)csmObject).getReferencedObject());
+            out = getReferencedElement(((CsmReference)csmObject).getReferencedObject());
         } else {
-            return csmObject;
+            out = csmObject;
         }
+        return CsmRefactoringUtils.convertToCsmObjectIfNeeded(out);
     }
     
     private String getSearchElementName(CsmObject csmObj, String defaultName) {

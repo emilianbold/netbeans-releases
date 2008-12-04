@@ -241,7 +241,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Gets an object, which represents correspondent IDE project */
     protected void setPlatformProject(Object platformProject) {
         this.platformProject = platformProject;
+        // recreate unique name
         this.uniqueName = null;
+        this.uniqueName = getUniqueName();
     }
 
     /** Finds namespace by its qualified name */
