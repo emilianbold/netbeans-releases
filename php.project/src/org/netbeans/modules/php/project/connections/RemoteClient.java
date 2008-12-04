@@ -318,7 +318,7 @@ public class RemoteClient implements Cancellable {
                         LOGGER.fine("Permissions are not preserved.");
                     }
 
-                    success = moveRemoteFile(fileName, tmpFileName);
+                    success = moveRemoteFile(tmpFileName, fileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
                     }
@@ -352,38 +352,38 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private boolean moveRemoteFile(String fileName, String tmpFileName) throws RemoteException {
-        boolean moved = remoteClient.rename(tmpFileName, fileName);
+    private boolean moveRemoteFile(String source, String target) throws RemoteException {
+        boolean moved = remoteClient.rename(source, target);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpFileName, fileName, moved));
+            LOGGER.fine(String.format("File %s directly renamed to %s: %s", source, target, moved));
         }
         if (moved) {
             return true;
         }
         // possible cleanup
-        String oldPath = fileName + REMOTE_TMP_OLD_SUFFIX;
+        String oldPath = target + REMOTE_TMP_OLD_SUFFIX;
         remoteClient.deleteFile(oldPath);
 
         // try to move the old file, move the new file, delete the old file
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
         }
-        moved = remoteClient.rename(fileName, oldPath);
+        moved = remoteClient.rename(target, oldPath);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("(1) File %s renamed to %s: %s", fileName, oldPath, moved));
+            LOGGER.fine(String.format("(1) File %s renamed to %s: %s", target, oldPath, moved));
         }
         if (!moved) {
             return false;
         }
-        moved = remoteClient.rename(tmpFileName, fileName);
+        moved = remoteClient.rename(source, target);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpFileName, fileName, moved));
+            LOGGER.fine(String.format("(2) File %s renamed to %s: %s", source, target, moved));
         }
         if (!moved) {
             // try to restore the original file
-            boolean restored = remoteClient.rename(oldPath, fileName);
+            boolean restored = remoteClient.rename(oldPath, target);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPath, fileName, restored));
+                LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPath, target, restored));
             }
         } else {
             boolean deleted = remoteClient.deleteFile(oldPath);
@@ -578,7 +578,7 @@ public class RemoteClient implements Cancellable {
                 os.close();
                 if (success) {
                     // move the file
-                    success = moveLocalFile(localFile, tmpLocalFile);
+                    success = moveLocalFile(tmpLocalFile, localFile);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
                     }
@@ -598,17 +598,17 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private boolean moveLocalFile(final File localFile, final File tmpLocalFile) {
+    private boolean moveLocalFile(final File source, final File target) {
         final boolean[] moved = new boolean[1];
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
-                File oldPath = new File(localFile.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
-                String tmpLocalFileName = tmpLocalFile.getName();
-                String localFileName = localFile.getName();
+                File oldPath = new File(target.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
+                String tmpLocalFileName = source.getName();
+                String localFileName = target.getName();
                 String oldPathName = oldPath.getName();
 
-                if (!localFile.exists()) {
-                    moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
+                if (!target.exists()) {
+                    moved[0] = renameLocalFileTo(source, target);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
                     }
@@ -625,20 +625,20 @@ public class RemoteClient implements Cancellable {
                 }
                 // intentional usage of java.io.File!!
                 //  (if the file is opened in the editor, it's not closed, just refreshed)
-                moved[0] = localFile.renameTo(oldPath);
+                moved[0] = target.renameTo(oldPath);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
                 }
                 if (!moved[0]) {
                     return;
                 }
-                moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
+                moved[0] = renameLocalFileTo(source, target);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
                 }
-                if (!moved[0] && oldPath.exists() && !localFile.exists()) {
+                if (!moved[0] && oldPath.exists() && !target.exists()) {
                     // try to restore the original file
-                    boolean restored = renameLocalFileTo(oldPath, localFile);
+                    boolean restored = renameLocalFileTo(oldPath, target);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPathName, localFileName, restored));
                     }
