@@ -357,9 +357,30 @@ made subject to such option by the copyright holder.
     <target name="jws-debug" if="netbeans.home" depends="jar,-verify-jnlp-enabled,generate-jnlp,-verify-codebase,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug javaws project in IDE"/>
     
-    <target name="-debug-javaws-debuggee">
+    <target name="-init-debug-args">
+        <property name="version-output" value="java version &quot;${ant.java.version}"/>
+        <condition property="have-jdk-older-than-1.4">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition else="-Xdebug" property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none">
+            <istrue value="${have-jdk-older-than-1.4}"/>
+        </condition>
+        <condition else="dt_socket" property="debug-transport-by-os" value="dt_shmem">
+            <os family="windows"/>
+        </condition>
+        <condition else="${debug-transport-by-os}" property="debug-transport" value="${debug.transport}">
+            <isset property="debug.transport"/>
+        </condition>
+    </target>
+
+    <target name="-debug-javaws-debuggee" depends="-init-debug-args">
         <exec executable="${java.home}/bin/javaws">
-            <env key="JAVAWS_VM_ARGS" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <env key="JAVAWS_VM_ARGS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <arg line="${jnlp.dest.dir}/${launch.jnlp.file}"/>
         </exec>
     </target>

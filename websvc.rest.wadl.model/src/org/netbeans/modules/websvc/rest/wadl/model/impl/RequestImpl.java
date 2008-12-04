@@ -29,7 +29,7 @@ public class RequestImpl extends NamedImpl implements Request {
         return getChildren(Param.class);
     }
     public void addParam(Param param) {
-        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_REQUEST.types());
+        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_PARAM.types());
     }
 
     public void removeParam(Param param) {
@@ -41,7 +41,7 @@ public class RequestImpl extends NamedImpl implements Request {
     }
 
     public void addRepresentation(Representation rep) {
-        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_REQUEST.types());
+        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_REPRESENTATION.types());
     }
 
     public void removeRepresentation(Representation rep) {

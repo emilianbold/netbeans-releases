@@ -51,17 +51,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
@@ -74,7 +73,6 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
     J2MEPlatform platform;
     DefaultListModel srcModel;
     DefaultListModel docModel;
-    String fileChooserValue;
     
     /** Creates new form SrcDocPathsPanel */
     public SrcDocPathsPanel() {
@@ -87,14 +85,12 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
         docModel = new DefaultListModel();
         lDocPaths.setModel(docModel);
         platform = null;
-        fileChooserValue = null;
     }
     
     public void readData(final WizardDescriptor object) {
         platform = (J2MEPlatform) object.getProperty(DetectPanel.PLATFORM);
         if (platform == null)
             return;
-        fileChooserValue = platform.getHomePath();
         final FileObject[] al = platform.getSourceFolders().getRoots();
         srcModel.clear();
         if (al != null) 
@@ -129,23 +125,13 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
         		u.add(((ListItem<URL>)osa).getObject());
         platform.setJavadocFolders(u);
     }
-    
-    private String browse(final String oldValue, final String title) {
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith( ".zip") || f.getName().endsWith(".jar")))); //NOI18N
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(SrcDocPathsPanel.class,"TXT_ZipFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile().getAbsolutePath();
+
+    private String browse(final String title) {
+        File f;
+        if ((f = new FileChooserBuilder(SrcDocPathsPanel.class).
+                setFileFilter(new ArchiveFilter()).
+                setTitle(title).showOpenDialog()) != null) {
+            return f.getAbsolutePath();
         }
         return null;
     }
@@ -316,10 +302,9 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
     private void bDocAddActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDocAddActionPerformed
         if (platform == null)
             return;
-        final String value = browse(fileChooserValue, NbBundle.getMessage(SrcDocPathsPanel.class, "TITLE_SDPathsPanel_SelectJavaDoc")); // NOI18N
+        final String value = browse(NbBundle.getMessage(SrcDocPathsPanel.class, "TITLE_SDPathsPanel_SelectJavaDoc")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final URL o = J2MEPlatform.localfilepath2url(value);
         if (o != null) {
             final ListItem<URL> item = new ListItem<URL>(o);
@@ -332,10 +317,9 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
     private void bSrcAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSrcAddActionPerformed
         if (platform == null)
             return;
-        final String value = browse(fileChooserValue, NbBundle.getMessage(SrcDocPathsPanel.class, "TITLE_SDPathsPanel_SelectSource")); // NOI18N
+        final String value = browse(NbBundle.getMessage(SrcDocPathsPanel.class, "TITLE_SDPathsPanel_SelectSource")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final FileObject o = platform.resolveRelativePathToFileObject(value);
         if (o != null) {
             final ListItem<FileObject> item = new ListItem<FileObject>(o);

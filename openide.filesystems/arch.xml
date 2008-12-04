@@ -357,7 +357,20 @@ No.
         </question>
 -->
 <answer id="exec-component">
-No.
+<p>
+FileChooserBuilder uses the following boolean system properties:
+</p>
+<ul>
+    <li><code>allow.filechooser.symlink.traversal</code>&mdash; If set to false,
+    file choosers created by instances of FileChooserBuilder will traverse
+    symlinks.  By default they do not.
+    </li>
+    <li><code>forget.recent.dirs</code>&mdash;If true, FileChooserBuilder will
+    not remember users&apos; recent directories across sessions.  This property
+    is provided for applications where a history of recently used directories is a
+    security concern.
+    </li>
+    </ul>
 </answer>
 
 
@@ -1049,7 +1062,8 @@ public class LoginFileSystem extends <a href="@TOP@/org/openide/filesystems/Mult
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   FileChooserBuilder uses NbPreferences as the backing storage for per-key
+   recently used directories.
   </p>
  </answer>
 

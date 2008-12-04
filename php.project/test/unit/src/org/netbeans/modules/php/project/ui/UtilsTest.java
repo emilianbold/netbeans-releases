@@ -63,6 +63,7 @@ public class UtilsTest extends NbTestCase {
             "https://user:pwd@localhost/phpProject1",
         };
         final String[] incorrectUrls = new String[] {
+            null,
             "",
             "http:/localhost/test",
             "http://local host/test",

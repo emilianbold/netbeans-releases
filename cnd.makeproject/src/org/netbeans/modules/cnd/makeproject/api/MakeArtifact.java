@@ -203,37 +203,38 @@ public class MakeArtifact {
     }
 
     public String getOutput() {
-	return output;
+        return output;
     }
-    
+
     @Override
     public String toString() {
         String ret = getConfigurationName();
-        if (getOutput() != null && getOutput().length() > 0)
-	    ret = ret + " (" + getOutput() + ")"; // NOI18N
+        if (getOutput() != null && getOutput().length() > 0) {
+            ret = ret + " (" + getOutput() + ")"; // NOI18N
+        }
         return ret;
     }
 
     public static MakeArtifact[] getMakeArtifacts(Project project) {
-	MakeArtifactProvider map = project.getLookup().lookup(MakeArtifactProvider.class);
-	if (map != null)
-	    return map.getBuildArtifacts();
-	else
-	    return null;
+        MakeArtifactProvider map = project.getLookup().lookup(MakeArtifactProvider.class);
+        if (map != null) {
+            return map.getBuildArtifacts();
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public Object clone() {
-	return new MakeArtifact(
-	    projectLocation,
-	    configurationType,
-	    configurationName,
-	    active,
-	    build,
-	    workingDirectory,
-	    buildCommand,
-	    cleanCommand,
-	    output
-	);
+    public MakeArtifact clone() {
+        return new MakeArtifact(
+                projectLocation,
+                configurationType,
+                configurationName,
+                active,
+                build,
+                workingDirectory,
+                buildCommand,
+                cleanCommand,
+                output);
     }
 }

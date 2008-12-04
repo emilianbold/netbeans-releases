@@ -384,7 +384,7 @@ public class Retriever implements Runnable {
         }
     }
     
-    private String getDurationString(int time) {
+    static String getDurationString(int time) {
         // < 1000 -> XXX ms
         // > 1000 -> XX seconds
         // > 60000 -> XX minutes, XX seconds
@@ -409,7 +409,7 @@ public class Retriever implements Runnable {
                 time %= 60000;
                 builder.append(NbBundle.getMessage(Retriever.class, "TIME_MINUTES", minutes));  //NOI18N
             }
-            if(time >= 1000 || builder.length() > 0) {
+            if(time >= 1000) { //  || builder.length() > 0) {
                 if(builder.length() > 0) {
                     builder.append(separator);
                 }
@@ -418,7 +418,7 @@ public class Retriever implements Runnable {
                 if(seconds > 0) {
                     builder.append(NbBundle.getMessage(Retriever.class, "TIME_SECONDS", seconds));  //NOI18N
                 }
-            } else {
+            } else if (time > 0 && builder.length() < 1) {
                 builder.append(NbBundle.getMessage(Retriever.class, "TIME_MILISECONDS", time));  //NOI18N
             }
         }

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -80,11 +81,15 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends String> getParameters() {
-        List<String> retval = new ArrayList<String>();
+    public List<? extends Parameter> getParameters() {
         List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
+        List<Parameter> retval = new ArrayList<Parameter>();
         for (FormalParameter formalParameter : formalParameters) {
-            retval.add(CodeUtils.getParamDisplayName(formalParameter));
+            String name = CodeUtils.getParamDisplayName(formalParameter);
+            String defVal = CodeUtils.getParamDefaultValue(formalParameter);
+            if (name != null) {
+                retval.add(new ParameterImpl(name, defVal));
+            }
         }
         return retval;
     }

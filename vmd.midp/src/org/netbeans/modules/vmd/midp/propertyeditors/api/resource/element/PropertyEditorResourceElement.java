@@ -97,7 +97,13 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     public String getIconPath() {
         return ResourceCD.ICON_PATH;
     }
-
+    /**
+     * Do no use this method. If you need to obtian suggested name use instead ClassCode.getSuggestedMainName (getTypeID ())
+     * 
+     * @return suggested name
+     * @deprecated
+     */
+    @Deprecated
     public String getResourceNameSuggestion() {
         return ClassCode.getSuggestedMainName (getTypeID ());
     }

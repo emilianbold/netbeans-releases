@@ -72,13 +72,20 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class RelocateAction extends ContextAction {
          
     protected boolean enable(Node[] nodes) {
-        final Context ctx = getContext(nodes);
-        File[] roots = ctx.getRootFiles();
-        if(roots == null || roots.length != 1) {
+        if(nodes.length != 1) {
             return false;
         }
-        File file = roots[0];
-        return file != null && file.isDirectory();
+        final Context ctx = getContext(nodes);
+        File[] roots = ctx.getRootFiles();
+        if(roots == null || roots.length < 1) {
+            return false;
+        }
+        for (File file : roots) {
+            if(file.isDirectory()) {
+                return true; // at least one dir
+            }
+        }
+        return false;
     }
     
     protected int getDirectoryEnabledStatus() {
@@ -94,7 +101,6 @@ public class RelocateAction extends ContextAction {
         } catch (MalformedURLException e) {
             btnOk.setEnabled(false);
         }
-        
     }
 
     protected String getBaseName(Node[] activatedNodes) {
@@ -111,23 +117,16 @@ public class RelocateAction extends ContextAction {
         }
         
         final RelocatePanel panel = new RelocatePanel();
-        File root = null;
+        File root = SvnUtils.getActionRoot(ctx);
         SVNUrl repositoryUrl = null;
-        for (File r : roots) {
-            try {            
-                repositoryUrl = SvnUtils.getRepositoryRootUrl(r);
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
-                return;
-            }
-            if(repositoryUrl != null) {
-                root = r;
-                break;
-            } else {
-                Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ r });
-            }
+        try {
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
         }
         if(repositoryUrl == null) {
+            Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root });
             return;
         }
         final String wc = root.getAbsolutePath();
