@@ -40,8 +40,10 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -53,10 +55,10 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -70,6 +72,18 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringUtils {
+
+    public static CsmObject convertToCsmObjectIfNeeded(CsmObject referencedObject) {
+        if (CsmKindUtilities.isInclude(referencedObject)) {
+            referencedObject = ((CsmInclude) referencedObject).getIncludeFile();
+        } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
+            CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
+            if (decl != null) {
+                referencedObject = decl;
+            }
+        }
+        return referencedObject;
+    }
 
     private CsmRefactoringUtils() {}
     
