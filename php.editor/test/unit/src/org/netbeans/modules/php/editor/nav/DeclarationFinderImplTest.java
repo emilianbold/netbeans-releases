@@ -57,6 +57,28 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
+    public void testGotoConstructTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public function ^__construct() {//MyClassConstr",
+                "$a = new MyClassConstr();",
+                "$a = new MyCla|ssConstr();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testGotoConstructTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public ^function __construct() {//MyClassConstr",
+                "$b = new MyClassConstr2();",
+                "$b = new MyCla|ssConstr2();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
     public void testIfaceTest() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/ifaceTest.php",

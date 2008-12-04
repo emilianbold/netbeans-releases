@@ -574,7 +574,7 @@ class OccurenceBuilder {
                 List<? extends ClassScope> elems = CachedModelSupport.getClasses(queryName, fileScope);
                 List<MethodScope> methods = new ArrayList<MethodScope>();
                 for (ClassScope clz : elems) {
-                    methods.addAll(CachedModelSupport.getMethods(clz, "__construct", fileScope));//NOI18N
+                    methods.addAll(CachedModelSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
                 }
                 if (!methods.isEmpty()) {
                     fileScope.addOccurence(ModelUtils.getFirst(elems), new OccurenceImpl<ModelElement>(methods, nodeInfo.getRange(), fileScope));
