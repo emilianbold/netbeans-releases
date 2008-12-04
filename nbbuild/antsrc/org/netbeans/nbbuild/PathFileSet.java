@@ -69,6 +69,7 @@ import org.apache.tools.ant.types.selectors.SelectorContainer;
 import org.apache.tools.ant.types.selectors.SizeSelector;
 import org.apache.tools.ant.types.selectors.TypeSelector;
 import org.apache.tools.ant.types.selectors.modifiedselector.ModifiedSelector;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Does the same as ant's fileset, only for given path instead of single basedir.
@@ -110,6 +111,17 @@ public class PathFileSet extends Task implements SelectorContainer {
 
     /**
      * Optional include pattern for filtering files. The same as fileset's nested &gt;include&lt; tag.
+     *
+     * Note that pattern is matched against <b>relative</b> path starting at each pathelement.
+     * E.g. when there is file <tt>/a/b/c/d.txt</tt>, it will be included in result
+     * of:
+     * <pre>&lt;pathfileset include="c/**.txt property="output"&gt;
+     *      &lt;path path="/a/b"/&gt;
+     * &lt;/pathfileset&gt;</pre>
+     * and it won't be included in result of:
+     * <pre>&lt;pathfileset include="b/**.txt property="output"&gt;
+     *      &lt;path path="/a/b"/&gt;
+     * &lt;/pathfileset&gt;</pre>
      * @param include
      */
     public void setInclude(String include) {
@@ -117,6 +129,15 @@ public class PathFileSet extends Task implements SelectorContainer {
     }
 
     private List<Path> paths = new ArrayList<Path>();
+
+    /**
+     * Adds path in classpath notation. Searched in addition
+     * to any nested paths.
+     * @param stringPath
+     */
+    public void setPath(Path stringPath) {
+        addPath(stringPath);
+    }
 
     /**
      * Elements of nested paths are used as basedirs for fileset.
@@ -141,14 +162,14 @@ public class PathFileSet extends Task implements SelectorContainer {
             for (Path path : paths) {
                 String[] includedClusters = path.list();
                 for (String clusterName : includedClusters) {
+                    log("Scanning pathelement '" + clusterName + "'.", Project.MSG_VERBOSE);
                     scanner.setBasedir(clusterName);
                     scanner.setSelectors(selectors.getSelectors(getProject()));
                     if (include != null)
                         scanner.setIncludes(new String[] { include });
                     scanner.scan();
 
-                    log("Scanned pathelement '" + clusterName + "', "
-                        + scanner.getIncludedFilesCount() + " files found.", Project.MSG_VERBOSE);
+                    log(scanner.getIncludedFilesCount() + " files found.", Project.MSG_VERBOSE);
                     for (String relFile: scanner.getIncludedFiles()) {
                         if (sb.length() > 0)
                             sb.append(pathsep);
@@ -258,5 +279,6 @@ public class PathFileSet extends Task implements SelectorContainer {
     public void add(FileSelector selector) {
         selectors.add(selector);
     }
+
 
 }

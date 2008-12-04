@@ -214,6 +214,14 @@ public class PathFileSetTest extends NbTestCase {
     }
 
     @Test
+    public void testWrongRelativeIncludes() throws IOException {
+        task.setInclude("cl1/modules/org-m1.jar");
+        task.setProperty("output");
+        task.execute();
+        assertEquals("", fakeproj.getProperty("output"));
+    }
+
+    @Test
     public void testEmptySet() throws IOException {
         task.setProperty("output");
         task.setInclude("pattern not present");
@@ -229,5 +237,20 @@ public class PathFileSetTest extends NbTestCase {
         sel.setName("**/config/**/*.xml");
         task.add(sel);
         executeAndCheckResults(new String[]{"cl1/config/Modules/org-m1.xml"});
+    }
+
+    @Test
+    public void testPathAttribute() throws IOException {
+        new ClusterRecord("cl3").create().addModule("org-m3", true, false, false);
+        new ClusterRecord("cl4").create().addModule("org-m4", true, false, false);
+        Path path = new Path(fakeproj, getWorkDir().getPath() + File.separator + "cl3"
+                + File.pathSeparator
+                + getWorkDir().getPath() + File.separator + "cl4");
+        task.setPath(path);
+        task.setInclude("**/*.jar");
+        executeAndCheckResults(new String[] {
+            "cl1/modules/org-m1.jar", "cl2/modules/org-m2.jar",
+            "cl3/modules/org-m3.jar", "cl4/modules/org-m4.jar"
+        });
     }
 }

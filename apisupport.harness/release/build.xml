@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
 
     <target name="common-init" depends="taskdefs">
         <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+        <convertclusterpath from="${cluster.path}" id="cluster.path.id" basedir="${suite.dir}"/>
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">
@@ -149,12 +150,13 @@ made subject to such option by the copyright holder.
                 <include name="build/cluster/config/Modules/*.xml_hidden"/>
             </fileset>
         </delete>
+        <pathfileset property="junit.jars.in.clusters" include="modules/ext/junit-*.jar">
+            <path refid="cluster.path.id"/>
+        </pathfileset>
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <!-- As a fallback for old platforms which do not include the right modules: -->
-            <fileset dir="${netbeans.dest.dir}">
-                <include name="*/modules/ext/junit-*.jar"/>
-            </fileset>
+            <path path="${junit.jars.in.clusters}"/>
             <fileset dir="${netbeans.home}/..">
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>

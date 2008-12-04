@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-init" depends="-taskdefs">
+        <convertclusterpath from="${cluster.path}" id="cluster.path.id"/>
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
@@ -106,7 +107,7 @@ made subject to such option by the copyright holder.
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <mkdir dir="${cluster}/config/Modules"/>
         <pathfileset pathsep="," property="disabled.modules.paths.list">
-            <path path="${cluster.path}"/>
+            <path refid="cluster.path.id"/>
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                 <param name="excludeModules" value="${disabled.modules}"/>
                 <param name="excluded" value="true"/>
