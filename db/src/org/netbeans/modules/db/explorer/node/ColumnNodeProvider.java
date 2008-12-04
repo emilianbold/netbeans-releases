@@ -106,19 +106,18 @@ public class ColumnNodeProvider extends NodeProvider {
         }
 
         for (Column column : columns) {
-            Collection<Node> matches = getNodes(column);
+            MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
+            Collection<Node> matches = getNodes(h);
             if (matches.size() > 0) {
                 newList.addAll(matches);
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
                 lookup.add(metaData);
-
-                MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
                 lookup.add(h);
+
                 newList.add(ColumnNode.create(lookup, this));
             }
-
         }
 
         setNodes(newList);

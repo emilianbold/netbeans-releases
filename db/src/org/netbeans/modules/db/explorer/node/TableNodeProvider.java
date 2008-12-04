@@ -96,15 +96,14 @@ public class TableNodeProvider extends NodeProvider {
 
         Collection<Table> tables = schema.getTables();
         for (Table table : tables) {
-            Collection<Node> matches = getNodes(table);
+            MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
+            Collection<Node> matches = getNodes(handle);
             if (matches.size() > 0) {
                 newList.addAll(matches);
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
                 lookup.add(metaData);
-
-                MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
                 lookup.add(handle);
 
                 newList.add(TableNode.create(lookup, this));

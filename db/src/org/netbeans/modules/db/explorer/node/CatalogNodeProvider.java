@@ -101,14 +101,18 @@ public class CatalogNodeProvider extends NodeProvider {
                     }
 
                     if (use) {
-                        NodeDataLookup lookup = new NodeDataLookup();
-                        lookup.add(connection);
-
                         MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
-                        lookup.add(catalogHandle);
-                        lookup.add(metaData);
+                        Collection<Node> matches = getNodes(catalogHandle);
+                        if (matches.size() > 0) {
+                            newList.addAll(matches);
+                        } else {
+                            NodeDataLookup lookup = new NodeDataLookup();
+                            lookup.add(connection);
+                            lookup.add(catalogHandle);
+                            lookup.add(metaData);
 
-                        newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
+                            newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
+                        }
                     }
                 }
             }

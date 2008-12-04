@@ -108,13 +108,20 @@ public abstract class NodeProvider implements Lookup.Provider {
 
     public void refresh() {
         initialized = false;
+        synchronized (nodeSet) {
+            for (Node child : nodeSet) {
+                if (child instanceof BaseNode) {
+                    ((BaseNode)child).refresh();
+                }
+            }
+        }
     }
 
     protected abstract void initialize();
 
     /**
      * Get the list of nodes that contain a lookup that in turn contains 
-     * a specified data object.
+     * an object with a matching hash code.
      * 
      * @param dataObject the data object.
      * 
@@ -127,7 +134,7 @@ public abstract class NodeProvider implements Lookup.Provider {
         synchronized (nodeSet) {
             for (Node child : nodeSet) {
                 Object obj = child.getLookup().lookup(dataObject.getClass());
-                if (obj == dataObject) {
+                if (obj.hashCode() == dataObject.hashCode()) {
                     results.add(child);
                 }
             }

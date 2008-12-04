@@ -103,7 +103,7 @@ public class CreateTableDialog {
         return dlgtab;
     }
 
-    public CreateTableDialog(final Specification spe, DatabaseNodeInfo nfo) {
+    public CreateTableDialog(final Specification spe, String schema) {
         spec = spe;
         try {
             JLabel label;
@@ -158,7 +158,6 @@ public class CreateTableDialog {
             pane.add(label);
 
             Vector users = new Vector();
-            String schema = nfo.getDriverSpecification().getSchema();
             if (schema != null && schema.length() > 0)
                 users.add(schema);
             else

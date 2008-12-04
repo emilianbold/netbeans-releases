@@ -37,73 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.node;
+package org.netbeans.modules.db.explorer.action;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.ChildNodeFactory;
-import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Rob Englander
  */
-public class CatalogNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/database.gif";
-    private static final String FOLDER = "Catalog"; //NOI18N
-
-    /**
-     * Create an instance of CatalogNode.
-     *
-     * @param dataLookup the lookup to use when creating node providers
-     * @return the CatalogNode instance
-     */
-    public static CatalogNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        CatalogNode node = new CatalogNode(dataLookup, provider);
-        node.setup();
-        return node;
-    }
-
-    private MetadataElementHandle<Catalog> catalogHandle;
-    private Metadata metaData;
-
-    private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
-    }
-
-    protected void initialize() {
-        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaData = getLookup().lookup(Metadata.class);
-    }
+public class ViewDataAction extends QueryAction {
 
     @Override
     public String getName() {
-        return renderName();
+        return bundle().getString("ViewData"); // NOI18N
     }
 
-    @Override
-    public String getDisplayName() {
-        return renderName();
-    }
-
-    private String renderName() {
-        Catalog catalog = catalogHandle.resolve(metaData);
-        if (catalog == null) {
-            return "";
+    public void performAction (final Node[] activatedNodes) {
+        final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
+        if (connection != null) {
+            RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        try {
+                            String expression = getDefaultQuery(activatedNodes);
+                            SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression, true);
+                        } catch(Exception exc) {
+                            String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        }
+                    }
+                }
+            );
         }
-
-        String name = catalog.getName();
-        if (name == null) {
-            name = "Default"; // NOI18N
-        }
-        
-        return name;
     }
 
-    @Override
-    public String getIconBase() {
-        return ICONBASE;
-    }
 }

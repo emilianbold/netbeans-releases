@@ -42,16 +42,16 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.View;
 
 /**
  *
  * @author rob
  */
-public class ViewNode extends BaseNode {
+public class ViewNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
     private static final String FOLDER = "View"; //NOI18N
 
@@ -77,6 +77,11 @@ public class ViewNode extends BaseNode {
     protected void initialize() {
         metaData = getLookup().lookup(Metadata.class);
         viewHandle = getLookup().lookup(MetadataElementHandle.class);
+    }
+
+    public Schema getSchema() {
+        View view = viewHandle.resolve(metaData);
+        return view.getParent();
     }
 
     @Override

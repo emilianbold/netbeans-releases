@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
 public abstract class ConnectedNodeProvider  extends NodeProvider {
 
     private final DatabaseConnection connection;
+    private boolean setup = false;
 
     protected ConnectedNodeProvider(Lookup lookup) {
         super(lookup);
@@ -89,23 +90,29 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
 
         if (disconnected) {
             removeAllNodes();
+            setup = false;
         } else {
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
+            if (!setup) {
+                NodeDataLookup lookup = new NodeDataLookup();
+                lookup.add(connection);
 
-            Metadata metaData = getLookup().lookup(Metadata.class);
-            if (metaData != null) {
-                lookup.add(metaData);
+                Metadata metaData = getLookup().lookup(Metadata.class);
+                if (metaData != null) {
+                    lookup.add(metaData);
+                }
+
+                MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+                if (schemaHandle != null) {
+                    lookup.add(schemaHandle);
+                }
+
+                List<Node> newList = new ArrayList<Node>();
+
+                newList.add(createNode(lookup));
+
+                setNodes(newList);
+                setup = true;
             }
-
-            MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-            if (schemaHandle != null) {
-                lookup.add(schemaHandle);
-            }
-
-            List<Node> newList = new ArrayList<Node>();
-            newList.add(createNode(lookup));
-            setNodes(newList);
         }
     }
 }

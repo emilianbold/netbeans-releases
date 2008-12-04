@@ -42,16 +42,16 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableNode extends BaseNode {
+public class TableNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif";
     private static final String FOLDER = "Table"; //NOI18N
 
@@ -77,14 +77,18 @@ public class TableNode extends BaseNode {
     protected void initialize() {
         metaData = getLookup().lookup(Metadata.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
+    }
 
+    public Schema getSchema() {
+        Table table = tableHandle.resolve(metaData);
+        return table.getParent();
     }
 
     @Override
     public void refresh() {
         metaData.refresh();
         Table table = tableHandle.resolve(metaData);
-        
+
         if (table == null) {
             remove();
         } else {

@@ -49,11 +49,12 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -80,7 +81,7 @@ public class ConnectionNode extends BaseNode {
     
     // the connection
     private DatabaseConnection connection;
-    private MetadataModel model;
+    private MetadataModel model = null;
 
     /**
      * Constructor
@@ -107,7 +108,7 @@ public class ConnectionNode extends BaseNode {
         buildModel();
     }
 
-    private void buildModel() {
+    private synchronized void buildModel() {
         RequestProcessor.getDefault().post(
             new Runnable() {
                 public void run() {
@@ -122,9 +123,10 @@ public class ConnectionNode extends BaseNode {
                         }
                     }
 
-                    if (connected) {
+                    if (connected && model == null) {
                         try {
-                            model = MetadataModelManager.get(connection.getDatabaseConnection());
+                            model = MetadataModels.createModel(conn, connection.getSchema());
+                            //model = MetadataModelManager.get(connection.getDatabaseConnection());
 
                             NodeDataLookup lookup = (NodeDataLookup)getLookup();
                             lookup.add(model);
@@ -140,7 +142,14 @@ public class ConnectionNode extends BaseNode {
                             );
                         } catch (MetadataModelException e) {
                         }
-                    } else {
+                    } else if (!connected) {
+                        model = null;
+                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                        Metadata md = lookup.lookup(Metadata.class);
+                        if (md != null) {
+                            lookup.remove(md);
+                        }
+                        
                         refresh();
                     }
                 }

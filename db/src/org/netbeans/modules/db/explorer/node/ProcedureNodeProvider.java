@@ -95,16 +95,14 @@ public class ProcedureNodeProvider extends NodeProvider {
 
         Collection<Procedure> procedures = schema.getProcedures();
         for (Procedure procedure : procedures) {
-            Collection<Node> matches = getNodes(procedure);
+            MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
+            Collection<Node> matches = getNodes(handle);
             if (matches.size() > 0) {
                 newList.addAll(matches);
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
                 lookup.add(metaData);
-
-                MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
-
                 lookup.add(handle);
 
                 newList.add(ProcedureNode.create(lookup, this));

@@ -95,15 +95,14 @@ public class ViewNodeProvider extends NodeProvider {
 
         Collection<View> views = schema.getViews();
         for (View view : views) {
-            Collection<Node> matches = getNodes(view);
+            MetadataElementHandle<View> handle = MetadataElementHandle.create(view);
+            Collection<Node> matches = getNodes(handle);
             if (matches.size() > 0) {
                 newList.addAll(matches);
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
                 lookup.add(metaData);
-
-                MetadataElementHandle<View> handle = MetadataElementHandle.create(view);
                 lookup.add(handle);
 
                 newList.add(ViewNode.create(lookup, this));

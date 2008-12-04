@@ -106,14 +106,13 @@ public class SchemaNodeProvider extends NodeProvider {
     }
 
     private void updateNode(List<Node> newList, Schema schema, Metadata metadata) {
-        Collection<Node> matches = getNodes(schema);
+        MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
+        Collection<Node> matches = getNodes(schemaHandle);
         if (matches.size() > 0) {
             newList.addAll(matches);
         } else {
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
-
-            MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
             lookup.add(schemaHandle);
             lookup.add(metadata);
 
