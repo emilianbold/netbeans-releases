@@ -37,21 +37,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import java.util.Comparator;
 import java.util.Set;
-import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
-
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 abstract public class MethodNode extends SelectorNode {
+
+    public static enum Modifier {
+
+        STATIC, PUBLIC, PROTECTED, PRIVATE
+    }
     public static final Comparator<MethodNode> COMPARATOR = new Comparator<MethodNode>() {
+
         public int compare(MethodNode o1, MethodNode o2) {
             return o1.toString().compareTo(o2.toString());
         }
@@ -81,22 +84,22 @@ abstract public class MethodNode extends SelectorNode {
     public Icon getIcon() {
         Icon icon;
 
-        if (getModifiers().contains(Modifier.STATIC.name())) {
-            if (getModifiers().contains(Modifier.PUBLIC.name())) {
+        if (getModifiers().contains(Modifier.STATIC)) {
+            if (getModifiers().contains(Modifier.PUBLIC)) {
                 icon = IconResource.METHOD_PUBLIC_STATIC_ICON;
-            } else if (getModifiers().contains(Modifier.PROTECTED.name())) {
+            } else if (getModifiers().contains(Modifier.PROTECTED)) {
                 icon = IconResource.METHOD_PROTECTED_STATIC_ICON;
-            } else if (getModifiers().contains(Modifier.PRIVATE.name())) {
+            } else if (getModifiers().contains(Modifier.PRIVATE)) {
                 icon = IconResource.METHOD_PRIVATE_STATIC_ICON;
             } else {
                 icon = IconResource.METHOD_PACKAGE_STATIC_ICON;
             }
         } else {
-            if (getModifiers().contains(Modifier.PUBLIC.name())) {
+            if (getModifiers().contains(Modifier.PUBLIC)) {
                 icon = IconResource.METHOD_PUBLIC_ICON;
-            } else if (getModifiers().contains(Modifier.PROTECTED.name())) {
+            } else if (getModifiers().contains(Modifier.PROTECTED)) {
                 icon = IconResource.METHOD_PROTECTED_ICON;
-            } else if (getModifiers().contains(Modifier.PRIVATE.name())) {
+            } else if (getModifiers().contains(Modifier.PRIVATE)) {
                 icon = IconResource.METHOD_PRIVATE_ICON;
             } else {
                 icon = IconResource.METHOD_PACKAGE_ICON;
@@ -106,5 +109,5 @@ abstract public class MethodNode extends SelectorNode {
         return icon;
     }
 
-    abstract protected Set<String> getModifiers();
+    abstract protected Set<Modifier> getModifiers();
 }

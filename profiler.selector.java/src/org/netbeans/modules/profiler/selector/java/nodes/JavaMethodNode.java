@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.profiler.selector.java.nodes;
 
 import java.io.IOException;
@@ -45,7 +44,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -61,10 +59,10 @@ import org.netbeans.modules.profiler.selector.spi.nodes.MethodsNode;
  * @author Jaroslav Bachorik
  */
 public class JavaMethodNode extends MethodNode {
+
     private ClasspathInfo cpInfo;
     private SourceCodeSelection signature;
-
-    private Set<String> modifiers;
+    private Set<Modifier> modifiers;
 
     public JavaMethodNode(ClasspathInfo cpInfo, final ExecutableElement method, MethodsNode parent) {
         super(method.getSimpleName().toString(), parent);
@@ -75,30 +73,45 @@ public class JavaMethodNode extends MethodNode {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        signatureString[0] = JavacUtils.getVMMethodSignature(method, controller);
-                    }
-                }, true);
+                public void cancel() {
+                }
+
+                public void run(CompilationController controller)
+                        throws Exception {
+                    signatureString[0] = JavacUtils.getVMMethodSignature(method, controller);
+                }
+            }, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
         if (signatureString[0] != null) {
             signature = new SourceCodeSelection(ElementUtilities.getBinaryName(getEnclosingClass(method)),
-                                                             method.getSimpleName().toString(), signatureString[0]);
-            modifiers = new HashSet<String>();
-            for(Modifier modifier : method.getModifiers()) {
-                modifiers.add(modifier.name());
+                    method.getSimpleName().toString(), signatureString[0]);
+            modifiers = new HashSet<Modifier>();
+
+            for (javax.lang.model.element.Modifier modifier : method.getModifiers()) {
+                switch (modifier) {
+                    case STATIC:
+                        modifiers.add(MethodNode.Modifier.STATIC);
+                        break;
+                    case PUBLIC:
+                        modifiers.add(MethodNode.Modifier.PUBLIC);
+                        break;
+                    case PROTECTED:
+                        modifiers.add(MethodNode.Modifier.PROTECTED);
+                        break;
+                    case PRIVATE:
+                        modifiers.add(MethodNode.Modifier.PRIVATE);
+                        break;
+                }
             }
         }
     }
 
     @Override
-    protected Set<String> getModifiers() {
+    protected Set<Modifier> getModifiers() {
         return modifiers;
     }
 
