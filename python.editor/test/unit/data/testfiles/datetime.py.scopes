@@ -1,0 +1,1975 @@
+=============================================
+<file-top>: Module : OffsetRange[0,71801>
+MAXYEAR [bound][data][read][node=Name]
+MINYEAR [bound][data][read][node=Name]
+None [read][UNRESOLVED][node=Name]
+_DAYNAMES [bound][private][data][read][node=Name]
+_DAYS_BEFORE_MONTH [bound][private][data][read][node=Name]
+_DAYS_IN_MONTH [bound][private][data][read][node=Name]
+_DI100Y [bound][private][data][read][node=Name]
+_DI400Y [bound][private][data][read][node=Name]
+_DI4Y [bound][private][data][read][node=Name]
+_MONTHNAMES [bound][private][data][read][node=Name]
+_ORD1970 [bound][private][data][read][node=Name]
+__name__ [read][UNRESOLVED][node=Name]
+_build_struct_time [bound][private][function][def][read][called][node=FunctionDef]
+_call_tzinfo_method [bound][private][function][def][read][called][node=FunctionDef]
+_check_date_fields [bound][private][function][def][read][called][node=FunctionDef]
+_check_time_fields [bound][private][function][def][read][called][node=FunctionDef]
+_check_tzinfo_arg [bound][private][function][def][read][called][node=FunctionDef]
+_check_tzname [bound][private][function][def][read][called][node=FunctionDef]
+_check_utc_offset [bound][private][function][def][read][called][node=FunctionDef]
+_cmperror [bound][private][function][def][read][called][node=FunctionDef]
+_date_class [bound][private][class][read][alias][node=ClassDef]
+_days_before_month [bound][private][function][def][read][called][node=FunctionDef]
+_days_before_year [bound][private][function][def][read][called][node=FunctionDef]
+_days_in_month [bound][private][function][def][read][called][node=FunctionDef]
+_days_in_year [bound][private][function][def][node=FunctionDef]
+_format_time [bound][private][function][def][read][called][node=FunctionDef]
+_is_leap [bound][private][function][def][read][called][node=FunctionDef]
+_isoweek1monday [bound][private][function][def][node=FunctionDef]
+_math [bound][imported][private][data][read][node=Import]
+_ord2ymd [bound][private][function][def][read][called][node=FunctionDef]
+_test [bound][private][function][def][read][called][node=FunctionDef]
+_time [bound][imported][private][data][read][node=Import]
+_time_class [bound][private][class][read][alias][node=ClassDef]
+_tzinfo_class [bound][private][class][alias][node=ClassDef]
+_wrap_strftime [bound][private][function][def][read][called][node=FunctionDef]
+_ymd2ord [bound][private][function][def][read][called][node=FunctionDef]
+date [bound][class][def][read][called][node=ClassDef]
+datetime [bound][class][def][read][called][node=ClassDef]
+dbm [bound][data][read][node=Name]
+dim [bound][data][read][node=Name]
+object [read][UNRESOLVED][node=Name]
+time [bound][class][def][read][called][node=ClassDef]
+timedelta [bound][class][def][read][called][node=ClassDef]
+tmxxx [bound][class][def][read][called][node=ClassDef]
+tzinfo [bound][class][def][read][node=ClassDef]
+
+    =============================================
+    _is_leap: FunctionDef : OffsetRange[1313,1438>
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _days_in_year: FunctionDef : OffsetRange[1438,1565>
+    _is_leap [free][read][called][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _days_before_year: FunctionDef : OffsetRange[1565,1711>
+    y [bound][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _days_in_month: FunctionDef : OffsetRange[1711,1933>
+    _DAYS_IN_MONTH [free][read][node=Name]
+    _is_leap [free][read][called][node=Name]
+    month [bound][param][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _days_before_month: FunctionDef : OffsetRange[1933,2203>
+    ValueError [free][read][called][node=Name]
+    _DAYS_BEFORE_MONTH [free][read][node=Name]
+    _is_leap [free][read][called][node=Name]
+    month [bound][param][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _ymd2ord: FunctionDef : OffsetRange[2203,2619>
+    ValueError [free][read][called][node=Name]
+    _days_before_month [free][read][called][node=Name]
+    _days_before_year [free][read][called][node=Name]
+    _days_in_month [free][read][called][node=Name]
+    day [bound][param][data][read][node=Name]
+    dim [bound][data][read][node=Name]
+    month [bound][param][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _ord2ymd: FunctionDef : OffsetRange[3228,6007>
+    _DAYS_BEFORE_MONTH [free][read][node=Name]
+    _DAYS_IN_MONTH [free][read][node=Name]
+    _DI100Y [free][read][node=Name]
+    _DI400Y [free][read][node=Name]
+    _DI4Y [free][read][node=Name]
+    _days_in_month [free][read][called][node=Name]
+    _is_leap [free][read][called][node=Name]
+    divmod [free][read][called][node=Name]
+    leapyear [bound][data][read][node=Name]
+    month [bound][data][read][node=Name]
+    n [bound][param][data][read][node=Name]
+    n1 [bound][data][read][node=Name]
+    n100 [bound][data][read][node=Name]
+    n4 [bound][data][read][node=Name]
+    n400 [bound][data][read][node=Name]
+    preceding [bound][data][read][node=Name]
+    year [bound][data][read][node=Name]
+
+    =============================================
+    _build_struct_time: FunctionDef : OffsetRange[6203,6410>
+    _days_before_month [free][read][called][node=Name]
+    _time [free][read][node=Name]
+    _ymd2ord [free][read][called][node=Name]
+    d [bound][param][data][read][node=Name]
+    dnum [bound][data][read][node=Name]
+    dstflag [bound][param][data][read][node=Name]
+    hh [bound][param][data][read][node=Name]
+    m [bound][param][data][read][node=Name]
+    mm [bound][param][data][read][node=Name]
+    ss [bound][param][data][read][node=Name]
+    wday [bound][data][read][node=Name]
+    y [bound][param][data][read][node=Name]
+
+    =============================================
+    _format_time: FunctionDef : OffsetRange[6410,6661>
+    hh [bound][param][data][read][node=Name]
+    mm [bound][param][data][read][node=Name]
+    result [bound][data][read][node=Name]
+    ss [bound][param][data][read][node=Name]
+    us [bound][param][data][read][node=Name]
+
+    =============================================
+    _wrap_strftime: FunctionDef : OffsetRange[6661,8721>
+    None [free][read][node=Name]
+    ValueError [free][read][called][node=Name]
+    Zreplace [bound][data][read][node=Name]
+    _time [free][read][node=Name]
+    ch [bound][data][read][node=Name]
+    divmod [free][read][called][node=Name]
+    format [bound][param][data][read][node=Name]
+    h [bound][data][read][node=Name]
+    hasattr [free][read][called][node=Name]
+    i [bound][data][read][node=Name]
+    len [free][read][called][node=Name]
+    m [bound][data][read][node=Name]
+    n [bound][data][read][node=Name]
+    newformat [bound][data][read][node=Name]
+    object [bound][param][data][read][node=Name]
+    offset [bound][data][read][node=Name]
+    push [bound][data][read][called][node=Name]
+    s [bound][data][read][node=Name]
+    sign [bound][data][read][node=Name]
+    timetuple [bound][param][data][read][node=Name]
+    year [bound][data][read][node=Name]
+    zreplace [bound][data][read][node=Name]
+
+    =============================================
+    _call_tzinfo_method: FunctionDef : OffsetRange[8721,8925>
+    None [free][read][node=Name]
+    getattr [free][read][called][node=Name]
+    methname [bound][param][data][read][node=Name]
+    tzinfo [bound][param][data][read][node=Name]
+    tzinfoarg [bound][param][data][read][node=Name]
+
+    =============================================
+    _check_tzname: FunctionDef : OffsetRange[8925,9449>
+    None [free][read][node=Name]
+    TypeError [free][read][called][node=Name]
+    isinstance [free][read][called][node=Name]
+    name [bound][param][data][read][node=Name]
+    str [free][read][node=Name]
+    type [free][read][called][node=Name]
+
+    =============================================
+    _check_utc_offset: FunctionDef : OffsetRange[9449,10259>
+    None [free][read][node=Name]
+    TypeError [free][read][called][node=Name]
+    ValueError [free][read][called][node=Name]
+    days [bound][data][read][node=Name]
+    divmod [free][read][called][node=Name]
+    isinstance [free][read][called][node=Name]
+    minutes [bound][data][read][node=Name]
+    name [bound][param][data][read][node=Name]
+    offset [bound][param][data][read][node=Name]
+    seconds [bound][data][read][node=Name]
+    timedelta [free][read][node=Name]
+    type [free][read][called][node=Name]
+
+    =============================================
+    _check_date_fields: FunctionDef : OffsetRange[10259,10632>
+    MAXYEAR [free][read][node=Name]
+    MINYEAR [free][read][node=Name]
+    ValueError [free][read][called][node=Name]
+    _days_in_month [free][read][called][node=Name]
+    day [bound][param][data][read][node=Name]
+    dim [bound][data][read][node=Name]
+    month [bound][param][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _check_time_fields: FunctionDef : OffsetRange[10632,11069>
+    ValueError [free][read][called][node=Name]
+    hour [bound][param][data][read][node=Name]
+    microsecond [bound][param][data][read][node=Name]
+    minute [bound][param][data][read][node=Name]
+    second [bound][param][data][read][node=Name]
+
+    =============================================
+    _check_tzinfo_arg: FunctionDef : OffsetRange[11069,12221>
+    None [free][read][node=Name]
+    TypeError [free][read][called][node=Name]
+    isinstance [free][read][called][node=Name]
+    tz [bound][param][data][read][node=Name]
+    tzinfo [free][read][node=Name]
+
+    =============================================
+    _cmperror: FunctionDef : OffsetRange[12221,12741>
+    TypeError [free][read][called][node=Name]
+    type [free][read][called][node=Name]
+    x [bound][param][data][read][node=Name]
+    y [bound][param][data][read][node=Name]
+
+    =============================================
+    class tmxxx: ClassDef : OffsetRange[12804,16258>
+    None [free][read][node=Name]
+    __init__ [bound][function][def][node=FunctionDef]
+    ctime [bound][function][def][node=FunctionDef]
+    ordinal [bound][data][node=Name]
+    time [bound][function][def][node=FunctionDef]
+    toordinal [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    microsecond : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    ordinal : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[12842,15307>
+        _days_in_month [free][read][called][node=Name]
+        _ord2ymd [free][read][called][node=Name]
+        _ymd2ord [free][read][called][node=Name]
+        carry [bound][data][read][node=Name]
+        day [bound][param][data][read][node=Name]
+        dim [bound][data][read][node=Name]
+        divmod [free][read][called][node=Name]
+        hour [bound][param][data][read][node=Name]
+        microsecond [bound][param][data][read][node=Name]
+        minute [bound][param][data][read][node=Name]
+        month [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        year [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        ordinal : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        toordinal: FunctionDef : OffsetRange[15308,15660>
+        None [free][read][node=Name]
+        _ymd2ord [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        ordinal : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        time: FunctionDef : OffsetRange[15661,15942>
+        _ORD1970 [free][read][node=Name]
+        days [bound][data][read][node=Name]
+        seconds [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        ctime: FunctionDef : OffsetRange[15943,16258>
+        _DAYNAMES [free][read][node=Name]
+        _MONTHNAMES [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        weekday [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class timedelta: ClassDef : OffsetRange[16258,25637>
+    True [free][read][node=Name]
+    __abs__ [bound][function][def][node=FunctionDef]
+    __add__ [bound][function][def][read][node=FunctionDef]
+    __cmp [bound][private][function][def][node=FunctionDef]
+    __div__ [bound][function][def][read][node=FunctionDef]
+    __eq__ [bound][function][def][node=FunctionDef]
+    __floordiv__ [bound][function][alias][node=FunctionDef]
+    __ge__ [bound][function][def][node=FunctionDef]
+    __getstate [bound][private][function][def][node=FunctionDef]
+    __gt__ [bound][function][def][node=FunctionDef]
+    __hash__ [bound][function][def][node=FunctionDef]
+    __le__ [bound][function][def][node=FunctionDef]
+    __lt__ [bound][function][def][node=FunctionDef]
+    __mul__ [bound][function][def][read][node=FunctionDef]
+    __ne__ [bound][function][def][node=FunctionDef]
+    __neg__ [bound][function][def][node=FunctionDef]
+    __new__ [bound][function][def][node=FunctionDef]
+    __nonzero__ [bound][function][def][node=FunctionDef]
+    __pos__ [bound][function][def][node=FunctionDef]
+    __radd__ [bound][function][alias][node=FunctionDef]
+    __reduce__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __rmul__ [bound][function][alias][node=FunctionDef]
+    __rsub__ [bound][function][def][node=FunctionDef]
+    __safe_for_unpickling__ [bound][data][node=Name]
+    __str__ [bound][function][def][node=FunctionDef]
+    __sub__ [bound][function][def][node=FunctionDef]
+    days [bound][data][node=Name]
+    microseconds [bound][data][node=Name]
+    property [free][read][called][node=Name]
+    seconds [bound][data][node=Name]
+    ------ Attributes ---------------------------------------
+    __days : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __microseconds : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __seconds : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+
+        =============================================
+        __new__: FunctionDef : OffsetRange[16773,21337>
+        OverflowError [free][read][called][node=Name]
+        _math [free][read][node=Name]
+        abs [free][read][called][node=Name]
+        cls [bound][param][data][read][node=Name]
+        d [bound][data][read][node=Name]
+        dayfrac [bound][data][read][node=Name]
+        days [bound][param][data][read][node=Name]
+        daysecondsfrac [bound][data][read][node=Name]
+        daysecondswhole [bound][data][read][node=Name]
+        divmod [free][read][called][node=Name]
+        float [free][read][called][node=Name]
+        hours [bound][param][data][read][node=Name]
+        int [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        long [free][read][called][node=Name]
+        microseconds [bound][param][data][read][node=Name]
+        milliseconds [bound][param][data][read][node=Name]
+        minutes [bound][param][data][read][node=Name]
+        object [free][read][node=Name]
+        round [free][read][called][node=Name]
+        s [bound][data][read][node=Name]
+        seconds [bound][param][data][read][node=Name]
+        secondsfrac [bound][data][read][node=Name]
+        self [bound][data][read][node=Name]
+        us [bound][data][read][node=Name]
+        usdouble [bound][data][read][node=Name]
+        weeks [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __new__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[21338,21918>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __str__: FunctionDef : OffsetRange[21919,22319>
+        abs [free][node=null]
+        divmod [free][read][called][node=Name]
+        hh [bound][data][read][node=Name]
+        mm [bound][data][read][node=Name]
+        plural [bound][function][def][read][called][node=FunctionDef]
+        s [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ss [bound][data][read][node=Name]
+        ---------------------------------------------
+        inner_free: {abs=PRESENT}
+        ------ Attributes ---------------------------------------
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+            =============================================
+            plural: FunctionDef : OffsetRange[22092,22170>
+            abs [free][read][called][node=Name]
+            n [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[22336,22360>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[22397,22424>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[22469,22501>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        __add__: FunctionDef : OffsetRange[22556,22850>
+        NotImplemented [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __sub__: FunctionDef : OffsetRange[22875,23009>
+        NotImplemented [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+
+        =============================================
+        __rsub__: FunctionDef : OffsetRange[23010,23145>
+        NotImplemented [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+
+        =============================================
+        __neg__: FunctionDef : OffsetRange[23146,23312>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __pos__: FunctionDef : OffsetRange[23313,23356>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        __abs__: FunctionDef : OffsetRange[23357,23471>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __mul__: FunctionDef : OffsetRange[23472,23751>
+        NotImplemented [free][read][node=Name]
+        int [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        long [free][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __div__: FunctionDef : OffsetRange[23776,24051>
+        NotImplemented [free][read][node=Name]
+        int [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        long [free][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        usec [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __eq__: FunctionDef : OffsetRange[24100,24251>
+        False [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ne__: FunctionDef : OffsetRange[24252,24402>
+        True [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __le__: FunctionDef : OffsetRange[24403,24564>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __lt__: FunctionDef : OffsetRange[24565,24725>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ge__: FunctionDef : OffsetRange[24726,24887>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __gt__: FunctionDef : OffsetRange[24888,25048>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __cmp: FunctionDef : OffsetRange[25049,25179>
+        cmp [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __hash__: FunctionDef : OffsetRange[25180,25243>
+        hash [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __nonzero__: FunctionDef : OffsetRange[25244,25411>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __getstate: FunctionDef : OffsetRange[25470,25562>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __days : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microseconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __seconds : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __reduce__: FunctionDef : OffsetRange[25563,25637>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class date: ClassDef : OffsetRange[25848,34505>
+    MAXYEAR [free][read][node=Name]
+    MINYEAR [free][read][node=Name]
+    None [free][read][node=Name]
+    True [free][read][node=Name]
+    __add__ [bound][function][def][read][node=FunctionDef]
+    __cmp [bound][private][function][def][node=FunctionDef]
+    __eq__ [bound][function][def][node=FunctionDef]
+    __ge__ [bound][function][def][node=FunctionDef]
+    __getstate [bound][private][function][def][node=FunctionDef]
+    __gt__ [bound][function][def][node=FunctionDef]
+    __hash__ [bound][function][def][node=FunctionDef]
+    __le__ [bound][function][def][node=FunctionDef]
+    __lt__ [bound][function][def][node=FunctionDef]
+    __ne__ [bound][function][def][node=FunctionDef]
+    __new__ [bound][function][def][node=FunctionDef]
+    __radd__ [bound][function][alias][node=FunctionDef]
+    __reduce__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __safe_for_unpickling__ [bound][data][node=Name]
+    __setstate [bound][private][function][def][node=FunctionDef]
+    __str__ [bound][function][alias][node=FunctionDef]
+    __sub__ [bound][function][def][node=FunctionDef]
+    _checkOverflow [bound][private][function][def][node=FunctionDef]
+    classmethod [free][read][called][node=Name]
+    ctime [bound][function][def][node=FunctionDef]
+    day [bound][data][node=Name]
+    fromordinal [bound][function][def][read][node=FunctionDef]
+    fromtimestamp [bound][function][def][read][node=FunctionDef]
+    isocalendar [bound][function][def][node=FunctionDef]
+    isoformat [bound][function][def][read][node=FunctionDef]
+    isoweekday [bound][function][def][node=FunctionDef]
+    month [bound][data][node=Name]
+    property [free][read][called][node=Name]
+    replace [bound][function][def][node=FunctionDef]
+    strftime [bound][function][def][node=FunctionDef]
+    timetuple [bound][function][def][node=FunctionDef]
+    today [bound][function][def][read][node=FunctionDef]
+    toordinal [bound][function][def][node=FunctionDef]
+    weekday [bound][function][def][node=FunctionDef]
+    year [bound][data][node=Name]
+    ------ Attributes ---------------------------------------
+    __day : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __month : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __year : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+
+        =============================================
+        __new__: FunctionDef : OffsetRange[26301,26827>
+        _check_date_fields [free][read][called][node=Name]
+        cls [bound][param][data][read][node=Name]
+        day [bound][param][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        month [bound][param][data][read][node=Name]
+        object [free][read][node=Name]
+        self [bound][data][read][node=Name]
+        str [free][read][node=Name]
+        year [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __new__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __setstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        fromtimestamp: FunctionDef : OffsetRange[26828,27025>
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        dst [bound][data][unused][node=Name]
+        hh [bound][data][unused][node=Name]
+        jday [bound][data][unused][node=Name]
+        m [bound][data][read][node=Name]
+        mm [bound][data][unused][node=Name]
+        ss [bound][data][unused][node=Name]
+        t [bound][param][data][read][node=Name]
+        weekday [bound][data][unused][node=Name]
+        y [bound][data][read][node=Name]
+
+        =============================================
+        today: FunctionDef : OffsetRange[27074,27199>
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+
+        =============================================
+        fromordinal: FunctionDef : OffsetRange[27232,27498>
+        _ord2ymd [free][read][called][node=Name]
+        cls [bound][param][data][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        m [bound][data][read][node=Name]
+        n [bound][param][data][read][node=Name]
+        y [bound][data][read][node=Name]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[27572,28116>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        ctime: FunctionDef : OffsetRange[28117,28237>
+        self [bound][param][data][read][node=Name]
+        tmxxx [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        strftime: FunctionDef : OffsetRange[28238,28361>
+        _wrap_strftime [free][read][called][node=Name]
+        fmt [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        timetuple : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        isoformat: FunctionDef : OffsetRange[28362,28680>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[28754,28778>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[28862,28887>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[28928,28951>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        timetuple: FunctionDef : OffsetRange[29037,29250>
+        _build_struct_time [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        toordinal: FunctionDef : OffsetRange[29251,29536>
+        _ymd2ord [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        replace: FunctionDef : OffsetRange[29537,29938>
+        None [free][read][node=Name]
+        _check_date_fields [free][read][called][node=Name]
+        date [free][read][called][node=Name]
+        day [bound][param][data][read][node=Name]
+        month [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        year [bound][param][data][read][node=Name]
+
+        =============================================
+        __eq__: FunctionDef : OffsetRange[29939,30161>
+        False [free][read][node=Name]
+        NotImplemented [free][read][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ne__: FunctionDef : OffsetRange[30162,30383>
+        NotImplemented [free][read][node=Name]
+        True [free][read][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __le__: FunctionDef : OffsetRange[30384,30616>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __lt__: FunctionDef : OffsetRange[30617,30848>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ge__: FunctionDef : OffsetRange[30849,31081>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __gt__: FunctionDef : OffsetRange[31082,31313>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        date [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __cmp: FunctionDef : OffsetRange[31314,31543>
+        cmp [free][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        d2 [bound][data][read][node=Name]
+        date [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        m [bound][data][read][node=Name]
+        m2 [bound][data][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        y [bound][data][read][node=Name]
+        y2 [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __hash__: FunctionDef : OffsetRange[31544,31643>
+        hash [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _checkOverflow: FunctionDef : OffsetRange[31644,31856>
+        MAXYEAR [free][read][node=Name]
+        MINYEAR [free][read][node=Name]
+        OverflowError [free][read][called][node=Name]
+        self [bound][param][data][unused][node=Name]
+        year [bound][param][data][read][node=Name]
+
+        =============================================
+        __add__: FunctionDef : OffsetRange[31857,32239>
+        NotImplemented [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        result [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        tmxxx [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _checkOverflow : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __sub__: FunctionDef : OffsetRange[32264,32630>
+        NotImplemented [free][read][node=Name]
+        date [free][read][node=Name]
+        days1 [bound][data][read][node=Name]
+        days2 [bound][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        weekday: FunctionDef : OffsetRange[32631,32827>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        isoweekday: FunctionDef : OffsetRange[32828,32997>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        isocalendar: FunctionDef : OffsetRange[32998,33991>
+        _isoweek1monday [free][read][called][node=Name]
+        _ymd2ord [free][read][called][node=Name]
+        day [bound][data][read][node=Name]
+        divmod [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        today [bound][data][read][node=Name]
+        week [bound][data][read][node=Name]
+        week1monday [bound][data][read][node=Name]
+        year [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __getstate: FunctionDef : OffsetRange[34050,34189>
+        divmod [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        yhi [bound][data][read][node=Name]
+        ylo [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __setstate: FunctionDef : OffsetRange[34190,34430>
+        isinstance [free][read][called][node=Name]
+        len [free][read][called][node=Name]
+        map [free][read][called][node=Name]
+        ord [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        string [bound][data][read][node=Name]
+        t [bound][param][data][read][node=Name]
+        tuple [free][read][node=Name]
+        yhi [bound][data][read][node=Name]
+        ylo [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __reduce__: FunctionDef : OffsetRange[34431,34505>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class tzinfo: ClassDef : OffsetRange[34675,37029>
+    True [free][read][node=Name]
+    __reduce__ [bound][function][def][node=FunctionDef]
+    __safe_for_unpickling__ [bound][data][node=Name]
+    dst [bound][function][def][node=FunctionDef]
+    fromutc [bound][function][def][node=FunctionDef]
+    tzname [bound][function][def][node=FunctionDef]
+    utcoffset [bound][function][def][node=FunctionDef]
+
+        =============================================
+        tzname: FunctionDef : OffsetRange[34838,34988>
+        NotImplementedError [free][read][called][node=Name]
+        dt [bound][param][data][unused][node=Name]
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        utcoffset: FunctionDef : OffsetRange[34989,35166>
+        NotImplementedError [free][read][called][node=Name]
+        dt [bound][param][data][unused][node=Name]
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        dst: FunctionDef : OffsetRange[35167,35423>
+        NotImplementedError [free][read][called][node=Name]
+        dt [bound][param][data][unused][node=Name]
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        fromutc: FunctionDef : OffsetRange[35424,36481>
+        None [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        ValueError [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        delta [bound][data][read][node=Name]
+        dt [bound][param][data][read][node=Name]
+        dtdst [bound][data][read][node=Name]
+        dtoff [bound][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        __reduce__: FunctionDef : OffsetRange[36540,37029>
+        None [free][read][node=Name]
+        args [bound][data][read][node=Name]
+        getattr [free][read][called][node=Name]
+        getinitargs [bound][data][read][called][node=Name]
+        getstate [bound][data][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        state [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class time: ClassDef : OffsetRange[37106,46501>
+    None [free][read][node=Name]
+    True [free][read][node=Name]
+    __cmp [bound][private][function][def][node=FunctionDef]
+    __eq__ [bound][function][def][node=FunctionDef]
+    __ge__ [bound][function][def][node=FunctionDef]
+    __getstate [bound][private][function][def][node=FunctionDef]
+    __gt__ [bound][function][def][node=FunctionDef]
+    __hash__ [bound][function][def][node=FunctionDef]
+    __le__ [bound][function][def][node=FunctionDef]
+    __lt__ [bound][function][def][node=FunctionDef]
+    __ne__ [bound][function][def][node=FunctionDef]
+    __new__ [bound][function][def][node=FunctionDef]
+    __nonzero__ [bound][function][def][node=FunctionDef]
+    __reduce__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __safe_for_unpickling__ [bound][data][node=Name]
+    __setstate [bound][private][function][def][node=FunctionDef]
+    __str__ [bound][function][alias][node=FunctionDef]
+    _dst [bound][private][function][def][node=FunctionDef]
+    _tzstr [bound][private][function][def][node=FunctionDef]
+    _utcoffset [bound][private][function][def][node=FunctionDef]
+    dst [bound][function][def][node=FunctionDef]
+    hour [bound][data][node=Name]
+    isoformat [bound][function][def][read][node=FunctionDef]
+    microsecond [bound][data][node=Name]
+    minute [bound][data][node=Name]
+    property [free][read][called][node=Name]
+    replace [bound][function][def][node=FunctionDef]
+    second [bound][data][node=Name]
+    strftime [bound][function][def][node=FunctionDef]
+    tzinfo [bound][data][node=Name]
+    tzname [bound][function][def][node=FunctionDef]
+    utcoffset [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    __hour : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __microsecond : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __minute : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __second : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    _tzinfo : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    hour : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    microsecond : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    minute : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    second : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    tzinfo : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+
+        =============================================
+        __new__: FunctionDef : OffsetRange[37421,38149>
+        None [free][read][node=Name]
+        _check_time_fields [free][read][called][node=Name]
+        _check_tzinfo_arg [free][read][called][node=Name]
+        cls [bound][param][data][read][node=Name]
+        hour [bound][param][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        microsecond [bound][param][data][read][node=Name]
+        minute [bound][param][data][read][node=Name]
+        object [free][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][data][read][node=Name]
+        str [free][read][node=Name]
+        tzinfo [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __new__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __setstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[38166,38190>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[38233,38259>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[38304,38330>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[38380,38411>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[38492,38517>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        __eq__: FunctionDef : OffsetRange[38624,38770>
+        False [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ne__: FunctionDef : OffsetRange[38771,38916>
+        True [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __le__: FunctionDef : OffsetRange[38917,39073>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __lt__: FunctionDef : OffsetRange[39074,39229>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ge__: FunctionDef : OffsetRange[39230,39386>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __gt__: FunctionDef : OffsetRange[39387,39542>
+        _cmperror [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __cmp: FunctionDef : OffsetRange[39543,40534>
+        None [free][read][node=Name]
+        True [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        base_compare [bound][data][read][node=Name]
+        cmp [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        myhhmm [bound][data][read][node=Name]
+        myoff [bound][data][read][node=Name]
+        mytz [bound][data][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        othhmm [bound][data][read][node=Name]
+        otoff [bound][data][read][node=Name]
+        ottz [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __hash__: FunctionDef : OffsetRange[40535,40938>
+        divmod [free][read][called][node=Name]
+        h [bound][data][read][node=Name]
+        hash [free][read][called][node=Name]
+        m [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][called][node=Name]
+        tzoff [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _tzstr: FunctionDef : OffsetRange[40939,41361>
+        None [free][read][node=Name]
+        divmod [free][read][called][node=Name]
+        hh [bound][data][read][node=Name]
+        mm [bound][data][read][node=Name]
+        off [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        sep [bound][param][data][read][node=Name]
+        sign [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[41362,41919>
+        None [free][read][node=Name]
+        s [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        isoformat: FunctionDef : OffsetRange[41920,42300>
+        _format_time [free][read][called][node=Name]
+        s [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tz [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzstr : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        strftime: FunctionDef : OffsetRange[42326,42811>
+        _wrap_strftime [free][read][called][node=Name]
+        fmt [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timetuple [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        utcoffset: FunctionDef : OffsetRange[42812,43227>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _utcoffset: FunctionDef : OffsetRange[43228,43402>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        tzname: FunctionDef : OffsetRange[43403,43823>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_tzname [free][read][called][node=Name]
+        name [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        dst: FunctionDef : OffsetRange[43824,44430>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        replace: FunctionDef : OffsetRange[44431,45148>
+        None [free][read][node=Name]
+        True [free][read][node=Name]
+        _check_time_fields [free][read][called][node=Name]
+        _check_tzinfo_arg [free][read][called][node=Name]
+        hour [bound][param][data][read][node=Name]
+        microsecond [bound][param][data][read][node=Name]
+        minute [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        time [free][read][called][node=Name]
+        tzinfo [bound][param][data][read][node=Name]
+
+        =============================================
+        _dst: FunctionDef : OffsetRange[45149,45305>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __nonzero__: FunctionDef : OffsetRange[45306,45519>
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __getstate: FunctionDef : OffsetRange[45578,45941>
+        None [free][read][node=Name]
+        basestate [bound][data][read][node=Name]
+        divmod [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        us1 [bound][data][read][node=Name]
+        us2 [bound][data][read][node=Name]
+        us3 [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __setstate: FunctionDef : OffsetRange[45942,46426>
+        None [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        len [free][read][called][node=Name]
+        map [free][read][called][node=Name]
+        ord [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        state [bound][param][data][read][node=Name]
+        string [bound][data][read][node=Name]
+        tuple [free][read][node=Name]
+        us1 [bound][data][read][node=Name]
+        us2 [bound][data][read][node=Name]
+        us3 [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __reduce__: FunctionDef : OffsetRange[46427,46501>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class datetime: ClassDef : OffsetRange[46685,62681>
+    None [free][read][node=Name]
+    True [free][read][node=Name]
+    __add__ [bound][function][def][read][node=FunctionDef]
+    __cmp [bound][private][function][def][node=FunctionDef]
+    __eq__ [bound][function][def][node=FunctionDef]
+    __ge__ [bound][function][def][node=FunctionDef]
+    __getstate [bound][private][function][def][node=FunctionDef]
+    __gt__ [bound][function][def][node=FunctionDef]
+    __hash__ [bound][function][def][node=FunctionDef]
+    __le__ [bound][function][def][node=FunctionDef]
+    __lt__ [bound][function][def][node=FunctionDef]
+    __ne__ [bound][function][def][node=FunctionDef]
+    __new__ [bound][function][def][node=FunctionDef]
+    __radd__ [bound][function][alias][node=FunctionDef]
+    __reduce__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __safe_for_unpickling__ [bound][data][node=Name]
+    __setstate [bound][private][function][def][node=FunctionDef]
+    __str__ [bound][function][def][node=FunctionDef]
+    __sub__ [bound][function][def][node=FunctionDef]
+    _dst [bound][private][function][def][node=FunctionDef]
+    _utcoffset [bound][private][function][def][node=FunctionDef]
+    astimezone [bound][function][def][node=FunctionDef]
+    classmethod [free][read][called][node=Name]
+    combine [bound][function][def][read][node=FunctionDef]
+    ctime [bound][function][def][node=FunctionDef]
+    date [bound][function][def][node=FunctionDef]
+    dst [bound][function][def][node=FunctionDef]
+    fromtimestamp [bound][function][def][read][node=FunctionDef]
+    hour [bound][data][node=Name]
+    isoformat [bound][function][def][node=FunctionDef]
+    microsecond [bound][data][node=Name]
+    minute [bound][data][node=Name]
+    now [bound][function][def][read][node=FunctionDef]
+    property [free][read][called][node=Name]
+    replace [bound][function][def][node=FunctionDef]
+    second [bound][data][node=Name]
+    time [bound][function][def][node=FunctionDef]
+    timetuple [bound][function][def][node=FunctionDef]
+    timetz [bound][function][def][node=FunctionDef]
+    tzinfo [bound][data][node=Name]
+    tzname [bound][function][def][node=FunctionDef]
+    utcfromtimestamp [bound][function][def][read][node=FunctionDef]
+    utcnow [bound][function][def][read][node=FunctionDef]
+    utcoffset [bound][function][def][node=FunctionDef]
+    utctimetuple [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    __day : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __hour : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __microsecond : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __minute : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __month : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __second : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __year : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    _tzinfo : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    day : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    hour : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    microsecond : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    minute : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    month : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    second : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    tzinfo : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    year : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+
+        =============================================
+        __new__: FunctionDef : OffsetRange[46811,47623>
+        _check_time_fields [free][read][called][node=Name]
+        _check_tzinfo_arg [free][read][called][node=Name]
+        cls [bound][param][data][read][node=Name]
+        date [free][read][node=Name]
+        day [bound][param][data][read][node=Name]
+        hour [bound][param][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        microsecond [bound][param][data][read][node=Name]
+        minute [bound][param][data][read][node=Name]
+        month [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][data][read][node=Name]
+        str [free][read][node=Name]
+        tzinfo [bound][param][data][read][node=Name]
+        year [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __new__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __setstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[47640,47664>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[47707,47733>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[47778,47804>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[47854,47885>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        <lambda>: Lambda : OffsetRange[47966,47991>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        fromtimestamp: FunctionDef : OffsetRange[48026,48673>
+        None [free][read][node=Name]
+        _check_tzinfo_arg [free][read][called][node=Name]
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][called][node=Name]
+        converter [bound][data][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        dst [bound][data][unused][node=Name]
+        hh [bound][data][read][node=Name]
+        int [free][read][called][node=Name]
+        jday [bound][data][unused][node=Name]
+        m [bound][data][read][node=Name]
+        min [free][read][called][node=Name]
+        mm [bound][data][read][node=Name]
+        result [bound][data][read][node=Name]
+        ss [bound][data][read][node=Name]
+        t [bound][param][data][read][node=Name]
+        tz [bound][param][data][read][node=Name]
+        us [bound][data][read][node=Name]
+        weekday [bound][data][unused][node=Name]
+        y [bound][data][read][node=Name]
+
+        =============================================
+        utcfromtimestamp: FunctionDef : OffsetRange[48722,49059>
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        dst [bound][data][unused][node=Name]
+        hh [bound][data][read][node=Name]
+        int [free][read][called][node=Name]
+        jday [bound][data][unused][node=Name]
+        m [bound][data][read][node=Name]
+        min [free][read][called][node=Name]
+        mm [bound][data][read][node=Name]
+        ss [bound][data][read][node=Name]
+        t [bound][param][data][read][node=Name]
+        us [bound][data][read][node=Name]
+        weekday [bound][data][unused][node=Name]
+        y [bound][data][read][node=Name]
+
+        =============================================
+        now: FunctionDef : OffsetRange[49451,49619>
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+        tz [bound][param][data][read][node=Name]
+
+        =============================================
+        utcnow: FunctionDef : OffsetRange[49648,49785>
+        _time [free][read][node=Name]
+        cls [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+
+        =============================================
+        combine: FunctionDef : OffsetRange[49820,50308>
+        TypeError [free][read][called][node=Name]
+        _date_class [free][read][node=Name]
+        _time_class [free][read][node=Name]
+        cls [bound][param][data][read][called][node=Name]
+        date [bound][param][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        time [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        timetuple: FunctionDef : OffsetRange[50345,50724>
+        None [free][read][node=Name]
+        _build_struct_time [free][read][called][node=Name]
+        dst [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _dst : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        utctimetuple: FunctionDef : OffsetRange[50725,51194>
+        _build_struct_time [free][read][called][node=Name]
+        d [bound][data][read][node=Name]
+        hh [bound][data][read][node=Name]
+        m [bound][data][read][node=Name]
+        mm [bound][data][read][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ss [bound][data][read][node=Name]
+        tm [bound][data][read][node=Name]
+        tmxxx [free][read][called][node=Name]
+        y [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        date: FunctionDef : OffsetRange[51195,51306>
+        date [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        time: FunctionDef : OffsetRange[51307,51452>
+        self [bound][param][data][read][node=Name]
+        time [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        timetz: FunctionDef : OffsetRange[51453,51634>
+        self [bound][param][data][read][node=Name]
+        time [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        replace: FunctionDef : OffsetRange[51635,52576>
+        None [free][read][node=Name]
+        True [free][read][node=Name]
+        _check_date_fields [free][read][called][node=Name]
+        _check_time_fields [free][read][called][node=Name]
+        _check_tzinfo_arg [free][read][called][node=Name]
+        datetime [free][read][called][node=Name]
+        day [bound][param][data][read][node=Name]
+        hour [bound][param][data][read][node=Name]
+        microsecond [bound][param][data][read][node=Name]
+        minute [bound][param][data][read][node=Name]
+        month [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tzinfo [bound][param][data][read][node=Name]
+        year [bound][param][data][read][node=Name]
+
+        =============================================
+        astimezone: FunctionDef : OffsetRange[52577,53260>
+        None [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        ValuError [free][read][called][node=Name]
+        ValueError [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        myoffset [bound][data][read][node=Name]
+        mytz [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tz [bound][param][data][read][node=Name]
+        tzinfo [free][read][node=Name]
+        utc [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        utcoffset : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        ctime: FunctionDef : OffsetRange[53261,53456>
+        self [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+        tmxxx [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        isoformat: FunctionDef : OffsetRange[53457,54437>
+        None [free][read][node=Name]
+        _format_time [free][read][called][node=Name]
+        divmod [free][read][called][node=Name]
+        hh [bound][data][read][node=Name]
+        mm [bound][data][read][node=Name]
+        off [bound][data][read][node=Name]
+        s [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        sep [bound][param][data][read][node=Name]
+        sign [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[54438,54999>
+        L [bound][data][read][node=Name]
+        None [free][read][node=Name]
+        map [free][read][called][node=Name]
+        s [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        str [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __str__: FunctionDef : OffsetRange[55000,55102>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        isoformat : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        utcoffset: FunctionDef : OffsetRange[55103,55518>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _utcoffset: FunctionDef : OffsetRange[55519,55693>
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        tzname: FunctionDef : OffsetRange[55694,56114>
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_tzname [free][read][called][node=Name]
+        name [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        dst: FunctionDef : OffsetRange[56115,56793>
+        None [free][read][node=Name]
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _dst: FunctionDef : OffsetRange[56794,56970>
+        _call_tzinfo_method [free][read][called][node=Name]
+        _check_utc_offset [free][read][called][node=Name]
+        offset [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __eq__: FunctionDef : OffsetRange[56971,57197>
+        False [free][read][node=Name]
+        NotImplemented [free][read][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ne__: FunctionDef : OffsetRange[57198,57423>
+        NotImplemented [free][read][node=Name]
+        True [free][read][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __le__: FunctionDef : OffsetRange[57424,57660>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __lt__: FunctionDef : OffsetRange[57661,57896>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __ge__: FunctionDef : OffsetRange[57897,58133>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __gt__: FunctionDef : OffsetRange[58134,58369>
+        NotImplemented [free][read][node=Name]
+        _cmperror [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __cmp : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __cmp: FunctionDef : OffsetRange[58370,59534>
+        None [free][read][node=Name]
+        True [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        base_compare [bound][data][read][node=Name]
+        cmp [free][read][called][node=Name]
+        datetime [free][read][node=Name]
+        diff [bound][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        myoff [bound][data][read][node=Name]
+        mytz [bound][data][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        otoff [bound][data][read][node=Name]
+        ottz [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __add__: FunctionDef : OffsetRange[59535,60206>
+        NotImplemented [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        other [bound][param][data][read][node=Name]
+        result [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        t [bound][data][read][node=Name]
+        timedelta [free][read][node=Name]
+        tmxxx [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _checkOverflow : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __sub__: FunctionDef : OffsetRange[60231,61204>
+        None [free][read][node=Name]
+        NotImplemented [free][read][node=Name]
+        TypeError [free][read][node=Name]
+        base [bound][data][read][node=Name]
+        datetime [free][read][node=Name]
+        days1 [bound][data][read][node=Name]
+        days2 [bound][data][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        myoff [bound][data][read][node=Name]
+        other [bound][param][data][read][node=Name]
+        otoff [bound][data][read][node=Name]
+        secs1 [bound][data][read][node=Name]
+        secs2 [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        toordinal : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __hash__: FunctionDef : OffsetRange[61205,61557>
+        None [free][read][node=Name]
+        _ymd2ord [free][read][called][node=Name]
+        days [bound][data][read][node=Name]
+        hash [free][read][called][node=Name]
+        seconds [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        timedelta [free][read][called][node=Name]
+        tzoff [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __getstate: FunctionDef : OffsetRange[61616,62096>
+        None [free][read][node=Name]
+        basestate [bound][data][read][node=Name]
+        divmod [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        us1 [bound][data][read][node=Name]
+        us2 [bound][data][read][node=Name]
+        us3 [bound][data][read][node=Name]
+        yhi [bound][data][read][node=Name]
+        ylo [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __setstate: FunctionDef : OffsetRange[62097,62605>
+        None [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        len [free][read][called][node=Name]
+        map [free][read][called][node=Name]
+        ord [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        state [bound][param][data][read][node=Name]
+        string [bound][data][read][node=Name]
+        tuple [free][read][node=Name]
+        us1 [bound][data][read][node=Name]
+        us2 [bound][data][read][node=Name]
+        us3 [bound][data][read][node=Name]
+        yhi [bound][data][read][node=Name]
+        ylo [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __reduce__: FunctionDef : OffsetRange[62606,62681>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __getstate : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+    =============================================
+    _isoweek1monday: FunctionDef : OffsetRange[62822,63202>
+    THURSDAY [bound][data][read][node=Name]
+    _ymd2ord [free][read][called][node=Name]
+    firstday [bound][data][read][node=Name]
+    firstweekday [bound][data][read][node=Name]
+    week1monday [bound][data][read][node=Name]
+    year [bound][param][data][read][node=Name]
+
+    =============================================
+    _test: FunctionDef : OffsetRange[71694,71763>
+    test_datetime [bound][imported][data][read][node=Import]
+

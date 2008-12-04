@@ -44,11 +44,11 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.zip.GZIPInputStream;
 
 public class MultiPartHandler {
   public interface InputFacade {
@@ -481,9 +481,9 @@ public class MultiPartHandler {
     long written = 0;
     OutputStream fileOut = null;
 
+    File file = new File(uploadDir, fileName);
     try {
       // Only do something if this part contains a file
-      File file = new File(uploadDir, fileName);
       for (int i = 0; file.exists(); i++) {
           if (!file.exists()) {
               break;
@@ -513,8 +513,12 @@ public class MultiPartHandler {
       if (canCloseStream){
         partInput.close();
       }
-    }
-    finally {
+    } catch (SocketTimeoutException ste) {
+        if (file.exists()){
+            file.delete();
+        }
+        throw ste;
+    } finally {
       if (fileOut != null) fileOut.close();
     }
 

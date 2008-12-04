@@ -407,17 +407,11 @@ class OccurenceBuilder {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
-                List<ClassScope> classes = new ArrayList<ClassScope>();
-                for (TypeScope type : types) {
-                    if (type instanceof ClassScope) {
-                        classes.add((ClassScope) type);
-                    }
-                }
                 List<ModelElement> allMethods = new ArrayList<ModelElement>();
-                if (!classes.isEmpty()) {
-                    for (ClassScope clz : classes) {
+                if (!types.isEmpty()) {
+                    for (TypeScope type : types) {
                         List<? extends ModelElement> methods = CachedModelSupport.getInheritedMethods(
-                                clz, queryName, fileScope);
+                                type, queryName, fileScope);
                         //TODO: if not found, then lookup inherited
                         //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
                         allMethods.addAll(methods);
@@ -542,9 +536,9 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 StaticConstantAccess sca = nodeInfo.getOriginalNode();
                 List<ModelElement> allConstants = new ArrayList<ModelElement>();
-                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sca.getClassName().getName());
-                for (ClassScope clz : classes) {
-                    List<? extends ModelElement> constants = clz.getInheritedConstants(queryName);
+                List<? extends TypeScope> types = getStaticTypeName(entry.getValue(), sca.getClassName().getName());
+                for (TypeScope type : types) {
+                    List<? extends ModelElement> constants = type.getInheritedConstants(queryName);
                     //TODO: if not found, then lookup inherited
                     //use ClassScope.getTopInheritedFields(final String queryName, final int... modifiers)
                     allConstants.addAll(constants);
@@ -789,6 +783,19 @@ class OccurenceBuilder {
 
         }
         return CachedModelSupport.getClasses(staticClzName, inScope);
+    }
+    private static List<? extends TypeScope> getStaticTypeName(Scope inScope, String staticClzName) {
+        if (inScope instanceof MethodScopeImpl) {
+            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+            ClassScope csi = (ClassScope) msi.getInScope();
+            if ("self".equals(staticClzName)) {
+                return Collections.singletonList(csi);
+            } else if ("parent".equals(staticClzName)) {
+                return csi.getSuperClasses();
+            }
+
+        }
+        return CachedModelSupport.getTypes(staticClzName, inScope);
     }
 
     @SuppressWarnings("unchecked")

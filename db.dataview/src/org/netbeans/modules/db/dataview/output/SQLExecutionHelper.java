@@ -415,11 +415,15 @@ class SQLExecutionHelper {
                     } else {
                         return;
                     }
-                } catch (SQLException sqlEx) {                    
-                    List<Object[]> rows = new ArrayList<Object[]>();
-                    dataView.getDataViewPageContext().setCurrentRows(rows);
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(sqlEx.getMessage());
+                } catch (SQLException sqlEx) {
+                    //List<Object[]> rows = new ArrayList<Object[]>();
+                    //dataView.getDataViewPageContext().setCurrentRows(rows);
+                    String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "." + NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close"), title, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
+                    if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                        dataView.removeComponents();
+                    }
                     throw sqlEx;
 
                 } finally {

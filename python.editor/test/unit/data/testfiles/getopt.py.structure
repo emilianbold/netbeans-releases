@@ -1,0 +1,11 @@
+GetoptError:CLASS:[]:ESCAPED{GetoptError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{msg}ESCAPED{,}ESCAPED{opt}}):
+  __str__:METHOD:[]:ESCAPED{__str__}(PARAMETERS{ESCAPED{self}}):
+  msg:ATTRIBUTE:[]:ESCAPED{msg}:
+  opt:ATTRIBUTE:[]:ESCAPED{opt}:
+getopt:METHOD:[]:ESCAPED{getopt}(PARAMETERS{ESCAPED{args}ESCAPED{,}ESCAPED{shortopts}ESCAPED{,}ESCAPED{longopts}}):
+gnu_getopt:METHOD:[]:ESCAPED{gnu_getopt}(PARAMETERS{ESCAPED{args}ESCAPED{,}ESCAPED{shortopts}ESCAPED{,}ESCAPED{longopts}}):
+do_longs:METHOD:[PRIVATE]:ESCAPED{do_longs}(PARAMETERS{ESCAPED{opts}ESCAPED{,}ESCAPED{opt}ESCAPED{,}ESCAPED{longopts}ESCAPED{,}ESCAPED{args}}):
+long_has_args:METHOD:[PRIVATE]:ESCAPED{long_has_args}(PARAMETERS{ESCAPED{opt}ESCAPED{,}ESCAPED{longopts}}):
+do_shorts:METHOD:[PRIVATE]:ESCAPED{do_shorts}(PARAMETERS{ESCAPED{opts}ESCAPED{,}ESCAPED{optstring}ESCAPED{,}ESCAPED{shortopts}ESCAPED{,}ESCAPED{args}}):
+short_has_arg:METHOD:[PRIVATE]:ESCAPED{short_has_arg}(PARAMETERS{ESCAPED{opt}ESCAPED{,}ESCAPED{shortopts}}):

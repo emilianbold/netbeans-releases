@@ -69,6 +69,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -836,9 +837,30 @@ public class WizardDescriptor extends DialogDescriptor {
             });
         }
     }
+
+    private static Set<String> logged = new HashSet<String>();
+    private static void checkComponent (Panel<?> pnl) {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts && pnl instanceof Component && logged.add(pnl.getClass().getName())) {
+            logged.add(pnl.getClass().getName());
+            IllegalStateException ise = new IllegalStateException (
+                    pnl.getClass().getName() + " is both a " + //NOI18N
+                    "WizardDescriptor.Panel and a Component.  This is illegal " + //NOI18N
+                    "because Component.isValid() conflicts with " + //NOI18N
+                    "Panel.isValid().  See umbrella issue 154624 and " + //NOI18N
+                    "issues 150223, 134601, 99680 and " + //NOI18N
+                    "many others for why this is a Bad Thing."); //NOI18N
+            //Per agreement, to be made user-visible later to encourage reporting
+//            Exceptions.printStackTrace(ise);
+            Logger.getLogger (WizardDescriptor.class.getName()).log(Level.INFO,
+                    null, ise);
+        }
+    }
+
     private <A> void updateStateOpen(SettingsAndIterator<A> data) {
         Panel<A> p = data.getIterator(this).current();
-
+        checkComponent(p);
         // listeners on the panel
         if (data.current != p) {
             if (data.current != null) {
@@ -851,6 +873,7 @@ public class WizardDescriptor extends DialogDescriptor {
             // It's here to allow dynamic change of panels in wizard
             // (which can be done in storeSettings method)
             p = data.getIterator(this).current();
+            checkComponent(p);
 
             // add to new, detach old change listener and attach new one
             data.getIterator(this).removeChangeListener(weakChangeListener);

@@ -1,0 +1,9 @@
+Code completion result for source line:
+y.foo(xyz, b|az)
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       foo(... , param3, ...)                     
+------------------------------------
+METHOD     basestring()                               
+METHOD     bool(x)                                    
+METHOD     buffer(object, offset, size)               
+KEYWORD    break                                      

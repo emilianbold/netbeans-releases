@@ -41,16 +41,19 @@
 package org.netbeans.modules.asm.core.editor;
 
 import java.io.StringReader;
-import javax.swing.JEditorPane;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.asm.core.dataobjects.AsmObjectUtilities;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.asm.model.AsmSyntaxProvider;
@@ -59,7 +62,7 @@ import org.netbeans.modules.asm.model.AsmModelAccessor;
 import org.netbeans.modules.asm.model.AsmModelProvider;
 import org.netbeans.modules.asm.model.AsmSyntax;
 import org.netbeans.modules.asm.model.AsmTypesProvider;
-import org.netbeans.modules.asm.core.dataobjects.AsmObjectUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 
 public class AsmEditorKit extends NbEditorKit {
 
@@ -69,44 +72,7 @@ public class AsmEditorKit extends NbEditorKit {
     @Override
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
-        AsmModelAccessor acc = (AsmModelAccessor) doc.getProperty(AsmModelAccessor.class);
-
-        if (acc == null) {
-
-            AsmModelProvider modelProv = null;
-            AsmSyntaxProvider syntProv = null;
-
-            Collection<? extends AsmTypesProvider> idents =
-                    Lookup.getDefault().lookup(new Lookup.Template<AsmTypesProvider>(AsmTypesProvider.class)).allInstances();
-
-            AsmTypesProvider.ResolverResult res = null;
-
-            String text = AsmObjectUtilities.getText(NbEditorUtilities.getFileObject(doc));
-
-            for (AsmTypesProvider ident : idents) {
-                res = ident.resolve(new StringReader(text));
-                if (res != null) {
-                    modelProv = res.getModelProvider();
-                    syntProv = res.getSyntaxProvider();
-
-                    Logger.getLogger(AsmEditorKit.class.getName()).
-                            log(Level.FINE, "Asm Regognized " + modelProv + " " + syntProv); // NOI18N
-                }
-            }
-
-            if (res == null || modelProv == null || syntProv == null) {
-                return;
-            }
-
-            AsmModel model = modelProv.getModel();
-            AsmSyntax synt = syntProv.getSyntax(model);
-
-            acc = new AsmModelAccessorImpl(model, synt, doc);
-
-            doc.putProperty(AsmModelAccessor.class, acc);
-            doc.putProperty(AsmModel.class, model);
-            doc.putProperty(Language.class, new AsmLanguageHierarchy(synt).language());
-        }
+        initLanguage(doc);
     }
 
     @Override
@@ -114,14 +80,72 @@ public class AsmEditorKit extends NbEditorKit {
         return MIME_TYPE;
     }
 
-    @Override
-    public void install(JEditorPane jEditorPane) {
-        super.install(jEditorPane);
+    private static final class LangInitializer implements DocumentListener {
 
+        private final Document doc;
+        LangInitializer(Document doc) {
+            this.doc = doc;
+        }
+        public void insertUpdate(DocumentEvent e) {
+            initLanguage();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            initLanguage();
+        }
+
+        private void initLanguage() {
+            if (AsmEditorKit.initLanguage(doc)) {
+                doc.removeDocumentListener(this);
+                doc.putProperty(LangInitializer.class, null);
+            }
+        }
     }
-
-    @Override
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return super.createSyntaxSupport(doc);
+    
+    private static boolean initLanguage(Document doc) {
+        AsmModelAccessor acc = (AsmModelAccessor) doc.getProperty(AsmModelAccessor.class);
+        if (acc == null) {
+            if (doc.getProperty(Language.class) != null) {
+                return true;
+            }
+            String text = AsmObjectUtilities.getText(doc);
+            if (text.length() == 0) {
+                text = AsmObjectUtilities.getText(NbEditorUtilities.getFileObject(doc));
+            }
+            if (text.length() == 0) {
+                if (doc.getProperty(LangInitializer.class) == null) {
+                    LangInitializer langInitializer = new LangInitializer(doc);
+                    doc.putProperty(LangInitializer.class, langInitializer);
+                    doc.addDocumentListener(langInitializer);
+                }
+                return false;
+            }
+            AsmModelProvider modelProv = null;
+            AsmSyntaxProvider syntProv = null;
+            Collection<? extends AsmTypesProvider> idents = Lookup.getDefault().lookup(new Lookup.Template<AsmTypesProvider>(AsmTypesProvider.class)).allInstances();
+            AsmTypesProvider.ResolverResult res = null;
+            for (AsmTypesProvider ident : idents) {
+                res = ident.resolve(new StringReader(text));
+                if (res != null) {
+                    modelProv = res.getModelProvider();
+                    syntProv = res.getSyntaxProvider();
+                    Logger.getLogger(AsmEditorKit.class.getName()).log(Level.FINE, "Asm Regognized " + modelProv + " " + syntProv); // NOI18N
+                }
+            }
+            if (res == null || modelProv == null || syntProv == null) {
+                return false;
+            }
+            AsmModel model = modelProv.getModel();
+            AsmSyntax synt = syntProv.getSyntax(model);
+            acc = new AsmModelAccessorImpl(model, synt, doc);
+            doc.putProperty(AsmModelAccessor.class, acc);
+            doc.putProperty(AsmModel.class, model);
+            doc.putProperty(Language.class, new AsmLanguageHierarchy(synt).language());
+            return true;
+        }
+        return false;
     }
 }

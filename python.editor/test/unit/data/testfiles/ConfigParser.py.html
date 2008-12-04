@@ -1,0 +1,302 @@
+<html><body>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>ConfigParser.py</b></pre>
+
+<hr>
+Configuration file parser.
+
+<br><br>
+A setup file consists of sections, lead by a "[section]" header,
+and followed by "name: value" entries, with continuations and such in
+the style of RFC 822.
+
+<br><br>
+ the same section, or values in a special [DEFAULT] section.
+
+<br><br>
+For example:
+
+<br><br>
+    something: %(dir)s/whatever
+
+<br><br>
+would resolve the "%(dir)s" to the value of dir.  All reference
+expansions are done late, on demand.
+
+<br><br>
+Intrinsic defaults can be specified by passing them into the
+ConfigParser constructor as a dictionary.
+
+<br><br>
+class:
+
+<br><br>
+ConfigParser -- responsible for parsing a list of
+                configuration files, and managing the parsed database.
+
+<br><br>
+    methods:
+
+<br><br>
+    __init__(defaults=None)
+        create the parser and specify a dictionary of intrinsic defaults.  The
+        keys must be strings, the values must be appropriate for %()s string
+        interpolation.  Note that `__name__' is always an intrinsic default;
+        it's value is the section's name.
+
+<br><br>
+    sections()
+        return all the configuration section names, sans DEFAULT
+
+<br><br>
+    has_section(section)
+        return whether the given section exists
+
+<br><br>
+    has_option(section, option)
+        return whether the given option exists in the given section
+
+<br><br>
+    options(section)
+        return list of configuration options for the named section
+
+<br><br>
+    read(filenames)
+        read and parse the list of named configuration files, given by
+        name.  A single filename is also allowed.  Non-existing files
+        are ignored.
+
+<br><br>
+    readfp(fp, filename=None)
+        read and parse one configuration file, given as a file object.
+        The filename defaults to fp.name; it is only used in error
+        messages (if fp has no `name' attribute, the string `&lt;???>' is used).
+
+<br><br>
+    get(section, option, raw=False, vars=None)
+        return a string value for the named option.  All % interpolations are
+        expanded in the return values, based on the defaults passed into the
+        constructor and the DEFAULT section.  Additional substitutions may be
+        provided using the `vars' argument, which must be a dictionary whose
+        contents override any pre-existing defaults.
+
+<br><br>
+    getint(section, options)
+        like get(), but convert value to an integer
+
+<br><br>
+    getfloat(section, options)
+        like get(), but convert value to a float
+
+<br><br>
+    getboolean(section, options)
+        like get(), but convert value to a boolean (currently case
+        insensitively defined as 0, false, no, off for False, and 1, true,
+        yes, on for True).  Returns False or True.
+
+<br><br>
+    items(section, raw=False, vars=None)
+        return a list of tuples with (name, value) for each option
+        in the section.
+
+<br><br>
+    remove_section(section)
+        remove the given file section and all its options
+
+<br><br>
+    remove_option(section, option)
+        remove the given option from the given section
+
+<br><br>
+    set(section, option, value)
+        set the given option
+
+<br><br>
+    write(fp)
+        write the configuration state in .ini format
+<h2 style="color: green">Next Comment</h2>
+<pre><b>Error</b></pre>
+
+<hr>
+Base class for ConfigParser exceptions.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>NoSectionError</b></pre>
+
+<hr>
+Rasssised when no section matches a requested option.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>DuplicateSectionError</b></pre>
+
+<hr>
+Raised when a section is multiply-created.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>NoOptionError</b></pre>
+
+<hr>
+A requested option was not found.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>InterpolationError</b></pre>
+
+<hr>
+Base class for interpolation-related exceptions.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>InterpolationMissingOptionError</b></pre>
+
+<hr>
+A string substitution required a setting which was not available.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>InterpolationSyntaxError</b></pre>
+
+<hr>
+Raised when the source text into which substitutions are made
+    does not conform to the required syntax.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>InterpolationDepthError</b></pre>
+
+<hr>
+Raised when substitutions are nested too deeply.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>ParsingError</b></pre>
+
+<hr>
+Raised when a configuration file does not follow legal syntax.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>MissingSectionHeaderError</b></pre>
+
+<hr>
+Raised when a key-value pair is found before any section header.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>sections</b>(<font color="#808080">self</font>)</pre>
+
+<hr>
+Return a list of section names, excluding [DEFAULT]
+<h2 style="color: green">Next Comment</h2>
+<pre><b>add_section</b>(<font color="#808080">self, section</font>)</pre>
+
+<hr>
+Create a new section in the configuration.
+
+<br><br>
+        Raise DuplicateSectionError if a section by the specified name
+        already exists.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>has_section</b>(<font color="#808080">self, section</font>)</pre>
+
+<hr>
+Indicate whether the named section is present in the configuration.
+
+<br><br>
+        The DEFAULT section is not acknowledged.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>options</b>(<font color="#808080">self, section</font>)</pre>
+
+<hr>
+Return a list of option names for the given section name.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>read</b>(<font color="#808080">self, filenames</font>)</pre>
+
+<hr>
+Read and parse a filename or a list of filenames.
+
+<br><br>
+        Files that cannot be opened are silently ignored; this is
+        designed so that you can specify a list of potential
+        configuration file locations (e.g. current directory, user's
+        home directory, systemwide directory), and all existing
+        configuration files in the list will be read.  A single
+        filename may also be given.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>readfp</b>(<font color="#808080">self, fp, filename</font>)</pre>
+
+<hr>
+Like read() but the argument must be a file-like object.
+
+<br><br>
+        The `fp' argument must have a `readline' method.  Optional
+        second argument is the `filename', which if not given, is
+        taken from fp.name.  If fp has no `name' attribute, `&lt;???>' is
+        used.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>has_option</b>(<font color="#808080">self, section, option</font>)</pre>
+
+<hr>
+Check for the existence of a given option in a given section.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>set</b>(<font color="#808080">self, section, option, value</font>)</pre>
+
+<hr>
+Set an option.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>write</b>(<font color="#808080">self, fp</font>)</pre>
+
+<hr>
+Write an .ini-format representation of the configuration state.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>remove_option</b>(<font color="#808080">self, section, option</font>)</pre>
+
+<hr>
+Remove an option.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>remove_section</b>(<font color="#808080">self, section</font>)</pre>
+
+<hr>
+Remove a file section.
+<h2 style="color: green">Next Comment</h2>
+<pre><b>_read</b>(<font color="#808080">self, fp, fpname</font>)</pre>
+
+<hr>
+Parse a sectioned setup file.
+
+<br><br>
+        The sections in setup file contains a title line at the top,
+        indicated by a name in square brackets (`[]'), plus key/value
+        options lines, indicated by `name: value' format lines.
+        Continuations are represented by an embedded newline then
+        leading whitespace.  Blank lines, lines beginning with a '#',
+        and just about everything else are ignored.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>get</b>(<font color="#808080">self, section, option, raw, vars</font>)</pre>
+
+<hr>
+Get an option value for a given section.
+
+<br><br>
+        All % interpolations are expanded in the return values, based on the
+        defaults passed into the constructor, unless the optional argument
+        `raw' is true.  Additional substitutions may be provided using the
+        `vars' argument, which must be a dictionary whose contents overrides
+        any pre-existing defaults.
+
+<br><br>
+        The section DEFAULT is special.
+
+<br><br>
+<h2 style="color: green">Next Comment</h2>
+<pre><b>items</b>(<font color="#808080">self, section, raw, vars</font>)</pre>
+
+<hr>
+Return a list of tuples with (name, value) for each option
+        in the section.
+
+<br><br>
+        All % interpolations are expanded in the return values, based on the
+        defaults passed into the constructor, unless the optional argument
+        `raw' is true.  Additional substitutions may be provided using the
+        `vars' argument, which must be a dictionary whose contents overrides
+        any pre-existing defaults.
+
+<br><br>
+        The section DEFAULT is special.
+
+<br><br>
+</body></html>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -234,7 +234,7 @@ class PropertiesParser {
             if(comment.charAt(comment.length() - 1) == '\n')
                 comHelp = comment.substring(0, comment.length() - 1);
 
-        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), UtilConvert.loadConvert(comHelp));
+        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
         // fl now contains the line after the comment or  null if none exists
 
 
@@ -321,8 +321,8 @@ class PropertiesParser {
                 valuePosFile = currentPos;
             }
             
-            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), UtilConvert.loadConvert(key));
-            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), UtilConvert.loadConvert(value));
+            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), key);
+            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), value);
         }
         
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);
