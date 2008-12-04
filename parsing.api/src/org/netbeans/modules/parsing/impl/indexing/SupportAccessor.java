@@ -37,45 +37,42 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexManager {
+public abstract class SupportAccessor {
 
-    private static LuceneIndexManager instance;
-    private volatile boolean invalid;
+    private static volatile SupportAccessor instance;
 
-    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
+    public static void setInstance (final SupportAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
+    }
 
-    private LuceneIndexManager() {}
-
-
-    public static synchronized LuceneIndexManager getDefault () {
+    public static synchronized SupportAccessor getInstance () {
         if (instance == null) {
-            instance = new LuceneIndexManager();
+            try {
+                Class.forName(IndexingSupport.class.getName(),true, IndexingSupport.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
         return instance;
     }
 
-    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
-        }
-        LuceneIndex li = indexes.get(root);
-        if (create && li == null) {
-            li = new LuceneIndex(root);
-            indexes.put(root,li);
-        }
-        return li;
-    }   
+    public abstract void beginTrans ();
+
+    public abstract void endTrans () throws IOException;
+
+    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
 
 }

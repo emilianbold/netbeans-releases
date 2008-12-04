@@ -410,30 +410,35 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
-                final Crawler crawler = new FileObjectCrawler(rootFo);
-                final Map<String,Collection<Indexable>> resources = crawler.getResources();
-                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                //First use custom indexers
-                for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
-                    final Map.Entry<String,Collection<Indexable>> entry = it.next();
-                    final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
-                    if (factory != null) {
-                        try {
-                            final CustomIndexer indexer = factory.createIndexer();
-                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion());
-                            SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);                        
-                        } finally {
-                            it.remove();
+                SupportAccessor.getInstance().beginTrans();
+                try {
+                    final Crawler crawler = new FileObjectCrawler(rootFo);
+                    final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                    //First use custom indexers
+                    for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
+                        final Map.Entry<String,Collection<Indexable>> entry = it.next();
+                        final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
+                        if (factory != null) {
+                            try {
+                                final CustomIndexer indexer = factory.createIndexer();
+                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion());
+                                SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
+                            } finally {
+                                it.remove();
+                            }
                         }
                     }
-                }                
-                //For rest use slow gsf like indexers
-                final List<Indexable> toIndex = new LinkedList<Indexable>();
-                for (Collection<Indexable> data : resources.values()) {
-                    toIndex.addAll(data);
+                    //For rest use slow gsf like indexers
+                    final List<Indexable> toIndex = new LinkedList<Indexable>();
+                    for (Collection<Indexable> data : resources.values()) {
+                        toIndex.addAll(data);
+                    }
+                    final SourceIndexer si = new SourceIndexer(root,cacheRoot);
+                    si.index(toIndex);
+                } finally {
+                    SupportAccessor.getInstance().endTrans();
                 }
-                final SourceIndexer si = new SourceIndexer(root,cacheRoot);
-                si.index(toIndex);
             }
         }
 

@@ -39,43 +39,25 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexManager {
+public class DocumentUtil {
 
-    private static LuceneIndexManager instance;
-    private volatile boolean invalid;
+    private static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
 
-    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
-
-    private LuceneIndexManager() {}
-
-
-    public static synchronized LuceneIndexManager getDefault () {
-        if (instance == null) {
-            instance = new LuceneIndexManager();
-        }
-        return instance;
+    static Query sourceNameQuery(String relativePath) {
+        return new TermQuery(sourceNameTerm(relativePath));
     }
 
-    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
-        }
-        LuceneIndex li = indexes.get(root);
-        if (create && li == null) {
-            li = new LuceneIndex(root);
-            indexes.put(root,li);
-        }
-        return li;
-    }   
+    static Term sourceNameTerm (final String relativePath) {
+        assert relativePath != null;
+        return new Term (FIELD_SOURCE_NAME, relativePath);
+    }
 
 }

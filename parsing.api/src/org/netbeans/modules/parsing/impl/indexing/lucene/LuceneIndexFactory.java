@@ -60,12 +60,12 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
 
     public IndexImpl createIndex (Context ctx) throws IOException {
         final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, true);
     }
 
     public IndexImpl getIndex(final Context ctx) throws IOException {
         final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, false);
     }
 
     private URL getIndexFolder (final Context ctx) throws IOException {

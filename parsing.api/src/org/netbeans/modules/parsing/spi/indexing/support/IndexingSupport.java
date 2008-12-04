@@ -40,14 +40,18 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -58,6 +62,10 @@ import org.openide.util.Parameters;
 //@NotThreadSafe
 public class IndexingSupport {
 
+    static {
+        SupportAccessor.setInstance(new MyAccessor());
+    }
+
     private final IndexFactoryImpl spiFactory;
     private final IndexImpl spiIndex;
     private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
@@ -67,6 +75,22 @@ public class IndexingSupport {
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
 
+    static Collection<? extends IndexingSupport> getDirtySupports () {
+        return instances.values();
+    }
+
+    static void beginTrans () {
+        assert instances.isEmpty();
+    }
+
+    static void endTrans () throws IOException {
+        for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
+            final IndexingSupport is = it.next();
+            is.spiIndex.store();            
+            it.remove();
+        }
+    }
+
     /**
      * Returns an {@link IndexingSupport} for given indexing {@link Context}
      * @param context for which the support should be returned
@@ -74,7 +98,7 @@ public class IndexingSupport {
      * @throws java.io.IOException when underlying storage is corrupted or cannot
      * be created
      */
-    public IndexingSupport getInstance (final Context context) throws IOException {
+    public static IndexingSupport getInstance (final Context context) throws IOException {
         Parameters.notNull("context", context);
         final String key = createkey(context);
         IndexingSupport support = instances.get(key);
@@ -101,7 +125,7 @@ public class IndexingSupport {
     public void addDocument (final Indexable indexable, final IndexDocument document) {
         Parameters.notNull("indexable", indexable);
         Parameters.notNull("document", document.spi);
-        spiIndex.addDocument (indexable, document.spi);
+        spiIndex.addDocument (indexable.getRelativePath(), document.spi);
     }
 
     /**
@@ -110,11 +134,30 @@ public class IndexingSupport {
      */
     public void removeDocument (final Indexable indexable) {
         Parameters.notNull("indexable", indexable);
-        spiIndex.removeDocument (indexable);
+        spiIndex.removeDocument (indexable.getRelativePath());
     }
 
-    private String createkey (final Context ctx) {
+    private static String createkey (final Context ctx) {
         return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
+    }
+
+    private static class MyAccessor extends SupportAccessor {
+
+        @Override
+        public void beginTrans() {
+            IndexingSupport.beginTrans();
+        }
+
+        @Override
+        public void endTrans() throws IOException {
+            IndexingSupport.endTrans();
+        }
+
+        @Override
+        public Collection<? extends IndexingSupport> getDirtySupports() {
+            return IndexingSupport.getDirtySupports();
+        }
+
     }
    
 }

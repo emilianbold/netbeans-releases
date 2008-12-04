@@ -55,9 +55,9 @@ public class LuceneDocument implements IndexDocumentImpl {
         this.doc = new Document();
     }
 
-    public void addPair(final String key, final String value, final boolean searchable) {
+    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
         final Field field = new Field (key, value,
-                Field.Store.YES,
+                stored ? Field.Store.YES : Field.Store.NO,
                 searchable ? Field.Index.NO_NORMS : Field.Index.NO);
         doc.add (field);
     }
