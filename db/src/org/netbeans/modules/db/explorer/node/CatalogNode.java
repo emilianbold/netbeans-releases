@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.openide.util.Lookup;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends ConnectedNodeProvider {
-    
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
+public class CatalogNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/database.gif";
+    private static final String FOLDER = "Catalog"; //NOI18N
+
+    /**
+     * Create an instance of CatalogNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the CatalogNode instance
+     */
+    public static CatalogNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        CatalogNode node = new CatalogNode(dataLookup, provider);
+        node.setup();
+        return node;
     }
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public TableListNodeProvider createInstance(Lookup lookup) {
-                TableListNodeProvider provider = new TableListNodeProvider(lookup);
-                return provider;
-            }
-        };
+    private MetadataElementHandle<Catalog> catalogHandle;
+    private Metadata metaData;
+
+    private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
-    private TableListNodeProvider(Lookup lookup) {
-        super(lookup);
+    protected void initialize() {
+        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
     @Override
-    protected BaseNode createNode(NodeDataLookup lookup) {
-        return TableListNode.create(lookup, this);
+    public String getName() {
+        return renderName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return renderName();
+    }
+
+    private String renderName() {
+        Catalog catalog = catalogHandle.resolve(metaData);
+        if (catalog == null) {
+            return "";
+        }
+
+        String name = catalog.getName();
+        if (name == null) {
+            name = "Default"; // NOI18N
+        }
+        
+        return name;
+    }
+
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
     }
 }

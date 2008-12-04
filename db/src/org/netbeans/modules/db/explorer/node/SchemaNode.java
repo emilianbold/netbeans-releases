@@ -41,7 +41,10 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
@@ -50,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
  */
 public class SchemaNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
+    private static final String DEFAULTICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "Schema"; //NOI18N
 
     /**
@@ -58,23 +62,22 @@ public class SchemaNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the SchemaNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup) {
-        SchemaNode node = new SchemaNode(dataLookup);
+    public static SchemaNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        SchemaNode node = new SchemaNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
-    private SchemaNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
     @Override
@@ -88,6 +91,11 @@ public class SchemaNode extends BaseNode {
     }
 
     private String renderName() {
+        Schema schema = schemaHandle.resolve(metaData);
+        if (schema == null) {
+            return "";
+        }
+
         String name = schema.getName();
         if (name == null) {
             name = schema.getParent().getName();
@@ -98,6 +106,14 @@ public class SchemaNode extends BaseNode {
 
     @Override
     public String getIconBase() {
-        return ICONBASE;
+        Schema schema = schemaHandle.resolve(metaData);
+        String base = ICONBASE;
+        if (schema != null) {
+            if (schema.isDefault()) {
+                base = DEFAULTICONBASE;
+            }
+        }
+
+        return base;
     }
 }

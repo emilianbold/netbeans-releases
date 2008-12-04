@@ -63,6 +63,7 @@ public abstract class NodeProvider implements Lookup.Provider {
     private final TreeSet<Node> nodeSet;
     private final ChangeSupport changeSupport;
     private final Lookup lookup;
+    protected boolean initialized = false;
 
     /**
      * Constructor
@@ -90,31 +91,50 @@ public abstract class NodeProvider implements Lookup.Provider {
     public Lookup getLookup() {
         return lookup;
     }
-        
+
     /**
      * Get the list of nodes.
      * 
      * @return the list of nodes.
      */
-    public Collection<Node> getNodes() {
+    public synchronized Collection<Node> getNodes() {
+        if (!initialized) {
+            initialize();
+            initialized = true;
+        }
+
         return Collections.unmodifiableCollection(nodeSet);
     }
-    
+
+    public void refresh() {
+        initialized = false;
+        synchronized (nodeSet) {
+            for (Node child : nodeSet) {
+                if (child instanceof BaseNode) {
+                    ((BaseNode)child).refresh();
+                }
+            }
+        }
+    }
+
+    protected abstract void initialize();
+
     /**
      * Get the list of nodes that contain a lookup that in turn contains 
-     * a specified data object.
+     * an object with a matching hash code.
      * 
      * @param dataObject the data object.
      * 
      * @return the list of nodes that contain a lookup containing the data object
      */
-    public Collection<Node> getNodes(Object dataObject) {
+    protected Collection<Node> getNodes(Object dataObject) {
+        
         List<Node> results = new ArrayList<Node>();
         
         synchronized (nodeSet) {
             for (Node child : nodeSet) {
                 Object obj = child.getLookup().lookup(dataObject.getClass());
-                if (obj == dataObject) {
+                if (obj.hashCode() == dataObject.hashCode()) {
                     results.add(child);
                 }
             }
@@ -150,7 +170,15 @@ public abstract class NodeProvider implements Lookup.Provider {
         
         changeSupport.fireChange();
     }
-    
+
+    public void removeNode(Node node) {
+        synchronized (nodeSet) {
+            nodeSet.remove(node);
+        }
+        
+        changeSupport.fireChange();
+    }
+
     /**
      * Remove all nodes.
      */

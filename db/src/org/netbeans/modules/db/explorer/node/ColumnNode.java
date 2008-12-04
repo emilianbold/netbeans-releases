@@ -40,14 +40,17 @@
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Rob Englander
  */
-public class ColumnNode extends BaseNode {
+public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/column.gif";
     private static final String FOLDER = "Column"; //NOI18N
 
@@ -57,33 +60,56 @@ public class ColumnNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ColumnNode instance
      */
-    public static ColumnNode create(NodeDataLookup dataLookup) {
-        ColumnNode node = new ColumnNode(dataLookup);
+    public static ColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ColumnNode node = new ColumnNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Column column;
+    private Metadata metaData;
+    private MetadataElementHandle<Column> columnHandle;
 
-    private ColumnNode(NodeDataLookup lookup) {
-        super(lookup, FOLDER);
+    private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        column = getLookup().lookup(Column.class);
+        metaData = getLookup().lookup(Metadata.class);
+        columnHandle = getLookup().lookup(MetadataElementHandle.class);
+    }
 
+    public Column getColumn() {
+        Column column = columnHandle.resolve(metaData);
+        return column;
+    }
+
+    public Schema getSchema() {
+        Column column = columnHandle.resolve(metaData);
+        return (Schema)column.getParent().getParent();
+    }
+
+    public int getOrdinalPosition() {
+        Column column = columnHandle.resolve(metaData);
+        return column.getOrdinalPosition();
     }
 
     @Override
     public String getName() {
+        Column column = columnHandle.resolve(metaData);
+        if (column == null) {
+            return "";
+        }
+
         return column.getName();
     }
 
     @Override
     public String getDisplayName() {
+        Column column = columnHandle.resolve(metaData);
+        if (column == null) {
+            return "";
+        }
+
         return column.getName();
     }
 

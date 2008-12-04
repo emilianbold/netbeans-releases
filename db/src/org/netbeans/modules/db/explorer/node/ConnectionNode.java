@@ -47,7 +47,14 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -66,22 +73,23 @@ public class ConnectionNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ConnectionNode instance
      */
-    public static ConnectionNode create(NodeDataLookup dataLookup) {
-        ConnectionNode node = new ConnectionNode(dataLookup);
+    public static ConnectionNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ConnectionNode node = new ConnectionNode(dataLookup, provider);
         node.setup();
         return node;
     }
     
     // the connection
     private DatabaseConnection connection;
+    private MetadataModel model = null;
 
     /**
      * Constructor
      * 
      * @param lookup the associated lookup
      */
-    private ConnectionNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -92,16 +100,61 @@ public class ConnectionNode extends BaseNode {
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    // just ask the node to update itself
-                    update();
+                    buildModel();
                 }
             }
         );
+
+        buildModel();
     }
 
-    @Override
-    public boolean canRefresh() {
-        return true;
+    private synchronized void buildModel() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    Connection conn = connection.getConnection();
+                    boolean connected = false;
+
+                    if (conn != null) {
+                        try {
+                            connected = !conn.isClosed();
+                        } catch (SQLException e) {
+
+                        }
+                    }
+
+                    if (connected && model == null) {
+                        try {
+                            model = MetadataModels.createModel(conn, connection.getSchema());
+                            //model = MetadataModelManager.get(connection.getDatabaseConnection());
+
+                            NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                            lookup.add(model);
+
+                            model.runReadAction(
+                                new Action<Metadata>() {
+                                    public void run(Metadata parameter) {
+                                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                                        lookup.add(parameter);
+                                        refresh();
+                                    }
+                                }
+                            );
+                        } catch (MetadataModelException e) {
+                        }
+                    } else if (!connected) {
+                        model = null;
+                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                        Metadata md = lookup.lookup(Metadata.class);
+                        if (md != null) {
+                            lookup.remove(md);
+                        }
+                        
+                        refresh();
+                    }
+                }
+            }
+        );
     }
 
     @Override

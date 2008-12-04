@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.node;
+package org.netbeans.modules.db.explorer.action;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.openide.util.Lookup;
+import java.sql.Connection;
+import java.sql.SQLException;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends ConnectedNodeProvider {
-    
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
-    }
+public class RecreateTableAction extends BaseAction {
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public TableListNodeProvider createInstance(Lookup lookup) {
-                TableListNodeProvider provider = new TableListNodeProvider(lookup);
-                return provider;
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return false;
+        }
+
+        boolean enabled = false;
+        DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
+
+        if (dbconn != null) {
+            Connection conn = dbconn.getConnection();
+            try {
+                if (conn != null) {
+                    enabled = !conn.isClosed();
+                }
+            } catch (SQLException e) {
+
             }
-        };
+        }
+
+        return enabled;
     }
 
-    private TableListNodeProvider(Lookup lookup) {
-        super(lookup);
+    public void performAction (Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1) {
+        }
     }
 
     @Override
-    protected BaseNode createNode(NodeDataLookup lookup) {
-        return TableListNode.create(lookup, this);
+    public String getName() {
+        return bundle().getString("RecreateTable"); // NOI18N
     }
 }
