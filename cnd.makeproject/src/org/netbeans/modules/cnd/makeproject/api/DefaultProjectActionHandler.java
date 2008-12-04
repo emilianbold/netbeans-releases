@@ -313,8 +313,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
+                    pae.getID() == ProjectActionEvent.CHECK_EXECUTABLE ||
                     pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
-                if (!checkExecutable(pae)) {
+                if (!checkExecutable(pae) || pae.getID() == ProjectActionEvent.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
