@@ -1,0 +1,3 @@
+Code completion result for source line:
+warnings.filterwarnings("ignore", r"i|mport \*", SyntaxWarning, "<string>")
+(QueryType=COMPLETION, NameKind=PREFIX)

@@ -50,7 +50,9 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.tools.ant.BuildException;
@@ -91,17 +93,39 @@ public class VerifyJNLP extends Task {
         filesets.add(fs);
     }
 
+    private File report;
+    /**
+     * JUnit report file to create rather than halting build if errors are encountered.
+     */
+    public void setReport(File report) {
+        this.report = report;
+    }
+
+    private boolean failOnError = true;
+    /**
+     * Whether to halt the build if there is a verification error. Default true.
+     */
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
+
     public @Override void execute() throws BuildException {
+        Map<String,String> results = new LinkedHashMap<String,String>();
         for (FileSet fs : filesets) {
             DirectoryScanner s = fs.getDirectoryScanner(getProject());
             File basedir = s.getBasedir();
             for (String incl : s.getIncludedFiles()) {
-                validate(new File(basedir, incl));
+                validate(new File(basedir, incl), results);
             }
         }
+        JUnitReportWriter.writeReport(this, null, failOnError ? null : report, results);
     }
 
-    private void validate(File jnlp) throws BuildException {
+    private static void error(File jnlp, Map<String,String> results, String key, String message) {
+        results.put(jnlp + "/test" + key, message);
+    }
+
+    private void validate(File jnlp, Map<String,String> results) {
         log("Validating: " + jnlp);
         Document doc;
         try {
@@ -126,7 +150,8 @@ public class VerifyJNLP extends Task {
                 }
             });
         } catch (Exception x) {
-            throw new BuildException(x);
+            error(jnlp, results, "Parse", x.getMessage());
+            return;
         }
         String codebase = doc.getDocumentElement().getAttribute("codebase");
         URI base;
@@ -136,14 +161,16 @@ public class VerifyJNLP extends Task {
             try {
                 base = new URI(codebase);
                 if (!base.isAbsolute()) {
-                    throw new BuildException("JNLP validation error\n" + jnlp + ": non-absolute codebase " + base);
+                    error(jnlp, results, "Codebase", "non-absolute codebase " + base);
+                    return;
                 }
                 if (!"file".equals(base.getScheme())) {
                     // Needed for local validation of a tree intended for eventual upload to a server.
                     base = jnlp.getParentFile().toURI();
                 }
             } catch (URISyntaxException x) {
-                throw new BuildException("JNLP validation error\n" + jnlp + ": invalid codebase '" + codebase + "': " + x, x);
+                error(jnlp, results, "Codebase", "invalid codebase " + codebase + "': " + x);
+                return;
             }
         }
         Certificate[] existingCertificates = null;
@@ -157,7 +184,8 @@ public class VerifyJNLP extends Task {
                 try {
                     u = base.resolve(new URI(href));
                 } catch (URISyntaxException x) {
-                    throw new BuildException("JNLP validation error\n" + jnlp + ": invalid href '" + href + "': " + x, x);
+                    error(jnlp, results, "Href", "invalid href '" + href + "': " + x);
+                    continue;
                 }
                 assert u.isAbsolute() : u + " not absolute as " + href + " resolved against " + base;
                 if ("file".equals(u.getScheme())) {
@@ -172,11 +200,12 @@ public class VerifyJNLP extends Task {
                             log("Localization file " + f + " is referenced, but cannot be found. Skipping.", Project.MSG_WARN);
                         }
                         else {
-                            throw new BuildException("JNLP validation error\n" + jnlp + ": no such file " + f);
+                            error(jnlp, results, "Href", "no such file " + f);
+                            continue;
                         }
                     }
                     if (el.getTagName().equals("extension")) {
-                        validate(f);
+                        validate(f, results);
                     } else if (el.getTagName().equals("jar") && f.exists()) {
                         try {
                             JarFile jf = new JarFile(f, true);
@@ -204,8 +233,8 @@ public class VerifyJNLP extends Task {
                                                        " f=" + f + " certs=" + Arrays.toString(certs) + " entry.name=" + entry.getName());
                                      */
                                     if (existingSignedJar != null && !Arrays.equals(certs, existingCertificates)) {
-                                        throw new BuildException("JNLP validation error\n" + jnlp +
-                                                ": different signatures (or signing status) between " + existingSignedJar + " and " + f);
+                                        error(jnlp, results, "Signatures", "different signatures (or signing status) between " + existingSignedJar + " and " + f);
+                                        break;
                                     }
                                     existingCertificates = certs;
                                     existingSignedJar = f;
@@ -215,7 +244,7 @@ public class VerifyJNLP extends Task {
                                 jf.close();
                             }
                         } catch (IOException x) {
-                            throw new BuildException("JNLP validation error\n" + jnlp + ": error examining signatures in " + f + ": " + x, x);
+                            error(jnlp, results, "Signatures", "error examining signatures in " + f + ": " + x);
                         }
                     }
                 } else {

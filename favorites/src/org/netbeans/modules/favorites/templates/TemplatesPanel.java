@@ -47,9 +47,12 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -76,6 +79,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -91,11 +96,15 @@ import org.openide.windows.TopComponent;
  * @author  Jiri Rechtacek
  */
 public class TemplatesPanel extends TopComponent implements ExplorerManager.Provider {
-    private ExplorerManager manager;
-    private TemplateTreeView view;
+    private static ExplorerManager manager;
+    private static TemplateTreeView view;
     
     static private FileObject templatesRoot;
+    private static Node templatesRootNode = null;
     
+    private static final String TEMPLATE_DISPLAY_NAME_ATTRIBUTE = "displayName";
+    private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle";
+
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
         
@@ -173,8 +182,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     static Node getTemplateRootNode () {
-        DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
-        return new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
+        if (templatesRootNode == null) {
+            DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
+            templatesRootNode = new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
+        }
+        return templatesRootNode;
     }
     
     private static final class TemplateFilter implements DataFilter {
@@ -470,7 +482,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (DeleteAction.class),
                                     SystemAction.get (RenameAction.class),
         };
-        
+
         public TemplateNode (Node n) { 
             this (n, new DataFolderFilterChildren (n), new InstanceContent ());
         }
@@ -515,17 +527,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         @Override
+        public String getName () {
+            return super.getDisplayName ();
+        }
+
+        @Override
         public void setName(String name) {
-            // #140308 - get attributtes before rename and set them for renamed FileObject
             FileObject fo = this.getLookup().lookup(FileObject.class);
-            final HashMap<String, Object> attributes = getAttributes(fo);
-            super.setName(name);
             try {
-                setAttributes (fo, attributes);
+                fo.setAttribute (TEMPLATE_DISPLAY_NAME_ATTRIBUTE, name);
+                fo.setAttribute (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE, null);
             } catch (IOException ex) {
                 Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
             }
+            setDisplayName (name);
         }
+
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -547,9 +564,55 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             }
             return filtered;
         }
-        
+
+        @Override
+        protected void addNotify () {
+            super.addNotify ();
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
+        }
+
+        @Override
+        protected void filterChildrenAdded (NodeMemberEvent ev) {
+            super.filterChildrenAdded (ev);
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
+        }
+
+        @Override
+        protected void filterChildrenRemoved (NodeMemberEvent ev) {
+            super.filterChildrenRemoved (ev);
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
+        }
+
+        @Override
+        protected void filterChildrenReordered (NodeReorderEvent ev) {
+            super.filterChildrenReordered (ev);
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
+        }
+
+        private void sortNodes () {
+            Node [] originalNodes = original.getChildren ().getNodes ();
+            Collection<Node> sortedNodes = new TreeSet<Node> (new TemplateCategotyComparator ());
+            for (Node n : originalNodes) {
+                sortedNodes.add (n);
+            }
+            setKeys (sortedNodes.toArray (new Node[0]));
+        }
+
+        private static final class TemplateCategotyComparator implements Comparator<Node> {
+            public int compare (Node o1, Node o2) {
+                return o1.getDisplayName ().compareToIgnoreCase (o2.getDisplayName ());
+            }
+        }
     }
-    
+
     static private DataObject getDOFromNode (Node n) {
         DataObject dobj = n.getLookup ().lookup (DataObject.class);
         assert dobj != null : "DataObject for node " + n;
@@ -634,10 +697,33 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static DataObject createDuplicateFromNode (Node n) {
         DataObject source = getDOFromNode (n);
         try {
+            Node parent = n.getParentNode ();
             DataObject target = source.copy(source.getFolder());
             FileObject srcFo = source.getPrimaryFile();
             FileObject targetFo = target.getPrimaryFile();
-            setAttributes(targetFo, getAttributes(srcFo));
+            setTemplateAttributes(targetFo, getAttributes(srcFo));
+            if (parent != null) {
+                Node duplicateNode = null;
+                for (Node k : parent.getChildren ().getNodes (true)) {
+                    if (k.getName ().startsWith (targetFo.getName ())) {
+                        duplicateNode = k;
+                        break;
+                    }
+                }
+                if (duplicateNode != null) {
+                    final Node finalNode = duplicateNode;
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            try {
+                                manager.setSelectedNodes (new Node [] { finalNode });
+                                view.invokeInplaceEditing ();
+                            } catch (PropertyVetoException ex) {
+                                Logger.getLogger (TemplatesPanel.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                            }
+                        }
+                    });
+                }
+            }
             return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -663,8 +749,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
 
     /** Sets attributes for given FileObject. */
-    private static void setAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
+    private static void setTemplateAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
         for (Entry<String, Object> entry : attributes.entrySet()) {
+            // skip localizing bundle for custom templates
+            if (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE.equals (entry.getKey ())) {
+                continue;
+            }
             fo.setAttribute(entry.getKey(), entry.getValue());
         }
     }

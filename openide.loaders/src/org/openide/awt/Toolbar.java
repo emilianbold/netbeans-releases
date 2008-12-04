@@ -268,7 +268,31 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     public void setDnDListener (DnDListener l) {
         //NOOP
     }
-    
+
+    /**
+     *
+     * @param dx
+     * @param dy
+     * @param type
+     * @deprecated There is no public support for toolbar drag and drop.
+     */
+    @Deprecated
+    protected void fireDragToolbar (int dx, int dy, int type) {
+        //NOOP
+    }
+
+    /**
+     *
+     * @param dx
+     * @param dy
+     * @param type
+     * @deprecated There is no public support for toolbar drag and drop.
+     */
+    @Deprecated
+    protected void fireDropToolbar (int dx, int dy, int type) {
+        //NOOP
+    }
+
     /** @return Display name of this toolbar. Display name is localizable,
      * on the contrary to the programmatic name */
     public String getDisplayName () {

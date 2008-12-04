@@ -53,8 +53,12 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
+import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -980,4 +984,41 @@ public class SvnUtils {
         if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
         TY9_LOG.log(Level.FINEST, msg);
     }
+
+    public static File getActionRoot(Context ctx) {
+        File[] roots = ctx.getRootFiles();
+        List<File> l = new ArrayList<File>();
+        for (File file : roots) {
+            if(isManaged(file)) {
+                l.add(file);
+            }
+        }
+        roots = l.toArray(new File[l.size()]);
+        if(roots.length > 1) {
+            FileSelector fs = new FileSelector();
+            if(fs.show(roots)) {
+                return fs.getSelectedFile();
+            } else {
+                return null;
+            }
+        } else {
+            return roots[0];
+        }
+    }
+
+    public static String getHash(String alg, byte[] encoded) throws NoSuchAlgorithmException {
+        MessageDigest md5 = MessageDigest.getInstance(alg);
+        md5.update(encoded);
+        byte[] md5digest = md5.digest();
+        String ret = ""; // NOI18N
+        for (int i = 0; i < md5digest.length; i++) {
+            String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
+            if (hex.length() == 1) {
+                hex = "0" + hex; // NOI18N
+            }
+            ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
+        }
+        return ret;
+    }
+
  }

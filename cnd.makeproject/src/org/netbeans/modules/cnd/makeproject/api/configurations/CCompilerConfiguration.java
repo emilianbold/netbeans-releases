@@ -66,26 +66,26 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     }
     
     @Override
-    public Object clone() {
+    public CCompilerConfiguration clone() {
         CCompilerConfiguration clone = new CCompilerConfiguration(getBaseDir(), (CCompilerConfiguration)getMaster());
         // BasicCompilerConfiguration
-        clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-        clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-        clone.setMTLevel((IntConfiguration)getMTLevel().clone());
-        clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-        clone.setStrip((BooleanConfiguration)getStrip().clone());
-        clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-        clone.setTool((StringConfiguration)getTool().clone());
-        clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
+        clone.setDevelopmentMode(getDevelopmentMode().clone());
+        clone.setWarningLevel(getWarningLevel().clone());
+        clone.setMTLevel(getMTLevel().clone());
+        clone.setSixtyfourBits(getSixtyfourBits().clone());
+        clone.setStrip(getStrip().clone());
+        clone.setAdditionalDependencies(getAdditionalDependencies().clone());
+        clone.setTool(getTool().clone());
+        clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         // From CCCCompiler
-        clone.setMTLevel((IntConfiguration)getMTLevel().clone());
-        clone.setLibraryLevel((IntConfiguration)getLibraryLevel().clone());
-        clone.setStandardsEvolution((IntConfiguration)getStandardsEvolution().clone());
-        clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
+        clone.setMTLevel(getMTLevel().clone());
+        clone.setLibraryLevel(getLibraryLevel().clone());
+        clone.setStandardsEvolution(getStandardsEvolution().clone());
+        clone.setLanguageExt(getLanguageExt().clone());
         clone.setIncludeDirectories(getIncludeDirectories().cloneConf());
-        clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
+        clone.setInheritIncludes(getInheritIncludes().clone());
         clone.setPreprocessorConfiguration(getPreprocessorConfiguration().cloneConf());
-        clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
+        clone.setInheritPreprocessor(getInheritPreprocessor().clone());
         return clone;
     }
     
@@ -106,8 +106,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         options += cccCompiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
-        if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST)
+        if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
+        }
         return CppUtils.reformatWhitespaces(options);
     }
     
@@ -138,37 +139,40 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         CCompilerConfiguration master;
         
         String options = ""; // NOI18N
-        if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST)
+        if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
+        }
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += getPreprocessorOptions();
-        options += getIncludeDirectoriesOptions();
+        options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         return CppUtils.reformatWhitespaces(options);
     }
     
     public String getPreprocessorOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " ") ; // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " ") ; // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " "); // NOI18N
-            if (master.getInheritPreprocessor().getValue())
-                master = (CCompilerConfiguration)master.getMaster();
-            else
+            options.append(master.getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " "); // NOI18N
+            if (master.getInheritPreprocessor().getValue()) {
+                master = (CCompilerConfiguration) master.getMaster();
+            } else {
                 master = null;
+            }
         }
         return options.toString();
     }
     
-    public String getIncludeDirectoriesOptions() {
+    public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
-            if (master.getInheritIncludes().getValue())
-                master = (CCompilerConfiguration)master.getMaster();
-            else
+            options.append(master.getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
+            if (master.getInheritIncludes().getValue()) {
+                master = (CCompilerConfiguration) master.getMaster();
+            } else {
                 master = null;
+            }
         }
         return options.toString();
     } 
@@ -212,8 +216,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                 set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                 sheet.put(set2);
             }
-            if (getMaster() != null)
+            if (getMaster() != null) {
                 sheet.put(getInputSet());
+            }
             Sheet.Set set4 = new Sheet.Set();
             set4.setName("Tool"); // NOI18N
             set4.setDisplayName(getString("ToolTxt1"));

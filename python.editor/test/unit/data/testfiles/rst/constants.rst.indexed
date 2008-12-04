@@ -1,0 +1,16 @@
+
+
+Document 0
+Searchable Keys:
+  item : Ellipsis;D;|DOCUMENTED|DOC_ONLY|;
+  item : False;D;|DOCUMENTED|DOC_ONLY|;
+  item : None;D;|DOCUMENTED|DOC_ONLY|;
+  item : NotImplemented;D;|DOCUMENTED|DOC_ONLY|;
+  item : True;D;|DOCUMENTED|DOC_ONLY|;
+  item : __debug__;D;|DOCUMENTED|DOC_ONLY|;
+  item : copyright;D;|DOCUMENTED|DOC_ONLY|;
+  item : quit;F;|DOCUMENTED|DOC_ONLY|;code;
+  module : constants
+
+Not Searchable Keys:
+  modattrs : S

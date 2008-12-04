@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -55,7 +56,9 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
@@ -95,6 +98,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     
     private static final Pattern LABEL_TEXT_PROP = Pattern.compile(PREFIX + 
             SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS +"_text$"); // NOI18N
+    private static final Pattern RADIO_TEXT_PROP = Pattern.compile(PREFIX + 
+            SVGComponentsSupport.ID_PREFIX_RADIOBUTTON + DIGITS +"_text$"); // NOI18N
 
     public synchronized static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgForm) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
@@ -102,18 +107,56 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
+                    Map<SVGFormComponent,DesignComponent> producer2Component = 
+                        new HashMap<SVGFormComponent, DesignComponent>();
                     for (SVGFormComponent srcComponent : srcComponents) {
                         DesignComponent svgComponent = srcComponent.createComponent(svgForm);
                         svgForm.addComponent(svgComponent);
+                        producer2Component.put( srcComponent, svgComponent );
                         MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
                     }
+                    initButtonGroup(producer2Component);
                 }
+
             });
         }
     }
 
     public void parse(InputStream svgInputStream, DesignComponent svgComponent) {
         parseSVGForm(svgInputStream, svgComponent);
+    }
+    
+    public static void initButtonGroup(
+            Map<SVGFormComponent, DesignComponent> producer2Component )
+    {
+        for ( Entry<SVGFormComponent,DesignComponent> entry : 
+            producer2Component.entrySet() )
+        {
+            SVGFormComponent component = entry.getKey();
+            if ( !component.getTypeID().equals( SVGButtonGroupCD.TYPEID)){
+                continue;
+            }
+            Map<String,Object> map = component.getProperties();
+            if ( map == null ){
+                continue;
+            }
+            List<SVGFormComponent> list = (List<SVGFormComponent>)
+                    map.get( SVGButtonGroupCD.PROP_BUTTONS);
+            if ( list != null ){
+                for( SVGFormComponent comp : list ){
+                    DesignComponent desComp = 
+                        producer2Component.get( comp );
+                    MidpArraySupport.append(entry.getValue(),
+                            SVGButtonGroupCD.PROP_BUTTONS, desComp );
+                    desComp.writeProperty( 
+                            SVGRadioButtonCD.PROP_BUTTON_GROUP, 
+                            MidpTypes.createJavaCodeValue( entry.
+                                    getValue().readProperty(
+                                            ClassCD.PROP_INSTANCE_NAME).
+                                            getPrimitiveValue().toString()));
+                }
+            }
+        }
     }
 
     private static SVGFormComponent[] getFormComponents(final InputStream svgInputStream) {
@@ -130,10 +173,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         }
         return ch.getFoundElements();
     }
-
+    
     public abstract static class SVGFormComponent {
 
-        public static SVGFormComponent create(final String id, final TypeID type, Float position) {
+        /*public static SVGFormComponent create(final String id, final TypeID type, Float position) {
             return new SVGFormComponent(id, type, position) {
 
                 @Override
@@ -143,42 +186,69 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                     return dc;
                 }
             };
+        }*/
+        
+        public static SVGFormComponent createComponent(  SVGFormComponent 
+                component , Float position)
+        {
+            component.setPosition( position );
+            return component; 
         }
 
         public static SVGFormComponent createComponent(final String id, 
                 final TypeID type, final TypeID eventTypeId , Float position) 
         {
-            return new SVGFormComponent(id, type, position) {
-
-                @Override
-                public DesignComponent createComponent(DesignComponent parentComponent) {
-                    DesignComponent dc = parentComponent.getDocument().createComponent(type);
-                    if (eventTypeId != null) {
-                        DesignComponent svgES = parentComponent.getDocument()
-                                .createComponent(eventTypeId);
-                        svgES.writeProperty(
-                                SVGComponentEventSourceCD.PROP_SVGCOMPONENT,
-                                PropertyValue.createComponentReference(dc));
-                        parentComponent.addComponent(svgES);
-                    }
-                    dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
-                    Map<String,String> properties = getProperties();
-                    if ( properties != null  ){
-                        for ( Entry<String,String> entry : properties.entrySet()){
+            return new SVGFormComponentImpl(id, type, position, eventTypeId) ;
+        }
+        
+        private static class  SVGFormComponentImpl extends SVGFormComponent {
+            
+            SVGFormComponentImpl( String id, TypeID type, Float position ,
+                    TypeID eventTypeId )
+            {
+                super( id, type , position );
+                myEventType = eventTypeId;
+            }
+            
+            SVGFormComponentImpl( SVGFormComponent component, Float position )
+            {
+                super( component.id, component.type , position );
+                setProperties( component.getProperties() );
+            }
+            
+            @Override
+            public DesignComponent createComponent(DesignComponent parentComponent) {
+                DesignComponent dc = parentComponent.getDocument().createComponent(getTypeID());
+                if (myEventType != null) {
+                    DesignComponent svgES = parentComponent.getDocument()
+                            .createComponent(myEventType);
+                    svgES.writeProperty(
+                            SVGComponentEventSourceCD.PROP_SVGCOMPONENT,
+                            PropertyValue.createComponentReference(dc));
+                    parentComponent.addComponent(svgES);
+                }
+                dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
+                Map<String,Object> properties = getProperties();
+                if ( properties != null  ){
+                    for ( Entry<String,Object> entry : properties.entrySet()){
+                        if ( !entry.getKey().equals( SVGButtonGroupCD.PROP_BUTTONS)){
                             dc.writeProperty( entry.getKey(), 
-                                    MidpTypes.createStringValue(entry.getValue()));
+                                MidpTypes.createStringValue(
+                                        entry.getValue().toString()));
                         }
                     }
-                    return dc;
                 }
-            };
+                return dc;
+            }
+            
+            private TypeID myEventType;
         }
         
         private String id;
         private TypeID type;
         private Float position;
-        private Map<String,String> myProperties;
-
+        private Map<String,Object> myProperties;
+        
         SVGFormComponent(String id, TypeID type, Float position) {
             if (type == null || id == null || position == null) {
                 throw new IllegalArgumentException(" id or type argument is null"); //NOI18N
@@ -202,14 +272,22 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             return position;
         }
         
-        void setProperty( String name , String value ){
+        void setPosition( Float pos ){
+            position = pos;
+        }
+        
+        void setProperty( String name , Object value ){
             if ( myProperties == null ){
-                myProperties = new HashMap<String, String>();
+                myProperties = new HashMap<String, Object>();
             }
             myProperties.put( name, value );
         }
         
-        Map<String,String> getProperties(){
+        void setProperties( Map<String,Object> props ){
+            myProperties  = props;
+        }
+        
+        Map<String,Object> getProperties(){
             return myProperties;
         }
     }
@@ -238,6 +316,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         private Float radioButtonFramePosition;
         //private Stack<Pair> myStack;
         private SVGFormComponent myCurrentComponent;
+        private SVGFormComponent myButtonGroup;
+        private List<SVGFormComponent> myButtons; 
         private String myPropName;
         private StringBuilder myText;
 
@@ -267,7 +347,9 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             final String id = atts.getValue("id"); // NOI18N
             final String transform = atts.getValue("transform");
             
-            if (id != null && LABEL_TEXT_PROP.matcher( id ).find()) {
+            if (id != null && ( LABEL_TEXT_PROP.matcher( id ).find() 
+                    || RADIO_TEXT_PROP.matcher( id ).find())) 
+            {
                 myPropName = SVGLabelCD.PROP_TEXT;    // NOI18N
                 return;
             }
@@ -279,6 +361,11 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             }
             if (FORM_COMPONENT_ID_RADIOBUTTONFRAME.matcher(id).find()) {
                 radioButtonFramePosition = getPosition(atts);
+                addSVGFormComponent(id, SVGButtonGroupCD.TYPEID, getPosition(atts), 
+                        localName );
+                myButtonGroup = myCurrentComponent;
+                myButtons = new LinkedList<SVGFormComponent>();
+                return;
             }
             if (FORM_COMPONENT_ID_BUTTON.matcher(id).find()) {
                 addSVGFormComponent(id, SVGButtonCD.TYPEID, getPosition(atts), 
@@ -299,6 +386,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                 addSVGFormComponent(id, SVGRadioButtonCD.TYPEID, 
                         getPositionForRadioButton(atts, radioButtonFramePosition), 
                         localName);
+                myButtons.add( myCurrentComponent );
             } else if (FORM_COMPONENT_ID_SLIDER.matcher(id).find()) {
                 addSVGFormComponent(id, SVGSliderCD.TYPEID, getPosition(atts), 
                         localName);
@@ -309,10 +397,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                 addSVGFormComponent(id, SVGTextFieldCD.TYPEID, getPosition(atts), 
                         localName);
             }
-            else {
-                /*Pair entry = new Pair( localName , null);
-                myStack.push( entry );*/
-            }
+            /*else {
+                Pair entry = new Pair( localName , null);
+                myStack.push( entry );
+            }*/
         }
         
         @Override
@@ -329,18 +417,27 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         }
 
         private void addSVGFormComponent(String id, TypeID type, Float position,
-                String localName ) {
+                String localName ) 
+        {
+            if ( !type.equals( SVGRadioButtonCD.TYPEID )){
+                myButtonGroup = null;
+                myButtons = null;
+            }
+            else if ( myButtonGroup != null ){
+                System.out.println();
+                myButtonGroup.setProperty( SVGButtonGroupCD.PROP_BUTTONS, 
+                        myButtons);
+            }
             int index = getIndex(position);
             myCurrentComponent = SVGFormComponent.createComponent(id, 
                     type, SVGComponentCD.getEventType(type), 
                     position);
             if (index == -1) {
-                ;
                 foundElements.add( myCurrentComponent );
             } else {
                 foundElements.add(index, myCurrentComponent );
             }
-            /*Pair entry = new Pair( localName , component);
+            /*Pair entry = new Pair( localName , myCurrentComponent);
             myStack.push( entry );*/
         }
 
@@ -357,7 +454,11 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             /*Pair entry = myStack.pop();
             assert entry.getKey().equals( localName ) :"'endElement' mmethod " +
             		"is called for tag '"+localName+" that was not placed" +
-            				" into the stack on 'startElement' handling";*/
+            				" into the stack on 'startElement' handling";
+            SVGFormComponent component = entry.getComponent();
+            if ( component != null ){
+                
+            }*/
         }
 
         private int getIndex(Float position) {
@@ -427,14 +528,15 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     /**
      * Search for SVGComponents in the given SVG image (Tiny)
      * @param svgInputStream - SVG image
-     * @return Array of svg id components with SVGCOmponent ID
+     * @return Array of svg id components with SVGCOmponent ID and properties
      */
-    public static final String[][] getComponentsInformation(InputStream svgInputStream) {
+    public static final Object[][] getComponentsInformation(InputStream svgInputStream) {
         SVGFormComponent[] components = getFormComponents(svgInputStream);
-        String[][] values = new String[components.length][2];
+        Object[][] values = new Object[components.length][3];
         for (int i = 0; i < components.length; i++) {
             values[i][1] = components[i].getId();
             values[i][0] = MidpTypes.getSimpleClassName(components[i].getTypeID());
+            values[i][2] = components[i];
         }
 
         return values;

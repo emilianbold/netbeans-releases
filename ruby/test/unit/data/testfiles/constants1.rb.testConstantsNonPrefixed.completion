@@ -1,0 +1,143 @@
+Code completion result for source line:
+Fcntl::|O_A
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   FD_CLOEXEC                                 null
+CONSTANT   F_DUPFD                                    null
+CONSTANT   F_GETFD                                    null
+CONSTANT   F_GETFL                                    null
+CONSTANT   F_GETLK                                    null
+CONSTANT   F_RDLCK                                    null
+CONSTANT   F_SETFD                                    null
+CONSTANT   F_SETFL                                    null
+CONSTANT   F_SETLK                                    null
+CONSTANT   F_SETLKW                                   null
+CONSTANT   F_UNLCK                                    null
+CONSTANT   F_WRLCK                                    null
+CONSTANT   O_ACCMODE                                  null
+CONSTANT   O_APPEND                                   null
+CONSTANT   O_CREAT                                    null
+CONSTANT   O_EXCL                                     null
+CONSTANT   O_NDELAY                                   null
+CONSTANT   O_NOCTTY                                   null
+CONSTANT   O_NONBLOCK                                 null
+CONSTANT   O_RDONLY                                   null
+CONSTANT   O_RDWR                                     null
+CONSTANT   O_TRUNC                                    null
+CONSTANT   O_WRONLY                                   null
+------------------------------------
+METHOD     alias_method(new_name, old_nam             Module
+METHOD     ancestors                                  Module
+METHOD     append_features(mod)                       Module
+METHOD     attr(symbol, writable)                     Module
+METHOD     attr_accessor(symbol)                      Module
+METHOD     attr_reader(symbol)                        Module
+METHOD     attr_writer(symbol)                        Module
+METHOD     autoload(name, filename)                   Module
+METHOD     autoload?(name)                            Module
+METHOD     class_eval(string, filename, l             Module
+METHOD     class_exec(arg) { }                        Module
+METHOD     class_variable_defined?(symbol             Module
+METHOD     class_variable_get(symbol)                 Module
+METHOD     class_variable_set(symbol, obj             Module
+METHOD     class_variables                            Module
+METHOD     const_defined?(sym)                        Module
+METHOD     const_get(sym)                             Module
+METHOD     const_missing(sym)                         Module
+METHOD     const_set(sym, obj)                        Module
+METHOD     constants                       [STATIC]   Module
+METHOD     constants                                  Module
+METHOD     define_method(symbol)                      Module
+METHOD     define_method(symbol, method)              Module
+METHOD     eql?(other)                                Module
+METHOD     equal?(other)                              Module
+METHOD     extend_object(obj)                         Module
+METHOD     extended(p1)                               Module
+METHOD     freeze                                     Module
+METHOD     include(module_)                           Module
+METHOD     include?(module_name)                      Module
+METHOD     included(othermod)                         Module
+METHOD     included_modules                           Module
+METHOD     instance_method(symbol)                    Module
+METHOD     instance_methods(include_super             Module
+METHOD     method_added(p1)                           Module
+METHOD     method_defined?(symbol)                    Module
+METHOD     method_removed(p1)                         Module
+METHOD     method_undefined(p1)                       Module
+METHOD     module_exec(arg) { }                       Module
+METHOD     module_function(symbol)                    Module
+METHOD     name                                       Module
+METHOD     nesting                         [STATIC]   Module
+METHOD     new                             [STATIC]   Module
+METHOD     new                             [STATIC]   Object
+METHOD     new(super_class)                [STATIC]   Class
+METHOD     private(symbol)                            Module
+METHOD     private_class_method(symbol)               Module
+METHOD     private_instance_methods(inclu             Module
+METHOD     private_method_defined?(symbol             Module
+METHOD     protected(symbol)                          Module
+METHOD     protected_instance_methods(inc             Module
+METHOD     protected_method_defined?(symb             Module
+METHOD     public(symbol)                             Module
+METHOD     public_class_method(symbol)                Module
+METHOD     public_instance_methods(includ             Module
+METHOD     public_method_defined?(symbol)             Module
+METHOD     remove_class_variable(sym)                 Module
+METHOD     remove_const(sym)                          Module
+METHOD     remove_method(symbol)                      Module
+METHOD     to_s                                       Module
+METHOD     undef_method(symbol)                       Module
+KEYWORD    ARGF                                       null
+KEYWORD    ARGV                                       null
+KEYWORD    BEGIN                                      null
+KEYWORD    DATA                                       null
+KEYWORD    END                                        null
+KEYWORD    ENV                                        null
+KEYWORD    FALSE                                      null
+KEYWORD    NIL                                        null
+KEYWORD    RUBY_PLATFORM                              null
+KEYWORD    RUBY_RELEASE_DATE                          null
+KEYWORD    RUBY_VERSION                               null
+KEYWORD    SCRIPT_LINES__                             null
+KEYWORD    STDERR                                     null
+KEYWORD    STDIN                                      null
+KEYWORD    STDOUT                                     null
+KEYWORD    TOPLEVEL_BINDING                           null
+KEYWORD    TRUE                                       null
+KEYWORD    __FILE__                                   null
+KEYWORD    __LINE__                                   null
+KEYWORD    alias                                      null
+KEYWORD    and                                        null
+KEYWORD    begin                                      null
+KEYWORD    break                                      null
+KEYWORD    case                                       null
+KEYWORD    class                                      null
+KEYWORD    def                                        null
+KEYWORD    defined?                                   null
+KEYWORD    do                                         null
+KEYWORD    else                                       null
+KEYWORD    elsif                                      null
+KEYWORD    end                                        null
+KEYWORD    ensure                                     null
+KEYWORD    false                                      null
+KEYWORD    for                                        null
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    module                                     null
+KEYWORD    next                                       null
+KEYWORD    nil                                        null
+KEYWORD    not                                        null
+KEYWORD    or                                         null
+KEYWORD    redo                                       null
+KEYWORD    rescue                                     null
+KEYWORD    retry                                      null
+KEYWORD    return                                     null
+KEYWORD    self                                       null
+KEYWORD    super                                      null
+KEYWORD    then                                       null
+KEYWORD    true                                       null
+KEYWORD    undef                                      null
+KEYWORD    unless                                     null
+KEYWORD    until                                      null
+KEYWORD    when                                       null
+KEYWORD    while                                      null
+KEYWORD    yield                                      null

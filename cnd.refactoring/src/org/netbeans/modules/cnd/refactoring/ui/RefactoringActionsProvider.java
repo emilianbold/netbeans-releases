@@ -38,11 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
@@ -50,8 +51,6 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -69,35 +68,36 @@ import org.openide.windows.TopComponent;
  * 
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=150)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position = 150)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
-    
+
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
-        
+
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
         if (CsmRefactoringUtils.isSupportedReference(ctx)) {
             return true;
-        }        
+        }
         return false;
     }
 
     @Override
     public void doFindUsages(final Lookup lookup) {
         Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec, lookup) {
+        if (isFromEditor(lookup)) {
+            task = new TextComponentTask(lookup) {
+
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
-                     return new WhereUsedQueryUI(selectedElement);
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
+                    return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
-            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToElementTask(lookup) {
+
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     return new WhereUsedQueryUI(selectedElement);
                 }
@@ -105,102 +105,67 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
         task.run();
     }
-    
+
     @Override
     public void doRename(final Lookup lookup) {
         Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec, lookup) {
+        if (isFromEditor(lookup)) {
+            task = new TextComponentTask(lookup) {
+
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
                     return new RenameRefactoringUI(selectedElement);
-//                    Element selected = selectedElement.resolveElement(info);
-//                    if (selected==null)
-//                        return null;
-//                    if (selected.getKind() == ElementKind.CONSTRUCTOR) {
-//                        selected = selected.getEnclosingElement();
-//                        selectedElement = TreePathHandle.create(info.getTrees().getPath(selected), info);
-//                    } 
-//                    if (selected.getKind() == ElementKind.PACKAGE) {
-//                        NonRecursiveFolder folder = new NonRecursiveFolder() {
-//                            public FileObject getFolder() {
-//                                return info.getFileObject().getParent();
-//                            }
-//                        };
-//                        return new RenameRefactoringUI(folder);
-//                    } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
-//                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-//                        if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
-//                            return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
-//                        } else {
-//                            return new RenameRefactoringUI(selectedElement, info);
-//                        }
-//                    } else {
-//                        return new RenameRefactoringUI(selectedElement, info);
-//                    }
                 }
             };
         } else {
-            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToElementTask(lookup) {
+
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     return new RenameRefactoringUI(selectedElement);
-//                    String newName = getName(lookup);
-//                    if (newName!=null) {
-//                        if (pkg[0]!= null)
-//                            return new RenameRefactoringUI(pkg[0], newName);
-//                        else
-//                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
-//                    }
-//                    else 
-//                        if (pkg[0]!= null)
-//                            return new RenameRefactoringUI(pkg[0]);
-//                        else
-//                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
                 }
             };
         }
         task.run();
 //        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
-    
+
     private static String getActionName(Action action) {
         String arg = (String) action.getValue(Action.NAME);
         arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
         return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
     }
 
-
     /**
      * returns true if refactorable element is selected
      */
     @Override
     public boolean canRename(Lookup lookup) {
-        if( CsmModelAccessor.getModelState() != CsmModelState.ON ) {
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
             return false;
         }
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        Set<Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if (nodes.size() > 1) {
             return false;
-        }        
-        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        }
+        CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
         if (CsmRefactoringUtils.isSupportedReference(ctx)) {
             return true;
-        }        
+        }
         return false;
     }
-    
+
     public static abstract class TextComponentTask implements Runnable {
+
         private JTextComponent textC;
         private int caret;
         private int start;
         private int end;
         private RefactoringUI ui;
         private Lookup lookup;
-        
-        public TextComponentTask(EditorCookie ec, Lookup lkp) {
-            this.textC = ec.getOpenedPanes()[0];
+
+        public TextComponentTask(Lookup lkp) {
+            this.textC = lkp.lookup(EditorCookie.class).getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();
@@ -209,98 +174,105 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             assert start != -1;
             assert end != -1;
         }
-        
+
         public final void run() {
-            CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
             if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
                 return;
             }
             ui = createRefactoringUI(ctx, start, end);
             TopComponent activetc = TopComponent.getRegistry().getActivated();
-            
-            if (ui!=null) {
+
+            if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
             }
         }
-        
-        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement*/,int startOffset,int endOffset/*, CompilationInfo info*/);
+
+        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset);
     }
-    
-    public static abstract class NodeToElementTask implements Runnable/*, CancellableTask<CompilationController>*/  {
-        private Node node;
+
+    public static abstract class NodeToElementTask implements Runnable {
+
+        private Lookup context;
         private RefactoringUI ui;
-        
-        public NodeToElementTask(Collection<? extends Node> nodes) {
-            assert nodes.size() == 1;
-            this.node = nodes.iterator().next();
+
+        public NodeToElementTask(Lookup context) {
+            this.context = context;
         }
-        
+
         public void cancel() {
         }
-        
+
         public final void run() {
-            CsmReference ctx = CsmReferenceResolver.getDefault().findReference(node);
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(context);
             if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
                 return;
             }
             ui = createRefactoringUI(ctx);
             TopComponent activetc = TopComponent.getRegistry().getActivated();
 
-            if (ui!=null) {
+            if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
             }
         }
+
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/);
     }
-    
-    public static abstract class NodeToFileObjectTask implements Runnable/*, CancellableTask<CompilationController>*/ {
+
+    public static abstract class ElementTask implements Runnable {
+
+        private RefactoringUI ui;
+        private final CsmObject ctx;
+
+        public ElementTask(CsmObject ctx) {
+            this.ctx = ctx;
+        }
+
+        public void cancel() {
+        }
+
+        public final void run() {
+            if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
+                return;
+            }
+            ui = createRefactoringUI(ctx);
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+
+            if (ui != null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+            }
+        }
+
+        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement);
+    }
+
+    public static abstract class NodeToFileObjectTask implements Runnable {
+
         private Collection<? extends Node> nodes;
         private RefactoringUI ui;
         public NonRecursiveFolder pkg[];
-//        public WeakReference<CompilationInfo> cinfo;
-//        Collection<RubyElementCtx> handles = new ArrayList<RubyElementCtx>();
         Collection<CsmObject> handles = new ArrayList<CsmObject>();
-     
+
         public NodeToFileObjectTask(Collection<? extends Node> nodes) {
             this.nodes = nodes;
         }
-        
+
         public void cancel() {
         }
-        
-//        public void run(CompilationController info) throws Exception {
-//            info.toPhase(Phase.ELEMENTS_RESOLVED);
-//            org.jruby.ast.Node root = AstUtilities.getRoot(info);
-//            if (root != null) {
-//                RubyParseResult rpr = (RubyParseResult)info.getParserResult();
-//                if (rpr != null) {
-//                    AnalysisResult ar = rpr.getStructure();
-//                    List<? extends AstElement> els = ar.getElements();
-//                    if (els.size() > 0) {
-//                        // TODO - try to find the outermost or most "relevant" module/class in the file?
-//                        // In Java, we look for a class with the name corresponding to the file.
-//                        // It's not as simple in Ruby.
-//                        AstElement element = els.get(0);
-//                        org.jruby.ast.Node node = element.getNode();
-//                        RubyElementCtx representedObject = new RubyElementCtx(root, node, element, info.getFileObject(), info);
-//                        handles.add(representedObject);
-//                    }
-//                }
-//            }
-//            cinfo=new WeakReference<CompilationInfo>(info);
-//        }
-        
+
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
             pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
-            for (Node node:nodes) {
+            for (Node node : nodes) {
                 DataObject dob = node.getCookie(DataObject.class);
-                if (dob!=null) {
+                if (dob != null) {
                     fobs[i] = dob.getPrimaryFile();
 //                    Source source = RetoucheUtils.getSource(fobs[i]);
 //                    assert source != null;
@@ -311,7 +283,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 //                    } catch (IOException ex) {
 //                        ex.printStackTrace();
 //                    }
-                    
+
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
                 }
             }
@@ -319,9 +291,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
 
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<CsmObject> handles);
-    }    
-    
-    static boolean isFromEditor(EditorCookie ec) {
+    }
+
+    static boolean isFromEditor(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null && ec.getOpenedPanes() != null) {
             // This doesn't seem to work well - a lot of the time, I'm right clicking
             // on the editor and it still has another activated view (this is on the mac)
@@ -331,7 +304,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             //            if (activetc instanceof CloneableEditorSupport.Pane) {
             //
             return true;
-            //            }
+        //            }
         }
 
         return false;

@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableName;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
@@ -88,6 +89,47 @@ public class PersistentUtils {
     private PersistentUtils() {
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // support for parameters
+    public static void writeParameterList(CsmParameterList params, DataOutput output) throws IOException {
+        if (params == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else if (params instanceof ParameterListImpl) {
+            int handler = PARAM_LIST_IMPL;
+            if (params instanceof FunctionParameterListImpl) {
+                handler = FUN_PARAM_LIST_IMPL;
+                if (params instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
+                    handler = FUN_KR_PARAM_LIST_IMPL;
+                }
+            }
+            output.writeInt(handler);
+            ((ParameterListImpl)params).write(output);
+        }
+    }
+
+    public static CsmParameterList readParameterList(DataInput input) throws IOException {
+        int handler = input.readInt();
+        CsmParameterList paramList;
+        switch (handler) {
+            case AbstractObjectFactory.NULL_POINTER:
+                paramList = null;
+                break;
+            case PARAM_LIST_IMPL:
+                paramList = new ParameterListImpl(input);
+                break;
+            case FUN_PARAM_LIST_IMPL:
+                paramList = new FunctionParameterListImpl(input);
+                break;
+            case FUN_KR_PARAM_LIST_IMPL:
+                paramList = new FunctionParameterListImpl.FunctionKnRParameterListImpl(input);
+                break;
+            default:
+                assert false : "unexpected param list implementation " + handler;
+                paramList = null;
+        }
+        return paramList;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // support file buffers
     public static void writeBuffer(FileBuffer buffer, DataOutput output) throws IOException {
@@ -607,7 +649,12 @@ public class PersistentUtils {
     private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
     private static final int COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
 
+    // param lists
+    private static final int PARAM_LIST_IMPL = COMPOUND_STATEMENT_IMPL + 1;
+    private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
+    private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
+
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = COMPOUND_STATEMENT_IMPL;
+    public static final int LAST_INDEX = FUN_KR_PARAM_LIST_IMPL;
 }

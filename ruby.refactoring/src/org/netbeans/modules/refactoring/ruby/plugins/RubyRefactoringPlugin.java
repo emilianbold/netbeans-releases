@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,8 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult;
@@ -77,7 +75,6 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
     private Problem problem;
     protected volatile boolean cancelRequest = false;
     private volatile CancellableTask currentTask;
-    
 
     protected abstract Problem preCheck(CompilationController javac) throws IOException;
     protected abstract Problem checkParameters(CompilationController javac) throws IOException;

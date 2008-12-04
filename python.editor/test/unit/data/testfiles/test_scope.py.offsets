@@ -1,0 +1,531 @@
+
+<Module><ImportFrom>from test_support import verify, TestFailed, check_syntax</ImportFrom>
+
+<Import>import warnings</Import>
+<Expr><Call><Attribute><Name>warnings</Name>.filterwarnings</Attribute>(<Str>"ignore"</Str>, <Str>r"import \*"</Str>, <Name>SyntaxWarning</Name>, <Str>"&lt;string&gt;"</Str>)</Call></Expr>
+
+<Print>print <Str>"1. simple nesting"</Str></Print>
+
+<FunctionDef>def make_adder(<Name>x</Name>):
+    <FunctionDef>def adder(<Name>y</Name>):
+        <Return>return <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Return>
+   </FunctionDef> <Return>return <Name>adder</Name></Return>
+
+</FunctionDef><Assign><Name>inc</Name> = <Call><Name>make_adder</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>make_adder</Name>(<Num>10</Num>)</Call></Assign>
+
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"2. extra nesting"</Str></Print>
+
+<FunctionDef>def make_adder2(<Name>x</Name>):
+    <FunctionDef>def extra(): # check freevars passing through non-use scopes
+        <FunctionDef>def adder(<Name>y</Name>):
+            <Return>return <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Return>
+       </FunctionDef> <Return>return <Name>adder</Name></Return>
+   </FunctionDef> <Return>return <Call><Name>extra</Name>()</Call></Return>
+
+</FunctionDef><Assign><Name>inc</Name> = <Call><Name>make_adder2</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>make_adder2</Name>(<Num>10</Num>)</Call></Assign>
+
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"3. simple nesting + rebinding"</Str></Print>
+
+<FunctionDef>def make_adder3(<Name>x</Name>):
+    <FunctionDef>def adder(<Name>y</Name>):
+        <Return>return <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Return>
+   </FunctionDef> <Assign><Name>x</Name> = <BinOp><Name>x</Name> + <Num>1</Num></BinOp></Assign> # check tracking of assignment to x in defining scope
+    <Return>return <Name>adder</Name></Return>
+
+</FunctionDef><Assign><Name>inc</Name> = <Call><Name>make_adder3</Name>(<Num>0</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>make_adder3</Name>(<Num>9</Num>)</Call></Assign>
+
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"4. nesting with global but no free"</Str></Print>
+
+<FunctionDef>def make_adder4(): # XXX add exta level of indirection
+    <FunctionDef>def nest():
+        <FunctionDef>def nest():
+            <FunctionDef>def adder(<Name>y</Name>):
+                <Return>return <BinOp><Name>global_x</Name> + <Name>y</Name></BinOp></Return> # check that plain old globals work
+           </FunctionDef> <Return>return <Name>adder</Name></Return>
+       </FunctionDef> <Return>return <Call><Name>nest</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Call><Name>nest</Name>()</Call></Return>
+
+</FunctionDef><Assign><Name>global_x</Name> = <Num>1</Num></Assign>
+<Assign><Name>adder</Name> = <Call><Name>make_adder4</Name>()</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>adder</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+
+<Assign><Name>global_x</Name> = <Num>10</Num></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>adder</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"5. nesting through class"</Str></Print>
+
+<FunctionDef>def make_adder5(<Name>x</Name>):
+    <ClassDef>class Adder:
+        <FunctionDef>def __call__(<Name>self</Name>, <Name>y</Name>):
+            <Return>return <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Return>
+   </FunctionDef></ClassDef> <Return>return <Call><Name>Adder</Name>()</Call></Return>
+
+</FunctionDef><Assign><Name>inc</Name> = <Call><Name>make_adder5</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>make_adder5</Name>(<Num>10</Num>)</Call></Assign>
+
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"6. nesting plus free ref to global"</Str></Print>
+
+<FunctionDef>def make_adder6(<Name>x</Name>):
+    <Global>global global_nest_x</Global>
+    <FunctionDef>def adder(<Name>y</Name>):
+        <Return>return <BinOp><Name>global_nest_x</Name> + <Name>y</Name></BinOp></Return>
+   </FunctionDef> <Assign><Name>global_nest_x</Name> = <Name>x</Name></Assign>
+    <Return>return <Name>adder</Name></Return>
+
+</FunctionDef><Assign><Name>inc</Name> = <Call><Name>make_adder6</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>make_adder6</Name>(<Num>10</Num>)</Call></Assign>
+
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>11</Num></Compare>)</Call></Expr> # there's only one global
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>-2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"7. nearest enclosing scope"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <FunctionDef>def g(<Name>y</Name>):
+        <Assign><Name>x</Name> = <Num>42</Num></Assign> # check that this masks binding in f()
+        <FunctionDef>def h(<Name>z</Name>):
+            <Return>return <BinOp><Name>x</Name> + <Name>z</Name></BinOp></Return>
+       </FunctionDef> <Return>return <Name>h</Name></Return>
+   </FunctionDef> <Return>return <Call><Name>g</Name>(<Num>2</Num>)</Call></Return>
+
+</FunctionDef><Assign><Name>test_func</Name> = <Call><Name>f</Name>(<Num>10</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>test_func</Name>(<Num>5</Num>)</Call> == <Num>47</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"8. mixed freevars and cellvars"</Str></Print>
+
+<FunctionDef>def identity(<Name>x</Name>):
+    <Return>return <Name>x</Name></Return>
+
+</FunctionDef><FunctionDef>def f(<Name>x</Name>, <Name>y</Name>, <Name>z</Name>):
+    <FunctionDef>def g(<Name>a</Name>, <Name>b</Name>, <Name>c</Name>):
+        <Assign><Name>a</Name> = <BinOp><Name>a</Name> + <Name>x</Name></BinOp></Assign> # 3
+        <FunctionDef>def h():
+            # z * (4 + 9)
+            # 3 * 13
+            <Return>return <Call><Name>identity</Name>(<BinOp><Name>z</Name> * <BinOp>(<Name>b</Name> + <Name>y</Name>)</BinOp></BinOp>)</Call></Return>
+       </FunctionDef> <Assign><Name>y</Name> = <BinOp><Name>c</Name> + <Name>z</Name></BinOp></Assign> # 9
+        <Return>return <Name>h</Name></Return>
+   </FunctionDef> <Return>return <Name>g</Name></Return>
+
+</FunctionDef><Assign><Name>g</Name> = <Call><Name>f</Name>(<Num>1</Num>, <Num>2</Num>, <Num>3</Num>)</Call></Assign>
+<Assign><Name>h</Name> = <Call><Name>g</Name>(<Num>2</Num>, <Num>4</Num>, <Num>6</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>h</Name>()</Call> == <Num>39</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"9. free variable in method"</Str></Print>
+
+<FunctionDef>def test():
+    <Assign><Name>method_and_var</Name> = <Str>"var"</Str></Assign>
+    <ClassDef>class Test:
+        <FunctionDef>def method_and_var(<Name>self</Name>):
+            <Return>return <Str>"method"</Str></Return>
+       </FunctionDef> <FunctionDef>def test(<Name>self</Name>):
+            <Return>return <Name>method_and_var</Name></Return>
+       </FunctionDef> <FunctionDef>def actual_global(<Name>self</Name>):
+            <Return>return <Call><Name>str</Name>(<Str>"global"</Str>)</Call></Return>
+       </FunctionDef> <FunctionDef>def str(<Name>self</Name>):
+            <Return>return <Call><Name>str</Name>(<Name>self</Name>)</Call></Return>
+   </FunctionDef></ClassDef> <Return>return <Call><Name>Test</Name>()</Call></Return>
+
+</FunctionDef><Assign><Name>t</Name> = <Call><Name>test</Name>()</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.test</Attribute>()</Call> == <Str>"var"</Str></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.method_and_var</Attribute>()</Call> == <Str>"method"</Str></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.actual_global</Attribute>()</Call> == <Str>"global"</Str></Compare>)</Call></Expr>
+
+<Assign><Name>method_and_var</Name> = <Str>"var"</Str></Assign>
+<ClassDef>class Test:
+    # this class is not nested, so the rules are different
+    <FunctionDef>def method_and_var(<Name>self</Name>):
+        <Return>return <Str>"method"</Str></Return>
+   </FunctionDef> <FunctionDef>def test(<Name>self</Name>):
+        <Return>return <Name>method_and_var</Name></Return>
+   </FunctionDef> <FunctionDef>def actual_global(<Name>self</Name>):
+        <Return>return <Call><Name>str</Name>(<Str>"global"</Str>)</Call></Return>
+   </FunctionDef> <FunctionDef>def str(<Name>self</Name>):
+        <Return>return <Call><Name>str</Name>(<Name>self</Name>)</Call></Return>
+
+</FunctionDef></ClassDef><Assign><Name>t</Name> = <Call><Name>Test</Name>()</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.test</Attribute>()</Call> == <Str>"var"</Str></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.method_and_var</Attribute>()</Call> == <Str>"method"</Str></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Attribute><Name>t</Name>.actual_global</Attribute>()</Call> == <Str>"global"</Str></Compare>)</Call></Expr>
+
+<Print>print <Str>"10. recursion"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <FunctionDef>def fact(<Name>n</Name>):
+        <If>if <Compare><Name>n</Name> == <Num>0</Num></Compare>:
+            <Return>return <Num>1</Num></Return>
+        else:
+            <Return>return <BinOp><Name>n</Name> * <Call><Name>fact</Name>(<BinOp><Name>n</Name> - <Num>1</Num></BinOp>)</Call></BinOp></Return>
+   </If></FunctionDef> <If>if <Compare><Name>x</Name> &gt;= <Num>0</Num></Compare>:
+        <Return>return <Call><Name>fact</Name>(<Name>x</Name>)</Call></Return>
+    else:
+        <Raise>raise <Name>ValueError</Name>, <Str>"x must be &gt;= 0"</Str></Raise>
+
+</If></FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>f</Name>(<Num>6</Num>)</Call> == <Num>720</Num></Compare>)</Call></Expr>
+
+
+<Print>print <Str>"11. unoptimized namespaces"</Str></Print>
+
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def unoptimized_clash1(strip):
+    def f(s):
+        from string import *
+        return strip(s) # ambiguity: free or local
+    return f
+"""</Str>)</Call></Expr>
+
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def unoptimized_clash2():
+    from string import *
+    def f(s):
+        return strip(s) # ambiguity: global or local
+    return f
+"""</Str>)</Call></Expr>
+
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def unoptimized_clash2():
+    from string import *
+    def g():
+        def f(s):
+            return strip(s) # ambiguity: global or local
+        return f
+"""</Str>)</Call></Expr>
+
+# XXX could allow this for exec with const argument, but what's the point
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def error(y):
+    exec "a = 1"
+    def f(x):
+        return x + y
+    return f
+"""</Str>)</Call></Expr>
+
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def f(x):
+    def g():
+        return x
+    del x # can't del name
+"""</Str>)</Call></Expr>
+
+<Expr><Call><Name>check_syntax</Name>(<Str>"""\
+def f():
+    def g():
+         from string import *
+         return strip # global or local?
+"""</Str>)</Call></Expr>
+
+# and verify a few cases that should work
+
+<Exec>exec <Str>"""
+def noproblem1():
+    from string import *
+    f = lambda x:x
+
+def noproblem2():
+    from string import *
+    def f(x):
+        return x + 1
+
+def noproblem3():
+    from string import *
+    def f(x):
+        global y
+        y = x
+"""</Str></Exec>
+
+<Print>print <Str>"12. lambdas"</Str></Print>
+
+<Assign><Name>f1</Name> = <Lambda>lambda <Name>x</Name>: <Lambda>lambda <Name>y</Name>: <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Lambda></Lambda></Assign>
+<Assign><Name>inc</Name> = <Call><Name>f1</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>f1</Name>(<Num>10</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>5</Num>)</Call> == <Num>15</Num></Compare>)</Call></Expr>
+
+<Assign><Name>f2</Name> = <Lambda>lambda <Name>x</Name>: <Call><Lambda>(lambda : <Lambda>lambda <Name>y</Name>: <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Lambda>)</Lambda>()</Call></Lambda></Assign>
+<Assign><Name>inc</Name> = <Call><Name>f2</Name>(<Num>1</Num>)</Call></Assign>
+<Assign><Name>plus10</Name> = <Call><Name>f2</Name>(<Num>10</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>1</Num>)</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>plus10</Name>(<Num>5</Num>)</Call> == <Num>15</Num></Compare>)</Call></Expr>
+
+<Assign><Name>f3</Name> = <Lambda>lambda <Name>x</Name>: <Lambda>lambda <Name>y</Name>: <BinOp><Name>global_x</Name> + <Name>y</Name></BinOp></Lambda></Lambda></Assign>
+<Assign><Name>global_x</Name> = <Num>1</Num></Assign>
+<Assign><Name>inc</Name> = <Call><Name>f3</Name>(<Name>None</Name>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>inc</Name>(<Num>2</Num>)</Call> == <Num>3</Num></Compare>)</Call></Expr>
+
+<Assign><Name>f8</Name> = <Lambda>lambda <Name>x</Name>, <Name>y</Name>, <Name>z</Name>: <Lambda>lambda <Name>a</Name>, <Name>b</Name>, <Name>c</Name>: <Lambda>lambda : <BinOp><Name>z</Name> * <BinOp>(<Name>b</Name> + <Name>y</Name>)</BinOp></BinOp></Lambda></Lambda></Lambda></Assign>
+<Assign><Name>g</Name> = <Call><Name>f8</Name>(<Num>1</Num>, <Num>2</Num>, <Num>3</Num>)</Call></Assign>
+<Assign><Name>h</Name> = <Call><Name>g</Name>(<Num>2</Num>, <Num>4</Num>, <Num>6</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>h</Name>()</Call> == <Num>18</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"13. UnboundLocal"</Str></Print>
+
+<FunctionDef>def errorInOuter():
+    <Print>print <Name>y</Name></Print>
+    <FunctionDef>def inner():
+        <Return>return <Name>y</Name></Return>
+   </FunctionDef> <Assign><Name>y</Name> = <Num>1</Num></Assign>
+
+</FunctionDef><FunctionDef>def errorInInner():
+    <FunctionDef>def inner():
+        <Return>return <Name>y</Name></Return>
+   </FunctionDef> <Expr><Call><Name>inner</Name>()</Call></Expr>
+    <Assign><Name>y</Name> = <Num>1</Num></Assign>
+
+</FunctionDef><TryExcept>try:
+    <Expr><Call><Name>errorInOuter</Name>()</Call></Expr>
+except <Name>UnboundLocalError</Name>:
+    <Pass>pass</Pass>
+else:
+    <Raise>raise <Name>TestFailed</Name></Raise>
+
+</TryExcept><TryExcept>try:
+    <Expr><Call><Name>errorInInner</Name>()</Call></Expr>
+except <Name>NameError</Name>:
+    <Pass>pass</Pass>
+else:
+    <Raise>raise <Name>TestFailed</Name></Raise>
+
+</TryExcept><Print>print <Str>"14. complex definitions"</Str></Print>
+
+<FunctionDef>def makeReturner(*lst):
+    <FunctionDef>def returner():
+        <Return>return <Name>lst</Name></Return>
+   </FunctionDef> <Return>return <Name>returner</Name></Return>
+
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>makeReturner</Name><Call>(<Num>1</Num>,<Num>2</Num>,<Num>3</Num>)</Call>()</Call> == <Tuple>(<Num>1</Num>,<Num>2</Num>,<Num>3</Num>)</Tuple></Compare>)</Call></Expr>
+
+<FunctionDef>def makeReturner2(**kwargs):
+    <FunctionDef>def returner():
+        <Return>return <Name>kwargs</Name></Return>
+   </FunctionDef> <Return>return <Name>returner</Name></Return>
+
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Subscript><Name>makeReturner2</Name><Call>(a=<Num>11</Num>)</Call><Call>()</Call>[<Index><Str>'a'</Str></Index>]</Subscript> == <Num>11</Num></Compare>)</Call></Expr>
+
+<FunctionDef>def makeAddPair(<Tuple>(<Name>a</Name>, <Name>b</Name>)</Tuple>):
+    <FunctionDef>def addPair(<Tuple>(<Name>c</Name>, <Name>d</Name>)</Tuple>):
+        <Return>return <Tuple>(<BinOp><Name>a</Name> + <Name>c</Name></BinOp>, <BinOp><Name>b</Name> + <Name>d</Name></BinOp>)</Tuple></Return>
+   </FunctionDef> <Return>return <Name>addPair</Name></Return>
+
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>makeAddPair</Name><Call>(<Tuple>(<Num>1</Num>, <Num>2</Num>)</Tuple>)</Call>(<Tuple>(<Num>100</Num>, <Num>200</Num>)</Tuple>)</Call> == <Tuple>(<Num>101</Num>,<Num>202</Num>)</Tuple></Compare>)</Call></Expr>
+
+<Print>print <Str>"15. scope of global statements"</Str></Print>
+# Examples posted by Samuele Pedroni to python-dev on 3/1/2001
+
+# I
+<Assign><Name>x</Name> = <Num>7</Num></Assign>
+<FunctionDef>def f():
+    <Assign><Name>x</Name> = <Num>1</Num></Assign>
+    <FunctionDef>def g():
+        <Global>global x</Global>
+        <FunctionDef>def i():
+            <FunctionDef>def h():
+                <Return>return <Name>x</Name></Return>
+           </FunctionDef> <Return>return <Call><Name>h</Name>()</Call></Return>
+       </FunctionDef> <Return>return <Call><Name>i</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Call><Name>g</Name>()</Call></Return>
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>f</Name>()</Call> == <Num>7</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Name>x</Name> == <Num>7</Num></Compare>)</Call></Expr>
+
+# II
+<Assign><Name>x</Name> = <Num>7</Num></Assign>
+<FunctionDef>def f():
+    <Assign><Name>x</Name> = <Num>1</Num></Assign>
+    <FunctionDef>def g():
+        <Assign><Name>x</Name> = <Num>2</Num></Assign>
+        <FunctionDef>def i():
+            <FunctionDef>def h():
+                <Return>return <Name>x</Name></Return>
+           </FunctionDef> <Return>return <Call><Name>h</Name>()</Call></Return>
+       </FunctionDef> <Return>return <Call><Name>i</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Call><Name>g</Name>()</Call></Return>
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>f</Name>()</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Name>x</Name> == <Num>7</Num></Compare>)</Call></Expr>
+
+# III
+<Assign><Name>x</Name> = <Num>7</Num></Assign>
+<FunctionDef>def f():
+    <Assign><Name>x</Name> = <Num>1</Num></Assign>
+    <FunctionDef>def g():
+        <Global>global x</Global>
+        <Assign><Name>x</Name> = <Num>2</Num></Assign>
+        <FunctionDef>def i():
+            <FunctionDef>def h():
+                <Return>return <Name>x</Name></Return>
+           </FunctionDef> <Return>return <Call><Name>h</Name>()</Call></Return>
+       </FunctionDef> <Return>return <Call><Name>i</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Call><Name>g</Name>()</Call></Return>
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>f</Name>()</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Name>x</Name> == <Num>2</Num></Compare>)</Call></Expr>
+
+# IV
+<Assign><Name>x</Name> = <Num>7</Num></Assign>
+<FunctionDef>def f():
+    <Assign><Name>x</Name> = <Num>3</Num></Assign>
+    <FunctionDef>def g():
+        <Global>global x</Global>
+        <Assign><Name>x</Name> = <Num>2</Num></Assign>
+        <FunctionDef>def i():
+            <FunctionDef>def h():
+                <Return>return <Name>x</Name></Return>
+           </FunctionDef> <Return>return <Call><Name>h</Name>()</Call></Return>
+       </FunctionDef> <Return>return <Call><Name>i</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Call><Name>g</Name>()</Call></Return>
+</FunctionDef><Expr><Call><Name>verify</Name>(<Compare><Call><Name>f</Name>()</Call> == <Num>2</Num></Compare>)</Call></Expr>
+<Expr><Call><Name>verify</Name>(<Compare><Name>x</Name> == <Num>2</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"16. check leaks"</Str></Print>
+
+<ClassDef>class Foo:
+    <Assign><Name>count</Name> = <Num>0</Num></Assign>
+
+    <FunctionDef>def __init__(<Name>self</Name>):
+        <AugAssign><Attribute><Name>Foo</Name>.count</Attribute> += <Num>1</Num></AugAssign>
+
+   </FunctionDef> <FunctionDef>def __del__(<Name>self</Name>):
+        <AugAssign><Attribute><Name>Foo</Name>.count</Attribute> -= <Num>1</Num></AugAssign>
+
+</FunctionDef></ClassDef><FunctionDef>def f1():
+    <Assign><Name>x</Name> = <Call><Name>Foo</Name>()</Call></Assign>
+    <FunctionDef>def f2():
+        <Return>return <Name>x</Name></Return>
+   </FunctionDef> <Expr><Call><Name>f2</Name>()</Call></Expr>
+
+</FunctionDef><For>for <Name>i</Name> in <Call><Name>range</Name>(<Num>100</Num>)</Call>:
+    <Expr><Call><Name>f1</Name>()</Call></Expr>
+
+</For><Import>import os</Import>
+<If>if <Compare><Attribute><Name>os</Name>.name</Attribute> == <Str>'java'</Str></Compare>:
+    <ImportFrom>from java.lang import System, Thread</ImportFrom>
+    <Expr><Call><Attribute><Name>System</Name>.gc</Attribute>()</Call></Expr>
+    <Expr><Call><Attribute><Name>Thread</Name>.sleep</Attribute>(<Num>100</Num>)</Call></Expr>
+    <Expr><Call><Attribute><Name>System</Name>.gc</Attribute>()</Call></Expr>
+</If><Expr><Call><Name>verify</Name>(<Compare><Attribute><Name>Foo</Name>.count</Attribute> == <Num>0</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"17. class and global"</Str></Print>
+
+<FunctionDef>def test(<Name>x</Name>):
+    <ClassDef>class Foo:
+        <Global>global x</Global>
+        <FunctionDef>def __call__(<Name>self</Name>, <Name>y</Name>):
+            <Return>return <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Return>
+   </FunctionDef></ClassDef> <Return>return <Call><Name>Foo</Name>()</Call></Return>
+
+</FunctionDef><Assign><Name>x</Name> = <Num>0</Num></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>test</Name><Call>(<Num>6</Num>)</Call>(<Num>2</Num>)</Call> == <Num>8</Num></Compare>)</Call></Expr>
+<Assign><Name>x</Name> = <Num>-1</Num></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Call><Name>test</Name><Call>(<Num>3</Num>)</Call>(<Num>2</Num>)</Call> == <Num>5</Num></Compare>)</Call></Expr>
+
+<Print>print <Str>"18. verify that locals() works"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <FunctionDef>def g(<Name>y</Name>):
+        <FunctionDef>def h(<Name>z</Name>):
+            <Return>return <BinOp><Name>y</Name> + <Name>z</Name></BinOp></Return>
+       </FunctionDef> <Assign><Name>w</Name> = <BinOp><Name>x</Name> + <Name>y</Name></BinOp></Assign>
+        <AugAssign><Name>y</Name> += <Num>3</Num></AugAssign>
+        <Return>return <Call><Name>locals</Name>()</Call></Return>
+   </FunctionDef> <Return>return <Name>g</Name></Return>
+
+</FunctionDef><Assign><Name>d</Name> = <Call><Name>f</Name><Call>(<Num>2</Num>)</Call>(<Num>4</Num>)</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Call><Attribute><Name>d</Name>.has_key</Attribute>(<Str>'h'</Str>)</Call>)</Call></Expr>
+<Delete>del <Subscript><Name>d</Name>[<Index><Str>'h'</Str></Index>]</Subscript></Delete>
+<Expr><Call><Name>verify</Name>(<Compare><Name>d</Name> == <Dict>{<Str>'x'</Str>: <Num>2</Num>, <Str>'y'</Str>: <Num>7</Num>, <Str>'w'</Str>: <Num>6</Num>}</Dict></Compare>)</Call></Expr>
+
+<Print>print <Str>"19. var is bound and free in class"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <ClassDef>class C:
+        <FunctionDef>def m(<Name>self</Name>):
+            <Return>return <Name>x</Name></Return>
+       </FunctionDef> <Assign><Name>a</Name> = <Name>x</Name></Assign>
+   </ClassDef> <Return>return <Name>C</Name></Return>
+
+</FunctionDef><Assign><Name>inst</Name> = <Call><Name>f</Name><Call>(<Num>3</Num>)</Call>()</Call></Assign>
+<Expr><Call><Name>verify</Name>(<Compare><Attribute><Name>inst</Name>.a</Attribute> == <Call><Attribute><Name>inst</Name>.m</Attribute>()</Call></Compare>)</Call></Expr>
+
+<Print>print <Str>"20. interaction with trace function"</Str></Print>
+
+<Import>import sys</Import>
+<FunctionDef>def tracer(<Name>a</Name>,<Name>b</Name>,<Name>c</Name>):
+    <Return>return <Name>tracer</Name></Return>
+
+</FunctionDef><FunctionDef>def adaptgetter(<Name>name</Name>, <Name>klass</Name>, <Name>getter</Name>):
+    <Assign><Tuple><Name>kind</Name>, <Name>des</Name></Tuple> = <Name>getter</Name></Assign>
+    <If>if <Compare><Name>kind</Name> == <Num>1</Num></Compare>:       # AV happens when stepping from this line to next
+        <If>if <Compare><Name>des</Name> == <Str>""</Str></Compare>:
+            <Assign><Name>des</Name> = <BinOp><Str>"_%s__%s"</Str> % <Tuple>(<Attribute><Name>klass</Name>.__name__</Attribute>, <Name>name</Name>)</Tuple></BinOp></Assign>
+       </If> <Return>return <Lambda>lambda <Name>obj</Name>: <Call><Name>getattr</Name>(<Name>obj</Name>, <Name>des</Name>)</Call></Lambda></Return>
+
+</If></FunctionDef><ClassDef>class TestClass:
+    <Pass>pass</Pass>
+
+</ClassDef><Expr><Call><Attribute><Name>sys</Name>.settrace</Attribute>(<Name>tracer</Name>)</Call></Expr>
+<Expr><Call><Name>adaptgetter</Name>(<Str>"foo"</Str>, <Name>TestClass</Name>, <Tuple>(<Num>1</Num>, <Str>""</Str>)</Tuple>)</Call></Expr>
+<Expr><Call><Attribute><Name>sys</Name>.settrace</Attribute>(<Name>None</Name>)</Call></Expr>
+
+<TryExcept>try: <Expr><Call><Attribute><Name>sys</Name>.settrace</Attribute>()</Call></Expr>
+except <Name>TypeError</Name>: <Pass>pass</Pass>
+else: <Raise>raise <Name>TestFailed</Name>, <Str>'sys.settrace() did not raise TypeError'</Str></Raise>
+
+</TryExcept><Print>print <Str>"20. eval and exec with free variables"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <Return>return <Lambda>lambda: <BinOp><Name>x</Name> + <Num>1</Num></BinOp></Lambda></Return>
+
+</FunctionDef><Assign><Name>g</Name> = <Call><Name>f</Name>(<Num>3</Num>)</Call></Assign>
+<TryExcept>try:
+    <Expr><Call><Name>eval</Name>(<Attribute><Name>g</Name>.func_code</Attribute>)</Call></Expr>
+except <Name>TypeError</Name>:
+    <Pass>pass</Pass>
+else:
+    <Print>print <Str>"eval() should have failed, because code contained free vars"</Str></Print>
+
+</TryExcept><TryExcept>try:
+    <Exec>exec <Attribute><Name>g</Name>.func_code</Attribute></Exec>
+except <Name>TypeError</Name>:
+    <Pass>pass</Pass>
+else:
+    <Print>print <Str>"exec should have failed, because code contained free vars"</Str></Print>
+
+</TryExcept><Print>print <Str>"21. list comprehension with local variables"</Str></Print>
+
+<TryExcept>try:
+    <Print>print <Name>bad</Name></Print>
+except <Name>NameError</Name>:
+    <Pass>pass</Pass>
+else:
+    <Print>print <Str>"bad should not be defined"</Str></Print>
+
+</TryExcept><FunctionDef>def x():
+    <Expr><ListComp>[<Name>bad</Name> for <Name>s</Name> in <Str>'a b'</Str> for <Name>bad</Name> in <Call><Attribute><Name>s</Name>.split</Attribute>()</Call>]</ListComp></Expr>
+
+</FunctionDef><Expr><Call><Name>x</Name>()</Call></Expr>
+<TryExcept>try:
+    <Print>print <Name>bad</Name></Print>
+except <Name>NameError</Name>:
+    <Pass>pass</Pass>
+
+</TryExcept><Print>print <Str>"22. eval with free variables"</Str></Print>
+
+<FunctionDef>def f(<Name>x</Name>):
+    <FunctionDef>def g():
+        <Expr><Name>x</Name></Expr>
+        <Expr><Call><Name>eval</Name>(<Str>"x + 1"</Str>)</Call></Expr>
+   </FunctionDef> <Return>return <Name>g</Name></Return>
+
+</FunctionDef><Expr><Call><Name>f</Name><Call>(<Num>4</Num>)</Call>()</Call></Expr></Module>

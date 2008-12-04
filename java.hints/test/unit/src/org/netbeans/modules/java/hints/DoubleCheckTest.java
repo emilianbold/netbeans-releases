@@ -170,6 +170,43 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             golden
         );
     }
+    public void testVolatileJDK5IZ153334() throws Exception {
+        String code = "package test; public class Test {\n" +
+            "private static volatile Test INST;\n" +
+            "public static Test factory() {\n" +
+              "if (INST == null) {\n" +
+                "synchro|nized (INST) {\n" +
+                  "if (INST == null) {\n" +
+                    "INST = new test.Test();\n" +
+                  "}\n" +
+                "}\n" +
+               "}\n" +
+              "return INST;\n" +
+            "}\n";
+        
+        performAnalysisTest("test/Test.java", code);
+    }
+
+    public void testVolatileJDK4IZ153334() throws Exception {
+        sourceLevel = "1.4";
+        
+        String code = "package test; public class Test {\n" +
+            "private static volatile Test INST;\n" +
+            "public static Test factory() {\n" +
+              "if (INST == null) {\n" +
+                "synchro|nized (INST) {\n" +
+                  "if (INST == null) {\n" +
+                    "INST = new test.Test();\n" +
+                  "}\n" +
+                "}\n" +
+               "}\n" +
+              "return INST;\n" +
+            "}\n";
+
+        performAnalysisTest("test/Test.java",
+                            code,
+                            "4:0-4:12:verifier:Remove the outer conditional statement");
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);

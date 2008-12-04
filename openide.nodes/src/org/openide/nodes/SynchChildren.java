@@ -64,12 +64,14 @@ final class SynchChildren<T> extends Children.Keys<T> implements ChildFactory.Ob
     volatile boolean active = false;
     protected @Override void addNotify() {
         active = true;
+        factory.addNotify();
         refresh(true);
     }
     
     protected @Override void removeNotify() {
         active = false;
         setKeys(Collections.<T>emptyList());
+        factory.removeNotify();
     }
     
     protected Node[] createNodes(T key) {

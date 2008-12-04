@@ -195,9 +195,11 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
                     ( currentTime - myLastEvent.getWhen()) <= MILLIS_ON_CLICK)
             {
                 SVGComponent component = myLastEvent.getComponent();
-                component.getInputHandler().handlePointerPress( 
+                if ( component.getInputHandler() != null ){
+                    component.getInputHandler().handlePointerPress( 
                         new PointerEvent(component, x, y, 
                                 myLastEvent.getClickCount() +1));
+                }
                 return;
             }
             else {
@@ -208,7 +210,9 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
                 while ( en.hasMoreElements() ){
                     SVGComponent next = (SVGComponent)en.nextElement();
                     SVGRectangle rectangle = next.getBounds();
-                    if ( rectangle != null && rectangle.contains(x, y)){
+                    if ( rectangle != null && rectangle.contains(x, y)
+                            && next.getInputHandler()!= null )
+                    {
                         next.getInputHandler().handlePointerPress( 
                                 new PointerEvent(next, x, y));
                         return;
@@ -226,7 +230,9 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
                 SVGComponent component = myLastEvent.getComponent();
                 myLastEvent = new PointerEvent(component, x, y, 
                         myLastEvent.getClickCount() +1);
-                component.getInputHandler().handlePointerRelease( myLastEvent );
+                if ( component.getInputHandler() != null ){
+                    component.getInputHandler().handlePointerRelease( myLastEvent );
+                }
                 return;
             }
             else {
@@ -237,7 +243,9 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
                 while ( en.hasMoreElements() ){
                     SVGComponent next = (SVGComponent)en.nextElement();
                     SVGRectangle rectangle = next.getBounds();
-                    if ( rectangle != null && rectangle.contains(x, y)){
+                    if ( rectangle != null && rectangle.contains(x, y)
+                            && next.getInputHandler()!= null)
+                    {
                         myLastEvent = new PointerEvent(next, x, y);
                         next.getInputHandler().handlePointerRelease( 
                                 myLastEvent);

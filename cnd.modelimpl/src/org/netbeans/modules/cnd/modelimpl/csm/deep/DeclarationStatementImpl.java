@@ -160,7 +160,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                                             // we ignore both currentNamespace and container; <= WHY?
                                             // eat all tokens up to the comma that separates the next decl
                                             next = next.getNextSibling();
+                                            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+                                                next = next.getNextSibling();
+                                            }
                                             if (next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                                                next = next.getNextSibling();
+                                            }
+                                            if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
                                                 next = next.getNextSibling();
                                             }
                                             if (next != null && next.getType() == CPPTokenTypes.COMMA) {

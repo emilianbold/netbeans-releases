@@ -150,7 +150,7 @@ public class CheckLinks extends MatchingTask {
             }
             testMessage = b.toString();
         }
-        JUnitReportWriter.writeReport(this, report, Collections.singletonMap("testBrokenLinks", testMessage));
+        JUnitReportWriter.writeReport(this, null, report, Collections.singletonMap("testBrokenLinks", testMessage));
     }
     
     private static Pattern hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?\\s*/?>", Pattern.CASE_INSENSITIVE);

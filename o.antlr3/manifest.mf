@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.antlr3/3
+OpenIDE-Module-Localizing-Bundle: org/antlr/Bundle.properties
+OpenIDE-Module-Specification-Version: 3.1.1
+AutoUpdate-Show-In-Client: false
+
+

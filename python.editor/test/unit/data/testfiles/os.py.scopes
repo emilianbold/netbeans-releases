@@ -1,0 +1,531 @@
+=============================================
+<file-top>: Module : OffsetRange[0,24666>
+* [bound][imported][data][node=ImportFrom]
+ImportError [read][UNRESOLVED][node=Name]
+NameError [read][UNRESOLVED][node=Name]
+None [read][UNRESOLVED][node=Name]
+P_NOWAIT [bound][data][read][node=Name]
+P_NOWAITO [bound][data][node=Name]
+P_WAIT [bound][data][node=Name]
+SEEK_CUR [bound][data][node=Name]
+SEEK_END [bound][data][node=Name]
+SEEK_SET [bound][data][node=Name]
+True [read][UNRESOLVED][node=Name]
+UserDict [bound][imported][data][read][node=Import]
+_Environ [bound][imported][private][class][def][read][called][node=ClassDef]
+__all__ [bound][data][read][node=Name]
+_copy_reg [bound][imported][private][data][read][node=Import]
+_execvpe [bound][private][function][def][node=FunctionDef]
+_exists [bound][private][function][def][read][called][node=FunctionDef]
+_exit [bound][imported][private][data][read][called][node=ImportFrom]
+_get_exports_list [bound][private][function][def][read][called][node=FunctionDef]
+_make_stat_result [bound][private][function][def][read][node=FunctionDef]
+_make_statvfs_result [bound][private][function][def][read][node=FunctionDef]
+_names [bound][private][data][read][node=Name]
+_pickle_stat_result [bound][private][function][def][read][node=FunctionDef]
+_pickle_statvfs_result [bound][private][function][def][read][node=FunctionDef]
+_spawnvef [bound][private][function][def][read][called][node=FunctionDef]
+altsep [bound][imported][data][node=ImportFrom]
+ce [bound][imported][data][read][node=Import]
+curdir [bound][imported][data][read][node=ImportFrom]
+defpath [bound][imported][data][read][node=ImportFrom]
+devnull [bound][imported][data][node=ImportFrom]
+environ [bound][data][read][node=Name]
+execl [bound][function][def][node=FunctionDef]
+execle [bound][function][def][node=FunctionDef]
+execlp [bound][function][def][node=FunctionDef]
+execlpe [bound][function][def][node=FunctionDef]
+execvp [bound][function][def][read][node=FunctionDef]
+execvpe [bound][function][def][read][node=FunctionDef]
+extsep [bound][imported][data][node=ImportFrom]
+getenv [bound][function][def][node=FunctionDef]
+linesep [bound][data][node=Name]
+link [bound][imported][data][node=ImportFrom]
+mac [bound][imported][data][read][node=Import]
+makedirs [bound][function][def][read][called][node=FunctionDef]
+name [bound][data][read][node=Name]
+nt [bound][imported][data][read][node=Import]
+os2 [bound][imported][data][read][node=Import]
+pardir [bound][imported][data][node=ImportFrom]
+path [bound][imported][data][read][node=Import]
+pathsep [bound][imported][data][read][node=ImportFrom]
+popen2 [bound][function][def][node=FunctionDef]
+popen3 [bound][function][def][node=FunctionDef]
+popen4 [bound][function][def][node=FunctionDef]
+posix [bound][imported][data][read][node=Import]
+putenv [read][UNRESOLVED][node=Name]
+removedirs [bound][function][def][read][called][node=FunctionDef]
+renames [bound][function][def][node=FunctionDef]
+riscos [bound][imported][data][read][node=Import]
+sep [bound][imported][data][node=ImportFrom]
+spawnl [bound][function][def][node=FunctionDef]
+spawnle [bound][function][def][node=FunctionDef]
+spawnlp [bound][function][def][node=FunctionDef]
+spawnlpe [bound][function][def][node=FunctionDef]
+spawnv [bound][function][def][read][called][node=FunctionDef]
+spawnve [bound][function][def][read][called][node=FunctionDef]
+spawnvp [bound][function][def][read][called][node=FunctionDef]
+spawnvpe [bound][function][def][read][called][node=FunctionDef]
+stat_result [read][UNRESOLVED][node=Name]
+statvfs_result [read][UNRESOLVED][node=Name]
+sys [bound][imported][data][read][node=Import]
+unsetenv [bound][function][def][read][called][node=FunctionDef]
+urandom [bound][function][def][node=FunctionDef]
+walk [bound][function][def][read][called][node=FunctionDef]
+
+    =============================================
+    _get_exports_list: FunctionDef : OffsetRange[1451,1610>
+    AttributeError [free][read][node=Name]
+    _[39_16] [bound][private][data][unused][node=ListComp]
+    dir [free][read][called][node=Name]
+    list [free][read][called][node=Name]
+    module [bound][param][data][read][node=Name]
+    n [bound][data][read][node=Name]
+
+    =============================================
+    makedirs: FunctionDef : OffsetRange[3783,4559>
+    EEXIST [bound][imported][data][read][node=ImportFrom]
+    OSError [free][read][node=Name]
+    curdir [free][read][node=Name]
+    e [bound][data][read][node=Name]
+    head [bound][data][read][node=Name]
+    makedirs [free][read][called][node=Name]
+    mkdir [free][read][called][node=Name]
+    mode [bound][param][data][read][node=Name]
+    name [bound][param][data][read][node=Name]
+    path [free][read][node=Name]
+    tail [bound][data][read][node=Name]
+
+    =============================================
+    removedirs: FunctionDef : OffsetRange[4559,5266>
+    error [free][read][node=Name]
+    head [bound][data][read][node=Name]
+    name [bound][param][data][read][node=Name]
+    path [free][read][node=Name]
+    rmdir [free][read][called][node=Name]
+    tail [bound][data][read][node=Name]
+
+    =============================================
+    renames: FunctionDef : OffsetRange[5266,6138>
+    error [free][read][node=Name]
+    head [bound][data][read][node=Name]
+    makedirs [free][read][called][node=Name]
+    new [bound][param][data][read][node=Name]
+    old [bound][param][data][read][node=Name]
+    path [free][read][node=Name]
+    removedirs [free][read][called][node=Name]
+    rename [free][read][called][node=Name]
+    tail [bound][data][read][node=Name]
+
+    =============================================
+    walk: FunctionDef : OffsetRange[6193,9684>
+    None [free][read][node=Name]
+    dirs [bound][data][read][node=Name]
+    err [bound][data][read][node=Name]
+    error [free][read][node=Name]
+    isdir [bound][imported][data][read][called][node=ImportFrom]
+    islink [bound][imported][data][read][called][node=ImportFrom]
+    join [bound][imported][data][read][called][node=ImportFrom]
+    listdir [free][read][called][node=Name]
+    name [bound][data][read][node=Name]
+    names [bound][data][read][node=Name]
+    nondirs [bound][data][read][node=Name]
+    onerror [bound][param][data][read][called][node=Name]
+    path [bound][data][read][node=Name]
+    top [bound][param][data][read][node=Name]
+    topdown [bound][param][data][read][node=Name]
+    walk [free][read][called][node=Name]
+    x [bound][data][read][node=Name]
+
+    =============================================
+    execl: FunctionDef : OffsetRange[9801,9971>
+    args [bound][param][data][read][node=argumentsType]
+    execv [free][read][called][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    execle: FunctionDef : OffsetRange[9971,10198>
+    args [bound][param][data][read][node=argumentsType]
+    env [bound][data][read][node=Name]
+    execve [free][read][called][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    execlp: FunctionDef : OffsetRange[10198,10407>
+    args [bound][param][data][read][node=argumentsType]
+    execvp [free][read][called][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    execlpe: FunctionDef : OffsetRange[10407,10677>
+    args [bound][param][data][read][node=argumentsType]
+    env [bound][data][read][node=Name]
+    execvpe [free][read][called][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    execvp: FunctionDef : OffsetRange[10677,10929>
+    _execvpe [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    execvpe: FunctionDef : OffsetRange[10929,11224>
+    _execvpe [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    env [bound][param][data][read][node=Name]
+    file [bound][param][data][read][node=Name]
+
+    =============================================
+    _execvpe: FunctionDef : OffsetRange[11298,12255>
+    ENOENT [bound][imported][data][read][node=ImportFrom]
+    ENOTDIR [bound][imported][data][read][node=ImportFrom]
+    None [free][read][node=Name]
+    PATH [bound][data][read][node=Name]
+    argrest [bound][data][read][node=Name]
+    args [bound][param][data][read][node=Name]
+    defpath [free][read][node=Name]
+    dir [bound][data][read][node=Name]
+    e [bound][data][read][node=Name]
+    env [bound][param][data][read][node=Name]
+    environ [free][read][node=Name]
+    envpath [bound][data][read][node=Name]
+    error [free][read][node=Name]
+    execv [free][read][node=Name]
+    execve [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    fullname [bound][data][read][node=Name]
+    func [bound][data][read][called][node=Name]
+    head [bound][data][read][node=Name]
+    path [free][read][node=Name]
+    pathsep [free][read][node=Name]
+    saved_exc [bound][data][read][node=Name]
+    saved_tb [bound][data][read][node=Name]
+    sys [free][read][node=Name]
+    tail [bound][data][unused][node=Name]
+    tb [bound][data][read][node=Name]
+
+    =============================================
+    unsetenv: FunctionDef : OffsetRange[12512,12563>
+    key [bound][param][data][read][node=Name]
+    putenv [free][read][called][node=Name]
+
+    =============================================
+    class _Environ: ClassDef : OffsetRange[12819,14567>
+    NameError [free][read][node=Name]
+    None [free][read][node=Name]
+    __contains__ [bound][function][def][node=FunctionDef]
+    __delitem__ [bound][function][def][node=FunctionDef]
+    __getitem__ [bound][function][def][node=FunctionDef]
+    __init__ [bound][function][def][node=FunctionDef]
+    __setitem__ [bound][function][def][node=FunctionDef]
+    copy [bound][function][def][node=FunctionDef]
+    get [bound][function][def][node=FunctionDef]
+    has_key [bound][function][def][node=FunctionDef]
+    unsetenv [free][read][node=Name]
+    update [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    data : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[12874,13081>
+        UserDict [free][read][node=Name]
+        data [bound][data][read][node=Name]
+        environ [bound][param][data][read][node=Name]
+        k [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        v [bound][data][read][node=Name]
+
+        =============================================
+        __setitem__: FunctionDef : OffsetRange[13082,13207>
+        item [bound][param][data][read][node=Name]
+        key [bound][param][data][read][node=Name]
+        putenv [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __getitem__: FunctionDef : OffsetRange[13208,13293>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __delitem__: FunctionDef : OffsetRange[13370,13456>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __delitem__: FunctionDef : OffsetRange[13479,13599>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        unsetenv [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        has_key: FunctionDef : OffsetRange[13600,13683>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __contains__: FunctionDef : OffsetRange[13684,13772>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        get: FunctionDef : OffsetRange[13773,13877>
+        failobj [bound][param][data][read][node=Name]
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        update: FunctionDef : OffsetRange[13878,14512>
+        AttributeError [free][read][node=Name]
+        dict [bound][param][data][read][node=Name]
+        k [bound][data][read][node=Name]
+        keys [bound][data][read][node=Name]
+        kwargs [bound][param][data][read][node=argumentsType]
+        self [bound][param][data][read][node=Name]
+        v [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        update : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        copy: FunctionDef : OffsetRange[14513,14567>
+        dict [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+
+    =============================================
+    class _Environ: ClassDef : OffsetRange[14623,15841>
+    NameError [free][read][node=Name]
+    None [free][read][node=Name]
+    __delitem__ [bound][function][def][node=FunctionDef]
+    __init__ [bound][function][def][node=FunctionDef]
+    __setitem__ [bound][function][def][node=FunctionDef]
+    copy [bound][function][def][node=FunctionDef]
+    unsetenv [free][read][node=Name]
+    update [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    data : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[14678,14803>
+        UserDict [free][read][node=Name]
+        environ [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        __setitem__: FunctionDef : OffsetRange[14804,14921>
+        item [bound][param][data][read][node=Name]
+        key [bound][param][data][read][node=Name]
+        putenv [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        update: FunctionDef : OffsetRange[14922,15557>
+        AttributeError [free][read][node=Name]
+        dict [bound][param][data][read][node=Name]
+        k [bound][data][read][node=Name]
+        keys [bound][data][read][node=Name]
+        kwargs [bound][param][data][read][node=argumentsType]
+        self [bound][param][data][read][node=Name]
+        v [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        update : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __delitem__: FunctionDef : OffsetRange[15673,15785>
+        key [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        unsetenv [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        copy: FunctionDef : OffsetRange[15786,15841>
+        dict [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+
+    =============================================
+    getenv: FunctionDef : OffsetRange[15871,16078>
+    default [bound][param][data][read][node=Name]
+    environ [free][read][node=Name]
+    key [bound][param][data][read][node=Name]
+
+    =============================================
+    _exists: FunctionDef : OffsetRange[16104,16258>
+    False [free][read][node=Name]
+    NameError [free][read][node=Name]
+    True [free][read][node=Name]
+    eval [free][read][called][node=Name]
+    name [bound][param][data][read][node=Name]
+
+    =============================================
+    _spawnvef: FunctionDef : OffsetRange[16529,17414>
+    None [free][read][node=Name]
+    P_NOWAIT [free][read][node=Name]
+    WEXITSTATUS [free][read][called][node=Name]
+    WIFEXITED [free][read][called][node=Name]
+    WIFSIGNALED [free][read][called][node=Name]
+    WIFSTOPPED [free][read][called][node=Name]
+    WTERMSIG [free][read][called][node=Name]
+    _exit [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    env [bound][param][data][read][node=Name]
+    error [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    fork [free][read][called][node=Name]
+    func [bound][param][data][read][called][node=Name]
+    mode [bound][param][data][read][node=Name]
+    pid [bound][data][read][node=Name]
+    sts [bound][data][read][node=Name]
+    waitpid [free][read][called][node=Name]
+    wpid [bound][data][unused][node=Name]
+
+    =============================================
+    spawnv: FunctionDef : OffsetRange[17415,17797>
+    None [free][read][node=Name]
+    _spawnvef [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    execv [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+
+    =============================================
+    spawnve: FunctionDef : OffsetRange[17798,18283>
+    _spawnvef [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    env [bound][param][data][read][node=Name]
+    execve [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+
+    =============================================
+    spawnvp: FunctionDef : OffsetRange[18284,18703>
+    None [free][read][node=Name]
+    _spawnvef [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    execvp [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+
+    =============================================
+    spawnvpe: FunctionDef : OffsetRange[18704,19162>
+    _spawnvef [free][read][called][node=Name]
+    args [bound][param][data][read][node=Name]
+    env [bound][param][data][read][node=Name]
+    execvpe [free][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+
+    =============================================
+    spawnl: FunctionDef : OffsetRange[19289,19657>
+    args [bound][param][data][read][node=argumentsType]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+    spawnv [free][read][called][node=Name]
+
+    =============================================
+    spawnle: FunctionDef : OffsetRange[19658,20098>
+    args [bound][param][data][read][node=argumentsType]
+    env [bound][data][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+    spawnve [free][read][called][node=Name]
+
+    =============================================
+    spawnlp: FunctionDef : OffsetRange[20289,20724>
+    args [bound][param][data][read][node=argumentsType]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+    spawnvp [free][read][called][node=Name]
+
+    =============================================
+    spawnlpe: FunctionDef : OffsetRange[20725,21202>
+    args [bound][param][data][read][node=argumentsType]
+    env [bound][data][read][node=Name]
+    file [bound][param][data][read][node=Name]
+    mode [bound][param][data][read][node=Name]
+    spawnvpe [free][read][called][node=Name]
+
+    =============================================
+    popen2: FunctionDef : OffsetRange[21359,22002>
+    bufsize [bound][param][data][read][node=Name]
+    cmd [bound][param][data][read][node=Name]
+    mode [bound][param][data][unused][node=Name]
+    popen2 [bound][imported][data][read][node=Import]
+    stdin [bound][data][read][node=Name]
+    stdout [bound][data][read][node=Name]
+
+    =============================================
+    popen3: FunctionDef : OffsetRange[22067,22740>
+    bufsize [bound][param][data][read][node=Name]
+    cmd [bound][param][data][read][node=Name]
+    mode [bound][param][data][unused][node=Name]
+    popen2 [bound][imported][data][read][node=Import]
+    stderr [bound][data][read][node=Name]
+    stdin [bound][data][read][node=Name]
+    stdout [bound][data][read][node=Name]
+
+    =============================================
+    popen4: FunctionDef : OffsetRange[22805,23455>
+    bufsize [bound][param][data][read][node=Name]
+    cmd [bound][param][data][read][node=Name]
+    mode [bound][param][data][unused][node=Name]
+    popen2 [bound][imported][data][read][node=Import]
+    stdin [bound][data][read][node=Name]
+    stdout [bound][data][read][node=Name]
+
+    =============================================
+    _make_stat_result: FunctionDef : OffsetRange[23512,23581>
+    dict [bound][param][data][read][node=Name]
+    stat_result [free][read][called][node=Name]
+    tup [bound][param][data][read][node=Name]
+
+    =============================================
+    _pickle_stat_result: FunctionDef : OffsetRange[23581,23683>
+    _make_stat_result [free][read][node=Name]
+    args [bound][data][read][node=Name]
+    sr [bound][param][data][read][node=Name]
+    type [bound][data][unused][node=Name]
+
+    =============================================
+    _make_statvfs_result: FunctionDef : OffsetRange[23818,23893>
+    dict [bound][param][data][read][node=Name]
+    statvfs_result [free][read][called][node=Name]
+    tup [bound][param][data][read][node=Name]
+
+    =============================================
+    _pickle_statvfs_result: FunctionDef : OffsetRange[23893,24001>
+    _make_statvfs_result [free][read][node=Name]
+    args [bound][data][read][node=Name]
+    sr [bound][param][data][read][node=Name]
+    type [bound][data][unused][node=Name]
+
+    =============================================
+    urandom: FunctionDef : OffsetRange[24200,24666>
+    IOError [free][read][node=Name]
+    NotImplementedError [free][read][called][node=Name]
+    OSError [free][read][node=Name]
+    O_RDONLY [free][read][node=Name]
+    _urandomfd [bound][private][data][read][node=Name]
+    bytes [bound][data][read][node=Name]
+    close [free][read][called][node=Name]
+    len [free][read][called][node=Name]
+    n [bound][param][data][read][node=Name]
+    open [free][read][called][node=Name]
+    read [free][read][called][node=Name]
+
