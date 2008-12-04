@@ -96,12 +96,15 @@ import org.openide.windows.TopComponent;
  * @author  Jiri Rechtacek
  */
 public class TemplatesPanel extends TopComponent implements ExplorerManager.Provider {
-    private ExplorerManager manager;
-    private TemplateTreeView view;
+    private static ExplorerManager manager;
+    private static TemplateTreeView view;
     
     static private FileObject templatesRoot;
     private static Node templatesRootNode = null;
     
+    private static final String TEMPLATE_DISPLAY_NAME_ATTRIBUTE = "displayName";
+    private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle";
+
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
         
@@ -479,7 +482,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (DeleteAction.class),
                                     SystemAction.get (RenameAction.class),
         };
-        
+
         public TemplateNode (Node n) { 
             this (n, new DataFolderFilterChildren (n), new InstanceContent ());
         }
@@ -524,17 +527,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         @Override
+        public String getName () {
+            return super.getDisplayName ();
+        }
+
+        @Override
         public void setName(String name) {
-            // #140308 - get attributtes before rename and set them for renamed FileObject
             FileObject fo = this.getLookup().lookup(FileObject.class);
-            final HashMap<String, Object> attributes = getAttributes(fo);
-            super.setName(name);
             try {
-                setAttributes (fo, attributes);
+                fo.setAttribute (TEMPLATE_DISPLAY_NAME_ATTRIBUTE, name);
+                fo.setAttribute (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE, null);
             } catch (IOException ex) {
                 Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
             }
+            setDisplayName (name);
         }
+
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -689,10 +697,33 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static DataObject createDuplicateFromNode (Node n) {
         DataObject source = getDOFromNode (n);
         try {
+            Node parent = n.getParentNode ();
             DataObject target = source.copy(source.getFolder());
             FileObject srcFo = source.getPrimaryFile();
             FileObject targetFo = target.getPrimaryFile();
-            setAttributes(targetFo, getAttributes(srcFo));
+            setTemplateAttributes(targetFo, getAttributes(srcFo));
+            if (parent != null) {
+                Node duplicateNode = null;
+                for (Node k : parent.getChildren ().getNodes (true)) {
+                    if (k.getName ().startsWith (targetFo.getName ())) {
+                        duplicateNode = k;
+                        break;
+                    }
+                }
+                if (duplicateNode != null) {
+                    final Node finalNode = duplicateNode;
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            try {
+                                manager.setSelectedNodes (new Node [] { finalNode });
+                                view.invokeInplaceEditing ();
+                            } catch (PropertyVetoException ex) {
+                                Logger.getLogger (TemplatesPanel.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                            }
+                        }
+                    });
+                }
+            }
             return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -718,8 +749,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
 
     /** Sets attributes for given FileObject. */
-    private static void setAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
+    private static void setTemplateAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
         for (Entry<String, Object> entry : attributes.entrySet()) {
+            // skip localizing bundle for custom templates
+            if (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE.equals (entry.getKey ())) {
+                continue;
+            }
             fo.setAttribute(entry.getKey(), entry.getValue());
         }
     }
