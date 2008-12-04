@@ -104,12 +104,21 @@ class TextRenderer {
     }
     
     float doGetTextWidth(final String text) {
-        float width = 0;
+        float width =0;
         if (text.length() > 0) {
             getForm().invokeAndWaitSafely(new Runnable() {
                 public void run() {
                     getHiddenTextElement().setTrait(SVGComponent.TRAIT_TEXT, 
                             text);
+                    while ( getHiddenTextElement().getTrait( 
+                            SVGComponent.TRAIT_TEXT )!=text )
+                    {
+                        try {
+                            Thread.sleep(50);
+                        }
+                        catch (InterruptedException e) {
+                        }
+                    }
                 }
             });
             SVGRect bBox = getHiddenTextElement().getBBox();
