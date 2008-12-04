@@ -47,9 +47,12 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -76,6 +79,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -547,9 +552,47 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             }
             return filtered;
         }
-        
+
+        @Override
+        protected void addNotify () {
+            super.addNotify ();
+            sortNodes ();
+        }
+
+        @Override
+        protected void filterChildrenAdded (NodeMemberEvent ev) {
+            super.filterChildrenAdded (ev);
+            sortNodes();
+        }
+
+        @Override
+        protected void filterChildrenRemoved (NodeMemberEvent ev) {
+            super.filterChildrenRemoved (ev);
+            sortNodes();
+        }
+
+        @Override
+        protected void filterChildrenReordered (NodeReorderEvent ev) {
+            super.filterChildrenReordered (ev);
+            sortNodes();
+        }
+
+        private void sortNodes () {
+            Node [] originalNodes = original.getChildren ().getNodes ();
+            Collection<Node> sortedNodes = new TreeSet<Node> (new TemplateCategotyComparator ());
+            for (Node n : originalNodes) {
+                sortedNodes.add (n);
+            }
+            setKeys (sortedNodes.toArray (new Node[0]));
+        }
+
+        private static final class TemplateCategotyComparator implements Comparator<Node> {
+            public int compare (Node o1, Node o2) {
+                return o1.getDisplayName ().compareToIgnoreCase (o2.getDisplayName ());
+            }
+        }
     }
-    
+
     static private DataObject getDOFromNode (Node n) {
         DataObject dobj = n.getLookup ().lookup (DataObject.class);
         assert dobj != null : "DataObject for node " + n;

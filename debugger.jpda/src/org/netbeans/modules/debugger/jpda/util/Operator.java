@@ -352,6 +352,8 @@ public class Operator {
                                          t.resume();
                                      } // while
                                  } catch (ObjectCollectedException e) {
+                                 } catch (IllegalThreadStateException e) {
+                                     // ignore mobility VM defects
                                  }
                              } // for
                          }

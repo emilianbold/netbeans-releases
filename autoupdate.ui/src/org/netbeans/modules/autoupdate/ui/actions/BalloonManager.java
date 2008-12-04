@@ -159,6 +159,7 @@ public class BalloonManager {
             if( null != ownerWindow ) {
                 ownerWindow.removeWindowStateListener(windowListener);
             }
+            currentBalloon.content.removeMouseListener (currentBalloon.mouseListener);
             currentBalloon = null;
             currentPane = null;
             listener = null;
@@ -250,6 +251,7 @@ public class BalloonManager {
 
 
         private JComponent content;
+        private MouseListener mouseListener;
         private Action defaultAction;
         private JButton btnDismiss;
         private int arrowLocation = GridBagConstraints.SOUTHEAST;
@@ -278,7 +280,7 @@ public class BalloonManager {
             setOpaque( false );
 
             if( null != defaultAction ) {
-                content.addMouseListener( new MouseListener() {
+                mouseListener = new MouseListener() {
 
                     public void mouseClicked(MouseEvent e) {
                         BalloonManager.dismiss();
@@ -302,7 +304,8 @@ public class BalloonManager {
                         if( Balloon.this.timeoutMillis > 0 )
                             startDismissTimer (ToolTipManager.sharedInstance ().getDismissDelay ());
                     }
-                });
+                };
+                content.addMouseListener(mouseListener);
             }
             
             if( timeoutMillis > 0 ) {

@@ -54,6 +54,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -79,6 +80,9 @@ public class UnitTable extends JTable {
         this.model = (UnitCategoryTableModel) model;
         setShowGrid (false);
         setColumnsSize ();
+        if(UIManager.getLookAndFeel().getID().equals("Nimbus")) {
+            setBackground(new Color(getBackground().getRGB(), false));
+        }
         //setFillsViewportHeight(true);        
         setIntercellSpacing (new Dimension (0, 0));
         revalidate ();

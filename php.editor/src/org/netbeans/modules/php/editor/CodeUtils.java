@@ -346,6 +346,17 @@ public class CodeUtils {
         return null;
     }
 
+    @CheckForNull
+    public static String getParamDefaultValue(FormalParameter param) {
+        Expression expr = param.getDefaultValue();
+        //TODO: can be improved
+        if (expr instanceof Scalar) {
+            Scalar scalar = (Scalar) expr;
+                return scalar.getStringValue();
+        }
+        return expr == null ? null : "";//NOI18N
+    }
+    
     public static String getParamDisplayName(FormalParameter param) {
         Expression paramNameExpr = param.getParameterName();
         StringBuilder paramName = new StringBuilder();

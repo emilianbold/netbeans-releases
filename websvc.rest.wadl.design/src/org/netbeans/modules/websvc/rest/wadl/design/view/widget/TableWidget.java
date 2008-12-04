@@ -130,30 +130,7 @@ public class TableWidget extends Widget{
     
     private Widget createLabelWidget(int i, int j) {
         final int ii = i;
-        final LabelWidget cellWidget = new LabelWidget(getScene(), model.getValueAt(j, i)) {
-
-            private Object key = new Object();
-
-            protected void notifyAdded() {
-                super.notifyAdded();
-                ObjectScene scene = (ObjectScene) getScene();
-                scene.addObject(key, this);
-            }
-
-            protected void notifyRemoved() {
-                super.notifyRemoved();
-                ObjectScene scene = (ObjectScene) getScene();
-                scene.removeObject(key);
-            }
-
-            protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
-                if (previousState.isSelected() != state.isSelected() ||
-                        previousState.isFocused() != state.isFocused()) {
-                    setBorder(state.isSelected() ? state.isFocused() ? BorderFactory.createDashedBorder(SELECTED_BORDER_COLOR, 2, 2, true) : BorderFactory.createLineBorder(1, SELECTED_BORDER_COLOR) : state.isFocused() ? BorderFactory.createDashedBorder(BORDER_COLOR, 2, 2, true) : new LineBorder(0, ii != 0 ? 1 : 0, 0, 0, BORDER_COLOR));
-                    revalidate(true);
-                }
-            }
-        };
+        final LabelWidget cellWidget = new LabelWidget(getScene(), model.getValueAt(j, i));
         if (i != 0) {
             cellWidget.setBorder(new LineBorder(0, 1, 0, 0, BORDER_COLOR));
         }

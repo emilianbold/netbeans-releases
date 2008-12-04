@@ -47,9 +47,16 @@ import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorButtonGroup;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorSpinnerModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,6 +65,8 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGSpinnerCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGSpinner"); // NOI18N
+    
+    public static final String PROP_MODEL = "spinnerModel"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
@@ -75,12 +84,26 @@ public class SVGSpinnerCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
+                new PropertyDescriptor(PROP_MODEL, 
+                        MidpTypes.TYPEID_JAVA_CODE, 
+                        MidpTypes.createJavaCodeValue(""), true, true, 
+                        MidpVersionable.MIDP_2)
                 );
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
+                         "DISP_SpinnerModel"), 
+                  PropertyEditorSpinnerModel.createInstance(), PROP_MODEL); // NOI18N
     }
 
     @Override
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                //properties
+                createPropertiesPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
