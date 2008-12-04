@@ -106,7 +106,7 @@ public class RetrieverTest {
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
         time = 60000;
-        expResult = "1 minute, ";
+        expResult = "1 minute";
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
         time = 61001;
