@@ -44,11 +44,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.filesystems.FileObject;
@@ -56,6 +58,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -117,33 +120,52 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         //return getCookieSet().getLookup();
     }       
     
-    private static void insert( String text, JTextComponent target) {
-        Document doc = target.getDocument();
+    private static void insert( final String text, final JTextComponent target) {
+        final Document doc = target.getDocument();
         
         if ( doc instanceof BaseDocument) {
             BaseDocument bDoc = (BaseDocument) doc;
-            Formatter formatter = bDoc.getFormatter();
+            final Reformat formatter = Reformat.get(bDoc);
+            formatter.lock();
             try {
-                bDoc.atomicLock();
-                
-                Caret caret = target.getCaret();
-                int p0 = Math.min(caret.getDot(), caret.getMark());
-                int p1 = Math.max(caret.getDot(), caret.getMark());
-                doc.remove(p0, p1 - p0);
-                
-                int start = caret.getDot();
-                doc.insertString(start, text, null);
-                
-                int end = start + text.length();
-                formatter.reformatLock();
-                formatter.reformat(bDoc, start, end);
-                formatter.reformatUnlock();
-                bDoc.atomicUnlock();
-            } catch( Exception e) {
-                formatter.reformatUnlock();
-                bDoc.atomicUndo();
+
+                Runnable run = new Runnable() {
+
+                    public void run() {
+                        try {
+                            Caret caret = target.getCaret();
+                            int p0 = Math.min(caret.getDot(), caret.getMark());
+                            int p1 = Math.max(caret.getDot(), caret.getMark());
+                            doc.remove(p0, p1 - p0);
+
+                            int start = caret.getDot();
+                            doc.insertString(start, text, null);
+                            
+                            int end = start + text.length();
+                            formatter.reformat(start, end);
+                        } catch (BadLocationException ex) {
+                            throw new DocumentModificationException(ex);
+                        }
+                    }
+                };
+                try {
+                    bDoc.runAtomic(run);
+                } catch (DocumentModificationException ex) {
+                    SceneManager.error("Transaction failed.", ex.getCause()); //NOI18N
+                }
+
+            } finally {
+                formatter.unlock();
             }
             
         }
     }
+
+    private static class DocumentModificationException extends RuntimeException {
+
+        public DocumentModificationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
 }
