@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -102,6 +103,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 
     /*package*/ Collection<RefactoringElementImplementation> doPrepareElements(CsmObject referencedObject) {
         Collection<RefactoringElementImplementation> res = null;
+        referencedObject = CsmRefactoringUtils.convertToCsmObjectIfNeeded(referencedObject);
         if (referencedObject == null) {
             return null;
         }

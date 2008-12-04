@@ -116,6 +116,10 @@ public class WadlComponentFactoryImpl implements WadlComponentFactory {
         return new ResourceImpl(model);
     }
 
+    public ResourceType createResourceType() {
+        return new ResourceTypeImpl(model);
+    }
+
     public Option createOption() {
         return new OptionImpl(model);
     }

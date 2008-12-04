@@ -74,6 +74,7 @@ public class MethodWidget extends WadlComponentWidget {
     private ResponseWidget responseWidget;
     private Widget containerWidget;
     private boolean showServiceUrl;
+    private Method methodRef;
     
     /**
      * Creates a new instance of MethodWidget
@@ -95,17 +96,18 @@ public class MethodWidget extends WadlComponentWidget {
         super(scene, method, model);
         this.containerWidget = containerWidget;
         this.showServiceUrl = showServiceUrl;
-//        if(this.getMethod().getHref() != null) {
-//            String href = this.getMethod().getHref();
-//            if(href.startsWith("#"))
-//                href = href.substring(1);
-//            for(Resource child:model.getApplication().getResource()) {
-//                if(child instanceof Method && href.equals(
-//                        ((Method)child).getId())) {
-//                    this.getMethod() = WadlFactory.createMethod((Method) child, model.getApplication(), model);
-//                }
-//            }
-//        }
+
+        String href = method.getHref();
+        if(href != null) {
+            if(href.indexOf("#") != -1)
+                href = href.substring(href.indexOf("#")+1);
+            for(Method child:model.getApplication().getMethod()) {
+                if(href.equals(child.getId())) {
+                    this.methodRef = child;
+                }
+            }
+        }
+
         initUI();
     }
     
@@ -129,7 +131,10 @@ public class MethodWidget extends WadlComponentWidget {
     }
 
     public Method getMethod() {
-        return (Method) getWadlComponent();
+        if(this.methodRef == null)
+            return (Method) getWadlComponent();
+        else
+            return this.methodRef;
     }
 
     @Override
@@ -218,8 +223,8 @@ public class MethodWidget extends WadlComponentWidget {
         super.createContent();
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, RADIUS/2));
-        requestWidget = new RequestWidget(getObjectScene(), getMethod().getRequest().iterator().next(), getModel());
-        responseWidget = new ResponseWidget(getObjectScene(), getMethod().getResponse().iterator().next(), getModel());
+        requestWidget = new RequestWidget(getObjectScene(), getMethod(), getModel());
+        responseWidget = new ResponseWidget(getObjectScene(), getMethod(), getModel());
         listWidget.addChild(requestWidget);
         listWidget.addChild(responseWidget);
 
@@ -228,36 +233,6 @@ public class MethodWidget extends WadlComponentWidget {
         tabbedWidget.addTab(responseWidget);
         
         setTabbedView(!viewButton.isSelected());
-    }
-
-    protected void collapseWidget() {
-        if(buttons!=null && buttons.getParentWidget()!=null) {
-            getHeaderWidget().revalidate(true);
-            buttons.removeChild(getExpanderWidget());
-            getHeaderWidget().removeChild(buttons);
-            getHeaderWidget().addChild(getExpanderWidget());
-        }
-        super.collapseWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
-    }
-
-    protected void expandWidget() {
-        if(buttons!=null && buttons.getParentWidget()==null) {
-            getHeaderWidget().revalidate(true);
-            getHeaderWidget().removeChild(getExpanderWidget());
-            buttons.addChild(getExpanderWidget());
-            getHeaderWidget().addChild(buttons);
-        }
-        super.expandWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
     }
 
     public Object hashKey() {
