@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -82,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -103,7 +105,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
  * @author Radek Matous
  */
 class OccurenceBuilder {
-
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
@@ -419,7 +420,7 @@ class OccurenceBuilder {
                 } else {
                     List<MethodScopeImpl> name2Methods = unknownMethodNameCache.get(queryName);
                     if (name2Methods == null) {
-                        name2Methods = name2Methods(fileScope, queryName);
+                        name2Methods = name2Methods(fileScope, queryName, nodeInfo);
                         if (!name2Methods.isEmpty()) {
                             unknownMethodNameCache.put(queryName, name2Methods);
                         }
@@ -831,13 +832,24 @@ class OccurenceBuilder {
         return fields;
     }
 
-    private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name) {
+    private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScopeImpl indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
         List<MethodScopeImpl> methods = Collections.emptyList();
+        FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
+        int paramCount = functionInvocation.getParameters().size();
+
         if (typeNamesForIdentifier.size() > 0) {
-            methods = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
+            List<MethodScopeImpl> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
+            methods = new ArrayList<MethodScopeImpl>();
+            for (MethodScopeImpl methodScopeImpl : methodsSuggestions) {
+                List<? extends Parameter> parameters = methodScopeImpl.getParameters();
+                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScopeImpl.getName())
+                        && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
+                    methods.add(methodScopeImpl);
+                }
+            }
         }
 
         return methods;
@@ -850,7 +862,13 @@ class OccurenceBuilder {
                 null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
         List<FieldElementImpl> fields = Collections.emptyList();
         if (typeNamesForIdentifier.size() > 0) {
-            fields = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
+            fields = new ArrayList<FieldElementImpl>();
+            List<FieldElementImpl> fieldSuggestions = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
+            for (FieldElementImpl fieldElementImpl : fieldSuggestions) {
+                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, fieldElementImpl.getName())) {
+                    fields.add(fieldElementImpl);
+                }
+            }
         }
         return fields;
     }
@@ -860,5 +878,14 @@ class OccurenceBuilder {
      */
     int getOffset() {
         return offset;
+    }
+    private static int numberOfMandatoryParams(List<? extends Parameter> params) {
+            int mandatory = 0;
+            for (Parameter parameter : params) {
+                if (parameter.isMandatory()) {
+                    mandatory++;
+                }
+            }
+            return mandatory;
     }
 }
