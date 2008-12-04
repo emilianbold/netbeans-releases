@@ -838,23 +838,18 @@ public class WizardDescriptor extends DialogDescriptor {
         }
     }
 
-    private static Set<String> logged = new HashSet<String>();
-    private static void checkComponent (Panel<?> pnl) {
-        boolean asserts = false;
-        assert asserts = true;
-        if (asserts && pnl instanceof Component && logged.add(pnl.getClass().getName())) {
-            logged.add(pnl.getClass().getName());
-            IllegalStateException ise = new IllegalStateException (
-                    pnl.getClass().getName() + " is both a " + //NOI18N
-                    "WizardDescriptor.Panel and a Component.  This is illegal " + //NOI18N
-                    "because Component.isValid() conflicts with " + //NOI18N
-                    "Panel.isValid().  See umbrella issue 154624 and " + //NOI18N
-                    "issues 150223, 134601, 99680 and " + //NOI18N
-                    "many others for why this is a Bad Thing."); //NOI18N
-            //Per agreement, to be made user-visible later to encourage reporting
-//            Exceptions.printStackTrace(ise);
-            Logger.getLogger (WizardDescriptor.class.getName()).log(Level.INFO,
-                    null, ise);
+    private static final Set<String> logged = new HashSet<String>();
+    @SuppressWarnings("unchecked")
+    private static void checkComponent(Panel<?> pnl) {
+        String name = pnl.getClass().getName();
+        if (pnl instanceof Component && logged.add(name)) {
+          Logger.getLogger(WizardDescriptor.class.getName()).warning(
+            name + " is both a " + //NOI18N
+            "WizardDescriptor.Panel and a Component.  This is illegal " + //NOI18N
+            "because Component.isValid() conflicts with " + //NOI18N
+            "Panel.isValid().  See umbrella issue 154624 and " + //NOI18N
+            "issues 150223, 134601, 99680 and " + //NOI18N
+            "many others for why this is a Bad Thing."); //NOI18N
         }
     }
 

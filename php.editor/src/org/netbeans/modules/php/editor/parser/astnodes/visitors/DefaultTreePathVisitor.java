@@ -87,6 +87,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
@@ -460,4 +464,25 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
     public void visit(PHPDocBlock node) {
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
+
+    @Override
+    public void visit(PHPDocTypeTag node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(PHPDocTag node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(PHPDocVarTypeTag node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(PHPDocNode node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
 }
