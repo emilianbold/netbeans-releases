@@ -101,50 +101,51 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         BaseDocument bdoc = (BaseDocument) doc;
         bdoc.readLock();
         try {
-        JTextComponent target = Utilities.getFocusedComponent();
+            JTextComponent target = Utilities.getFocusedComponent();
+            if (target == null || target.getDocument() != bdoc)
+                return false;
         
-        if (target == null || target.getDocument() != bdoc)
-            return false;
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
+                return false; //no token found
+            }
         
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
-            return false; //no token found
-        }
+            if (!tokenSequence.moveNext()) {
+                return false; //no token
+            }
         
-        if(!tokenSequence.moveNext()) {
-            return false; //no token
-        }
-        
-        Token token = tokenSequence.token();
-        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
-        
-        if (elTokenSequence != null){
-            FileObject fObject = NbEditorUtilities.getFileObject(doc);
-            WebModule wm = WebModule.getWebModule(fObject);
+            Token token = tokenSequence.token();
+            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             
-            if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return false; //no token
-                }
-                
-                if (elTokenSequence.token().id() == ELTokenId.DOT){
+            if (elTokenSequence != null) {
+                FileObject fObject = NbEditorUtilities.getFileObject(doc);
+                if (fObject == null) {
                     return false;
                 }
                 
-                int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
-                int res = exp.parse(endOfEL);
+                WebModule wm = WebModule.getWebModule(fObject);
+                if (wm != null) {
+                    JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
+                    elTokenSequence.move(offset);
+                    if (!elTokenSequence.moveNext()) {
+                        return false; //no token
+                    }
                 
-                if (res == JSFELExpression.EL_START){
-                    res = exp.parse(endOfEL + 1);
+                    if (elTokenSequence.token().id() == ELTokenId.DOT) {
+                        return false;
+                    }
+                    
+                    int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
+                    int res = exp.parse(endOfEL);
+                    
+                    if (res == JSFELExpression.EL_START) {
+                        res = exp.parse(endOfEL + 1);
+                    }
+                    
+                    return res == JSFELExpression.EL_JSF_BEAN;
                 }
-                
-                return res == JSFELExpression.EL_JSF_BEAN;
             }
-        }
-        
         } finally {
             bdoc.readUnlock();
         }
