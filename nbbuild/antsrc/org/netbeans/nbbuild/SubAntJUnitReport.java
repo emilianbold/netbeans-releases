@@ -64,6 +64,9 @@ public class SubAntJUnitReport extends Task {
     public void setBuildPath(Path buildPath) {
         this.buildPath = buildPath;
     }
+    public void addConfiguredBuildPath(Path buildPath) {
+        this.buildPath = buildPath;
+    }
 
     private String targetToRun;
     public void setTarget(String target) {

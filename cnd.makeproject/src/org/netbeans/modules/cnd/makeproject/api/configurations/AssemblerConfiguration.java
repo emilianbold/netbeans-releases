@@ -63,16 +63,16 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
     }
 
     @Override
-    public Object clone() {
+    public AssemblerConfiguration clone() {
         AssemblerConfiguration clone = new AssemblerConfiguration(getBaseDir(), (AssemblerConfiguration) getMaster());
         // BasicCompilerConfiguration
-        clone.setDevelopmentMode((IntConfiguration) getDevelopmentMode().clone());
-        clone.setWarningLevel((IntConfiguration) getWarningLevel().clone());
-        clone.setSixtyfourBits((IntConfiguration) getSixtyfourBits().clone());
-        clone.setStrip((BooleanConfiguration) getStrip().clone());
-        clone.setAdditionalDependencies((StringConfiguration) getAdditionalDependencies().clone());
-        clone.setTool((StringConfiguration) getTool().clone());
-        clone.setCommandLineConfiguration((OptionsConfiguration) getCommandLineConfiguration().clone());
+        clone.setDevelopmentMode(getDevelopmentMode().clone());
+        clone.setWarningLevel(getWarningLevel().clone());
+        clone.setSixtyfourBits(getSixtyfourBits().clone());
+        clone.setStrip(getStrip().clone());
+        clone.setAdditionalDependencies(getAdditionalDependencies().clone());
+        clone.setTool(getTool().clone());
+        clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         return clone;
     }
 

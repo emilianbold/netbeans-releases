@@ -511,119 +511,6 @@ public class Evaluator2 extends javax.swing.JPanel {
         }
     }
     
-    private static final class CompletionedEditor implements ComboBoxEditor {
-        
-        private JEditorPane editor;
-        private java.awt.Component component;
-        private Object oldValue;
-        private boolean isContextSetUp;
-        private boolean canTransferFocus = true;
-        
-        public CompletionedEditor(javax.swing.JComboBox comboBox) {
-            editor = new JEditorPane();
-            editor.setBorder(null);
-            editor.setKeymap(new FilteredKeymap(editor));
-            editor.setFocusCycleRoot(false);
-            editor.setFocusTraversalPolicy(null);
-            editor.setFocusTraversalPolicyProvider(false);
-            component = new JScrollPane(editor,
-                                        JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            ((JScrollPane)component).setBorder(null);
-            editor.addFocusListener(new FocusListener() {
-                public void focusGained(FocusEvent e) {
-                    setupContext();
-                }
-                public void focusLost(FocusEvent e) {
-                }
-            });
-            comboBox.addPopupMenuListener(new PopupMenuListener() {
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    canTransferFocus = false;
-                }
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    canTransferFocus = true;
-                }
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                }
-            });
-            component.addFocusListener(new FocusListener() {
-                public void focusGained(FocusEvent e) {
-                    if (canTransferFocus) {
-                        editor.requestFocusInWindow();
-                    }
-                }
-                public void focusLost(FocusEvent e) {
-                }
-            });
-            JTextField referenceTextField = new JTextField();
-            Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-            editor.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
-            tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
-            editor.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        }
-        
-        public void setupContext() {
-            if (!isContextSetUp) {
-                WatchPanel.setupContext(editor);
-                HelpCtx.setHelpIDString(editor, Evaluator2.class.getName());
-                isContextSetUp = true;
-            }
-        }
-        
-        public void addActionListener(java.awt.event.ActionListener actionListener) {
-        }
-
-        public void removeActionListener(java.awt.event.ActionListener actionListener) {
-        }
-
-        public java.awt.Component getEditorComponent() {
-            return component;
-        }
-        
-        javax.swing.text.Document getDocument() {
-            return editor.getDocument();
-        }
-
-        public Object getItem() {
-            Object newValue = editor.getText();
-            
-            if (oldValue != null && !(oldValue instanceof String))  {
-                // The original value is not a string. Should return the value in it's
-                // original type.
-                if (newValue.equals(oldValue.toString()))  {
-                    return oldValue;
-                } else {
-                    // Must take the value from the editor and get the value and cast it to the new type.
-                    Class cls = oldValue.getClass();
-                    try {
-                        Method method = cls.getMethod("valueOf", new Class[]{String.class});
-                        newValue = method.invoke(oldValue, new Object[] { editor.getText()});
-                    } catch (Exception ex) {
-                        // Fail silently and return the newValue (a String object)
-                    }
-                }
-            }
-            return newValue;
-        }
-
-        public void setItem(Object obj) {
-            if (obj != null)  {
-                editor.setText(obj.toString());
-                
-                oldValue = obj;
-            } else {
-                editor.setText("");
-            }
-        }
-        
-        public void selectAll() {
-            editor.selectAll();
-            editor.requestFocus();
-        }
-        
-    }
-    
     /**
      * Inspired by org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener.
      */
@@ -866,9 +753,18 @@ public class Evaluator2 extends javax.swing.JPanel {
 
         public CodeEditor() {
             codePane = new JEditorPane();
-            WatchPanel.setupContext(codePane);
+            final Document[] documentPtr = new Document[] { null };
+            ActionListener contextUpdated = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (codePane.getDocument() != documentPtr[0]) {
+                        codePane.getDocument().addDocumentListener(CodeEditor.this);
+                    }
+                }
+            };
+            WatchPanel.setupContext(codePane, contextUpdated);
             setViewportView(codePane);
             codePane.getDocument().addDocumentListener(this);
+            documentPtr[0] = codePane.getDocument();
             // issue 103809
             addComponentListener(new ComponentAdapter() {
                 @Override

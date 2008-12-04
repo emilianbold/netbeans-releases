@@ -64,7 +64,7 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
@@ -76,6 +76,9 @@ public final class TestKit {
         
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
+        if (getOsName().indexOf("Mac") > -1) {
+            new NewProjectWizardOperator().invoke().close();
+        }
         String folder = "work" + File.separator + "w" + System.currentTimeMillis();
         File file = new File("/tmp", folder); // NOI18N
         file.mkdirs();
@@ -113,18 +116,22 @@ public final class TestKit {
     }
     
     public static void closeProject(String projectName) {
+        long lTimeOut = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
-            Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-            rootNode.performPopupActionNoBlock("Close");
+            lTimeOut = JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 5000);
             try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+                rootNode.performPopupActionNoBlock("Close");
+//                new EventTool().waitNoEvent(2000);
+            } catch (Exception e) {
+            }
+        } catch (Exception e) {
+        } finally {
+            try {
+                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", lTimeOut);
+            } catch (Exception e) {
             }
         }
-        catch (Exception e) {
-            
-        }    
     }
     
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
@@ -171,7 +178,17 @@ public final class TestKit {
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
-    }    
+    }
+
+    public static String getOsName() {
+        String osName = "uknown";
+        try {
+            osName = System.getProperty("os.name");
+        } catch (Throwable e) {
+
+        }
+        return osName;
+    }
     
     public static void createNewElement(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();

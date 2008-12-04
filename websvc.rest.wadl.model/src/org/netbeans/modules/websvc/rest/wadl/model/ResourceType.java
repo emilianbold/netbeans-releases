@@ -71,25 +71,7 @@ public interface ResourceType extends Nameable<WadlComponent>, ReferenceableWadl
 
     public void removeMethod(Method method);
 
-    public Collection<ResourceType> getResource();
-
-    public void addResource(ResourceType resource);
-
-    public void removeResource(ResourceType resource);
-
     public String getId();
 
     public void setId(String base);
-
-    public String getType();
-
-    public void setType(String base);
-
-    public String getQueryType();
-
-    public void setQueryType(String base);
-
-    public String getPath();
-
-    public void setPath(String base);
 }

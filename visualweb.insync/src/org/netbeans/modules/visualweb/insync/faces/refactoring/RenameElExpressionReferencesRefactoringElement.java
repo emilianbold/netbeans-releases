@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
@@ -82,6 +84,11 @@ public class RenameElExpressionReferencesRefactoringElement extends MarkupRefact
 
     public void performChange() {
         Document document = markupUnit.getSourceDom();
+        if (document == null) {
+            // XXX #107723 NPE.
+            log(new NullPointerException("There is null source document for markup unit, markupUnit=" + markupUnit)); // NOI18N
+            return;
+        }
         MarkupVisitor v = new ElAttrUpdater(oldName, newName);
         v.apply(document);
         markupUnit.flush();        
@@ -90,10 +97,19 @@ public class RenameElExpressionReferencesRefactoringElement extends MarkupRefact
     @Override
     public void undoChange() {
         Document document = markupUnit.getSourceDom();
+        if (document == null) {
+            // XXX #107723 NPE.
+            log(new NullPointerException("There is null source document for markup unit, markupUnit=" + markupUnit)); // NOI18N
+            return;
+        }
         MarkupVisitor v = new ElAttrUpdater(newName, oldName);
         v.apply(document);
         markupUnit.flush();        
     }
-    
+
+
+    private static void log(Exception ex) {
+        Logger.getLogger(RenameElExpressionReferencesRefactoringElement.class.getName()).log(Level.INFO, null, ex);
+    }
     
 }

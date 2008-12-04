@@ -63,7 +63,12 @@ import org.openide.filesystems.FileUtil;
  */
 public class NavigationSupport {
 
+    private static final String GSP_MIME_TYPE = "text/x-gsp"; // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
+
     public NavigationSupport() {
+        super();
     }
 
     public static boolean isActionEnabled(AbstractAction caller) {
@@ -80,10 +85,6 @@ public class NavigationSupport {
     }
 
     private static DataObject getDataObjectFromComponent(JTextComponent sourceComponent) {
-
-        final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
-        LOG.setLevel(Level.OFF);
-
         if (sourceComponent == null) {
             LOG.log(Level.FINEST, "JTextComponent == null"); // NOI18N
             return null;
@@ -111,9 +112,6 @@ public class NavigationSupport {
     }
 
     private static String getTargetFilename(AbstractAction caller, JTextComponent sourceComponent) {
-
-        final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
-        LOG.setLevel(Level.OFF);
         LOG.log(Level.FINEST, "openArtifact()"); // NOI18N
 
 
@@ -146,9 +144,6 @@ public class NavigationSupport {
             return null;
         }
 
-        final String GSP_MIME_TYPE = "application/x-gsp"; // NOI18N
-
-
         String mimetype = fo.getMIMEType();
 
         if (!(mimetype.equals(GroovyTokenId.GROOVY_MIME_TYPE) || mimetype.equals(GSP_MIME_TYPE))) {
@@ -174,10 +169,6 @@ public class NavigationSupport {
     }
 
     public static void openArtifact(AbstractAction caller, JTextComponent sourceComponent) {
-
-        final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
-        LOG.setLevel(Level.OFF);
-
         String fileName = getTargetFilename(caller, sourceComponent);
 
         FileObject controllerFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
@@ -209,7 +200,13 @@ public class NavigationSupport {
             case DOMAIN:
                 return BASE_DIR + "domain" + File.separator + filename + ".groovy"; //NOI18N
             case VIEW:
-                return BASE_DIR + "views" + File.separator + filename.toLowerCase() + File.separator + "show.gsp"; //NOI18N
+                if (filename.length() > 1) {
+                    char first = filename.charAt(0);
+                    filename = Character.toLowerCase(first) + filename.substring(1);
+                } else {
+                    filename = filename.toLowerCase();
+                }
+                return BASE_DIR + "views" + File.separator + filename + File.separator + "show.gsp"; //NOI18N
         }
 
         return "";
