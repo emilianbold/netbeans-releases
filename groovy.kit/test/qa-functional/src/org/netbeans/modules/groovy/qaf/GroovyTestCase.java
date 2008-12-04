@@ -69,6 +69,7 @@ public abstract class GroovyTestCase extends JellyTestCase {
     private static final Logger LOGGER = Logger.getLogger(GroovyTestCase.class.getName());
     private Project project;
     private String projectName;
+    private ProjectType projectType;
 
     /**
      * Enum type to hold project specific settings (like ie. project category
@@ -122,6 +123,8 @@ public abstract class GroovyTestCase extends JellyTestCase {
 
     public GroovyTestCase(String name) {
         super(name);
+        setProjectName(getProjectName());
+        setProjectType(getProjectType());
     }
 
     /**
@@ -295,4 +298,13 @@ public abstract class GroovyTestCase extends JellyTestCase {
         new BuildProjectAction().performPopup(getProjectRootNode());
         oo.getOutputTab(getProjectName()).waitText("BUILD SUCCESSFUL"); //NOI18N
     }
+
+    private void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    private void setProjectType(ProjectType projectType) {
+        this.projectType = projectType;
+    }
+
 }
