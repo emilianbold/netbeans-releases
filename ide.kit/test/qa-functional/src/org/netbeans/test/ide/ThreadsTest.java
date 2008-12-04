@@ -45,83 +45,78 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Read access test
+ * Threads test
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
- *
- * To run this test do the following:
- * 1. specify stage = 1 in suite method and run the test
- *                      to initilize the environment
- * 2. specify stage = 2 and run the test to perform measurement
  *
  * @author mrkam@netbeans.org
  */
-public class ReadAccessTest extends JellyTestCase {
+public class ThreadsTest extends JellyTestCase {
 
-    private static int stage;
+    private Set<String> allowedThreads;
 
-    private static void initCheckReadAccess() throws IOException {
-        if (stage == 2) {
-            Set<String> allowedFiles = new HashSet<String>();
-            InputStream is = ReadAccessTest.class.getResourceAsStream("allowed-file-reads.txt");
-            BufferedReader r = new BufferedReader(new InputStreamReader(is));
-            for (;;) {
-                String line = r.readLine();
-                if (line == null) {
-                    break;
-                }
-                if (line.startsWith("#")) {
-                    continue;
-                }
-                allowedFiles.add(line);
-            }
-            CountingSecurityManager.initialize(null, CountingSecurityManager.Mode.CHECK_READ, allowedFiles);
-        }
-    }
-    
-    public ReadAccessTest(String name) {
+    public ThreadsTest(String name) throws IOException {
         super(name);
+        allowedThreads = new HashSet<String>();
+        InputStream is = ThreadsTest.class.getResourceAsStream("allowed-threads.txt");
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedThreads.add(line);
+        }
     }
     
     public static Test suite() throws IOException {
 
-        /**
-         * Specify:
-         * stage = 1 to initialize userdir
-         * stage = 2 to perform measurement
-         */
-        stage = 2;
-        //stage = Integer.getInteger("test.whitelist.stage", 1);
-        
-        initCheckReadAccess();
-        
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            ReadAccessTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
-        
+            ThreadsTest.class
+        ).clusters(".*").enableModules(".*").reuseUserDir(false);
 
-        conf = conf.addTest("testReadAccess");
+        conf = conf.addTest("testThreads");
         
         return NbModuleSuite.create(conf);
     }
 
-    public void testReadAccess() throws Exception {
+    public void testThreads() throws Exception {
         try {
-            if (CountingSecurityManager.isEnabled()) {
-                CountingSecurityManager.assertCounts("No reads during startup", 0);
-            } else {
-                System.out.println("Initialization mode, counting is disabled");
-            }
+            assertThreads();
         } catch (Error e) {
             e.printStackTrace(getLog("report.txt"));
             throw e;
         }
     }
 
+    public void assertThreads() {
+        Map<Thread, StackTraceElement[]> data = Thread.getAllStackTraces();
+        StringWriter msgs = new StringWriter();
+        PrintWriter pw = new PrintWriter(msgs);
+        boolean fail = false;
+        for (Thread t : data.keySet()) {
+            if (!allowedThreads.contains(t.getName())) {
+                msgs.append("assertThread: ").append(t.getName()).append('\n');
+                for (StackTraceElement s : data.get(t)) {
+                    msgs.append("    ").append(s.toString()).append('\n');
+                }
+                fail = true;
+            }
+        }
+        assertFalse(msgs.toString(), fail);
+    }
+
 }
+

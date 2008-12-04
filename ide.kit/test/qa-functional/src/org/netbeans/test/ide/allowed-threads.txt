@@ -1,0 +1,6 @@
+# This file contains thread names which are allowed to be running after startup.
+# Each line consists of a thread name
+
+
+# Thread that executes the test itself:
+main
