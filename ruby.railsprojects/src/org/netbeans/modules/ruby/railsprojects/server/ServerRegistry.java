@@ -44,6 +44,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,7 +71,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class ServerRegistry implements VetoableChangeListener {
 
-    private static ServerRegistry defaultRegistry; 
+    private static ServerRegistry defaultRegistry;
 
     private ServerRegistry() {
     }
@@ -94,7 +96,7 @@ public class ServerRegistry implements VetoableChangeListener {
     }
 
     List<RubyInstance> getServers(RubyPlatform platform) {
-        List<RubyInstance> result = new  ArrayList<RubyInstance>();
+        List<RubyInstance> result = new ArrayList<RubyInstance>();
         for (RubyInstance each : getServers()) {
             if (each.isPlatformSupported(platform)) {
                 result.add(each);
@@ -102,33 +104,33 @@ public class ServerRegistry implements VetoableChangeListener {
         }
         return result;
     }
-    
+
     List<RubyServer> getRubyServers() {
-        List<RubyServer> result = new  ArrayList<RubyServer>();
+        List<RubyServer> result = new ArrayList<RubyServer>();
         for (RubyPlatform each : RubyPlatformManager.getPlatforms()) {
             result.addAll(RubyServerFactory.getInstance(each).getServers());
         }
         return result;
     }
-    
+
     public RubyInstance getServer(String serverId, RubyPlatform platform) {
 
         for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
-            RubyInstance instance = provider.getInstance(serverId); 
+            RubyInstance instance = provider.getInstance(serverId);
             if (instance != null && instance.isPlatformSupported(platform)) {
                 return instance;
             }
         }
-        
+
         for (RubyServer each : RubyServerFactory.getInstance(platform).getServers()) {
             if (each.getServerUri().equals(serverId) && each.isPlatformSupported(platform)) {
                 return each;
             }
         }
         return null;
-        
+
     }
-    
+
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (evt.getPropertyName().equals("platforms")) { //NOI18N
             ServerInstanceProviderImpl.getInstance().fireServersChanged();
@@ -144,7 +146,7 @@ public class ServerRegistry implements VetoableChangeListener {
 
         private static final Map<RubyPlatform, RubyServerFactory> instances = new HashMap<RubyPlatform, ServerRegistry.RubyServerFactory>();
         private final RubyPlatform platform;
-        private final Set<RubyServer> servers = new HashSet<RubyServer>();
+        private final List<RubyServer> servers = new ArrayList<RubyServer>();
 
         private RubyServerFactory(RubyPlatform platform) {
             this.platform = platform;
@@ -157,19 +159,20 @@ public class ServerRegistry implements VetoableChangeListener {
             }
             RubyServerFactory result = new RubyServerFactory(platform);
             result.initGlassFish();
-            result.initWEBrick();
             result.initMongrel();
+            result.initWEBrick();
             platform.addPropertyChangeListener(result);
             instances.put(platform, result);
             return result;
         }
 
         public List<RubyServer> getServers() {
-            return new ArrayList<RubyServer>(servers);
+            Collections.sort(servers, new ServerComparator());
+            return Collections.<RubyServer>unmodifiableList(servers);
         }
-        
+
         private void initGlassFish() {
-            if(platform.isJRuby()) {
+            if (platform.isJRuby()) {
                 GemManager gemManager = platform.getGemManager();
                 if (gemManager == null) {
                     return;
@@ -179,7 +182,7 @@ public class ServerRegistry implements VetoableChangeListener {
                 GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
                 if (glassFishGemInfo == null) {
                     // remove all glassfish from gems
-                    for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
+                    for (Iterator<RubyServer> it = servers.iterator(); it.hasNext();) {
                         if (it.next() instanceof GlassFishGem) {
                             it.remove();
                         }
@@ -200,11 +203,11 @@ public class ServerRegistry implements VetoableChangeListener {
             if (gemManager == null) {
                 return;
             }
-            
+
             String mongrelVersion = gemManager.getLatestVersion(Mongrel.GEM_NAME);
             if (mongrelVersion == null) {
                 // remove all mongrels
-                for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
+                for (Iterator<RubyServer> it = servers.iterator(); it.hasNext();) {
                     if (it.next() instanceof Mongrel) {
                         it.remove();
                     }
@@ -232,6 +235,25 @@ public class ServerRegistry implements VetoableChangeListener {
                 initWEBrick();
                 ServerInstanceProviderImpl.getInstance().fireServersChanged();
             }
+        }
+    }
+
+    static class ServerComparator implements Comparator<RubyServer> {
+
+        public int compare(RubyServer o1, RubyServer o2) {
+            if (o1.getClass().equals(o2.getClass())) {
+                return o2.getDisplayName().compareTo(o1.getDisplayName());
+            }
+            if (o1 instanceof GlassFishGem) {
+                return -1;
+            }
+            if (o2 instanceof GlassFishGem) {
+                return 1;
+            }
+            if (o1 instanceof Mongrel) {
+                return -1;
+            }
+            return 1;
         }
     }
 

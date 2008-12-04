@@ -1,0 +1,6 @@
+"""Configuration file parser.
+
+HINT:Name "ConfigParser" is not a valid module name according to your code style (lowercase)
+FIX:Ignore name violations for "ConfigParser"
+FIX:Change preferred module name style to CapitalizedWords
+FIX:Change preferred module name style to Capitalized_With_Underscores

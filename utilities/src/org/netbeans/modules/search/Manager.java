@@ -67,6 +67,7 @@ import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCO
  *
  * @see <a href="doc-files/manager-state-diagram.png">State diagram</a>
  * @author  Marian Petras
+ * @author  kaktus
  */
 final class Manager {
     
@@ -166,7 +167,10 @@ final class Manager {
         assert EventQueue.isDispatchThread();
         
         synchronized (lock) {
-            ResultView.getInstance().setResultModel(null);
+            ResultViewPanel viewPanel = ResultView.getInstance().initiateResultView(task);
+            ResultModel resultModel = task.getResultModel();
+            viewPanel.setResultModel(resultModel);
+//            ResultView.getInstance().setResultModel(null);
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
             }
@@ -205,6 +209,8 @@ final class Manager {
         
         synchronized (lock) {
             SearchTask newSearchTask = lastSearchTask.createNewGeneration();
+            if(lastSearchTask.getResultModel() != null)
+                ResultView.getInstance().addSearchPair(lastSearchTask.getResultModel().getResultView(), newSearchTask);
             lastSearchTask = null;
             scheduleSearchTask(newSearchTask);
         }
@@ -249,42 +255,52 @@ final class Manager {
     
     /**
      */
-    private void notifySearchStarted() {
-        notifySearchTaskStateChange(EVENT_SEARCH_STARTED);
+    private void notifySearchStarted(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_STARTED);
     }
     
     /**
      */
-    private void notifySearchFinished() {
-        notifySearchTaskStateChange(EVENT_SEARCH_FINISHED);
+    private void notifySearchFinished(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_FINISHED);
     }
     
     /**
      */
-    private void notifySearchInterrupted() {
-        notifySearchTaskStateChange(EVENT_SEARCH_INTERRUPTED);
+    private void notifySearchInterrupted(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_INTERRUPTED);
     }
     
     /**
      */
-    private void notifySearchCancelled() {
-        notifySearchTaskStateChange(EVENT_SEARCH_CANCELLED);
+    private void notifySearchCancelled(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_CANCELLED);
     }
     
     /**
      * Notifies the result window of a search task's state change.
      *
+     * @param
      * @param  changeType  constant describing what happened
      *                     - one of the EVENT_xxx constants
      */
-    private void notifySearchTaskStateChange(final int changeType) {
+    private void notifySearchTaskStateChange(final SearchTask task, final int changeType) {
         synchronized (lock) {
             if (!searchWindowOpen) {
                 return;
             }
         }
-        callOnWindowFromAWT("searchTaskStateChanged",                   //NOI18N
-                          new Integer(changeType));
+        Method theMethod;
+        try {
+            theMethod = ResultView.class.getDeclaredMethod(
+                                                "searchTaskStateChanged",  //NOI18N
+                                                SearchTask.class,
+                                                Integer.TYPE);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        callOnWindowFromAWT(theMethod, new Object[]{task ,new Integer(changeType)});
     }
 
     /**
@@ -293,8 +309,16 @@ final class Manager {
         if (!searchWindowOpen) {
             return;
         }
-        callOnWindowFromAWT("notifySearchPending",                      //NOI18N
-                          new Integer(blockingTask));
+        Method theMethod;
+        try {
+            theMethod = ResultView.class.getDeclaredMethod(
+                                                "notifySearchPending",  //NOI18N
+                                                SearchTask.class,
+                                                Integer.TYPE);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+        callOnWindowFromAWT(theMethod, new Object[]{pendingSearchTask, new Integer(blockingTask)});
     }
     
     /**
@@ -309,15 +333,23 @@ final class Manager {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(getClass(), "MSG_Success"));    //NOI18N
             if (searchWindowOpen) {
-                callOnWindowFromAWT("closeAndSendFocusToEditor", false);//NOI18N
+                Method theMethod;
+                try {
+                    theMethod = ResultView.class.getDeclaredMethod(
+                                                        "closeAndSendFocusToEditor",  //NOI18N
+                                                        ReplaceTask.class);
+                } catch (NoSuchMethodException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                callOnWindowFromAWT(theMethod, new Object[]{currentReplaceTask} , false);//NOI18N
             }
         } else {
             String msgKey = (resultStatus == PRE_CHECK_FAILED)
                             ? "MSG_Issues_found_during_precheck"        //NOI18N
                             : "MSG_Issues_found_during_replace";        //NOI18N
             String title = NbBundle.getMessage(getClass(), msgKey);
-            displayIssuesFromAWT(title,
-                                 currentReplaceTask.getProblems(),
+            displayIssuesFromAWT(currentReplaceTask,
+                                 title,
                                  resultStatus != PRE_CHECK_FAILED);
             if (resultStatus == PRE_CHECK_FAILED) {
                 offerRescanAfterIssuesFound();
@@ -351,7 +383,16 @@ final class Manager {
              * to the EventQueue thread, we use invokeLater(...) and not
              * invokeAndWait(...).
              */
-            callOnWindowFromAWT("rescan", false);                       //NOI18N
+            Method theMethod;
+            try {
+                theMethod = ResultView.class.getDeclaredMethod(
+                                                    "rescan",  //NOI18N
+                                                    ReplaceTask.class);
+            } catch (NoSuchMethodException ex) {
+                throw new IllegalStateException(ex);
+            }
+
+            callOnWindowFromAWT(theMethod, new Object[]{currentReplaceTask}, false);
         }
     }
     
@@ -379,13 +420,14 @@ final class Manager {
     
     /**
      */
-    private void displayIssuesFromAWT(String title,
-                                      String[] issues,
+    private void displayIssuesFromAWT(ReplaceTask task,
+                                      String title,
                                       boolean att) {
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
                                                 "displayIssuesToUser",  //NOI18N
+                                                ReplaceTask.class,
                                                 String.class,
                                                 String[].class,
                                                 Boolean.TYPE);
@@ -393,7 +435,7 @@ final class Manager {
             throw new IllegalStateException(ex);
         }
         callOnWindowFromAWT(theMethod,
-                            new Object[] {title, issues, Boolean.valueOf(att)},
+                            new Object[] {task, title, task.getProblems(), Boolean.valueOf(att)},
                             false);
     }
     
@@ -568,11 +610,11 @@ final class Manager {
         synchronized (lock) {
             assert pendingSearchTask != null;
             
-            notifySearchStarted();
+            notifySearchStarted(pendingSearchTask);
             
             ResultModel resultModel = pendingSearchTask.getResultModel();
-            callOnWindowFromAWT("setResultModel",                       //NOI18N
-                                resultModel);
+//            callOnWindowFromAWT("setResultModel",                       //NOI18N
+//                                resultModel);
             resultModelToClean = resultModel;
 
             if (outputWriterRef != null) {
@@ -669,7 +711,7 @@ final class Manager {
             if ((pendingTasks & SEARCHING) != 0) {
                 pendingTasks &= ~SEARCHING;
                 pendingSearchTask = null;
-                notifySearchCancelled();
+                notifySearchCancelled(pendingSearchTask);
             } else if (currentSearchTask != null) {
                 currentSearchTask.stop();
             }
@@ -689,9 +731,9 @@ final class Manager {
                 assert state == SEARCHING;
                 if (currentSearchTask.notifyWhenFinished()) {
                     if (currentSearchTask.wasInterrupted()) {
-                        notifySearchInterrupted();
+                        notifySearchInterrupted(currentSearchTask);
                     } else {
-                        notifySearchFinished();
+                        notifySearchFinished(currentSearchTask);
                     }
                 }
                 currentSearchTask = null;

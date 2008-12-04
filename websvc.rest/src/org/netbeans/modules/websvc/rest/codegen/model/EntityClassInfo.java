@@ -121,7 +121,7 @@ public class EntityClassInfo {
                     type = packageName + "." + name;
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-                    
+
                     if (useFieldAccess(classElement)) {
                         extractFields(classElement);
                     } else {
@@ -150,7 +150,7 @@ public class EntityClassInfo {
             }
 
             if (!fieldInfo.isPersistent()) continue;
-            
+
             fieldInfos.add(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
 

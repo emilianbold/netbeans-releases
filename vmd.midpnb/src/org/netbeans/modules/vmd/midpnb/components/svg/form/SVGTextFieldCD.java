@@ -110,8 +110,7 @@ public class SVGTextFieldCD extends ComponentDescriptor{
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).
                 addProperty(NbBundle.getMessage(SVGTextFieldCD.class, 
                         "DISP_Text"), 
                         PropertyEditorString.createInstance(

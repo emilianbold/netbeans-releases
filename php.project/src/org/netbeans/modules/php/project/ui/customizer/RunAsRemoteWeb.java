@@ -79,10 +79,12 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593346955414591271L;
+    private static final String NO_CONFIG = "no-config"; // NOI18N
+    private static final String MISSING_CONFIG = "missing-config"; // NOI18N
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
-            new RemoteConfiguration.Empty("no-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
+            new RemoteConfiguration.Empty(NO_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
-            new RemoteConfiguration.Empty("missing-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
+            new RemoteConfiguration.Empty(MISSING_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProjectProperties properties;
@@ -287,7 +289,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection == null
-                    || "".equals(remoteConnection) // NOI18N
+                    || NO_CONFIG.equals(remoteConnection)
                     || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one

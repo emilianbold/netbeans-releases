@@ -1,0 +1,3 @@
+        self.notokay = true;
+        ------------
+HINT:Attribute Defined Outside __init__ "notokay"

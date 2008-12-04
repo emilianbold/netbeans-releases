@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringBufferInputStream;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
@@ -106,10 +111,11 @@ public final class AntDeploymentHelper {
                 provider = si.getAntDeploymentProvider();
             }
         }
+
         FileObject fo = FileUtil.createData(FileUtil.normalizeFile(file));
         FileLock lock = fo.lock();
         try {
-            OutputStream os = fo.getOutputStream(lock);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             try {
                 if (provider == null) {
                     InputStream is = ServerInstance.class.getResourceAsStream("resources/default-ant-deploy.xml"); // NOI18N
@@ -121,6 +127,40 @@ public final class AntDeploymentHelper {
                 } else {
                     provider.writeDeploymentScript(os, moduleType);
                 }
+
+                if(file.exists() == true)
+                {
+                    InputStream stream = fo.getInputStream();
+                    ByteArrayInputStream stringStream = new ByteArrayInputStream(os.toString().getBytes());
+                    if(isEqual(stream, stringStream) == false)
+                    {
+                        stream.close();
+                        stringStream.reset();
+                        OutputStream fileStream = fo.getOutputStream(lock);
+                        try
+                        {
+                            FileUtil.copy(stringStream, fileStream);
+                        }
+                        finally
+                        {
+                            fileStream.close();
+                        }
+                    }
+                    else
+                    {
+                        stream.close();
+                    }
+
+                }
+                else
+                {
+
+                    OutputStream fileOS = fo.getOutputStream(lock);
+                    OutputStreamWriter writer = new OutputStreamWriter(fileOS);
+                    String outString = os.toString();
+                    writer.write(outString, 0, outString.length());
+                }
+
             } finally {
                 os.close();
             }
@@ -150,5 +190,40 @@ public final class AntDeploymentHelper {
         }
         AntDeploymentProvider sup = si.getAntDeploymentProvider();
         return sup == null ? null : sup.getDeploymentPropertiesFile();
+    }
+
+    private static boolean isEqual(InputStream stream1, InputStream stream2)
+            throws IOException
+    {
+        boolean retVal = false;
+
+        BufferedReader reader1 = new BufferedReader(new java.io.InputStreamReader(stream1));
+        BufferedReader reader2 = new BufferedReader(new java.io.InputStreamReader(stream2));
+
+        for(;;)
+        {
+            String line1 = reader1.readLine();
+            String line2 = reader2.readLine();
+
+            if((line1 == null) && (line2 == null))
+            {
+                // Both streams has ended, and at this point both stream are the
+                // same;
+                retVal = true;
+                break;
+            }
+            else if((line1 == null) || (line2 == null))
+            {
+                // One stream has ended before the other.  Therefore they are
+                // not equal
+                break;
+            }
+            else if(line1.equals(line2) == false)
+            {
+                break;
+            }
+        }
+
+        return retVal;
     }
 }

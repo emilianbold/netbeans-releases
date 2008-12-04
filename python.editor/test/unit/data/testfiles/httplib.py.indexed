@@ -1,0 +1,481 @@
+
+
+Document 0
+Searchable Keys:
+  class : BadStatusLine
+  class-ig : badstatusline
+  extends : HTTPException
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,line;
+  member : args;D;;
+  member : line;D;;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : CannotSendHeader
+  class-ig : cannotsendheader
+  extends : ImproperConnectionState
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  class : CannotSendRequest
+  class-ig : cannotsendrequest
+  extends : ImproperConnectionState
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  class : FakeSocket
+  class-ig : fakesocket
+  extends : SharedSocketClient
+  in : httplib
+  item : _closedsocket;C;|PRIVATE|;
+  member : __getattr__;F;|PRIVATE|;self,attr;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,sock,ssl;
+  member : _sock;D;|PRIVATE|;
+  member : _ssl;D;|PRIVATE|;
+  member : close;F;|PRIVATE|;self;
+  member : makefile;F;|PRIVATE|;self,mode,bufsize;
+  member : recv;F;|PRIVATE|;self,len,flags;
+  member : send;F;|PRIVATE|;self,stuff,flags;
+  member : sendall;F;|PRIVATE|;self,stuff,flags;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 4
+Searchable Keys:
+  class : HTTP
+  class-ig : http
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,host,port,strict;
+  member : _conn;D;|PRIVATE|;
+  member : _connection_class;D;|PRIVATE|;
+  member : _http_vsn;D;|PRIVATE|;
+  member : _http_vsn_str;D;|PRIVATE|;
+  member : _setup;F;|PRIVATE|;self,conn;
+  member : close;F;;self;
+  member : connect;F;;self,host,port;
+  member : debuglevel;D;;
+  member : endheaders;D;;
+  member : file;D;;
+  member : getfile;F;;self;
+  member : getreply;F;;self;
+  member : headers;D;;
+  member : putheader;F;;self,header,values;
+  member : putrequest;D;;
+  member : send;D;;
+  member : set_debuglevel;D;;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  class : HTTPConnection
+  class-ig : httpconnection
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,host,port,strict;
+  member : __response;D;|PRIVATE|;
+  member : __state;D;|PRIVATE|;
+  member : _buffer;D;|PRIVATE|;
+  member : _http_vsn;D;|PRIVATE|;
+  member : _http_vsn_str;D;|PRIVATE|;
+  member : _method;D;|PRIVATE|;
+  member : _output;F;|PRIVATE|;self,s;
+  member : _send_output;F;|PRIVATE|;self;
+  member : _send_request;F;|PRIVATE|;self,method,url,body,headers;
+  member : _set_hostport;F;|PRIVATE|;self,host,port;
+  member : auto_open;D;;
+  member : close;F;;self;
+  member : connect;F;;self;
+  member : debuglevel;D;;
+  member : debuglevel;D;;
+  member : default_port;D;;
+  member : endheaders;F;;self;
+  member : getresponse;F;;self;
+  member : host;D;;
+  member : port;D;;
+  member : putheader;F;;self,header,value;
+  member : putrequest;F;;self,method,url,skip_host,skip_accept_encoding;
+  member : request;F;;self,method,url,body,headers;
+  member : response_class;D;;
+  member : send;F;;self,str;
+  member : set_debuglevel;F;;self,level;
+  member : sock;D;;
+  member : strict;D;;
+  member : strict;D;;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  class : HTTPException
+  class-ig : httpexception
+  extends : Exception
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  class : HTTPMessage
+  class-ig : httpmessage
+  extends : Message
+  in : httplib
+  member : addcontinue;F;|PRIVATE|;self,key,more;
+  member : addheader;F;|PRIVATE|;self,key,value;
+  member : dict;D;;
+  member : headers;D;;
+  member : readheaders;F;|PRIVATE|;self;
+  member : seekable;D;;
+  member : status;D;;
+  member : unixfrom;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 8
+Searchable Keys:
+  class : HTTPResponse
+  class-ig : httpresponse
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,sock,debuglevel,strict,method;
+  member : _check_close;F;|PRIVATE|;self;
+  member : _method;D;|PRIVATE|;
+  member : _read_chunked;F;|PRIVATE|;self,amt;
+  member : _read_status;F;|PRIVATE|;self;
+  member : _safe_read;F;|PRIVATE|;self,amt;
+  member : begin;F;;self;
+  member : chunk_left;D;;
+  member : chunked;D;;
+  member : close;F;;self;
+  member : debuglevel;D;;
+  member : fp;D;;
+  member : getheader;F;;self,name,default;
+  member : getheaders;F;;self;
+  member : isclosed;F;;self;
+  member : length;D;;
+  member : msg;D;;
+  member : read;F;;self,amt;
+  member : reason;D;;
+  member : status;D;;
+  member : strict;D;;
+  member : version;D;;
+  member : will_close;D;;
+
+Not Searchable Keys:
+
+
+Document 9
+Searchable Keys:
+  class : HTTPS
+  class-ig : https
+  extends : HTTP
+  in : httplib
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,host,port,key_file,cert_file,strict;
+  member : _connection_class;D;|PRIVATE|;
+  member : cert_file;D;;
+  member : key_file;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 10
+Searchable Keys:
+  class : HTTPSConnection
+  class-ig : httpsconnection
+  extends : HTTPConnection
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,host,port,key_file,cert_file,strict;
+  member : cert_file;D;;
+  member : connect;F;;self;
+  member : default_port;D;;
+  member : key_file;D;;
+  member : sock;D;;
+
+Not Searchable Keys:
+
+
+Document 11
+Searchable Keys:
+  class : ImproperConnectionState
+  class-ig : improperconnectionstate
+  extends : HTTPException
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 12
+Searchable Keys:
+  class : IncompleteRead
+  class-ig : incompleteread
+  extends : HTTPException
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,partial;
+  member : args;D;;
+  member : partial;D;;
+
+Not Searchable Keys:
+
+
+Document 13
+Searchable Keys:
+  class : InvalidURL
+  class-ig : invalidurl
+  extends : HTTPException
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 14
+Searchable Keys:
+  class : LineAndFileWrapper
+  class-ig : lineandfilewrapper
+  in : httplib
+  member : __getattr__;F;|PRIVATE|;self,attr;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,line,file;
+  member : _done;F;|PRIVATE|;self;
+  member : _file;D;|PRIVATE|;
+  member : _line;D;|PRIVATE|;
+  member : _line_consumed;D;|PRIVATE|;
+  member : _line_left;D;|PRIVATE|;
+  member : _line_offset;D;|PRIVATE|;
+  member : read;D;;
+  member : read;F;|PRIVATE|;self,amt;
+  member : readline;D;;
+  member : readline;F;|PRIVATE|;self;
+  member : readlines;D;;
+  member : readlines;F;|PRIVATE|;self,size;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 15
+Searchable Keys:
+  class : NotConnected
+  class-ig : notconnected
+  extends : HTTPException
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 16
+Searchable Keys:
+  class : ResponseNotReady
+  class-ig : responsenotready
+  extends : ImproperConnectionState
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 17
+Searchable Keys:
+  class : SSLFile
+  class-ig : sslfile
+  extends : SharedSocketClient
+  in : httplib
+  member : BUFSIZE;D;|PRIVATE|;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,sock,ssl,bufsize;
+  member : __iter__;F;|PRIVATE|;self;
+  member : _buf;D;|PRIVATE|;
+  member : _bufsize;D;|PRIVATE|;
+  member : _read;F;|PRIVATE|;self;
+  member : _ssl;D;|PRIVATE|;
+  member : fileno;F;|PRIVATE|;self;
+  member : next;F;|PRIVATE|;self;
+  member : read;F;|PRIVATE|;self,size;
+  member : readline;F;|PRIVATE|;self;
+  member : readlines;F;|PRIVATE|;self,sizehint;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 18
+Searchable Keys:
+  class : SharedSocket
+  class-ig : sharedsocket
+  in : httplib
+  member : __del__;F;|PRIVATE|;self;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,sock;
+  member : _refcnt;D;|PRIVATE|;
+  member : decref;F;|PRIVATE|;self;
+  member : incref;F;|PRIVATE|;self;
+  member : sock;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 19
+Searchable Keys:
+  class : SharedSocketClient
+  class-ig : sharedsocketclient
+  in : httplib
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,shared;
+  member : _closed;D;|PRIVATE|;
+  member : _shared;D;|PRIVATE|;
+  member : _sock;D;|PRIVATE|;
+  member : close;F;|PRIVATE|;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 20
+Searchable Keys:
+  class : UnimplementedFileMode
+  class-ig : unimplementedfilemode
+  extends : HTTPException
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 21
+Searchable Keys:
+  class : UnknownProtocol
+  class-ig : unknownprotocol
+  extends : HTTPException
+  in : httplib
+  member : __init__;c;|CONSTRUCTOR|;self,version;
+  member : args;D;;
+  member : version;D;;
+
+Not Searchable Keys:
+
+
+Document 22
+Searchable Keys:
+  class : UnknownTransferEncoding
+  class-ig : unknowntransferencoding
+  extends : HTTPException
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 23
+Searchable Keys:
+  class : error
+  class-ig : error
+  extends : Exception
+  in : httplib
+
+Not Searchable Keys:
+
+
+Document 24
+Searchable Keys:
+  item : ACCEPTED;D;|PRIVATE|;
+  item : BAD_GATEWAY;D;|PRIVATE|;
+  item : BAD_REQUEST;D;|PRIVATE|;
+  item : BadStatusLine;C;;
+  item : CONFLICT;D;|PRIVATE|;
+  item : CONTINUE;D;|PRIVATE|;
+  item : CREATED;D;|PRIVATE|;
+  item : CannotSendHeader;C;;
+  item : CannotSendRequest;C;;
+  item : EXPECTATION_FAILED;D;|PRIVATE|;
+  item : FAILED_DEPENDENCY;D;|PRIVATE|;
+  item : FORBIDDEN;D;|PRIVATE|;
+  item : FOUND;D;|PRIVATE|;
+  item : FakeSocket;C;|PRIVATE|;
+  item : GATEWAY_TIMEOUT;D;|PRIVATE|;
+  item : GONE;D;|PRIVATE|;
+  item : HTTP;C;;
+  item : HTTPConnection;C;;
+  item : HTTPException;C;;
+  item : HTTPMessage;C;|PRIVATE|;
+  item : HTTPResponse;C;;
+  item : HTTPS;C;|PRIVATE|;
+  item : HTTPSConnection;C;;
+  item : HTTPS_PORT;D;|PRIVATE|;
+  item : HTTP_PORT;D;|PRIVATE|;
+  item : HTTP_VERSION_NOT_SUPPORTED;D;|PRIVATE|;
+  item : IM_USED;D;|PRIVATE|;
+  item : INSUFFICIENT_STORAGE;D;|PRIVATE|;
+  item : INTERNAL_SERVER_ERROR;D;|PRIVATE|;
+  item : ImproperConnectionState;C;;
+  item : IncompleteRead;C;;
+  item : InvalidURL;C;;
+  item : LENGTH_REQUIRED;D;|PRIVATE|;
+  item : LOCKED;D;|PRIVATE|;
+  item : LineAndFileWrapper;C;|PRIVATE|;
+  item : MAXAMOUNT;D;|PRIVATE|;
+  item : METHOD_NOT_ALLOWED;D;|PRIVATE|;
+  item : MOVED_PERMANENTLY;D;|PRIVATE|;
+  item : MULTIPLE_CHOICES;D;|PRIVATE|;
+  item : MULTI_STATUS;D;|PRIVATE|;
+  item : NON_AUTHORITATIVE_INFORMATION;D;|PRIVATE|;
+  item : NOT_ACCEPTABLE;D;|PRIVATE|;
+  item : NOT_EXTENDED;D;|PRIVATE|;
+  item : NOT_FOUND;D;|PRIVATE|;
+  item : NOT_IMPLEMENTED;D;|PRIVATE|;
+  item : NOT_MODIFIED;D;|PRIVATE|;
+  item : NO_CONTENT;D;|PRIVATE|;
+  item : NotConnected;C;;
+  item : OK;D;|PRIVATE|;
+  item : PARTIAL_CONTENT;D;|PRIVATE|;
+  item : PAYMENT_REQUIRED;D;|PRIVATE|;
+  item : PRECONDITION_FAILED;D;|PRIVATE|;
+  item : PROCESSING;D;|PRIVATE|;
+  item : PROXY_AUTHENTICATION_REQUIRED;D;|PRIVATE|;
+  item : REQUESTED_RANGE_NOT_SATISFIABLE;D;|PRIVATE|;
+  item : REQUEST_ENTITY_TOO_LARGE;D;|PRIVATE|;
+  item : REQUEST_TIMEOUT;D;|PRIVATE|;
+  item : REQUEST_URI_TOO_LONG;D;|PRIVATE|;
+  item : RESET_CONTENT;D;|PRIVATE|;
+  item : ResponseNotReady;C;;
+  item : SEE_OTHER;D;|PRIVATE|;
+  item : SERVICE_UNAVAILABLE;D;|PRIVATE|;
+  item : SSLFile;C;|PRIVATE|;
+  item : SWITCHING_PROTOCOLS;D;|PRIVATE|;
+  item : SharedSocket;C;|PRIVATE|;
+  item : SharedSocketClient;C;|PRIVATE|;
+  item : StringIO;I;|PRIVATE|;
+  item : TEMPORARY_REDIRECT;D;|PRIVATE|;
+  item : UNAUTHORIZED;D;|PRIVATE|;
+  item : UNPROCESSABLE_ENTITY;D;|PRIVATE|;
+  item : UNSUPPORTED_MEDIA_TYPE;D;|PRIVATE|;
+  item : UPGRADE_REQUIRED;D;|PRIVATE|;
+  item : USE_PROXY;D;|PRIVATE|;
+  item : UnimplementedFileMode;C;;
+  item : UnknownProtocol;C;;
+  item : UnknownTransferEncoding;C;;
+  item : _CS_IDLE;D;|PRIVATE|;
+  item : _CS_REQ_SENT;D;|PRIVATE|;
+  item : _CS_REQ_STARTED;D;|PRIVATE|;
+  item : _UNKNOWN;D;|PRIVATE|;
+  item : __all__;D;;
+  item : errno;I;|PRIVATE|;
+  item : error;C;;
+  item : mimetools;I;|PRIVATE|;
+  item : responses;D;;
+  item : socket;I;|PRIVATE|;
+  item : test;F;|PRIVATE|;;
+  item : urlsplit;I;|PRIVATE|;
+  module : httplib
+
+Not Searchable Keys:

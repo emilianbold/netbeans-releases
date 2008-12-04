@@ -48,25 +48,31 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.classview.Diagnostic;
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Vladimir Kvasihn
  */
 public class ProjectNode extends NPNode {
     public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N
+    protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
     private boolean isLibrary;
     
     public ProjectNode(final CsmProject project, Children.Array key) {
-        super(key);
+        super(key, Lookups.fixed(project));
         this.project = project;
         isLibrary = project.isArtificial();
         init(project);
     }
-    
+
     private void init(CsmProject project){
         setName(project.getName().toString());
         setDisplayName(project.getName().toString());
@@ -106,7 +112,6 @@ public class ProjectNode extends NPNode {
     }
     
     private CsmProject project;
-    private Node[] loadingNodes = null;
     
     private class TraverseAction extends AbstractAction {
         private Map<BaseNode,BaseNode> map;
@@ -158,9 +163,49 @@ public class ProjectNode extends NPNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if( Diagnostic.DEBUG || EXPORT) {
-            return new Action[] {new TraverseAction(),new ExportAction()};
+        List<? extends Action> list = Utilities.actionsForPath("NativeProjects/Actions"); // NOI18N
+        List<Action> res = new ArrayList<Action>();
+        for(Action action : list){
+            if (action instanceof NodeAction){
+                NodeAction nodeAction = (NodeAction) action;
+                if ("org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction".equals(action.getClass().getName())){ // NOI18N
+                    res.add(new NodeActionImpl(nodeAction, this));
+                } else if( TEST_XREF) {
+                    res.add(new NodeActionImpl(nodeAction, this));
+                }
+            }
         }
-        return new Action[0];
+        if( Diagnostic.DEBUG || EXPORT) {
+            res.add(new TraverseAction());
+            res.add(new ExportAction());
+        }
+        return res.toArray(new Action[res.size()]);
     }
+
+    private static class NodeActionImpl extends AbstractAction {
+        private final NodeAction na;
+        private final ProjectNode node;
+        public NodeActionImpl(NodeAction na, ProjectNode node) {
+            this.na = na;
+            this.node = node;
+        }
+
+        @Override
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return na.getName();
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return na.createContextAwareInstance(Lookups.fixed(node)).isEnabled();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            na.createContextAwareInstance(Lookups.fixed(node)).actionPerformed(e);
+        }
+    }
+
 }

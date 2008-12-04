@@ -684,6 +684,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151955.cc", 13, 35, "iz151955.cc", 10, 5);
     }
 
+    public void testIZ154112() throws Exception {
+        // IZ#154112: Unresolved instantiations of template
+        performTest("iz154112.cc", 17, 13, "iz154112.cc", 7, 5);
+        performTest("iz154112.cc", 18, 13, "iz154112.cc", 7, 5);
+        performTest("iz154112.cc", 19, 19, "iz154112.cc", 13, 5);
+        performTest("iz154112.cc", 20, 19, "iz154112.cc", 13, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

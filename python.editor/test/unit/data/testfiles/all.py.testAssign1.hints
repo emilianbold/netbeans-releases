@@ -1,0 +1,3 @@
+__all__ = [ "MyPublikClass", "MyPublicClass" ]
+            ---------------
+HINT:"MyPublikClass" defined in __all__ does not exist!

@@ -213,6 +213,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 if (AstRenderer.isConstQualifier(tokenType)) {
                     return true;
                 } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                           tokenType == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
                                tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
                     return false;
                 }

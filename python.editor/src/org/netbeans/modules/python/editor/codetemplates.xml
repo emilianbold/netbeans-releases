@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+    <!-- TODO - import from TextMate -->
+<!-- TODO  __magic__ -->
+
+
+    <codetemplate abbreviation="wh" xml:space="preserve">
+        <code>while ${EXP}:
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>while loop</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="cls" xml:space="preserve">
+        <code>class ${name}${1 default="(Extends)"}:
+${initialindent editable="false"}${indent editable="false"}"""
+${initialindent editable="false"}${indent editable="false"}${Documentation}
+${initialindent editable="false"}${indent editable="false"}"""
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>Class</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="def" xml:space="preserve">
+        <code>def ${name}(${1 default="parameters"}):
+${initialindent editable="false"}${indent editable="false"}"""${Documentation}"""
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>Method</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="init" xml:space="preserve">
+        <code>def __init__(self${1 default=", parameters"}):
+${initialindent editable="false"}${indent editable="false"}"""${Documentation}"""
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>Constructor</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="bre" xml:space="preserve">
+        <code>break
+${initialindent editable="false"}${cursor}</code>
+        <description>Break out of loop</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="cont" xml:space="preserve">
+        <code>continue
+${initialindent editable="false"}${cursor}</code>
+        <description>Continue in loop</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="asse" xml:space="preserve">
+        <code>assert ${condition}, "${assertmessage}"
+${initialindent editable="false"}${cursor}</code>
+        <description>Assert - check condition</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="forin" xml:space="preserve">
+        <code>for ${i} in range(${10}):
+${initialindent editable="false"}${indent editable="false"}print ${i}
+${initialindent editable="false"}${cursor}</code>
+        <description>For loop range</description>
+    </codetemplate>
+    <codetemplate abbreviation="imp" xml:space="preserve">
+        <code>import ${libraryName}
+${initialindent editable="false"}${cursor}</code>
+        <description>import Statement</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="trye" xml:space="preserve">
+
+        <code>try:
+${initialindent editable="false"}${indent editable="false"}${dangerousCode}
+${initialindent editable="false"}except Exception:
+${initialindent editable="false"}${indent editable="false"}print "${errorMessage}"
+${initialindent editable="false"}else:
+${initialindent editable="false"}${indent editable="false"}${runBlockIfNoExceptionThrown}
+${initialindent editable="false"}${cursor}</code>
+        <description>try catch else</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="tryf" xml:space="preserve">
+
+        <code>try:
+${initialindent editable="false"}${indent editable="false"}${dangerousCode}
+${initialindent editable="false"}except Exception, e:
+${initialindent editable="false"}${indent editable="false"}print "Exception: ", e
+${initialindent editable="false"}finally:
+${initialindent editable="false"}${codeWillRunRegardlessOfException}
+${cursor}</code>
+        <description>
+try catch finally - the finally block will run regarless whether or
+not exception occurs
+        </description>
+    </codetemplate>
+
+    <codetemplate abbreviation="ife" xml:space="preserve">
+        <code>if ${condition}:
+${initialindent editable="false"}${indent editable="false"}${statement}
+${initialindent editable="false"}else:
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>if else Statement</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="rai" xml:space="preserve">
+        <code>raise ${Exception}
+${initialindent editable="false"}${cursor}</code>
+        <description>raise an Exception</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="if" xml:space="preserve">
+        <code>if ${condition}:
+${initialindent editable="false"}${indent editable="false"}${cursor}</code>
+        <description>if Statement</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="prn" xml:space="preserve">
+        <code>print "${cursor}"</code>
+        <description>Print statement</description>
+    </codetemplate>
+
+    <codetemplate abbreviation="try" xml:space="preserve">
+
+        <code>try:
+${initialindent editable="false"}${indent editable="false"}${dangerousCode}
+${initialindent editable="false"}except Exception, e:
+${initialindent editable="false"}${indent editable="false"}print "Exception: ", e
+${initialindent editable="false"}${cursor}</code>
+        <description>try catch</description>
+    </codetemplate>
+</codetemplates>

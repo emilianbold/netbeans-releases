@@ -118,7 +118,7 @@ public class JavaClassCompletor extends Completor {
                 }
                 
                 cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
+                ClassIndex ci = cc.getClasspathInfo().getClassIndex();
                 int index = substitutionOffset;
                 String packName = typedPrefix;
                 int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
@@ -166,7 +166,7 @@ public class JavaClassCompletor extends Completor {
                 
                 cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 
-                ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
+                ClassIndex ci = cc.getClasspathInfo().getClassIndex();
                 // add packages
                 addPackages(ci, typedPrefix, substitutionOffset, queryType);
                 if(isCancelled()) {

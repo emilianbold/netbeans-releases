@@ -99,7 +99,14 @@ public class DependencyGenerator implements CodeGenerator {
         assert fo != null;
         org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
         assert prj != null;
-        String[] ret = DialogFactory.showDependencyDialog(prj);
+        int pos = component.getCaretPosition();
+        DocumentComponent c = model.findComponent(pos);
+        boolean dm = false;
+        if (c != null) {
+            String xpath = model.getXPathExpression(c);
+            dm = xpath.contains("dependencyManagement"); //NOI18N
+        }
+        String[] ret = DialogFactory.showDependencyDialog(prj, !dm);
         if (ret != null) {
             String groupId = ret[0];
             String artifactId = ret[1];
@@ -109,7 +116,7 @@ public class DependencyGenerator implements CodeGenerator {
             String classifier = ret[5];
             try {
                 model.startTransaction();
-                int pos = component.getCaretPosition();
+                pos = component.getCaretPosition();
                 DependencyContainer container = findContainer(pos, model);
                 Dependency dep = container.findDependencyById(groupId, artifactId, classifier);
                 if (dep == null) {
