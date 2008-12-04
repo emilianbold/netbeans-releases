@@ -66,6 +66,7 @@ public class MetadataElementHandle<T extends MetadataElement> {
     private static final int VIEW = 2;
     private static final int PROCEDURE = 2;
     private static final int COLUMN = 3;
+    private static final int PRIMARY_KEY = 3;
     private static final int PARAMETER = 3;
 
     // The hierarchy of names for this element (e.g. ["mycatalog","myschema","mytable","mycolumn"])
@@ -172,6 +173,8 @@ public class MetadataElementHandle<T extends MetadataElement> {
                 return (T) resolveProcedure(metadata);
             case COLUMN:
                 return (T) resolveColumn(metadata);
+            case PRIMARY_KEY:
+                return (T) resolvePrimaryKey(metadata);
             case PARAMETER:
                 return (T) resolveParameter(metadata);
             default:
@@ -220,6 +223,15 @@ public class MetadataElementHandle<T extends MetadataElement> {
         return null;
     }
 
+    private PrimaryKey resolvePrimaryKey(Metadata metadata) {
+        Table table = resolveTable(metadata);
+        if (table != null) {
+            return table.getPrimaryKey();
+        }
+
+        return null;
+    }
+
     private Column resolveColumn(Metadata metadata) {
         // A column can be part of a number of different metadata elements.
         // Find out which one and resolve appropriately
@@ -264,7 +276,8 @@ public class MetadataElementHandle<T extends MetadataElement> {
         VIEW(View.class),
         PROCEDURE(Procedure.class),
         PARAMETER(Parameter.class),
-        COLUMN(Column.class);
+        COLUMN(Column.class),
+        PRIMARY_KEY(PrimaryKey.class);
 
         public static Kind of(MetadataElement element) {
             return of(element.getClass());

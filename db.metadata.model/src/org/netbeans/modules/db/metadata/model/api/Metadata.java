@@ -45,8 +45,13 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
@@ -176,5 +181,29 @@ public class Metadata {
             return catalog.impl;
         }
 
+        @Override
+        public PrimaryKey createPrimaryKey(PrimaryKeyImplementation impl) {
+            return new PrimaryKey(impl);
+        }
+
+        @Override
+        public Index createIndex(IndexImplementation impl) {
+            return new Index(impl);
+        }
+
+        @Override
+        public IndexColumn createIndexColumn(IndexColumnImplementation impl) {
+            return new IndexColumn(impl);
+        }
+
+        @Override
+        public ForeignKeyColumn createForeignKeyColumn(ForeignKeyColumnImplementation impl) {
+            return new ForeignKeyColumn(impl);
+        }
+
+        @Override
+        public ForeignKey createForeignKey(ForeignKeyImplementation impl) {
+            return new ForeignKey(impl);
+        }
     }
 }

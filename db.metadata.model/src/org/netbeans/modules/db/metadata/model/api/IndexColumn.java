@@ -39,33 +39,68 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 
 /**
- * Encapsulates a table column.
+ * This class represents a column in an index.  It provides more information
+ * about the column, such as whether it's used in the index ascending or
+ * descending
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class IndexColumn extends MetadataElement {
+    private IndexColumnImplementation impl;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
+    IndexColumn(IndexColumnImplementation impl) {
         this.impl = impl;
     }
 
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    /**
+     * Return the ordering for this column in the index
+     *
+     * @return the ordering for this column
+     */
+    public Ordering getOrdering() {
+        return impl.getOrdering();
     }
 
     /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
+     * Get the ordinal position for the column in this index
+     *
+     * @return the ordinal position, starting at 1
      */
     public int getPosition() {
         return impl.getPosition();
     }
+
+    @Override
+    public Index getParent() {
+        return impl.getParent();
+    }
+
+    /**
+     * Returns the name of the column
+     *
+     * @return the column name
+     */
+    @Override
+    public String getName() {
+        return impl.getName();
+    }
+
+    /**
+     * Get the underlying column for this index column
+     *
+     * @return the column for this index column.
+     */
+    public Column getColumn() {
+        return impl.getColumn();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
+
+
 }

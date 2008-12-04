@@ -37,35 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public abstract class ForeignKeyColumnImplementation {
+    private ForeignKeyColumn column;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public final ForeignKeyColumn getForeignKeyColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createForeignKeyColumn(this);
+        }
+        return column;
     }
 
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
-    }
+    public abstract String getName();
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
-    }
+    public abstract ForeignKey getParent();
+
+    public abstract Column getReferredColumn();
+
+    public abstract Column getReferringColumn();
+
+    public abstract int getPosition();
 }

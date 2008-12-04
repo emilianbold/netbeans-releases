@@ -37,35 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David
  */
-public class Column extends Value {
-
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
-    }
-
+public abstract class JDBCMetadataTest extends MetadataTestBase {
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public abstract void setUp() throws Exception;
+
+    public JDBCMetadataTest(String name) {
+        super(name);
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
+    protected void checkForeignKeyColumn(ForeignKey key, Table referredTable, String referringColName, String referredColName,
+            int position) throws Exception {
+        ForeignKeyColumn col = key.getColumn(referringColName);
+        assertEquals(referredTable.getColumn(referredColName), col.getReferredColumn());
+        assertEquals(key.getParent().getColumn(referringColName), col.getReferringColumn());
+        assertEquals(position, col.getPosition());
     }
 }

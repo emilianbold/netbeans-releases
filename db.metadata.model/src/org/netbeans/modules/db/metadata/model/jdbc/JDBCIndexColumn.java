@@ -37,35 +37,60 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class JDBCIndexColumn extends IndexColumnImplementation {
+    private final Index parent;
+    private final String name;
+    private final Column column;
+    private final int position;
+    private final Ordering ordering;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public JDBCIndexColumn(Index parent, String name, Column column, int position, Ordering ordering) {
+        this.parent = parent;
+        this.name = name;
+        this.column = column;
+        this.position = position;
+        this.ordering = ordering;
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public Column getColumn() {
+        return column;
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
+    @Override
+    public String getName() {
+        return name;
     }
+
+    @Override
+    public Ordering getOrdering() {
+        return ordering;
+    }
+
+    @Override
+    public Index getParent() {
+        return parent;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCIndexColumn[name='" + name + "', ordering=" + ordering + ", position=" + position + ", column=" + column +"]";
+    }
+
 }

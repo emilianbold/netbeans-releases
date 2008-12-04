@@ -37,35 +37,55 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class JDBCForeignKey extends ForeignKeyImplementation {
+    private final Table parent;
+    private final String name;
+    private final Map<String,ForeignKeyColumn> columns = new LinkedHashMap<String,ForeignKeyColumn>();
 
-    private final ColumnImplementation impl;
+    public JDBCForeignKey(Table parent, String name) {
+        this.parent = parent;
+        this.name = name;
+    }
 
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public void addColumn(ForeignKeyColumn col) {
+        columns.put(col.getName(), col);
+    }
+
+    public final Table getParent() {
+        return parent;
+    }
+
+    public final String getName() {
+        return name;
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public String toString() {
+        return "JDBCForeignKey[name='" + name + "']"; // NOI18N
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
+    @Override
+    public Collection<ForeignKeyColumn> getColumns() {
+        return columns.values();
+    }
+
+    @Override
+    public ForeignKeyColumn getColumn(String name) {
+        return columns.get(name);
     }
 }

@@ -39,33 +39,52 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
- * Encapsulates a table column.
- *
- * @author Andrei Badea
+ * This class represents a foreign key in a table - a key that refers to the
+ * primary key of another table.
+ * 
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class ForeignKey extends MetadataElement {
+    ForeignKeyImplementation impl;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
+    ForeignKey(ForeignKeyImplementation impl) {
         this.impl = impl;
     }
 
     @Override
-    public Tuple getParent() {
+    public Table getParent() {
         return impl.getParent();
     }
 
+    @Override
     /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
+     * Return the name of the foreign key.  The name of a foreign key may be null
      */
-    public int getPosition() {
-        return impl.getPosition();
+    public String getName() {
+        return impl.getName();
+    }
+
+    /**
+     * Get the foreign key columns that comprise this foreign key
+     *
+     * @return the collection of foreign key columns for this foreign key
+     */
+    public Collection<ForeignKeyColumn> getColumns() {
+        return impl.getColumns();
+    }
+
+    /**
+     * Get a specific foreign key column by name
+     *
+     * @param name the name of the foreign key column we are interested in
+     *
+     * @return the foreign key column for this name
+     */
+    public ForeignKeyColumn getColumn(String name) {
+        return impl.getColumn(name);
     }
 }

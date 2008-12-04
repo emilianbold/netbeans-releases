@@ -37,35 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public abstract class IndexColumnImplementation {
+    private IndexColumn column;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public final IndexColumn getIndexColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createIndexColumn(this);
+        }
+        return column;
     }
 
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
-    }
+    public abstract Column getColumn();
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
-    }
+    public abstract int getPosition();
+
+    public abstract Ordering getOrdering();
+
+    public abstract String getName();
+
+    public abstract Index getParent();
 }

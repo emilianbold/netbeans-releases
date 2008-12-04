@@ -39,33 +39,11 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-
 /**
- * Encapsulates a table column.
+ * Defines an ordering for a metadata element
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
-
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
-    }
-
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
-    }
-
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
-    }
+public enum Ordering {
+    ASCENDING, DESCENDING, NOT_SUPPORTED
 }

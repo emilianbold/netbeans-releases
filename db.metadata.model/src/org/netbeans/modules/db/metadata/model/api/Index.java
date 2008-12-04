@@ -39,33 +39,78 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class Index extends MetadataElement {
+    public enum IndexType { CLUSTERED, HASHED, OTHER };
 
-    private final ColumnImplementation impl;
+    final IndexImplementation impl;
 
-    Column(ColumnImplementation impl) {
-        super(impl);
+    Index(IndexImplementation impl) {
         this.impl = impl;
     }
 
-    @Override
-    public Tuple getParent() {
+    /**
+     * Returns the schema containing this table.
+     *
+     * @return the parent schema.
+     */
+    public Table getParent() {
         return impl.getParent();
     }
 
     /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
+     * Returns the name of this table; never {@code null}.
+     *
+     * @return the name.
      */
-    public int getPosition() {
-        return impl.getPosition();
+    public String getName() {
+        return impl.getName();
+    }
+
+    /**
+     * Return the columns for this index
+     *
+     * @return the list of columns for this index
+     */
+    public Collection<IndexColumn> getColumns() {
+        return impl.getColumns();
+    }
+
+    /**
+     * Return a given index column
+     * @param name the name of the column to retrieve
+     * @return the column for the given name or null if it doesn't exist
+     */
+    public IndexColumn getColumn(String name) {
+        return impl.getColumn(name);
+    }
+
+    /**
+     * Return the type of index
+     *
+     * @return the index type
+     */
+    public IndexType getIndexType() {
+        return impl.getIndexType();
+    }
+
+    /**
+     * Return whether the index must have unique values
+     *
+     * @return true if unique, false otherwise
+     */
+    public boolean isUnique() {
+        return impl.isUnique();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
     }
 }

@@ -88,6 +88,11 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         Table resolvedTable = tableHandle.resolve(metadata);
         assertSame(table, resolvedTable);
 
+        PrimaryKey key = table.getPrimaryKey();
+        MetadataElementHandle<PrimaryKey> keyHandle = MetadataElementHandle.create(key);
+        PrimaryKey resolvedKey = keyHandle.resolve(metadata);
+        assertSame(key, resolvedKey);
+
         Column column = table.getColumn("FOO");
         MetadataElementHandle<Column> columnHandle = MetadataElementHandle.create(column);
         Column resolvedColumn = columnHandle.resolve(metadata);

@@ -37,35 +37,70 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class JDBCIndex extends IndexImplementation {
 
-    private final ColumnImplementation impl;
+    private final Table parent;
+    private final String name;
+    private final Map<String,IndexColumn> columns = new LinkedHashMap<String,IndexColumn>();
+    private final IndexType indexType;
+    private final boolean isUnique;
 
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public JDBCIndex(Table parent, String name, IndexType indexType, boolean isUnique) {
+        this.parent = parent;
+        this.name = name;
+        this.indexType = indexType;
+        this.isUnique = isUnique;
+    }
+
+    public void addColumn(IndexColumn col) {
+        columns.put(col.getName(), col);
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public IndexColumn getColumn(String name) {
+        return columns.get(name);
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
+    public final Table getParent() {
+        return parent;
+    }
+
+    public final String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCIndex[name='" + name + "', type=" +indexType + ", unique=" + isUnique +"]"; // NOI18N
+    }
+
+    @Override
+    public Collection<IndexColumn> getColumns() {
+        return columns.values();
+    }
+
+    @Override
+    public IndexType getIndexType() {
+        return indexType;
+    }
+
+    @Override
+    public boolean isUnique() {
+        return isUnique;
     }
 }
