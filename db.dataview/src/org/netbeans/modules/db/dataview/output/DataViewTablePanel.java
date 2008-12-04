@@ -173,6 +173,9 @@ class DataViewTablePanel extends JPanel {
                 int fieldWidth = col.getDisplaySize();
                 int labelWidth = col.getDisplayName().length();
                 int colWidth = Math.max(fieldWidth, labelWidth) * tableUI.getMultiplier();
+                if(colWidth == 0){
+                   colWidth = 15  * tableUI.getMultiplier();
+                }
                 if (colWidth > MAX_COLUMN_WIDTH * tableUI.getMultiplier()) {
                     colWidth = MAX_COLUMN_WIDTH * tableUI.getMultiplier();
                 }
