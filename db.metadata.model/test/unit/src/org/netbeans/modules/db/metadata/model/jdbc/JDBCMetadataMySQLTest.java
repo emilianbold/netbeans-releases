@@ -52,6 +52,7 @@ import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
@@ -74,6 +75,11 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
     private String defaultCatalogName;
     private Connection conn;
     private Statement stmt;
+    private String mysqlHost;
+    private Integer mysqlPort;
+    private String mysqlUser;
+    private String mysqlPassword;
+    private String mysqlDatabase;
 
     public JDBCMetadataMySQLTest(String name) {
         super(name);
@@ -81,11 +87,11 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
 
     @Override
     public void setUp() throws Exception {
-        String mysqlHost = System.getProperty("mysql.host", "localhost");
-        int mysqlPort = Integer.getInteger("mysql.port", 3306);
-        String mysqlDatabase = System.getProperty("mysql.database", "test");
-        String mysqlUser = System.getProperty("mysql.user", "test");
-        String mysqlPassword = System.getProperty("mysql.password", "test");
+        mysqlHost = System.getProperty("mysql.host", "localhost");
+        mysqlPort = Integer.getInteger("mysql.port", 3306);
+        mysqlDatabase = System.getProperty("mysql.database", "test");
+        mysqlUser = System.getProperty("mysql.user", "test");
+        mysqlPassword = System.getProperty("mysql.password", "test");
         clearWorkDir();
         Class.forName("com.mysql.jdbc.Driver");
         conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
@@ -134,7 +140,7 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
         defaultCatalogName = mysqlDatabase;
     }
 
-    public void testRunReadAction() throws Exception {
+    public void testBasic() throws Exception {
         Collection<Catalog> catalogs = metadata.getCatalogs();
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(defaultCatalogName, defaultCatalog.getName());
@@ -159,7 +165,22 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
         assertSame(schema, barTable.getParent());
 
         checkColumns(barTable);
+    }
 
+    /**
+     * In MySQL it's possible to connect without specifying a database name, in which
+     * case there should be no default catalog and we should be able to get the full
+     * list of catalogs
+     *
+     * @throws java.lang.Exception
+     */
+    public void testNoDatabaseSpecified() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+        JDBCMetadata md = new MySQLMetadata(connection, null);
+
+        Collection<Catalog> catalogs = md.getCatalogs();
+        assertNull(md.getDefaultCatalog().getName());
+        assertFalse(catalogs.contains(md.getDefaultCatalog()));
     }
 
     public void testSchemaRefresh() throws Exception {

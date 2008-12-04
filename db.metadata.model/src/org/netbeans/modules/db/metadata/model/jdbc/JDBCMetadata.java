@@ -158,7 +158,9 @@ public class JDBCMetadata extends MetadataImplementation {
         }
         if (defaultCatalog == null) {
             defaultCatalog = createJDBCCatalog(null, true, defaultSchemaName).getCatalog();
-            newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+            
+            // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null
+            
             LOGGER.log(Level.FINE, "Created fallback default catalog {0}", defaultCatalog);
         }
         catalogs = Collections.unmodifiableMap(newCatalogs);

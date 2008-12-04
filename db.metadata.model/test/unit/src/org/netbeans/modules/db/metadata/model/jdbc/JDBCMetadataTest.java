@@ -46,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
- * @author David
+ * @author David Van Couvering
  */
 public abstract class JDBCMetadataTest extends MetadataTestBase {
     @Override
