@@ -139,8 +139,7 @@ public class SubAntJUnitReport extends Task {
                 log("Exiting: " + path);
             }
         }
-        // XXX would be nice to permit the 'classname' field to be customized in output...
-        JUnitReportWriter.writeReport(this, report, pseudoTests);
+        JUnitReportWriter.writeReport(this, SubAntJUnitReport.class.getName() + "." + targetToRun, report, pseudoTests);
     }
 
 }
