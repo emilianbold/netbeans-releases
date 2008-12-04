@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -118,7 +119,16 @@ public class PHPDOCCodeCompletion {
                     try {
                         // text between PHPDoc directive and begining of the prefix, should only contain white spaces
                         String txt = document.getText(offset, request.anchor - offset);
-
+                        if (txt.charAt(txt.length()-1) == '|') {
+                            // expect that user wants to complete mixed type
+                            txt = txt.trim();
+                            for (int i = 0; i < txt.length(); i++) {
+                            if (Character.isWhitespace(txt.charAt(i))) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
                         for (int i = 0; i < txt.length(); i++) {
                             if (!Character.isWhitespace(txt.charAt(i))) {
                                 return false;
