@@ -48,11 +48,7 @@ public interface ResourceType extends Nameable<WadlComponent>, ReferenceableWadl
 
     public static String PARAM_PROPERTY = "param";
     public static String METHOD_PROPERTY = "method";
-    public static String RESOURCE_PROPERTY = "resource";
     public static String ID_PROPERTY = "id";
-    public static String PATH_PROPERTY = "path";
-    public static String TYPE_PROPERTY = "type";
-    public static String QUERY_TYPE_PROPERTY = "queryType";
     
     public static ParamStyle[] VALID_PARAM_STYLES = {
         ParamStyle.HEADER,

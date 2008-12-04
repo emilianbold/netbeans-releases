@@ -1,0 +1,33 @@
+class duplicateSectionError(Error):
+      ---------------------
+HINT:Name "duplicateSectionError" is not a valid class name according to your code style (CapitalizedWords)
+FIX:Ignore name violations for "duplicateSectionError"
+FIX:Change preferred class name style to mixedCase
+    def __Init__(self, section):
+        --------
+HINT:Name "__Init__" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "__Init__"
+FIX:Change preferred function name style to CapitalizedWords
+FIX:Change preferred function name style to Capitalized_With_Underscores
+class _noOptionError(Error):
+      --------------
+HINT:Name "_noOptionError" is not a valid class name according to your code style (CapitalizedWords)
+FIX:Ignore name violations for "_noOptionError"
+FIX:Change preferred class name style to mixedCase
+class _interpolationError(Error):
+      -------------------
+HINT:Name "_interpolationError" is not a valid class name according to your code style (CapitalizedWords)
+FIX:Ignore name violations for "_interpolationError"
+FIX:Change preferred class name style to mixedCase
+    def Defaults(self):
+        --------
+HINT:Name "Defaults" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "Defaults"
+FIX:Change preferred function name style to CapitalizedWords
+FIX:Change preferred function name style to Capitalized_With_Underscores
+    def _Sections(self):
+        ---------
+HINT:Name "_Sections" is not a valid function name according to your code style (lowercase_with_underscores)
+FIX:Ignore name violations for "_Sections"
+FIX:Change preferred function name style to CapitalizedWords
+FIX:Change preferred function name style to Capitalized_With_Underscores

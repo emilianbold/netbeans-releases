@@ -76,6 +76,7 @@ import org.netbeans.modules.visualweb.complib.Complib;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.ExtensionComplib;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
+import org.openide.awt.Mnemonics;
 
 /**
  *
@@ -475,38 +476,31 @@ public class CompLibManagerPanel extends javax.swing.JPanel {
 
             String labelKey;
             String descriptionKey;
-            String mnemonicKey;
             if (userObject == DESIGN_TIME_UO) {
                 labelKey = "manager.DesignTimeLabel";
                 descriptionKey = "manager.DesignTimeDescription";
-                mnemonicKey = "manager.DesignTimeMnemonic";
                 setDetailPanel(new PathDetailPanel(compLib.getDesignTimePath(),
-                        labelKey, descriptionKey, mnemonicKey));
+                        labelKey, descriptionKey));
             } else if (userObject == RUNTIME_UO) {
                 labelKey = "manager.RuntimeLabel";
                 descriptionKey = "manager.RuntimeDescription";
-                mnemonicKey = "manager.RuntimeMnemonic";
                 setDetailPanel(new PathDetailPanel(compLib.getRuntimePath(),
-                        labelKey, descriptionKey, mnemonicKey));
+                        labelKey, descriptionKey));
             } else if (userObject == JAVADOC_UO) {
                 labelKey = "manager.JavadocLabel";
                 descriptionKey = "manager.JavadocDescription";
-                mnemonicKey = "manager.JavadocMnemonic";
                 setDetailPanel(new PathDetailPanel(compLib.getJavadocPath(),
-                        labelKey, descriptionKey, mnemonicKey));
+                        labelKey, descriptionKey));
             } else if (userObject == SOURCE_UO) {
                 labelKey = "manager.SourceLabel";
                 descriptionKey = "manager.SourceDescription";
-                mnemonicKey = "manager.SourceMnemonic";
                 setDetailPanel(new PathDetailPanel(compLib.getSourcePath(),
-                        labelKey, descriptionKey, mnemonicKey));
+                        labelKey, descriptionKey));
             } else if (userObject == WEB_RESOURCES_UO) {
                 labelKey = "manager.WebResourceLabel";
                 descriptionKey = "manager.WebResourceDescription";
-                mnemonicKey = "manager.WebResourceMnemonic";
                 setDetailPanel(new PathDetailPanel(
-                        compLib.getWebResourcePath(), labelKey, descriptionKey,
-                        mnemonicKey));
+                        compLib.getWebResourcePath(), labelKey, descriptionKey));
             } else if (userObject == HELP_UO) {
                 setDetailPanel(new HelpSourcesDetailPanel(compLib));
             }
@@ -585,12 +579,9 @@ public class CompLibManagerPanel extends javax.swing.JPanel {
         HelpCtx helpCtx = new HelpCtx(
                 "projrave_ui_elements_dialogs_component_library_manager"); // NOI18N
         JButton closeButton = new JButton();
-        closeButton.setMnemonic(org.openide.util.NbBundle.getMessage(
-                CompLibManagerPanel.class, "manager.closeButtonMnemonic")
-                .charAt(0));
         String msg = org.openide.util.NbBundle.getMessage(
                 CompLibManagerPanel.class, "manager.closeButtonLabel");
-        closeButton.setText(msg);
+        Mnemonics.setLocalizedText(closeButton, msg);
         closeButton.getAccessibleContext().setAccessibleDescription(msg);
 
         Object[] options = new Object[] { closeButton };

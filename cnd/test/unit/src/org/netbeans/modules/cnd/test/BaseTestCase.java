@@ -225,17 +225,21 @@ public abstract class BaseTestCase extends NbTestCase {
             ui = System.getenv("CND_REMOTE_TESTUSERINFO");
         }
         if (ui != null) {
+            System.err.print("initRemoteUserInfo:debug (ui: " + ui + "). ");
             int m = ui.indexOf(':');
             if (m>-1) {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
                 remoteHKey = ui.substring(0,m) + ui.substring(n);
                 RemoteUserInfo.getUserInfo(remoteHKey, false).setPassword(remotePassword, false);
+                System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + remotePassword);
             } else {
                 remoteHKey = ui;
+                System.err.println("mode 1. hkey: " + remoteHKey );
             }
             return true;
         }
+        System.err.println("initRemoteUserInfo:debug. No info found");
         return false;
     }
 
