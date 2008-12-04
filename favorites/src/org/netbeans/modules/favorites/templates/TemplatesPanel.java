@@ -100,6 +100,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private TemplateTreeView view;
     
     static private FileObject templatesRoot;
+    private static Node templatesRootNode = null;
     
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -178,8 +179,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     static Node getTemplateRootNode () {
-        DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
-        return new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
+        if (templatesRootNode == null) {
+            DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
+            templatesRootNode = new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
+        }
+        return templatesRootNode;
     }
     
     private static final class TemplateFilter implements DataFilter {
@@ -556,25 +560,33 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         @Override
         protected void addNotify () {
             super.addNotify ();
-            sortNodes ();
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
         }
 
         @Override
         protected void filterChildrenAdded (NodeMemberEvent ev) {
             super.filterChildrenAdded (ev);
-            sortNodes();
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
         }
 
         @Override
         protected void filterChildrenRemoved (NodeMemberEvent ev) {
             super.filterChildrenRemoved (ev);
-            sortNodes();
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
         }
 
         @Override
         protected void filterChildrenReordered (NodeReorderEvent ev) {
             super.filterChildrenReordered (ev);
-            sortNodes();
+            if (getTemplateRootNode ().equals (this.getNode ())) {
+                sortNodes ();
+            }
         }
 
         private void sortNodes () {
