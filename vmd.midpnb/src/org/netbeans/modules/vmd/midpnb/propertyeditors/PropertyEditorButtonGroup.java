@@ -99,6 +99,17 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
         myRadioButton = null;
     }
     
+    @Override
+    public Boolean canEditAsText() {
+        return false;
+    }
+    
+    @Override
+    public String getAsText() {
+        return NbBundle.getMessage( PropertyEditorSpinnerModel.class, 
+                "TXT_ButtonGroup");
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#getCustomEditor()
      */
