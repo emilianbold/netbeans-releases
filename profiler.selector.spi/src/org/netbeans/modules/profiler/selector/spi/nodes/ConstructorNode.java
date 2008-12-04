@@ -40,60 +40,19 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.modules.profiler.utilities.OutputParameter;
-import org.openide.filesystems.FileObject;
-import java.io.IOException;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
+import java.util.Set;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ConstructorNode extends SelectorNode {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private ClientUtils.SourceCodeSelection rootMethod;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of MethodNode */
-    public ConstructorNode(ClasspathInfo cpInfo, final ExecutableElement method, ConstructorsNode parent) {
-        super(method.toString(), method.getSimpleName().toString(), getIcon(method), SelectorChildren.LEAF, parent);
-
-        final OutputParameter<String> signature = new OutputParameter<String>(""); // NOI18N
-        JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        signature.setValue(SourceUtils.getVMMethodSignature(method, controller));
-                    }
-                }, true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        rootMethod = new ClientUtils.SourceCodeSelection(getEnclosingClass(method).getQualifiedName().toString(),
-                                                         method.getSimpleName().toString(), signature.getValue());
+abstract public class ConstructorNode extends SelectorNode {
+    /** Creates a new instance of ConstructorNode */
+    public ConstructorNode(String methodName, ConstructorsNode parent) {
+        super(methodName, methodName, null, SelectorChildren.LEAF, parent);
     }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
     public boolean getAllowsChildren() {
@@ -111,32 +70,14 @@ public class ConstructorNode extends SelectorNode {
     }
 
     @Override
-    public ClientUtils.SourceCodeSelection getSignature() {
-        return rootMethod;
-    }
-
-    private TypeElement getEnclosingClass(Element element) {
-        Element parent = element.getEnclosingElement();
-
-        if (parent != null) {
-            if ((parent.getKind() == ElementKind.CLASS) || (parent.getKind() == ElementKind.ENUM)) {
-                return (TypeElement) parent;
-            } else {
-                return getEnclosingClass(parent);
-            }
-        }
-
-        return null;
-    }
-
-    private static Icon getIcon(ExecutableElement method) {
+    public Icon getIcon() {
         Icon icon;
 
-        if (method.getModifiers().contains(Modifier.PUBLIC)) {
+        if (getModifiers().contains(Modifier.PUBLIC.name())) {
             icon = IconResource.CONSTRUCTOR_PUBLIC_ICON;
-        } else if (method.getModifiers().contains(Modifier.PROTECTED)) {
+        } else if (getModifiers().contains(Modifier.PROTECTED.name())) {
             icon = IconResource.CONSTRUCTOR_PROTECTED_ICON;
-        } else if (method.getModifiers().contains(Modifier.PRIVATE)) {
+        } else if (getModifiers().contains(Modifier.PRIVATE.name())) {
             icon = IconResource.CONSTRUCTOR_PRIVATE_ICON;
         } else {
             icon = IconResource.CONSTRUCTOR_PACKAGE_ICON;
@@ -144,4 +85,11 @@ public class ConstructorNode extends SelectorNode {
 
         return icon;
     }
+
+    public ClassNode getParentClass() {
+        return ((ConstructorsNode)getParent()).getParentClass();
+    }
+
+    abstract protected Set<String> getModifiers();
+
 }
