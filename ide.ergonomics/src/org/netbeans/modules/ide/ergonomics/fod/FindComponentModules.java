@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -79,7 +78,6 @@ public final class FindComponentModules {
     private Collection<UpdateElement> forInstall = null;
     private Collection<UpdateElement> forEnable = null;
     private RequestProcessor.Task componentModulesFindingTask = null;
-    private RequestProcessor.Task enableLaterTask = null;
 
     public RequestProcessor.Task getFindingTask () {
         return componentModulesFindingTask;
@@ -99,7 +97,6 @@ public final class FindComponentModules {
     public void clearModulesForInstall () {
         forInstall = null;
         componentModulesFindingTask = null;
-        enableLaterTask = null;
     }
     
     public void writeEnableLater (Collection<UpdateElement> modules) {
@@ -186,12 +183,13 @@ public final class FindComponentModules {
     };
 
     private void findComponentModules () {
+        long start = System.currentTimeMillis();
         Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
-        
+
         // install missing modules
         Collection<UpdateElement> elementsForInstall = getMissingModules (units);
         forInstall = getAllForInstall (elementsForInstall);
-        
+
         // install disabled modules
         Collection<UpdateElement> elementsForEnable = getDisabledModules (units);
         forEnable = getAllForEnable (elementsForEnable, units);
@@ -257,14 +255,14 @@ public final class FindComponentModules {
                     }
                     Set<UpdateElement> reqs = inf.getRequiredElements ();
                     ocForEnable.add (reqs);
-                    Set<String> breaks = inf.getBrokenDependencies ();
-                    if (breaks.isEmpty ()) {
+//                    Set<String> breaks = inf.getBrokenDependencies ();
+//                    if (breaks.isEmpty ()) {
                         all.add (el);
                         all.addAll (reqs);
-                    } else {
-                        FoDFileSystem.LOG.fine("Cannot enable " + el.getCodeName() + " broken deps: " + breaks); // NOI18N
-                        ignore.add(el.getCodeName());
-                    }
+//                    } else {
+//                        FoDFileSystem.LOG.fine("Cannot enable " + el.getCodeName() + " broken deps: " + breaks); // NOI18N
+//                        ignore.add(el.getCodeName());
+//                    }
                 } else {
                     ignore.add(el.getCodeName());
                 }
