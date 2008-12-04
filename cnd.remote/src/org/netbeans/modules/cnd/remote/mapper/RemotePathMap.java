@@ -188,34 +188,11 @@ public class RemotePathMap implements PathMap {
         }
 
         // check if local path is mirrored by remote path
-        if (!PlatformInfo.getDefault(hkey).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
-            File path = new File(lpath);
-            if (path.exists() && path.isDirectory()) {
-                File validationFile = null;
-                try {
-                    // create file
-                    validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
-                    BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
-                    String validationLine = Double.toString(Math.random());
-                    out.write(validationLine);
-                    out.close();
-                    // check existance
-                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) { // NOI18N
-                        synchronized(map) {
-                            map.put(lpath, lpath);
-                        }
-                        return true;
-                    }
-
-                } catch (IOException ex) {
-                    // directory is write protected
-                } finally {
-                    if (validationFile != null && validationFile.exists()) {
-                        validationFile.delete();
-                    }
-                }
+        if (validateMapping(hkey, lpath, lpath)) {
+            synchronized (map) {
+                map.put(lpath, lpath);
             }
-            //TODO: check parent directories in other thread
+            return true;
         }
 
         if (fixMissingPaths) {
@@ -280,5 +257,34 @@ public class RemotePathMap implements PathMap {
 
     private static void setPreferences(String hkey, String newValue) {
         NbPreferences.forModule(RemotePathMap.class).put(REMOTE_PATH_MAP + hkey, newValue);
+    }
+
+    static boolean validateMapping(String hkey, String rpath, String lpath) {
+        if (!PlatformInfo.getDefault(hkey).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
+            File path = new File(lpath);
+            if (path.exists() && path.isDirectory()) {
+                File validationFile = null;
+                try {
+                    // create file
+                    validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
+                    if (validationFile.exists()) {
+                        BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
+                        String validationLine = Double.toString(Math.random());
+                        out.write(validationLine);
+                        out.close();
+                        if (0 == RemoteCommandSupport.run(hkey, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
+                            return true;
+                        }
+                    }
+                } catch (IOException ex) {
+                    // directory is write protected
+                } finally {
+                    if (validationFile != null && validationFile.exists()) {
+                        validationFile.delete();
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
