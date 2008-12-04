@@ -1,0 +1,7 @@
+Code completion result for source line:
+print w|hatever.r
+(QueryType=COMPLETION, NameKind=PREFIX)
+MODULE     whatever                                   
+------------------------------------
+KEYWORD    while                                      
+KEYWORD    with                                       

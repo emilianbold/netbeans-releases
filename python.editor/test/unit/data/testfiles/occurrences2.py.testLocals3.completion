@@ -1,0 +1,7 @@
+Code completion result for source line:
+tople|velvar = 1
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   toplevelvar                                
+VARIABLE   toplevelvar2                               
+VARIABLE   toplevelvar3                               
+VARIABLE   toplevelvar4                               

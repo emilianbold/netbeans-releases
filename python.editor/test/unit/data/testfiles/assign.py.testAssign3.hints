@@ -1,0 +1,4 @@
+    ^get_preprocess2(self, source, output_file, macros, include_dirs, extra_preargs, extra_postargs)
+    -----------------------------------------------------------------------------------------------
+HINT:Assign expression to a variable
+FIX:Assign expression to a variable

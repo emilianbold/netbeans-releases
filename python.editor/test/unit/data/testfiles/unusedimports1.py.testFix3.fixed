@@ -1,0 +1,26 @@
+"""
+Test
+"""
+import math as _math
+import sys
+import time as _time
+
+from bar import Sym3
+from bar import Sym4
+import extract1b
+from foo import Sym1
+from foo import Sym2
+from foo import Sym5
+from foo import Sym6
+from foo import Sym7
+from foo import Sym8
+import urimport
+
+
+sys.excepthook()
+_time.isused()
+Sym2()
+Sym3()
+Sym5()
+Sym6()
+

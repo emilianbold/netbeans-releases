@@ -1,0 +1,6 @@
+"""My module"""
+import definitions
+#import unused1
+    
+x.otherMethodInClass()
+
