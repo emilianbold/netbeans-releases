@@ -283,6 +283,10 @@ public final class ExtractLayer extends Task {
                         if (urlresource == null) {
                             return;
                         }
+                        if (urlresource.startsWith("nbres:")) {
+                            urlresource = "nbresloc:" + urlresource.substring(6);
+                        }
+
                         final String prfx = "nbresloc:";
                         if (!urlresource.startsWith(prfx)) {
                             throw new BuildException("Unknown urlvalue in " + file + " was: " + urlresource);
