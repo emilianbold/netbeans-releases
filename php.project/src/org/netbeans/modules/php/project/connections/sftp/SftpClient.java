@@ -332,11 +332,50 @@ public class SftpClient implements RemoteClient {
     }
 
     public int getPermissions(String path) throws RemoteException {
-        return -1;
+        int permissions = -1;
+        try {
+            sftpLogger.info("LIST " + path); // NOI18N
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirListing"));
+
+            ChannelSftp.LsEntry file = getFile(path);
+            if (file != null) {
+                permissions = file.getAttrs().getPermissions();
+            }
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
+        } catch (SftpException ex) {
+            LOGGER.log(Level.FINE, "Error while getting permissions for " + path, ex);
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotGetPermissions", path), ex);
+        }
+        return permissions;
     }
 
     public boolean setPermissions(int permissions, String path) throws RemoteException {
-        return false;
+        try {
+            sftpLogger.info(String.format("chmod %d %s", permissions, path)); // NOI18N
+
+            sftpClient.chmod(permissions, path);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_ChmodOk"));
+            return true;
+        } catch (SftpException ex) {
+            LOGGER.log(Level.FINE, "Error while setting permissions for " + path, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
+            return false;
+        }
+    }
+
+    private ChannelSftp.LsEntry getFile(String path) throws SftpException {
+        assert path != null && path.trim().length() > 0;
+
+        @SuppressWarnings("unchecked")
+        Vector<ChannelSftp.LsEntry> files = sftpClient.ls(path);
+        // in fact, the size of the list should be exactly 1
+        LOGGER.fine(String.format("Exactly 1 file should be found for %s; found %d", path, files.size()));
+        if (files.size() > 0) {
+            return files.get(0);
+        }
+        return null;
     }
 
     private static final class RemoteFileImpl implements RemoteFile {

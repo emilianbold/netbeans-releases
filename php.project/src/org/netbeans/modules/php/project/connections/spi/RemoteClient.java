@@ -148,22 +148,20 @@ public interface RemoteClient {
     /**
      * Get permissions of the given file. The behaviour for directories is not defined.
      * @param path the file path (relative or absolute).
-     * @return permissions, number usually with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;),
+     * @return permissions (usually number with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;)),
      *         <tt>-1</tt> if unknown (e.g. file not exists).
      * @throws RemoteException if any unexpected error occurs.
      * @see #setPermissions(int, java.lang.String)
-     * @see UnixPermissions
      */
     int getPermissions(String path) throws RemoteException;
 
     /**
      * Set permissions of the given file. The behaviour for directories is not defined.
-     * @param permissions, number usually with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;).
+     * @param permissions permissions (usually number with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;)).
      * @param path the file path (relative or absolute).
      * @return <code>true</code> if the permissions was set, <code>false</code> otherwise.
      * @throws RemoteException if any unexpected error occurs.
      * @see #getPermissions(java.lang.String)
-     * @see UnixPermissions
      */
     boolean setPermissions(int permissions, String path) throws RemoteException;
 
@@ -177,20 +175,6 @@ public interface RemoteClient {
      * @throws RemoteException if any unexpected error occurs.
      */
     List<RemoteFile> listFiles(PathInfo pathInfo) throws RemoteException;
-
-    /**
-     * This class could be useful for getting/setting permissions.
-     * @see #getPermissions(java.lang.String)
-     * @see #setPermissions(int, java.lang.String)
-     */
-    final class UnixPermissions {
-        public static final int PERMISSION_READ = 4;
-        public static final int PERMISSION_WRITE = 2;
-        public static final int PERMISSION_EXECUTE = 1;
-
-        private UnixPermissions() {
-        }
-    }
 
     /**
      * This class contains information about the current working directory.

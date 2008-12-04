@@ -301,8 +301,6 @@ public class FtpClient implements RemoteClient {
     }
 
     public boolean setPermissions(int permissions, String path) throws RemoteException {
-        assert permissions > 0 && permissions <= 777 : "Permissions must be between 0 and 777";
-
         try {
             return ftpClient.sendSiteCommand("chmod " + permissions + " " + path); // NOI18N
         } catch (IOException ex) {
