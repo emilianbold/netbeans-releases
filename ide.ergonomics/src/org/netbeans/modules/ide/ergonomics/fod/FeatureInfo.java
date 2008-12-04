@@ -129,6 +129,10 @@ public final class FeatureInfo {
         return properties.getProperty("attachTypeName");
     }
 
+    public String getProfilerAttachName() {
+        return properties.getProperty("profilerAttachName");
+    }
+
     String getPreferredCodeNameBase() {
         return properties.getProperty("mainModule");
     }
