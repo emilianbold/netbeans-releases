@@ -96,7 +96,14 @@ public class JsParser extends Parser {
 
     public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         Context context = new Context(snapshot, event);
+        final List<Error> errors = new ArrayList<Error>();
+        context.errorHandler = new ParseErrorHandler() {
+            public void error(Error error) {
+                errors.add(error);
+            }
+        };
         lastResult = parseBuffer(context, Sanitize.NONE);
+        lastResult.setErrors(errors);
     }
 
     public @Override Result getResult(Task task) throws ParseException {

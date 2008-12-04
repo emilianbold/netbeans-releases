@@ -72,7 +72,6 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -294,54 +293,47 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
-                    HintsProvider provider = language.getHintsProvider();
-                    if (provider == null) {
-                        return;
+                    if (language != null) {
+                        ParserResult r = (ParserResult) resultIterator.getParserResult();
+                        List<? extends Error> errors = r.getDiagnostics();
+                        List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
+
+                        HintsProvider provider = language.getHintsProvider();
+                        GsfHintsManager manager = null;
+                        RuleContext ruleContext = null;
+                        if (provider != null) {
+                            manager = language.getHintsManager();
+                            if (manager != null) {
+                                ruleContext = manager.createRuleContext(r, language, -1, -1, -1);
+                                if (ruleContext != null) {
+                                    List<Error> unhandled = new ArrayList<Error>();
+                                    List<Hint> hints = new ArrayList<Hint>();
+                                    provider.computeErrors(manager, ruleContext, hints, unhandled);
+                                    errors = unhandled;
+                                    boolean allowDisableEmpty = true;
+                                    for (Hint hint : hints) {
+                                        ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
+                                        descriptions.add(errorDesc);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Process errors without codes
+                        desc = computeErrors(doc, r, errors, desc);
+                        if (desc == null) {
+                            //meaning: cancelled
+                            return;
+                        }
+
+                        descriptions.addAll(desc);
                     }
-
-                    GsfHintsManager manager = language.getHintsManager();
-                    if (manager == null) {
-                        return;
-                    }
-
-                    Parser.Result r = resultIterator.getParserResult();
-                    if (!(r instanceof ParserResult)) {
-                        return;
-                    }
-
-                    ParserResult parserResult = (ParserResult) r;
-                    RuleContext ruleContext = manager.createRuleContext(parserResult, language, -1, -1, -1);
-                    if (ruleContext == null) {
-                        return;
-                    }
-
-                    List<? extends Error> errors = parserResult.getDiagnostics();
-                    List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
-
-                    List<Error> unhandled = new ArrayList<Error>();
-                    List<Hint> hints = new ArrayList<Hint>();
-                    provider.computeErrors(manager, ruleContext, hints, unhandled);
-                    errors = unhandled;
-                    boolean allowDisableEmpty = true;
-                    for (Hint hint : hints) {
-                        ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
-                        descriptions.add(errorDesc);
-                    }
-
-                    // Process errors without codes
-                    desc = computeErrors(doc, parserResult, errors, desc);
-                    if (desc == null) {
-                        //meaning: cancelled
-                        return;
-                    }
-
-                    if (isCanceled()) {
-                        return;
-                    }
-
-                    descriptions.addAll(desc);
 
                     for(Embedding e : resultIterator.getEmbeddings()) {
+                        if (isCanceled()) {
+                            return;
+                        }
+                        
                         run(resultIterator.getResultIterator(e));
                     }
                 }
