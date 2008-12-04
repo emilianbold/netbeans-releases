@@ -1,0 +1,57 @@
+
+
+Document 0
+Searchable Keys:
+  class : DebuggingServer
+  class-ig : debuggingserver
+  in : smtpd
+  member : DebuggingServer;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;localaddr,remoteaddr;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : MailmanProxy
+  class-ig : mailmanproxy
+  in : smtpd
+  member : MailmanProxy;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;localaddr,remoteaddr;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  class : PureProxy
+  class-ig : pureproxy
+  in : smtpd
+  member : PureProxy;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;localaddr,remoteaddr;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 3
+Searchable Keys:
+  class : SMTPServer
+  class-ig : smtpserver
+  in : smtpd
+  member : SMTPServer;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;localaddr,remoteaddr;
+  member : process_message;F;|DOCUMENTED|DOC_ONLY|;peer,mailfrom,rcpttos,data;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  item : DebuggingServer;C;|DOCUMENTED|DOC_ONLY|;
+  item : MailmanProxy;C;|DOCUMENTED|DOC_ONLY|;
+  item : PureProxy;C;|DOCUMENTED|DOC_ONLY|;
+  item : SMTPServer;C;|DOCUMENTED|DOC_ONLY|;
+  module : smtpd
+
+Not Searchable Keys:
+  modattrs : S

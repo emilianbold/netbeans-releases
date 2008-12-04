@@ -1,0 +1,392 @@
+
+
+Document 0
+Searchable Keys:
+  class : _date_class
+  class-ig : _date_class
+  extends : object
+  in : datetime
+  member : __add__;F;;self,other;
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __day;D;|PRIVATE|;
+  member : __eq__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __month;D;|PRIVATE|;
+  member : __ne__;F;;self,other;
+  member : __new__;F;;cls,year,month,day;
+  member : __radd__;F;;self,other;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : __setstate;F;|PRIVATE|;self,t;
+  member : __str__;F;;self;
+  member : __sub__;F;;self,other;
+  member : __year;D;|PRIVATE|;
+  member : _checkOverflow;F;|PRIVATE|;self,year;
+  member : ctime;F;;self;
+  member : day;D;;
+  member : fromordinal;F;;cls,n;
+  member : fromtimestamp;F;;cls,t;
+  member : isocalendar;F;;self;
+  member : isoformat;F;;self;
+  member : isoweekday;F;;self;
+  member : month;D;;
+  member : replace;F;;self,year,month,day;
+  member : strftime;F;;self,fmt;
+  member : timetuple;F;;self;
+  member : today;F;;cls;
+  member : toordinal;F;;self;
+  member : weekday;F;;self;
+  member : year;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 1
+Searchable Keys:
+  class : _time_class
+  class-ig : _time_class
+  extends : object
+  in : datetime
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __eq__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __hour;D;|PRIVATE|;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __microsecond;D;|PRIVATE|;
+  member : __minute;D;|PRIVATE|;
+  member : __ne__;F;;self,other;
+  member : __new__;F;;cls,hour,minute,second,microsecond,tzinfo;
+  member : __nonzero__;F;;self;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : __second;D;|PRIVATE|;
+  member : __setstate;F;|PRIVATE|;self,state;
+  member : __str__;F;;self;
+  member : _dst;F;|PRIVATE|;self;
+  member : _tzinfo;D;|PRIVATE|;
+  member : _tzstr;F;|PRIVATE|;self,sep;
+  member : _utcoffset;F;|PRIVATE|;self;
+  member : dst;F;;self;
+  member : hour;D;;
+  member : isoformat;F;;self;
+  member : microsecond;D;;
+  member : minute;D;;
+  member : replace;F;;self,hour,minute,second,microsecond,tzinfo;
+  member : second;D;;
+  member : strftime;F;;self,fmt;
+  member : tzinfo;D;;
+  member : tzname;F;;self;
+  member : utcoffset;F;;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 2
+Searchable Keys:
+  class : _tzinfo_class
+  class-ig : _tzinfo_class
+  extends : object
+  in : datetime
+  member : __reduce__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : dst;F;;self,dt;
+  member : fromutc;F;;self,dt;
+  member : tzname;F;;self,dt;
+  member : utcoffset;F;;self,dt;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 3
+Searchable Keys:
+  class : date
+  class-ig : date
+  extends : object
+  in : datetime
+  member : __add__;F;;self,other;
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __day;D;|PRIVATE|;
+  member : __eq__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __month;D;|PRIVATE|;
+  member : __ne__;F;;self,other;
+  member : __new__;F;;cls,year,month,day;
+  member : __radd__;F;;self,other;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : __setstate;F;|PRIVATE|;self,t;
+  member : __str__;F;;self;
+  member : __sub__;F;;self,other;
+  member : __year;D;|PRIVATE|;
+  member : _checkOverflow;F;|PRIVATE|;self,year;
+  member : ctime;F;;self;
+  member : day;D;;
+  member : fromordinal;F;;cls,n;
+  member : fromtimestamp;F;;cls,t;
+  member : isocalendar;F;;self;
+  member : isoformat;F;;self;
+  member : isoweekday;F;;self;
+  member : month;D;;
+  member : replace;F;;self,year,month,day;
+  member : strftime;F;;self,fmt;
+  member : timetuple;F;;self;
+  member : today;F;;cls;
+  member : toordinal;F;;self;
+  member : weekday;F;;self;
+  member : year;D;;
+
+Not Searchable Keys:
+
+
+Document 4
+Searchable Keys:
+  class : datetime
+  class-ig : datetime
+  extends : date
+  in : datetime
+  member : __add__;F;;self,other;
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __day;D;|PRIVATE|;
+  member : __eq__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __hour;D;|PRIVATE|;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __microsecond;D;|PRIVATE|;
+  member : __minute;D;|PRIVATE|;
+  member : __month;D;|PRIVATE|;
+  member : __ne__;F;;self,other;
+  member : __new__;F;;cls,year,month,day,hour,minute,second,microsecond,tzinfo;
+  member : __radd__;F;;self,other;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : __second;D;|PRIVATE|;
+  member : __setstate;F;|PRIVATE|;self,state;
+  member : __str__;F;;self;
+  member : __sub__;F;;self,other;
+  member : __year;D;|PRIVATE|;
+  member : _dst;F;|PRIVATE|;self;
+  member : _tzinfo;D;|PRIVATE|;
+  member : _utcoffset;F;|PRIVATE|;self;
+  member : astimezone;F;;self,tz;
+  member : combine;F;;cls,date,time;
+  member : ctime;F;;self;
+  member : date;F;;self;
+  member : dst;F;;self;
+  member : fromtimestamp;F;;cls,t,tz;
+  member : hour;D;;
+  member : isoformat;F;;self,sep;
+  member : microsecond;D;;
+  member : minute;D;;
+  member : now;F;;cls,tz;
+  member : replace;F;;self,year,month,day,hour,minute,second,microsecond,tzinfo;
+  member : second;D;;
+  member : time;F;;self;
+  member : timetuple;F;;self;
+  member : timetz;F;;self;
+  member : tzinfo;D;;
+  member : tzname;F;;self;
+  member : utcfromtimestamp;F;;cls,t;
+  member : utcnow;F;;cls;
+  member : utcoffset;F;;self;
+  member : utctimetuple;F;;self;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  class : time
+  class-ig : time
+  extends : object
+  in : datetime
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __eq__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __hour;D;|PRIVATE|;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __microsecond;D;|PRIVATE|;
+  member : __minute;D;|PRIVATE|;
+  member : __ne__;F;;self,other;
+  member : __new__;F;;cls,hour,minute,second,microsecond,tzinfo;
+  member : __nonzero__;F;;self;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : __second;D;|PRIVATE|;
+  member : __setstate;F;|PRIVATE|;self,state;
+  member : __str__;F;;self;
+  member : _dst;F;|PRIVATE|;self;
+  member : _tzinfo;D;|PRIVATE|;
+  member : _tzstr;F;|PRIVATE|;self,sep;
+  member : _utcoffset;F;|PRIVATE|;self;
+  member : dst;F;;self;
+  member : hour;D;;
+  member : isoformat;F;;self;
+  member : microsecond;D;;
+  member : minute;D;;
+  member : replace;F;;self,hour,minute,second,microsecond,tzinfo;
+  member : second;D;;
+  member : strftime;F;;self,fmt;
+  member : tzinfo;D;;
+  member : tzname;F;;self;
+  member : utcoffset;F;;self;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  class : timedelta
+  class-ig : timedelta
+  extends : object
+  in : datetime
+  member : __abs__;F;;self;
+  member : __add__;F;;self,other;
+  member : __cmp;F;|PRIVATE|;self,other;
+  member : __days;D;|PRIVATE|;
+  member : __div__;F;;self,other;
+  member : __eq__;F;;self,other;
+  member : __floordiv__;F;;self,other;
+  member : __ge__;F;;self,other;
+  member : __getstate;F;|PRIVATE|;self;
+  member : __gt__;F;;self,other;
+  member : __hash__;F;;self;
+  member : __le__;F;;self,other;
+  member : __lt__;F;;self,other;
+  member : __microseconds;D;|PRIVATE|;
+  member : __mul__;F;;self,other;
+  member : __ne__;F;;self,other;
+  member : __neg__;F;;self;
+  member : __new__;F;;cls,days,seconds,microseconds,milliseconds,minutes,hours,weeks;
+  member : __nonzero__;F;;self;
+  member : __pos__;F;;self;
+  member : __radd__;F;;self,other;
+  member : __reduce__;F;;self;
+  member : __repr__;F;;self;
+  member : __rmul__;F;;self,other;
+  member : __rsub__;F;;self,other;
+  member : __safe_for_unpickling__;D;;
+  member : __seconds;D;|PRIVATE|;
+  member : __str__;F;;self;
+  member : __sub__;F;;self,other;
+  member : days;D;;
+  member : microseconds;D;;
+  member : seconds;D;;
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  class : tmxxx
+  class-ig : tmxxx
+  in : datetime
+  member : __init__;c;|CONSTRUCTOR|;self,year,month,day,hour,minute,second,microsecond;
+  member : ctime;F;;self;
+  member : day;D;;
+  member : hour;D;;
+  member : microsecond;D;;
+  member : minute;D;;
+  member : month;D;;
+  member : ordinal;D;;
+  member : ordinal;D;;
+  member : second;D;;
+  member : time;F;;self;
+  member : toordinal;F;;self;
+  member : year;D;;
+
+Not Searchable Keys:
+
+
+Document 8
+Searchable Keys:
+  class : tzinfo
+  class-ig : tzinfo
+  extends : object
+  in : datetime
+  member : __reduce__;F;;self;
+  member : __safe_for_unpickling__;D;;
+  member : dst;F;;self,dt;
+  member : fromutc;F;;self,dt;
+  member : tzname;F;;self,dt;
+  member : utcoffset;F;;self,dt;
+
+Not Searchable Keys:
+
+
+Document 9
+Searchable Keys:
+  item : MAXYEAR;D;;
+  item : MINYEAR;D;;
+  item : _DAYNAMES;D;|PRIVATE|;
+  item : _DAYS_BEFORE_MONTH;D;|PRIVATE|;
+  item : _DAYS_IN_MONTH;D;|PRIVATE|;
+  item : _DI100Y;D;|PRIVATE|;
+  item : _DI400Y;D;|PRIVATE|;
+  item : _DI4Y;D;|PRIVATE|;
+  item : _MONTHNAMES;D;|PRIVATE|;
+  item : _ORD1970;D;|PRIVATE|;
+  item : _build_struct_time;F;|PRIVATE|;y,m,d,hh,mm,ss,dstflag;
+  item : _call_tzinfo_method;F;|PRIVATE|;tzinfo,methname,tzinfoarg;
+  item : _check_date_fields;F;|PRIVATE|;year,month,day;
+  item : _check_time_fields;F;|PRIVATE|;hour,minute,second,microsecond;
+  item : _check_tzinfo_arg;F;|PRIVATE|;tz;
+  item : _check_tzname;F;|PRIVATE|;name;
+  item : _check_utc_offset;F;|PRIVATE|;name,offset;
+  item : _cmperror;F;|PRIVATE|;x,y;
+  item : _date_class;C;|PRIVATE|;
+  item : _days_before_month;F;|PRIVATE|;year,month;
+  item : _days_before_year;F;|PRIVATE|;year;
+  item : _days_in_month;F;|PRIVATE|;year,month;
+  item : _days_in_year;F;|PRIVATE|;year;
+  item : _format_time;F;|PRIVATE|;hh,mm,ss,us;
+  item : _is_leap;F;|PRIVATE|;year;
+  item : _isoweek1monday;F;|PRIVATE|;year;
+  item : _math;I;|PRIVATE|;
+  item : _ord2ymd;F;|PRIVATE|;n;
+  item : _test;F;|PRIVATE|;;
+  item : _time;I;|PRIVATE|;
+  item : _time_class;C;|PRIVATE|;
+  item : _tzinfo_class;C;|PRIVATE|;
+  item : _wrap_strftime;F;|PRIVATE|;object,format,timetuple;
+  item : _ymd2ord;F;|PRIVATE|;year,month,day;
+  item : date;C;;
+  item : datetime;C;;
+  item : dbm;D;;
+  item : dim;D;;
+  item : time;C;;
+  item : timedelta;C;;
+  item : tmxxx;C;;
+  item : tzinfo;C;;
+  module : datetime
+
+Not Searchable Keys:

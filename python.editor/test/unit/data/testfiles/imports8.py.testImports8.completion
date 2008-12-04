@@ -1,0 +1,26 @@
+Code completion result for source line:
+import distutils.com|mand
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    distutils.command                          
+KEYWORD    distutils.command.bdist                    
+KEYWORD    distutils.command.bdist_dumb               
+KEYWORD    distutils.command.bdist_msi                
+KEYWORD    distutils.command.bdist_rpm                
+KEYWORD    distutils.command.bdist_winins             
+KEYWORD    distutils.command.build                    
+KEYWORD    distutils.command.build_clib               
+KEYWORD    distutils.command.build_ext                
+KEYWORD    distutils.command.build_py                 
+KEYWORD    distutils.command.build_script             
+KEYWORD    distutils.command.clean                    
+KEYWORD    distutils.command.config                   
+KEYWORD    distutils.command.install                  
+KEYWORD    distutils.command.install_data             
+KEYWORD    distutils.command.install_egg_             
+KEYWORD    distutils.command.install_head             
+KEYWORD    distutils.command.install_lib              
+KEYWORD    distutils.command.install_scri             
+KEYWORD    distutils.command.register                 
+KEYWORD    distutils.command.sdist                    
+KEYWORD    distutils.command.upload                   
