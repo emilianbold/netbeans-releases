@@ -155,4 +155,39 @@
         </folder>
     </folder>
 
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-gsp">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

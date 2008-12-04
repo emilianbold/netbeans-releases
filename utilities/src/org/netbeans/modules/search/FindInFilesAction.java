@@ -356,9 +356,11 @@ public class FindInFilesAction extends CallableSystemAction
 	List<SearchType> extraSearchTypes = searchPanel.getSearchTypes();
         
         ResultView resultView = ResultView.getInstance();
-        resultView.rememberInput(searchScope.getTypeId(),
-			         basicSearchCriteria,
-				 extraSearchTypes);
+//kaktus
+//temporary commented
+//        resultView.rememberInput(searchScope.getTypeId(),
+//			         basicSearchCriteria,
+//				 extraSearchTypes);
         resultView.open();
         resultView.requestActive();
         

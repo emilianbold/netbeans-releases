@@ -164,7 +164,7 @@ public class StaticAccess extends AbstractHint {
             TreePathHandle.create(type, info),
             info.getFileObject()
         ));
-        fixes.add(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
+        fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
 
 
         bounds[0] = span[0];

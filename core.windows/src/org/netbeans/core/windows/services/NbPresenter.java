@@ -341,6 +341,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 layout.setVerticalGroup(
                     layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );

@@ -40,12 +40,32 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 
 
@@ -57,35 +77,58 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
     implements PropertyEditorElement 
 {
 
-    protected PropertyEditorButtonGroup( String label ){
-        super( label );
+    private PropertyEditorButtonGroup(  ){
+        super( NbBundle.getMessage( 
+                PropertyEditorButtonGroup.class, "LBL_ButtonGroup") );
     }
     
-    public static PropertyEditorButtonGroup createInstance( String label){
-        return new PropertyEditorButtonGroup( label );
+    public static PropertyEditorButtonGroup createInstance( ){
+        return new PropertyEditorButtonGroup( );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#cleanUp(org.netbeans.modules.vmd.api.model.DesignComponent)
+     */
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (myCustomEditor != null) {
+            myCustomEditor.cleanUp();
+            myCustomEditor = null;
+        }
+        myRadioButton = null;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#getCustomEditor()
+     */
+    @Override
+    public Component getCustomEditor() {
+        if (myCustomEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#getCustomEditorComponent()
      */
     public JComponent getCustomEditorComponent() {
-        // TODO Auto-generated method stub
-        return null;
+        return myCustomEditor;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#getRadioButton()
      */
     public JRadioButton getRadioButton() {
-        // TODO Auto-generated method stub
-        return null;
+        return myRadioButton;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#getTextForPropertyValue()
      */
     public String getTextForPropertyValue() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -93,31 +136,179 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#isInitiallySelected()
      */
     public boolean isInitiallySelected() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#isVerticallyResizable()
      */
     public boolean isVerticallyResizable() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#setTextForPropertyValue(java.lang.String)
      */
-    public void setTextForPropertyValue( String arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void setTextForPropertyValue( String text ) {
+        saveValue(text);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#updateState(org.netbeans.modules.vmd.api.model.PropertyValue)
      */
-    public void updateState( PropertyValue arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void updateState( PropertyValue value ) {
+        if ( value != null ){
+            myCustomEditor.setValue(value);
+        }
+        myRadioButton.setSelected(!isCurrentValueAUserCodeType());
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#customEditorOKButtonPressed()
+     */
+    @Override
+    public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
+        if ( myRadioButton.isSelected()) {
+            saveValue( myCustomEditor.getValue() );
+        }
+    }
+    
+    private void initComponents() {
+        myRadioButton = new JRadioButton();
+        Mnemonics.setLocalizedText(myRadioButton, NbBundle.getMessage(
+                PropertyEditorButtonGroup.class, "LBL_ButtonGroupList")); // NOI18N
+
+        myRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                        PropertyEditorButtonGroup.class, "ACSN_ButtonGroupList")); // NOI18N
+        myRadioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(
+                        PropertyEditorButtonGroup.class, "ACSD_ButtonGroupList"));
+
+        myCustomEditor = new CustomEditor();
+        myCustomEditor.updateModel();
+    }
+    
+    private void saveValue(final String text) {
+        if (component == null || component.get() == null) {
+            return;
+        }
+        
+        final DesignComponent desComponent = component.get();
+        final PropertyValue oldValue[] = new PropertyValue[1];
+        desComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                  oldValue[0] = desComponent.readProperty(SVGRadioButtonCD.PROP_BUTTON_GROUP);
+            }
+        });
+        if (oldValue[0].getPrimitiveValue().equals(text)) {
+            return;
+        }
+        
+        desComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                desComponent.writeProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP, 
+                        MidpTypes.createJavaCodeValue(text));
+                List<PropertyValue> list = desComponent.getParentComponent().
+                        readProperty( SVGFormCD.PROP_COMPONENTS).getArray();
+                for (PropertyValue propertyValue : list) {
+                    if ( propertyValue.getComponent().getType().equals( 
+                        SVGButtonGroupCD.TYPEID ))
+                    {
+                        DesignComponent buttonGroup = propertyValue.getComponent();
+                        if ( buttonGroup.readProperty( ClassCD.PROP_INSTANCE_NAME).
+                                getPrimitiveValue().toString().equals( 
+                                        oldValue[0].getPrimitiveValue().toString()))
+                        {
+                            ArraySupport.remove( buttonGroup , 
+                                    SVGButtonGroupCD.PROP_BUTTONS , desComponent );
+                        }
+                        if ( buttonGroup.readProperty( ClassCD.PROP_INSTANCE_NAME).
+                                getPrimitiveValue().toString().equals( text))
+                        {
+                            MidpArraySupport.append( buttonGroup, 
+                                    SVGButtonGroupCD.PROP_BUTTONS , desComponent );
+                        }
+                    }
+                }
+            }
+        });
+        super.setValue(MidpTypes.createJavaCodeValue(text));
+    }
+    
+    private class CustomEditor extends JPanel implements ActionListener {
+
+        private static final long serialVersionUID = 7734641168584954536L;
+
+        CustomEditor() {
+            initComponents();
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            myRadioButton.setSelected(true);
+        }
+        
+        void cleanUp(){
+            if (myCombobox != null) {
+                myCombobox.removeActionListener(this);
+                myCombobox = null;
+            }
+            removeAll();
+        }
+        
+        void updateModel() {
+            final DefaultComboBoxModel model = (DefaultComboBoxModel) myCombobox.getModel();
+            model.removeAllElements();
+            
+            final DesignComponent desComponent = component.get();
+            desComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                      List<PropertyValue> list = desComponent.getParentComponent().
+                          readProperty( SVGFormCD.PROP_COMPONENTS).getArray();
+                      for (PropertyValue propertyValue : list) {
+                          if ( propertyValue.getComponent().getType().equals( 
+                                  SVGButtonGroupCD.TYPEID )){
+                              model.addElement( propertyValue.getComponent().
+                                      readProperty( ClassCD.PROP_INSTANCE_NAME).
+                                      getPrimitiveValue().toString());
+                          }
+                      }
+                }
+            });
+            /*for (String tag : tags) {
+                model.addElement(tag);
+            }*/
+        }
+        
+        void setValue(PropertyValue value) {
+            String group = value.getPrimitiveValue().toString();
+            myCombobox.setSelectedItem( group );
+        }
+        
+        String getValue(){
+            return myCombobox.getSelectedItem().toString();
+        }
+        
+        private void initComponents() {
+            setLayout(new BorderLayout());
+            myCombobox = new JComboBox();
+            myCombobox.setModel(new DefaultComboBoxModel());
+            myCombobox.addActionListener(this);
+
+            myCombobox.getAccessibleContext().setAccessibleName(
+                    myRadioButton.getAccessibleContext().getAccessibleName());
+            myCombobox.getAccessibleContext().setAccessibleDescription(
+                    myRadioButton.getAccessibleContext().getAccessibleDescription());
+
+            add(myCombobox, BorderLayout.CENTER);
+        }
+        
+        private JComboBox myCombobox;
+    }
+    
+    private CustomEditor myCustomEditor;
+    private JRadioButton myRadioButton;
 }

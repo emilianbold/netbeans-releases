@@ -133,7 +133,9 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 transferInfo = remoteClient.upload(sources[0], forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
-                rememberLastUpload(sources[0], filesToUpload);
+                if (!remoteClient.isCancelled()) {
+                    rememberLastUpload(sources[0], filesToUpload);
+                }
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);

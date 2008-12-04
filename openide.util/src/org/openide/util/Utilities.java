@@ -47,6 +47,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
@@ -1742,11 +1743,11 @@ widthcheck:  {
                     if (i != null) {
                         //#26854 - Default accelerator should be Command on mac
                         if (wildcard) {
-                            needed |= Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+                            needed |= getMenuShortcutKeyMask();
 
                             if (isMac()) {
                                 if (!usableKeyOnMac(i, needed)) {
-                                    needed &= ~Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+                                    needed &= ~getMenuShortcutKeyMask();
                                     needed |= KeyEvent.CTRL_MASK;
                                 }
                             }
@@ -1792,6 +1793,14 @@ widthcheck:  {
         } else {
             return true;
         }
+    }
+
+    private static final int getMenuShortcutKeyMask() {
+        // #152050 - work in headless environment too
+        if (GraphicsEnvironment.isHeadless()) {
+            return Event.CTRL_MASK;
+        }
+        return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     }
 
     /** Convert a space-separated list of user-friendly key binding names to a list of Swing key strokes.
@@ -2061,6 +2070,7 @@ widthcheck:  {
      * @param parent
      * @param approveButtonText
      * @deprecated Not needed in JDK 1.4.
+     * @see <a href="@org-openide-filesystems@/org/openide/filesystems/FileChooserBuilder.html"><code>FileChooserBuilder</code></a>
      */
     @Deprecated
     public static final int showJFileChooser(

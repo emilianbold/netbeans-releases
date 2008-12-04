@@ -262,9 +262,15 @@ made subject to such option by the copyright holder.
       <property name="jnlp.dest.dir" location="build/jnlp" />
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
-      <for-each startdir=".." target="jnlp" locations="${config.modules.jnlp}"/>
+      <property name="jnlp.fail.on.error" value="true"/>
+      <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
+      <subant-junit target="jnlp" failonerror="${jnlp.fail.on.error}" report="build/build-all-jnlp.xml">
+          <buildpath>
+              <dirset dir=".." includes="${config.modules.jnlp}"/>
+          </buildpath>
+      </subant-junit>
       <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="nbantext.jar"/>
-      <verifyjnlp>
+      <verifyjnlp report="build/verify-jnlp.xml" failonerror="jnlp.fail.on.error">
           <fileset dir="${jnlp.dest.dir}" includes="*.jnlp"/>
       </verifyjnlp>
   </target>
