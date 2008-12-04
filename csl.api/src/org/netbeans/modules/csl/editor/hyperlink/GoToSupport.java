@@ -62,7 +62,6 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -136,10 +135,6 @@ public class GoToSupport {
                     }
 
                     ParserResult info = (ParserResult) embeddedResult;
-                    if (info.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                        return;
-                    }
-
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(info.getSnapshot().getMimeType());
                     if (language == null) {
                         return;

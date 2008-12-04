@@ -41,7 +41,6 @@ package org.netbeans.modules.csl.spi;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -55,8 +54,6 @@ public abstract class ParserResult extends Parser.Result {
         super(snapshot);
     }
 
-    public abstract Phase toPhase (Phase phase);
-    
     public abstract List<? extends Error> getDiagnostics ();
 
 }

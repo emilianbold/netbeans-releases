@@ -47,7 +47,6 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -163,7 +162,6 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws IOException, ParseException {
                                 ParserResult parserResult = (ParserResult) resultIterator.getParserResult (c.getCaretPosition ());
-                                parserResult.toPhase (Phase.RESOLVED);
                                 cInfo = parserResult;
                                 snapshot = parserResult.getSnapshot ();
                             }

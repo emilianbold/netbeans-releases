@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.csl.core;
 
-import org.netbeans.modules.csl.api.Phase;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -175,8 +174,6 @@ public final class UiUtils {
                         Parser.Result r = resultIterator.getParserResult();
                         if (r instanceof ParserResult) {
                             ParserResult info = (ParserResult) r;
-                            info.toPhase(Phase.RESOLVED);
-
                             OffsetRange range = handle.getOffsetRange(info);
                             if (range != OffsetRange.NONE && range != null) {
                                 result[0] = new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), range.getStart());

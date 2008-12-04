@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -109,8 +108,6 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public synchronized void run (ResultIterator resultIterator) throws IOException, ParseException {
         ParserResult parserResult = (ParserResult) resultIterator.getParserResult (startOffset);
         Snapshot snapshot = parserResult.getSnapshot ();
-        parserResult.toPhase(Phase.PARSED);
-        
         CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (),  startOffset);
             
         if (completer != null) {

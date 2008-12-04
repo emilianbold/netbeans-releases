@@ -53,7 +53,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -63,7 +62,6 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -197,7 +195,6 @@ public final class SelectCodeElementAction extends BaseAction {
 
         public void run (ResultIterator resultIterator) throws ParseException {
             ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
-            parserResult.toPhase(Phase.RESOLVED);
             selectionInfos = initSelectionPath(target, parserResult);
         }
         

@@ -53,7 +53,6 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -124,10 +123,6 @@ public class InstantRenameAction extends BaseAction {
                 new UserTask () {
                     public void run (ResultIterator resultIterator) throws Exception {
                         ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
-                        if (parserResult.toPhase (Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
-                        }
-
                         Document doc = target.getDocument();
                         BaseDocument baseDoc = (BaseDocument)doc;
                         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, caret);

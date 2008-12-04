@@ -46,7 +46,6 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -81,11 +80,6 @@ public class JsParseResult extends ParserResult {
         super(snapshot);
         this.parser = parser;
         this.rootNode = rootNode;
-    }
-
-    public @Override Phase toPhase(Phase phase) {
-        // javascript parser does not support phases
-        return phase;
     }
 
     public @Override List<? extends Error> getDiagnostics() {

@@ -52,7 +52,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxTree;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -137,12 +136,6 @@ public class HtmlParserResult extends ParserResult {
             }
         }
         return ids;
-    }
-
-    @Override
-    public Phase toPhase(Phase phase) {
-        //xxx use this?
-        return phase;
     }
 
     @Override

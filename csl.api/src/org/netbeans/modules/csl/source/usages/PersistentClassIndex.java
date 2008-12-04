@@ -56,7 +56,6 @@ import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -208,7 +207,6 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                             }
                                             
                                             if (r instanceof ParserResult) {
-                                                ((ParserResult) r).toPhase(Phase.RESOLVED);
                                                 runIndexers((ParserResult) r);
                                             }
 

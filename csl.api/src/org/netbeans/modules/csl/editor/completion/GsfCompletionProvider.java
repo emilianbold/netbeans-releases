@@ -71,7 +71,6 @@ import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -525,10 +524,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void resolveDocumentation(ParserResult controller)
-            throws IOException {
-            controller.toPhase(Phase.RESOLVED);
-
+        private void resolveDocumentation(ParserResult controller) throws IOException {
             if (element != null) {
                 documentation = GsfCompletionDoc.create(controller, element);
             } else {
@@ -722,8 +718,6 @@ public class GsfCompletionProvider implements CompletionProvider {
                 ErrorManager.getDefault().notify(ex);
             }
             
-            controller.toPhase(Phase.PARSED);
-
             return new Env(offset, prefix, controller, completer);
         }
         
