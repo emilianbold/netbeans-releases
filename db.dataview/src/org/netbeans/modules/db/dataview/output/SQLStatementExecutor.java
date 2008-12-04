@@ -88,6 +88,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             try {
                 handle.switchToIndeterminate();
                 dataView.setInfoStatusText(""); // NOI18N
+                errorMsg = "";  // NOI18N
                 dataView.disableButtons();
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());

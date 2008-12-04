@@ -252,26 +252,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                     break;
                 case NEW_CLASS:
-                    /*Collection<IndexedClass> classes = request.index.getClasses(result, prefix, NameKind.PREFIX);
-                    for (IndexedClass clz : classes) {
-                        Collection<IndexedFunction> methods = request.index.getMethods(result, clz.getName(), "__construct", NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
-                        methods = !methods.isEmpty() ? methods : request.index.getMethods(result, clz.getName(), clz.getName(), NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
-                        if (!methods.isEmpty()) {
-                            for (IndexedFunction method : methods) {
-                                int[] optionalArgs = method.getOptionalArgs();
-                                for (int i = 0; i <= optionalArgs.length; i++) {
-                                    proposals.add(new PHPCompletionItem.NewClassItem(method, request, i));
-                                }
+                    Collection<IndexedFunction> functions = request.index.getConstructors(result, prefix);
+                    if (!functions.isEmpty()) {
+                        for (IndexedFunction fnc : functions) {
+                            int[] optionalArgs = fnc.getOptionalArgs();
+                            for (int i = 0; i <= optionalArgs.length; i++) {
+                                proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
                             }
-                        } else {
-                            IndexedFunction indexedFunction = new IndexedFunction(clz.getName(), clz.getName(),
-                                    request.index, null, null, caretOffset, Modifier.PUBLIC, ElementKind.CONSTRUCTOR);
-                            indexedFunction.setOptionalArgs(new int[0]);
-                            proposals.add(new PHPCompletionItem.NewClassItem(indexedFunction,request, 0) {
-                            });
                         }
-                    }*/
-                    autoCompleteClassNames(proposals, request, false);
+                    } 
                     break;
                 case CLASS_NAME:
                     autoCompleteClassNames(proposals, request,false);

@@ -214,6 +214,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         Map<String,String> map = new HashMap<String,String>();
         map.put("classname", "FireFly");
         map.put("classfile", "fire_fly");
+        map.put("file_to_require", "'fire_fly'");
         map.put("classfield", "fire_fly");
         createTemplate("createdspec", "rspec.rb", Type.SPEC, map);
     }

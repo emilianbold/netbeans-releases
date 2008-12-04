@@ -40,7 +40,7 @@ public class MergeUiTest extends JellyTestCase {
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     static Logger log;
 
@@ -76,18 +76,19 @@ public class MergeUiTest extends JellyTestCase {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
-
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 new NewProjectWizardOperator().invoke().close();
-                    
+
+            TestKit.TIME_OUT = 25;
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
-            ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
             RepositoryStepOperator rso = new RepositoryStepOperator();
+            //rso.verify();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             rso.next();
             Thread.sleep(1000);
@@ -99,6 +100,7 @@ public class MergeUiTest extends JellyTestCase {
             Thread.sleep(1000);
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
+            
             TestKit.waitText(mh);
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);

@@ -610,7 +610,7 @@ public class Evaluator extends javax.swing.JPanel {
         
         public void setupContext() {
             if (!isContextSetUp) {
-                WatchPanel.setupContext(editor);
+                WatchPanel.setupContext(editor, null);
                 HelpCtx.setHelpIDString(editor, Evaluator.class.getName());
                 isContextSetUp = true;
             }

@@ -103,8 +103,14 @@ public class Constants {
     public static final String COLLECTION_TYPE = "java.util.Collection"; //NOI18N
     
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
+
+    public static final String LIST_TYPE = "java.util.List";        //NOI18N
+
+    public static final String SET_TYPE = "java.util.Set";      //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
+
+    public static final String HASH_SET_TYPE = "java.util.HashSet"; //NOI18N
     
     public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
     

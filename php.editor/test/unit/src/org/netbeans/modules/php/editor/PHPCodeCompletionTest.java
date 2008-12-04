@@ -139,6 +139,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
     }
 
+    public void testTypesInPHPDOC4() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|^", false);
+    }
+
+    public void testTypesInPHPDOC5() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|   text|^", false);
+    }
+
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
@@ -438,6 +446,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void test149519() throws Exception {
         checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
+    }
+    public void test154055() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue154055.php", "$book->^", false);
     }
     // tests for class declaration until '{' like "class name extends MyClass  "
     public void testClsDeclaration() throws Exception {

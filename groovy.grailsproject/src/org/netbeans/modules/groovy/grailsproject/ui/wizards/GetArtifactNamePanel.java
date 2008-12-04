@@ -25,16 +25,21 @@ import org.openide.util.Utilities;
  * @author  schmidtm
  */
 public class GetArtifactNamePanel extends WizardSettingsPanel implements DocumentListener {
-    GetArtifactNameStep parentStep;
-    GrailsProject project;
-    String baseDir;
+
+    private GetArtifactNameStep parentStep;
+
+    private GrailsProject project;
+
+    private String baseDir;
+
     private String fileName = "";
-    String suffix = "";
     
-    SourceCategory cat;
-        
+    private String suffix = "";
+
+    private SourceCategory cat;
+
     boolean valid(WizardDescriptor settings) {
-        
+
         if (!Utilities.isJavaIdentifier(classNameTextField.getText().trim())) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                 NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
@@ -49,11 +54,11 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         }
         return true;
     }
-    
+
     void read (WizardDescriptor d) {
 
     }
-    
+
     void validate (WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
@@ -61,19 +66,19 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     void store( WizardDescriptor d ) {
         d.putProperty("projectFolder", projectTextField.getText().trim()); // NOI18N
     }
-    
+
     /** Creates new form NewGrailsProjectPanel */
     public GetArtifactNamePanel(GetArtifactNameStep parentStep, SourceCategory cat) {
         this.parentStep = parentStep;
         this.cat = cat;
-        
+
         initComponents();
 
         String subDirName = "<unknown>";
         String dirPrefix  = "";
         String className = "";
         FileObject preselectedFolder = parentStep.project.getProjectDirectory().getFileObject(cat.getRelativePath());
-        
+
         switch(cat){
             case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
@@ -97,14 +102,14 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
                 className = uniqueName("NewElement", suffix, preselectedFolder);
-                break; 
+                break;
             case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewView"));
                 subDirName = "views";
                 dirPrefix = "grails-app" + File.separatorChar;
                 className = uniqueName("NewElement", suffix, preselectedFolder);
-                break;    
+                break;
             case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewTaglib"));
@@ -112,7 +117,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "TagLib";
                 className = uniqueName("NewElement", suffix, preselectedFolder);
-                break;    
+                break;
             case TEST_INTEGRATION:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_INTEGRATION")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewIntegrationTest"));
@@ -134,27 +139,27 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewScript"));
                 subDirName = "scripts";
                 className = uniqueName("NewElement", suffix, preselectedFolder);
-                break;    
+                break;
             }
-        
+
         // populate the panel with some stuff
-        
+
         project = parentStep.getGrailsProject();
 
         projectTextField.setText(project.getProjectDirectory().getName());
-        
-        baseDir =   FileUtil.getFileDisplayName(project.getProjectDirectory()) + 
+
+        baseDir =   FileUtil.getFileDisplayName(project.getProjectDirectory()) +
                     File.separatorChar + dirPrefix + subDirName;
-        
+
         createdFileTextField.setText(baseDir + File.separatorChar );
-        
+
         // register event listeners to auto-update some fields.
 
         classNameTextField.getDocument().addDocumentListener( this );
         classNameTextField.setText(className);
-        
+
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -235,8 +240,8 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classNameLabel;
     private javax.swing.JTextField classNameTextField;
@@ -251,7 +256,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         putClientProperty("NewFileWizard_Title", title); // NOI18N
         getAccessibleContext().setAccessibleName(title);
     }
-    
+
     public void insertUpdate(DocumentEvent e) {
         updateTexts( e ) ;
     }
@@ -263,30 +268,37 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     public void changedUpdate(DocumentEvent e) {
         updateTexts( e ) ;
     }
-    
+
     /** Handles changes in the Project name and project directory
      */
     private void updateTexts( DocumentEvent e ) {
-        
+
         Document doc = e.getDocument();
-                
+
+        // FIXME this should be replaced by call to GCU if possible
         if ( doc == classNameTextField.getDocument() ) {
-            
+
             String artifactName = classNameTextField.getText().trim();
             // there can be package name as part of the artifact name,
             // we don't have package chooser in this wizard
             if (artifactName.indexOf('.') != -1) {
                 artifactName = artifactName.replace('.', File.separatorChar);
             }
-            
+            if (artifactName.length() > 1) {
+                char first = artifactName.charAt(0);
+                artifactName = Character.toUpperCase(first) + artifactName.substring(1);
+            } else {
+                artifactName = artifactName.toUpperCase();
+            }
+
+
             fileName = baseDir + File.separatorChar + artifactName + suffix + ".groovy";
             createdFileTextField.setText(fileName);
             projectTextField.setText(project.getProjectDirectory().getName());
-            
+
             parentStep.fireChangeEvent();
-            
-        }                
-  
+        }
+
     }
 
     public String getArtifactName(){
