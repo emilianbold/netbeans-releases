@@ -304,9 +304,10 @@ public class ClassBreakpointsTest extends JellyTestCase {
                     throw e;
                 }
             }
-            new EventTool().waitNoEvent(1500);
+            
             new ContinueAction().perform();
             try {
+                new EventTool().waitNoEvent(1500);
                 Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
             } catch (Throwable e) {
                 if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1.")) {
