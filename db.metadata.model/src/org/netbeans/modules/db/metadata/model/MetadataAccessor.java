@@ -41,6 +41,8 @@ package org.netbeans.modules.db.metadata.model;
 
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -54,6 +56,8 @@ import org.netbeans.modules.db.metadata.model.api.Value;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
@@ -92,6 +96,10 @@ public abstract class MetadataAccessor {
         }
         return accessor;
     }
+
+    public abstract ForeignKeyColumn createForeignKeyColumn(ForeignKeyColumnImplementation impl);
+
+    public abstract ForeignKey createForeignKey(ForeignKeyImplementation impl);
 
     public abstract Index createIndex(IndexImplementation impl);
 

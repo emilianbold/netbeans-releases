@@ -37,47 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
- *
- * @author Andrei Badea
+ * This class represents a foreign key in a table - a key that refers to the
+ * primary key of another table.
+ * 
+ * @author David Van Couvering
  */
-public abstract class TableImplementation {
+public class ForeignKey extends MetadataElement {
+    ForeignKeyImplementation impl;
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+    ForeignKey(ForeignKeyImplementation impl) {
+        this.impl = impl;
     }
 
-    public abstract Schema getParent();
+    @Override
+    public Table getParent() {
+        return impl.getParent();
+    }
 
-    public abstract String getName();
+    @Override
+    /**
+     * Return the name of the foreign key.  The name of a foreign key may be null
+     */
+    public String getName() {
+        return impl.getName();
+    }
 
-    public abstract Collection<Column> getColumns();
+    /**
+     * Get the foreign key columns that comprise this foreign key
+     *
+     * @return the collection of foreign key columns for this foreign key
+     */
+    public Collection<ForeignKeyColumn> getColumns() {
+        return impl.getColumns();
+    }
 
-    public abstract Column getColumn(String name);
-
-    public abstract PrimaryKey getPrimaryKey();
-
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract void refresh();
+    /**
+     * Get a specific foreign key column by name
+     *
+     * @param name the name of the foreign key column we are interested in
+     *
+     * @return the foreign key column for this name
+     */
+    public ForeignKeyColumn getColumn(String name) {
+        return impl.getColumn(name);
+    }
 }

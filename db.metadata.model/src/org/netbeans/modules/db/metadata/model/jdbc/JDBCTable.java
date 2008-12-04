@@ -46,11 +46,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
@@ -58,7 +63,9 @@ import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,6 +80,7 @@ public class JDBCTable extends TableImplementation {
 
     private Map<String, Column> columns;
     private Map<String, Index> indexes;
+    private List<ForeignKey> foreignKeys;
     
     private PrimaryKey primaryKey;
 
@@ -114,6 +122,11 @@ public class JDBCTable extends TableImplementation {
     @Override
     public Collection<Index> getIndexes() {
         return initIndexes().values();
+    }
+
+    @Override
+    public Collection<ForeignKey> getForeignKeys() {
+        return initForeignKeys();
     }
 
     @Override
@@ -213,6 +226,108 @@ public class JDBCTable extends TableImplementation {
         }
     }
 
+        protected void createForeignKeys() {
+        List<ForeignKey> newKeys = new ArrayList<ForeignKey>();
+        try {
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getImportedKeys(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name);
+            try {
+                JDBCForeignKey fkey = null;
+                String currentKeyName = null;
+                while (rs.next()) {
+                    String keyName = rs.getString("FK_NAME");
+                    // We have to assume that if the foreign key name is null, then this is a *new*
+                    // foreign key, even if the last foreign key name was also null.
+                    if (fkey == null || keyName == null || !(currentKeyName.equals(keyName))) {
+                        fkey = createJDBCForeignKey(keyName, rs);
+                        LOGGER.log(Level.FINE, "Created foreign key " + keyName);
+
+                        newKeys.add(fkey.getForeignKey());
+                        currentKeyName = keyName;
+                    }
+
+                    ForeignKeyColumn col = createJDBCForeignKeyColumn(fkey, rs).getForeignKeyColumn();
+                    fkey.addColumn(col);
+                    LOGGER.log(Level.FINE, "Added foreign key column " + col.getName() + " to foreign key " + keyName);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+
+        foreignKeys = Collections.unmodifiableList(newKeys);
+    }
+
+    protected JDBCForeignKey createJDBCForeignKey(String name, ResultSet rs) {
+        return new JDBCForeignKey(this.getTable(), name);
+    }
+
+    protected JDBCForeignKeyColumn createJDBCForeignKeyColumn(JDBCForeignKey parent, ResultSet rs) {
+        try {
+            Table table = findReferredTable(rs);
+            String colname = rs.getString("PKCOLUMN_NAME"); // NOI18N
+            Column referredColumn = table.getColumn(colname);
+            if (referredColumn == null) {
+                throw new MetadataException(getMessage("ERR_COL_NOT_FOUND", table.getParent().getParent().getName(), table.getParent().getName(), table.getName(), colname)); // NOI18N
+            }
+
+            colname = rs.getString("FKCOLUMN_NAME");
+            Column referringColumn = getColumn(colname);
+
+            int position = rs.getInt("KEY_SEQ");
+
+            return new JDBCForeignKeyColumn(parent.getForeignKey(), referringColumn.getName(), referringColumn, referredColumn, position);
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+    }
+    
+    private String getMessage(String key, String ... args) {
+        return NbBundle.getMessage(JDBCTable.class, key, args);
+    }
+
+    private Table findReferredTable(ResultSet rs) {
+        JDBCMetadata metadata = jdbcSchema.getJDBCCatalog().getJDBCMetadata();
+        Catalog catalog;
+        Schema schema;
+
+        try {
+            String catalogName = rs.getString("PKTABLE_CAT"); // NOI18N
+            if (catalogName == null || catalogName.length() == 0) {
+                catalog = jdbcSchema.getParent();
+            } else {
+                catalog = metadata.getCatalog(catalogName);
+                if (catalog == null) {
+                    throw new MetadataException(getMessage("ERR_CATALOG_NOT_FOUND", catalogName)); // NOI18N
+                }
+            }
+
+            String schemaName = rs.getString("PKTABLE_SCHEM"); // NOI18N
+
+            if (schemaName == null || schemaName.length() == 0) {
+                schema = catalog.getSyntheticSchema();
+            } else {
+                schema = catalog.getSchema(schemaName);
+                if (schema == null) {
+                    throw new MetadataException(getMessage("ERR_SCHEMA_NOT_FOUND", schemaName, catalog.getName()));
+                }
+            }
+
+            String tableName = rs.getString("PKTABLE_NAME");
+            Table table = schema.getTable(tableName);
+
+            if (table == null) {
+                throw new MetadataException(getMessage("ERR_TABLE_NOT_FOUND", catalogName, schemaName, tableName));
+            }
+
+            return table;
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+
+    }
+
 
     protected void createPrimaryKey() {
         String pkname = null;
@@ -254,6 +369,16 @@ public class JDBCTable extends TableImplementation {
 
         createIndexes();
         return indexes;
+    }
+
+    private List<ForeignKey> initForeignKeys() {
+        if (foreignKeys != null) {
+            return foreignKeys;
+        }
+        LOGGER.log(Level.FINE, "Initializing foreign keys in {0}", this);
+
+        createForeignKeys();
+        return foreignKeys;
     }
 
     private PrimaryKey initPrimaryKey() {

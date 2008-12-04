@@ -37,47 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
 
 /**
- *
- * @author Andrei Badea
+ * This class defines a column that is a foreign key, referring to a
+ * column in the primary key of another table.
+ * 
+ * @author David Van Couvering
  */
-public abstract class TableImplementation {
+public class ForeignKeyColumn extends MetadataElement {
+    ForeignKeyColumnImplementation impl;
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+    ForeignKeyColumn(ForeignKeyColumnImplementation impl) {
+        this.impl = impl;
     }
 
-    public abstract Schema getParent();
+    @Override
+    public ForeignKey getParent() {
+        return impl.getParent();
+    }
 
-    public abstract String getName();
+    @Override
+    public String getName() {
+        return impl.getName();
+    }
 
-    public abstract Collection<Column> getColumns();
+    /**
+     * Get the column in the source table which is referring to the column
+     * in the target table.
+     *
+     * @return the referring column definition
+     */
+    public Column getReferringColumn() {
+        return impl.getReferringColumn();
+    }
 
-    public abstract Column getColumn(String name);
+    /**
+     * Get the primary key column in the target table which is being referred to
+     *
+     * @return the referred column
+     */
+    public Column getReferredColumn() {
+        return impl.getReferredColumn();
+    }
 
-    public abstract PrimaryKey getPrimaryKey();
-
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract void refresh();
+    /**
+     * Get the position of this column in the foreign key
+     *
+     * @return the position of the column in the foreign key
+     */
+    public int getPosition() {
+        return impl.getPosition();
+    }
 }

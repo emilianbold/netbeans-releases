@@ -37,47 +37,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class TableImplementation {
+public final class JDBCForeignKeyColumn extends ForeignKeyColumnImplementation {
+    private final ForeignKey parent;
+    private final String name;
+    private final Column referringColumn;
+    private final Column referredColumn;
+    private final int position;
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+    public JDBCForeignKeyColumn(ForeignKey parent, String name, Column referringColumn, Column referredColumn, int position) {
+        this.parent = parent;
+        this.name = name;
+        this.referringColumn = referringColumn;
+        this.referredColumn = referredColumn;
+        this.position = position;
     }
 
-    public abstract Schema getParent();
+    @Override
+    public String getName() {
+        return name;
+    }
+    @Override
+    public String toString() {
+        return "JDBCForeignKeyColumn[name='" + name + "', position=" + position + "referringColumn=" + referringColumn +", referredColumn=" + referredColumn + "]";
+    }
 
-    public abstract String getName();
+    @Override
+    public ForeignKey getParent() {
+        return parent;
+    }
 
-    public abstract Collection<Column> getColumns();
+    @Override
+    public Column getReferredColumn() {
+        return referredColumn;
+    }
 
-    public abstract Column getColumn(String name);
+    @Override
+    public Column getReferringColumn() {
+        return referringColumn;
+    }
 
-    public abstract PrimaryKey getPrimaryKey();
+    @Override
+    public int getPosition() {
+        return position;
+    }
 
-    public abstract Index getIndex(String name);
 
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract void refresh();
 }

@@ -45,6 +45,8 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
@@ -192,6 +194,16 @@ public class Metadata {
         @Override
         public IndexColumn createIndexColumn(IndexColumnImplementation impl) {
             return new IndexColumn(impl);
+        }
+
+        @Override
+        public ForeignKeyColumn createForeignKeyColumn(ForeignKeyColumnImplementation impl) {
+            return new ForeignKeyColumn(impl);
+        }
+
+        @Override
+        public ForeignKey createForeignKey(ForeignKeyImplementation impl) {
+            return new ForeignKey(impl);
         }
     }
 }

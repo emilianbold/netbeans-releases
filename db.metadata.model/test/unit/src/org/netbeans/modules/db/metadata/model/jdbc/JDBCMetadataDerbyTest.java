@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
@@ -57,13 +58,12 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.View;
-import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCMetadataDerbyTest extends MetadataTestBase {
+public class JDBCMetadataDerbyTest extends JDBCMetadataTest {
 
     private Connection conn;
     private JDBCMetadata metadata;
@@ -95,6 +95,19 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         stmt.executeUpdate("CREATE INDEX BAR_INDEX ON BAR(FOO_ID ASC, FOO_NAME DESC)");
         stmt.executeUpdate("CREATE UNIQUE INDEX DEC_COL_INDEX ON BAR(DEC_COL)");
         metadata = new JDBCMetadata(conn, "APP");
+    }
+
+    public void testForeignKey() throws Exception {
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        Schema appSchema = defaultCatalog.getSchema("APP");
+
+        Table table = appSchema.getTable("BAR");
+        ForeignKey[] keys = table.getForeignKeys().toArray(new ForeignKey[0]);
+        assertEquals(1, keys.length);
+        ForeignKey key = keys[0];
+        Table referredTable = appSchema.getTable("FOO");
+        checkForeignKeyColumn(key, referredTable, "FOO_ID", "ID", 1);
+        checkForeignKeyColumn(key, referredTable, "FOO_NAME", "FOO_NAME", 2);
     }
 
     public void testBasic() throws Exception {

@@ -94,6 +94,10 @@ public class Table extends Tuple {
         return impl.getIndex(name);
     }
 
+    public Collection<ForeignKey> getForeignKeys() {
+        return impl.getForeignKeys();
+    }
+    
     /**
      * Refresh the table metadata from the database
      */

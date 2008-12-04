@@ -37,47 +37,55 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class TableImplementation {
+public class JDBCForeignKey extends ForeignKeyImplementation {
+    private final Table parent;
+    private final String name;
+    private final Map<String,ForeignKeyColumn> columns = new LinkedHashMap<String,ForeignKeyColumn>();
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+    public JDBCForeignKey(Table parent, String name) {
+        this.parent = parent;
+        this.name = name;
     }
 
-    public abstract Schema getParent();
+    public void addColumn(ForeignKeyColumn col) {
+        columns.put(col.getName(), col);
+    }
 
-    public abstract String getName();
+    public final Table getParent() {
+        return parent;
+    }
 
-    public abstract Collection<Column> getColumns();
+    public final String getName() {
+        return name;
+    }
 
-    public abstract Column getColumn(String name);
+    @Override
+    public String toString() {
+        return "JDBCForeignKey[name='" + name + "']"; // NOI18N
+    }
 
-    public abstract PrimaryKey getPrimaryKey();
+    @Override
+    public Collection<ForeignKeyColumn> getColumns() {
+        return columns.values();
+    }
 
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract void refresh();
+    @Override
+    public ForeignKeyColumn getColumn(String name) {
+        return columns.get(name);
+    }
 }

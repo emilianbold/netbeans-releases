@@ -39,45 +39,32 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
-import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class TableImplementation {
+public abstract class ForeignKeyColumnImplementation {
+    private ForeignKeyColumn column;
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
+    public final ForeignKeyColumn getForeignKeyColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createForeignKeyColumn(this);
         }
-        return table;
+        return column;
     }
-
-    public abstract Schema getParent();
 
     public abstract String getName();
 
-    public abstract Collection<Column> getColumns();
+    public abstract ForeignKey getParent();
 
-    public abstract Column getColumn(String name);
+    public abstract Column getReferredColumn();
 
-    public abstract PrimaryKey getPrimaryKey();
+    public abstract Column getReferringColumn();
 
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract void refresh();
+    public abstract int getPosition();
 }
