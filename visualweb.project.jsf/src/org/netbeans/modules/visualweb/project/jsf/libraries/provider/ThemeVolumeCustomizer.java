@@ -70,6 +70,7 @@ import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -120,23 +121,18 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
         this.downButton.setEnabled (false);
         this.removeButton.setEnabled (false);
         if (this.volumeType.equals(ThemeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {  //NOI18N
-            this.addButton.setText (NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddClassPath"));
-            this.addButton.setMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_AddClassPath").charAt(0));
-            this.message.setText(NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentClassPath"));
-            this.message.setDisplayedMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_ContentClassPath").charAt(0));
+            Mnemonics.setLocalizedText(this.addButton, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddClassPath"));
+            Mnemonics.setLocalizedText(message, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentClassPath"));
             this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_AddClassPath"));
             this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_ContentClassPath"));
         }
         else if (this.volumeType.equals(ThemeLibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {  //NOI18N
-            this.addButton.setText(NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddJavadoc"));
-            this.addButton.setMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_AddJavadoc").charAt(0));
-            this.message.setText(NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentJavadoc"));
-            this.message.setDisplayedMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_ContentJavadoc").charAt(0));
+            Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddJavadoc"));
+            Mnemonics.setLocalizedText(message, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentJavadoc"));
             this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_AddJavadoc"));
             this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_ContentJavadoc"));
 //            this.addURLButton = new JButton ();
-//            this.addURLButton.setText(NbBundle.getMessage (ThemeVolumeCustomizer.class,"CTL_AddJavadocURL"));
-//            this.addURLButton.setMnemonic(NbBundle.getMessage (ThemeVolumeCustomizer.class,"MNE_AddJavadocURL").charAt(0));
+//            Mnemonics.setLocalizedText(addURLButton, NbBundle.getMessage (ThemeVolumeCustomizer.class,"CTL_AddJavadocURL"));
 //            this.addURLButton.addActionListener (new ActionListener () {
 //                public void actionPerformed(ActionEvent e) {
 //                    addURLResource ();
@@ -154,18 +150,14 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
 //            this.add (this.addURLButton);
         }
         else if (this.volumeType.equals(ThemeLibraryTypeProvider.VOLUME_TYPE_SRC)) {  //NOI18N
-            this.addButton.setText (NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddSources"));
-            this.addButton.setMnemonic (NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_AddSources").charAt(0));
-            this.message.setText(NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentSources"));
-            this.message.setDisplayedMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_ContentSources").charAt(0));
+            Mnemonics.setLocalizedText(this.addButton, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddSources"));
+            Mnemonics.setLocalizedText(message, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentSources"));
             this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_AddSources"));
             this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_ContentSources"));
         }
         else if (this.volumeType.equals(ThemeLibraryTypeProvider.VOLUME_TYPE_RUNTIME)) {  //NOI18N
-            this.addButton.setText (NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddSources"));
-            this.addButton.setMnemonic (NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_AddSources").charAt(0));
-            this.message.setText(NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentSources"));
-            this.message.setDisplayedMnemonic(NbBundle.getMessage(ThemeVolumeCustomizer.class,"MNE_ContentSources").charAt(0));
+            Mnemonics.setLocalizedText(this.addButton, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_AddSources"));
+            Mnemonics.setLocalizedText(message, NbBundle.getMessage(ThemeVolumeCustomizer.class,"CTL_ContentSources"));
             this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_AddSources"));
             this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ThemeVolumeCustomizer.class,"AD_ContentSources"));
         }
