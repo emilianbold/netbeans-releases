@@ -33,7 +33,7 @@
         <copy todir="${release.ext.dir}" file="${jython.dist.dir}/jython.jar" />
     </target>
     
-    <target name="release" depends="files-init" if="has.release.dir">
+    <target name="release" depends="init">
         <mkdir dir="${cluster}"/>
         <copy todir="${cluster}">
             <fileset dir="${release.dir}">
