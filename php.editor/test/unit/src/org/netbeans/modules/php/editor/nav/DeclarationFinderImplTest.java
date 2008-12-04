@@ -101,6 +101,28 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(-1, ifaceTest);
     }
 
+    public void testIfaceTest5() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc() {}//mycls",
+                "function ^mfnc^() {}//mycls",
+                "$a->mfnc();//mycls",
+                "$a->mf|nc();//mycls"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest6() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc();//myface",
+                "function ^mfnc^();//myface",
+                "$a->mfnc();//myface",
+                "$a->mfn|c();//myface"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
      public void testImplementsInterface() throws Exception {
         String gotoTest2 = prepareTestFile(
                 "testfiles/classMan.php",
