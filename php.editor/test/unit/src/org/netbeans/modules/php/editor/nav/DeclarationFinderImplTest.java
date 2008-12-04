@@ -57,6 +57,50 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
+    public void testIfaceTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "interface myface {",
+                "interface ^myface {",
+                "myface::RECOVER_ORIG;",
+                "myf|ace::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 2;",
+                "const ^RECOVER_ORIG = 2;",
+                "myface::RECOVER_ORIG;",
+                "myface::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest3() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "class mycls implements myface {",
+                "class ^mycls implements myface {",
+                "mycls::RECOVER_ORIG;",
+                "myc|ls::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest4() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 1;",
+                "const ^RECOVER_ORIG = 1;",
+                "mycls::RECOVER_ORIG;",
+                "mycls::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
      public void testImplementsInterface() throws Exception {
         String gotoTest2 = prepareTestFile(
                 "testfiles/classMan.php",
