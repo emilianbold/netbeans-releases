@@ -237,6 +237,13 @@ public class DataView {
         dataViewUI.setEditable(editable);
     }
 
+    synchronized void removeComponents() {
+        dataViewUI.getParent().setVisible(false);        
+        dataViewUI.removeAll();
+        dataViewUI.repaint();
+        dataViewUI.revalidate();
+    }
+    
     void setInfoStatusText(String statusText) {
         if (statusText != null) {
             StatusDisplayer.getDefault().setStatusText(statusText);
