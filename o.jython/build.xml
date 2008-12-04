@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.jython" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.jython.</description>    
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <property name="jython.version" value="2.5" />
+    
+    <property name="release.dir" location="release" />
+    <property name="release.ext.dir" location="${release.dir}/modules/ext" />
+    <property name="jython.dist.dir" location="${release.dir}/jython-${jython.version}" />
+    
+    <property name="jython.build.dir" location="jython-build" />
+    <target name="init" depends="projectized.init">
+        <mkdir dir="${release.dir}" />
+        <mkdir dir="${release.ext.dir}" />
+        <mkdir dir="${jython.dist.dir}" />
+        <mkdir dir="${jython.build.dir}" />
+        <unzip dest="${jython.build.dir}" src="external/jython-${jython.version}.zip" />
+        <!--<copy todir="${jython.build.dir}/jython"  >
+            <fileset dir="patches">
+                <include name="**/*.*" />
+            </fileset>
+        </copy>-->
+        <!--<chmod file="${jython.build.dir}/jython/src/shell/jython" perm="+x"/>-->
+        <ant dir="${jython.build.dir}/jython" target="developer-build" inheritall="false" inheritrefs="false">
+            <property name="dist.dir" value="${jython.dist.dir}"/>
+        </ant>
+
+        <!--<chmod file="${jython.dist.dir}/bin/jython" perm="+x"/>-->
+        <copy todir="${release.ext.dir}" file="${jython.dist.dir}/jython.jar" />
+    </target>
+    
+    <target name="release" depends="init">
+        <mkdir dir="${cluster}"/>
+        <copy todir="${cluster}">
+            <fileset dir="${release.dir}">
+                <patternset includes="${release.files}"/>
+            </fileset>
+        </copy>
+        <property name="jython.cluster.dir" location="${cluster}/jython-${jython.version}" />
+        <chmod file="${jython.cluster.dir}/bin/jython" perm="+x"/>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <delete dir="${jython.build.dir}"/>
+        <delete dir="${release.dir}"/>
+        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
+        <delete dir="jython-build"/>
+        <delete dir="release"/>
+    </target>
+
+    <target name="files-init" depends="projectized-common.files-init">
+        <property name="jython.cluster.dir" location="${cluster}/jython-${jython.version}" />
+
+        <!-- Override module.files definition performed by parent, used for NBMs etc. -->
+        <patternset id="module.files" includes="${release.files},${extra.module.files}">
+            <!-- Standard includes (from common definition) -->
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="config/Modules/${code.name.base.dashes}.xml"/>
+            <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
+            <!-- Python stuff -->
+            <include name="${jython.cluster.dir}/**"/>
+            <exclude name="${jython.cluster.dir}/**/netbeans-index-*.zip"/>
+        </patternset>
+    </target>
+
+
+</project>

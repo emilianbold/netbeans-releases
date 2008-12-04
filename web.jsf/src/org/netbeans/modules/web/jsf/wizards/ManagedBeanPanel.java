@@ -86,7 +86,8 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
     }
 
     public void updateManagedBeanName(WizardDescriptor.Panel panel) {
-        panel.storeSettings(wizard);
+        // XXX the JavaTargetChooserPanel will create the not-yet-ready folder before needed!
+        // panel.storeSettings(wizard);
         String targetName = wizard.getTargetName();
         if ((targetName == null) || targetName.trim().equals("")) {
             return;

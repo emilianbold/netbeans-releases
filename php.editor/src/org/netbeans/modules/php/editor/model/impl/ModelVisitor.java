@@ -250,17 +250,21 @@ public final class ModelVisitor extends DefaultVisitor {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        occurencesBuilder.prepare(Kind.IFACE, node.getClassName(), scope);
     }
 
     @Override
     public void visit(ClassConstantDeclaration node) {
         //ScopeImpl scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
-        assert scope != null && scope instanceof ClassScopeImpl;
-        ClassScopeImpl classScope = (ClassScopeImpl) scope;
+        //TODO: constants can be also in ifaces
+        assert scope != null && scope instanceof TypeScopeImpl;
         List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
+        TypeScopeImpl typeScope = (TypeScopeImpl) scope;
+        //InterfaceScopeImpl interfaceScopeImpl = (InterfaceScopeImpl) scope;
+
         for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-            ClassConstantElement element = classScope.createElement(nodeInfo);
+            ClassConstantElement element = typeScope.createElement(nodeInfo);
             occurencesBuilder.prepare(nodeInfo, element);
         }
         super.visit(node);

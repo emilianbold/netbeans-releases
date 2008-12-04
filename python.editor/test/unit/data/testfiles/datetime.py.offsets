@@ -1,0 +1,2009 @@
+
+<Module><Expr><Str>"""Concrete date/time and related types -- prototype implemented in Python.
+
+See http://www.zope.org/Members/fdrake/DateTimeWiki/FrontPage
+
+See also http://dir.yahoo.com/Reference/calendars/
+
+For a primer on DST, including many current DST rules, see
+http://webexhibits.org/daylightsaving/
+
+For more about DST than you ever wanted to know, see
+ftp://elsie.nci.nih.gov/pub/
+
+Sources for time zone and DST data: http://www.twinsun.com/tz/tz-link.htm
+
+"""</Str></Expr>
+
+<Import>import time as _time</Import>
+<Import>import math as _math</Import>
+
+<Assign><Name>MINYEAR</Name> = <Num>1</Num></Assign>
+<Assign><Name>MAXYEAR</Name> = <Num>9999</Num></Assign>
+
+# Utility functions, adapted from Python's Demo/classes/Dates.py, which
+# also assumes the current Gregorian calendar indefinitely extended in
+# both directions.  Difference:  Dates.py calls January 1 of year 0 day
+# number 1.  The code here calls January 1 of year 1 day number 1.  This is
+# to match the definition of the "proleptic Gregorian" calendar in Dershowitz
+# and Reingold's "Calendrical Calculations", where it's the base calendar
+# for all computations.  See the book for algorithms for converting between
+# proleptic Gregorian ordinals and many other calendar systems.
+
+<Assign><Name>_DAYS_IN_MONTH</Name> = <List>[<Name>None</Name>, <Num>31</Num>, <Num>28</Num>, <Num>31</Num>, <Num>30</Num>, <Num>31</Num>, <Num>30</Num>, <Num>31</Num>, <Num>31</Num>, <Num>30</Num>, <Num>31</Num>, <Num>30</Num>, <Num>31</Num>]</List></Assign>
+
+<Assign><Name>_DAYS_BEFORE_MONTH</Name> = <List>[<Name>None</Name>]</List></Assign>
+<Assign><Name>dbm</Name> = <Num>0</Num></Assign>
+<For>for <Name>dim</Name> in <Subscript><Name>_DAYS_IN_MONTH</Name>[<Slice><Num>1</Num>:</Slice>]</Subscript>:
+    <Expr><Call><Attribute><Name>_DAYS_BEFORE_MONTH</Name>.append</Attribute>(<Name>dbm</Name>)</Call></Expr>
+    <AugAssign><Name>dbm</Name> += <Name>dim</Name></AugAssign>
+</For><Delete>del <Name>dbm</Name>, <Name>dim</Name></Delete>
+
+<FunctionDef>def _is_leap(<Name>year</Name>):
+    <Expr><Str>"year -&gt; 1 if leap year, else 0."</Str></Expr>
+    <Return>return <BoolOp><Compare><BinOp><Name>year</Name> % <Num>4</Num></BinOp> == <Num>0</Num></Compare> and <BoolOp>(<Compare><BinOp><Name>year</Name> % <Num>100</Num></BinOp> != <Num>0</Num></Compare> or <Compare><BinOp><Name>year</Name> % <Num>400</Num></BinOp> == <Num>0</Num></Compare>)</BoolOp></BoolOp></Return>
+
+</FunctionDef><FunctionDef>def _days_in_year(<Name>year</Name>):
+    <Expr><Str>"year -&gt; number of days in year (366 if a leap year, else 365)."</Str></Expr>
+    <Return>return <BinOp><Num>365</Num> + <Call><Name>_is_leap</Name>(<Name>year</Name>)</Call></BinOp></Return>
+
+</FunctionDef><FunctionDef>def _days_before_year(<Name>year</Name>):
+    <Expr><Str>"year -&gt; number of days before January 1st of year."</Str></Expr>
+    <Assign><Name>y</Name> = <BinOp><Name>year</Name> - <Num>1</Num></BinOp></Assign>
+    <Return>return <BinOp><BinOp><BinOp><BinOp><Name>y</Name></BinOp></BinOp></BinOp>*<Num>365</Num> + <BinOp><Name>y</Name></BinOp>//<Num>4</Num> - <BinOp><Name>y</Name></BinOp>//<Num>100</Num> + <BinOp><Name>y</Name></BinOp>//<Num>400</Num></BinOp></Return>
+
+</FunctionDef><FunctionDef>def _days_in_month(<Name>year</Name>, <Name>month</Name>):
+    <Expr><Str>"year, month -&gt; number of days in that month in that year."</Str></Expr>
+    <Assert>assert <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare>, <Name>month</Name></Assert>
+    <If>if <BoolOp><Compare><Name>month</Name> == <Num>2</Num></Compare> and <Call><Name>_is_leap</Name>(<Name>year</Name>)</Call></BoolOp>:
+        <Return>return <Num>29</Num></Return>
+   </If> <Return>return <Subscript><Name>_DAYS_IN_MONTH</Name>[<Index><Name>month</Name></Index>]</Subscript></Return>
+
+</FunctionDef><FunctionDef>def _days_before_month(<Name>year</Name>, <Name>month</Name>):
+    <Expr><Str>"year, month -&gt; number of days in year preceeding first day of month."</Str></Expr>
+    <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'month must be in 1..12'</Str>, <Name>month</Name>)</Call></Raise>
+   </If> <Return>return <BinOp><Subscript><Name>_DAYS_BEFORE_MONTH</Name>[<Index><Name>month</Name></Index>]</Subscript> + <BoolOp>(<Compare><Name>month</Name> &gt; <Num>2</Num></Compare> and <Call><Name>_is_leap</Name>(<Name>year</Name>)</Call>)</BoolOp></BinOp></Return>
+
+</FunctionDef><FunctionDef>def _ymd2ord(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>):
+    <Expr><Str>"year, month, day -&gt; ordinal, considering 01-Jan-0001 as day 1."</Str></Expr>
+    <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'month must be in 1..12'</Str>, <Name>month</Name>)</Call></Raise>
+   </If> <Assign><Name>dim</Name> = <Call><Name>_days_in_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call></Assign>
+    <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>day</Name> &lt;= <Name>dim</Name></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>'day must be in 1..%d'</Str> % <Name>dim</Name></BinOp>, <Name>day</Name>)</Call></Raise>
+   </If> <Return>return <BinOp>(<BinOp><Call><Name>_days_before_year</Name>(<Name>year</Name>)</Call></BinOp> +
+            <Call><Name>_days_before_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call> +
+            <Name>day</Name>)</BinOp></Return>
+
+</FunctionDef><Assign><Name>_DI400Y</Name> = <Call><Name>_days_before_year</Name>(<Num>401</Num>)</Call></Assign>    # number of days in 400 years
+<Assign><Name>_DI100Y</Name> = <Call><Name>_days_before_year</Name>(<Num>101</Num>)</Call></Assign>    #    "    "   "   " 100   "
+<Assign><Name>_DI4Y</Name>   = <Call><Name>_days_before_year</Name>(<Num>5</Num>)</Call></Assign>      #    "    "   "   "   4   "
+
+# A 4-year cycle has an extra leap day over what we'd get from pasting
+# together 4 single years.
+<Assert>assert <Compare><Name>_DI4Y</Name> == <BinOp><BinOp><Num>4</Num></BinOp> * <Num>365</Num> + <Num>1</Num></BinOp></Compare></Assert>
+
+# Similarly, a 400-year cycle has an extra leap day over what we'd get from
+# pasting together 4 100-year cycles.
+<Assert>assert <Compare><Name>_DI400Y</Name> == <BinOp><BinOp><Num>4</Num></BinOp> * <Name>_DI100Y</Name> + <Num>1</Num></BinOp></Compare></Assert>
+
+# OTOH, a 100-year cycle has one fewer leap day than we'd get from
+# pasting together 25 4-year cycles.
+<Assert>assert <Compare><Name>_DI100Y</Name> == <BinOp><BinOp><Num>25</Num></BinOp> * <Name>_DI4Y</Name> - <Num>1</Num></BinOp></Compare></Assert>
+
+<FunctionDef>def _ord2ymd(<Name>n</Name>):
+    <Expr><Str>"ordinal -&gt; (year, month, day), considering 01-Jan-0001 as day 1."</Str></Expr>
+
+    # n is a 1-based index, starting at 1-Jan-1.  The pattern of leap years
+    # repeats exactly every 400 years.  The basic strategy is to find the
+    # closest 400-year boundary at or before n, then work with the offset
+    # from that boundary to n.  Life is much clearer if we subtract 1 from
+    # n first -- then the values of n at 400-year boundaries are exactly
+    # those divisible by _DI400Y:
+    #
+    #     D  M   Y            n              n-1
+    #     -- --- ----        ----------     ----------------
+    #     31 Dec -400        -_DI400Y       -_DI400Y -1
+    #      1 Jan -399         -_DI400Y +1   -_DI400Y      400-year boundary
+    #     ...
+    #     30 Dec  000        -1             -2
+    #     31 Dec  000         0             -1
+    #      1 Jan  001         1              0            400-year boundary
+    #      2 Jan  001         2              1
+    #      3 Jan  001         3              2
+    #     ...
+    #     31 Dec  400         _DI400Y        _DI400Y -1
+    #      1 Jan  401         _DI400Y +1     _DI400Y      400-year boundary
+    <AugAssign><Name>n</Name> -= <Num>1</Num></AugAssign>
+    <Assign><Tuple><Name>n400</Name>, <Name>n</Name></Tuple> = <Call><Name>divmod</Name>(<Name>n</Name>, <Name>_DI400Y</Name>)</Call></Assign>
+    <Assign><Name>year</Name> = <BinOp><BinOp><Name>n400</Name></BinOp> * <Num>400</Num> + <Num>1</Num></BinOp></Assign>   # ..., -399, 1, 401, ...
+
+    # Now n is the (non-negative) offset, in days, from January 1 of year, to
+    # the desired date.  Now compute how many 100-year cycles precede n.
+    # Note that it's possible for n100 to equal 4!  In that case 4 full
+    # 100-year cycles precede the desired day, which implies the desired
+    # day is December 31 at the end of a 400-year cycle.
+    <Assign><Tuple><Name>n100</Name>, <Name>n</Name></Tuple> = <Call><Name>divmod</Name>(<Name>n</Name>, <Name>_DI100Y</Name>)</Call></Assign>
+
+    # Now compute how many 4-year cycles precede it.
+    <Assign><Tuple><Name>n4</Name>, <Name>n</Name></Tuple> = <Call><Name>divmod</Name>(<Name>n</Name>, <Name>_DI4Y</Name>)</Call></Assign>
+
+    # And now how many single years.  Again n1 can be 4, and again meaning
+    # that the desired day is December 31 at the end of the 4-year cycle.
+    <Assign><Tuple><Name>n1</Name>, <Name>n</Name></Tuple> = <Call><Name>divmod</Name>(<Name>n</Name>, <Num>365</Num>)</Call></Assign>
+
+    <AugAssign><Name>year</Name> += <BinOp><BinOp><BinOp><Name>n100</Name></BinOp></BinOp> * <Num>100</Num> + <BinOp><Name>n4</Name></BinOp> * <Num>4</Num> + <Name>n1</Name></BinOp></AugAssign>
+    <If>if <BoolOp><Compare><Name>n1</Name> == <Num>4</Num></Compare> or <Compare><Name>n100</Name> == <Num>4</Num></Compare></BoolOp>:
+        <Assert>assert <Compare><Name>n</Name> == <Num>0</Num></Compare></Assert>
+        <Return>return <Tuple><BinOp><Name>year</Name>-<Num>1</Num></BinOp>, <Num>12</Num>, <Num>31</Num></Tuple></Return>
+
+    # Now the year is correct, and n is the offset from January 1.  We find
+    # the month via an estimate that's either exact or one too large.
+   </If> <Assign><Name>leapyear</Name> = <BoolOp><Compare><Name>n1</Name> == <Num>3</Num></Compare> and <BoolOp>(<Compare><Name>n4</Name> != <Num>24</Num></Compare> or <Compare><Name>n100</Name> == <Num>3</Num></Compare>)</BoolOp></BoolOp></Assign>
+    <Assert>assert <Compare><Name>leapyear</Name> == <Call><Name>_is_leap</Name>(<Name>year</Name>)</Call></Compare></Assert>
+    <Assign><Name>month</Name> = <BinOp><BinOp>(<Name>n</Name> + <Num>50</Num>)</BinOp> &gt;&gt; <Num>5</Num></BinOp></Assign>
+    <Assign><Name>preceding</Name> = <BinOp><Subscript><Name>_DAYS_BEFORE_MONTH</Name>[<Index><Name>month</Name></Index>]</Subscript> + <BoolOp>(<Compare><Name>month</Name> &gt; <Num>2</Num></Compare> and <Name>leapyear</Name>)</BoolOp></BinOp></Assign>
+    <If>if <Compare><Name>preceding</Name> &gt; <Name>n</Name></Compare>:  # estimate is too large
+        <AugAssign><Name>month</Name> -= <Num>1</Num></AugAssign>
+        <AugAssign><Name>preceding</Name> -= <BinOp><Subscript><Name>_DAYS_IN_MONTH</Name>[<Index><Name>month</Name></Index>]</Subscript> + <BoolOp>(<Compare><Name>month</Name> == <Num>2</Num></Compare> and <Name>leapyear</Name>)</BoolOp></BinOp></AugAssign>
+   </If> <AugAssign><Name>n</Name> -= <Name>preceding</Name></AugAssign>
+    <Assert>assert <Compare><Num>0</Num> &lt;= <Name>n</Name> &lt; <Call><Name>_days_in_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call></Compare></Assert>
+
+    # Now the year and month are correct, and n is the offset from the
+    # start of that month:  we're done!
+    <Return>return <Tuple><Name>year</Name>, <Name>month</Name>, <BinOp><Name>n</Name>+<Num>1</Num></BinOp></Tuple></Return>
+
+# Month and day names.  For localized versions, see the calendar module.
+</FunctionDef><Assign><Name>_MONTHNAMES</Name> = <List>[<Name>None</Name>, <Str>"Jan"</Str>, <Str>"Feb"</Str>, <Str>"Mar"</Str>, <Str>"Apr"</Str>, <Str>"May"</Str>, <Str>"Jun"</Str>,
+                     <Str>"Jul"</Str>, <Str>"Aug"</Str>, <Str>"Sep"</Str>, <Str>"Oct"</Str>, <Str>"Nov"</Str>, <Str>"Dec"</Str>]</List></Assign>
+<Assign><Name>_DAYNAMES</Name> = <List>[<Name>None</Name>, <Str>"Mon"</Str>, <Str>"Tue"</Str>, <Str>"Wed"</Str>, <Str>"Thu"</Str>, <Str>"Fri"</Str>, <Str>"Sat"</Str>, <Str>"Sun"</Str>]</List></Assign>
+
+
+<FunctionDef>def _build_struct_time(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>dstflag</Name>):
+    <Assign><Name>wday</Name> = <BinOp><BinOp>(<Call><Name>_ymd2ord</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>)</Call> + <Num>6</Num>)</BinOp> % <Num>7</Num></BinOp></Assign>
+    <Assign><Name>dnum</Name> = <BinOp><Call><Name>_days_before_month</Name>(<Name>y</Name>, <Name>m</Name>)</Call> + <Name>d</Name></BinOp></Assign>
+    <Return>return <Call><Attribute><Name>_time</Name>.struct_time</Attribute>(<Tuple>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>wday</Name>, <Name>dnum</Name>, <Name>dstflag</Name>)</Tuple>)</Call></Return>
+
+</FunctionDef><FunctionDef>def _format_time(<Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>us</Name>):
+    # Skip trailing microseconds when us==0.
+    <Assign><Name>result</Name> = <BinOp><Str>"%02d:%02d:%02d"</Str> % <Tuple>(<Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>)</Tuple></BinOp></Assign>
+    <If>if <Name>us</Name>:
+        <AugAssign><Name>result</Name> += <BinOp><Str>".%06d"</Str> % <Name>us</Name></BinOp></AugAssign>
+   </If> <Return>return <Name>result</Name></Return>
+
+# Correctly substitute for %z and %Z escapes in strftime formats.
+</FunctionDef><FunctionDef>def _wrap_strftime(<Name>object</Name>, <Name>format</Name>, <Name>timetuple</Name>):
+    <Assign><Name>year</Name> = <Subscript><Name>timetuple</Name>[<Index><Num>0</Num></Index>]</Subscript></Assign>
+    <If>if <Compare><Name>year</Name> &lt; <Num>1900</Num></Compare>:
+        <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>"year=%d is before 1900; the datetime strftime() "
+                         "methods require year &gt;= 1900"</Str> % <Name>year</Name></BinOp>)</Call></Raise>
+    # Don't call _utcoffset() or tzname() unless actually needed.
+   </If> <Assign><Name>zreplace</Name> = <Name>None</Name></Assign> # the string to use for %z
+    <Assign><Name>Zreplace</Name> = <Name>None</Name></Assign> # the string to use for %Z
+
+    # Scan format for %z and %Z escapes, replacing as needed.
+    <Assign><Name>newformat</Name> = <List>[]</List></Assign>
+    <Assign><Name>push</Name> = <Attribute><Name>newformat</Name>.append</Attribute></Assign>
+    <Assign><Tuple><Name>i</Name>, <Name>n</Name></Tuple> = <Tuple><Num>0</Num>, <Call><Name>len</Name>(<Name>format</Name>)</Call></Tuple></Assign>
+    <While>while <Compare><Name>i</Name> &lt; <Name>n</Name></Compare>:
+        <Assign><Name>ch</Name> = <Subscript><Name>format</Name>[<Index><Name>i</Name></Index>]</Subscript></Assign>
+        <AugAssign><Name>i</Name> += <Num>1</Num></AugAssign>
+        <If>if <Compare><Name>ch</Name> == <Str>'%'</Str></Compare>:
+            <If>if <Compare><Name>i</Name> &lt; <Name>n</Name></Compare>:
+                <Assign><Name>ch</Name> = <Subscript><Name>format</Name>[<Index><Name>i</Name></Index>]</Subscript></Assign>
+                <AugAssign><Name>i</Name> += <Num>1</Num></AugAssign>
+                <If>if <Compare><Name>ch</Name> == <Str>'z'</Str></Compare>:
+                    <If>if <Compare><Name>zreplace</Name> is <Name>None</Name></Compare>:
+                        <Assign><Name>zreplace</Name> = <Str>""</Str></Assign>
+                        <If>if <Call><Name>hasattr</Name>(<Name>object</Name>, <Str>"_utcoffset"</Str>)</Call>:
+                            <Assign><Name>offset</Name> = <Call><Attribute><Name>object</Name>._utcoffset</Attribute>()</Call></Assign>
+                            <If>if <Compare><Name>offset</Name> is not <Name>None</Name></Compare>:
+                                <Assign><Name>sign</Name> = <Str>'+'</Str></Assign>
+                                <If>if <Compare><Name>offset</Name> &lt; <Num>0</Num></Compare>:
+                                    <Assign><Name>offset</Name> = <UnaryOp>-<Name>offset</Name></UnaryOp></Assign>
+                                    <Assign><Name>sign</Name> = <Str>'-'</Str></Assign>
+                               </If> <Assign><Tuple><Name>h</Name>, <Name>m</Name></Tuple> = <Call><Name>divmod</Name>(<Name>offset</Name>, <Num>60</Num>)</Call></Assign>
+                                <Assign><Name>zreplace</Name> = <BinOp><Str>'%c%02d%02d'</Str> % <Tuple>(<Name>sign</Name>, <Name>h</Name>, <Name>m</Name>)</Tuple></BinOp></Assign>
+                   </If></If></If> <Assert>assert <Compare><Str>'%'</Str> not in <Name>zreplace</Name></Compare></Assert>
+                    <Expr><Call><Attribute><Name>newformat</Name>.append</Attribute>(<Name>zreplace</Name>)</Call></Expr>
+                <If>elif <Compare><Name>ch</Name> == <Str>'Z'</Str></Compare>:
+                    <If>if <Compare><Name>Zreplace</Name> is <Name>None</Name></Compare>:
+                        <Assign><Name>Zreplace</Name> = <Str>""</Str></Assign>
+                        <If>if <Call><Name>hasattr</Name>(<Name>object</Name>, <Str>"tzname"</Str>)</Call>:
+                            <Assign><Name>s</Name> = <Call><Attribute><Name>object</Name>.tzname</Attribute>()</Call></Assign>
+                            <If>if <Compare><Name>s</Name> is not <Name>None</Name></Compare>:
+                                # strftime is going to have at this: escape %
+                                <Assign><Name>Zreplace</Name> = <Call><Attribute><Name>s</Name>.replace</Attribute>(<Str>'%'</Str>, <Str>'%%'</Str>)</Call></Assign>
+                   </If></If></If> <Expr><Call><Attribute><Name>newformat</Name>.append</Attribute>(<Name>Zreplace</Name>)</Call></Expr>
+                else:
+                    <Expr><Call><Name>push</Name>(<Str>'%'</Str>)</Call></Expr>
+                    <Expr><Call><Name>push</Name>(<Name>ch</Name>)</Call></Expr>
+           </If></If> else:
+                <Expr><Call><Name>push</Name>(<Str>'%'</Str>)</Call></Expr>
+       </If> else:
+            <Expr><Call><Name>push</Name>(<Name>ch</Name>)</Call></Expr>
+   </If></While> <Assign><Name>newformat</Name> = <Call><Attribute><Str>""</Str>.join</Attribute>(<Name>newformat</Name>)</Call></Assign>
+    <Return>return <Call><Attribute><Name>_time</Name>.strftime</Attribute>(<Name>newformat</Name>, <Name>timetuple</Name>)</Call></Return>
+
+</FunctionDef><FunctionDef>def _call_tzinfo_method(<Name>tzinfo</Name>, <Name>methname</Name>, <Name>tzinfoarg</Name>):
+    <If>if <Compare><Name>tzinfo</Name> is <Name>None</Name></Compare>:
+        <Return>return <Name>None</Name></Return>
+   </If> <Return>return <Call><Name>getattr</Name><Call>(<Name>tzinfo</Name>, <Name>methname</Name>)</Call>(<Name>tzinfoarg</Name>)</Call></Return>
+
+# Just raise TypeError if the arg isn't None or a string.
+</FunctionDef><FunctionDef>def _check_tzname(<Name>name</Name>):
+    <If>if <BoolOp><Compare><Name>name</Name> is not <Name>None</Name></Compare> and <UnaryOp>not <Call><Name>isinstance</Name>(<Name>name</Name>, <Name>str</Name>)</Call></UnaryOp></BoolOp>:
+        <Raise>raise <Call><Name>TypeError</Name>(<BinOp><Str>"tzinfo.tzname() must return None or string, "
+                        "not '%s'"</Str> % <Call><Name>type</Name>(<Name>name</Name>)</Call></BinOp>)</Call></Raise>
+
+# name is the offset-producing method, "utcoffset" or "dst".
+# offset is what it returned.
+# If offset isn't None or timedelta, raises TypeError.
+# If offset is None, returns None.
+# Else offset is checked for being in range, and a whole # of minutes.
+# If it is, its integer value is returned.  Else ValueError is raised.
+</If></FunctionDef><FunctionDef>def _check_utc_offset(<Name>name</Name>, <Name>offset</Name>):
+    <Assert>assert <Compare><Name>name</Name> in <Tuple>(<Str>"utcoffset"</Str>, <Str>"dst"</Str>)</Tuple></Compare></Assert>
+    <If>if <Compare><Name>offset</Name> is <Name>None</Name></Compare>:
+        <Return>return <Name>None</Name></Return>
+   </If> <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>offset</Name>, <Name>timedelta</Name>)</Call></UnaryOp>:
+        <Raise>raise <Call><Name>TypeError</Name>(<BinOp><Str>"tzinfo.%s() must return None "
+                        "or timedelta, not '%s'"</Str> % <Tuple>(<Name>name</Name>, <Call><Name>type</Name>(<Name>offset</Name>)</Call>)</Tuple></BinOp>)</Call></Raise>
+   </If> <Assign><Name>days</Name> = <Attribute><Name>offset</Name>.days</Attribute></Assign>
+    <If>if <BoolOp><Compare><Name>days</Name> &lt; <Num>-1</Num></Compare> or <Compare><Name>days</Name> &gt; <Num>0</Num></Compare></BoolOp>:
+        <Assign><Name>offset</Name> = <Num>1440</Num></Assign>  # trigger out-of-range
+    else:
+        <Assign><Name>seconds</Name> = <BinOp><BinOp><Name>days</Name></BinOp> * <Num>86400</Num> + <Attribute><Name>offset</Name>.seconds</Attribute></BinOp></Assign>
+        <Assign><Tuple><Name>minutes</Name>, <Name>seconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>seconds</Name>, <Num>60</Num>)</Call></Assign>
+        <If>if <BoolOp><Name>seconds</Name> or <Attribute><Name>offset</Name>.microseconds</Attribute></BoolOp>:
+            <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>"tzinfo.%s() must return a whole number "
+                             "of minutes"</Str> % <Name>name</Name></BinOp>)</Call></Raise>
+       </If> <Assign><Name>offset</Name> = <Name>minutes</Name></Assign>
+   </If> <If>if <Compare><Num>-1440</Num> &lt; <Name>offset</Name> &lt; <Num>1440</Num></Compare>:
+        <Return>return <Name>offset</Name></Return>
+   </If> <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>"%s()=%d, must be in -1439..1439"</Str> % <Tuple>(<Name>name</Name>, <Name>offset</Name>)</Tuple></BinOp>)</Call></Raise>
+
+</FunctionDef><FunctionDef>def _check_date_fields(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>):
+    <If>if <UnaryOp>not <Compare><Name>MINYEAR</Name> &lt;= <Name>year</Name> &lt;= <Name>MAXYEAR</Name></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>'year must be in %d..%d'</Str> % <Tuple>(<Name>MINYEAR</Name>, <Name>MAXYEAR</Name>)</Tuple></BinOp>, <Name>year</Name>)</Call></Raise>
+   </If> <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'month must be in 1..12'</Str>, <Name>month</Name>)</Call></Raise>
+   </If> <Assign><Name>dim</Name> = <Call><Name>_days_in_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call></Assign>
+    <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>day</Name> &lt;= <Name>dim</Name></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<BinOp><Str>'day must be in 1..%d'</Str> % <Name>dim</Name></BinOp>, <Name>day</Name>)</Call></Raise>
+
+</If></FunctionDef><FunctionDef>def _check_time_fields(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>):
+    <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>hour</Name> &lt;= <Num>23</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'hour must be in 0..23'</Str>, <Name>hour</Name>)</Call></Raise>
+   </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>minute</Name> &lt;= <Num>59</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'minute must be in 0..59'</Str>, <Name>minute</Name>)</Call></Raise>
+   </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>second</Name> &lt;= <Num>59</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'second must be in 0..59'</Str>, <Name>second</Name>)</Call></Raise>
+   </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>microsecond</Name> &lt;= <Num>999999</Num></Compare></UnaryOp>:
+        <Raise>raise <Call><Name>ValueError</Name>(<Str>'microsecond must be in 0..999999'</Str>, <Name>microsecond</Name>)</Call></Raise>
+
+</If></FunctionDef><FunctionDef>def _check_tzinfo_arg(<Name>tz</Name>):
+    <If>if <BoolOp><Compare><Name>tz</Name> is not <Name>None</Name></Compare> and <UnaryOp>not <Call><Name>isinstance</Name>(<Name>tz</Name>, <Name>tzinfo</Name>)</Call></UnaryOp></BoolOp>:
+        <Raise>raise <Call><Name>TypeError</Name>(<Str>"tzinfo argument must be None or of a tzinfo subclass"</Str>)</Call></Raise>
+
+
+# Notes on comparison:  In general, datetime module comparison operators raise
+# TypeError when they don't know how to do a comparison themself.  If they
+# returned NotImplemented instead, comparison could (silently) fall back to
+# the default compare-objects-by-comparing-their-memory-addresses strategy,
+# and that's not helpful.  There are two exceptions:
+#
+# 1. For date and datetime, if the other object has a "timetuple" attr,
+#    NotImplemented is returned.  This is a hook to allow other kinds of
+#    datetime-like objects a chance to intercept the comparison.
+#
+# 2. Else __eq__ and __ne__ return False and True, respectively.  This is
+#    so opertaions like
+#
+#        x == y
+#        x != y
+#        x in sequence
+#        x not in sequence
+#        dict[x] = y
+#
+#    don't raise annoying TypeErrors just because a datetime object
+#    is part of a heterogeneous collection.  If there's no known way to
+#    compare X to a datetime, saying they're not equal is reasonable.
+
+</If></FunctionDef><FunctionDef>def _cmperror(<Name>x</Name>, <Name>y</Name>):
+    <Raise>raise <Call><Name>TypeError</Name>(<BinOp><Str>"can't compare '%s' to '%s'"</Str> % <Tuple>(
+                    <Attribute><Name>type</Name><Call>(<Name>x</Name>)</Call>.__name__</Attribute>, <Attribute><Name>type</Name><Call>(<Name>y</Name>)</Call>.__name__</Attribute>)</Tuple></BinOp>)</Call></Raise>
+
+# This is a start at a struct tm workalike.  Goals:
+#
+# + Works the same way across platforms.
+# + Handles all the fields datetime needs handled, without 1970-2038 glitches.
+#
+# Note:  I suspect it's best if this flavor of tm does *not* try to
+# second-guess timezones or DST.  Instead fold whatever adjustments you want
+# into the minutes argument (and the constructor will normalize).
+
+</FunctionDef><Assign><Name>_ORD1970</Name> = <Call><Name>_ymd2ord</Name>(<Num>1970</Num>, <Num>1</Num>, <Num>1</Num>)</Call></Assign> # base ordinal for UNIX epoch
+
+<ClassDef>class tmxxx:
+
+    <Assign><Name>ordinal</Name> = <Name>None</Name></Assign>
+
+    <FunctionDef>def __init__(<Name>self</Name>, <Name>year</Name>, <Name>month</Name>, <Name>day</Name>, <Name>hour</Name>=<Num>0</Num>, <Name>minute</Name>=<Num>0</Num>, <Name>second</Name>=<Num>0</Num>,
+                 <Name>microsecond</Name>=<Num>0</Num>):
+        # Normalize all the inputs, and store the normalized values.
+        <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>microsecond</Name> &lt;= <Num>999999</Num></Compare></UnaryOp>:
+            <Assign><Tuple><Name>carry</Name>, <Name>microsecond</Name></Tuple> = <Call><Name>divmod</Name>(<Name>microsecond</Name>, <Num>1000000</Num>)</Call></Assign>
+            <AugAssign><Name>second</Name> += <Name>carry</Name></AugAssign>
+       </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>second</Name> &lt;= <Num>59</Num></Compare></UnaryOp>:
+            <Assign><Tuple><Name>carry</Name>, <Name>second</Name></Tuple> = <Call><Name>divmod</Name>(<Name>second</Name>, <Num>60</Num>)</Call></Assign>
+            <AugAssign><Name>minute</Name> += <Name>carry</Name></AugAssign>
+       </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>minute</Name> &lt;= <Num>59</Num></Compare></UnaryOp>:
+            <Assign><Tuple><Name>carry</Name>, <Name>minute</Name></Tuple> = <Call><Name>divmod</Name>(<Name>minute</Name>, <Num>60</Num>)</Call></Assign>
+            <AugAssign><Name>hour</Name> += <Name>carry</Name></AugAssign>
+       </If> <If>if <UnaryOp>not <Compare><Num>0</Num> &lt;= <Name>hour</Name> &lt;= <Num>23</Num></Compare></UnaryOp>:
+            <Assign><Tuple><Name>carry</Name>, <Name>hour</Name></Tuple> = <Call><Name>divmod</Name>(<Name>hour</Name>, <Num>24</Num>)</Call></Assign>
+            <AugAssign><Name>day</Name> += <Name>carry</Name></AugAssign>
+
+        # That was easy.  Now it gets muddy:  the proper range for day
+        # can't be determined without knowing the correct month and year,
+        # but if day is, e.g., plus or minus a million, the current month
+        # and year values make no sense (and may also be out of bounds
+        # themselves).
+        # Saying 12 months == 1 year should be non-controversial.
+       </If> <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare></UnaryOp>:
+            <Assign><Tuple><Name>carry</Name>, <Name>month</Name></Tuple> = <Call><Name>divmod</Name>(<BinOp><Name>month</Name>-<Num>1</Num></BinOp>, <Num>12</Num>)</Call></Assign>
+            <AugAssign><Name>year</Name> += <Name>carry</Name></AugAssign>
+            <AugAssign><Name>month</Name> += <Num>1</Num></AugAssign>
+            <Assert>assert <Compare><Num>1</Num> &lt;= <Name>month</Name> &lt;= <Num>12</Num></Compare></Assert>
+
+        # Now only day can be out of bounds (year may also be out of bounds
+        # for a datetime object, but we don't care about that here).
+        # If day is out of bounds, what to do is arguable, but at least the
+        # method here is principled and explainable.
+       </If> <Assign><Name>dim</Name> = <Call><Name>_days_in_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call></Assign>
+        <If>if <UnaryOp>not <Compare><Num>1</Num> &lt;= <Name>day</Name> &lt;= <Name>dim</Name></Compare></UnaryOp>:
+            # Move day-1 days from the first of the month.  First try to
+            # get off cheap if we're only one day out of range (adjustments
+            # for timezone alone can't be worse than that).
+            <If>if <Compare><Name>day</Name> == <Num>0</Num></Compare>:    # move back a day
+                <AugAssign><Name>month</Name> -= <Num>1</Num></AugAssign>
+                <If>if <Compare><Name>month</Name> &gt; <Num>0</Num></Compare>:
+                    <Assign><Name>day</Name> = <Call><Name>_days_in_month</Name>(<Name>year</Name>, <Name>month</Name>)</Call></Assign>
+                else:
+                    <Assign><Tuple><Name>year</Name>, <Name>month</Name>, <Name>day</Name></Tuple> = <Tuple><BinOp><Name>year</Name>-<Num>1</Num></BinOp>, <Num>12</Num>, <Num>31</Num></Tuple></Assign>
+           </If> <If>elif <Compare><Name>day</Name> == <BinOp><Name>dim</Name> + <Num>1</Num></BinOp></Compare>:    # move forward a day
+                <AugAssign><Name>month</Name> += <Num>1</Num></AugAssign>
+                <Assign><Name>day</Name> = <Num>1</Num></Assign>
+                <If>if <Compare><Name>month</Name> &gt; <Num>12</Num></Compare>:
+                    <Assign><Name>month</Name> = <Num>1</Num></Assign>
+                    <AugAssign><Name>year</Name> += <Num>1</Num></AugAssign>
+           </If> else:
+                <Assign><Attribute><Name>self</Name>.ordinal</Attribute> = <BinOp><Call><Name>_ymd2ord</Name>(<Name>year</Name>, <Name>month</Name>, <Num>1</Num>)</Call> + <BinOp>(<Name>day</Name> - <Num>1</Num>)</BinOp></BinOp></Assign>
+                <Assign><Tuple><Name>year</Name>, <Name>month</Name>, <Name>day</Name></Tuple> = <Call><Name>_ord2ymd</Name>(<Attribute><Name>self</Name>.ordinal</Attribute>)</Call></Assign>
+
+       </If></If></If> <Assign><Tuple><Attribute><Name>self</Name>.year</Attribute>, <Attribute><Name>self</Name>.month</Attribute>, <Attribute><Name>self</Name>.day</Attribute></Tuple> = <Tuple><Name>year</Name>, <Name>month</Name>, <Name>day</Name></Tuple></Assign>
+        <Assign><Tuple><Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute></Tuple> = <Tuple><Name>hour</Name>, <Name>minute</Name>, <Name>second</Name></Tuple></Assign>
+        <Assign><Attribute><Name>self</Name>.microsecond</Attribute> = <Name>microsecond</Name></Assign>
+
+   </FunctionDef> <FunctionDef>def toordinal(<Name>self</Name>):
+        <Expr><Str>"""Return proleptic Gregorian ordinal for the year, month and day.
+
+        January 1 of year 1 is day 1.  Only the year, month and day values
+        contribute to the result.
+        """</Str></Expr>
+        <If>if <Compare><Attribute><Name>self</Name>.ordinal</Attribute> is <Name>None</Name></Compare>:
+            <Assign><Attribute><Name>self</Name>.ordinal</Attribute> = <Call><Name>_ymd2ord</Name>(<Attribute><Name>self</Name>.year</Attribute>, <Attribute><Name>self</Name>.month</Attribute>, <Attribute><Name>self</Name>.day</Attribute>)</Call></Assign>
+       </If> <Return>return <Attribute><Name>self</Name>.ordinal</Attribute></Return>
+
+   </FunctionDef> <FunctionDef>def time(<Name>self</Name>):
+        <Expr><Str>"Return Unixish timestamp, as a float (assuming UTC)."</Str></Expr>
+        <Assign><Name>days</Name> = <BinOp><Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call> - <Name>_ORD1970</Name></BinOp></Assign>   # convert to UNIX epoch
+        <Assign><Name>seconds</Name> = <BinOp><BinOp>(<BinOp><BinOp>(<BinOp><Name>days</Name></BinOp> * <Num>24.</Num> + <Attribute><Name>self</Name>.hour</Attribute>)</BinOp></BinOp>*<Num>60.</Num> + <Attribute><Name>self</Name>.minute</Attribute>)</BinOp>*<Num>60.</Num></BinOp></Assign>
+        <Return>return <BinOp><BinOp><Name>seconds</Name></BinOp> + <Attribute><Name>self</Name>.second</Attribute> + <BinOp><Attribute><Name>self</Name>.microsecond</Attribute></BinOp> / <Num>1e6</Num></BinOp></Return>
+
+   </FunctionDef> <FunctionDef>def ctime(<Name>self</Name>):
+        <Expr><Str>"Return ctime() style string."</Str></Expr>
+        <Assign><Name>weekday</Name> = <BoolOp><BinOp><Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call> % <Num>7</Num></BinOp> or <Num>7</Num></BoolOp></Assign>
+        <Return>return <BinOp><Str>"%s %s %2d %02d:%02d:%02d %04d"</Str> % <Tuple>(
+            <Subscript><Name>_DAYNAMES</Name>[<Index><Name>weekday</Name></Index>]</Subscript>,
+            <Subscript><Name>_MONTHNAMES</Name>[<Index><Attribute><Name>self</Name>.month</Attribute></Index>]</Subscript>,
+            <Attribute><Name>self</Name>.day</Attribute>,
+            <Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute>,
+            <Attribute><Name>self</Name>.year</Attribute>)</Tuple></BinOp></Return>
+
+</FunctionDef></ClassDef><ClassDef>class timedelta(<Name>object</Name>):
+    <Expr><Str>"""Represent the difference between two datetime objects.
+
+    Supported operators:
+
+    - add, subtract timedelta
+    - unary plus, minus, abs
+    - compare to timedelta
+    - multiply, divide by int/long
+
+    In addition, datetime supports subtraction of two datetime objects
+    returning a timedelta, and addition or subtraction of a datetime
+    and a timedelta giving a datetime.
+
+    Representation: (days, seconds, microseconds).  Why?  Because I
+    felt like it.
+    """</Str></Expr>
+
+    <FunctionDef>def __new__(<Name>cls</Name>, <Name>days</Name>=<Num>0</Num>, <Name>seconds</Name>=<Num>0</Num>, <Name>microseconds</Name>=<Num>0</Num>,
+                # XXX The following should only be used as keyword args:
+                <Name>milliseconds</Name>=<Num>0</Num>, <Name>minutes</Name>=<Num>0</Num>, <Name>hours</Name>=<Num>0</Num>, <Name>weeks</Name>=<Num>0</Num>):
+        # Doing this efficiently and accurately in C is going to be difficult
+        # and error-prone, due to ubiquitous overflow possibilities, and that
+        # C double doesn't have enough bits of precision to represent
+        # microseconds over 10K years faithfully.  The code here tries to make
+        # explicit where go-fast assumptions can be relied on, in order to
+        # guide the C implementation; it's way more convoluted than speed-
+        # ignoring auto-overflow-to-long idiomatic Python could be.
+
+        # XXX Check that all inputs are ints, longs or floats.
+
+        # Final values, all integer.
+        # s and us fit in 32-bit signed ints; d isn't bounded.
+        <Assign><Name>d</Name> = <Name>s</Name> = <Name>us</Name> = <Num>0</Num></Assign>
+
+        # Normalize everything to days, seconds, microseconds.
+        <AugAssign><Name>days</Name> += <BinOp><Name>weeks</Name>*<Num>7</Num></BinOp></AugAssign>
+        <AugAssign><Name>seconds</Name> += <BinOp><BinOp><Name>minutes</Name></BinOp>*<Num>60</Num> + <BinOp><Name>hours</Name></BinOp>*<Num>3600</Num></BinOp></AugAssign>
+        <AugAssign><Name>microseconds</Name> += <BinOp><Name>milliseconds</Name>*<Num>1000</Num></BinOp></AugAssign>
+
+        # Get rid of all fractions, and normalize s and us.
+        # Take a deep breath &lt;wink&gt;.
+        <If>if <Call><Name>isinstance</Name>(<Name>days</Name>, <Name>float</Name>)</Call>:
+            <Assign><Tuple><Name>dayfrac</Name>, <Name>days</Name></Tuple> = <Call><Attribute><Name>_math</Name>.modf</Attribute>(<Name>days</Name>)</Call></Assign>
+            <Assign><Tuple><Name>daysecondsfrac</Name>, <Name>daysecondswhole</Name></Tuple> = <Call><Attribute><Name>_math</Name>.modf</Attribute>(<BinOp><Name>dayfrac</Name> * <BinOp>(<Num>24.</Num>*<Num>3600.</Num>)</BinOp></BinOp>)</Call></Assign>
+            <Assert>assert <Compare><Name>daysecondswhole</Name> == <Call><Name>int</Name>(<Name>daysecondswhole</Name>)</Call></Compare></Assert>  # can't overflow
+            <Assign><Name>s</Name> = <Call><Name>int</Name>(<Name>daysecondswhole</Name>)</Call></Assign>
+            <Assert>assert <Compare><Name>days</Name> == <Call><Name>long</Name>(<Name>days</Name>)</Call></Compare></Assert>
+            <Assign><Name>d</Name> = <Call><Name>long</Name>(<Name>days</Name>)</Call></Assign>
+        else:
+            <Assign><Name>daysecondsfrac</Name> = <Num>0.0</Num></Assign>
+            <Assign><Name>d</Name> = <Name>days</Name></Assign>
+       </If> <Assert>assert <Call><Name>isinstance</Name>(<Name>daysecondsfrac</Name>, <Name>float</Name>)</Call></Assert>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>daysecondsfrac</Name>)</Call> &lt;= <Num>1.0</Num></Compare></Assert>
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>d</Name>, <Tuple>(<Name>int</Name>, <Name>long</Name>)</Tuple>)</Call></Assert>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>s</Name>)</Call> &lt;= <BinOp><Num>24</Num> * <Num>3600</Num></BinOp></Compare></Assert>
+        # days isn't referenced again before redefinition
+
+        <If>if <Call><Name>isinstance</Name>(<Name>seconds</Name>, <Name>float</Name>)</Call>:
+            <Assign><Tuple><Name>secondsfrac</Name>, <Name>seconds</Name></Tuple> = <Call><Attribute><Name>_math</Name>.modf</Attribute>(<Name>seconds</Name>)</Call></Assign>
+            <Assert>assert <Compare><Name>seconds</Name> == <Call><Name>long</Name>(<Name>seconds</Name>)</Call></Compare></Assert>
+            <Assign><Name>seconds</Name> = <Call><Name>long</Name>(<Name>seconds</Name>)</Call></Assign>
+            <AugAssign><Name>secondsfrac</Name> += <Name>daysecondsfrac</Name></AugAssign>
+            <Assert>assert <Compare><Call><Name>abs</Name>(<Name>secondsfrac</Name>)</Call> &lt;= <Num>2.0</Num></Compare></Assert>
+        else:
+            <Assign><Name>secondsfrac</Name> = <Name>daysecondsfrac</Name></Assign>
+        # daysecondsfrac isn't referenced again
+       </If> <Assert>assert <Call><Name>isinstance</Name>(<Name>secondsfrac</Name>, <Name>float</Name>)</Call></Assert>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>secondsfrac</Name>)</Call> &lt;= <Num>2.0</Num></Compare></Assert>
+
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>seconds</Name>, <Tuple>(<Name>int</Name>, <Name>long</Name>)</Tuple>)</Call></Assert>
+        <Assign><Tuple><Name>days</Name>, <Name>seconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>seconds</Name>, <BinOp><Num>24</Num>*<Num>3600</Num></BinOp>)</Call></Assign>
+        <AugAssign><Name>d</Name> += <Name>days</Name></AugAssign>
+        <AugAssign><Name>s</Name> += <Call><Name>int</Name>(<Name>seconds</Name>)</Call></AugAssign>    # can't overflow
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>s</Name>, <Name>int</Name>)</Call></Assert>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>s</Name>)</Call> &lt;= <BinOp><BinOp><Num>2</Num></BinOp> * <Num>24</Num> * <Num>3600</Num></BinOp></Compare></Assert>
+        # seconds isn't referenced again before redefinition
+
+        <Assign><Name>usdouble</Name> = <BinOp><Name>secondsfrac</Name> * <Num>1e6</Num></BinOp></Assign>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>usdouble</Name>)</Call> &lt; <Num>2.1e6</Num></Compare></Assert>    # exact value not critical
+        # secondsfrac isn't referenced again
+
+        <If>if <Call><Name>isinstance</Name>(<Name>microseconds</Name>, <Name>float</Name>)</Call>:
+            <AugAssign><Name>microseconds</Name> += <Name>usdouble</Name></AugAssign>
+            <Assign><Name>microseconds</Name> = <Call><Name>round</Name>(<Name>microseconds</Name>)</Call></Assign>
+            <Assign><Tuple><Name>seconds</Name>, <Name>microseconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>microseconds</Name>, <Num>1e6</Num>)</Call></Assign>
+            <Assert>assert <Compare><Name>microseconds</Name> == <Call><Name>int</Name>(<Name>microseconds</Name>)</Call></Compare></Assert>
+            <Assert>assert <Compare><Name>seconds</Name> == <Call><Name>long</Name>(<Name>seconds</Name>)</Call></Compare></Assert>
+            <Assign><Tuple><Name>days</Name>, <Name>seconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>seconds</Name>, <BinOp><Num>24.</Num>*<Num>3600.</Num></BinOp>)</Call></Assign>
+            <Assert>assert <Compare><Name>days</Name> == <Call><Name>long</Name>(<Name>days</Name>)</Call></Compare></Assert>
+            <Assert>assert <Compare><Name>seconds</Name> == <Call><Name>int</Name>(<Name>seconds</Name>)</Call></Compare></Assert>
+            <AugAssign><Name>d</Name> += <Call><Name>long</Name>(<Name>days</Name>)</Call></AugAssign>
+            <AugAssign><Name>s</Name> += <Call><Name>int</Name>(<Name>seconds</Name>)</Call></AugAssign>   # can't overflow
+            <Assert>assert <Call><Name>isinstance</Name>(<Name>s</Name>, <Name>int</Name>)</Call></Assert>
+            <Assert>assert <Compare><Call><Name>abs</Name>(<Name>s</Name>)</Call> &lt;= <BinOp><BinOp><Num>3</Num></BinOp> * <Num>24</Num> * <Num>3600</Num></BinOp></Compare></Assert>
+        else:
+            <Assign><Tuple><Name>seconds</Name>, <Name>microseconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>microseconds</Name>, <Num>1000000</Num>)</Call></Assign>
+            <Assign><Tuple><Name>days</Name>, <Name>seconds</Name></Tuple> = <Call><Name>divmod</Name>(<Name>seconds</Name>, <BinOp><Num>24</Num>*<Num>3600</Num></BinOp>)</Call></Assign>
+            <AugAssign><Name>d</Name> += <Name>days</Name></AugAssign>
+            <AugAssign><Name>s</Name> += <Call><Name>int</Name>(<Name>seconds</Name>)</Call></AugAssign>    # can't overflow
+            <Assert>assert <Call><Name>isinstance</Name>(<Name>s</Name>, <Name>int</Name>)</Call></Assert>
+            <Assert>assert <Compare><Call><Name>abs</Name>(<Name>s</Name>)</Call> &lt;= <BinOp><BinOp><Num>3</Num></BinOp> * <Num>24</Num> * <Num>3600</Num></BinOp></Compare></Assert>
+            <Assign><Name>microseconds</Name> = <Call><Name>float</Name>(<Name>microseconds</Name>)</Call></Assign>
+            <AugAssign><Name>microseconds</Name> += <Name>usdouble</Name></AugAssign>
+            <Assign><Name>microseconds</Name> = <Call><Name>round</Name>(<Name>microseconds</Name>)</Call></Assign>
+       </If> <Assert>assert <Compare><Call><Name>abs</Name>(<Name>s</Name>)</Call> &lt;= <BinOp><BinOp><Num>3</Num></BinOp> * <Num>24</Num> * <Num>3600</Num></BinOp></Compare></Assert>
+        <Assert>assert <Compare><Call><Name>abs</Name>(<Name>microseconds</Name>)</Call> &lt; <Num>3.1e6</Num></Compare></Assert>
+
+        # Just a little bit of carrying possible for microseconds and seconds.
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>microseconds</Name>, <Name>float</Name>)</Call></Assert>
+        <Assert>assert <Compare><Call><Name>int</Name>(<Name>microseconds</Name>)</Call> == <Name>microseconds</Name></Compare></Assert>
+        <Assign><Name>us</Name> = <Call><Name>int</Name>(<Name>microseconds</Name>)</Call></Assign>
+        <Assign><Tuple><Name>seconds</Name>, <Name>us</Name></Tuple> = <Call><Name>divmod</Name>(<Name>us</Name>, <Num>1000000</Num>)</Call></Assign>
+        <AugAssign><Name>s</Name> += <Name>seconds</Name></AugAssign>    # cant't overflow
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>s</Name>, <Name>int</Name>)</Call></Assert>
+        <Assign><Tuple><Name>days</Name>, <Name>s</Name></Tuple> = <Call><Name>divmod</Name>(<Name>s</Name>, <BinOp><Num>24</Num>*<Num>3600</Num></BinOp>)</Call></Assign>
+        <AugAssign><Name>d</Name> += <Name>days</Name></AugAssign>
+
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>d</Name>, <Tuple>(<Name>int</Name>, <Name>long</Name>)</Tuple>)</Call></Assert>
+        <Assert>assert <BoolOp><Call><Name>isinstance</Name>(<Name>s</Name>, <Name>int</Name>)</Call> and <Compare><Num>0</Num> &lt;= <Name>s</Name> &lt; <BinOp><Num>24</Num>*<Num>3600</Num></BinOp></Compare></BoolOp></Assert>
+        <Assert>assert <BoolOp><Call><Name>isinstance</Name>(<Name>us</Name>, <Name>int</Name>)</Call> and <Compare><Num>0</Num> &lt;= <Name>us</Name> &lt; <Num>1000000</Num></Compare></BoolOp></Assert>
+
+        <Assign><Name>self</Name> = <Call><Attribute><Name>object</Name>.__new__</Attribute>(<Name>cls</Name>)</Call></Assign>
+
+        <Assign><Attribute><Name>self</Name>.__days</Attribute> = <Name>d</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__seconds</Attribute> = <Name>s</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__microseconds</Attribute> = <Name>us</Name></Assign>
+        <If>if <Compare><Call><Name>abs</Name>(<Name>d</Name>)</Call> &gt; <Num>999999999</Num></Compare>:
+            <Raise>raise <Call><Name>OverflowError</Name>(<BinOp><Str>"timedelta # of days is too large: %d"</Str> % <Name>d</Name></BinOp>)</Call></Raise>
+
+       </If> <Return>return <Name>self</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __repr__(<Name>self</Name>):
+        <If>if <Attribute><Name>self</Name>.__microseconds</Attribute>:
+            <Return>return <BinOp><Str>"%s(%d, %d, %d)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>,
+                                       <Attribute><Name>self</Name>.__days</Attribute>,
+                                       <Attribute><Name>self</Name>.__seconds</Attribute>,
+                                       <Attribute><Name>self</Name>.__microseconds</Attribute>)</Tuple></BinOp></Return>
+       </If> <If>if <Attribute><Name>self</Name>.__seconds</Attribute>:
+            <Return>return <BinOp><Str>"%s(%d, %d)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>,
+                                   <Attribute><Name>self</Name>.__days</Attribute>,
+                                   <Attribute><Name>self</Name>.__seconds</Attribute>)</Tuple></BinOp></Return>
+       </If> <Return>return <BinOp><Str>"%s(%d)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>, <Attribute><Name>self</Name>.__days</Attribute>)</Tuple></BinOp></Return>
+
+   </FunctionDef> <FunctionDef>def __str__(<Name>self</Name>):
+        <Assign><Tuple><Name>mm</Name>, <Name>ss</Name></Tuple> = <Call><Name>divmod</Name>(<Attribute><Name>self</Name>.__seconds</Attribute>, <Num>60</Num>)</Call></Assign>
+        <Assign><Tuple><Name>hh</Name>, <Name>mm</Name></Tuple> = <Call><Name>divmod</Name>(<Name>mm</Name>, <Num>60</Num>)</Call></Assign>
+        <Assign><Name>s</Name> = <BinOp><Str>"%d:%02d:%02d"</Str> % <Tuple>(<Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>)</Tuple></BinOp></Assign>
+        <If>if <Attribute><Name>self</Name>.__days</Attribute>:
+            <FunctionDef>def plural(<Name>n</Name>):
+                <Return>return <Tuple><Name>n</Name>, <BoolOp><BoolOp><Compare><Call><Name>abs</Name>(<Name>n</Name>)</Call> != <Num>1</Num></Compare></BoolOp> and <Str>"s"</Str> or <Str>""</Str></BoolOp></Tuple></Return>
+           </FunctionDef> <Assign><Name>s</Name> = <BinOp><BinOp>(<Str>"%d day%s, "</Str> % <Call><Name>plural</Name>(<Attribute><Name>self</Name>.__days</Attribute>)</Call>)</BinOp> + <Name>s</Name></BinOp></Assign>
+       </If> <If>if <Attribute><Name>self</Name>.__microseconds</Attribute>:
+            <Assign><Name>s</Name> = <BinOp><Name>s</Name> + <BinOp><Str>".%06d"</Str></BinOp> % <Attribute><Name>self</Name>.__microseconds</Attribute></BinOp></Assign>
+       </If> <Return>return <Name>s</Name></Return>
+
+   </FunctionDef> <Assign><Name>days</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__days</Attribute></Lambda>, doc=<Str>"days"</Str>)</Call></Assign>
+    <Assign><Name>seconds</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__seconds</Attribute></Lambda>, doc=<Str>"seconds"</Str>)</Call></Assign>
+    <Assign><Name>microseconds</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__microseconds</Attribute></Lambda>,
+                            doc=<Str>"microseconds"</Str>)</Call></Assign>
+
+    <FunctionDef>def __add__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Call><Name>timedelta</Name>(<BinOp><Attribute><Name>self</Name>.__days</Attribute> + <Attribute><Name>other</Name>.__days</Attribute></BinOp>,
+                             <BinOp><Attribute><Name>self</Name>.__seconds</Attribute> + <Attribute><Name>other</Name>.__seconds</Attribute></BinOp>,
+                             <BinOp><Attribute><Name>self</Name>.__microseconds</Attribute> + <Attribute><Name>other</Name>.__microseconds</Attribute></BinOp>)</Call></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <Assign><Name>__radd__</Name> = <Name>__add__</Name></Assign>
+
+    <FunctionDef>def __sub__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <BinOp><Name>self</Name> + <UnaryOp>-<Name>other</Name></UnaryOp></BinOp></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __rsub__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <BinOp><UnaryOp>-<Name>self</Name></UnaryOp> + <Name>other</Name></BinOp></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __neg__(<Name>self</Name>):
+        <Return>return <Call><Attribute><Name>self</Name>.__class__</Attribute>(<UnaryOp>-<Attribute><Name>self</Name>.__days</Attribute></UnaryOp>,
+                              <UnaryOp>-<Attribute><Name>self</Name>.__seconds</Attribute></UnaryOp>,
+                              <UnaryOp>-<Attribute><Name>self</Name>.__microseconds</Attribute></UnaryOp>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def __pos__(<Name>self</Name>):
+        <Return>return <Name>self</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __abs__(<Name>self</Name>):
+        <If>if <Compare><Attribute><Name>self</Name>.__days</Attribute> &lt; <Num>0</Num></Compare>:
+            <Return>return <UnaryOp>-<Name>self</Name></UnaryOp></Return>
+        else:
+            <Return>return <Name>self</Name></Return>
+
+   </If></FunctionDef> <FunctionDef>def __mul__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Tuple>(<Name>int</Name>, <Name>long</Name>)</Tuple>)</Call>:
+            <Return>return <Call><Attribute><Name>self</Name>.__class__</Attribute>(<BinOp><Attribute><Name>self</Name>.__days</Attribute> * <Name>other</Name></BinOp>,
+                                  <BinOp><Attribute><Name>self</Name>.__seconds</Attribute> * <Name>other</Name></BinOp>,
+                                  <BinOp><Attribute><Name>self</Name>.__microseconds</Attribute> * <Name>other</Name></BinOp>)</Call></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <Assign><Name>__rmul__</Name> = <Name>__mul__</Name></Assign>
+
+    <FunctionDef>def __div__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Tuple>(<Name>int</Name>, <Name>long</Name>)</Tuple>)</Call>:
+            <Assign><Name>usec</Name> = <BinOp>(<BinOp><BinOp>(<BinOp><Attribute><Name>self</Name>.__days</Attribute></BinOp> * <BinOp>(<Num>24</Num>*<Num>3600L</Num>)</BinOp> + <Attribute><Name>self</Name>.__seconds</Attribute>)</BinOp></BinOp> * <Num>1000000</Num> +
+                    <Attribute><Name>self</Name>.__microseconds</Attribute>)</BinOp></Assign>
+            <Return>return <Call><Attribute><Name>self</Name>.__class__</Attribute>(<Num>0</Num>, <Num>0</Num>, <BinOp><Name>usec</Name> // <Name>other</Name></BinOp>)</Call></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <Assign><Name>__floordiv__</Name> = <Name>__div__</Name></Assign>
+
+    # Comparisons.
+
+    <FunctionDef>def __eq__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> == <Num>0</Num></Compare></Return>
+        else:
+            <Return>return <Name>False</Name></Return>
+
+   </If></FunctionDef> <FunctionDef>def __ne__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> != <Num>0</Num></Compare></Return>
+        else:
+            <Return>return <Name>True</Name></Return>
+
+   </If></FunctionDef> <FunctionDef>def __le__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt;= <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __lt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt; <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __ge__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt;= <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __gt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt; <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __cmp(<Name>self</Name>, <Name>other</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call></Assert>
+        <Return>return <Call><Name>cmp</Name>(<Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>, <Call><Attribute><Name>other</Name>.__getstate</Attribute>()</Call>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def __hash__(<Name>self</Name>):
+        <Return>return <Call><Name>hash</Name>(<Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def __nonzero__(<Name>self</Name>):
+        <Return>return <BoolOp>(<Compare><Attribute><Name>self</Name>.__days</Attribute> != <Num>0</Num></Compare> or
+                <Compare><Attribute><Name>self</Name>.__seconds</Attribute> != <Num>0</Num></Compare> or
+                <Compare><Attribute><Name>self</Name>.__microseconds</Attribute> != <Num>0</Num></Compare>)</BoolOp></Return>
+
+    # Pickle support.
+
+   </FunctionDef> <Assign><Name>__safe_for_unpickling__</Name> = <Name>True</Name></Assign>      # For Python 2.2
+
+    <FunctionDef>def __getstate(<Name>self</Name>):
+        <Return>return <Tuple>(<Attribute><Name>self</Name>.__days</Attribute>, <Attribute><Name>self</Name>.__seconds</Attribute>, <Attribute><Name>self</Name>.__microseconds</Attribute>)</Tuple></Return>
+
+   </FunctionDef> <FunctionDef>def __reduce__(<Name>self</Name>):
+        <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Tuple></Return>
+
+</FunctionDef></ClassDef><Assign><Attribute><Name>timedelta</Name>.min</Attribute> = <Call><Name>timedelta</Name>(<Num>-999999999</Num>)</Call></Assign>
+<Assign><Attribute><Name>timedelta</Name>.max</Attribute> = <Call><Name>timedelta</Name>(days=<Num>999999999</Num>, hours=<Num>23</Num>, minutes=<Num>59</Num>, seconds=<Num>59</Num>,
+                          microseconds=<Num>999999</Num>)</Call></Assign>
+<Assign><Attribute><Name>timedelta</Name>.resolution</Attribute> = <Call><Name>timedelta</Name>(microseconds=<Num>1</Num>)</Call></Assign>
+
+<ClassDef>class date(<Name>object</Name>):
+    <Expr><Str>"""Concrete date type.
+
+    Constructors:
+
+    __new__()
+    fromtimestamp()
+    today()
+    fromordinal()
+
+    Operators:
+
+    __repr__, __str__
+    __cmp__, __hash__
+    __add__, __radd__, __sub__ (add/radd only with timedelta arg)
+
+    Methods:
+
+    timetuple()
+    toordinal()
+    weekday()
+    isoweekday(), isocalendar(), isoformat()
+    ctime()
+    strftime()
+
+    Properties (readonly):
+    year, month, day
+    """</Str></Expr>
+
+    <FunctionDef>def __new__(<Name>cls</Name>, <Name>year</Name>, <Name>month</Name>=<Name>None</Name>, <Name>day</Name>=<Name>None</Name>):
+        <Expr><Str>"""Constructor.
+
+        Arguments:
+
+        year, month, day (required, base 1)
+        """</Str></Expr>
+        <If>if <Call><Name>isinstance</Name>(<Name>year</Name>, <Name>str</Name>)</Call>:
+            # Pickle support
+            <Assign><Name>self</Name> = <Call><Attribute><Name>object</Name>.__new__</Attribute>(<Name>cls</Name>)</Call></Assign>
+            <Expr><Call><Attribute><Name>self</Name>.__setstate</Attribute>(<Tuple>(<Name>year</Name>,)</Tuple>)</Call></Expr>
+            <Return>return <Name>self</Name></Return>
+       </If> <Expr><Call><Name>_check_date_fields</Name>(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>)</Call></Expr>
+        <Assign><Name>self</Name> = <Call><Attribute><Name>object</Name>.__new__</Attribute>(<Name>cls</Name>)</Call></Assign>
+        <Assign><Attribute><Name>self</Name>.__year</Attribute> = <Name>year</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__month</Attribute> = <Name>month</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__day</Attribute> = <Name>day</Name></Assign>
+        <Return>return <Name>self</Name></Return>
+
+    # Additional constructors
+
+   </FunctionDef> <FunctionDef>def fromtimestamp(<Name>cls</Name>, <Name>t</Name>):
+        <Expr><Str>"Construct a date from a POSIX timestamp (like time.time())."</Str></Expr>
+        <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>weekday</Name>, <Name>jday</Name>, <Name>dst</Name></Tuple> = <Call><Attribute><Name>_time</Name>.localtime</Attribute>(<Name>t</Name>)</Call></Assign>
+        <Return>return <Call><Name>cls</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>fromtimestamp</Name> = <Call><Name>classmethod</Name>(<Name>fromtimestamp</Name>)</Call></Assign>
+
+    <FunctionDef>def today(<Name>cls</Name>):
+        <Expr><Str>"Construct a date from time.time()."</Str></Expr>
+        <Assign><Name>t</Name> = <Call><Attribute><Name>_time</Name>.time</Attribute>()</Call></Assign>
+        <Return>return <Call><Attribute><Name>cls</Name>.fromtimestamp</Attribute>(<Name>t</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>today</Name> = <Call><Name>classmethod</Name>(<Name>today</Name>)</Call></Assign>
+
+    <FunctionDef>def fromordinal(<Name>cls</Name>, <Name>n</Name>):
+        <Expr><Str>"""Contruct a date from a proleptic Gregorian ordinal.
+
+        January 1 of year 1 is day 1.  Only the year, month and day are
+        non-zero in the result.
+        """</Str></Expr>
+        <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name></Tuple> = <Call><Name>_ord2ymd</Name>(<Name>n</Name>)</Call></Assign>
+        <Return>return <Call><Name>cls</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>fromordinal</Name> = <Call><Name>classmethod</Name>(<Name>fromordinal</Name>)</Call></Assign>
+
+    # Conversions to string
+
+    <FunctionDef>def __repr__(<Name>self</Name>):
+        <Expr><Str>"Convert to formal string, for repr()."</Str></Expr>
+        <Return>return <BinOp><Str>"%s(%d, %d, %d)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>,
+                                   <Attribute><Name>self</Name>.__year</Attribute>,
+                                   <Attribute><Name>self</Name>.__month</Attribute>,
+                                   <Attribute><Name>self</Name>.__day</Attribute>)</Tuple></BinOp></Return>
+    # XXX These shouldn't depend on time.localtime(), because that
+    # clips the usable dates to [1970 .. 2038).  At least ctime() is
+    # easily done without using strftime() -- that's better too because
+    # strftime("%c", ...) is locale specific.
+
+   </FunctionDef> <FunctionDef>def ctime(<Name>self</Name>):
+        <Expr><Str>"Format a la ctime()."</Str></Expr>
+        <Return>return <Call><Name>tmxxx</Name><Attribute><Call>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Call>.ctime</Attribute>()</Call></Return>
+
+   </FunctionDef> <FunctionDef>def strftime(<Name>self</Name>, <Name>fmt</Name>):
+        <Expr><Str>"Format using strftime()."</Str></Expr>
+        <Return>return <Call><Name>_wrap_strftime</Name>(<Name>self</Name>, <Name>fmt</Name>, <Call><Attribute><Name>self</Name>.timetuple</Attribute>()</Call>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def isoformat(<Name>self</Name>):
+        <Expr><Str>"""Return the date formatted according to ISO.
+
+        This is 'YYYY-MM-DD'.
+
+        References:
+        - http://www.w3.org/TR/NOTE-datetime
+        - http://www.cl.cam.ac.uk/~mgk25/iso-time.html
+        """</Str></Expr>
+        <Return>return <BinOp><Str>"%04d-%02d-%02d"</Str> % <Tuple>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Tuple></BinOp></Return>
+
+   </FunctionDef> <Assign><Name>__str__</Name> = <Name>isoformat</Name></Assign>
+
+    # Read-only field accessors
+    <Assign><Name>year</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__year</Attribute></Lambda>,
+                    doc=<BinOp><Str>"year (%d-%d)"</Str> % <Tuple>(<Name>MINYEAR</Name>, <Name>MAXYEAR</Name>)</Tuple></BinOp>)</Call></Assign>
+    <Assign><Name>month</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__month</Attribute></Lambda>, doc=<Str>"month (1-12)"</Str>)</Call></Assign>
+    <Assign><Name>day</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__day</Attribute></Lambda>, doc=<Str>"day (1-31)"</Str>)</Call></Assign>
+
+    # Standard conversions, __cmp__, __hash__ (and helpers)
+
+    <FunctionDef>def timetuple(<Name>self</Name>):
+        <Expr><Str>"Return local time tuple compatible with time.localtime()."</Str></Expr>
+        <Return>return <Call><Name>_build_struct_time</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>,
+                                  <Num>0</Num>, <Num>0</Num>, <Num>0</Num>, <Num>-1</Num>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def toordinal(<Name>self</Name>):
+        <Expr><Str>"""Return proleptic Gregorian ordinal for the year, month and day.
+
+        January 1 of year 1 is day 1.  Only the year, month and day values
+        contribute to the result.
+        """</Str></Expr>
+        <Return>return <Call><Name>_ymd2ord</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def replace(<Name>self</Name>, <Name>year</Name>=<Name>None</Name>, <Name>month</Name>=<Name>None</Name>, <Name>day</Name>=<Name>None</Name>):
+        <Expr><Str>"""Return a new date with new values for the specified fields."""</Str></Expr>
+        <If>if <Compare><Name>year</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>year</Name> = <Attribute><Name>self</Name>.__year</Attribute></Assign>
+       </If> <If>if <Compare><Name>month</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>month</Name> = <Attribute><Name>self</Name>.__month</Attribute></Assign>
+       </If> <If>if <Compare><Name>day</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>day</Name> = <Attribute><Name>self</Name>.__day</Attribute></Assign>
+       </If> <Expr><Call><Name>_check_date_fields</Name>(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>)</Call></Expr>
+        <Return>return <Call><Name>date</Name>(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>)</Call></Return>
+
+    # Comparisons.
+
+   </FunctionDef> <FunctionDef>def __eq__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> == <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Return>return <Name>False</Name></Return>
+
+   </If></If></FunctionDef> <FunctionDef>def __ne__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> != <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Return>return <Name>True</Name></Return>
+
+   </If></If></FunctionDef> <FunctionDef>def __le__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt;= <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __lt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt; <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __ge__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt;= <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __gt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt; <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __cmp(<Name>self</Name>, <Name>other</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call></Assert>
+        <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name></Tuple> = <Tuple><Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute></Tuple></Assign>
+        <Assign><Tuple><Name>y2</Name>, <Name>m2</Name>, <Name>d2</Name></Tuple> = <Tuple><Attribute><Name>other</Name>.__year</Attribute>, <Attribute><Name>other</Name>.__month</Attribute>, <Attribute><Name>other</Name>.__day</Attribute></Tuple></Assign>
+        <Return>return <Call><Name>cmp</Name>(<Tuple>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>)</Tuple>, <Tuple>(<Name>y2</Name>, <Name>m2</Name>, <Name>d2</Name>)</Tuple>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def __hash__(<Name>self</Name>):
+        <Expr><Str>"Hash."</Str></Expr>
+        <Return>return <Call><Name>hash</Name>(<Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Call></Return>
+
+    # Computations
+
+   </FunctionDef> <FunctionDef>def _checkOverflow(<Name>self</Name>, <Name>year</Name>):
+        <If>if <UnaryOp>not <Compare><Name>MINYEAR</Name> &lt;= <Name>year</Name> &lt;= <Name>MAXYEAR</Name></Compare></UnaryOp>:
+            <Raise>raise <Call><Name>OverflowError</Name>(<BinOp><Str>"date +/-: result year %d not in %d..%d"</Str> %
+                                <Tuple>(<Name>year</Name>, <Name>MINYEAR</Name>, <Name>MAXYEAR</Name>)</Tuple></BinOp>)</Call></Raise>
+
+   </If></FunctionDef> <FunctionDef>def __add__(<Name>self</Name>, <Name>other</Name>):
+        <Expr><Str>"Add a date to a timedelta."</Str></Expr>
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Assign><Name>t</Name> = <Call><Name>tmxxx</Name>(<Attribute><Name>self</Name>.__year</Attribute>,
+                      <Attribute><Name>self</Name>.__month</Attribute>,
+                      <BinOp><Attribute><Name>self</Name>.__day</Attribute> + <Attribute><Name>other</Name>.days</Attribute></BinOp>)</Call></Assign>
+            <Expr><Call><Attribute><Name>self</Name>._checkOverflow</Attribute>(<Attribute><Name>t</Name>.year</Attribute>)</Call></Expr>
+            <Assign><Name>result</Name> = <Call><Attribute><Name>self</Name>.__class__</Attribute>(<Attribute><Name>t</Name>.year</Attribute>, <Attribute><Name>t</Name>.month</Attribute>, <Attribute><Name>t</Name>.day</Attribute>)</Call></Assign>
+            <Return>return <Name>result</Name></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <Assign><Name>__radd__</Name> = <Name>__add__</Name></Assign>
+
+    <FunctionDef>def __sub__(<Name>self</Name>, <Name>other</Name>):
+        <Expr><Str>"""Subtract two dates, or a date and a timedelta."""</Str></Expr>
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+            <Return>return <BinOp><Name>self</Name> + <Call><Name>timedelta</Name>(<UnaryOp>-<Attribute><Name>other</Name>.days</Attribute></UnaryOp>)</Call></BinOp></Return>
+       </If> <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>date</Name>)</Call>:
+            <Assign><Name>days1</Name> = <Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call></Assign>
+            <Assign><Name>days2</Name> = <Call><Attribute><Name>other</Name>.toordinal</Attribute>()</Call></Assign>
+            <Return>return <Call><Name>timedelta</Name>(<BinOp><Name>days1</Name> - <Name>days2</Name></BinOp>)</Call></Return>
+       </If> <Return>return <Name>NotImplemented</Name></Return>
+
+   </FunctionDef> <FunctionDef>def weekday(<Name>self</Name>):
+        <Expr><Str>"Return day of the week, where Monday == 0 ... Sunday == 6."</Str></Expr>
+        <Return>return <BinOp><BinOp>(<Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call> + <Num>6</Num>)</BinOp> % <Num>7</Num></BinOp></Return>
+
+    # Day-of-the-week and week-of-the-year, according to ISO
+
+   </FunctionDef> <FunctionDef>def isoweekday(<Name>self</Name>):
+        <Expr><Str>"Return day of the week, where Monday == 1 ... Sunday == 7."</Str></Expr>
+        # 1-Jan-0001 is a Monday
+        <Return>return <BoolOp><BinOp><Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call> % <Num>7</Num></BinOp> or <Num>7</Num></BoolOp></Return>
+
+   </FunctionDef> <FunctionDef>def isocalendar(<Name>self</Name>):
+        <Expr><Str>"""Return a 3-tuple containing ISO year, week number, and weekday.
+
+        The first ISO week of the year is the (Mon-Sun) week
+        containing the year's first Thursday; everything else derives
+        from that.
+
+        The first week is 1; Monday is 1 ... Sunday is 7.
+
+        ISO calendar algorithm taken from
+        http://www.phys.uu.nl/~vgent/calendar/isocalendar.htm
+        """</Str></Expr>
+        <Assign><Name>year</Name> = <Attribute><Name>self</Name>.__year</Attribute></Assign>
+        <Assign><Name>week1monday</Name> = <Call><Name>_isoweek1monday</Name>(<Name>year</Name>)</Call></Assign>
+        <Assign><Name>today</Name> = <Call><Name>_ymd2ord</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Call></Assign>
+        # Internally, week and day have origin 0
+        <Assign><Tuple><Name>week</Name>, <Name>day</Name></Tuple> = <Call><Name>divmod</Name>(<BinOp><Name>today</Name> - <Name>week1monday</Name></BinOp>, <Num>7</Num>)</Call></Assign>
+        <If>if <Compare><Name>week</Name> &lt; <Num>0</Num></Compare>:
+            <AugAssign><Name>year</Name> -= <Num>1</Num></AugAssign>
+            <Assign><Name>week1monday</Name> = <Call><Name>_isoweek1monday</Name>(<Name>year</Name>)</Call></Assign>
+            <Assign><Tuple><Name>week</Name>, <Name>day</Name></Tuple> = <Call><Name>divmod</Name>(<BinOp><Name>today</Name> - <Name>week1monday</Name></BinOp>, <Num>7</Num>)</Call></Assign>
+        <If>elif <Compare><Name>week</Name> &gt;= <Num>52</Num></Compare>:
+            <If>if <Compare><Name>today</Name> &gt;= <Call><Name>_isoweek1monday</Name>(<BinOp><Name>year</Name>+<Num>1</Num></BinOp>)</Call></Compare>:
+                <AugAssign><Name>year</Name> += <Num>1</Num></AugAssign>
+                <Assign><Name>week</Name> = <Num>0</Num></Assign>
+       </If></If></If> <Return>return <Tuple><Name>year</Name>, <BinOp><Name>week</Name>+<Num>1</Num></BinOp>, <BinOp><Name>day</Name>+<Num>1</Num></BinOp></Tuple></Return>
+
+    # Pickle support.
+
+   </FunctionDef> <Assign><Name>__safe_for_unpickling__</Name> = <Name>True</Name></Assign>      # For Python 2.2
+
+    <FunctionDef>def __getstate(<Name>self</Name>):
+        <Assign><Tuple><Name>yhi</Name>, <Name>ylo</Name></Tuple> = <Call><Name>divmod</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Num>256</Num>)</Call></Assign>
+        <Return>return <Tuple>(<BinOp><Str>"%c%c%c%c"</Str> % <Tuple>(<Name>yhi</Name>, <Name>ylo</Name>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Tuple></BinOp>, )</Tuple></Return>
+
+   </FunctionDef> <FunctionDef>def __setstate(<Name>self</Name>, <Name>t</Name>):
+        <Assert>assert <BoolOp><Call><Name>isinstance</Name>(<Name>t</Name>, <Name>tuple</Name>)</Call> and <Compare><Call><Name>len</Name>(<Name>t</Name>)</Call> == <Num>1</Num></Compare></BoolOp>, <Repr>`<Name>t</Name>`</Repr></Assert>
+        <Assign><Name>string</Name> = <Subscript><Name>t</Name>[<Index><Num>0</Num></Index>]</Subscript></Assign>
+        <Assert>assert <Compare><Call><Name>len</Name>(<Name>string</Name>)</Call> == <Num>4</Num></Compare></Assert>
+        <Assign><Tuple><Name>yhi</Name>, <Name>ylo</Name>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute></Tuple> = <Call><Name>map</Name>(<Name>ord</Name>, <Name>string</Name>)</Call></Assign>
+        <Assign><Attribute><Name>self</Name>.__year</Attribute> = <BinOp><BinOp><Name>yhi</Name></BinOp> * <Num>256</Num> + <Name>ylo</Name></BinOp></Assign>
+
+   </FunctionDef> <FunctionDef>def __reduce__(<Name>self</Name>):
+        <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Tuple></Return>
+
+</FunctionDef></ClassDef><Assign><Name>_date_class</Name> = <Name>date</Name></Assign>  # so functions w/ args named "date" can get at the class
+
+<Assign><Attribute><Name>date</Name>.min</Attribute> = <Call><Name>date</Name>(<Num>1</Num>, <Num>1</Num>, <Num>1</Num>)</Call></Assign>
+<Assign><Attribute><Name>date</Name>.max</Attribute> = <Call><Name>date</Name>(<Num>9999</Num>, <Num>12</Num>, <Num>31</Num>)</Call></Assign>
+<Assign><Attribute><Name>date</Name>.resolution</Attribute> = <Call><Name>timedelta</Name>(days=<Num>1</Num>)</Call></Assign>
+
+<ClassDef>class tzinfo(<Name>object</Name>):
+    <Expr><Str>"""Abstract base class for time zone info classes.
+
+    Subclasses must override the name(), utcoffset() and dst() methods.
+    """</Str></Expr>
+
+    <FunctionDef>def tzname(<Name>self</Name>, <Name>dt</Name>):
+        <Expr><Str>"datetime -&gt; string name of time zone."</Str></Expr>
+        <Raise>raise <Call><Name>NotImplementedError</Name>(<Str>"tzinfo subclass must override tzname()"</Str>)</Call></Raise>
+
+   </FunctionDef> <FunctionDef>def utcoffset(<Name>self</Name>, <Name>dt</Name>):
+        <Expr><Str>"datetime -&gt; minutes east of UTC (negative for west of UTC)"</Str></Expr>
+        <Raise>raise <Call><Name>NotImplementedError</Name>(<Str>"tzinfo subclass must override utcoffset()"</Str>)</Call></Raise>
+
+   </FunctionDef> <FunctionDef>def dst(<Name>self</Name>, <Name>dt</Name>):
+        <Expr><Str>"""datetime -&gt; DST offset in minutes east of UTC.
+
+        Return 0 if DST not in effect.  utcoffset() must include the DST
+        offset.
+        """</Str></Expr>
+        <Raise>raise <Call><Name>NotImplementedError</Name>(<Str>"tzinfo subclass must override dst()"</Str>)</Call></Raise>
+
+   </FunctionDef> <FunctionDef>def fromutc(<Name>self</Name>, <Name>dt</Name>):
+        <Expr><Str>"datetime in UTC -&gt; datetime in local time."</Str></Expr>
+
+        <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>dt</Name>, <Name>datetime</Name>)</Call></UnaryOp>:
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"fromutc() requires a datetime argument"</Str>)</Call></Raise>
+       </If> <If>if <Compare><Attribute><Name>dt</Name>.tzinfo</Attribute> is not <Name>self</Name></Compare>:
+            <Raise>raise <Call><Name>ValueError</Name>(<Str>"dt.tzinfo is not self"</Str>)</Call></Raise>
+
+       </If> <Assign><Name>dtoff</Name> = <Call><Attribute><Name>dt</Name>.utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>dtoff</Name> is <Name>None</Name></Compare>:
+            <Raise>raise <Call><Name>ValueError</Name>(<Str>"fromutc() requires a non-None utcoffset() "
+                             "result"</Str>)</Call></Raise>
+
+        # See the long comment block at the end of this file for an
+        # explanation of this algorithm.
+       </If> <Assign><Name>dtdst</Name> = <Call><Attribute><Name>dt</Name>.dst</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>dtdst</Name> is <Name>None</Name></Compare>:
+            <Raise>raise <Call><Name>ValueError</Name>(<Str>"fromutc() requires a non-None dst() result"</Str>)</Call></Raise>
+       </If> <Assign><Name>delta</Name> = <BinOp><Name>dtoff</Name> - <Name>dtdst</Name></BinOp></Assign>
+        <If>if <Name>delta</Name>:
+            <AugAssign><Name>dt</Name> += <Name>delta</Name></AugAssign>
+            <Assign><Name>dtdst</Name> = <Call><Attribute><Name>dt</Name>.dst</Attribute>()</Call></Assign>
+            <If>if <Compare><Name>dtdst</Name> is <Name>None</Name></Compare>:
+                <Raise>raise <Call><Name>ValueError</Name>(<Str>"fromutc(): dt.dst gave inconsistent "
+                                 "results; cannot convert"</Str>)</Call></Raise>
+       </If></If> <If>if <Name>dtdst</Name>:
+            <Return>return <BinOp><Name>dt</Name> + <Name>dtdst</Name></BinOp></Return>
+        else:
+            <Return>return <Name>dt</Name></Return>
+
+    # Pickle support.
+
+   </If></FunctionDef> <Assign><Name>__safe_for_unpickling__</Name> = <Name>True</Name></Assign>      # For Python 2.2
+
+    <FunctionDef>def __reduce__(<Name>self</Name>):
+        <Assign><Name>getinitargs</Name> = <Call><Name>getattr</Name>(<Name>self</Name>, <Str>"__getinitargs__"</Str>, <Name>None</Name>)</Call></Assign>
+        <If>if <Name>getinitargs</Name>:
+            <Assign><Name>args</Name> = <Call><Name>getinitargs</Name>()</Call></Assign>
+        else:
+            <Assign><Name>args</Name> = <Tuple>()</Tuple></Assign>
+       </If> <Assign><Name>getstate</Name> = <Call><Name>getattr</Name>(<Name>self</Name>, <Str>"__getstate__"</Str>, <Name>None</Name>)</Call></Assign>
+        <If>if <Name>getstate</Name>:
+            <Assign><Name>state</Name> = <Call><Name>getstate</Name>()</Call></Assign>
+        else:
+            <Assign><Name>state</Name> = <BoolOp><Call><Name>getattr</Name>(<Name>self</Name>, <Str>"__dict__"</Str>, <Name>None</Name>)</Call> or <Name>None</Name></BoolOp></Assign>
+       </If> <If>if <Compare><Name>state</Name> is <Name>None</Name></Compare>:
+            <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Name>args</Name>)</Tuple></Return>
+        else:
+            <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Name>args</Name>, <Name>state</Name>)</Tuple></Return>
+
+</If></FunctionDef></ClassDef><Assign><Name>_tzinfo_class</Name> = <Name>tzinfo</Name></Assign>   # so functions w/ args named "tinfo" can get at it
+
+<ClassDef>class time(<Name>object</Name>):
+    <Expr><Str>"""Time with time zone.
+
+    Constructors:
+
+    __new__()
+
+    Operators:
+
+    __repr__, __str__
+    __cmp__, __hash__
+
+    Methods:
+
+    strftime()
+    isoformat()
+    utcoffset()
+    tzname()
+    dst()
+
+    Properties (readonly):
+    hour, minute, second, microsecond, tzinfo
+    """</Str></Expr>
+
+    <FunctionDef>def __new__(<Name>cls</Name>, <Name>hour</Name>=<Num>0</Num>, <Name>minute</Name>=<Num>0</Num>, <Name>second</Name>=<Num>0</Num>, <Name>microsecond</Name>=<Num>0</Num>, <Name>tzinfo</Name>=<Name>None</Name>):
+        <Expr><Str>"""Constructor.
+
+        Arguments:
+
+        hour, minute (required)
+        second, microsecond (default to zero)
+        tzinfo (default to None)
+        """</Str></Expr>
+        <Assign><Name>self</Name> = <Call><Attribute><Name>object</Name>.__new__</Attribute>(<Name>cls</Name>)</Call></Assign>
+        <If>if <Call><Name>isinstance</Name>(<Name>hour</Name>, <Name>str</Name>)</Call>:
+            # Pickle support
+            <Expr><Call><Attribute><Name>self</Name>.__setstate</Attribute>(<Tuple>(<Name>hour</Name>, <BoolOp><Name>minute</Name> or <Name>None</Name></BoolOp>)</Tuple>)</Call></Expr>
+            <Return>return <Name>self</Name></Return>
+       </If> <Expr><Call><Name>_check_tzinfo_arg</Name>(<Name>tzinfo</Name>)</Call></Expr>
+        <Expr><Call><Name>_check_time_fields</Name>(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>)</Call></Expr>
+        <Assign><Attribute><Name>self</Name>.__hour</Attribute> = <Name>hour</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__minute</Attribute> = <Name>minute</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__second</Attribute> = <Name>second</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__microsecond</Attribute> = <Name>microsecond</Name></Assign>
+        <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Name>tzinfo</Name></Assign>
+        <Return>return <Name>self</Name></Return>
+
+    # Read-only field accessors
+   </FunctionDef> <Assign><Name>hour</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__hour</Attribute></Lambda>, doc=<Str>"hour (0-23)"</Str>)</Call></Assign>
+    <Assign><Name>minute</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__minute</Attribute></Lambda>, doc=<Str>"minute (0-59)"</Str>)</Call></Assign>
+    <Assign><Name>second</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__second</Attribute></Lambda>, doc=<Str>"second (0-59)"</Str>)</Call></Assign>
+    <Assign><Name>microsecond</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__microsecond</Attribute></Lambda>,
+                           doc=<Str>"microsecond (0-999999)"</Str>)</Call></Assign>
+    <Assign><Name>tzinfo</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>._tzinfo</Attribute></Lambda>, doc=<Str>"timezone info object"</Str>)</Call></Assign>
+
+    # Standard conversions, __hash__ (and helpers)
+
+    # Comparisons.
+
+    <FunctionDef>def __eq__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> == <Num>0</Num></Compare></Return>
+        else:
+            <Return>return <Name>False</Name></Return>
+
+   </If></FunctionDef> <FunctionDef>def __ne__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> != <Num>0</Num></Compare></Return>
+        else:
+            <Return>return <Name>True</Name></Return>
+
+   </If></FunctionDef> <FunctionDef>def __le__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt;= <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __lt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt; <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __ge__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt;= <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __gt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt; <Num>0</Num></Compare></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></FunctionDef> <FunctionDef>def __cmp(<Name>self</Name>, <Name>other</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>time</Name>)</Call></Assert>
+        <Assign><Name>mytz</Name> = <Attribute><Name>self</Name>._tzinfo</Attribute></Assign>
+        <Assign><Name>ottz</Name> = <Attribute><Name>other</Name>._tzinfo</Attribute></Assign>
+        <Assign><Name>myoff</Name> = <Name>otoff</Name> = <Name>None</Name></Assign>
+
+        <If>if <Compare><Name>mytz</Name> is <Name>ottz</Name></Compare>:
+            <Assign><Name>base_compare</Name> = <Name>True</Name></Assign>
+        else:
+            <Assign><Name>myoff</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+            <Assign><Name>otoff</Name> = <Call><Attribute><Name>other</Name>._utcoffset</Attribute>()</Call></Assign>
+            <Assign><Name>base_compare</Name> = <Compare><Name>myoff</Name> == <Name>otoff</Name></Compare></Assign>
+
+       </If> <If>if <Name>base_compare</Name>:
+            <Return>return <Call><Name>cmp</Name>(<Tuple>(<Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                        <Attribute><Name>self</Name>.__microsecond</Attribute>)</Tuple>,
+                       <Tuple>(<Attribute><Name>other</Name>.__hour</Attribute>, <Attribute><Name>other</Name>.__minute</Attribute>, <Attribute><Name>other</Name>.__second</Attribute>,
+                        <Attribute><Name>other</Name>.__microsecond</Attribute>)</Tuple>)</Call></Return>
+       </If> <If>if <BoolOp><Compare><Name>myoff</Name> is <Name>None</Name></Compare> or <Compare><Name>otoff</Name> is <Name>None</Name></Compare></BoolOp>:
+            # XXX Buggy in 2.2.2.
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"cannot compare naive and aware times"</Str>)</Call></Raise>
+       </If> <Assign><Name>myhhmm</Name> = <BinOp><BinOp><BinOp><Attribute><Name>self</Name>.__hour</Attribute></BinOp></BinOp> * <Num>60</Num> + <Attribute><Name>self</Name>.__minute</Attribute> - <Name>myoff</Name></BinOp></Assign>
+        <Assign><Name>othhmm</Name> = <BinOp><BinOp><BinOp><Attribute><Name>other</Name>.__hour</Attribute></BinOp></BinOp> * <Num>60</Num> + <Attribute><Name>other</Name>.__minute</Attribute> - <Name>otoff</Name></BinOp></Assign>
+        <Return>return <Call><Name>cmp</Name>(<Tuple>(<Name>myhhmm</Name>, <Attribute><Name>self</Name>.__second</Attribute>, <Attribute><Name>self</Name>.__microsecond</Attribute>)</Tuple>,
+                   <Tuple>(<Name>othhmm</Name>, <Attribute><Name>other</Name>.__second</Attribute>, <Attribute><Name>other</Name>.__microsecond</Attribute>)</Tuple>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def __hash__(<Name>self</Name>):
+        <Expr><Str>"""Hash."""</Str></Expr>
+        <Assign><Name>tzoff</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <UnaryOp>not <Name>tzoff</Name></UnaryOp>: # zero or None
+            <Return>return <Call><Name>hash</Name>(<Subscript><Attribute><Name>self</Name>.__getstate</Attribute><Call>()</Call>[<Index><Num>0</Num></Index>]</Subscript>)</Call></Return>
+       </If> <Assign><Tuple><Name>h</Name>, <Name>m</Name></Tuple> = <Call><Name>divmod</Name>(<BinOp><BinOp><BinOp><Attribute><Name>self</Name>.hour</Attribute></BinOp></BinOp> * <Num>60</Num> + <Attribute><Name>self</Name>.minute</Attribute> - <Name>tzoff</Name></BinOp>, <Num>60</Num>)</Call></Assign>
+        <If>if <Compare><Num>0</Num> &lt;= <Name>h</Name> &lt; <Num>24</Num></Compare>:
+            <Return>return <Call><Name>hash</Name>(<Call><Name>time</Name>(<Name>h</Name>, <Name>m</Name>, <Attribute><Name>self</Name>.second</Attribute>, <Attribute><Name>self</Name>.microsecond</Attribute>)</Call>)</Call></Return>
+       </If> <Return>return <Call><Name>hash</Name>(<Tuple>(<Name>h</Name>, <Name>m</Name>, <Attribute><Name>self</Name>.second</Attribute>, <Attribute><Name>self</Name>.microsecond</Attribute>)</Tuple>)</Call></Return>
+
+    # Conversion to string
+
+   </FunctionDef> <FunctionDef>def _tzstr(<Name>self</Name>, <Name>sep</Name>=<Str>":"</Str>):
+        <Expr><Str>"""Return formatted timezone offset (+xx:xx) or None."""</Str></Expr>
+        <Assign><Name>off</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>off</Name> is not <Name>None</Name></Compare>:
+            <If>if <Compare><Name>off</Name> &lt; <Num>0</Num></Compare>:
+                <Assign><Name>sign</Name> = <Str>"-"</Str></Assign>
+                <Assign><Name>off</Name> = <UnaryOp>-<Name>off</Name></UnaryOp></Assign>
+            else:
+                <Assign><Name>sign</Name> = <Str>"+"</Str></Assign>
+           </If> <Assign><Tuple><Name>hh</Name>, <Name>mm</Name></Tuple> = <Call><Name>divmod</Name>(<Name>off</Name>, <Num>60</Num>)</Call></Assign>
+            <Assert>assert <Compare><Num>0</Num> &lt;= <Name>hh</Name> &lt; <Num>24</Num></Compare></Assert>
+            <Assign><Name>off</Name> = <BinOp><Str>"%s%02d%s%02d"</Str> % <Tuple>(<Name>sign</Name>, <Name>hh</Name>, <Name>sep</Name>, <Name>mm</Name>)</Tuple></BinOp></Assign>
+       </If> <Return>return <Name>off</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __repr__(<Name>self</Name>):
+        <Expr><Str>"""Convert to formal string, for repr()."""</Str></Expr>
+        <If>if <Compare><Attribute><Name>self</Name>.__microsecond</Attribute> != <Num>0</Num></Compare>:
+            <Assign><Name>s</Name> = <BinOp><Str>", %d, %d"</Str> % <Tuple>(<Attribute><Name>self</Name>.__second</Attribute>, <Attribute><Name>self</Name>.__microsecond</Attribute>)</Tuple></BinOp></Assign>
+        <If>elif <Compare><Attribute><Name>self</Name>.__second</Attribute> != <Num>0</Num></Compare>:
+            <Assign><Name>s</Name> = <BinOp><Str>", %d"</Str> % <Attribute><Name>self</Name>.__second</Attribute></BinOp></Assign>
+        else:
+            <Assign><Name>s</Name> = <Str>""</Str></Assign>
+       </If></If> <Assign><Name>s</Name>= <BinOp><Str>"%s(%d, %d%s)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>,
+                             <Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Name>s</Name>)</Tuple></BinOp></Assign>
+        <If>if <Compare><Attribute><Name>self</Name>._tzinfo</Attribute> is not <Name>None</Name></Compare>:
+            <Assert>assert <Compare><Subscript><Name>s</Name>[<Slice><Num>-1</Num>:</Slice>]</Subscript> == <Str>")"</Str></Compare></Assert>
+            <Assign><Name>s</Name> = <BinOp><BinOp><Subscript><Name>s</Name>[<Slice>:<Num>-1</Num></Slice>]</Subscript></BinOp> + <BinOp><Str>", tzinfo=%r"</Str></BinOp> % <Attribute><Name>self</Name>._tzinfo</Attribute> + <Str>")"</Str></BinOp></Assign>
+       </If> <Return>return <Name>s</Name></Return>
+
+   </FunctionDef> <FunctionDef>def isoformat(<Name>self</Name>):
+        <Expr><Str>"""Return the time formatted according to ISO.
+
+        This is 'HH:MM:SS.mmmmmm+zz:zz', or 'HH:MM:SS+zz:zz' if
+        self.microsecond == 0.
+        """</Str></Expr>
+        <Assign><Name>s</Name> = <Call><Name>_format_time</Name>(<Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                         <Attribute><Name>self</Name>.__microsecond</Attribute>)</Call></Assign>
+        <Assign><Name>tz</Name> = <Call><Attribute><Name>self</Name>._tzstr</Attribute>()</Call></Assign>
+        <If>if <Name>tz</Name>:
+            <AugAssign><Name>s</Name> += <Name>tz</Name></AugAssign>
+       </If> <Return>return <Name>s</Name></Return>
+
+   </FunctionDef> <Assign><Name>__str__</Name> = <Name>isoformat</Name></Assign>
+
+    <FunctionDef>def strftime(<Name>self</Name>, <Name>fmt</Name>):
+        <Expr><Str>"""Format using strftime().  The date part of the timestamp passed
+        to underlying strftime should not be used.
+        """</Str></Expr>
+        # The year must be &gt;= 1900 else Python's strftime implementation
+        # can raise a bogus exception.
+        <Assign><Name>timetuple</Name> = <Tuple>(<Num>1900</Num>, <Num>1</Num>, <Num>1</Num>,
+                     <Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                     <Num>0</Num>, <Num>1</Num>, <Num>-1</Num>)</Tuple></Assign>
+        <Return>return <Call><Name>_wrap_strftime</Name>(<Name>self</Name>, <Name>fmt</Name>, <Name>timetuple</Name>)</Call></Return>
+
+    # Timezone functions
+
+   </FunctionDef> <FunctionDef>def utcoffset(<Name>self</Name>):
+        <Expr><Str>"""Return the timezone offset in minutes east of UTC (negative west of
+        UTC)."""</Str></Expr>
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"utcoffset"</Str>, <Name>None</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"utcoffset"</Str>, <Name>offset</Name>)</Call></Assign>
+        <If>if <Compare><Name>offset</Name> is not <Name>None</Name></Compare>:
+            <Assign><Name>offset</Name> = <Call><Name>timedelta</Name>(minutes=<Name>offset</Name>)</Call></Assign>
+       </If> <Return>return <Name>offset</Name></Return>
+
+    # Return an integer (or None) instead of a timedelta (or None).
+   </FunctionDef> <FunctionDef>def _utcoffset(<Name>self</Name>):
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"utcoffset"</Str>, <Name>None</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"utcoffset"</Str>, <Name>offset</Name>)</Call></Assign>
+        <Return>return <Name>offset</Name></Return>
+
+   </FunctionDef> <FunctionDef>def tzname(<Name>self</Name>):
+        <Expr><Str>"""Return the timezone name.
+
+        Note that the name is 100% informational -- there's no requirement that
+        it mean anything in particular. For example, "GMT", "UTC", "-500",
+        "-5:00", "EDT", "US/Eastern", "America/New York" are all valid replies.
+        """</Str></Expr>
+        <Assign><Name>name</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"tzname"</Str>, <Name>None</Name>)</Call></Assign>
+        <Expr><Call><Name>_check_tzname</Name>(<Name>name</Name>)</Call></Expr>
+        <Return>return <Name>name</Name></Return>
+
+   </FunctionDef> <FunctionDef>def dst(<Name>self</Name>):
+        <Expr><Str>"""Return 0 if DST is not in effect, or the DST offset (in minutes
+        eastward) if DST is in effect.
+
+        This is purely informational; the DST offset has already been added to
+        the UTC offset returned by utcoffset() if applicable, so there's no
+        need to consult dst() unless you're interested in displaying the DST
+        info.
+        """</Str></Expr>
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"dst"</Str>, <Name>None</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"dst"</Str>, <Name>offset</Name>)</Call></Assign>
+        <If>if <Compare><Name>offset</Name> is not <Name>None</Name></Compare>:
+            <Assign><Name>offset</Name> = <Call><Name>timedelta</Name>(minutes=<Name>offset</Name>)</Call></Assign>
+       </If> <Return>return <Name>offset</Name></Return>
+
+   </FunctionDef> <FunctionDef>def replace(<Name>self</Name>, <Name>hour</Name>=<Name>None</Name>, <Name>minute</Name>=<Name>None</Name>, <Name>second</Name>=<Name>None</Name>, <Name>microsecond</Name>=<Name>None</Name>,
+                <Name>tzinfo</Name>=<Name>True</Name>):
+        <Expr><Str>"""Return a new time with new values for the specified fields."""</Str></Expr>
+        <If>if <Compare><Name>hour</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>hour</Name> = <Attribute><Name>self</Name>.hour</Attribute></Assign>
+       </If> <If>if <Compare><Name>minute</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>minute</Name> = <Attribute><Name>self</Name>.minute</Attribute></Assign>
+       </If> <If>if <Compare><Name>second</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>second</Name> = <Attribute><Name>self</Name>.second</Attribute></Assign>
+       </If> <If>if <Compare><Name>microsecond</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>microsecond</Name> = <Attribute><Name>self</Name>.microsecond</Attribute></Assign>
+       </If> <If>if <Compare><Name>tzinfo</Name> is <Name>True</Name></Compare>:
+            <Assign><Name>tzinfo</Name> = <Attribute><Name>self</Name>.tzinfo</Attribute></Assign>
+       </If> <Expr><Call><Name>_check_time_fields</Name>(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>)</Call></Expr>
+        <Expr><Call><Name>_check_tzinfo_arg</Name>(<Name>tzinfo</Name>)</Call></Expr>
+        <Return>return <Call><Name>time</Name>(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>, <Name>tzinfo</Name>)</Call></Return>
+
+    # Return an integer (or None) instead of a timedelta (or None).
+   </FunctionDef> <FunctionDef>def _dst(<Name>self</Name>):
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"dst"</Str>, <Name>None</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"dst"</Str>, <Name>offset</Name>)</Call></Assign>
+        <Return>return <Name>offset</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __nonzero__(<Name>self</Name>):
+        <If>if <BoolOp><Attribute><Name>self</Name>.second</Attribute> or <Attribute><Name>self</Name>.microsecond</Attribute></BoolOp>:
+            <Return>return <Num>1</Num></Return>
+       </If> <Assign><Name>offset</Name> = <BoolOp><Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call> or <Num>0</Num></BoolOp></Assign>
+        <Return>return <Compare><BinOp><BinOp><BinOp><Attribute><Name>self</Name>.hour</Attribute></BinOp></BinOp> * <Num>60</Num> + <Attribute><Name>self</Name>.minute</Attribute> - <Name>offset</Name></BinOp> != <Num>0</Num></Compare></Return>
+
+    # Pickle support.
+
+   </FunctionDef> <Assign><Name>__safe_for_unpickling__</Name> = <Name>True</Name></Assign>      # For Python 2.2
+
+    <FunctionDef>def __getstate(<Name>self</Name>):
+        <Assign><Tuple><Name>us2</Name>, <Name>us3</Name></Tuple> = <Call><Name>divmod</Name>(<Attribute><Name>self</Name>.__microsecond</Attribute>, <Num>256</Num>)</Call></Assign>
+        <Assign><Tuple><Name>us1</Name>, <Name>us2</Name></Tuple> = <Call><Name>divmod</Name>(<Name>us2</Name>, <Num>256</Num>)</Call></Assign>
+        <Assign><Name>basestate</Name> = <BinOp><BinOp>(<Str>"%c"</Str> * <Num>6</Num>)</BinOp> % <Tuple>(<Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                                  <Name>us1</Name>, <Name>us2</Name>, <Name>us3</Name>)</Tuple></BinOp></Assign>
+        <If>if <Compare><Attribute><Name>self</Name>._tzinfo</Attribute> is <Name>None</Name></Compare>:
+            <Return>return <Tuple>(<Name>basestate</Name>,)</Tuple></Return>
+        else:
+            <Return>return <Tuple>(<Name>basestate</Name>, <Attribute><Name>self</Name>._tzinfo</Attribute>)</Tuple></Return>
+
+   </If></FunctionDef> <FunctionDef>def __setstate(<Name>self</Name>, <Name>state</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>state</Name>, <Name>tuple</Name>)</Call></Assert>
+        <Assert>assert <Compare><Num>1</Num> &lt;= <Call><Name>len</Name>(<Name>state</Name>)</Call> &lt;= <Num>2</Num></Compare></Assert>
+        <Assign><Name>string</Name> = <Subscript><Name>state</Name>[<Index><Num>0</Num></Index>]</Subscript></Assign>
+        <Assert>assert <Compare><Call><Name>len</Name>(<Name>string</Name>)</Call> == <Num>6</Num></Compare></Assert>
+        <Assign><Tuple><Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>, <Name>us1</Name>, <Name>us2</Name>, <Name>us3</Name></Tuple> = \
+                                                            <Call><Name>map</Name>(<Name>ord</Name>, <Name>string</Name>)</Call></Assign>
+        <Assign><Attribute><Name>self</Name>.__microsecond</Attribute> = <BinOp><BinOp>(<BinOp>(<BinOp>(<Name>us1</Name> &lt;&lt; <Num>8</Num>)</BinOp> | <Name>us2</Name>)</BinOp> &lt;&lt; <Num>8</Num>)</BinOp> | <Name>us3</Name></BinOp></Assign>
+        <If>if <Compare><Call><Name>len</Name>(<Name>state</Name>)</Call> == <Num>1</Num></Compare>:
+            <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Name>None</Name></Assign>
+        else:
+            <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Subscript><Name>state</Name>[<Index><Num>1</Num></Index>]</Subscript></Assign>
+
+   </If></FunctionDef> <FunctionDef>def __reduce__(<Name>self</Name>):
+        <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Tuple></Return>
+
+</FunctionDef></ClassDef><Assign><Name>_time_class</Name> = <Name>time</Name></Assign>  # so functions w/ args named "time" can get at the class
+
+<Assign><Attribute><Name>time</Name>.min</Attribute> = <Call><Name>time</Name>(<Num>0</Num>, <Num>0</Num>, <Num>0</Num>)</Call></Assign>
+<Assign><Attribute><Name>time</Name>.max</Attribute> = <Call><Name>time</Name>(<Num>23</Num>, <Num>59</Num>, <Num>59</Num>, <Num>999999</Num>)</Call></Assign>
+<Assign><Attribute><Name>time</Name>.resolution</Attribute> = <Call><Name>timedelta</Name>(microseconds=<Num>1</Num>)</Call></Assign>
+
+<ClassDef>class datetime(<Name>date</Name>):
+
+    # XXX needs docstrings
+    # See http://www.zope.org/Members/fdrake/DateTimeWiki/TimeZoneInfo
+
+    <FunctionDef>def __new__(<Name>cls</Name>, <Name>year</Name>, <Name>month</Name>=<Name>None</Name>, <Name>day</Name>=<Name>None</Name>, <Name>hour</Name>=<Num>0</Num>, <Name>minute</Name>=<Num>0</Num>, <Name>second</Name>=<Num>0</Num>,
+                <Name>microsecond</Name>=<Num>0</Num>, <Name>tzinfo</Name>=<Name>None</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>year</Name>, <Name>str</Name>)</Call>:
+            # Pickle support
+            <Assign><Name>self</Name> = <Call><Attribute><Name>date</Name>.__new__</Attribute>(<Name>cls</Name>, <Subscript><Name>year</Name>[<Slice>:<Num>4</Num></Slice>]</Subscript>)</Call></Assign>
+            <Expr><Call><Attribute><Name>self</Name>.__setstate</Attribute>(<Tuple>(<Name>year</Name>, <Name>month</Name>)</Tuple>)</Call></Expr>
+            <Return>return <Name>self</Name></Return>
+       </If> <Expr><Call><Name>_check_tzinfo_arg</Name>(<Name>tzinfo</Name>)</Call></Expr>
+        <Expr><Call><Name>_check_time_fields</Name>(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>)</Call></Expr>
+        <Assign><Name>self</Name> = <Call><Attribute><Name>date</Name>.__new__</Attribute>(<Name>cls</Name>, <Name>year</Name>, <Name>month</Name>, <Name>day</Name>)</Call></Assign>
+        # XXX This duplicates __year, __month, __day for convenience :-(
+        <Assign><Attribute><Name>self</Name>.__year</Attribute> = <Name>year</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__month</Attribute> = <Name>month</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__day</Attribute> = <Name>day</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__hour</Attribute> = <Name>hour</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__minute</Attribute> = <Name>minute</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__second</Attribute> = <Name>second</Name></Assign>
+        <Assign><Attribute><Name>self</Name>.__microsecond</Attribute> = <Name>microsecond</Name></Assign>
+        <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Name>tzinfo</Name></Assign>
+        <Return>return <Name>self</Name></Return>
+
+    # Read-only field accessors
+   </FunctionDef> <Assign><Name>hour</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__hour</Attribute></Lambda>, doc=<Str>"hour (0-23)"</Str>)</Call></Assign>
+    <Assign><Name>minute</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__minute</Attribute></Lambda>, doc=<Str>"minute (0-59)"</Str>)</Call></Assign>
+    <Assign><Name>second</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__second</Attribute></Lambda>, doc=<Str>"second (0-59)"</Str>)</Call></Assign>
+    <Assign><Name>microsecond</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>.__microsecond</Attribute></Lambda>,
+                           doc=<Str>"microsecond (0-999999)"</Str>)</Call></Assign>
+    <Assign><Name>tzinfo</Name> = <Call><Name>property</Name>(<Lambda>lambda <Name>self</Name>: <Attribute><Name>self</Name>._tzinfo</Attribute></Lambda>, doc=<Str>"timezone info object"</Str>)</Call></Assign>
+
+    <FunctionDef>def fromtimestamp(<Name>cls</Name>, <Name>t</Name>, <Name>tz</Name>=<Name>None</Name>):
+        <Expr><Str>"""Construct a datetime from a POSIX timestamp (like time.time()).
+
+        A timezone info object may be passed in as well.
+        """</Str></Expr>
+
+        <Expr><Call><Name>_check_tzinfo_arg</Name>(<Name>tz</Name>)</Call></Expr>
+        <If>if <Compare><Name>tz</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>converter</Name> = <Attribute><Name>_time</Name>.localtime</Attribute></Assign>
+        else:
+            <Assign><Name>converter</Name> = <Attribute><Name>_time</Name>.gmtime</Attribute></Assign>
+       </If> <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>weekday</Name>, <Name>jday</Name>, <Name>dst</Name></Tuple> = <Call><Name>converter</Name>(<Name>t</Name>)</Call></Assign>
+        <Assign><Name>us</Name> = <Call><Name>int</Name>(<BinOp><BinOp>(<Name>t</Name> % <Num>1.0</Num>)</BinOp> * <Num>1000000</Num></BinOp>)</Call></Assign>
+        <Assign><Name>ss</Name> = <Call><Name>min</Name>(<Name>ss</Name>, <Num>59</Num>)</Call></Assign>    # clamp out leap seconds if the platform has them
+        <Assign><Name>result</Name> = <Call><Name>cls</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>us</Name>, <Name>tz</Name>)</Call></Assign>
+        <If>if <Compare><Name>tz</Name> is not <Name>None</Name></Compare>:
+            <Assign><Name>result</Name> = <Call><Attribute><Name>tz</Name>.fromutc</Attribute>(<Name>result</Name>)</Call></Assign>
+       </If> <Return>return <Name>result</Name></Return>
+   </FunctionDef> <Assign><Name>fromtimestamp</Name> = <Call><Name>classmethod</Name>(<Name>fromtimestamp</Name>)</Call></Assign>
+
+    <FunctionDef>def utcfromtimestamp(<Name>cls</Name>, <Name>t</Name>):
+        <Expr><Str>"Construct a UTC datetime from a POSIX timestamp (like time.time())."</Str></Expr>
+        <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>weekday</Name>, <Name>jday</Name>, <Name>dst</Name></Tuple> = <Call><Attribute><Name>_time</Name>.gmtime</Attribute>(<Name>t</Name>)</Call></Assign>
+        <Assign><Name>us</Name> = <Call><Name>int</Name>(<BinOp><BinOp>(<Name>t</Name> % <Num>1.0</Num>)</BinOp> * <Num>1000000</Num></BinOp>)</Call></Assign>
+        <Assign><Name>ss</Name> = <Call><Name>min</Name>(<Name>ss</Name>, <Num>59</Num>)</Call></Assign>    # clamp out leap seconds if the platform has them
+        <Return>return <Call><Name>cls</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Name>us</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>utcfromtimestamp</Name> = <Call><Name>classmethod</Name>(<Name>utcfromtimestamp</Name>)</Call></Assign>
+
+    # XXX This is supposed to do better than we *can* do by using time.time(),
+    # XXX if the platform supports a more accurate way.  The C implementation
+    # XXX uses gettimeofday on platforms that have it, but that isn't
+    # XXX available from Python.  So now() may return different results
+    # XXX across the implementations.
+    <FunctionDef>def now(<Name>cls</Name>, <Name>tz</Name>=<Name>None</Name>):
+        <Expr><Str>"Construct a datetime from time.time() and optional time zone info."</Str></Expr>
+        <Assign><Name>t</Name> = <Call><Attribute><Name>_time</Name>.time</Attribute>()</Call></Assign>
+        <Return>return <Call><Attribute><Name>cls</Name>.fromtimestamp</Attribute>(<Name>t</Name>, <Name>tz</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>now</Name> = <Call><Name>classmethod</Name>(<Name>now</Name>)</Call></Assign>
+
+    <FunctionDef>def utcnow(<Name>cls</Name>):
+        <Expr><Str>"Construct a UTC datetime from time.time()."</Str></Expr>
+        <Assign><Name>t</Name> = <Call><Attribute><Name>_time</Name>.time</Attribute>()</Call></Assign>
+        <Return>return <Call><Attribute><Name>cls</Name>.utcfromtimestamp</Attribute>(<Name>t</Name>)</Call></Return>
+   </FunctionDef> <Assign><Name>utcnow</Name> = <Call><Name>classmethod</Name>(<Name>utcnow</Name>)</Call></Assign>
+
+    <FunctionDef>def combine(<Name>cls</Name>, <Name>date</Name>, <Name>time</Name>):
+        <Expr><Str>"Construct a datetime from a given date and a given time."</Str></Expr>
+        <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>date</Name>, <Name>_date_class</Name>)</Call></UnaryOp>:
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"date argument must be a date instance"</Str>)</Call></Raise>
+       </If> <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>time</Name>, <Name>_time_class</Name>)</Call></UnaryOp>:
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"time argument must be a time instance"</Str>)</Call></Raise>
+       </If> <Return>return <Call><Name>cls</Name>(<Attribute><Name>date</Name>.year</Attribute>, <Attribute><Name>date</Name>.month</Attribute>, <Attribute><Name>date</Name>.day</Attribute>,
+                   <Attribute><Name>time</Name>.hour</Attribute>, <Attribute><Name>time</Name>.minute</Attribute>, <Attribute><Name>time</Name>.second</Attribute>, <Attribute><Name>time</Name>.microsecond</Attribute>,
+                   <Attribute><Name>time</Name>.tzinfo</Attribute>)</Call></Return>
+   </FunctionDef> <Assign><Name>combine</Name> = <Call><Name>classmethod</Name>(<Name>combine</Name>)</Call></Assign>
+
+    <FunctionDef>def timetuple(<Name>self</Name>):
+        <Expr><Str>"Return local time tuple compatible with time.localtime()."</Str></Expr>
+        <Assign><Name>dst</Name> = <Call><Attribute><Name>self</Name>._dst</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>dst</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>dst</Name> = <Num>-1</Num></Assign>
+        <If>elif <Name>dst</Name>:
+            <Assign><Name>dst</Name> = <Num>1</Num></Assign>
+       </If></If> <Return>return <Call><Name>_build_struct_time</Name>(<Attribute><Name>self</Name>.year</Attribute>, <Attribute><Name>self</Name>.month</Attribute>, <Attribute><Name>self</Name>.day</Attribute>,
+                                  <Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute>,
+                                  <Name>dst</Name>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def utctimetuple(<Name>self</Name>):
+        <Expr><Str>"Return UTC time tuple compatible with time.gmtime()."</Str></Expr>
+        <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name></Tuple> = <Tuple><Attribute><Name>self</Name>.year</Attribute>, <Attribute><Name>self</Name>.month</Attribute>, <Attribute><Name>self</Name>.day</Attribute></Tuple></Assign>
+        <Assign><Tuple><Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name></Tuple> = <Tuple><Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute></Tuple></Assign>
+        <Assign><Name>offset</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <Name>offset</Name>:  # neither None nor 0
+            <Assign><Name>tm</Name> = <Call><Name>tmxxx</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <BinOp><Name>mm</Name> - <Name>offset</Name></BinOp>)</Call></Assign>
+            <Assign><Tuple><Name>y</Name>, <Name>m</Name>, <Name>d</Name></Tuple> = <Tuple><Attribute><Name>tm</Name>.year</Attribute>, <Attribute><Name>tm</Name>.month</Attribute>, <Attribute><Name>tm</Name>.day</Attribute></Tuple></Assign>
+            <Assign><Tuple><Name>hh</Name>, <Name>mm</Name></Tuple> = <Tuple><Attribute><Name>tm</Name>.hour</Attribute>, <Attribute><Name>tm</Name>.minute</Attribute></Tuple></Assign>
+       </If> <Return>return <Call><Name>_build_struct_time</Name>(<Name>y</Name>, <Name>m</Name>, <Name>d</Name>, <Name>hh</Name>, <Name>mm</Name>, <Name>ss</Name>, <Num>0</Num>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def date(<Name>self</Name>):
+        <Expr><Str>"Return the date part."</Str></Expr>
+        <Return>return <Call><Name>date</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def time(<Name>self</Name>):
+        <Expr><Str>"Return the time part, with tzinfo None."</Str></Expr>
+        <Return>return <Call><Name>time</Name>(<Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute>, <Attribute><Name>self</Name>.microsecond</Attribute>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def timetz(<Name>self</Name>):
+        <Expr><Str>"Return the time part, with same tzinfo."</Str></Expr>
+        <Return>return <Call><Name>time</Name>(<Attribute><Name>self</Name>.hour</Attribute>, <Attribute><Name>self</Name>.minute</Attribute>, <Attribute><Name>self</Name>.second</Attribute>, <Attribute><Name>self</Name>.microsecond</Attribute>,
+                    <Attribute><Name>self</Name>._tzinfo</Attribute>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def replace(<Name>self</Name>, <Name>year</Name>=<Name>None</Name>, <Name>month</Name>=<Name>None</Name>, <Name>day</Name>=<Name>None</Name>, <Name>hour</Name>=<Name>None</Name>,
+                <Name>minute</Name>=<Name>None</Name>, <Name>second</Name>=<Name>None</Name>, <Name>microsecond</Name>=<Name>None</Name>, <Name>tzinfo</Name>=<Name>True</Name>):
+        <Expr><Str>"""Return a new datetime with new values for the specified fields."""</Str></Expr>
+        <If>if <Compare><Name>year</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>year</Name> = <Attribute><Name>self</Name>.year</Attribute></Assign>
+       </If> <If>if <Compare><Name>month</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>month</Name> = <Attribute><Name>self</Name>.month</Attribute></Assign>
+       </If> <If>if <Compare><Name>day</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>day</Name> = <Attribute><Name>self</Name>.day</Attribute></Assign>
+       </If> <If>if <Compare><Name>hour</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>hour</Name> = <Attribute><Name>self</Name>.hour</Attribute></Assign>
+       </If> <If>if <Compare><Name>minute</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>minute</Name> = <Attribute><Name>self</Name>.minute</Attribute></Assign>
+       </If> <If>if <Compare><Name>second</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>second</Name> = <Attribute><Name>self</Name>.second</Attribute></Assign>
+       </If> <If>if <Compare><Name>microsecond</Name> is <Name>None</Name></Compare>:
+            <Assign><Name>microsecond</Name> = <Attribute><Name>self</Name>.microsecond</Attribute></Assign>
+       </If> <If>if <Compare><Name>tzinfo</Name> is <Name>True</Name></Compare>:
+            <Assign><Name>tzinfo</Name> = <Attribute><Name>self</Name>.tzinfo</Attribute></Assign>
+       </If> <Expr><Call><Name>_check_date_fields</Name>(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>)</Call></Expr>
+        <Expr><Call><Name>_check_time_fields</Name>(<Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>, <Name>microsecond</Name>)</Call></Expr>
+        <Expr><Call><Name>_check_tzinfo_arg</Name>(<Name>tzinfo</Name>)</Call></Expr>
+        <Return>return <Call><Name>datetime</Name>(<Name>year</Name>, <Name>month</Name>, <Name>day</Name>, <Name>hour</Name>, <Name>minute</Name>, <Name>second</Name>,
+                          <Name>microsecond</Name>, <Name>tzinfo</Name>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def astimezone(<Name>self</Name>, <Name>tz</Name>):
+        <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>tz</Name>, <Name>tzinfo</Name>)</Call></UnaryOp>:
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"tz argument must be an instance of tzinfo"</Str>)</Call></Raise>
+
+       </If> <Assign><Name>mytz</Name> = <Attribute><Name>self</Name>.tzinfo</Attribute></Assign>
+        <If>if <Compare><Name>mytz</Name> is <Name>None</Name></Compare>:
+            <Raise>raise <Call><Name>ValueError</Name>(<Str>"astimezone() requires an aware datetime"</Str>)</Call></Raise>
+
+       </If> <If>if <Compare><Name>tz</Name> is <Name>mytz</Name></Compare>:
+            <Return>return <Name>self</Name></Return>
+
+        # Convert self to UTC, and attach the new time zone object.
+       </If> <Assign><Name>myoffset</Name> = <Call><Attribute><Name>self</Name>.utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>myoffset</Name> is <Name>None</Name></Compare>:
+            <Raise>raise <Call><Name>ValuError</Name>(<Str>"astimezone() requires an aware datetime"</Str>)</Call></Raise>
+       </If> <Assign><Name>utc</Name> = <Call><Attribute><BinOp>(<Name>self</Name> - <Name>myoffset</Name>)</BinOp>.replace</Attribute>(tzinfo=<Name>tz</Name>)</Call></Assign>
+
+        # Convert from UTC to tz's local time.
+        <Return>return <Call><Attribute><Name>tz</Name>.fromutc</Attribute>(<Name>utc</Name>)</Call></Return>
+
+    # Ways to produce a string.
+
+   </FunctionDef> <FunctionDef>def ctime(<Name>self</Name>):
+        <Expr><Str>"Format a la ctime()."</Str></Expr>
+        <Assign><Name>t</Name> = <Call><Name>tmxxx</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>, <Attribute><Name>self</Name>.__hour</Attribute>,
+                  <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>)</Call></Assign>
+        <Return>return <Call><Attribute><Name>t</Name>.ctime</Attribute>()</Call></Return>
+
+   </FunctionDef> <FunctionDef>def isoformat(<Name>self</Name>, <Name>sep</Name>=<Str>'T'</Str>):
+        <Expr><Str>"""Return the time formatted according to ISO.
+
+        This is 'YYYY-MM-DD HH:MM:SS.mmmmmm', or 'YYYY-MM-DD HH:MM:SS' if
+        self.microsecond == 0.
+
+        If self.tzinfo is not None, the UTC offset is also attached, giving
+        'YYYY-MM-DD HH:MM:SS.mmmmmm+HH:MM' or 'YYYY-MM-DD HH:MM:SS+HH:MM'.
+
+        Optional argument sep specifies the separator between date and
+        time, default 'T'.
+        """</Str></Expr>
+        <Assign><Name>s</Name> = <BinOp>(<BinOp><Str>"%04d-%02d-%02d%c"</Str></BinOp> % <Tuple>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>,
+                                  <Name>sep</Name>)</Tuple> +
+                <Call><Name>_format_time</Name>(<Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                             <Attribute><Name>self</Name>.__microsecond</Attribute>)</Call>)</BinOp></Assign>
+        <Assign><Name>off</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>off</Name> is not <Name>None</Name></Compare>:
+            <If>if <Compare><Name>off</Name> &lt; <Num>0</Num></Compare>:
+                <Assign><Name>sign</Name> = <Str>"-"</Str></Assign>
+                <Assign><Name>off</Name> = <UnaryOp>-<Name>off</Name></UnaryOp></Assign>
+            else:
+                <Assign><Name>sign</Name> = <Str>"+"</Str></Assign>
+           </If> <Assign><Tuple><Name>hh</Name>, <Name>mm</Name></Tuple> = <Call><Name>divmod</Name>(<Name>off</Name>, <Num>60</Num>)</Call></Assign>
+            <AugAssign><Name>s</Name> += <BinOp><Str>"%s%02d:%02d"</Str> % <Tuple>(<Name>sign</Name>, <Name>hh</Name>, <Name>mm</Name>)</Tuple></BinOp></AugAssign>
+       </If> <Return>return <Name>s</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __repr__(<Name>self</Name>):
+        <Expr><Str>"Convert to formal string, for repr()."</Str></Expr>
+        <Assign><Name>L</Name> = <List>[<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>, # These are never zero
+             <Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>, <Attribute><Name>self</Name>.__microsecond</Attribute>]</List></Assign>
+        <If>if <Compare><Subscript><Name>L</Name>[<Index><Num>-1</Num></Index>]</Subscript> == <Num>0</Num></Compare>:
+            <Delete>del <Subscript><Name>L</Name>[<Index><Num>-1</Num></Index>]</Subscript></Delete>
+       </If> <If>if <Compare><Subscript><Name>L</Name>[<Index><Num>-1</Num></Index>]</Subscript> == <Num>0</Num></Compare>:
+            <Delete>del <Subscript><Name>L</Name>[<Index><Num>-1</Num></Index>]</Subscript></Delete>
+       </If> <Assign><Name>s</Name> = <Call><Attribute><Str>", "</Str>.join</Attribute>(<Call><Name>map</Name>(<Name>str</Name>, <Name>L</Name>)</Call>)</Call></Assign>
+        <Assign><Name>s</Name> = <BinOp><Str>"%s(%s)"</Str> % <Tuple>(<BinOp><Str>'datetime.'</Str> + <Attribute><Attribute><Name>self</Name>.__class__</Attribute>.__name__</Attribute></BinOp>, <Name>s</Name>)</Tuple></BinOp></Assign>
+        <If>if <Compare><Attribute><Name>self</Name>._tzinfo</Attribute> is not <Name>None</Name></Compare>:
+            <Assert>assert <Compare><Subscript><Name>s</Name>[<Slice><Num>-1</Num>:</Slice>]</Subscript> == <Str>")"</Str></Compare></Assert>
+            <Assign><Name>s</Name> = <BinOp><BinOp><Subscript><Name>s</Name>[<Slice>:<Num>-1</Num></Slice>]</Subscript></BinOp> + <BinOp><Str>", tzinfo=%r"</Str></BinOp> % <Attribute><Name>self</Name>._tzinfo</Attribute> + <Str>")"</Str></BinOp></Assign>
+       </If> <Return>return <Name>s</Name></Return>
+
+   </FunctionDef> <FunctionDef>def __str__(<Name>self</Name>):
+        <Expr><Str>"Convert to string, for str()."</Str></Expr>
+        <Return>return <Call><Attribute><Name>self</Name>.isoformat</Attribute>(sep=<Str>' '</Str>)</Call></Return>
+
+   </FunctionDef> <FunctionDef>def utcoffset(<Name>self</Name>):
+        <Expr><Str>"""Return the timezone offset in minutes east of UTC (negative west of
+        UTC)."""</Str></Expr>
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"utcoffset"</Str>, <Name>self</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"utcoffset"</Str>, <Name>offset</Name>)</Call></Assign>
+        <If>if <Compare><Name>offset</Name> is not <Name>None</Name></Compare>:
+            <Assign><Name>offset</Name> = <Call><Name>timedelta</Name>(minutes=<Name>offset</Name>)</Call></Assign>
+       </If> <Return>return <Name>offset</Name></Return>
+
+    # Return an integer (or None) instead of a timedelta (or None).
+   </FunctionDef> <FunctionDef>def _utcoffset(<Name>self</Name>):
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"utcoffset"</Str>, <Name>self</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"utcoffset"</Str>, <Name>offset</Name>)</Call></Assign>
+        <Return>return <Name>offset</Name></Return>
+
+   </FunctionDef> <FunctionDef>def tzname(<Name>self</Name>):
+        <Expr><Str>"""Return the timezone name.
+
+        Note that the name is 100% informational -- there's no requirement that
+        it mean anything in particular. For example, "GMT", "UTC", "-500",
+        "-5:00", "EDT", "US/Eastern", "America/New York" are all valid replies.
+        """</Str></Expr>
+        <Assign><Name>name</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"tzname"</Str>, <Name>self</Name>)</Call></Assign>
+        <Expr><Call><Name>_check_tzname</Name>(<Name>name</Name>)</Call></Expr>
+        <Return>return <Name>name</Name></Return>
+
+   </FunctionDef> <FunctionDef>def dst(<Name>self</Name>):
+        <Expr><Str>"""Return 0 if DST is not in effect, or the DST offset (in minutes
+        eastward) if DST is in effect.
+
+        This is purely informational; the DST offset has already been added to
+        the UTC offset returned by utcoffset() if applicable, so there's no
+        need to consult dst() unless you're interested in displaying the DST
+        info.
+        """</Str></Expr>
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"dst"</Str>, <Name>self</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"dst"</Str>, <Name>offset</Name>)</Call></Assign>
+        <If>if <Compare><Name>offset</Name> is not <Name>None</Name></Compare>:
+            <Assign><Name>offset</Name> = <Call><Name>timedelta</Name>(minutes=<Name>offset</Name>)</Call></Assign>
+       </If> <Return>return <Name>offset</Name></Return>
+
+    # Return an integer (or None) instead of a timedelta (or None).1573
+   </FunctionDef> <FunctionDef>def _dst(<Name>self</Name>):
+        <Assign><Name>offset</Name> = <Call><Name>_call_tzinfo_method</Name>(<Attribute><Name>self</Name>._tzinfo</Attribute>, <Str>"dst"</Str>, <Name>self</Name>)</Call></Assign>
+        <Assign><Name>offset</Name> = <Call><Name>_check_utc_offset</Name>(<Str>"dst"</Str>, <Name>offset</Name>)</Call></Assign>
+        <Return>return <Name>offset</Name></Return>
+
+    # Comparisons.
+
+   </FunctionDef> <FunctionDef>def __eq__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> == <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Return>return <Name>False</Name></Return>
+
+   </If></If></FunctionDef> <FunctionDef>def __ne__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> != <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Return>return <Name>True</Name></Return>
+
+   </If></If></FunctionDef> <FunctionDef>def __le__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt;= <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __lt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &lt; <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __ge__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt;= <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __gt__(<Name>self</Name>, <Name>other</Name>):
+        <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call>:
+            <Return>return <Compare><Call><Attribute><Name>self</Name>.__cmp</Attribute>(<Name>other</Name>)</Call> &gt; <Num>0</Num></Compare></Return>
+        <If>elif <Call><Name>hasattr</Name>(<Name>other</Name>, <Str>"timetuple"</Str>)</Call>:
+            <Return>return <Name>NotImplemented</Name></Return>
+        else:
+            <Expr><Call><Name>_cmperror</Name>(<Name>self</Name>, <Name>other</Name>)</Call></Expr>
+
+   </If></If></FunctionDef> <FunctionDef>def __cmp(<Name>self</Name>, <Name>other</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call></Assert>
+        <Assign><Name>mytz</Name> = <Attribute><Name>self</Name>._tzinfo</Attribute></Assign>
+        <Assign><Name>ottz</Name> = <Attribute><Name>other</Name>._tzinfo</Attribute></Assign>
+        <Assign><Name>myoff</Name> = <Name>otoff</Name> = <Name>None</Name></Assign>
+
+        <If>if <Compare><Name>mytz</Name> is <Name>ottz</Name></Compare>:
+            <Assign><Name>base_compare</Name> = <Name>True</Name></Assign>
+        else:
+            <If>if <Compare><Name>mytz</Name> is not <Name>None</Name></Compare>:
+                <Assign><Name>myoff</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+           </If> <If>if <Compare><Name>ottz</Name> is not <Name>None</Name></Compare>:
+                <Assign><Name>otoff</Name> = <Call><Attribute><Name>other</Name>._utcoffset</Attribute>()</Call></Assign>
+           </If> <Assign><Name>base_compare</Name> = <Compare><Name>myoff</Name> == <Name>otoff</Name></Compare></Assign>
+
+       </If> <If>if <Name>base_compare</Name>:
+            <Return>return <Call><Name>cmp</Name>(<Tuple>(<Attribute><Name>self</Name>.__year</Attribute>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>,
+                        <Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                        <Attribute><Name>self</Name>.__microsecond</Attribute>)</Tuple>,
+                       <Tuple>(<Attribute><Name>other</Name>.__year</Attribute>, <Attribute><Name>other</Name>.__month</Attribute>, <Attribute><Name>other</Name>.__day</Attribute>,
+                        <Attribute><Name>other</Name>.__hour</Attribute>, <Attribute><Name>other</Name>.__minute</Attribute>, <Attribute><Name>other</Name>.__second</Attribute>,
+                        <Attribute><Name>other</Name>.__microsecond</Attribute>)</Tuple>)</Call></Return>
+       </If> <If>if <BoolOp><Compare><Name>myoff</Name> is <Name>None</Name></Compare> or <Compare><Name>otoff</Name> is <Name>None</Name></Compare></BoolOp>:
+            # XXX Buggy in 2.2.2.
+            <Raise>raise <Call><Name>TypeError</Name>(<Str>"cannot compare naive and aware datetimes"</Str>)</Call></Raise>
+        # XXX What follows could be done more efficiently...
+       </If> <Assign><Name>diff</Name> = <BinOp><Name>self</Name> - <Name>other</Name></BinOp></Assign>     # this will take offsets into account
+        <If>if <Compare><Attribute><Name>diff</Name>.days</Attribute> &lt; <Num>0</Num></Compare>:
+            <Return>return <Num>-1</Num></Return>
+       </If> <Return>return <BoolOp><BoolOp><Name>diff</Name></BoolOp> and <Num>1</Num> or <Num>0</Num></BoolOp></Return>
+
+   </FunctionDef> <FunctionDef>def __add__(<Name>self</Name>, <Name>other</Name>):
+        <Expr><Str>"Add a datetime and a timedelta."</Str></Expr>
+        <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call></UnaryOp>:
+            <Return>return <Name>NotImplemented</Name></Return>
+       </If> <Assign><Name>t</Name> = <Call><Name>tmxxx</Name>(<Attribute><Name>self</Name>.__year</Attribute>,
+                  <Attribute><Name>self</Name>.__month</Attribute>,
+                  <BinOp><Attribute><Name>self</Name>.__day</Attribute> + <Attribute><Name>other</Name>.days</Attribute></BinOp>,
+                  <Attribute><Name>self</Name>.__hour</Attribute>,
+                  <Attribute><Name>self</Name>.__minute</Attribute>,
+                  <BinOp><Attribute><Name>self</Name>.__second</Attribute> + <Attribute><Name>other</Name>.seconds</Attribute></BinOp>,
+                  <BinOp><Attribute><Name>self</Name>.__microsecond</Attribute> + <Attribute><Name>other</Name>.microseconds</Attribute></BinOp>)</Call></Assign>
+        <Expr><Call><Attribute><Name>self</Name>._checkOverflow</Attribute>(<Attribute><Name>t</Name>.year</Attribute>)</Call></Expr>
+        <Assign><Name>result</Name> = <Call><Attribute><Name>self</Name>.__class__</Attribute>(<Attribute><Name>t</Name>.year</Attribute>, <Attribute><Name>t</Name>.month</Attribute>, <Attribute><Name>t</Name>.day</Attribute>,
+                                <Attribute><Name>t</Name>.hour</Attribute>, <Attribute><Name>t</Name>.minute</Attribute>, <Attribute><Name>t</Name>.second</Attribute>,
+                                <Attribute><Name>t</Name>.microsecond</Attribute>, tzinfo=<Attribute><Name>self</Name>._tzinfo</Attribute>)</Call></Assign>
+        <Return>return <Name>result</Name></Return>
+
+   </FunctionDef> <Assign><Name>__radd__</Name> = <Name>__add__</Name></Assign>
+
+    <FunctionDef>def __sub__(<Name>self</Name>, <Name>other</Name>):
+        <Expr><Str>"Subtract two datetimes, or a datetime and a timedelta."</Str></Expr>
+        <If>if <UnaryOp>not <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>datetime</Name>)</Call></UnaryOp>:
+            <If>if <Call><Name>isinstance</Name>(<Name>other</Name>, <Name>timedelta</Name>)</Call>:
+                <Return>return <BinOp><Name>self</Name> + <UnaryOp>-<Name>other</Name></UnaryOp></BinOp></Return>
+           </If> <Return>return <Name>NotImplemented</Name></Return>
+
+       </If> <Assign><Name>days1</Name> = <Call><Attribute><Name>self</Name>.toordinal</Attribute>()</Call></Assign>
+        <Assign><Name>days2</Name> = <Call><Attribute><Name>other</Name>.toordinal</Attribute>()</Call></Assign>
+        <Assign><Name>secs1</Name> = <BinOp><BinOp><Attribute><Name>self</Name>.__second</Attribute></BinOp> + <BinOp><Attribute><Name>self</Name>.__minute</Attribute></BinOp> * <Num>60</Num> + <BinOp><Attribute><Name>self</Name>.__hour</Attribute></BinOp> * <Num>3600</Num></BinOp></Assign>
+        <Assign><Name>secs2</Name> = <BinOp><BinOp><Attribute><Name>other</Name>.__second</Attribute></BinOp> + <BinOp><Attribute><Name>other</Name>.__minute</Attribute></BinOp> * <Num>60</Num> + <BinOp><Attribute><Name>other</Name>.__hour</Attribute></BinOp> * <Num>3600</Num></BinOp></Assign>
+        <Assign><Name>base</Name> = <Call><Name>timedelta</Name>(<BinOp><Name>days1</Name> - <Name>days2</Name></BinOp>,
+                         <BinOp><Name>secs1</Name> - <Name>secs2</Name></BinOp>,
+                         <BinOp><Attribute><Name>self</Name>.__microsecond</Attribute> - <Attribute><Name>other</Name>.__microsecond</Attribute></BinOp>)</Call></Assign>
+        <If>if <Compare><Attribute><Name>self</Name>._tzinfo</Attribute> is <Attribute><Name>other</Name>._tzinfo</Attribute></Compare>:
+            <Return>return <Name>base</Name></Return>
+       </If> <Assign><Name>myoff</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <Assign><Name>otoff</Name> = <Call><Attribute><Name>other</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>myoff</Name> == <Name>otoff</Name></Compare>:
+            <Return>return <Name>base</Name></Return>
+       </If> <If>if <BoolOp><Compare><Name>myoff</Name> is <Name>None</Name></Compare> or <Compare><Name>otoff</Name> is <Name>None</Name></Compare></BoolOp>:
+            <Raise>raise <Name>TypeError</Name>, <Str>"cannot mix naive and timezone-aware time"</Str></Raise>
+       </If> <Return>return <BinOp><Name>base</Name> + <Call><Name>timedelta</Name>(minutes = <BinOp><Name>otoff</Name>-<Name>myoff</Name></BinOp>)</Call></BinOp></Return>
+
+   </FunctionDef> <FunctionDef>def __hash__(<Name>self</Name>):
+        <Assign><Name>tzoff</Name> = <Call><Attribute><Name>self</Name>._utcoffset</Attribute>()</Call></Assign>
+        <If>if <Compare><Name>tzoff</Name> is <Name>None</Name></Compare>:
+            <Return>return <Call><Name>hash</Name>(<Subscript><Attribute><Name>self</Name>.__getstate</Attribute><Call>()</Call>[<Index><Num>0</Num></Index>]</Subscript>)</Call></Return>
+       </If> <Assign><Name>days</Name> = <Call><Name>_ymd2ord</Name>(<Attribute><Name>self</Name>.year</Attribute>, <Attribute><Name>self</Name>.month</Attribute>, <Attribute><Name>self</Name>.day</Attribute>)</Call></Assign>
+        <Assign><Name>seconds</Name> = <BinOp><BinOp><BinOp><Attribute><Name>self</Name>.hour</Attribute></BinOp></BinOp> * <Num>3600</Num> + <BinOp><BinOp>(<Attribute><Name>self</Name>.minute</Attribute> - <Name>tzoff</Name>)</BinOp></BinOp> * <Num>60</Num> + <Attribute><Name>self</Name>.second</Attribute></BinOp></Assign>
+        <Return>return <Call><Name>hash</Name>(<Call><Name>timedelta</Name>(<Name>days</Name>, <Name>seconds</Name>, <Attribute><Name>self</Name>.microsecond</Attribute>)</Call>)</Call></Return>
+
+    # Pickle support.
+
+   </FunctionDef> <Assign><Name>__safe_for_unpickling__</Name> = <Name>True</Name></Assign>      # For Python 2.2
+
+    <FunctionDef>def __getstate(<Name>self</Name>):
+        <Assign><Tuple><Name>yhi</Name>, <Name>ylo</Name></Tuple> = <Call><Name>divmod</Name>(<Attribute><Name>self</Name>.__year</Attribute>, <Num>256</Num>)</Call></Assign>
+        <Assign><Tuple><Name>us2</Name>, <Name>us3</Name></Tuple> = <Call><Name>divmod</Name>(<Attribute><Name>self</Name>.__microsecond</Attribute>, <Num>256</Num>)</Call></Assign>
+        <Assign><Tuple><Name>us1</Name>, <Name>us2</Name></Tuple> = <Call><Name>divmod</Name>(<Name>us2</Name>, <Num>256</Num>)</Call></Assign>
+        <Assign><Name>basestate</Name> = <BinOp><BinOp>(<Str>"%c"</Str> * <Num>10</Num>)</BinOp> % <Tuple>(<Name>yhi</Name>, <Name>ylo</Name>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>,
+                                   <Attribute><Name>self</Name>.__hour</Attribute>, <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>,
+                                   <Name>us1</Name>, <Name>us2</Name>, <Name>us3</Name>)</Tuple></BinOp></Assign>
+        <If>if <Compare><Attribute><Name>self</Name>._tzinfo</Attribute> is <Name>None</Name></Compare>:
+            <Return>return <Tuple>(<Name>basestate</Name>,)</Tuple></Return>
+        else:
+            <Return>return <Tuple>(<Name>basestate</Name>, <Attribute><Name>self</Name>._tzinfo</Attribute>)</Tuple></Return>
+
+   </If></FunctionDef> <FunctionDef>def __setstate(<Name>self</Name>, <Name>state</Name>):
+        <Assert>assert <Call><Name>isinstance</Name>(<Name>state</Name>, <Name>tuple</Name>)</Call></Assert>
+        <Assert>assert <Compare><Num>1</Num> &lt;= <Call><Name>len</Name>(<Name>state</Name>)</Call> &lt;= <Num>2</Num></Compare></Assert>
+        <Assign><Name>string</Name> = <Subscript><Name>state</Name>[<Index><Num>0</Num></Index>]</Subscript></Assign>
+        <Assert>assert <Compare><Call><Name>len</Name>(<Name>string</Name>)</Call> == <Num>10</Num></Compare></Assert>
+        <Assign><Tuple>(<Name>yhi</Name>, <Name>ylo</Name>, <Attribute><Name>self</Name>.__month</Attribute>, <Attribute><Name>self</Name>.__day</Attribute>, <Attribute><Name>self</Name>.__hour</Attribute>,
+         <Attribute><Name>self</Name>.__minute</Attribute>, <Attribute><Name>self</Name>.__second</Attribute>, <Name>us1</Name>, <Name>us2</Name>, <Name>us3</Name>)</Tuple> = <Call><Name>map</Name>(<Name>ord</Name>, <Name>string</Name>)</Call></Assign>
+        <Assign><Attribute><Name>self</Name>.__year</Attribute> = <BinOp><BinOp><Name>yhi</Name></BinOp> * <Num>256</Num> + <Name>ylo</Name></BinOp></Assign>
+        <Assign><Attribute><Name>self</Name>.__microsecond</Attribute> = <BinOp><BinOp>(<BinOp>(<BinOp>(<Name>us1</Name> &lt;&lt; <Num>8</Num>)</BinOp> | <Name>us2</Name>)</BinOp> &lt;&lt; <Num>8</Num>)</BinOp> | <Name>us3</Name></BinOp></Assign>
+        <If>if <Compare><Call><Name>len</Name>(<Name>state</Name>)</Call> == <Num>1</Num></Compare>:
+            <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Name>None</Name></Assign>
+        else:
+            <Assign><Attribute><Name>self</Name>._tzinfo</Attribute> = <Subscript><Name>state</Name>[<Index><Num>1</Num></Index>]</Subscript></Assign>
+
+   </If></FunctionDef> <FunctionDef>def __reduce__(<Name>self</Name>):
+        <Return>return <Tuple>(<Attribute><Name>self</Name>.__class__</Attribute>, <Call><Attribute><Name>self</Name>.__getstate</Attribute>()</Call>)</Tuple></Return>
+
+
+</FunctionDef></ClassDef><Assign><Attribute><Name>datetime</Name>.min</Attribute> = <Call><Name>datetime</Name>(<Num>1</Num>, <Num>1</Num>, <Num>1</Num>)</Call></Assign>
+<Assign><Attribute><Name>datetime</Name>.max</Attribute> = <Call><Name>datetime</Name>(<Num>9999</Num>, <Num>12</Num>, <Num>31</Num>, <Num>23</Num>, <Num>59</Num>, <Num>59</Num>, <Num>999999</Num>)</Call></Assign>
+<Assign><Attribute><Name>datetime</Name>.resolution</Attribute> = <Call><Name>timedelta</Name>(microseconds=<Num>1</Num>)</Call></Assign>
+
+
+<FunctionDef>def _isoweek1monday(<Name>year</Name>):
+    # Helper to calculate the day number of the Monday starting week 1
+    # XXX This could be done more efficiently
+    <Assign><Name>THURSDAY</Name> = <Num>3</Num></Assign>
+    <Assign><Name>firstday</Name> = <Call><Name>_ymd2ord</Name>(<Name>year</Name>, <Num>1</Num>, <Num>1</Num>)</Call></Assign>
+    <Assign><Name>firstweekday</Name> = <BinOp><BinOp>(<Name>firstday</Name> + <Num>6</Num>)</BinOp> % <Num>7</Num></BinOp></Assign> # See weekday() above
+    <Assign><Name>week1monday</Name> = <BinOp><Name>firstday</Name> - <Name>firstweekday</Name></BinOp></Assign>
+    <If>if <Compare><Name>firstweekday</Name> &gt; <Name>THURSDAY</Name></Compare>:
+        <AugAssign><Name>week1monday</Name> += <Num>7</Num></AugAssign>
+   </If> <Return>return <Name>week1monday</Name></Return>
+
+</FunctionDef><Expr><Str>"""
+Some time zone algebra.  For a datetime x, let
+    x.n = x stripped of its timezone -- its naive time.
+    x.o = x.utcoffset(), and assuming that doesn't raise an exception or
+          return None
+    x.d = x.dst(), and assuming that doesn't raise an exception or
+          return None
+    x.s = x's standard offset, x.o - x.d
+
+Now some derived rules, where k is a duration (timedelta).
+
+1. x.o = x.s + x.d
+   This follows from the definition of x.s.
+
+2. If x and y have the same tzinfo member, x.s = y.s.
+   This is actually a requirement, an assumption we need to make about
+   sane tzinfo classes.
+
+3. The naive UTC time corresponding to x is x.n - x.o.
+   This is again a requirement for a sane tzinfo class.
+
+4. (x+k).s = x.s
+   This follows from #2, and that datimetimetz+timedelta preserves tzinfo.
+
+5. (x+k).n = x.n + k
+   Again follows from how arithmetic is defined.
+
+Now we can explain tz.fromutc(x).  Let's assume it's an interesting case
+(meaning that the various tzinfo methods exist, and don't blow up or return
+None when called).
+
+The function wants to return a datetime y with timezone tz, equivalent to x.
+x is already in UTC.
+
+By #3, we want
+
+    y.n - y.o = x.n                             [1]
+
+The algorithm starts by attaching tz to x.n, and calling that y.  So
+x.n = y.n at the start.  Then it wants to add a duration k to y, so that [1]
+becomes true; in effect, we want to solve [2] for k:
+
+   (y+k).n - (y+k).o = x.n                      [2]
+
+By #1, this is the same as
+
+   (y+k).n - ((y+k).s + (y+k).d) = x.n          [3]
+
+By #5, (y+k).n = y.n + k, which equals x.n + k because x.n=y.n at the start.
+Substituting that into [3],
+
+   x.n + k - (y+k).s - (y+k).d = x.n; the x.n terms cancel, leaving
+   k - (y+k).s - (y+k).d = 0; rearranging,
+   k = (y+k).s - (y+k).d; by #4, (y+k).s == y.s, so
+   k = y.s - (y+k).d
+
+On the RHS, (y+k).d can't be computed directly, but y.s can be, and we
+approximate k by ignoring the (y+k).d term at first.  Note that k can't be
+very large, since all offset-returning methods return a duration of magnitude
+less than 24 hours.  For that reason, if y is firmly in std time, (y+k).d must
+be 0, so ignoring it has no consequence then.
+
+In any case, the new value is
+
+    z = y + y.s                                 [4]
+
+It's helpful to step back at look at [4] from a higher level:  it's simply
+mapping from UTC to tz's standard time.
+
+At this point, if
+
+    z.n - z.o = x.n                             [5]
+
+we have an equivalent time, and are almost done.  The insecurity here is
+at the start of daylight time.  Picture US Eastern for concreteness.  The wall
+time jumps from 1:59 to 3:00, and wall hours of the form 2:MM don't make good
+sense then.  The docs ask that an Eastern tzinfo class consider such a time to
+be EDT (because it's "after 2"), which is a redundant spelling of 1:MM EST
+on the day DST starts.  We want to return the 1:MM EST spelling because that's
+the only spelling that makes sense on the local wall clock.
+
+In fact, if [5] holds at this point, we do have the standard-time spelling,
+but that takes a bit of proof.  We first prove a stronger result.  What's the
+difference between the LHS and RHS of [5]?  Let
+
+    diff = x.n - (z.n - z.o)                    [6]
+
+Now
+    z.n =                       by [4]
+    (y + y.s).n =               by #5
+    y.n + y.s =                 since y.n = x.n
+    x.n + y.s =                 since z and y are have the same tzinfo member,
+                                    y.s = z.s by #2
+    x.n + z.s
+
+Plugging that back into [6] gives
+
+    diff =
+    x.n - ((x.n + z.s) - z.o) =     expanding
+    x.n - x.n - z.s + z.o =         cancelling
+    - z.s + z.o =                   by #2
+    z.d
+
+So diff = z.d.
+
+If [5] is true now, diff = 0, so z.d = 0 too, and we have the standard-time
+spelling we wanted in the endcase described above.  We're done.  Contrarily,
+if z.d = 0, then we have a UTC equivalent, and are also done.
+
+If [5] is not true now, diff = z.d != 0, and z.d is the offset we need to
+add to z (in effect, z is in tz's standard time, and we need to shift the
+local clock into tz's daylight time).
+
+Let
+
+    z' = z + z.d = z + diff                     [7]
+
+and we can again ask whether
+
+    z'.n - z'.o = x.n                           [8]
+
+If so, we're done.  If not, the tzinfo class is insane, according to the
+assumptions we've made.  This also requires a bit of proof.  As before, let's
+compute the difference between the LHS and RHS of [8] (and skipping some of
+the justifications for the kinds of substitutions we've done several times
+already):
+
+    diff' = x.n - (z'.n - z'.o) =           replacing z'.n via [7]
+            x.n  - (z.n + diff - z'.o) =    replacing diff via [6]
+            x.n - (z.n + x.n - (z.n - z.o) - z'.o) =
+            x.n - z.n - x.n + z.n - z.o + z'.o =    cancel x.n
+            - z.n + z.n - z.o + z'.o =              cancel z.n
+            - z.o + z'.o =                      #1 twice
+            -z.s - z.d + z'.s + z'.d =          z and z' have same tzinfo
+            z'.d - z.d
+
+So z' is UTC-equivalent to x iff z'.d = z.d at this point.  If they are equal,
+we've found the UTC-equivalent so are done.  In fact, we stop with [7] and
+return z', not bothering to compute z'.d.
+
+How could z.d and z'd differ?  z' = z + z.d [7], so merely moving z' by
+a dst() offset, and starting *from* a time already in DST (we know z.d != 0),
+would have to change the result dst() returns:  we start in DST, and moving
+a little further into it takes us out of DST.
+
+There isn't a sane case where this can happen.  The closest it gets is at
+the end of DST, where there's an hour in UTC with no spelling in a hybrid
+tzinfo class.  In US Eastern, that's 5:MM UTC = 0:MM EST = 1:MM EDT.  During
+that hour, on an Eastern clock 1:MM is taken as being in standard time (6:MM
+UTC) because the docs insist on that, but 0:MM is taken as being in daylight
+time (4:MM UTC).  There is no local time mapping to 5:MM UTC.  The local
+clock jumps from 1:59 back to 1:00 again, and repeats the 1:MM hour in
+standard time.  Since that's what the local clock *does*, we want to map both
+UTC hours 5:MM and 6:MM to 1:MM Eastern.  The result is ambiguous
+in local time, but so it goes -- it's the way the local clock works.
+
+When x = 5:MM UTC is the input to this algorithm, x.o=0, y.o=-5 and y.d=0,
+so z=0:MM.  z.d=60 (minutes) then, so [5] doesn't hold and we keep going.
+z' = z + z.d = 1:MM then, and z'.d=0, and z'.d - z.d = -60 != 0 so [8]
+(correctly) concludes that z' is not UTC-equivalent to x.
+
+Because we know z.d said z was in daylight time (else [5] would have held and
+we would have stopped then), and we know z.d != z'.d (else [8] would have held
+and we we have stopped then), and there are only 2 possible values dst() can
+return in Eastern, it follows that z'.d must be 0 (which it is in the example,
+but the reasoning doesn't depend on the example -- it depends on there being
+two possible dst() outcomes, one zero and the other non-zero).  Therefore
+z' must be in standard time, and is the spelling we want in this case.
+
+Note again that z' is not UTC-equivalent as far as the hybrid tzinfo class is
+concerned (because it takes z' as being in standard time rather than the
+daylight time we intend here), but returning it gives the real-life "local
+clock repeats an hour" behavior when mapping the "unspellable" UTC hour into
+tz.
+
+When the input is 6:MM, z=1:MM and z.d=0, and we stop at once, again with
+the 1:MM standard time spelling we want.
+
+So how can this break?  One of the assumptions must be violated.  Two
+possibilities:
+
+1) [2] effectively says that y.s is invariant across all y belong to a given
+   time zone.  This isn't true if, for political reasons or continental drift,
+   a region decides to change its base offset from UTC.
+
+2) There may be versions of "double daylight" time where the tail end of
+   the analysis gives up a step too early.  I haven't thought about that
+   enough to say.
+
+In any case, it's clear that the default fromutc() is strong enough to handle
+"almost all" time zones:  so long as the standard offset is invariant, it
+doesn't matter if daylight time transition points change from year to year, or
+if daylight time is skipped in some years; it doesn't matter how large or
+small dst() may get within its bounds; and it doesn't even matter if some
+perverse time zone returns a negative dst()).  So a breaking case must be
+pretty bizarre, and a tzinfo subclass can override fromutc() if it is.
+"""</Str></Expr>
+
+<FunctionDef>def _test():
+    <Import>import test_datetime</Import>
+    <Expr><Call><Attribute><Name>test_datetime</Name>.test_main</Attribute>()</Call></Expr>
+
+</FunctionDef><If>if <Compare><Name>__name__</Name> == <Str>"__main__"</Str></Compare>:
+    <Expr><Call><Name>_test</Name>()</Call></Expr></If></Module>

@@ -1,0 +1,14 @@
+=============================================
+<file-top>: Module : OffsetRange[0,150>
+None [read][UNRESOLVED][node=Name]
+ZipFile [read][called][UNRESOLVED][node=Name]
+binascii [bound][imported][data][read][node=Import]
+foo [bound][function][def][node=FunctionDef]
+putenv [read][called][UNRESOLVED][node=Name]
+sys [read][UNRESOLVED][node=Name]
+zip [bound][data][node=Name]
+
+    =============================================
+    foo: FunctionDef : OffsetRange[99,126>
+    x [bound][param][data][unused][node=Name]
+
