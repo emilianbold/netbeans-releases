@@ -311,9 +311,9 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             return false;
         }
 
-        final FileObject buildScriptFile = getProjectBuildScript(project);
+        final String buildScript = ProjectUtilities.getProjectBuildScript(project);
 
-        if (buildScriptFile == null) {
+        if (buildScript == null) {
             ProfilerDialogs.notify(new NotifyDescriptor.Message(MessageFormat.format(CANNOT_FIND_BUILDSCRIPT_MSG,
                                                                                      new Object[] { "build.xml" }), // NOI18N
                                                                 NotifyDescriptor.ERROR_MESSAGE));
@@ -328,8 +328,6 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                 return false; // cancelled by the user
             }
         }
-
-        String buildScript = FileUtil.toFile(buildScriptFile).getAbsolutePath();
 
         final StringBuffer newDataBuffer = new StringBuffer(buildScript.length() + 200);
         final int importIndex = buildScript.indexOf(STANDARD_IMPORT_STRING);
@@ -367,6 +365,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         newDataBuffer.append(PROFILER_IMPORT_STRING);
         newDataBuffer.append(buildScript.substring(importIndex + STANDARD_IMPORT_STRING.length() + 1));
 
+        FileObject buildScriptFile = getProjectBuildScript(project);
         FileLock lock = null;
         OutputStreamWriter writer = null;
 

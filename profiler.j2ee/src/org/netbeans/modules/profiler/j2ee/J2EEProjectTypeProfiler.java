@@ -547,7 +547,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             }
         }
 
-        final String buildScript = ProjectUtilities.getProjectBuildfilePath(project);
+        final String buildScript = ProjectUtilities.getProjectBuildScript(project);
 
         if (buildScript == null) {
             ProfilerDialogs.notify(new NotifyDescriptor.Message(MessageFormat.format(CANNOT_FIND_BUILDSCRIPT_MSG,
