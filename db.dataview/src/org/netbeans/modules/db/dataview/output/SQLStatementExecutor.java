@@ -149,7 +149,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         } else {
             rollback(conn);
             reinstateToolbar();
-            errorMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
+            errorMsg = cmdName +" "+ NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
             
             NotifyDescriptor nd = new NotifyDescriptor.Exception(new DBException(errorMsg, ex));
