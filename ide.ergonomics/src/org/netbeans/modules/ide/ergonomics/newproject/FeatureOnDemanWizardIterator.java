@@ -132,10 +132,10 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
             panels.add (new DescriptionStep ());
-            panels.add (new ToBeContinuedStep ());
+            //panels.add (new ToBeContinuedStep ());
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "ToBeContinuedStep_Name")
+//                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "ToBeContinuedStep_Name")
             
             };
             String[] steps = new String [panels.size ()];
@@ -308,7 +308,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             return ;
         }
         if (!hasNext ()) {
-            throw new NoSuchElementException ();
+            return;
         }
         index++;
     }
@@ -321,7 +321,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             return ;
         }
         if (!hasPrevious ()) {
-            throw new NoSuchElementException ();
+            return;
         }
         index--;
     }

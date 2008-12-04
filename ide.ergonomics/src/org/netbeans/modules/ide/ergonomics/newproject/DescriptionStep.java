@@ -114,8 +114,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
 
     public boolean isValid () {
-        return isValid &&
-                forInstall != null && ! forInstall.isEmpty ();
+        return false;
+//        return isValid &&
+//                ((forInstall != null && ! forInstall.isEmpty ()) ||
+//                (forEnable != null && ! forEnable.isEmpty ()));
     }
 
     public synchronized void addChangeListener (ChangeListener l) {
@@ -160,7 +162,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                                 return;
                             }
                         });
-                presentFindingModules ();
+                findingTask.waitFinished();
+   //             presentFindingModules ();
             }
         }
     };
@@ -384,5 +387,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             o + " is not null and instanceof WizardDescriptor.InstantiatingIterator";
         return (WizardDescriptor.InstantiatingIterator<?>)o;
     }
+
 }
 
