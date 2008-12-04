@@ -182,6 +182,13 @@ public abstract class RemoteCommand extends Command {
             }
         }
 
+        if (transferInfo.hasAnyPartiallyFailed()) {
+            err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemotePartiallyFailed"));
+            for (Map.Entry<TransferFile, String> entry : transferInfo.getPartiallyFailed().entrySet()) {
+                printError(err, maxRelativePath, entry.getKey(), entry.getValue());
+            }
+        }
+
         if (transferInfo.hasAnyIgnored()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
             for (Map.Entry<TransferFile, String> entry : transferInfo.getIgnored().entrySet()) {
@@ -251,6 +258,10 @@ public abstract class RemoteCommand extends Command {
     private int getRelativePathMaxSize(TransferInfo transferInfo) {
         int max = getRelativePathMaxSize(transferInfo.getTransfered());
         int size = getRelativePathMaxSize(transferInfo.getFailed().keySet());
+        if (size > max) {
+            max = size;
+        }
+        size = getRelativePathMaxSize(transferInfo.getPartiallyFailed().keySet());
         if (size > max) {
             max = size;
         }

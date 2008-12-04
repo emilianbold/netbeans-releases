@@ -331,6 +331,14 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    public int getPermissions(String path) throws RemoteException {
+        return -1;
+    }
+
+    public boolean setPermissions(int permissions, String path) throws RemoteException {
+        return false;
+    }
+
     private static final class RemoteFileImpl implements RemoteFile {
         private final ChannelSftp.LsEntry entry;
 

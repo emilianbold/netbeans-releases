@@ -311,15 +311,34 @@ public class RemoteClient implements Cancellable {
             } finally {
                 is.close();
                 if (success) {
+                    int oldPermissions = remoteClient.getPermissions(fileName);
+                    LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
+
                     success = moveRemoteFile(fileName, tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
+                    }
+
+                    if (success && oldPermissions != -1) {
+                        int newPermissions = remoteClient.getPermissions(fileName);
+                        LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
+                        if (oldPermissions != newPermissions) {
+                            LOGGER.fine(String.format("Setting permissions %d for %s.", oldPermissions, fileName));
+                            boolean permissionsSet = remoteClient.setPermissions(oldPermissions, fileName);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(String.format("Permissions for %s set: %s", fileName, permissionsSet));
+                                LOGGER.fine(String.format("Permissions for %s read: %s", fileName, remoteClient.getPermissions(fileName)));
+                            }
+                            if (!permissionsSet) {
+                                transferPartiallyFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_PermissionsNotSet", oldPermissions, file.getName()));
+                            }
+                        }
                     }
                 }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getFailureMessage(fileName, true));
+                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(fileName, true));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
@@ -330,7 +349,6 @@ public class RemoteClient implements Cancellable {
     }
 
     private boolean moveRemoteFile(String fileName, String tmpFileName) throws RemoteException {
-        String oldPath = fileName + REMOTE_TMP_OLD_SUFFIX;
         boolean moved = remoteClient.rename(tmpFileName, fileName);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpFileName, fileName, moved));
@@ -339,6 +357,7 @@ public class RemoteClient implements Cancellable {
             return true;
         }
         // possible cleanup
+        String oldPath = fileName + REMOTE_TMP_OLD_SUFFIX;
         remoteClient.deleteFile(oldPath);
 
         // try to move the old file, move the new file, delete the old file
@@ -563,7 +582,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
+                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(file.getName(), false));
                     boolean deleted = tmpLocalFile.delete();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
@@ -655,6 +674,19 @@ public class RemoteClient implements Cancellable {
         }
     }
 
+    private void transferPartiallyFailed(TransferInfo transferInfo, TransferFile file, String reason) {
+        if (!transferInfo.isPartiallyFailed(file)) {
+            transferInfo.addPartiallyFailed(file, reason);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Partially failed: " + file + ", reason: " + reason);
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Partially failed: " + file + ", reason: " + reason + " [ignored, partially failed already]");
+            }
+        }
+    }
+
     private void transferIgnored(TransferInfo transferInfo, TransferFile file, String reason) {
         if (!transferInfo.isIgnored(file)) {
             transferInfo.addIgnored(file, reason);
@@ -668,7 +700,7 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private String getFailureMessage(String fileName, boolean upload) {
+    private String getUploadDownloadFailureMessage(String fileName, boolean upload) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
             message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_CannotUploadFile" : "MSG_CannotDownloadFile", fileName);
