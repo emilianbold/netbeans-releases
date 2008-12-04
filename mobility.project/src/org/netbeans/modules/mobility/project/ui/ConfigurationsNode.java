@@ -56,6 +56,8 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.actions.AddConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.actions.SelectConfigurationAction;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualConfigSupport;
@@ -109,9 +111,9 @@ final class ConfigurationsNode extends DecoratedNode implements PropertyChangeLi
     public Action[] getActions(boolean ignored) {
         if (getLookup().lookup(Project.class).getProjectDirectory().isValid()) {
             return new Action[]{
-                        NodeActions.AddConfigurationAction.getStaticInstance(),
+                        AddConfigurationAction.getStaticInstance(),
                         null,
-                        NodeActions.SelectConfigurationAction.getStaticInstance(),
+                        SelectConfigurationAction.getStaticInstance(),
                         null,
                         SystemAction.get(PasteAction.class)
                     };

@@ -267,15 +267,9 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
     
     private String getUniqueName(String original, FacesConfig facesConfig){
         String value = original;
-        Collection<ManagedBean> beans = facesConfig.getManagedBeans();
         int count = 0;
-        for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
-            ManagedBean managedBean = it.next();
-            if (!value.equals(managedBean.getManagedBeanName())){
-                index++;
-            }
-            else {
-                index = 0;
+        for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
+            if (value.equals(managedBean.getManagedBeanName())) {
                 count++;
                 value = original+count;
             }

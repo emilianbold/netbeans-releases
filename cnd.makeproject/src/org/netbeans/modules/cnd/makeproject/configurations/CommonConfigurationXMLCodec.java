@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
  */
 /**
  * Change History:
+ * V53
+ *   New configuration types: 4 (QT_APPLICATION), 5 (QT_LIBRARY)
  * V52
  *   ASSEMBLER_REQUIRED_ELEMENT
  * V51
@@ -144,7 +146,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 52;
+    public final static int CURRENT_VERSION = 53;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N

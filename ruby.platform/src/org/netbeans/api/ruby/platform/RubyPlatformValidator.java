@@ -40,7 +40,6 @@ package org.netbeans.api.ruby.platform;
 
 import java.io.File;
 import org.netbeans.modules.ruby.platform.Util;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;

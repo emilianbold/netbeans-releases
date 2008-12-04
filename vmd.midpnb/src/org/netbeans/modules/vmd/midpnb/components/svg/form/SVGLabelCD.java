@@ -119,9 +119,8 @@ public class SVGLabelCD extends ComponentDescriptor{
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGLabelCD.class, 
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).
+                addProperty(NbBundle.getMessage(SVGLabelCD.class, 
                         "DISP_Text"), 
                         PropertyEditorString.createInstance(
                                 NbBundle.getMessage(SVGLabelCD.class, 

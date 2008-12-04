@@ -186,7 +186,7 @@ public final class VerifyUpdateCenter extends Task {
                 }
                 if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader, null).isEmpty()) {
                     log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
-                    JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+                    JUnitReportWriter.writeReport(this, null, reportFile, pseudoTests);
                     return;
                 }
                 SortedSet<String> updatedCNBs = new TreeSet<String>();
@@ -214,7 +214,7 @@ public final class VerifyUpdateCenter extends Task {
                 }
             }
         }
-        JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+        JUnitReportWriter.writeReport(this, null, reportFile, pseudoTests);
     }
 
     @SuppressWarnings("unchecked")

@@ -60,6 +60,7 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
         initComponents();
         boolean includeAssignementsInWhile = AccidentalAssignmentRule.includeAssignementsInWhile(prefs);
         cbIncludeWhile.setSelected(includeAssignementsInWhile);
+        chkTopLvlStmtOnly.setSelected(AccidentalAssignmentRule.topLevelStmtsOnly(prefs));
     }
 
     /** This method is called from within the constructor to
@@ -72,11 +73,19 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
     private void initComponents() {
 
         cbIncludeWhile = new javax.swing.JCheckBox();
+        chkTopLvlStmtOnly = new javax.swing.JCheckBox();
 
         cbIncludeWhile.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.includeWhileCB.text")); // NOI18N
         cbIncludeWhile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbIncludeWhileActionPerformed(evt);
+            }
+        });
+
+        chkTopLvlStmtOnly.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.text")); // NOI18N
+        chkTopLvlStmtOnly.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkTopLvlStmtOnlyActionPerformed(evt);
             }
         });
 
@@ -86,15 +95,19 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(cbIncludeWhile)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(chkTopLvlStmtOnly)
+                    .add(cbIncludeWhile))
                 .addContainerGap(72, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(chkTopLvlStmtOnly)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbIncludeWhile)
-                .addContainerGap(261, Short.MAX_VALUE))
+                .addContainerGap(238, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -102,9 +115,14 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
         AccidentalAssignmentRule.setIncludeAssignementsInWhile(prefs, cbIncludeWhile.isSelected());
     }//GEN-LAST:event_cbIncludeWhileActionPerformed
 
+    private void chkTopLvlStmtOnlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkTopLvlStmtOnlyActionPerformed
+        AccidentalAssignmentRule.setTopLevelStmtsOnly(prefs, chkTopLvlStmtOnly.isSelected());
+}//GEN-LAST:event_chkTopLvlStmtOnlyActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbIncludeWhile;
+    private javax.swing.JCheckBox chkTopLvlStmtOnly;
     // End of variables declaration//GEN-END:variables
 
 }

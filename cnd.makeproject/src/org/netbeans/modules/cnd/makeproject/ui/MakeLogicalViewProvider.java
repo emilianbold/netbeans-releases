@@ -764,12 +764,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return new Node[]{node};
         }
 
-        protected Collection getKeys() {
-            Collection collection = getFolder().getElements();
+        protected Collection<Object> getKeys() {
+            Collection<Object> collection = getFolder().getElements();
             switch (getFolder().getConfigurationDescriptor().getState()) {
                 case READING:
                     if (collection.size() == 0) {
-                        collection = Collections.singletonList(new LoadingNode());
+                        collection = Collections.singletonList((Object)new LoadingNode());
                     }
                     break;
                 case BROKEN:
@@ -1143,7 +1143,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
     private static final int WAIT_DELAY = 50;
 
-    private abstract class BaseMakeViewChildren extends Children.Keys
+    private abstract class BaseMakeViewChildren extends Children.Keys<Object>
             implements ChangeListener, RefreshableItemsContainer {
 
         private final Folder folder;
@@ -1215,7 +1215,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-        abstract protected Collection getKeys();
+        abstract protected Collection<Object> getKeys();
 
         public Folder getFolder() {
             return folder;
@@ -1247,7 +1247,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return new Node[]{node};
         }
 
-        protected Collection getKeys() {
+        protected Collection<Object> getKeys() {
             return getFolder().getElements();
         }
     }

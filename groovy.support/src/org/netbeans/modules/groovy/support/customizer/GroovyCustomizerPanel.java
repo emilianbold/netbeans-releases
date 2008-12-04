@@ -72,23 +72,12 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         enableGroovyCheckBox = new javax.swing.JCheckBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jLabel1 = new javax.swing.JLabel();
 
         enableGroovyCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.text")); // NOI18N
 
-        jScrollPane1.setBorder(null);
-
-        jTextArea1.setBackground(getBackground());
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.jTextArea1.text")); // NOI18N
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setAutoscrolls(false);
-        jTextArea1.setBorder(null);
-        jScrollPane1.setViewportView(jTextArea1);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.jLabel1.text")); // NOI18N
+        jLabel1.setFocusable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -96,25 +85,25 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(enableGroovyCheckBox)
-                .addContainerGap())
+                .add(25, 25, 25))
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                .add(21, 21, 21)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(enableGroovyCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jLabel1)
+                .addContainerGap(115, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox enableGroovyCheckBox;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
 }

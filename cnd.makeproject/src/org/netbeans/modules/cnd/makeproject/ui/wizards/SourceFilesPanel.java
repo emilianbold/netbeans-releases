@@ -111,7 +111,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     public Vector<FolderEntry> getListData() {
         //FolderEntry.setFileFilter((FileFilter)filterComboBox.getSelectedItem());
         String suffixes = (String) filterComboBox.getSelectedItem();
-        FolderEntry.setFileFilter(new CustomFileFilter(suffixes));
+        CustomFileFilter filter = new CustomFileFilter(suffixes);
+        for(FolderEntry fe : data){
+            fe.setFileFilter(filter);
+        }
         return data;
     }
 
@@ -181,23 +184,28 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             getAccessibleContext().setAccessibleDescription(getString("SourceFileTableAD"));
         }
 
+        @Override
         public boolean getShowHorizontalLines() {
             return false;
         }
 
+        @Override
         public boolean getShowVerticalLines() {
             return false;
         }
 
+        @Override
         public TableCellRenderer getCellRenderer(int row, int column) {
             return new MyTableCellRenderer();
         }
 
+        @Override
         public TableCellEditor getCellEditor(int row, int col) {
             JCheckBox checkBox = new JCheckBox();
             return new DefaultCellEditor(checkBox);
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
             if (col == 0) {
                 FolderEntry fileEntry = data.elementAt(row);
@@ -208,6 +216,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     class MyTableModel extends DefaultTableModel {
 
+        @Override
         public String getColumnName(int col) {
             if (col == 0) {
                 return " " + getString("TABLE_COLUMN_0_TXT"); // NOI18N
@@ -216,14 +225,17 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public int getRowCount() {
             return data.size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             if (col == 0) {
                 return data.elementAt(row);
@@ -232,6 +244,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             if (col == 0) {
                 return true;
@@ -243,6 +256,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     class MyTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             if (col == 0) {
                 JCheckBox checkBox = new JCheckBox();

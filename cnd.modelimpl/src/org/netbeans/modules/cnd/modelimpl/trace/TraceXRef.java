@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -82,7 +81,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -236,8 +234,7 @@ public class TraceXRef extends TraceModel {
     }
     private static final int FACTOR = 1;
 
-    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
-        CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
+    public static void traceProjectRefsStatistics(CsmProject csmPrj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
         XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;

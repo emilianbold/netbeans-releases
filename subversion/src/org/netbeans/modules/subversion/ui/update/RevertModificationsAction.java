@@ -90,7 +90,8 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         final Context ctx = getContext(nodes);
-        final File root = ctx.getRootFiles()[0];
+        final File root = SvnUtils.getActionRoot(ctx);
+        if(root == null) return;
         final SVNUrl rootUrl;
         final SVNUrl url;
         

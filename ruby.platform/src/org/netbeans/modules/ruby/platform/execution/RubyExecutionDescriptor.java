@@ -139,7 +139,46 @@ public class RubyExecutionDescriptor {
             addAdditionalEnv(env);
         }
     }
-    
+
+    /**
+     * Constructs a new RubyExecutionDescriptor with the same initial values
+     * as in the given <code>template</code>, i.e. effectively constructs
+     * a copy of it.
+     *
+     * @param template
+     */
+    public RubyExecutionDescriptor(RubyExecutionDescriptor template) {
+        this.pwd = template.pwd;
+        this.cmd = template.cmd;
+        this.addBinPath = template.addBinPath;
+        this.inputVisible = template.inputVisible;
+        this.displayName = template.displayName;
+        this.postBuildAction = template.postBuildAction;
+        this.platform = template.platform;
+        this.fileLocator = template.fileLocator;
+        this.script = template.script;
+        this.scriptPrefix = template.scriptPrefix;
+        this.additionalEnv = template.additionalEnv;
+        this.additionalArgs = template.additionalArgs;
+        this.initialArgs = template.initialArgs;
+        this.jvmArgs = template.jvmArgs;
+        this.fileObject = template.fileObject;
+        this.classPath = template.classPath;
+        this.showSuspended = template.showSuspended;
+        this.debug = template.debug;
+        this.fastDebugRequired = template.fastDebugRequired;
+        this.appendJdkToPath = template.appendJdkToPath;
+        this.encoding = template.encoding;
+        this.useInterpreter = template.useInterpreter;
+        this.outProcessorFactory = template.outProcessorFactory;
+        this.errProcessorFactory = template.errProcessorFactory;
+        this.outConvertors.addAll(template.outConvertors);
+        this.errConvertors.addAll(template.errConvertors);
+        this.addStandardConvertors = template.addStandardConvertors;
+        this.lineBased = template.lineBased;
+    }
+
+
     public RubyExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
         assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
@@ -188,7 +227,9 @@ public class RubyExecutionDescriptor {
     /**
      * Arguments that will be appended <em>AFTER</em> the target. Usually
      * arguments and options to the Ruby script (target, application, ..)
-     * itself.
+     * itself. Note that this will wipe out any existing additionalArgs in
+     * this descriptor, i.e. the given <code>additionalArgs</code> are <b>not</b>
+     * appended to the existing args.
      */
     public RubyExecutionDescriptor additionalArgs(final String... additionalArgs) {
         this.additionalArgs = additionalArgs;

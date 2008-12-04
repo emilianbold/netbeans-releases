@@ -106,8 +106,8 @@ public final class ProjectImpl extends ProjectBase {
         if( !acceptNativeItem(nativeFile)) {
             return;
         }
-        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
-	final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
+        if( TraceFlags.DEBUG ) {Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName());} // NOI18N
+	    final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
             impl.setBuffer(buf);
             synchronized( editedFiles ) {
@@ -127,7 +127,7 @@ public final class ProjectImpl extends ProjectBase {
         if( ! acceptNativeItem(nativeFile)) {
             return;
         }
-        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); // NOI18N
+        if( TraceFlags.DEBUG ) {Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName());} // NOI18N
         FileImpl file = getFile(buf.getFile());
         if( file != null ) {
             synchronized( editedFiles ) {
@@ -160,7 +160,7 @@ public final class ProjectImpl extends ProjectBase {
         if( ! acceptNativeItem(nativeFile)) {
             return;
         }
-        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); // NOI18N
+        if( TraceFlags.DEBUG ) {Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName());} // NOI18N
         DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
 
@@ -349,7 +349,6 @@ public final class ProjectImpl extends ProjectBase {
 
     ////////////////////////////////////////////////////////////////////////////
     private RequestProcessor.Task task = null;
-    private final static int DELAY = 1001;
 
     public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
         if (task != null) {
@@ -367,7 +366,7 @@ public final class ProjectImpl extends ProjectBase {
             }
         }, true);
         task.setPriority(Thread.MIN_PRIORITY);
-        task.schedule(DELAY);
+        task.schedule(TraceFlags.REPARSE_DELAY);
     }
 
     @Override

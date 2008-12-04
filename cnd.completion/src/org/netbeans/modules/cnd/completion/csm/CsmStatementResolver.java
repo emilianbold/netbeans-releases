@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -196,19 +197,22 @@ public class CsmStatementResolver {
                 CsmFunction fun = (CsmFunction) decl;
 
                 // check if offset in parameters
-                @SuppressWarnings("unchecked")
-                Collection<CsmParameter> params = fun.getParameters();
-                CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
-                if (param != null && !CsmOffsetUtilities.sameOffsets(fun, param)) {
-                    context.add(fun);
-                    CsmType type = param.getType();
-                    if (!CsmOffsetUtilities.sameOffsets(param, type)
-                            && CsmOffsetUtilities.isInObject(type, offset)) {
-                        context.setLastObject(type);
-                    } else {
-                        context.setLastObject(param);
+                CsmFunctionParameterList paramList = fun.getParameterList();
+//                if (paramList != null) {
+                    CsmParameter param = CsmOffsetUtilities.findObject(paramList.getParameters(), context, offset);
+                    if (CsmOffsetUtilities.isInObject(paramList, offset) || (param != null && !CsmOffsetUtilities.sameOffsets(fun, param))) {
+                        context.add(fun);
+                        if (param != null) {
+                            CsmType type = param.getType();
+                            if (!CsmOffsetUtilities.sameOffsets(param, type)
+                                    && CsmOffsetUtilities.isInObject(type, offset)) {
+                                context.setLastObject(type);
+                            } else {
+                                context.setLastObject(param);
+                            }
+                        }
                     }
-                }
+//                }
             }
             return true;
         }

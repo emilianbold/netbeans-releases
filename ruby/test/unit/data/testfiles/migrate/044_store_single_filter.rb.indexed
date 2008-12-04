@@ -40,7 +40,7 @@ Document 3
 Searchable Keys:
   class : StoreSingleFilter
   class-ig : storesinglefilter
-  constant : FILTERED_MODELS
+  constant : FILTERED_MODELS;Array
   extends : ActiveRecord::Migration
   fqn : StoreSingleFilter
   method : down|STATIC|
