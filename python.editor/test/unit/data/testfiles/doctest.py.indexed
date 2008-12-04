@@ -1,0 +1,344 @@
+
+
+Document 0
+Searchable Keys:
+  class : DebugRunner
+  class-ig : debugrunner
+  extends : DocTestRunner
+  in : doctest
+  member : report_failure;F;;self,out,test,example,got;
+  member : report_unexpected_exception;F;;self,out,test,example,exc_info;
+  member : run;F;;self,test,compileflags,out,clear_globs;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : DocFileCase
+  class-ig : docfilecase
+  extends : DocTestCase
+  in : doctest
+  member : __repr__;F;|PRIVATE|;self;
+  member : __str__;F;|PRIVATE|;self;
+  member : format_failure;F;|PRIVATE|;self,err;
+  member : id;F;|PRIVATE|;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 2
+Searchable Keys:
+  class : DocTest
+  class-ig : doctest
+  in : doctest
+  member : __cmp__;F;;self,other;
+  member : __init__;c;|CONSTRUCTOR|;self,examples,globs,name,filename,lineno,docstring;
+  member : __repr__;F;;self;
+  member : docstring;D;;
+  member : examples;D;;
+  member : filename;D;;
+  member : globs;D;;
+  member : lineno;D;;
+  member : name;D;;
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  class : DocTestCase
+  class-ig : doctestcase
+  extends : TestCase
+  in : doctest
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,test,optionflags,setUp,tearDown,checker;
+  member : __repr__;F;|PRIVATE|;self;
+  member : __str__;F;|PRIVATE|;self;
+  member : _dt_checker;D;|PRIVATE|;
+  member : _dt_optionflags;D;|PRIVATE|;
+  member : _dt_setUp;D;|PRIVATE|;
+  member : _dt_tearDown;D;|PRIVATE|;
+  member : _dt_test;D;|PRIVATE|;
+  member : debug;F;|PRIVATE|;self;
+  member : format_failure;F;|PRIVATE|;self,err;
+  member : id;F;|PRIVATE|;self;
+  member : runTest;F;|PRIVATE|;self;
+  member : setUp;F;|PRIVATE|;self;
+  member : shortDescription;F;|PRIVATE|;self;
+  member : tearDown;F;|PRIVATE|;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 4
+Searchable Keys:
+  class : DocTestFailure
+  class-ig : doctestfailure
+  extends : Exception
+  in : doctest
+  member : __init__;c;|CONSTRUCTOR|;self,test,example,got;
+  member : __str__;F;;self;
+  member : example;D;;
+  member : got;D;;
+  member : test;D;;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  class : DocTestFinder
+  class-ig : doctestfinder
+  in : doctest
+  member : __init__;c;|CONSTRUCTOR|;self,verbose,parser,recurse,exclude_empty;
+  member : _exclude_empty;D;|PRIVATE|;
+  member : _find;F;|PRIVATE|;self,tests,obj,name,module,source_lines,globs,seen;
+  member : _find_lineno;F;|PRIVATE|;self,obj,source_lines;
+  member : _from_module;F;|PRIVATE|;self,module,object;
+  member : _get_test;F;|PRIVATE|;self,obj,name,module,globs,source_lines;
+  member : _parser;D;|PRIVATE|;
+  member : _recurse;D;|PRIVATE|;
+  member : _verbose;D;|PRIVATE|;
+  member : find;F;;self,obj,name,module,globs,extraglobs;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  class : DocTestParser
+  class-ig : doctestparser
+  in : doctest
+  member : _EXAMPLE_RE;D;|PRIVATE|;
+  member : _EXCEPTION_RE;D;|PRIVATE|;
+  member : _INDENT_RE;D;|PRIVATE|;
+  member : _IS_BLANK_OR_COMMENT;D;|PRIVATE|;
+  member : _OPTION_DIRECTIVE_RE;D;|PRIVATE|;
+  member : _check_prefix;F;|PRIVATE|;self,lines,prefix,name,lineno;
+  member : _check_prompt_blank;F;|PRIVATE|;self,lines,indent,name,lineno;
+  member : _find_options;F;|PRIVATE|;self,source,name,lineno;
+  member : _min_indent;F;|PRIVATE|;self,s;
+  member : _parse_example;F;|PRIVATE|;self,m,name,lineno;
+  member : get_doctest;F;;self,string,globs,name,filename,lineno;
+  member : get_examples;F;;self,string,name;
+  member : parse;F;;self,string,name;
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  class : DocTestRunner
+  class-ig : doctestrunner
+  in : doctest
+  member : DIVIDER;D;;
+  member : __LINECACHE_FILENAME_RE;D;|PRIVATE|;
+  member : __init__;c;|CONSTRUCTOR|;self,checker,verbose,optionflags;
+  member : __patched_linecache_getlines;F;|PRIVATE|;self,filename,module_globals;
+  member : __record_outcome;F;|PRIVATE|;self,test,f,t;
+  member : __run;F;|PRIVATE|;self,test,compileflags,out;
+  member : _checker;D;|PRIVATE|;
+  member : _failure_header;F;|PRIVATE|;self,test,example;
+  member : _fakeout;D;|PRIVATE|;
+  member : _name2ft;D;|PRIVATE|;
+  member : _verbose;D;|PRIVATE|;
+  member : debugger;D;;
+  member : failures;D;;
+  member : merge;F;;self,other;
+  member : optionflags;D;;
+  member : original_optionflags;D;;
+  member : report_failure;F;;self,out,test,example,got;
+  member : report_start;F;;self,out,test,example;
+  member : report_success;F;;self,out,test,example,got;
+  member : report_unexpected_exception;F;;self,out,test,example,exc_info;
+  member : run;F;;self,test,compileflags,out,clear_globs;
+  member : save_linecache_getlines;D;;
+  member : summarize;F;;self,verbose;
+  member : test;D;;
+  member : tries;D;;
+
+Not Searchable Keys:
+
+
+Document 8
+Searchable Keys:
+  class : Example
+  class-ig : example
+  in : doctest
+  member : __init__;c;|CONSTRUCTOR|;self,source,want,exc_msg,lineno,indent,options;
+  member : exc_msg;D;;
+  member : indent;D;;
+  member : lineno;D;;
+  member : options;D;;
+  member : source;D;;
+  member : want;D;;
+
+Not Searchable Keys:
+
+
+Document 9
+Searchable Keys:
+  class : OutputChecker
+  class-ig : outputchecker
+  in : doctest
+  member : _do_a_fancy_diff;F;|PRIVATE|;self,want,got,optionflags;
+  member : check_output;F;;self,want,got,optionflags;
+  member : output_difference;F;;self,example,got,optionflags;
+
+Not Searchable Keys:
+
+
+Document 10
+Searchable Keys:
+  class : Tester
+  class-ig : tester
+  in : doctest
+  member : __init__;c;|CONSTRUCTOR|;self,mod,globs,verbose,optionflags;
+  member : globs;D;;
+  member : merge;F;;self,other;
+  member : optionflags;D;;
+  member : run__test__;F;;self,d,name;
+  member : rundict;F;;self,d,name,module;
+  member : rundoc;F;;self,object,name,module;
+  member : runstring;F;;self,s,name;
+  member : summarize;F;;self,verbose;
+  member : testfinder;D;;
+  member : testrunner;D;;
+  member : verbose;D;;
+
+Not Searchable Keys:
+
+
+Document 11
+Searchable Keys:
+  class : UnexpectedException
+  class-ig : unexpectedexception
+  extends : Exception
+  in : doctest
+  member : __init__;c;|CONSTRUCTOR|;self,test,example,exc_info;
+  member : __str__;F;;self;
+  member : example;D;;
+  member : exc_info;D;;
+  member : test;D;;
+
+Not Searchable Keys:
+
+
+Document 12
+Searchable Keys:
+  class : _OutputRedirectingPdb
+  class-ig : _outputredirectingpdb
+  extends : Pdb
+  in : doctest
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,out;
+  member : __out;D;|PRIVATE|;
+  member : trace_dispatch;F;|PRIVATE|;self,args;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 13
+Searchable Keys:
+  class : _SpoofOut
+  class-ig : _spoofout
+  extends : StringIO
+  in : doctest
+  member : getvalue;F;|PRIVATE|;self;
+  member : truncate;F;|PRIVATE|;self,size;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 14
+Searchable Keys:
+  class : _TestClass
+  class-ig : _testclass
+  in : doctest
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,val;
+  member : get;F;|PRIVATE|;self;
+  member : square;F;|PRIVATE|;self;
+  member : val;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 15
+Searchable Keys:
+  item : BLANKLINE_MARKER;D;|PRIVATE|;
+  item : COMPARISON_FLAGS;D;;
+  item : DONT_ACCEPT_BLANKLINE;D;;
+  item : DONT_ACCEPT_TRUE_FOR_1;D;;
+  item : DebugRunner;C;;
+  item : DocFileCase;C;|PRIVATE|;
+  item : DocFileSuite;F;;paths,kw;
+  item : DocFileTest;F;|PRIVATE|;path,module_relative,package,globs,parser,encoding,options;
+  item : DocTest;C;;
+  item : DocTestCase;C;|PRIVATE|;
+  item : DocTestFailure;C;;
+  item : DocTestFinder;C;;
+  item : DocTestParser;C;;
+  item : DocTestRunner;C;;
+  item : DocTestSuite;F;;module,globs,extraglobs,test_finder,options;
+  item : ELLIPSIS;D;;
+  item : ELLIPSIS_MARKER;D;|PRIVATE|;
+  item : Example;C;;
+  item : IGNORE_EXCEPTION_DETAIL;D;;
+  item : NORMALIZE_WHITESPACE;D;;
+  item : OPTIONFLAGS_BY_NAME;D;|PRIVATE|;
+  item : OutputChecker;C;;
+  item : REPORTING_FLAGS;D;;
+  item : REPORT_CDIFF;D;;
+  item : REPORT_NDIFF;D;;
+  item : REPORT_ONLY_FIRST_FAILURE;D;;
+  item : REPORT_UDIFF;D;;
+  item : SKIP;D;;
+  item : StringIO;I;|PRIVATE|;
+  item : Tester;C;;
+  item : UnexpectedException;C;;
+  item : _OutputRedirectingPdb;C;|PRIVATE|;
+  item : _SpoofOut;C;|PRIVATE|;
+  item : _TestClass;C;|PRIVATE|;
+  item : __all__;D;;
+  item : __docformat__;D;|PRIVATE|;
+  item : __future__;I;|PRIVATE|;
+  item : __test__;D;|PRIVATE|;
+  item : _comment_line;F;|PRIVATE|;line;
+  item : _ellipsis_match;F;|PRIVATE|;want,got;
+  item : _exception_traceback;F;|PRIVATE|;exc_info;
+  item : _extract_future_flags;F;|PRIVATE|;globs;
+  item : _indent;F;|PRIVATE|;s,indent;
+  item : _load_testfile;F;|PRIVATE|;filename,package,module_relative;
+  item : _module_relative_path;F;|PRIVATE|;module,path;
+  item : _normalize_module;F;|PRIVATE|;module,depth;
+  item : _test;F;|PRIVATE|;;
+  item : _unittest_reportflags;D;|PRIVATE|;
+  item : debug;F;;module,name,pm;
+  item : debug_script;F;|PRIVATE|;src,pm,globs;
+  item : debug_src;F;;src,pm,globs;
+  item : difflib;I;|PRIVATE|;
+  item : inspect;I;|PRIVATE|;
+  item : linecache;I;|PRIVATE|;
+  item : master;D;|PRIVATE|;
+  item : os;I;|PRIVATE|;
+  item : pdb;I;|PRIVATE|;
+  item : re;I;|PRIVATE|;
+  item : register_optionflag;F;;name;
+  item : run_docstring_examples;F;;f,globs,verbose,name,compileflags,optionflags;
+  item : script_from_examples;F;;s;
+  item : set_unittest_reportflags;F;;flags;
+  item : sys;I;|PRIVATE|;
+  item : tempfile;I;|PRIVATE|;
+  item : testfile;F;;filename,module_relative,name,package,globs,verbose,report,optionflags,extraglobs,raise_on_error,parser,encoding;
+  item : testmod;F;;m,name,globs,verbose,report,optionflags,extraglobs,raise_on_error,exclude_empty;
+  item : testsource;F;;module,name;
+  item : traceback;I;|PRIVATE|;
+  item : unittest;I;|PRIVATE|;
+  item : warnings;I;|PRIVATE|;
+  module : doctest
+
+Not Searchable Keys:

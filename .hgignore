@@ -58,6 +58,8 @@ derby\.log
 ^bpel.samples/src/org/netbeans/modules/bpel/samples/resources/zip$
 ^o.n.soa.libs.wsdl4j/external/wsdl4j-1\.5\.2$
 ^o.n.soa.libs.xmlbeans/external/xmlbeans-2\.1\.0$
+^o.jython/jython-build$
+^o.jython/release$
 ^performance/enterprise/test/.*\.sh$
 ^performance/enterprise/test/qa-functional/data/PerformanceTestData$
 ^performance/enterprise/test/qa-functional/data/PerformanceTestData/nbproject/build-impl\.xml$
@@ -205,6 +207,7 @@ derby\.log
 ^uml.kit/test/qa-lib/classes$
 ^performance/uml/test/.*\.sh$
 ^performance/uml/test/qa-functional/src/gui/TempTest\.java$
+^python.editor/external/pythonstubs-2_6.egg$
 ^uml.propertysupport/src/org/netbeans/modules/uml/propertysupport/options/panels/\.JavaPlatformOptionsPanel\.java\.swp$
 ^versioning/clearcase/JavaApplication21/\.hgignore$
 ^versioning/clearcase/JavaApplication21/\.hg$

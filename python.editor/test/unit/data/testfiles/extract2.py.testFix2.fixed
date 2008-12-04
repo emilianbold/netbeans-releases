@@ -1,0 +1,11 @@
+not_used = 1
+
+def |>^new_name<|():
+    simple_code = 1
+    simple_code = simple_code+1
+
+    return simple_code
+
+simple_code = |>new_name<|()
+print simple_code + not_used
+

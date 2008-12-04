@@ -65,6 +65,9 @@ import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -171,6 +174,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         RubyExecutionDescriptor desc = null;
         String charsetName = null;
+        File spec = getSpec(project);
+        if (spec == null) {
+            DialogDisplayer.getDefault().notify(
+                    new Message(NbBundle.getMessage(RspecRunner.class, "MSG_SpecNotFound"),
+                    Message.ERROR_MESSAGE));
+            return;
+        }
         desc = new RubyExecutionDescriptor(platform,
                 name,
                 FileUtil.toFile(project.getProjectDirectory()),
@@ -215,9 +225,6 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         if (spec != null) {
             return new File(spec);
         }
-        // this should not happen as the presence of the binary
-        // should be checked before invoking this test runner
-        assert false : "Could not find RSpec binary"; //NOI18N
         return null;
     }
 

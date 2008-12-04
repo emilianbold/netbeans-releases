@@ -1,0 +1,14 @@
+class Page(object):
+  def |>METHOD:__init__<|(|>PARAMETER:self<|, |>PARAMETER:name<|, |>PARAMETER:entity<|=None):
+    |>PARAMETER:self<|.name = |>PARAMETER:name<|
+    |>PARAMETER:self<|.entity = |>PARAMETER:entity<|
+
+  @sta|>METHOD:ticm<|ethod
+  def load(|>PARAMETER,UNUSED:name<|):
+    pass
+
+  @sta|>METHOD:ticmet<|hod
+  def exists(|>PARAMETER,UNUSED:name<|):
+    pass
+
+
