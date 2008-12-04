@@ -86,21 +86,15 @@ public class RemoteClient implements Cancellable {
     private final RemoteConfiguration configuration;
     private final InputOutput io;
     private final String baseRemoteDirectory;
+    private final boolean preservePermissions;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
     private volatile boolean cancelled = false;
 
     /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.spi.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String, boolean)
      */
     public RemoteClient(RemoteConfiguration configuration) {
-        this(configuration, null, null);
-    }
-
-    /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
-     */
-    public RemoteClient(RemoteConfiguration configuration, InputOutput io) {
-        this(configuration, io, null);
+        this(configuration, null, null, false);
     }
 
     /**
@@ -111,12 +105,15 @@ public class RemoteClient implements Cancellable {
      * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
      *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
      *                                      set as default base remote directory. Can be <code>null</code>.
+     * @param preservePermissions <code>true</code> if permissions should be preserved; please note that this is not supported for local
+     *                            files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
      */
-    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory) {
+    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions) {
         assert configuration != null;
 
         this.configuration = configuration;
         this.io = io;
+        this.preservePermissions = preservePermissions;
 
         // base remote directory
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
@@ -131,8 +128,10 @@ public class RemoteClient implements Cancellable {
         assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
+            LOGGER.fine(String.format("Remote client created with configuration: %s, base remote directory: %s, preserve permissions: %b",
+                    configuration, baseRemoteDirectory, preservePermissions));
         }
+
 
         // remote client itself
         org.netbeans.modules.php.project.connections.spi.RemoteClient client = null;
@@ -311,15 +310,20 @@ public class RemoteClient implements Cancellable {
             } finally {
                 is.close();
                 if (success) {
-                    int oldPermissions = remoteClient.getPermissions(fileName);
-                    LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
+                    int oldPermissions = -1;
+                    if (preservePermissions) {
+                        oldPermissions = remoteClient.getPermissions(fileName);
+                        LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
+                    } else {
+                        LOGGER.fine("Permissions are not preserved.");
+                    }
 
                     success = moveRemoteFile(fileName, tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
                     }
 
-                    if (success && oldPermissions != -1) {
+                    if (preservePermissions && success && oldPermissions != -1) {
                         int newPermissions = remoteClient.getPermissions(fileName);
                         LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
                         if (oldPermissions != newPermissions) {

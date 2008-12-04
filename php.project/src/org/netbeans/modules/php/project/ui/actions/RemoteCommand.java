@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
@@ -119,7 +120,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected RemoteClient getRemoteClient(InputOutput io) {
-        return new RemoteClient(getRemoteConfiguration(), io, getRemoteDirectory());
+        return new RemoteClient(getRemoteConfiguration(), io, getRemoteDirectory(), ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()));
     }
 
     protected RemoteConfiguration getRemoteConfiguration() {
