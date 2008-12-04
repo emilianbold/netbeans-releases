@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.refactoring.plugins;
+package org.netbeans.modules.ruby.railsprojects.server;
 
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
-import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.spi.*;
-import org.openide.util.Lookup;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
+import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry.ServerComparator;
+
 
 /**
- * Factory to support C/C++ refactorings
- * @author Vladimir Voskresensky
+ *
+ * @author Erno Mononen
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=150)
-public class CsmRefactoringsFactory implements RefactoringPluginFactory {
-   
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup look = refactoring.getRefactoringSource();
-        if (refactoring instanceof WhereUsedQuery) {
-            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
-            if (CsmRefactoringUtils.isSupportedReference(ref)) {
-                return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
-            }
-        } else if (refactoring instanceof RenameRefactoring) {
-            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
-            if (CsmRefactoringUtils.isSupportedReference(ref)) {
-                return new CsmRenameRefactoringPlugin((RenameRefactoring)refactoring);
-            }            
-        }
-        return null;
+public class ServerComparatorTest extends RubyTestBase {
+
+    public ServerComparatorTest(String name) {
+        super(name);
     }
+
+    public void testOrder() throws Exception {
+        RubyPlatform platform = setUpPlatform();
+        WEBrick webrick = new WEBrick(platform);
+        Mongrel mongrel1 = new Mongrel(platform, "1.1.4");
+        Mongrel mongrel2 = new Mongrel(platform, "1.1.5");
+        GlassFishGem gf1 = new GlassFishGem(platform, new GemInfo("glassfish", "0.9.1", getWorkDir()));
+        GlassFishGem gf2 = new GlassFishGem(platform, new GemInfo("glassfish", "1.0", getWorkDir()));
+        ServerComparator comparator = new ServerComparator();
+        assertEquals(1, comparator.compare(webrick, gf1));
+        assertEquals(1, comparator.compare(webrick, mongrel1));
+        assertEquals(1, comparator.compare(mongrel1, gf1));
+        assertEquals(1, comparator.compare(gf1, gf2));
+        assertEquals(1, comparator.compare(mongrel1, mongrel2));
+    }
+
 }
