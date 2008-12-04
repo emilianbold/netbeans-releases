@@ -181,17 +181,17 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     private static final String PROJECT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                        "J2EEProjectTypeProfiler_ProjectCategory"); // NOI18N
     private static final String WEB_CONTAINER_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_WebContainerCategory"); // NOI18N
+                                                                             "J2EEProjectTypeProfiler_WebContainerCategory"); // NOI18N    
     private static final String SOAP_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPCategory"); // NOI18N
-
+    
     private static final String SOAP_PROTOCOL_PARSING_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPProtocolParsingCategory"); // NOI18N
-
+    
     private static final String SOAP_SERIALIZATION_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPSerialization"); // NOI18N
-
+    
     private static final String SOAP_ENDPOINT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPEndpointCategory"); // NOI18N
-
+    
     private static final String SOAP_REPLY_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPReplyCategory"); // NOI18N
-
+    
     private static final String LIFECYCLE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                          "J2EEProjectTypeProfiler_LifecycleCategory"); // NOI18N
     private static final String EXECUTIVE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
@@ -601,7 +601,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         newDataBuffer.append(PROFILER_IMPORT_STRING);
         newDataBuffer.append(buildScript.substring(importIndex + STANDARD_IMPORT_STRING.length() + 1));
 
-        final FileObject buildFile = getProjectBuildScript(project);
+        final FileObject buildFile = project.getProjectDirectory().getFileObject("build.xml"); // NOI18N
         FileLock lock = null;
         OutputStreamWriter writer = null;
 
@@ -982,7 +982,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 //        HierarchicalMark soapSerializationMark = new HierarchicalMark("SOAP/SERIALIZATION", SOAP_SERIALIZATION_CATEGORY, soapMark); // NOI18N
 //        HierarchicalMark soapEndpointMark = new HierarchicalMark("SOAP/ENDPOINT", SOAP_ENDPOINT_CATEGORY, soapMark); // NOI18N
 //        HierarchicalMark soapReplyMark = new HierarchicalMark("SOAP/REPLY", SOAP_REPLY_CATEGORY, soapMark); // NOI18N
-//
+//        
 //        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, true, webLifecycleMark, project); // NOI18N
 //        addInterfaceMarkers(mMarker, new String[] { "javax.servlet.ServletConfig", // NOI18N
 //            "javax.servlet.FilterConfig" }, // NOI18N
