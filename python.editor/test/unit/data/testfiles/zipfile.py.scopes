@@ -137,7 +137,6 @@ zlib [bound][imported][private][data][read][node=Import]
     __slots__ [bound][data][node=Name]
     _decodeExtra [bound][private][function][def][node=FunctionDef]
     ------ Attributes ---------------------------------------
-    CRC : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
     comment : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
     compress_size : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
     compress_type : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
@@ -186,8 +185,13 @@ zlib [bound][imported][private][data][read][node=Import]
         struct [free][read][node=Name]
         structFileHeader [free][read][node=Name]
         ------ Attributes ---------------------------------------
+        CRC : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        compress_size : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         compress_type : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        date_time : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        extra : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         extract_version : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        file_size : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         filename : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         flag_bits : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         reserved : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
@@ -206,6 +210,7 @@ zlib [bound][imported][private][data][read][node=Import]
         unpack [bound][data][read][called][node=Name]
         ------ Attributes ---------------------------------------
         compress_size : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        extra : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         file_size : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         header_offset : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
@@ -311,6 +316,7 @@ zlib [bound][imported][private][data][read][node=Import]
         NameToInfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         debug : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         filelist : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        fp : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         start_dir : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
@@ -427,6 +433,7 @@ zlib [bound][imported][private][data][read][node=Import]
         ------ Attributes ---------------------------------------
         NameToInfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         _writecheck : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        compression : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         filelist : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         fp : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
@@ -449,6 +456,7 @@ zlib [bound][imported][private][data][read][node=Import]
         ------ Attributes ---------------------------------------
         NameToInfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         _writecheck : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        compression : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         filelist : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         fp : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 

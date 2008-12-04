@@ -229,8 +229,14 @@ tzinfo [bound][class][def][read][node=ClassDef]
     time [bound][function][def][node=FunctionDef]
     toordinal [bound][function][def][node=FunctionDef]
     ------ Attributes ---------------------------------------
+    day : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    hour : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
     microsecond : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    minute : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    month : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
     ordinal : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    second : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    year : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __init__: FunctionDef : OffsetRange[12842,15307>
@@ -249,13 +255,7 @@ tzinfo [bound][class][def][read][node=ClassDef]
         self [bound][param][data][read][node=Name]
         year [bound][param][data][read][node=Name]
         ------ Attributes ---------------------------------------
-        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         ordinal : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
         toordinal: FunctionDef : OffsetRange[15308,15660>
@@ -330,9 +330,9 @@ tzinfo [bound][class][def][read][node=ClassDef]
     property [free][read][called][node=Name]
     seconds [bound][data][node=Name]
     ------ Attributes ---------------------------------------
-    __days : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __microseconds : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __seconds : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __days : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __microseconds : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __seconds : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __new__: FunctionDef : OffsetRange[16773,21337>
@@ -628,9 +628,9 @@ tzinfo [bound][class][def][read][node=ClassDef]
     weekday [bound][function][def][node=FunctionDef]
     year [bound][data][node=Name]
     ------ Attributes ---------------------------------------
-    __day : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __month : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __year : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
+    __day : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __month : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __year : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __new__: FunctionDef : OffsetRange[26301,26827>
@@ -750,6 +750,10 @@ tzinfo [bound][class][def][read][node=ClassDef]
         month [bound][param][data][read][node=Name]
         self [bound][param][data][read][node=Name]
         year [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
 
         =============================================
         __eq__: FunctionDef : OffsetRange[29939,30161>
@@ -937,9 +941,6 @@ tzinfo [bound][class][def][read][node=ClassDef]
         tuple [free][read][node=Name]
         yhi [bound][data][read][node=Name]
         ylo [bound][data][read][node=Name]
-        ------ Attributes ---------------------------------------
-        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
 
         =============================================
         __reduce__: FunctionDef : OffsetRange[34431,34505>
@@ -1037,16 +1038,11 @@ tzinfo [bound][class][def][read][node=ClassDef]
     tzname [bound][function][def][node=FunctionDef]
     utcoffset [bound][function][def][node=FunctionDef]
     ------ Attributes ---------------------------------------
-    __hour : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __microsecond : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __minute : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __second : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    _tzinfo : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    hour : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    microsecond : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    minute : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    second : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    tzinfo : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    __hour : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __microsecond : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __minute : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __second : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    _tzinfo : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __new__: FunctionDef : OffsetRange[37421,38149>
@@ -1169,6 +1165,7 @@ tzinfo [bound][class][def][read][node=ClassDef]
         __microsecond : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
 
         =============================================
@@ -1293,6 +1290,12 @@ tzinfo [bound][class][def][read][node=ClassDef]
         self [bound][param][data][read][node=Name]
         time [free][read][called][node=Name]
         tzinfo [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        tzinfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
         _dst: FunctionDef : OffsetRange[45149,45305>
@@ -1345,10 +1348,6 @@ tzinfo [bound][class][def][read][node=ClassDef]
         us1 [bound][data][read][node=Name]
         us2 [bound][data][read][node=Name]
         us3 [bound][data][read][node=Name]
-        ------ Attributes ---------------------------------------
-        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
 
         =============================================
         __reduce__: FunctionDef : OffsetRange[46427,46501>
@@ -1406,22 +1405,14 @@ tzinfo [bound][class][def][read][node=ClassDef]
     utcoffset [bound][function][def][node=FunctionDef]
     utctimetuple [bound][function][def][node=FunctionDef]
     ------ Attributes ---------------------------------------
-    __day : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __hour : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __microsecond : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __minute : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __month : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __second : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    __year : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    _tzinfo : SymInfo[24579 0 0][bound][func-global][private][data][member][generator][unused][node=Attribute]
-    day : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    hour : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    microsecond : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    minute : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    month : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    second : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    tzinfo : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
-    year : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    __day : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __hour : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __microsecond : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __minute : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __month : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __second : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __year : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    _tzinfo : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __new__: FunctionDef : OffsetRange[46811,47623>
@@ -1527,10 +1518,6 @@ tzinfo [bound][class][def][read][node=ClassDef]
         date [bound][param][data][read][node=Name]
         isinstance [free][read][called][node=Name]
         time [bound][param][data][read][node=Name]
-        ------ Attributes ---------------------------------------
-        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
-        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
         timetuple: FunctionDef : OffsetRange[50345,50724>
@@ -1616,6 +1603,15 @@ tzinfo [bound][class][def][read][node=ClassDef]
         self [bound][param][data][read][node=Name]
         tzinfo [bound][param][data][read][node=Name]
         year [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        day : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        hour : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        microsecond : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        minute : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        month : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        second : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        tzinfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        year : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
         astimezone: FunctionDef : OffsetRange[52577,53260>
@@ -1631,6 +1627,7 @@ tzinfo [bound][class][def][read][node=ClassDef]
         tzinfo [free][read][node=Name]
         utc [bound][data][read][node=Name]
         ------ Attributes ---------------------------------------
+        tzinfo : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         utcoffset : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
 
         =============================================
@@ -1838,6 +1835,7 @@ tzinfo [bound][class][def][read][node=ClassDef]
         __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         __year : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        _tzinfo : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         _utcoffset : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
 
         =============================================
@@ -1946,12 +1944,6 @@ tzinfo [bound][class][def][read][node=ClassDef]
         us3 [bound][data][read][node=Name]
         yhi [bound][data][read][node=Name]
         ylo [bound][data][read][node=Name]
-        ------ Attributes ---------------------------------------
-        __day : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __hour : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __minute : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __month : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
-        __second : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
 
         =============================================
         __reduce__: FunctionDef : OffsetRange[62606,62681>

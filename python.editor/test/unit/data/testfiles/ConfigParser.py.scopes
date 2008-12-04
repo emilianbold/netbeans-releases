@@ -373,6 +373,7 @@ re [bound][imported][private][data][read][node=Import]
         self [bound][param][private][data][read][node=Name]
         value [bound][param][private][data][read][node=Name]
         ------ Attributes ---------------------------------------
+        _defaults : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         _sections : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         optionxform : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
 
@@ -400,6 +401,7 @@ re [bound][imported][private][data][read][node=Import]
         section [bound][param][private][data][read][node=Name]
         self [bound][param][private][data][read][node=Name]
         ------ Attributes ---------------------------------------
+        _defaults : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         _sections : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         optionxform : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
 
@@ -435,6 +437,7 @@ re [bound][imported][private][data][read][node=Import]
         ------ Attributes ---------------------------------------
         OPTCRE : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
         SECTCRE : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        _defaults : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         _sections : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
         optionxform : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
 

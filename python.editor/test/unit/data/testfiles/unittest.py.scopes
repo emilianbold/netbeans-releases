@@ -235,6 +235,8 @@ types [bound][imported][private][data][read][node=Import]
         None [free][read][node=Name]
         doc [bound][data][read][node=Name]
         self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _testMethodDoc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
 
         =============================================
         id: FunctionDef : OffsetRange[8522,8615>

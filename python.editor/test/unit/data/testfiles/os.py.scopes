@@ -224,8 +224,6 @@ walk [bound][function][def][read][called][node=FunctionDef]
     has_key [bound][function][def][node=FunctionDef]
     unsetenv [free][read][node=Name]
     update [bound][function][def][node=FunctionDef]
-    ------ Attributes ---------------------------------------
-    data : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
 
         =============================================
         __init__: FunctionDef : OffsetRange[12874,13081>
@@ -235,6 +233,8 @@ walk [bound][function][def][read][called][node=FunctionDef]
         k [bound][data][read][node=Name]
         self [bound][param][data][read][node=Name]
         v [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        data : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
 
         =============================================
         __setitem__: FunctionDef : OffsetRange[13082,13207>
