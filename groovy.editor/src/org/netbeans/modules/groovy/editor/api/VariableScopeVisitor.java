@@ -341,7 +341,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         } else if (leaf instanceof MethodNode) {
             MethodNode method = (MethodNode) leaf;
             OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
-            if (range != OffsetRange.NONE) {
+            if (range != OffsetRange.NONE && classNode.getName().equals(method.getReturnType().getName())) {
                 occurrences.add(classNode);
             }
         }
