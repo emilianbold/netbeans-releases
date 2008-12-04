@@ -365,13 +365,13 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         newDataBuffer.append(PROFILER_IMPORT_STRING);
         newDataBuffer.append(buildScript.substring(importIndex + STANDARD_IMPORT_STRING.length() + 1));
 
-        final FileObject buildFile = ProjectUtilities.findBuildFile(project); // NOI18N
+        FileObject buildScriptFile = getProjectBuildScript(project);
         FileLock lock = null;
         OutputStreamWriter writer = null;
 
         try {
-            lock = buildFile.lock();
-            writer = new OutputStreamWriter(buildFile.getOutputStream(lock), "UTF-8"); // NOI18N // According to Issue 65557, build.xml uses UTF-8, not default encoding!
+            lock = buildScriptFile.lock();
+            writer = new OutputStreamWriter(buildScriptFile.getOutputStream(lock), "UTF-8"); // NOI18N // According to Issue 65557, build.xml uses UTF-8, not default encoding!
             writer.write(newDataBuffer.toString());
         } catch (FileNotFoundException e1) {
             ProfilerLogger.log(e1);
