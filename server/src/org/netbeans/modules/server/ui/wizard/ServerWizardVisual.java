@@ -141,8 +141,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         }
     }
 
-    @Override
-    public boolean isValid() {
+    boolean hasValidData() {
         boolean result = isServerValid() && isDisplayNameValid();
         if (result) {
             wizard.setErrorMessage(null);
