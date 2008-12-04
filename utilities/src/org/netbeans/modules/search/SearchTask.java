@@ -140,6 +140,12 @@ final class SearchTask implements Runnable, Cancellable {
 
     /**
      */
+    BasicSearchCriteria getSearchCriteria() {
+        return basicSearchCriteria;
+    }
+
+    /**
+     */
     ResultModel getResultModel() {
         ensureResultModelExists();
         return resultModel;

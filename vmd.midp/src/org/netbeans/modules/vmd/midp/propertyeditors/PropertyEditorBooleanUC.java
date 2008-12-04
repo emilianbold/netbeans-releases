@@ -125,6 +125,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
                     JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
                     boolean currentState = checkBox.isSelected();
                     PropertyEditorBooleanUC.this.setValue(MidpTypes.createBooleanValue(currentState));
+                    invokeSaveToModel();
                 }
             });
         } else {

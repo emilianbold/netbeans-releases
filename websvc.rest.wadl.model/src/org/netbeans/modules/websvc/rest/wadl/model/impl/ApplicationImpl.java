@@ -42,7 +42,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
     }
 
     public void addGrammars(Grammars grammars) {
-        addAfter(GRAMMARS_PROPERTY, grammars, TypeCollection.FOR_APPLICATION.types());
+        addAfter(GRAMMARS_PROPERTY, grammars, TypeCollection.FOR_GRAMMARS.types());
     }
 
     public void removeGrammars(Grammars grammars) {
@@ -53,7 +53,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
         return getChildren(Resources.class);
     }
     public void addResources(Resources resources) {
-        addAfter(GRAMMARS_PROPERTY, resources, TypeCollection.FOR_APPLICATION.types());
+        addAfter(GRAMMARS_PROPERTY, resources, TypeCollection.FOR_RESOURCES.types());
     }
 
     public void removeResources(Resources resources) {
@@ -65,7 +65,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
     }
 
     public void addResourceType(ResourceType rType) {
-        addAfter(RESOURCE_TYPE_PROPERTY, rType, TypeCollection.FOR_APPLICATION.types());
+        addAfter(RESOURCE_TYPE_PROPERTY, rType, TypeCollection.FOR_RESOURCE_TYPE.types());
     }
 
     public void removeResourceType(ResourceType rType) {
@@ -77,7 +77,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
     }
 
     public void addMethod(Method method) {
-        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_RESOURCE.types());
+        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_METHOD.types());
     }
 
     public void removeMethod(Method method) {
@@ -89,7 +89,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
     }
 
     public void addRepresentation(Representation rep) {
-        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_RESPONSE.types());
+        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_REPRESENTATION.types());
     }
 
     public void removeRepresentation(Representation rep) {
@@ -101,7 +101,7 @@ public class ApplicationImpl extends NamedImpl implements Application {
     }
 
     public void addFault(Fault fault) {
-        addAfter(FAULT_PROPERTY, fault, TypeCollection.FOR_RESPONSE.types());
+        addAfter(FAULT_PROPERTY, fault, TypeCollection.FOR_FAULT.types());
     }
 
     public void removeFault(Fault fault) {

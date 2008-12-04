@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -162,9 +163,21 @@ public class CsmRefactoringUtils {
     public static CsmReference findReference(Lookup lookup) {
         CsmReference ref = lookup.lookup(CsmReference.class);
         if (ref == null) {
-            Node node = lookup.lookup(Node.class);
-            if (node != null) {
-                ref = CsmReferenceResolver.getDefault().findReference(node);
+            CsmObject csmObj = lookup.lookup(CsmObject.class);
+            if (csmObj == null) {
+                CsmUID uid = lookup.lookup(CsmUID.class);
+                if (uid != null) {
+                    csmObj = (CsmObject) uid.getObject();
+                }
+            }
+            if (csmObj != null) {
+                ref = CsmReferenceSupport.createObjectReference((CsmOffsetable)csmObj);
+            }
+            if (ref == null) {
+                Node node = lookup.lookup(Node.class);
+                if (node != null) {
+                    ref = CsmReferenceResolver.getDefault().findReference(node);
+                }
             }
         }
         return ref;

@@ -259,16 +259,16 @@ public class PackagingConfiguration {
     }
 
     @Override
-    public Object clone() {
+    public PackagingConfiguration clone() {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
-        clone.setType((StringConfiguration) getType().clone());
-        clone.setVerbose((BooleanConfiguration) getVerbose().clone());
+        clone.setType(getType().clone());
+        clone.setVerbose(getVerbose().clone());
         clone.setInfo(getInfo().cloneConf());
         clone.setFiles(getFiles().cloneConf());
-        clone.setOutput((StringConfiguration) getOutput().clone());
-        clone.setTool((StringConfiguration) getTool().clone());
-        clone.setOptions((StringConfiguration) getOptions().clone());
-        clone.setTopDir((StringConfiguration) getTopDir().clone());
+        clone.setOutput(getOutput().clone());
+        clone.setTool(getTool().clone());
+        clone.setOptions(getOptions().clone());
+        clone.setTopDir(getTopDir().clone());
         return clone;
     }
     TypePropertyChangeListener typePropertyChangeListener;

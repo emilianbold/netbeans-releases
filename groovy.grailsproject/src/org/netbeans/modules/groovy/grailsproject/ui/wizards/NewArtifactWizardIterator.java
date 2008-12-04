@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,9 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -66,9 +66,9 @@ import org.openide.util.Exceptions;
  * @author schmidtm
  * @author Martin Adamek
  */
-public class NewArtifactWizardIterator implements  WizardDescriptor.InstantiatingIterator<WizardDescriptor>,
-                                                      WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor>{
-    
+public class NewArtifactWizardIterator implements 
+        WizardDescriptor.InstantiatingIterator<WizardDescriptor>, WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+
     private GetArtifactNameStep pls = null;
     private boolean serverRunning = false;
     private boolean serverConfigured = true;
@@ -77,7 +77,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     private String serverCommand;
     private String artifactName = "";
     private GrailsProject project;
-    
+
     private final Logger LOG = Logger.getLogger(NewArtifactWizardIterator.class.getName());
 
     public static NewArtifactWizardIterator create() {
@@ -91,70 +91,71 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     }
 
     private NewArtifactWizardIterator() {
+        super();
     }
 
-   public Set instantiate(final ProgressHandle handle) throws IOException {
-            Set<FileObject> resultSet = new HashSet<FileObject>();
-            
-            serverRunning = true;
-            handle.start(100);
-            try {
-                ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
-                String displayName = inf.getDisplayName() + " (" + serverCommand + ")"; // NOI18N
+    public Set instantiate(final ProgressHandle handle) throws IOException {
+        Set<FileObject> resultSet = new HashSet<FileObject>();
 
-                Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                        serverCommand, GrailsProjectConfig.forProject(project), pls.getArtifactName());
+        serverRunning = true;
+        handle.start(100);
+        try {
+            ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+            String displayName = inf.getDisplayName() + " (" + serverCommand + ")"; // NOI18N
 
-                ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                        .frontWindow(true).inputVisible(true);
-                descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                        return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
-                    }
-                });
-                descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
+            Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+                    serverCommand, GrailsProjectConfig.forProject(project), pls.getArtifactName());
 
-                ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-                Future<Integer> future = service.run();
-                try {
-                    // TODO handle return value
-                    future.get();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex.getCause());
+            ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                    .frontWindow(true).inputVisible(true);
+            descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                 }
-            } finally {
-                handle.progress(100);
-            }
-            serverRunning = false;
+            });
+            descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
 
-            LOG.log(Level.FINEST, "Artifact Name: " + pls.getFileName());
-            File artifactFile = new File(pls.getFileName());
-            
-            if (artifactFile != null) {
-                LOG.log(Level.FINEST, "Created File: " + artifactFile.getAbsolutePath());
-                project.getProjectDirectory().getFileSystem().refresh(true);
-                artifactFile = FileUtil.normalizeFile(artifactFile);
-                FileObject fo = FileUtil.toFileObject(artifactFile);
-                
-                if (fo == null){
-                    LOG.log(Level.WARNING, "Problem creating FileObject(null): " + artifactFile.getAbsolutePath());
-                    }
+            ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+            Future<Integer> future = service.run();
+            try {
+                // TODO handle return value
+                future.get();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex.getCause());
+            }
+        } finally {
+            handle.progress(100);
+        }
+        serverRunning = false;
+
+        LOG.log(Level.FINEST, "Artifact Name: " + pls.getFileName());
+        File artifactFile = new File(pls.getFileName());
+
+        if (artifactFile != null) {
+            LOG.log(Level.FINEST, "Created File: " + artifactFile.getAbsolutePath());
+            project.getProjectDirectory().getFileSystem().refresh(true);
+            artifactFile = FileUtil.normalizeFile(artifactFile);
+            FileObject fo = FileUtil.toFileObject(artifactFile);
+
+            if (fo != null) {
                 resultSet.add(fo);
+            } else {
+                LOG.log(Level.WARNING, "Problem creating FileObject(null): " + artifactFile.getAbsolutePath());
             }
+        }
 
-            return resultSet;
-
+        return resultSet;
     }
-    
+
     public Set instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         return resultSet;
     }
 
-    
-    public void initialize(WizardDescriptor wizard) {      
+
+    public void initialize(WizardDescriptor wizard) {
         FileObject template = Templates.getTemplate(wizard);
 
         this.wizard = wizard;
@@ -169,12 +170,12 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         this.serverCommand = sourceCategory.getCommand();
 
         if(!GrailsRuntime.getInstance().isConfigured()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
-                    NbBundle.getMessage(NewArtifactWizardIterator.class, 
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(NewArtifactWizardIterator.class,
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             serverConfigured = false;
         }
-        
+
         pls = new GetArtifactNameStep(serverRunning, serverConfigured, project, sourceCategory);
         Component c = pls.getComponent();
         if (c instanceof JComponent) { // assume Swing components
@@ -186,7 +187,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 title
             });
         }
-        
+
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -221,5 +222,5 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     public void addChangeListener(ChangeListener l) {}
 
     public void removeChangeListener(ChangeListener l) {}
-    
+
 }

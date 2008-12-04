@@ -255,6 +255,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         });
 
         serverListBox.setModel(new WizardListModel());
+        serverListBox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         serverListBox.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 serverListBoxValueChanged(evt);
