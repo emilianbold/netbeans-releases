@@ -37,16 +37,38 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.php.editor.model.Parameter;
 
 /**
+ *
  * @author Radek Matous
  */
-public interface FunctionScope extends Scope, VariableScope {
-    List<? extends String> getParameterNames();
-    List<? extends Parameter> getParameters();
-    List<? extends TypeScope> getReturnTypes();
+class ParameterImpl implements Parameter {
+    private String name;
+    private String defaultValue;
+    ParameterImpl(String name) {
+        this(name, null);
+    }
 
+    ParameterImpl(String name, String defaultValue) {
+        this.name = name;
+        this.defaultValue = defaultValue;
+    }
+
+    @NonNull
+    public String getName() {
+        return name;
+    }
+
+    @NonNull
+    public String getDefaultValue() {
+        return defaultValue != null ? defaultValue : "";//NOI18N
+    }
+
+    public boolean isMandatory() {
+        return defaultValue == null;
+    }
 }
