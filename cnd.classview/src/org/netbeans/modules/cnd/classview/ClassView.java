@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import javax.swing.*;
 import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.text.*;
@@ -63,6 +64,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -96,11 +98,15 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n : (Node[]) evt.getOldValue()) {
-                selectedNodes.remove(n);
-            }
+            selectedNodes.setPairs(Collections.<AbstractLookup.Pair>emptyList());
             for (Node n : (Node[]) evt.getNewValue()) {
                 selectedNodes.add(n);
+                if (n instanceof AbstractCsmNode) {
+                    CsmObject csmObject = ((AbstractCsmNode) n).getCsmObject();
+                    if (csmObject != null) {
+                        selectedNodes.add(csmObject);
+                    }
+                }
             }
         }
     }

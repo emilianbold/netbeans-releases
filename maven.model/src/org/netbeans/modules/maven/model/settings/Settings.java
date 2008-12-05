@@ -113,6 +113,7 @@ public interface Settings extends SettingsComponent {
     public List<Mirror> getMirrors();
     public void addMirror(Mirror mirror);
     public void removeMirror(Mirror mirror);
+    Mirror findMirrorById(String id);
 
     String getLocalRepository();
     void setLocalRepository(String repo);

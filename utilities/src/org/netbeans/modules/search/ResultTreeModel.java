@@ -157,8 +157,6 @@ final class ResultTreeModel implements TreeModel {
     }
 
     public boolean isLeaf(Object node) {
-        assert EventQueue.isDispatchThread();
-        
         boolean ret;
         if (node == getRoot()) {
             ret = false;
@@ -219,8 +217,6 @@ final class ResultTreeModel implements TreeModel {
     }
 
     public void addTreeModelListener(TreeModelListener l) {
-        assert EventQueue.isDispatchThread();
-        
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }

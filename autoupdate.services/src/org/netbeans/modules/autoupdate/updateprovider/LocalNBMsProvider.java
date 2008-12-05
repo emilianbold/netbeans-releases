@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -57,6 +59,7 @@ import org.xml.sax.SAXException;
 public class LocalNBMsProvider implements UpdateProvider {
     private String name;
     private File [] nbms;
+    private static final Logger err = Logger.getLogger (LocalNBMsProvider.class.getName());
     
     /** Creates a new instance of LocalNBMsProvider */
     public LocalNBMsProvider (String name, File... files) {
@@ -87,7 +90,10 @@ public class LocalNBMsProvider implements UpdateProvider {
             } catch (SAXException ex) {
                 throw new RuntimeException (ex.getMessage(), ex);
             }
-            assert items != null && ! items.isEmpty () && items.size () == 1 : "Only one item found in parsed items " + items;
+            assert items != null;
+            if(items.size()!=1) {
+                err.log(Level.INFO, "File " + nbms [i] + " contains not single items: " + items);
+            }
             for (String id : items.keySet ()) {
                 res.put (id, items.get (id));
             }

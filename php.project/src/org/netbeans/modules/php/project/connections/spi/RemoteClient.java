@@ -146,6 +146,26 @@ public interface RemoteClient {
     boolean rename(String from, String to) throws RemoteException;
 
     /**
+     * Get permissions of the given file. The behaviour for directories is not defined.
+     * @param path the file path (relative or absolute).
+     * @return permissions (usually number with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;)),
+     *         <tt>-1</tt> if unknown (e.g. file not exists).
+     * @throws RemoteException if any unexpected error occurs.
+     * @see #setPermissions(int, java.lang.String)
+     */
+    int getPermissions(String path) throws RemoteException;
+
+    /**
+     * Set permissions of the given file. The behaviour for directories is not defined.
+     * @param permissions permissions (usually number with 3 ciphers, UNIX-like (4 - read, 2 - write, 1 - execute; &lt;user&gt;&lt;group&gt;&lt;other&gt;)).
+     * @param path the file path (relative or absolute).
+     * @return <code>true</code> if the permissions was set, <code>false</code> otherwise.
+     * @throws RemoteException if any unexpected error occurs.
+     * @see #getPermissions(java.lang.String)
+     */
+    boolean setPermissions(int permissions, String path) throws RemoteException;
+
+    /**
      * Get the list of the {@link RemoteFile files} of the current directory.
      * <p>
      * {@link PathInfo} contains information about the current working directory

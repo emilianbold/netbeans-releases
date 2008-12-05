@@ -69,6 +69,9 @@ public class FtpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(FtpClient.class.getName());
     // store not provided passwords in memory only
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
+    private static final int[] PERMISSIONS_ACCESSES = new int[] {
+        FTPFile.USER_ACCESS, FTPFile.GROUP_ACCESS, FTPFile.WORLD_ACCESS
+    };
 
     private final FtpConfiguration configuration;
     private final InputOutput io;
@@ -286,6 +289,61 @@ public class FtpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Error while creating directory " + pathname, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotCreateDirectory", pathname), ex, getReplyString());
         }
+    }
+
+    public int getPermissions(String path) throws RemoteException {
+        try {
+            return getPermissions(getFile(path));
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Error while getting permissions for " + path, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotGetPermissions", path), ex, getReplyString());
+        }
+    }
+
+    public boolean setPermissions(int permissions, String path) throws RemoteException {
+        try {
+            return ftpClient.sendSiteCommand("chmod " + permissions + " " + path); // NOI18N
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Error while setting permissions for " + path, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotSetPermissions", path), ex, getReplyString());
+        }
+    }
+
+    private FTPFile getFile(String path) throws IOException {
+        assert path != null && path.trim().length() > 0;
+
+        FTPFile[] files = ftpClient.listFiles(path);
+        // in fact, the size of the list should be exactly 1
+        LOGGER.fine(String.format("Exactly 1 file should be found for %s; found %d", path, files.length));
+        if (files.length > 0) {
+            return files[0];
+        }
+        return null;
+    }
+
+    private int getPermissions(FTPFile file) {
+        // see #listFiles(PathInfo)
+        if (file == null) {
+            return -1;
+        }
+        // not the fastest solution but at least, it's readable
+        StringBuilder sb = new StringBuilder(3);
+        for (int access : PERMISSIONS_ACCESSES) {
+            int rights = 0;
+            if (file.hasPermission(access, FTPFile.READ_PERMISSION)) {
+                rights += 4;
+            }
+            if (file.hasPermission(access, FTPFile.WRITE_PERMISSION)) {
+                rights += 2;
+            }
+            if (file.hasPermission(access, FTPFile.EXECUTE_PERMISSION)) {
+                rights += 1;
+            }
+            sb.append(rights);
+        }
+        assert sb.length() == 3 : "Buffer lenght is incorrect: " + sb.length();
+        int rights = Integer.valueOf(sb.toString());
+        return rights;
     }
 
     private static final class PrintCommandListener implements ProtocolCommandListener {
