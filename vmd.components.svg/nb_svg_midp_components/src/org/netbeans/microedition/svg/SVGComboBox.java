@@ -44,7 +44,7 @@ package org.netbeans.microedition.svg;
 
 import java.util.Vector;
 
-import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
+import org.netbeans.microedition.svg.SVGList.DefaultListModel;
 import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.PointerEvent;
@@ -428,7 +428,7 @@ public class SVGComboBox extends SVGComponent implements
         void removeActionListener(SVGActionListener listener);
     }
     
-    public static class DefaultModel extends DefaultListMoldel 
+    public static class DefaultModel extends DefaultListModel 
         implements ComboBoxModel 
     {
         
