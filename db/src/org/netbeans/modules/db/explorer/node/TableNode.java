@@ -41,14 +41,25 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableNode extends BaseNode {
+public class TableNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif";
     private static final String FOLDER = "Table"; //NOI18N
 
@@ -58,34 +69,94 @@ public class TableNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableNode instance
      */
-    public static TableNode create(NodeDataLookup dataLookup) {
-        TableNode node = new TableNode(dataLookup);
+    public static TableNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        TableNode node = new TableNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Table table;
+    private String name;
+    private MetadataModel metaDataModel;
+    private MetadataElementHandle<Table> tableHandle;
 
-    private TableNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private TableNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        table = getLookup().lookup(Table.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        tableHandle = getLookup().lookup(MetadataElementHandle.class);
 
+        Table table = getTable();
+        name = table.getName();
+    }
+
+    public Table getTable() {
+        DataWrapper<Table> wrapper = new DataWrapper<Table>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Table table = tableHandle.resolve(metaData);
+                    wrapper.setObject(table);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    public Schema getSchema() {
+        Table table = getTable();
+        return table.getParent();
+    }
+
+    @Override
+    public void refresh() {
+        MetadataReader.readModel(metaDataModel, null,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    metaData.refresh();
+                }
+            }
+        );
+
+        Table table = getTable();
+
+        if (table == null) {
+            remove(true);
+        } else {
+            table.refresh();
+            super.refresh();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropTable(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_TABLE);
     }
 
     @Override
     public String getName() {
-        return table.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return table.getName();
+        return getName();
     }
 
     @Override

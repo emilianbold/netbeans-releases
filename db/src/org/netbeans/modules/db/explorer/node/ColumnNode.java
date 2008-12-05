@@ -40,14 +40,26 @@
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.RemoveColumn;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
 
 /**
  *
  * @author Rob Englander
  */
-public class ColumnNode extends BaseNode {
+public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/column.gif";
     private static final String FOLDER = "Column"; //NOI18N
 
@@ -57,34 +69,85 @@ public class ColumnNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ColumnNode instance
      */
-    public static ColumnNode create(NodeDataLookup dataLookup) {
-        ColumnNode node = new ColumnNode(dataLookup);
+    public static ColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ColumnNode node = new ColumnNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Column column;
+    private String name;
+    private MetadataModel metaDataModel;
+    private MetadataElementHandle<Column> columnHandle;
 
-    private ColumnNode(NodeDataLookup lookup) {
-        super(lookup, FOLDER);
+    private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        column = getLookup().lookup(Column.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        columnHandle = getLookup().lookup(MetadataElementHandle.class);
 
+        Column column = getColumn();
+        name = column.getName();
+    }
+
+    public Column getColumn() {
+        DataWrapper<Column> wrapper = new DataWrapper<Column>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Column column = columnHandle.resolve(metaData);
+                    wrapper.setObject(column);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    public Schema getSchema() {
+        Column column = getColumn();
+        return (Schema)column.getParent().getParent();
+    }
+
+    public Tuple getTuple() {
+        Column column = getColumn();
+        return column.getParent();
+    }
+
+    public int getPosition() {
+        Column column = getColumn();
+        return column.getPosition();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
+            command.removeColumn(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.REMOVE_COLUMN);
     }
 
     @Override
     public String getName() {
-        return column.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return column.getName();
+        return getName();
     }
 
     @Override

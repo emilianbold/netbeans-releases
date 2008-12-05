@@ -43,6 +43,7 @@ import java.sql.Connection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
+import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -65,7 +66,7 @@ public class DisconnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                Connection j = dbconn.getJDBCConnection();
+                Connection j = dbconn.getConnection();
                 try {
                     if (j == null || j.isClosed()) {
                         return false;
@@ -89,9 +90,9 @@ public class DisconnectAction extends BaseAction {
             Lookup lookup = activatedNodes[i].getLookup();
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
+                DatabaseConnector connector = lookup.lookup(DatabaseConnection.class).getConnector();
                 try {
-                    dbconn.disconnect();
+                    connector.disconnect();
                 } catch (DatabaseException dbe) {
 
                 }

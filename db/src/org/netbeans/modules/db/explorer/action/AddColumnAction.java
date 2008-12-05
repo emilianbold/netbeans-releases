@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.node;
+package org.netbeans.modules.db.explorer.action;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.openide.util.Lookup;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
+import org.netbeans.modules.db.explorer.node.TableNode;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends ConnectedNodeProvider {
-    
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
-    }
+public class AddColumnAction extends BaseAction {
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public TableListNodeProvider createInstance(Lookup lookup) {
-                TableListNodeProvider provider = new TableListNodeProvider(lookup);
-                return provider;
-            }
-        };
-    }
-
-    private TableListNodeProvider(Lookup lookup) {
-        super(lookup);
+    @Override
+    public String getName() {
+        return bundle().getString("AddColumn"); // NOI18N
     }
 
     @Override
-    protected BaseNode createNode(NodeDataLookup lookup) {
-        return TableListNode.create(lookup, this);
+    protected boolean enable(Node[] activatedNodes) {
+        boolean result = activatedNodes.length == 1 &&
+                activatedNodes[0].getLookup().lookup(TableNode.class) != null;
+
+        return result;
     }
+
+    @Override
+    protected void performAction(final Node[] activatedNodes) {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
+                    final DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
+
+                    try {
+                        final AddTableColumnDialog dlg = new AddTableColumnDialog(connection.getConnector().getDatabaseSpecification(), node);
+                        if (dlg.run()) {
+                            node.refresh();
+                        }
+                    } catch(Exception exc) {
+                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                        DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
+                    }
+                }
+            }
+        );
+    }
+
 }

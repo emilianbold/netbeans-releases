@@ -73,7 +73,7 @@ public class ChildNodeFactory extends ChildFactory<Lookup> {
     public void refresh() {
         super.refresh(false);
     }
-    
+
     @Override
     public Node[] createNodesForKey(Lookup key) {
         

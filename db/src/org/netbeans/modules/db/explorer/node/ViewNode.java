@@ -41,14 +41,25 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.View;
 
 /**
  *
  * @author rob
  */
-public class ViewNode extends BaseNode {
+public class ViewNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
     private static final String FOLDER = "View"; //NOI18N
 
@@ -58,34 +69,75 @@ public class ViewNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ViewNode instance
      */
-    public static ViewNode create(NodeDataLookup dataLookup) {
-        ViewNode node = new ViewNode(dataLookup);
+    public static ViewNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ViewNode node = new ViewNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private View view;
+    private String name;
+    private MetadataModel metaDataModel;
+    private MetadataElementHandle<View> viewHandle;
 
-    private ViewNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ViewNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        view = getLookup().lookup(View.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        viewHandle = getLookup().lookup(MetadataElementHandle.class);
 
+        View view = getView();
+        name = view.getName();
+    }
+
+    public View getView() {
+        DataWrapper<View> wrapper = new DataWrapper<View>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    View view = viewHandle.resolve(metaData);
+                    wrapper.setObject(view);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropView(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_VIEW);
+    }
+
+
+    public Schema getSchema() {
+        View view = getView();
+        return view.getParent();
     }
 
     @Override
     public String getName() {
-        return view.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return view.getName();
+        return getName();
     }
 
     @Override

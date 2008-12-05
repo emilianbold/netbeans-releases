@@ -135,6 +135,8 @@ public class DatabaseConnection implements DBConnection {
     /** Error code */
     private int errorCode = -1;
 
+    private DatabaseConnector connector = new DatabaseConnector(this);
+
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -873,12 +875,22 @@ public class DatabaseConnection implements DBConnection {
         return null;
     }
 
+    public DatabaseConnector getConnector() {
+        return connector;
+    }
+
+    public void notifyChange() {
+        propertySupport.firePropertyChange("changed", null, null);
+    }
+
     public void disconnect() throws DatabaseException {
         setConnection(null);
         ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
         if (cni != null && cni.getConnection() != null) {
             cni.disconnect();
         }
+
+        propertySupport.firePropertyChange("disconnected", null, null);
     }
 
     // Needed by unit tests as well as internally

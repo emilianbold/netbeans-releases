@@ -41,12 +41,22 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ProcedureNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/procedure.gif";
@@ -58,34 +68,69 @@ public class ProcedureNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureNode instance
      */
-    public static ProcedureNode create(NodeDataLookup dataLookup) {
-        ProcedureNode node = new ProcedureNode(dataLookup);
+    public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ProcedureNode node = new ProcedureNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Procedure procedure;
+    private String name;
+    private MetadataModel metaDataModel;
+    private MetadataElementHandle<Procedure> procedureHandle;
 
-    private ProcedureNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        procedure = getLookup().lookup(Procedure.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
 
+        Procedure proc = getProcedure();
+        name = proc.getName();
+    }
+
+    public Procedure getProcedure() {
+        DataWrapper<Procedure> wrapper = new DataWrapper<Procedure>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Procedure procedure = procedureHandle.resolve(metaData);
+                    wrapper.setObject(procedure);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropProcedure(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_PROCEDURE);
     }
 
     @Override
     public String getName() {
-        return procedure.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return procedure.getName();
+        return getName();
     }
 
     @Override

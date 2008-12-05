@@ -44,62 +44,52 @@ import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
-public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
-    private static final String DEFAULTICONBASE = "org/netbeans/modules/db/resources/folder.gif";
-    private static final String FOLDER = "Schema"; //NOI18N
+public class CatalogNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/database.gif";
+    private static final String FOLDER = "Catalog"; //NOI18N
 
     /**
-     * Create an instance of SchemaNode.
+     * Create an instance of CatalogNode.
      *
      * @param dataLookup the lookup to use when creating node providers
-     * @return the SchemaNode instance
+     * @return the CatalogNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        SchemaNode node = new SchemaNode(dataLookup, provider);
+    public static CatalogNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        CatalogNode node = new CatalogNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
     private String name;
-    private String icon;
 
-    private MetadataElementHandle<Schema> schemaHandle;
+    private MetadataElementHandle<Catalog> catalogHandle;
     private MetadataModel metaDataModel;
 
-    private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
+    private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
         metaDataModel = getLookup().lookup(MetadataModel.class);
-        Schema schema = getSchema();
-        renderNames(schema);
-    }
 
-    public Schema getSchema() {
-        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
-        MetadataReader.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
+        MetadataReader.readModel(metaDataModel, null,
+            new MetadataReader.MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Schema schema = schemaHandle.resolve(metaData);
-                    wrapper.setObject(schema);
+                    Catalog catalog = catalogHandle.resolve(metaData);
+                    renderNames(catalog);
                 }
             }
         );
-
-        return wrapper.getObject();
     }
 
     @Override
@@ -112,26 +102,19 @@ public class SchemaNode extends BaseNode {
         return name;
     }
 
-    private void renderNames(Schema schema) {
-        if (schema == null) {
+    private void renderNames(Catalog catalog) {
+        if (catalog == null) {
             name = "";
         }
 
-        name = schema.getName();
+        name = catalog.getName();
         if (name == null) {
-            name = schema.getParent().getName();
-        }
-
-        icon = ICONBASE;
-        if (schema != null) {
-            if (schema.isDefault()) {
-                icon = DEFAULTICONBASE;
-            }
+            name = "Default"; // NOI18N
         }
     }
 
     @Override
     public String getIconBase() {
-        return icon;
+        return ICONBASE;
     }
 }

@@ -46,55 +46,53 @@ import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
-public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
-    private static final String DEFAULTICONBASE = "org/netbeans/modules/db/resources/folder.gif";
-    private static final String FOLDER = "Schema"; //NOI18N
+public class ForeignKeyNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/foreignKey.gif";
+    private static final String FOLDER = "ForeignKey"; //NOI18N
 
     /**
-     * Create an instance of SchemaNode.
+     * Create an instance of ForeignKeyNode.
      *
      * @param dataLookup the lookup to use when creating node providers
-     * @return the SchemaNode instance
+     * @return the ForeignKeyNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        SchemaNode node = new SchemaNode(dataLookup, provider);
+    public static ForeignKeyNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ForeignKeyNode node = new ForeignKeyNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
     private String name;
-    private String icon;
-
-    private MetadataElementHandle<Schema> schemaHandle;
     private MetadataModel metaDataModel;
+    private MetadataElementHandle<ForeignKey> fkHandle;
 
-    private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
+    private ForeignKeyNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
         metaDataModel = getLookup().lookup(MetadataModel.class);
-        Schema schema = getSchema();
-        renderNames(schema);
+        fkHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        ForeignKey fk = getForeignKey();
+        name = fk.getName();
     }
 
-    public Schema getSchema() {
-        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+    public ForeignKey getForeignKey() {
+        DataWrapper<ForeignKey> wrapper = new DataWrapper<ForeignKey>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Schema schema = schemaHandle.resolve(metaData);
-                    wrapper.setObject(schema);
+                    ForeignKey fk = fkHandle.resolve(metaData);
+                    wrapper.setObject(fk);
                 }
             }
         );
@@ -109,29 +107,11 @@ public class SchemaNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return name;
-    }
-
-    private void renderNames(Schema schema) {
-        if (schema == null) {
-            name = "";
-        }
-
-        name = schema.getName();
-        if (name == null) {
-            name = schema.getParent().getName();
-        }
-
-        icon = ICONBASE;
-        if (schema != null) {
-            if (schema.isDefault()) {
-                icon = DEFAULTICONBASE;
-            }
-        }
+        return getName();
     }
 
     @Override
     public String getIconBase() {
-        return icon;
+        return ICONBASE;
     }
 }
