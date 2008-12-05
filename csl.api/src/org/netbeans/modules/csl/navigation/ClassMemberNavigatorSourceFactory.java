@@ -65,23 +65,6 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
 
     private static ClassMemberNavigatorSourceFactory instance = null;
     private ClassMemberPanelUI ui;
-    private static final ParserResultTask<ParserResult> EMPTY_TASK = new ParserResultTask<ParserResult>() {
-        public @Override void cancel() {
-            // no-op
-        }
-
-        public @Override void run(ParserResult result, SchedulerEvent event) {
-            // no-op
-        }
-
-        public @Override int getPriority() {
-            return Integer.MAX_VALUE;
-        }
-
-        public @Override Class<? extends Scheduler> getSchedulerClass() {
-            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
-        }
-    };
     
     public static synchronized ClassMemberNavigatorSourceFactory getInstance() {
         if (instance == null) {
@@ -96,12 +79,8 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
 
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
-        // System.out.println("CREATE TASK FOR " + file.getNameExt() );
-        if ( ui == null) {
-            return Collections.singleton(EMPTY_TASK);
-        } else {
-            return Collections.singleton(ui.getTask());
-        }
+//        System.out.println("~~~ ClassMemberNavigatorSourceFactory: file=" + snapshot.getSource().getFileObject().getPath() + ", ui=" + ui);
+        return Collections.singleton(new ProxyElementScanningTask());
     }
 
 // XXX: parsingapi
@@ -136,4 +115,39 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
 //          }
 //    }
 
+
+    private final class ProxyElementScanningTask extends ParserResultTask<ParserResult> {
+        private ElementScanningTask task = null;
+
+        private ElementScanningTask getTask() {
+            synchronized (ClassMemberNavigatorSourceFactory.this) {
+                if (task == null && ui != null) {
+                    task = ui.getTask();
+                }
+                return task;
+            }
+        }
+
+        public @Override void cancel() {
+            ElementScanningTask t = getTask();
+            if (t != null) {
+                t.cancel();
+            }
+        }
+
+        public @Override void run(ParserResult result, SchedulerEvent event) {
+            ElementScanningTask t = getTask();
+            if (t != null) {
+                t.run(result, event);
+            }
+        }
+
+        public @Override int getPriority() {
+            return Integer.MAX_VALUE;
+        }
+
+        public @Override Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        }
+    };
 }
