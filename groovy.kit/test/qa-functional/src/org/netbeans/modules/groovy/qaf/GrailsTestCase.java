@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.util.Utilities;
 
@@ -99,6 +100,10 @@ public abstract class GrailsTestCase extends GroovyTestCase {
         createNewGroovyFile(p, label);
         NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
         op.setObjectName(name);
-        op.finish();
+        String createdFile = op.txtCreatedFile().getText();
+        op.btFinish().pushNoBlock();
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 90000); //NOI18N
+        op.waitClosed();
+        assertTrue(new File(createdFile).isFile());
     }
 }

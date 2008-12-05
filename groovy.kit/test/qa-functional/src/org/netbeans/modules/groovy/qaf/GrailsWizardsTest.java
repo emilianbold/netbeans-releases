@@ -41,6 +41,7 @@ package org.netbeans.modules.groovy.qaf;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -69,30 +70,44 @@ public class GrailsWizardsTest extends GrailsTestCase {
 
     public void testDomainClass() {
         createNewGrailsFile(getProject(), "Templates/Groovy/DomainClass.groovy", "MyDomainClass"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyDomainClass.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testController() {
         createNewGrailsFile(getProject(), "Templates/Groovy/Controller.groovy", "MyController"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyControllerController.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testGantScript() {
         createNewGrailsFile(getProject(), "Templates/Groovy/GantScript.groovy", "MyGantScript"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyGantScript.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testService() {
         createNewGrailsFile(getProject(), "Templates/Groovy/Service.groovy", "MyService"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyServiceService.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testTagLib() {
         createNewGrailsFile(getProject(), "Templates/Groovy/TagLib.groovy", "MyTagLib"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyTagLibTagLib.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testUnitTest() {
         createNewGrailsFile(getProject(), "Templates/Groovy/UnitTest.groovy", "MyUnitTest"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyUnitTestTests.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public void testIntegrationTest() {
         createNewGrailsFile(getProject(), "Templates/Groovy/IntegrationTest.groovy", "MyIntegrationTest"); //NOI18N
+        EditorOperator eo = new EditorOperator("MyIntegrationTestTests.groovy"); //NOI18N
+        assertNotNull(eo);
     }
 
     public static Test suite() {
