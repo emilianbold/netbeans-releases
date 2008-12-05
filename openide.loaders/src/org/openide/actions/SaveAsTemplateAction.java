@@ -65,11 +65,12 @@ public final class SaveAsTemplateAction extends NodeAction {
     }
 
     /** @deprecated Should never be called publically. */
-    @Deprecated
+    @Deprecated @Override
     public String iconResource () {
         return super.iconResource ();
     }
 
+    @Override
     protected boolean surviveFocusChange () {
         return false;
     }
@@ -80,7 +81,7 @@ public final class SaveAsTemplateAction extends NodeAction {
         // test if all nodes support saving as template
         DataObject curCookie;
         for (int i = 0; i < activatedNodes.length; i++) {
-            curCookie = (DataObject)activatedNodes[i].getCookie(DataObject.class);
+            curCookie = activatedNodes[i].getCookie (DataObject.class);
             if ((curCookie == null) || (!curCookie.isCopyAllowed()))
                 // not supported
                 return false;
@@ -114,14 +115,15 @@ public final class SaveAsTemplateAction extends NodeAction {
         // we know DataFolder and DataObject cookies must be supported
         // so we needn't check for null values
         DataFolder targetFolder =
-            (DataFolder)selected[0].getCookie(DataFolder.class);
+            selected[0].getCookie (DataFolder.class);
         for (int i = 0; i < activatedNodes.length; i++ ) {
             createNewTemplate(
-                (DataObject)activatedNodes[i].getCookie(DataObject.class),
+                activatedNodes[i].getCookie (DataObject.class),
                 targetFolder);
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -130,7 +132,7 @@ public final class SaveAsTemplateAction extends NodeAction {
     private void createNewTemplate(DataObject source,
                                    DataFolder targetFolder) {
         try {
-            SaveCookie cookie = (SaveCookie)source.getCookie (SaveCookie.class);
+            SaveCookie cookie = source.getCookie (SaveCookie.class);
             if (cookie != null) {
                 cookie.save ();
             }
