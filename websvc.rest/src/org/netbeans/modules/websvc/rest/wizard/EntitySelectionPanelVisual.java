@@ -83,6 +83,8 @@ import org.openide.util.RequestProcessor;
  */
 public class EntitySelectionPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
 
+    private static final int MAX_RETRY = 10;
+
     //private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
     private List<ChangeListener> listeners;
@@ -93,6 +95,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
     private EntityMappings mappings;
     private EntityResourceModelBuilder builder;
     private EntityResourceBeanModel resourceModel;
+    private EntityListModel availableModel;
+    private EntityListModel selectedModel;
+    private int retryCount = 0;
+
     //private List<EntityMappings> waitForMappings = new ArrayList<EntityMappings>();
     //private PersistenceUnit persistenceUnit;
 
@@ -349,6 +355,10 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         listeners.add(listener);
     }
 
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
+    }
+
     public void fireChange() {
         ChangeEvent event = new ChangeEvent(this);
 
@@ -371,30 +381,41 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         }
 
         if (mappings == null) {
-            MetadataModel<EntityMappingsMetadata> entityModel = ps.getEntityMappingsModel(persistenceUnit);
-            entitiesHelper = MetadataModelReadHelper.create(entityModel, new MetadataModelAction<EntityMappingsMetadata, EntityMappings>() {
-
-                public EntityMappings run(EntityMappingsMetadata metadata) throws Exception {
-                    EntityMappings mappings = metadata.getRoot();
-                    mappings.getEntity();
-                    return mappings;
-                }
-            });
-
-            EntityListModel availableModel = new EntityListModel(true);
-            listAvailable.setModel(availableModel);
-            addChangeListener(availableModel);
-
-            availableModel.addElement(MSG_RETRIEVING);
-            listAvailable.ensureIndexIsVisible(0);
-
-            entitiesHelper.addChangeListener(availableModel);
-            entitiesHelper.start();
-
-            EntityListModel selectedModel = new EntityListModel(false);
-            listSelected.setModel(selectedModel);
-            this.addChangeListener(selectedModel);
+            setupModel();
         }
+    }
+
+    private void setupModel() {
+        PersistenceScope ps = PersistenceScope.getPersistenceScope(project.getProjectDirectory());
+        MetadataModel<EntityMappingsMetadata> entityModel = ps.getEntityMappingsModel(persistenceUnit);
+        entitiesHelper = MetadataModelReadHelper.create(entityModel, new MetadataModelAction<EntityMappingsMetadata, EntityMappings>() {
+
+            public EntityMappings run(EntityMappingsMetadata metadata) throws Exception {
+                EntityMappings mappings = metadata.getRoot();
+                mappings.getEntity();
+                return mappings;
+            }
+        });
+
+        if (availableModel != null) {
+            removeChangeListener(availableModel);
+        }
+        availableModel = new EntityListModel(true);
+        listAvailable.setModel(availableModel);
+        addChangeListener(availableModel);
+
+        availableModel.addElement(MSG_RETRIEVING);
+        listAvailable.ensureIndexIsVisible(0);
+
+        entitiesHelper.addChangeListener(availableModel);
+        entitiesHelper.start();
+
+        if (selectedModel != null) {
+            removeChangeListener(selectedModel);
+        }
+        selectedModel = new EntityListModel(false);
+        listSelected.setModel(selectedModel);
+        this.addChangeListener(selectedModel);
     }
 
     public void store(WizardDescriptor settings) {
@@ -483,16 +504,28 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
                                     builder = new EntityResourceModelBuilder(project, entities.values());
 
-                                    // Update the ListModel on the AWT thread.
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            removeElement(MSG_RETRIEVING);
-                                            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
-                                                addElement(entry.getValue());
+                                    if (builder.getEntities().size() == entities.size() ||
+                                            retryCount++ > MAX_RETRY) {
+
+                                        // Update the ListModel on the AWT thread.
+                                        SwingUtilities.invokeLater(new Runnable() {
+
+                                            public void run() {
+                                                removeElement(MSG_RETRIEVING);
+                                                for (Entity entity : builder.getEntities()) {
+                                                    addElement(entity);
+                                                }
+                                                updateButtons();
                                             }
-                                            updateButtons();
-                                        }
-                                    });
+                                        });
+                                    } else {
+                                        // Something is wrong. The entities in our resource model
+                                        // doesn't match the actual number of entities. Retry to
+                                        // see if we get a better result.
+                                        //System.out.println("retrying count = " + retryCount);
+                                        mappings = null;
+                                        setupModel();
+                                    }
                                 }
                             });
                         }

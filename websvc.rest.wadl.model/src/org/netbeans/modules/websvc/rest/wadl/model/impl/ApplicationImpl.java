@@ -83,7 +83,11 @@ public class ApplicationImpl extends NamedImpl implements Application {
     public void removeMethod(Method method) {
         removeChild(METHOD_PROPERTY, method);
     }
-    
+
+    public Collection<RepresentationType> getRepresentationType() {
+        return getChildren(RepresentationType.class);
+    }
+
     public Collection<Representation> getRepresentation() {
         return getChildren(Representation.class);
     }

@@ -145,42 +145,19 @@ public class ResourcesWidget extends WadlComponentWidget implements PropertyChan
     }
 
     protected void notifyAdded() {
-//        super.notifyAdded();
-//        resourceSelectionListener = new ObjectSceneAdapter() {
-//            public void selectionChanged(ObjectSceneEvent event,
-//                    Set<Object> previousSelection, Set<Object> newSelection) {
-//                Set<Resource> resourceSet = new HashSet<Resource>();
-//                if(newSelection!=null) {
-//                    for(Object obj:newSelection) {
-//                        if(obj instanceof Resource) {
-//                            resources.getResource().add((Resource)obj);
-//                        }
-//                    }
-//                }
-//                removeAction.setWorkingSet(resourceSet);
-//            }
-//        };
-//        getObjectScene().addObjectSceneListener(resourceSelectionListener,
-//                ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        super.notifyAdded();
     }
 
     protected void notifyRemoved() {
-//        super.notifyRemoved();
-//        if(resourceSelectionListener!=null) {
-//            getObjectScene().removeObjectSceneListener(resourceSelectionListener,
-//                    ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-//            resourceSelectionListener=null;
-//        }
+        super.notifyRemoved();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(AddResourceAction.ADD_RESOURCE)) {
             try {
-//                Resource r = model.getFactory().createResource();
                 Resource r = (Resource) evt.getNewValue();
                 ResourceWidget methodWidget = new ResourceWidget(getObjectScene(), this,
                         r, getModel());
-//                r.setPath((String) evt.getNewValue());
                 getContentWidget().addChild(methodWidget);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
