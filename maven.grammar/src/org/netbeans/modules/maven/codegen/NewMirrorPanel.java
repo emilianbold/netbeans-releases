@@ -74,11 +74,11 @@ public class NewMirrorPanel extends javax.swing.JPanel {
     private SettingsModel model;
     private NotificationLineSupport nls;
 
-    private final static String CENTRAL = "central";
-    private final static String ALL = "*"; //2.0.5+
-    private final static String ALL_NON_LOCAL = "external:*"; //2.0.9+
-    private final static String ALL_BUT_FOO = "*,!foo"; //2.0.9+
-    private final static String LIST = "foo,bar"; //2.0.9+
+    private final static String CENTRAL = "central"; //NOI18N
+    private final static String ALL = "*"; //2.0.5+ //NOI18N
+    private final static String ALL_NON_LOCAL = "external:*"; //2.0.9+ //NOI18N
+    private final static String ALL_BUT_FOO = "*,!foo"; //2.0.9+ //NOI18N
+    private final static String LIST = "foo,bar"; //2.0.9+ //NOI18N
 
     private final String[] MIRROROFS = new String[] {
         CENTRAL,
@@ -113,15 +113,15 @@ public class NewMirrorPanel extends javax.swing.JPanel {
                 if (toRet instanceof JLabel) {
                     JLabel label = (JLabel)toRet;
                     if (CENTRAL.equals(value)) {
-                        label.setText("Central Repository");
+                        label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_Central"));
                     } else if (ALL.equals(value)) {
-                        label.setText("All repositories, you have Repository Manager installed");
+                        label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_All"));
                     } else if (ALL_NON_LOCAL.equals(value)) {
-                        label.setText("All non local repositories (Maven 2.0.9+)");
+                        label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_NonLocal"));
                     } else if (ALL_BUT_FOO.equals(value)) {
-                        label.setText("All repositories, with exception of 'foo' (Maven 2.0.9+)");
+                        label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_AllButFoo"));
                     } else if (LIST.equals(value)) {
-                        label.setText("List of repositories (Maven 2.0.9+)");
+                        label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_List"));
                     }
                 }
                 return toRet;
@@ -194,13 +194,13 @@ public class NewMirrorPanel extends javax.swing.JPanel {
             //see http://docs.codehaus.org/display/MAVENUSER/Mirrors+Repositories
             // for a list of central mirrors.
             //TODO might be worth to externalize somehow.
-            urlmodel.addElement("http://mirrors.ibiblio.org/pub/mirrors/maven2");
-            urlmodel.addElement("http://www.ibiblio.net/pub/packages/maven2");
-            urlmodel.addElement("http://ftp.cica.es/mirrors/maven2");
-            urlmodel.addElement("http://repo1.sonatype.net/maven2");
-            urlmodel.addElement("http://repo.exist.com/maven2");
-            urlmodel.addElement("http://mirrors.redv.com/maven2");
-            urlmodel.addElement("http://mirrors.dotsrc.org/maven2");
+            urlmodel.addElement("http://mirrors.ibiblio.org/pub/mirrors/maven2"); //NOI18N
+            urlmodel.addElement("http://www.ibiblio.net/pub/packages/maven2");//NOI18N
+            urlmodel.addElement("http://ftp.cica.es/mirrors/maven2");//NOI18N
+            urlmodel.addElement("http://repo1.sonatype.net/maven2");//NOI18N
+            urlmodel.addElement("http://repo.exist.com/maven2");//NOI18N
+            urlmodel.addElement("http://mirrors.redv.com/maven2");//NOI18N
+            urlmodel.addElement("http://mirrors.dotsrc.org/maven2");//NOI18N
         }
     }
 
