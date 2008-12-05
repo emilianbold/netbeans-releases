@@ -82,6 +82,9 @@ public class DebuggerChooserConfiguration {
                             priority = ((PrioritizedCustomizerNode) node).getPriority();
                             idx = n.size();
                         }
+                    } else if (node.getClass().getName().toLowerCase().contains("dbx")) { // NOI18N
+                        priority = PrioritizedCustomizerNode.MAX_PRIORITY;
+                        idx = n.size();
                     }
                     n.add(node.getDisplayName());
                 }

@@ -182,6 +182,10 @@ public class LogReader {
             return false;
         }
 
+        if (workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
+            workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
+        }
+
         if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
             if (TRACE) {System.err.print(message);}
             setWorkingDir(workDir);
@@ -306,7 +310,7 @@ public class LogReader {
     
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
-        this.workingDir = workingDir;
+        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();;
     }
     
     private boolean parseLine(String line){
