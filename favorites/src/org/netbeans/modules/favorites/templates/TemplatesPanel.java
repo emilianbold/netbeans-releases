@@ -46,12 +46,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +68,7 @@ import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.actions.RenameAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -79,8 +84,11 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -102,8 +110,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static private FileObject templatesRoot;
     private static Node templatesRootNode = null;
     
-    private static final String TEMPLATE_DISPLAY_NAME_ATTRIBUTE = "displayName";
-    private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle";
+    private static final String TEMPLATE_DISPLAY_NAME_ATTRIBUTE = "displayName"; // NOI18N
+    private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle"; // NOI18N
+    private static final String TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE = "javax.script.ScriptEngine"; // NOI18N
+    private static final String TEMPLATE_CATEGORY_ATTRIBUTE = "templateCategory"; // NOI18N
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -485,6 +495,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     null,
                                     SystemAction.get (DeleteAction.class),
                                     SystemAction.get (RenameAction.class),
+                                    null,
+                                    SystemAction.get (PropertiesAction.class),
         };
         
         private static Action [] ACTIONS_ON_FOLDER = new Action [] {
@@ -559,6 +571,129 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             setDisplayName (name);
         }
 
+        @Override
+        public PropertySet[] getPropertySets () {
+            return new Node.PropertySet [] { createTemplateProperties (this) };
+        }
+
+        public String getFileName () {
+            return super.getName ();
+        }
+
+        public void setFileName (String name) {
+            String origDisplayName = getDisplayName ();
+            super.setName (name);
+            FileObject fo = this.getLookup().lookup(FileObject.class);
+            try {
+                fo.setAttribute (TEMPLATE_DISPLAY_NAME_ATTRIBUTE, origDisplayName);
+                fo.setAttribute (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE, null);
+            } catch (IOException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
+            }
+            setDisplayName (origDisplayName);
+        }
+
+    }
+
+    private static Sheet.Set createTemplateProperties (final TemplateNode templateNode) {
+        Sheet.Set properties = Sheet.createPropertiesSet ();
+        // display name
+        properties.put (new PropertySupport.ReadWrite<String> (
+                    DataObject.PROP_NAME,
+                    String.class,
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_DisplayName"), // NOI18N
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_DisplayName_Desc") // NOI18N
+                ) {
+                    @Override
+                    public String getValue () throws IllegalAccessException, InvocationTargetException {
+                        return templateNode.getDisplayName ();
+                    }
+
+                    @Override
+                    public void setValue (String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        templateNode.setName (val);
+                    }
+        });
+        // name == primary file filename
+        properties.put (new PropertySupport.ReadWrite<String> (
+                    DataObject.PROP_PRIMARY_FILE,
+                    String.class,
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_FileName"), // NOI18N
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_FileName_Desc") // NOI18N
+                ) {
+                    @Override
+                    public String getValue () throws IllegalAccessException, InvocationTargetException {
+                        return templateNode.getFileName ();
+                    }
+
+                    @Override
+                    public void setValue (String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        templateNode.setFileName (val);
+                    }
+        });
+        // ScriptEngine
+        properties.put (new PropertySupport.ReadWrite<String> (
+                    TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE,
+                    String.class,
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_ScriptEngine"), // NOI18N
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_ScriptEngine_Desc") // NOI18N
+                ) {
+                    @Override
+                    public String getValue () throws IllegalAccessException, InvocationTargetException {
+                        DataObject dobj = getDOFromNode (templateNode);
+                        Object o = dobj.getPrimaryFile ().getAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE);
+                        return o == null ? "" : o.toString ();
+                    }
+
+                    @Override
+                    public void setValue (String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        DataObject dobj = getDOFromNode (templateNode);
+                        try {
+                            dobj.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, val);
+                        } catch (IOException ex) {
+                            Logger.getLogger(TemplatesPanel.class.getName()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                        }
+                    }
+        });
+        properties.put (new PropertySupport.ReadWrite<String []> (
+                    TEMPLATE_CATEGORY_ATTRIBUTE,
+                    String [].class,
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_TemplateCategories"), // NOI18N
+                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_TemplateCategories_Desc") // NOI18N
+                ) {
+                    @Override
+                    public String [] getValue () throws IllegalAccessException, InvocationTargetException {
+                        DataObject dobj = getDOFromNode (templateNode);
+                        Object o = dobj.getPrimaryFile ().getAttribute (TEMPLATE_CATEGORY_ATTRIBUTE);
+                        if (o != null) {
+                            List<String> list = new ArrayList<String> ();
+                            StringTokenizer tokenizer = new StringTokenizer (o.toString (), ","); // NOI18N
+                            while (tokenizer.hasMoreTokens ()) {
+                                String token = tokenizer.nextToken ();
+                                list.add (token.trim ());
+                            }
+                            return list.toArray (new String [0]);
+                        } else {
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public void setValue (String [] val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        DataObject dobj = getDOFromNode (templateNode);
+                        try {
+                            if (val == null) {
+                                dobj.getPrimaryFile ().setAttribute (TEMPLATE_CATEGORY_ATTRIBUTE, null);
+                            } else {
+                                dobj.getPrimaryFile ().setAttribute (TEMPLATE_CATEGORY_ATTRIBUTE, Arrays.asList (val).toString ());
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(TemplatesPanel.class.getName()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                        }
+                    }
+        });
+
+        return properties;
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -679,7 +814,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             template.setTemplate(true);
             if (templateSample == null) {
                 // a fallback if no template sample found
-                template.getPrimaryFile ().setAttribute ("javax.script.ScriptEngine", "freemarker"); // NOI18N
+                template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
             } else {
                 setTemplateAttributes (template.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
             }
