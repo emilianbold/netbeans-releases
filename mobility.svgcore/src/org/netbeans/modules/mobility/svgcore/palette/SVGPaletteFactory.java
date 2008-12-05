@@ -40,7 +40,6 @@
  */   
 package org.netbeans.modules.mobility.svgcore.palette;
 
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
