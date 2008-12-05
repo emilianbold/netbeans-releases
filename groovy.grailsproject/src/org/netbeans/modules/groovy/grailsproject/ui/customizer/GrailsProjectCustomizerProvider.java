@@ -26,7 +26,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui;
+package org.netbeans.modules.groovy.grailsproject.ui.customizer;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -55,6 +55,7 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
 
     // Names of categories
     private static final String GENERAL_CATEGORY = "GeneralCategory";
+    private static final String LIBRARIES_CATEGORY = "LibrariesCategory";
     private static final String DEBUG_CATEGORY = "DebugCategory"; // NOI18N
     
     private final Project project;
@@ -68,10 +69,12 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
     }
 
     public void showCustomizer(String preselectedCategory) {
-        Lookup context = Lookups.fixed(project);
+        GrailsProjectProperties uiProperties = new GrailsProjectProperties(project);
+        Lookup context = Lookups.fixed(project, uiProperties);
         OptionListener optionListener = new OptionListener(project);
+        StoreListener storeListener = new StoreListener(uiProperties);
         Dialog dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
-                optionListener, null, null);
+                optionListener, storeListener, null);
         dialog.addWindowListener(optionListener);
         dialog.setTitle(ProjectUtils.getInformation(project).getDisplayName());
         dialog.setVisible(true);
@@ -110,7 +113,23 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
             }
 
             public JComponent createComponent(Category category, Lookup context) {
-                return new GeneralCustomizerPanel(context.lookup(Project.class));
+                return new GeneralCustomizerPanel(context.lookup(GrailsProjectProperties.class));
+            }
+        };
+    }
+
+    // used from XML layer
+    public static ProjectCustomizer.CompositeCategoryProvider createLibraries() {
+        return new ProjectCustomizer.CompositeCategoryProvider() {
+            public Category createCategory(Lookup context) {
+                return ProjectCustomizer.Category.create(
+                    LIBRARIES_CATEGORY,
+                    NbBundle.getMessage(GrailsProjectCustomizerProvider.class, "LBL_Libraries"), //NOI18N
+                    null);
+            }
+
+            public JComponent createComponent(Category category, Lookup context) {
+                return new LibrariesCustomizerPanel(context.lookup(GrailsProjectProperties.class));
             }
         };
     }
@@ -130,9 +149,20 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
             }
 
             public JComponent createComponent(Category category, Lookup context) {
-                return new DebugCustomizerPanel(context.lookup(Project.class));
+                return new DebugCustomizerPanel(context.lookup(GrailsProjectProperties.class));
             }
         };
     }
 
+    private class StoreListener implements ActionListener {
+        private final GrailsProjectProperties uiProperties;
+
+        StoreListener(GrailsProjectProperties uiProperties) {
+            this.uiProperties = uiProperties;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            uiProperties.save();
+        }
+    }
 }
