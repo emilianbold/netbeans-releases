@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
@@ -76,7 +77,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     public static final String PROP_SELECTED = "selected";       // NOI18N
     
     public static final String PROP_BUTTON_GROUP = "buttonGroup";// NOI18N
-
+    
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
@@ -130,8 +131,8 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                         MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
                         MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_BUTTON_GROUP, 
-                                MidpTypes.TYPEID_JAVA_CODE, 
-                                MidpTypes.createJavaCodeValue(""), true, true, 
+                                SVGButtonGroupCD.TYPEID, 
+                                PropertyValue.createNull(), true, true, 
                                 MidpVersionable.MIDP_2)
                 );
     }
