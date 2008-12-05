@@ -262,7 +262,8 @@ class SQLStatementGenerator {
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
-                        Object val = model.getValueAt(rowNum, i);
+                        //Object val = model.getValueAt(rowNum, i);
+                        Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
                         if (val != null) {
                             keySelected = true;
                             and = addSeparator(and, result, raw, " AND "); // NOI18N
@@ -276,7 +277,8 @@ class SQLStatementGenerator {
 
         if(key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
-                Object val = model.getValueAt(rowNum, i);
+                //Object val = model.getValueAt(rowNum, i);
+                Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
                 and = addSeparator(and, result, raw, " AND "); // NOI18N
                 generateNameValue(i, result, raw, val, values, types);
             }

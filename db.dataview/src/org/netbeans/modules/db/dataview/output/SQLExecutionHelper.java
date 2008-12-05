@@ -196,12 +196,13 @@ class SQLExecutionHelper {
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
+        final int[] rows = rsTable.getSelectedRows();
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                int[] rows = rsTable.getSelectedRows();
+                
                 for (int j = 0; j < rows.length && !error; j++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -228,7 +229,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");//"MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -246,7 +247,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.decrementRowSize(rsTable.getSelectedRows().length);
+                dataView.decrementRowSize(rows.length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
