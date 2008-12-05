@@ -59,6 +59,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -561,12 +562,26 @@ public class GsfUtilities {
             return ((CursorMovedSchedulerEvent) event).getCaretOffset();
         }
 
-        // Then editor pane, if it exists
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        if (pane != null) {
-            return pane.getCaretPosition();
+        // Then look through all existing editor pane
+        Document snapshotDoc = snapshot.getSource().getDocument();
+        if (snapshotDoc != null) {
+            for(JTextComponent jtc : EditorRegistry.componentList()) {
+                if (snapshotDoc == jtc.getDocument()) {
+                    return jtc.getCaretPosition();
+                }
+            }
+        } else {
+            FileObject snapshotFile = snapshot.getSource().getFileObject();
+            if (snapshotFile != null) {
+                for(JTextComponent jtc : EditorRegistry.componentList()) {
+                    if (snapshotFile == NbEditorUtilities.getFileObject(jtc.getDocument())) {
+                        return jtc.getCaretPosition();
+                    }
+                }
+            }
         }
 
+        // Finally, try the enforced caret offset (eg. enforced by tests)
         Integer enforcedCaretOffset = enforcedCaretOffsets.get(snapshot.getSource());
         if (enforcedCaretOffset != null) {
             return enforcedCaretOffset;
