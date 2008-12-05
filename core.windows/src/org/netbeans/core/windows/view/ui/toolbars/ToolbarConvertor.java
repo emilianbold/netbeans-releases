@@ -180,6 +180,12 @@ public final class ToolbarConvertor extends Convertor {
 
                 boolean dragable = !"false".equals( attributes.getValue(ATT_TOOLBAR_DRAGABLE) ); //NOI18N
 
+                //#154332 - HACK always dock quick search toolbar to the right
+                //needed when importing toolbar settings from nb 6.5
+                if( "QuickSearch".equals( barName ) ) {
+                    align = ToolbarConstraints.Align.right;
+                    dragable = false;
+                }
                 ToolbarConstraints tc = new ToolbarConstraints(barName, align, visible, dragable);
                 if( null != currentRow )
                     currentRow.addConstraint(tc);
