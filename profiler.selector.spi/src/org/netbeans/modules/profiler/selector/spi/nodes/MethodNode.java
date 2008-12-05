@@ -37,76 +37,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.modules.profiler.utilities.OutputParameter;
-import org.openide.filesystems.FileObject;
-import java.io.IOException;
 import java.util.Comparator;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
+import java.util.Set;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class MethodNode extends SelectorNode {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+abstract public class MethodNode extends SelectorNode {
 
+    public static enum Modifier {
+
+        STATIC, PUBLIC, PROTECTED, PRIVATE
+    }
     public static final Comparator<MethodNode> COMPARATOR = new Comparator<MethodNode>() {
+
         public int compare(MethodNode o1, MethodNode o2) {
             return o1.toString().compareTo(o2.toString());
         }
     };
 
-
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private ClientUtils.SourceCodeSelection rootMethod;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
     /** Creates a new instance of MethodNode */
-    public MethodNode(ClasspathInfo cpInfo, final ExecutableElement method, MethodsNode parent) {
-        super(method.toString(), method.getSimpleName().toString(), getIcon(method), SelectorChildren.LEAF, parent);
-
-        final OutputParameter<String> signature = new OutputParameter<String>(""); // NOI18N
-        JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        signature.setValue(SourceUtils.getVMMethodSignature(method, controller));
-                    }
-                }, true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        if (signature.getValue() != null) {
-            rootMethod = new ClientUtils.SourceCodeSelection(ElementUtilities.getBinaryName(getEnclosingClass(method)),
-                                                             method.getSimpleName().toString(), signature.getValue());
-        }
+    public MethodNode(final String methodName, MethodsNode parent) {
+        super(methodName, methodName, null, SelectorChildren.LEAF, parent);
     }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
     public boolean getAllowsChildren() {
@@ -124,43 +81,25 @@ public class MethodNode extends SelectorNode {
     }
 
     @Override
-    public ClientUtils.SourceCodeSelection getSignature() {
-        return rootMethod;
-    }
-
-    private TypeElement getEnclosingClass(Element element) {
-        Element parent = element.getEnclosingElement();
-
-        if (parent != null) {
-            if ((parent.getKind() == ElementKind.CLASS) || (parent.getKind() == ElementKind.ENUM)) {
-                return (TypeElement) parent;
-            } else {
-                return getEnclosingClass(parent);
-            }
-        }
-
-        return null;
-    }
-
-    private static Icon getIcon(ExecutableElement method) {
+    public Icon getIcon() {
         Icon icon;
 
-        if (method.getModifiers().contains(Modifier.STATIC)) {
-            if (method.getModifiers().contains(Modifier.PUBLIC)) {
+        if (getModifiers().contains(Modifier.STATIC)) {
+            if (getModifiers().contains(Modifier.PUBLIC)) {
                 icon = IconResource.METHOD_PUBLIC_STATIC_ICON;
-            } else if (method.getModifiers().contains(Modifier.PROTECTED)) {
+            } else if (getModifiers().contains(Modifier.PROTECTED)) {
                 icon = IconResource.METHOD_PROTECTED_STATIC_ICON;
-            } else if (method.getModifiers().contains(Modifier.PRIVATE)) {
+            } else if (getModifiers().contains(Modifier.PRIVATE)) {
                 icon = IconResource.METHOD_PRIVATE_STATIC_ICON;
             } else {
                 icon = IconResource.METHOD_PACKAGE_STATIC_ICON;
             }
         } else {
-            if (method.getModifiers().contains(Modifier.PUBLIC)) {
+            if (getModifiers().contains(Modifier.PUBLIC)) {
                 icon = IconResource.METHOD_PUBLIC_ICON;
-            } else if (method.getModifiers().contains(Modifier.PROTECTED)) {
+            } else if (getModifiers().contains(Modifier.PROTECTED)) {
                 icon = IconResource.METHOD_PROTECTED_ICON;
-            } else if (method.getModifiers().contains(Modifier.PRIVATE)) {
+            } else if (getModifiers().contains(Modifier.PRIVATE)) {
                 icon = IconResource.METHOD_PRIVATE_ICON;
             } else {
                 icon = IconResource.METHOD_PACKAGE_ICON;
@@ -169,4 +108,6 @@ public class MethodNode extends SelectorNode {
 
         return icon;
     }
+
+    abstract protected Set<Modifier> getModifiers();
 }
