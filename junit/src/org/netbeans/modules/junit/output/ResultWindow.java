@@ -108,6 +108,8 @@ public final class ResultWindow extends TopComponent {
     /** Creates a new instance of ResultWindow */
     public ResultWindow() {
         super();
+        setToolTipText(NbBundle.getMessage(ResultWindow.class,
+                                           "TOOLTIP_TEST_RESULTS"));
         setFocusable(true);
         setLayout(new BorderLayout());
         //add(tabbedPanel = new JTabbedPane(), BorderLayout.CENTER);
