@@ -51,6 +51,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  * A custom property editor for JavaScript, that displays code using basic
@@ -60,10 +62,6 @@ import javax.swing.UIManager;
  * @author gjmurphy
  */
 public class JavaScriptPropertyPanel extends PropertyPanelBase {
-
-    private static String instructions =
-            ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString(
-                "JavaScriptPropertyPanel.instructions");
 
     protected static Class codeClipsPanelClass;
     protected JEditorPane editorPane;
@@ -80,7 +78,7 @@ public class JavaScriptPropertyPanel extends PropertyPanelBase {
      */
     public JavaScriptPropertyPanel(JavaScriptPropertyEditor propertyEditor) {
         super(propertyEditor);
-        initComponents((String) propertyEditor.getValue(), instructions);
+        initComponents((String) propertyEditor.getValue());
     }
 
     protected JPanel getNewCodeClipsPanel() {
@@ -110,13 +108,13 @@ public class JavaScriptPropertyPanel extends PropertyPanelBase {
 //        }
 //    }
 
-    protected void initComponents(String string, String instructions) {
+    protected void initComponents(String string) {
         GridBagConstraints gridBagConstraints;
         setLayout(new java.awt.GridBagLayout());
         // Label with instructions
-        final JLabel label = new JLabel(instructions);
+        final JLabel label = new JLabel();
+        Mnemonics.setLocalizedText(label, NbBundle.getMessage(JavaScriptPropertyPanel.class, "JavaScriptPropertyPanel.instructions"));
         label.setFont(getFont());
-        label.setDisplayedMnemonic(ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("JavaScriptPropertyPanel.label.mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
