@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -83,7 +84,9 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         List<BuildAction> res = new ArrayList<BuildAction>();
         if (events != null && events.length == 2) {
             if (events[0].getID() == ProjectActionEvent.CLEAN &&
-                events[1].getID() == ProjectActionEvent.BUILD) {
+                events[1].getID() == ProjectActionEvent.BUILD &&
+                (events[1].getConfiguration() instanceof MakeConfiguration)&&
+                ((MakeConfiguration)events[1].getConfiguration()).getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
             }
         }

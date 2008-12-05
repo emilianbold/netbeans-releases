@@ -12,3 +12,6 @@ end
 
 Colors::RED.byte
 Colors::InnerColors
+
+require 'rexml/rexml'
+REXML::COPYRIGHT.ls

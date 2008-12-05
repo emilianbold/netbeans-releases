@@ -120,6 +120,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 _template = true;
                 break;
             case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
+            case CPPTokenTypes.CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
+            case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
             case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                 _template = true;
                 specialization = true;

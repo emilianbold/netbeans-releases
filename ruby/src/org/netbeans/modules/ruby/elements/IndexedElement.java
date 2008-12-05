@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class IndexedElement extends RubyElement {
+    
     /** This method is documented */
     public static final int DOCUMENTED = 1 << 0;
     /** This method is protected */
@@ -76,18 +77,21 @@ public abstract class IndexedElement extends RubyElement {
     protected String fileUrl;
     protected final String clz;
     protected final String fqn;
-    protected final RubyIndex index;
     protected final String require;
     protected final String attributes;
-    protected Set<Modifier> modifiers;
-    protected int flags;
+    protected final int flags;
     protected int docLength = -1;
+
+    private Set<Modifier> modifiers;
+    private final RubyIndex index;
     private Document document;
     private FileObject fileObject;
-    private FileObject context;
+    private final FileObject context;
+    private final String type;
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags, FileObject context) {
+            String clz, String require, String attributes,
+            int flags, FileObject context, String type) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
@@ -97,6 +101,13 @@ public abstract class IndexedElement extends RubyElement {
         this.clz = clz;
         this.flags = flags;
         this.context = context;
+        this.type = type;
+    }
+
+    protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
+            String clz, String require, String attributes,
+            int flags, FileObject context) {
+        this(index, fileUrl, fqn, clz, require, attributes, flags, context, null);
     }
 
     public abstract String getSignature();
@@ -111,6 +122,10 @@ public abstract class IndexedElement extends RubyElement {
 
     public final String getFqn() {
         return fqn;
+    }
+
+    public String getType() {
+        return type;
     }
 
     @Override

@@ -41,13 +41,14 @@
 
 package org.netbeans.performance.mobility.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -58,7 +59,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class QuickRunDialogTest extends PerformanceTestCase {
     
     private Node testNode;    
-    private String targetProject, TITLE;
+    private String targetProject;
     
     public QuickRunDialogTest(String testName) {
         super(testName);
@@ -85,28 +86,22 @@ public class QuickRunDialogTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        log(":: initialize");
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);         
         testNode.select();
     }
     
     public void prepare() {
-        log(":: prepare");
     }
 
     public ComponentOperator open() {
-        log(":: open");
         String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.Bundle", "LBL_RunWithAction_Name");
         new ActionNoBlock(null,cmdName).performPopup(testNode);
         return new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.Bundle", "Title_QuickRun"));        
     }
+
     @Override
     public void close() {
-        log(":: close");
         ((NbDialogOperator)testedComponentOperator).close();
     }
-    @Override
-    public void shutdown() {
-        log(":: shutdown");
-    }
+
 }

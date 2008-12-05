@@ -38,10 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -50,10 +54,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
@@ -64,7 +67,6 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
     private String targetProject;
     private String midletName;
     private ProjectsTabOperator pto;
-    // Since Loading Document label is shown it is okay to load document for 10 sec
     public final static long EXPECTED_TIME = 10000;
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
 
@@ -107,17 +109,13 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        log(":: initialize");
         EditorOperator.closeDiscardAll();
         pto = ProjectsTabOperator.invoke();
     }
 
     public void prepare() {
-        log(":: prepare");
         String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
-
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
 
         try {
             openNode = new Node(pto.getProjectRootNode(targetProject), documentPath);
@@ -134,13 +132,10 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
     }
 
     public ComponentOperator open() {
-        log(":: open");
         JPopupMenuOperator popup = this.openNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node ");
         }
-        log("   -- after popup invocation --");
-        popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
         try {
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
@@ -152,7 +147,6 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        log(":: close");
         if (testedComponentOperator != null) {
             new Thread("Question dialog discarder") {
 
@@ -170,8 +164,4 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
         }
     }
 
-    @Override
-    public void shutdown() {
-        log("::shutdown");
-    }
 }
