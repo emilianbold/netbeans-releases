@@ -2026,6 +2026,42 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(-1, userClass, manClass);
     }
 
+    public void testPHPDocType01() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class ^Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Bo|ok $hello\n" +
+                                         " * @return Magazine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
+    public void testPHPDocType02() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class ^Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Book $hello\n" +
+                                         " * @return Mag|azine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
 

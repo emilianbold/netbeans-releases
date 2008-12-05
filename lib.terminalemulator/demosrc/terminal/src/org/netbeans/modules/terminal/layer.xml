@@ -45,4 +45,14 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="TermAdvancedOption.instance">
+                <attr name="instanceClass"
+                      stringvalue="org.netbeans.modules.terminal.TermAdvancedOption"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>

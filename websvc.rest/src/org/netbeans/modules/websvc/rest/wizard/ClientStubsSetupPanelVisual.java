@@ -64,6 +64,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.State;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -177,9 +179,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 return false;
             } else {
                 String fileName = wadlTextField.getText().trim();
-                boolean isValid = validateWadlFile(fileName);
-                if(!isValid) {
-                    AbstractPanel.setErrorMessage(wizard, "MSG_NoValidWadlFile");
+                State state = validateWadlFile(fileName);
+                if(state != State.VALID) {
+                    AbstractPanel.setErrorMessage(wizard, "MSG_"+state.value());
                     return false;
                 }
             }
@@ -626,20 +628,22 @@ private void wadlTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:
     fireChange();
 }//GEN-LAST:event_wadlTextFieldKeyReleased
     
-    private boolean validateWadlFile(final String fileName) {
+    private State validateWadlFile(final String fileName) {
         File f = new File(fileName);
-        boolean isValid = false;
+        State state = State.INVALID;
         try {
-            if(f.isFile()) {
+            if (f.isFile()) {
                 FileObject newWadl = FileUtil.toFileObject(f);
-                if(newWadl != null) {
-                    wadlFile = newWadl;
-                    isValid = true;
+                if (newWadl != null) {
+                    state = new ClientStubModel().createModel(newWadl).validate();
+                    if (state == State.VALID) {
+                        wadlFile = newWadl;
+                    }
                 }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
         }
-        return isValid;
+        return state;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
