@@ -59,7 +59,7 @@ public class ModelUtils {
     }
 
     @CheckForNull
-    public static <T extends Occurence<? extends ModelElement>> T getFirst(List<? extends T> all) {
+    public static <T extends Occurence> T getFirst(List<? extends T> all) {
         return all.size() > 0 ? all.get(0) : null;
     }
 

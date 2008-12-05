@@ -568,7 +568,7 @@ public final class ModelVisitor extends DefaultVisitor {
     }
 
     @CheckForNull
-    public Occurence<? extends ModelElement> getOccurence(int offset) {
+    public Occurence getOccurence(int offset) {
         return findStrictOccurence((FileScope) getModelScope(), offset, null);
     }
 
@@ -576,7 +576,7 @@ public final class ModelVisitor extends DefaultVisitor {
         return findNearestVarScope((FileScope) getModelScope(), offset, null);
     }
 
-    static List<Occurence<? extends ModelElement>> getAllOccurences(ModelScope modelScope, Occurence<? extends ModelElement> occurence) {
+    static List<Occurence> getAllOccurences(ModelScope modelScope, Occurence occurence) {
         ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
         if (declaration instanceof MethodScope) {
             MethodScope methodScope = (MethodScope) declaration;
@@ -615,14 +615,14 @@ public final class ModelVisitor extends DefaultVisitor {
         }
     }
 
-    private Occurence<? extends ModelElement> findStrictOccurence(FileScope scope, int offset,
-            Occurence<? extends ModelElement> atOffset) {
+    private Occurence findStrictOccurence(FileScope scope, int offset,
+            Occurence atOffset) {
         buildOccurences();
         //FileObject fileObject = scope.getFileObject();
-        List<Occurence<? extends ModelElement>> occurences = scope.getOccurences();
-        for (Occurence<? extends ModelElement> occ : occurences) {
+        List<Occurence> occurences = scope.getOccurences();
+        for (Occurence occ : occurences) {
             assert occ != null;
-            if (occ.getOffsetRange().containsInclusive(offset)) {
+            if (occ.getOccurenceRange().containsInclusive(offset)) {
                 atOffset = occ;
             }
         }

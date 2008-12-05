@@ -206,7 +206,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     public static DeclarationLocation findDeclarationImpl(CompilationInfo info, int caretOffset) {
         DeclarationLocation retval = DeclarationLocation.NONE;
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
-        Occurence<? extends ModelElement> underCaret = occurencesSupport.getOccurence();
+        Occurence underCaret = occurencesSupport.getOccurence();
         if (underCaret != null) {
             ModelElement declaration = underCaret.getDeclaration();
             retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset());

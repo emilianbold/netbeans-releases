@@ -342,7 +342,7 @@ class OccurenceBuilder {
         for (Entry<SingleFieldDeclarationInfo, FieldElementImpl> entry : fldDeclarations.entrySet()) {
             SingleFieldDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
         }
     }
@@ -369,7 +369,7 @@ class OccurenceBuilder {
                         //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
                         allFields.addAll(fields);
                         if (allFields.isEmpty()) {
-                            fileScope.addOccurence(new OccurenceImpl<ModelElement>(clz, nodeInfo.getRange(), fileScope));
+                            fileScope.addOccurence(new OccurenceImpl(clz, nodeInfo.getRange(), fileScope));
                         }
                     }
                 } else {
@@ -382,12 +382,12 @@ class OccurenceBuilder {
                     }                    
                     if (!name2Fields.isEmpty()) {
                         @SuppressWarnings("unchecked")
-                        Occurence<? extends FieldElement> occurenceImpl = new OccurenceImpl(name2Fields, nodeInfo.getRange(), fileScope);
+                        Occurence occurenceImpl = new OccurenceImpl(name2Fields, nodeInfo.getRange(), fileScope);
                         fileScope.addOccurence(occurenceImpl);
                     }
                 }
                 if (!allFields.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allFields, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(allFields, nodeInfo.getRange(), fileScope));
                 }
             }
         }
@@ -397,7 +397,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
         }
     }
@@ -427,12 +427,12 @@ class OccurenceBuilder {
                     }
                     if (!name2Methods.isEmpty()) {
                         @SuppressWarnings("unchecked")
-                        Occurence<? extends MethodScope> occurenceImpl = new OccurenceImpl(name2Methods, nodeInfo.getRange(), fileScope);
+                        Occurence occurenceImpl = new OccurenceImpl(name2Methods, nodeInfo.getRange(), fileScope);
                         fileScope.addOccurence(occurenceImpl);
                     }
                 }
                 if (!allMethods.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allMethods, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(allMethods, nodeInfo.getRange(), fileScope));
                 }
             }
         }
@@ -442,7 +442,7 @@ class OccurenceBuilder {
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
             IncludeInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
         }
     }
@@ -453,7 +453,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = CachedModelSupport.getConstants(queryName, fileScope);
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
             }
         }
@@ -463,7 +463,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<Scalar>, ConstantElement> entry : constDeclarations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
 
         }
@@ -473,7 +473,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<Identifier>, ClassConstantElement> entry : classConstantDeclarations.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
 
         }
@@ -502,7 +502,7 @@ class OccurenceBuilder {
                 }
 
                 if (!allMethods.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allMethods, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(allMethods, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -524,7 +524,7 @@ class OccurenceBuilder {
                 }
 
                 if (!allFields.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allFields, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(allFields, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -546,7 +546,7 @@ class OccurenceBuilder {
                 }
 
                 if (!allConstants.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allConstants, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(allConstants, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -560,7 +560,7 @@ class OccurenceBuilder {
                 List<? extends ModelElement> elems = null;
                 elems = CachedModelSupport.getClasses(nodeInfo.getName(), fileScope);
                 if (elems != null && !elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -575,11 +575,11 @@ class OccurenceBuilder {
                 List<MethodScope> methods = new ArrayList<MethodScope>();
                 for (ClassScope clz : elems) {
                     methods.addAll(CachedModelSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
-                }
+                    }
                 if (!methods.isEmpty()) {
-                    fileScope.addOccurence(ModelUtils.getFirst(elems), new OccurenceImpl<ModelElement>(methods, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(ModelUtils.getFirst(elems), new OccurenceImpl(methods, nodeInfo.getRange(), fileScope));
                 } else if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -592,7 +592,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -605,7 +605,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = CachedModelSupport.getTypes(queryName, fileScope);
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -619,7 +619,7 @@ class OccurenceBuilder {
                 List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
                 if (!elems.isEmpty()) {
 
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -630,7 +630,7 @@ class OccurenceBuilder {
         for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
             InterfaceDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
 
         }
@@ -640,7 +640,7 @@ class OccurenceBuilder {
         for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
             ClassDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
 
         }
@@ -650,7 +650,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
             ASTNodeInfo<FunctionDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
 
         }
@@ -662,7 +662,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = CachedModelSupport.getFunctions(queryName, fileScope);
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -682,7 +682,7 @@ class OccurenceBuilder {
                 }
 
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
@@ -701,7 +701,7 @@ class OccurenceBuilder {
                 }
 
                 if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
 
             }
