@@ -38,23 +38,31 @@
  */
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -178,5 +186,88 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected final static String getString(String key, String a1) {
         return NbBundle.getMessage(AbstractExecutorRunAction.class, key, a1);
+    }
+
+    protected static class ShellExecuter implements ExecutionListener {
+        private final NativeExecutor nativeExecutor;
+        private final ProgressHandle progressHandle;
+        private ExecutorTask executorTask = null;
+
+        public ShellExecuter(NativeExecutor nativeExecutor, ExecutionListener listener) {
+            this.nativeExecutor = nativeExecutor;
+            nativeExecutor.addExecutionListener(this);
+            if (listener != null) {
+                nativeExecutor.addExecutionListener(listener);
+            }
+            this.progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+        }
+
+        public void execute() {
+            try {
+                executorTask = nativeExecutor.execute();
+            } catch (IOException ioe) {
+            }
+        }
+
+        public void executionFinished(int rc) {
+            progressHandle.finish();
+        }
+
+        public void executionStarted() {
+            progressHandle.start();
+        }
+
+        public ExecutorTask getExecutorTask() {
+            return executorTask;
+        }
+    }
+
+    private static final class StopAction extends AbstractAction {
+        private final ShellExecuter shellExecutor;
+
+        public StopAction(ShellExecuter shellExecutor) {
+            this.shellExecutor = shellExecutor;
+        }
+
+//        @Override
+//        public Object getValue(String key) {
+//            if (key.equals(Action.SMALL_ICON)) {
+//                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
+//            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+//                return getString("TargetExecutor.StopAction.stop");
+//            } else {
+//                return super.getValue(key);
+//            }
+//        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled()) {
+                return;
+            }
+            setEnabled(false);
+            if (shellExecutor.getExecutorTask() != null) {
+                shellExecutor.getExecutorTask().stop();
+            }
+        }
+    }
+
+    private static ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
+            public boolean cancel() {
+                sa.actionPerformed(null);
+                return true;
+            }
+        }, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                nativeExecutor.getTab().select();
+            }
+        });
+        handle.setInitialDelay(0);
+        return handle;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }
