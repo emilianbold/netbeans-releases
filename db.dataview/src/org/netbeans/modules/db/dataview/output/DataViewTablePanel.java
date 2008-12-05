@@ -271,10 +271,10 @@ class DataViewTablePanel extends JPanel {
                 dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
-                NotifyDescriptor nd = new NotifyDescriptor.Exception(new DBException(dbe.getMessage()));
+                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                java.util.logging.Logger.getLogger(DataViewTablePanel.class.getName()).log(Level.SEVERE, ""+ex);
             }
             tableUI.revalidate();
             tableUI.repaint();
