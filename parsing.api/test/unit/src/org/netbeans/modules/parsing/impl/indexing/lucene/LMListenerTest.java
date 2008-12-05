@@ -37,20 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.io.IOException;
-
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public class LMListenerTest extends NbTestCase {
 
-    public void addDocument (IndexDocumentImpl document);
+    private static final int _10K = 10 * 1024;
 
-    public void removeDocument (String relativePath);
 
-    public void store () throws IOException;
+    private List refs = new LinkedList();
+
+    public LMListenerTest (final String name) {
+        super (name);
+    }
+
+
+    /**
+     * Checks if the LMListener detects low memory
+     * and if it is not expensive to intensively call it.
+     */
+    public void testListnener () {
+        final LMListener l = new LMListener();
+        long ct = 0;
+        for (int i=0; i<100000; i++) {
+            long st = System.currentTimeMillis();
+            boolean isLM = l.isLowMemory();
+            long et = System.currentTimeMillis();
+            ct+=et-st;
+            if (isLM) {
+                refs.clear();
+            }
+            byte[] data = new byte[_10K];
+            refs.add(data);
+        }
+        assertTrue(ct<1000);
+        
+    }
+
 }

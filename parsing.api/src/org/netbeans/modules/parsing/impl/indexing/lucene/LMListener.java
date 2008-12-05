@@ -39,42 +39,74 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.lang.management.MemoryUsage;
+import java.util.List;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexFactory implements IndexFactoryImpl {
+class LMListener {
 
-    public IndexDocumentImpl createDocument(final Indexable indexable) {
-        assert indexable !=null;
-        return new LuceneDocument(indexable);
+    //@GuardedBy(LMListener.class)
+    private static MemoryPoolMXBean cachedPool;
+
+    private MemoryPoolMXBean pool;
+
+    private static final float DEFAULT_HEAP_LIMIT = 0.9f;
+
+    private final float heapLimit;
+
+    public LMListener () {
+        this (DEFAULT_HEAP_LIMIT);
     }
 
-    public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, true);
+    public LMListener (final float heapLimit) {
+        this.heapLimit = heapLimit;
+        this.pool = findPool();
+        assert pool != null;
     }
 
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, false);
+    public float getHeapLimit () {
+        return this.heapLimit;
+    }
+    
+    public boolean isLowMemory () {
+        if (this.pool != null) {
+            final MemoryUsage usage = this.pool.getUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
+            }
+        }
+        return false;
     }
 
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
+    private static synchronized MemoryPoolMXBean findPool () {
+        if (cachedPool == null || !cachedPool.isValid()) {
+            final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+            for (MemoryPoolMXBean pool : pools) {
+                if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
+                    cachedPool = pool;
+                    break;
+                }
+            }
+            assert cachedPool != null : dumpMemoryPoolMXBean (pools);
+        }
+        return cachedPool;
+    }
+
+    private static String dumpMemoryPoolMXBean (List<MemoryPoolMXBean> pools) {
+        StringBuilder sb = new StringBuilder ();
+        for (MemoryPoolMXBean pool : pools) {
+            sb.append(String.format("Pool: %s Type: %s TresholdSupported: %s\n", pool.getName(), pool.getType(), pool.isUsageThresholdSupported() ? Boolean.TRUE : Boolean.FALSE));
+        }
+        sb.append('\n');
+        return sb.toString();
     }
 
 }

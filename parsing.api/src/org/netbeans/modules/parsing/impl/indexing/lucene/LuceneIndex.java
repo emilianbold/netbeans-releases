@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.openide.util.Exceptions;
@@ -73,6 +75,7 @@ import org.openide.util.Exceptions;
 public class LuceneIndex implements IndexImpl {
 
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
+    private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
 
     static final int VERSION = 1;
 
@@ -83,7 +86,7 @@ public class LuceneIndex implements IndexImpl {
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private volatile boolean closed;
 
-    private final Map<String, List<IndexDocumentImpl>> toAdd = new HashMap<String, List<IndexDocumentImpl>>();
+    private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
     private final List<String> toRemove = new LinkedList<String>();
 
     public LuceneIndex (final URL root) throws IOException {
@@ -98,13 +101,9 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    public void addDocument(final String relativePath, final IndexDocumentImpl document) {
-        List<IndexDocumentImpl> docs = toAdd.get(relativePath);
-        if (docs == null) {
-            docs = new LinkedList<IndexDocumentImpl>();
-            toAdd.put(relativePath, docs);
-        }
-        docs.add(document);
+    public void addDocument(final IndexDocumentImpl document) {
+        assert document instanceof LuceneDocument;       
+        toAdd.add((LuceneDocument)document);
     }
 
     public void removeDocument(final String relativePath) {
@@ -112,26 +111,69 @@ public class LuceneIndex implements IndexImpl {
     }
 
     public void store() throws IOException {
-        checkPreconditions();
-        //assert ClassIndexManager.getDefault().holdsWriteLock();
-        //1) delete all documents from to delete and toAdd
-        final boolean create = !isValid (false);
-        if (!create) {
-            IndexReader in = getReader();
-            final Searcher searcher = new IndexSearcher (in);
-            try {
-                for (String toRemoveItem : toRemove) {
-                    deleteFile (in, searcher, toRemoveItem);
+        try {
+            checkPreconditions();
+            //assert ClassIndexManager.getDefault().holdsWriteLock();
+            //1) delete all documents from to delete and toAdd
+            final boolean create = !isValid (false);
+            if (!create) {
+                IndexReader in = getReader();
+                final Searcher searcher = new IndexSearcher (in);
+                try {
+                    for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
+                        String toRemoveItem = it.next();
+                        it.remove();
+                        deleteFile (in, searcher, toRemoveItem);
+                    }
+                    for (LuceneDocument toRemoveItem : toAdd) {
+                        deleteFile(in, searcher, toRemoveItem.getSourceName());
+                    }
+                } finally {
+                    searcher.close();
                 }
-                for (String toRemoveItem : toAdd.keySet()) {
-                    deleteFile(in, searcher, toRemoveItem);
-                }
-            } finally {
-                searcher.close();
             }
-        }                       
-        //2) add all documents form to add
-        
+            //2) add all documents form to add
+            final IndexWriter out = getWriter(create);
+            try {
+                if (debugIndexMerging) {
+                    out.setInfoStream (System.err);
+                }
+
+                LMListener lmListener = new LMListener ();
+                Directory memDir = null;
+                IndexWriter activeOut = null;
+                if (lmListener.isLowMemory()) {
+                    activeOut = out;
+                }
+                else {
+                    memDir = new RAMDirectory ();
+                    activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                }                
+                for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
+                    final LuceneDocument doc = it.next();
+                    it.remove();
+                    activeOut.addDocument(doc.doc);
+                    if (memDir != null && lmListener.isLowMemory()) {
+                        activeOut.close();
+                        out.addIndexes(new Directory[] {memDir});
+                        memDir = new RAMDirectory ();
+                        activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                    }
+                }
+                if (memDir != null) {
+                    activeOut.close();
+                    out.addIndexes(new Directory[] {memDir});
+                    activeOut = null;
+                    memDir = null;
+                }
+                
+            } finally {
+                out.close();
+            }
+        } finally {
+            toRemove.clear();
+            toAdd.clear();
+        }
     }
 
 

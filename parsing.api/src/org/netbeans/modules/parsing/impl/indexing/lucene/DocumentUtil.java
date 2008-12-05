@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -49,8 +51,11 @@ import org.apache.lucene.search.TermQuery;
  */
 public class DocumentUtil {
 
-    private static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
+    static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
 
+    static Fieldable sourceNameField(String relativePath) {
+        return new Field(DocumentUtil.FIELD_SOURCE_NAME, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
+    }
     static Query sourceNameQuery(String relativePath) {
         return new TermQuery(sourceNameTerm(relativePath));
     }

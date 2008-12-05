@@ -84,10 +84,14 @@ public class IndexingSupport {
     }
 
     static void endTrans () throws IOException {
-        for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
-            final IndexingSupport is = it.next();
-            is.spiIndex.store();            
-            it.remove();
+        try {
+            for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
+                final IndexingSupport is = it.next();
+                it.remove();
+                is.spiIndex.store();
+            }
+        } finally {
+            instances.clear();
         }
     }
 
@@ -113,26 +117,25 @@ public class IndexingSupport {
      * Creates a new {@link IndexDocument}.
      * @return the decument
      */
-    public IndexDocument createDocument () {
-        return new IndexDocument(this.spiFactory.createDocument());
+    public IndexDocument createDocument (final Indexable indexable) {
+        Parameters.notNull("indexable", indexable);
+        return new IndexDocument(this.spiFactory.createDocument(indexable));
     }
 
     /**
      * Adds a new {@link IndexDocument} into the index
-     * @param indexable from which the document was created
      * @param document to be added
      */
-    public void addDocument (final Indexable indexable, final IndexDocument document) {
-        Parameters.notNull("indexable", indexable);
+    public void addDocument (final IndexDocument document) {
         Parameters.notNull("document", document.spi);
-        spiIndex.addDocument (indexable.getRelativePath(), document.spi);
+        spiIndex.addDocument (document.spi);
     }
 
     /**
      * Removes all documents for given indexables
      * @param indexable to be removed
      */
-    public void removeDocument (final Indexable indexable) {
+    public void removeDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable);
         spiIndex.removeDocument (indexable.getRelativePath());
     }
