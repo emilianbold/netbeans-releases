@@ -37,39 +37,60 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
+
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class JDBCIndexColumn extends IndexColumnImplementation {
+    private final Index parent;
+    private final String name;
+    private final Column column;
+    private final int position;
+    private final Ordering ordering;
 
-    MetadataElement() {}
-
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
-
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    public JDBCIndexColumn(Index parent, String name, Column column, int position, Ordering ordering) {
+        this.parent = parent;
+        this.name = name;
+        this.column = column;
+        this.position = position;
+        this.ordering = ordering;
     }
+
+    @Override
+    public Column getColumn() {
+        return column;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Ordering getOrdering() {
+        return ordering;
+    }
+
+    @Override
+    public Index getParent() {
+        return parent;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCIndexColumn[name='" + name + "', ordering=" + ordering + ", position=" + position + ", column=" + column +"]";
+    }
+
 }

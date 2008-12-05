@@ -37,39 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
+
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class JDBCPrimaryKey extends PrimaryKeyImplementation {
 
-    MetadataElement() {}
-
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
-
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    private final String name;
+    private final Collection<Column> columns;
+    private final Table parent;
+    
+    public JDBCPrimaryKey(Table parent, String name, Collection<Column> columns) {
+        this.parent = parent;
+        this.name = name;
+        this.columns = Collections.unmodifiableCollection(columns);
     }
+    
+    @Override
+    public Collection<Column> getColumns() {
+        return columns;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Table getParent() {
+        return parent;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCPrimaryKey[name='" + getName() + "']";
+    }
+
 }

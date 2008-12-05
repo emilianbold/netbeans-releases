@@ -39,37 +39,49 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
+
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David
  */
-public abstract class MetadataElement {
+public class PrimaryKey extends MetadataElement {
 
-    MetadataElement() {}
+    private final PrimaryKeyImplementation impl;
 
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
-
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    PrimaryKey(PrimaryKeyImplementation impl) {
+        this.impl = impl;
     }
+
+    @Override
+    public Table getParent() {
+        return impl.getParent();
+    }
+
+    @Override
+    /**
+     * Get the name for this primary key.  May be null.
+     *
+     * @return the name for this primary key
+     */
+    public String getName() {
+        return impl.getName();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
+
+    /**
+     * Get the list of columns for this primary key.  The collection is ordered
+     * based on the sequencing of the primary key
+     *
+     * @return the list of columns for this primary key.  
+     */
+    public Collection<Column> getColumns() {
+        return impl.getColumns();
+    }
+
 }

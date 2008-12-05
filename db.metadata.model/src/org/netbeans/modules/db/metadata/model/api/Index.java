@@ -39,37 +39,78 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
+
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class Index extends MetadataElement {
+    public enum IndexType { CLUSTERED, HASHED, OTHER };
 
-    MetadataElement() {}
+    final IndexImplementation impl;
+
+    Index(IndexImplementation impl) {
+        this.impl = impl;
+    }
 
     /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
+     * Returns the schema containing this table.
      *
-     * @return the parent.
+     * @return the parent schema.
      */
-    public abstract MetadataElement getParent();
+    public Table getParent() {
+        return impl.getParent();
+    }
 
     /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
+     * Returns the name of this table; never {@code null}.
      *
      * @return the name.
      */
-    public abstract String getName();
+    public String getName() {
+        return impl.getName();
+    }
 
     /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
+     * Return the columns for this index
+     *
+     * @return the list of columns for this index
      */
-    String getInternalName() {
-        return getName();
+    public Collection<IndexColumn> getColumns() {
+        return impl.getColumns();
+    }
+
+    /**
+     * Return a given index column
+     * @param name the name of the column to retrieve
+     * @return the column for the given name or null if it doesn't exist
+     */
+    public IndexColumn getColumn(String name) {
+        return impl.getColumn(name);
+    }
+
+    /**
+     * Return the type of index
+     *
+     * @return the index type
+     */
+    public IndexType getIndexType() {
+        return impl.getIndexType();
+    }
+
+    /**
+     * Return whether the index must have unique values
+     *
+     * @return true if unique, false otherwise
+     */
+    public boolean isUnique() {
+        return impl.isUnique();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
     }
 }

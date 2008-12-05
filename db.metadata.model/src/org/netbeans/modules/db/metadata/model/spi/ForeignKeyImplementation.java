@@ -37,39 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
+
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public abstract class ForeignKeyImplementation {
+    private ForeignKey key;
 
-    MetadataElement() {}
+    public final ForeignKey getForeignKey() {
+        if (key == null) {
+            key = MetadataAccessor.getDefault().createForeignKey(this);
+        }
+        return key;
+
+    }
 
     /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
+     * This is used internally only, to help resolve foreign key handles
+     * in case the real foreign key name is null
      */
-    public abstract MetadataElement getParent();
+    public abstract String getInternalName();
 
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
+    public abstract Collection<ForeignKeyColumn> getColumns();
+
+    public abstract ForeignKeyColumn getColumn(String name);
+
     public abstract String getName();
 
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
-    }
+    public abstract Table getParent();
 }

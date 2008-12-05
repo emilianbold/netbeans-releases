@@ -39,37 +39,56 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
+
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
- *
- * @author Andrei Badea
+ * This class defines a column that is a foreign key, referring to a
+ * column in the primary key of another table.
+ * 
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class ForeignKeyColumn extends MetadataElement {
+    ForeignKeyColumnImplementation impl;
 
-    MetadataElement() {}
+    ForeignKeyColumn(ForeignKeyColumnImplementation impl) {
+        this.impl = impl;
+    }
+
+    @Override
+    public ForeignKey getParent() {
+        return impl.getParent();
+    }
+
+    @Override
+    public String getName() {
+        return impl.getName();
+    }
 
     /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
+     * Get the column in the source table which is referring to the column
+     * in the target table.
      *
-     * @return the parent.
+     * @return the referring column definition
      */
-    public abstract MetadataElement getParent();
+    public Column getReferringColumn() {
+        return impl.getReferringColumn();
+    }
 
     /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
+     * Get the primary key column in the target table which is being referred to
      *
-     * @return the name.
+     * @return the referred column
      */
-    public abstract String getName();
+    public Column getReferredColumn() {
+        return impl.getReferredColumn();
+    }
 
     /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
+     * Get the position of this column in the foreign key
+     *
+     * @return the position of the column in the foreign key
      */
-    String getInternalName() {
-        return getName();
+    public int getPosition() {
+        return impl.getPosition();
     }
 }

@@ -39,37 +39,64 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
+
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
- *
- * @author Andrei Badea
+ * This class represents a foreign key in a table - a key that refers to the
+ * primary key of another table.
+ * 
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class ForeignKey extends MetadataElement {
+    private final ForeignKeyImplementation impl;
 
-    MetadataElement() {}
+    ForeignKey(ForeignKeyImplementation impl) {
+        this.impl = impl;
+    }
 
+    @Override
+    public Table getParent() {
+        return impl.getParent();
+    }
+
+    @Override
     /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
+     * Return the name of the foreign key.  The name of a foreign key may be null
      */
-    public abstract MetadataElement getParent();
+    public String getName() {
+        return impl.getName();
+    }
 
     /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
+     * Get the foreign key columns that comprise this foreign key
      *
-     * @return the name.
+     * @return the collection of foreign key columns for this foreign key
      */
-    public abstract String getName();
+    public Collection<ForeignKeyColumn> getColumns() {
+        return impl.getColumns();
+    }
 
     /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
+     * Get a specific foreign key column by name
+     *
+     * @param name the name of the foreign key column we are interested in
+     *
+     * @return the foreign key column for this name
+     */
+    public ForeignKeyColumn getColumn(String name) {
+        return impl.getColumn(name);
+    }
+    
+    /**
+     * Get the internal name of the foreign key.  Used to resolve a foreign key
+     * when its real name is null
+     *
      * @return
      */
+    @Override
     String getInternalName() {
-        return getName();
+       return impl.getInternalName();
     }
 }

@@ -37,39 +37,62 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class JDBCForeignKey extends ForeignKeyImplementation {
+    private final Table parent;
+    private final String name;
+    private final Map<String,ForeignKeyColumn> columns = new LinkedHashMap<String,ForeignKeyColumn>();
+    private final String internalName;
+    private static AtomicLong fkeyCounter = new AtomicLong(0);
 
-    MetadataElement() {}
+    public JDBCForeignKey(Table parent, String name) {
+        this.parent = parent;
+        this.name = name;
+        internalName = parent.getName() + "_FKEY_" + fkeyCounter.incrementAndGet();
+    }
 
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
+    public void addColumn(ForeignKeyColumn col) {
+        columns.put(col.getName(), col);
+    }
 
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
+    public final Table getParent() {
+        return parent;
+    }
 
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    public final String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCForeignKey[name='" + name + "']"; // NOI18N
+    }
+
+    @Override
+    public Collection<ForeignKeyColumn> getColumns() {
+        return columns.values();
+    }
+
+    @Override
+    public ForeignKeyColumn getColumn(String name) {
+        return columns.get(name);
+    }
+
+    @Override
+    public String getInternalName() {
+        return internalName;
     }
 }

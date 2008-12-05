@@ -37,39 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
+
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
+ * Defines a primary key for a table
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public abstract class PrimaryKeyImplementation {
+    private PrimaryKey primaryKey;
 
-    MetadataElement() {}
+    public abstract Collection<Column> getColumns();
 
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
     public abstract String getName();
 
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    public abstract Table getParent();
+
+    public final PrimaryKey getPrimaryKey() {
+        if (primaryKey == null) {
+            primaryKey = MetadataAccessor.getDefault().createPrimaryKey(this);
+        }
+
+        return primaryKey;
     }
+
 }
