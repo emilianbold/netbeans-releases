@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         <folder name="Platforms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
             <folder name="org-netbeans-api-java-Platform">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/platformList.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/platform.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
             </folder>
         </folder>

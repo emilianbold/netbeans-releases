@@ -57,10 +57,6 @@ public class J2SESetup extends JellyTestCase {
         super(testName);
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }
