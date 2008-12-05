@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,12 @@ package org.openide.actions;
 
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -137,10 +142,51 @@ public final class SaveAsTemplateAction extends NodeAction {
                 cookie.save ();
             }
             DataObject newTemplate = source.copy(targetFolder);
+            DataObject templateSample = null;
+            for (DataObject d : targetFolder.getChildren ()) {
+                if (d.isTemplate ()) {
+                    templateSample = d;
+                    break;
+                }
+            }
             newTemplate.setTemplate(true);
+            if (templateSample == null) {
+                // a fallback if no template sample found
+                newTemplate.getPrimaryFile ().setAttribute ("javax.script.ScriptEngine", "freemarker"); // NOI18N
+            } else {
+                setTemplateAttributes (newTemplate.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    /** Sets attributes for given FileObject. */ // XXX: copied from org.netbeans.modules.favorites.templates
+    private static void setTemplateAttributes (FileObject fo, Map<String, Object> attributes) throws IOException {
+        for (Entry<String, Object> entry : attributes.entrySet()) {
+            // skip localizing bundle for custom templates
+            if ("SystemFileSystem.localizingBundle".equals (entry.getKey ())) { // NOI18N
+                continue;
+            }
+            fo.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /** Returns map of attributes for given FileObject. */ // XXX: copied from org.netbeans.modules.favorites.templates
+    private static Map<String, Object> getAttributes (FileObject fo) {
+        HashMap<String, Object> attributes = new HashMap<String, Object> ();
+        Enumeration<String> attributeNames = fo.getAttributes ();
+        while (attributeNames.hasMoreElements ()) {
+            String attrName = attributeNames.nextElement ();
+            if (attrName == null) {
+                continue;
+            }
+            Object attrValue = fo.getAttribute (attrName);
+            if (attrValue != null) {
+                attributes.put (attrName, attrValue);
+            }
+        }
+        return attributes;
     }
 
     /** Inner class functioning like node acceptor for

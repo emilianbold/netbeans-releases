@@ -669,7 +669,20 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         DataObject template = null;
         try {
             template = sourceDO.copy (folder);
-            template.setTemplate (true);
+            DataObject templateSample = null;
+            for (DataObject d : folder.getChildren ()) {
+                if (d.isTemplate ()) {
+                    templateSample = d;
+                    break;
+                }
+            }
+            template.setTemplate(true);
+            if (templateSample == null) {
+                // a fallback if no template sample found
+                template.getPrimaryFile ().setAttribute ("javax.script.ScriptEngine", "freemarker"); // NOI18N
+            } else {
+                setTemplateAttributes (template.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
+            }
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
