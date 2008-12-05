@@ -45,7 +45,7 @@ Contributor(s):
         </folder>
     </folder>
 
-    <!--folder name="Menu">
+    <folder name="Menu">
         <folder name="File">
             <folder name="Import">
                 <attr name="position" intvalue="1426"/>
@@ -61,7 +61,7 @@ Contributor(s):
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
         </folder>
-    </folder-->
+    </folder>
     
     <folder name="NativeProjects">
         <folder name="Actions">

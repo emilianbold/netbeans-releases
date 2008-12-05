@@ -89,6 +89,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
+    public static final String REMOTE_PERMISSIONS = "remote.permissions"; // NOI18N
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
@@ -100,7 +101,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         RUN_AS,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
-        REMOTE_UPLOAD
+        REMOTE_UPLOAD,
+        REMOTE_PERMISSIONS
     };
 
     public static enum RunAsType {
