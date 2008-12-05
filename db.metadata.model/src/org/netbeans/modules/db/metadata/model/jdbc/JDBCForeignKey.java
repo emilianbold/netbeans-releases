@@ -42,9 +42,8 @@ package org.netbeans.modules.db.metadata.model.jdbc;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
-import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
-import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
@@ -56,10 +55,13 @@ public class JDBCForeignKey extends ForeignKeyImplementation {
     private final Table parent;
     private final String name;
     private final Map<String,ForeignKeyColumn> columns = new LinkedHashMap<String,ForeignKeyColumn>();
+    private final String internalName;
+    private static AtomicLong fkeyCounter = new AtomicLong(0);
 
     public JDBCForeignKey(Table parent, String name) {
         this.parent = parent;
         this.name = name;
+        internalName = parent.getName() + "_FKEY_" + fkeyCounter.incrementAndGet();
     }
 
     public void addColumn(ForeignKeyColumn col) {
@@ -87,5 +89,10 @@ public class JDBCForeignKey extends ForeignKeyImplementation {
     @Override
     public ForeignKeyColumn getColumn(String name) {
         return columns.get(name);
+    }
+
+    @Override
+    public String getInternalName() {
+        return internalName;
     }
 }

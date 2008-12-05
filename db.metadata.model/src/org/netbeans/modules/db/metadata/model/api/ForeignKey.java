@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
 
 /**
@@ -49,7 +50,7 @@ import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
  * @author David Van Couvering
  */
 public class ForeignKey extends MetadataElement {
-    ForeignKeyImplementation impl;
+    private final ForeignKeyImplementation impl;
 
     ForeignKey(ForeignKeyImplementation impl) {
         this.impl = impl;
@@ -86,5 +87,16 @@ public class ForeignKey extends MetadataElement {
      */
     public ForeignKeyColumn getColumn(String name) {
         return impl.getColumn(name);
+    }
+    
+    /**
+     * Get the internal name of the foreign key.  Used to resolve a foreign key
+     * when its real name is null
+     *
+     * @return
+     */
+    @Override
+    String getInternalName() {
+       return impl.getInternalName();
     }
 }

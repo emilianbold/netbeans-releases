@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
@@ -59,6 +60,12 @@ public abstract class ForeignKeyImplementation {
         return key;
 
     }
+
+    /**
+     * This is used internally only, to help resolve foreign key handles
+     * in case the real foreign key name is null
+     */
+    public abstract String getInternalName();
 
     public abstract Collection<ForeignKeyColumn> getColumns();
 

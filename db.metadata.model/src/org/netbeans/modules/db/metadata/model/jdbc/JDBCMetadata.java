@@ -104,7 +104,12 @@ public class JDBCMetadata extends MetadataImplementation {
     }
 
     public final Catalog getCatalog(String name) {
-        return MetadataUtilities.find(name, initCatalogs());
+        Catalog catalog = MetadataUtilities.find(name, initCatalogs());
+        if (catalog == null && name == null) {
+            return getDefaultCatalog();
+        }
+
+        return catalog;
     }
 
     public Schema getDefaultSchema() {
@@ -159,7 +164,11 @@ public class JDBCMetadata extends MetadataImplementation {
         if (defaultCatalog == null) {
             defaultCatalog = createJDBCCatalog(null, true, defaultSchemaName).getCatalog();
             
-            // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null
+            // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null,
+            // unless it's the *only* catalog (e.g. with Derby, where it doesn't have a concept of catalogs)
+            if (newCatalogs.size() == 0) {
+                newCatalogs.put(null, defaultCatalog);
+            }
             
             LOGGER.log(Level.FINE, "Created fallback default catalog {0}", defaultCatalog);
         }

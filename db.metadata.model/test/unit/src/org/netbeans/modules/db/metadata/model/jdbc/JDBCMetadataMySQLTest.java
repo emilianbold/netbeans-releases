@@ -52,7 +52,6 @@ import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;

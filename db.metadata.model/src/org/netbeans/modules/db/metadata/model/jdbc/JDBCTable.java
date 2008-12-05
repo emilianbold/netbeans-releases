@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
@@ -80,7 +79,7 @@ public class JDBCTable extends TableImplementation {
 
     private Map<String, Column> columns;
     private Map<String, Index> indexes;
-    private List<ForeignKey> foreignKeys;
+    private Map<String, ForeignKey> foreignKeys;
     
     private PrimaryKey primaryKey;
 
@@ -126,7 +125,12 @@ public class JDBCTable extends TableImplementation {
 
     @Override
     public Collection<ForeignKey> getForeignKeys() {
-        return initForeignKeys();
+        return initForeignKeys().values();
+    }
+
+    @Override
+    public ForeignKey getForeignKeyByInternalName(String name) {
+         return MetadataUtilities.find(name, initForeignKeys());
     }
 
     @Override
@@ -227,7 +231,7 @@ public class JDBCTable extends TableImplementation {
     }
 
         protected void createForeignKeys() {
-        List<ForeignKey> newKeys = new ArrayList<ForeignKey>();
+        Map<String,ForeignKey> newKeys = new LinkedHashMap<String,ForeignKey>();
         try {
             ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getImportedKeys(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name);
             try {
@@ -241,7 +245,7 @@ public class JDBCTable extends TableImplementation {
                         fkey = createJDBCForeignKey(keyName, rs);
                         LOGGER.log(Level.FINE, "Created foreign key " + keyName);
 
-                        newKeys.add(fkey.getForeignKey());
+                        newKeys.put(fkey.getInternalName(), fkey.getForeignKey());
                         currentKeyName = keyName;
                     }
 
@@ -256,7 +260,7 @@ public class JDBCTable extends TableImplementation {
             throw new MetadataException(e);
         }
 
-        foreignKeys = Collections.unmodifiableList(newKeys);
+        foreignKeys = Collections.unmodifiableMap(newKeys);
     }
 
     protected JDBCForeignKey createJDBCForeignKey(String name, ResultSet rs) {
@@ -371,7 +375,7 @@ public class JDBCTable extends TableImplementation {
         return indexes;
     }
 
-    private List<ForeignKey> initForeignKeys() {
+    private Map<String,ForeignKey> initForeignKeys() {
         if (foreignKeys != null) {
             return foreignKeys;
         }

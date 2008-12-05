@@ -79,5 +79,7 @@ public abstract class TableImplementation {
 
     public abstract Collection<ForeignKey> getForeignKeys();
 
+    public abstract ForeignKey getForeignKeyByInternalName(String internalName);
+
     public abstract void refresh();
 }

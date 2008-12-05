@@ -363,6 +363,11 @@ public class TestMetadata extends MetadataImplementation {
         public Collection<ForeignKey> getForeignKeys() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public ForeignKey getForeignKeyByInternalName(String internalName) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     static final class TestColumn extends ColumnImplementation {
