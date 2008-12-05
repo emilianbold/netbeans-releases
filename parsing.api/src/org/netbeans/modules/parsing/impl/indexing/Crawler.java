@@ -39,18 +39,42 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public abstract class Crawler {
 
-    public void addDocument (IndexDocumentImpl document);
+    private String digest;
 
-    public void removeDocument (String relativePath);
+    private Map<String, Collection<Indexable>> cache;
 
-    public void store () throws IOException;
+
+    public synchronized final String getDigest () {
+        if (this.cache == null) {
+            this.cache = collectResources(new HashSet<String>(Arrays.asList(PathRecognizerRegistry.getDefault().getMimeTypes())));
+        }
+        return this.digest;
+    }
+
+    public final synchronized Map<String, Collection<Indexable>> getResources() {
+        if (this.cache == null) {
+            this.cache = collectResources(new HashSet<String>(Arrays.asList(PathRecognizerRegistry.getDefault().getMimeTypes())));
+        }
+        return cache;
+    }
+
+    protected final void addToDigest () {
+        
+    }
+
+    protected abstract Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes);
+
 }

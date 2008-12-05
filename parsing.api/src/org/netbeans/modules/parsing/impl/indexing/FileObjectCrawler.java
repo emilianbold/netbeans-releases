@@ -39,18 +39,56 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public class FileObjectCrawler extends Crawler {
+    
+    private final FileObject root;
 
-    public void addDocument (IndexDocumentImpl document);
+    public FileObjectCrawler (final FileObject root) {
+        assert root != null;
+        this.root = root;
+    }
 
-    public void removeDocument (String relativePath);
+    @Override
+    protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
+        Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
+        collect (root, root, result, supportedMimeTypes);
+        return result;
+    }
 
-    public void store () throws IOException;
+    private static void collect(final FileObject dir, final FileObject root,
+            final Map<String, Collection<Indexable>> cache,
+            final Set<? extends String> supportedMimeTypes) {
+        final FileObject[] fos = dir.getChildren();
+        for (FileObject fo : fos) {
+            if (fo.isFolder()) {
+                collect(fo, root, cache, supportedMimeTypes);
+            }
+            else {
+                final String mime = fo.getMIMEType();
+                if (mime != null && supportedMimeTypes.contains(mime)) {
+                    Collection<Indexable> indexable = cache.get(mime);
+                    if (indexable == null) {
+                        indexable = new LinkedList<Indexable>();
+                        cache.put(mime, indexable);
+                    }
+                    indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
+                }
+            }
+        }
+    }
+
+
+
 }

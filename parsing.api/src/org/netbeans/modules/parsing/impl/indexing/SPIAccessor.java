@@ -39,39 +39,52 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class IndexingSPIAccessor {
+public abstract class SPIAccessor {
+    
+    private static volatile SPIAccessor instance;
 
-    private static IndexingSPIAccessor instance;
+    public static void setInstance (final SPIAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
+    }
 
-    public synchronized static IndexingSPIAccessor getInstance () {
+    public static synchronized SPIAccessor getInstance () {
         if (instance == null) {
             try {
-                Class.forName(Context.class.getName(),true,Context.class.getClassLoader());
+                Class.forName(Indexable.class.getName(), true, Indexable.class.getClassLoader());
                 assert instance != null;
-            } catch (final ClassNotFoundException e) {
-                Exceptions.printStackTrace(e);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return instance;
     }
 
-    public static void setInstance (final IndexingSPIAccessor _instance) {
-        assert _instance != null;
-        instance = _instance;
-    }
+    public abstract Indexable create (final IndexableImpl delegate);
 
-    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
+    public abstract  Context createContext (final FileObject indexFolder,
+             final URL rootURL, String indexerName, int indexerVersion) throws IOException;
 
     public abstract String getIndexerName (Context ctx);
 
     public abstract int getIndexerVersion (Context ctx);
+
+    public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
+
+    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
+
 }

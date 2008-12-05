@@ -40,17 +40,39 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-
+import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public abstract class SupportAccessor {
 
-    public void addDocument (IndexDocumentImpl document);
+    private static volatile SupportAccessor instance;
 
-    public void removeDocument (String relativePath);
+    public static void setInstance (final SupportAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
+    }
 
-    public void store () throws IOException;
+    public static synchronized SupportAccessor getInstance () {
+        if (instance == null) {
+            try {
+                Class.forName(IndexingSupport.class.getName(),true, IndexingSupport.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return instance;
+    }
+
+    public abstract void beginTrans ();
+
+    public abstract void endTrans () throws IOException;
+
+    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
+
 }

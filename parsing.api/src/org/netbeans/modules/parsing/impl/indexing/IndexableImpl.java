@@ -40,17 +40,23 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public interface IndexableImpl {
 
-    public void addDocument (IndexDocumentImpl document);
+    public long getLastModified();
 
-    public void removeDocument (String relativePath);
+    public String getName();
 
-    public void store () throws IOException;
+    public String getRelativePath();
+
+    public URL getURL();
+
+    public InputStream openInputStream() throws IOException;
+
 }

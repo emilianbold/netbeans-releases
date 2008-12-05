@@ -39,18 +39,48 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
+import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public class FileCrawler extends Crawler {
+    
+    private final File root;
 
-    public void addDocument (IndexDocumentImpl document);
+    public FileCrawler (final File root) {
+        assert root != null;
+        this.root = root;
+    }
 
-    public void removeDocument (String relativePath);
+    @Override
+    protected  Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
+        final Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
+        collect (root, result);
+        return result;
+    }
 
-    public void store () throws IOException;
+    private static void collect (final File dir, final Map<String,Collection<Indexable>> result) {
+        final File[] ch = dir.listFiles();
+        if (ch != null) {
+            for (File c : ch) {
+                if (c.isDirectory()) {
+                    collect (c, result);
+                }
+                else {
+                    
+                }
+            }
+        }
+    }
+
+    
+
 }

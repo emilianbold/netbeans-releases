@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,24 +58,36 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -84,17 +97,22 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class PathRegistryTest extends NbTestCase {
+public class RepositoryUpdaterTest extends NbTestCase {
 
+    private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
+    private static final String MIME = "text/foo";
+    private static final String EMIME = "text/emb";
 
     private FileObject srcRoot1;
     private FileObject srcRoot2;
@@ -109,8 +127,14 @@ public class PathRegistryTest extends NbTestCase {
     private FileObject unknown1;
     private FileObject unknown2;
     private FileObject unknownSrc2;
+    private FileObject srcRootWithFiles1;
+    private URL[] customFiles;
+    private URL[] embeddedFiles;
 
-    public PathRegistryTest (String name) {
+    private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
+    private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
+
+    public RepositoryUpdaterTest (String name) {
         super (name);
     }
 
@@ -120,8 +144,12 @@ public class PathRegistryTest extends NbTestCase {
         this.clearWorkDir();
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
+        final FileObject cache = wd.createFolder("cache");
+        CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class, OpenProject.class);
+        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
+        MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
+        MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -154,325 +182,255 @@ public class PathRegistryTest extends NbTestCase {
         SFBQImpl.register (compRoot1,compSrc1);
         SFBQImpl.register (compRoot2,compSrc2);
         SFBQImpl.register (unknown2,unknownSrc2);
+
+        srcRootWithFiles1 = wd.createFolder("srcwf1");
+        assertNotNull(srcRootWithFiles1);
+        FileUtil.setMIMEType("foo", MIME);
+        FileObject f1 = FileUtil.createData(srcRootWithFiles1,"folder/a.foo");
+        assertNotNull(f1);
+        assertEquals(MIME, f1.getMIMEType());
+        FileObject f2 = FileUtil.createData(srcRootWithFiles1,"folder/b.foo");
+        assertNotNull(f2);
+        assertEquals(MIME, f2.getMIMEType());
+        customFiles = new URL[] {f1.getURL(), f2.getURL()};
+
+        FileUtil.setMIMEType("emb", EMIME);
+        FileObject f3 = FileUtil.createData(srcRootWithFiles1,"folder/a.emb");
+        assertNotNull(f3);
+        assertEquals(EMIME, f3.getMIMEType());
+        FileObject f4 = FileUtil.createData(srcRootWithFiles1,"folder/b.emb");
+        assertNotNull(f4);
+        assertEquals(EMIME, f4.getMIMEType());
+        embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
     }
 
-    public void testPathRegistry () throws Exception {
+    public void testPathAddedRemovedChanged () throws Exception {
         //Empty regs test
-        final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-        Collection<? extends URL> result = collectResults ();
-        assertEquals(0,result.size());
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
 
         //Testing classpath registration
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRoot1);
-        PRListener l = new PRListener();
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        regs.register(SOURCES,new ClassPath[]{cp1});
-        assertTrue(l.await());
-        result = collectResults ();
-        assertEquals(1,result.size());
-        assertEquals(srcRoot1.getURL(),result.iterator().next());
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+
+        //Nothing should be scanned if the same cp is registered again
+        handler.reset();
+        ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1clone});        
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Nothing should be scanned if the cp is unregistered
+        handler.reset();        
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1clone});        
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Nothing should be scanned after classpath remove
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());        
+        
 
         //Testing changes in registered classpath - add cp root
-        l = new PRListener();
+        handler.reset();
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+
+        handler.reset();
         mcpi1.addResource(srcRoot2);
-        assertTrue(l.await());
-        result = collectResults ();
-        assertEquals(2,result.size());
-        assertEquals(new FileObject[] {srcRoot1, srcRoot2},result);
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot2.getURL(), handler.getSources().get(0));
+
         //Testing changes in registered classpath - remove cp root
-        l = new PRListener();
+        handler.reset();
         mcpi1.removeResource(srcRoot1);
-        assertTrue(l.await());
-        result = collectResults ();        
-        assertEquals(1,result.size());
-        assertEquals(srcRoot2.getURL(),result.iterator().next());
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
         //Testing adding new ClassPath
-        l = new PRListener();
+        handler.reset();
         MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
         mcpi2.addResource(srcRoot1);
         ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
-        regs.register (SOURCES, new ClassPath[] {cp2});
-        assertTrue(l.await());
-        result = collectResults ();        
-        assertEquals(2,result.size());
-        assertEquals(new FileObject[] {srcRoot2, srcRoot1},result);
-        
+        GlobalPathRegistry.getDefault().register (SOURCES, new ClassPath[] {cp2});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+
         //Testing changes in newly registered classpath - add cp root
-        l = new PRListener();
+        handler.reset();
         mcpi2.addResource(srcRoot3);
-        assertTrue(l.await());
-        result = collectResults ();        
-        assertEquals(3,result.size());
-        assertEquals(new FileObject[] {srcRoot2, srcRoot1, srcRoot3},result);
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot3.getURL(), handler.getSources().get(0));
+
         //Testing removing ClassPath
-        l = new PRListener();
-        regs.unregister(SOURCES,new ClassPath[] {cp2});
-        assertTrue(l.await());
-        result = collectResults ();
-        assertEquals(1,result.size());
-        assertEquals(new FileObject[] {srcRoot2},result);
-        
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[] {cp2});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
         //Testing registering classpath with SFBQ - register PLATFROM
-        l = new PRListener();
+        handler.reset();
         ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
-        regs.register(PLATFORM,new ClassPath[] {cp3});
-        assertTrue(l.await());        
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(2,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1},result);
-        
+        GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp3});
+        assertTrue(handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(this.bootRoot2.getURL(), handler.getBinaries().iterator().next());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.bootSrc1.getURL(), handler.getSources().get(0));
+
         //Testing registering classpath with SFBQ - register LIBS
-        l = new PRListener();
+        handler.reset();
         MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
         mcpi4.addResource (compRoot1);
         ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
-        regs.register(LIBS,new ClassPath[] {cp4});
-        assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(3,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1},result);
-        
+        GlobalPathRegistry.getDefault().register(LIBS,new ClassPath[] {cp4});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc1.getURL(), handler.getSources().get(0));
+
         //Testing registering classpath with SFBQ - add into LIBS
-        l = new PRListener();
+        handler.reset();
         mcpi4.addResource(compRoot2);
-        assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(4,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1, compSrc2},result);
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
+
+
         //Testing registering classpath with SFBQ - remove from LIBS
-        l = new PRListener();
+        handler.reset();
         mcpi4.removeResource(compRoot1);
-        assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(3,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc2},result);
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
         //Testing registering classpath with SFBQ - unregister PLATFORM
-        l = new PRListener();
-        regs.unregister(PLATFORM,new ClassPath[] {cp3});
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);
-        
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(PLATFORM,new ClassPath[] {cp3});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
         //Testing listening on SFBQ.Results - bind source
-        l = new PRListener();
+        handler.reset();
         SFBQImpl.register(compRoot2,compSrc1);
-        assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc1},result);
-        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc1.getURL(), handler.getSources().get(0));
+
         //Testing listening on SFBQ.Results - rebind (change) source
-        l = new PRListener();
+        handler.reset();
         SFBQImpl.register(compRoot2,compSrc2);
-        assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
-        assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);        
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
     }
-    
-    /**
-     * Simulates a project mutex deadlock
-     */
-    public void testProjectMutexDeadlock () throws Exception {
-        final ExecutorService es = Executors.newSingleThreadExecutor();
-        final CountDownLatch wk_ready = new CountDownLatch (1);
-        final CountDownLatch mt_ready = new CountDownLatch (1);
-        try {
-            es.submit(new Runnable () {
-                public void run () {
-                    try {
-                        Object lock = DeadLockSFBQImpl.getLock();
-                        ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {unknown1});
-                        synchronized (lock) {
-                            wk_ready.countDown();
-                            mt_ready.await();
-                            Thread.sleep(1000);
-                            GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {cp});
-                        } 
-                    } catch (InterruptedException e) {                        
-                    }
-                }
-            });
-            ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {unknown1});
-            wk_ready.await();
-            mt_ready.countDown();
-            GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {cp});
-        } finally {
-            es.shutdownNow();
-        }
+
+
+    public void testIndexers () throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
     }
-    
-    public void testRaceCondition () throws Exception {
-        final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-        final PathRegistry gcp = PathRegistry.getDefault();        
-        final int initialSize = gcp.getSources().size();
-        final CountDownLatch state_1 = new CountDownLatch (1);
-        final CountDownLatch state_2 = new CountDownLatch (1);
-        final CountDownLatch state_3 = new CountDownLatch (1);        
-        final CountDownLatch state_4 = new CountDownLatch (1);        
-        final ExecutorService es = Executors.newSingleThreadExecutor();
-        gcp.setDebugCallBack(new Runnable (){
-            public void run () {
-                try {
-                    state_2.countDown();
-                    state_3.await();
-                } catch (InterruptedException ie) {}
+
+
+    public static class TestHandler extends Handler {
+
+            private CountDownLatch latch;
+            private List<URL> sources;
+            private Set<URL> binaries;
+
+            public TestHandler () {
+                reset();
             }
-        });
-        try {
-            es.submit(new Runnable() {
-                public void run () {
-                    try {
-                        state_1.await();
-                        gcp.getSources();
-                        gcp.getSources();
-                        state_4.countDown();
-                    } catch (InterruptedException ie) {}
-                }
-            });
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo1/")})});
-            state_1.countDown();
-            state_2.await();
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo2/")})});
-            state_3.countDown();
-            state_4.await();
-            assertEquals("Race condition",initialSize+2,gcp.getSources().size());
-        } finally {
-            es.shutdownNow();
-        }
-    }
 
-    public void testRaceCondition2 () throws Exception {
-        final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-        final PathRegistry gcp = PathRegistry.getDefault();
-        final int initialSize = gcp.getSources().size();
-        final CountDownLatch state_1 = new CountDownLatch (1);
-        final CountDownLatch state_2 = new CountDownLatch (1);
-        final CountDownLatch state_3 = new CountDownLatch (1);
-        final CountDownLatch state_4 = new CountDownLatch (1);
-        final ExecutorService es = Executors.newSingleThreadExecutor();
-        gcp.setDebugCallBack(new Runnable (){
-            public void run () {
-                try {
-                    state_2.countDown();
-                    state_3.await();
-                } catch (InterruptedException ie) {}
+            public void reset () {
+                sources = null;
+                binaries = null;
+                latch = new CountDownLatch(2);
             }
-        });
-        try {
-            es.submit(new Runnable() {
-                public void run () {
-                    try {
-                        state_1.await();
-                        gcp.getSources();
-                        gcp.getSources();
-                        state_4.countDown();
-                    } catch (InterruptedException ie) {}
+
+            public boolean await () throws InterruptedException {
+                return latch.await(TIME, TimeUnit.MILLISECONDS);
+            }
+
+            public Set<URL> getBinaries () {
+                return this.binaries;
+            }
+
+            public List<URL> getSources() {
+                return this.sources;
+            }
+
+            @Override
+            public void publish(LogRecord record) {
+                String msg = record.getMessage();
+                if ("scanBinary".equals(msg)) {
+                    binaries = (Set<URL>) record.getParameters()[0];
+                    latch.countDown();
                 }
-            });
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo3/")})});
-            state_1.countDown();
-            state_2.await();
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo4/")})});
-            state_3.countDown();
-            state_4.await();
-            assertEquals("Race condition",initialSize+2, gcp.getSources().size());
-        } finally {
-            es.shutdownNow();
-        }
-    }
-
-    public void testBinaryPath () throws Exception {
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(SOURCES);
-        GlobalPathRegistry.getDefault().unregister(SOURCES, cps.toArray(new ClassPath[cps.size()]));
-        cps = GlobalPathRegistry.getDefault().getPaths(PLATFORM);
-        GlobalPathRegistry.getDefault().unregister(PLATFORM, cps.toArray(new ClassPath[cps.size()]));
-        cps = GlobalPathRegistry.getDefault().getPaths(LIBS);
-        GlobalPathRegistry.getDefault().unregister(LIBS, cps.toArray(new ClassPath[cps.size()]));
-        Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
-        Collection<? extends URL> binaries = PathRegistry.getDefault().getBinaries();
-        assertEquals (0,sources.size());
-        assertEquals (0,binaries.size());
-
-
-        ClassPath src = ClassPathSupport.createClassPath(new FileObject[] {srcRoot1, srcRoot2, srcRoot3});
-        ClassPath libs = ClassPathSupport.createClassPath(new FileObject[] {compRoot1, compRoot2});
-        ClassPath platform = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1, bootRoot2});
-
-        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[] {src});
-        GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {libs});
-        GlobalPathRegistry.getDefault().register(PLATFORM, new ClassPath[] {platform});
-
-        Collection <? extends URL>  res = PathRegistry.getDefault().getSources();
-        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3, compSrc1, compSrc2, bootSrc1}, res);
-        res = PathRegistry.getDefault().getBinaries();
-        assertEquals(new FileObject[] {bootRoot2}, res);
-
-        ClassPath compile2 = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
-        GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {compile2});
-
-        res = PathRegistry.getDefault().getSources();
-        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3, compSrc1, compSrc2, bootSrc1, unknownSrc2}, res);
-        res = PathRegistry.getDefault().getBinaries();
-        assertEquals(new FileObject[] {bootRoot2, unknown1}, res);
-    }
-
-    public void testExcludeEvents () throws Exception {
-        List<PRI> resources = new ArrayList<PRI>(2);
-        resources.add(new PRI (srcRoot1.getURL()));
-        resources.add(new PRI (srcRoot2.getURL()));
-        ClassPath cp = ClassPathSupport.createClassPath(resources);
-
-        class L implements PropertyChangeListener {
-
-            Set ids = new HashSet ();
-
-            public void propertyChange(PropertyChangeEvent e) {
-                if (ClassPath.PROP_INCLUDES.equals(e.getPropertyName())) {
-                    ids.add (e.getPropagationId());
+                else if ("scanSources".equals(msg)) {
+                    sources = (List<URL>) record.getParameters()[0];
+                    latch.countDown();
                 }
             }
-        };
-        L l = new L ();
-        cp.addPropertyChangeListener(l);
-        Object propId = "ID0";
-        for (PRI pri : resources) {
-            pri.firePropertyChange(propId);
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
         }
-        cp.getRoots();
-        propId = "ID1";
-        for (PRI pri : resources) {
-            pri.firePropertyChange(propId);
-        }
-        assertEquals(1, l.ids.size());
-        propId = "ID2";
-        for (PRI pri : resources) {
-            pri.firePropertyChange(propId);
-        }
-        assertEquals(2, l.ids.size());
-    }
     
-    private static Collection<URL> collectResults () {
-        final PathRegistry pr = PathRegistry.getDefault();
-        final List<URL> result = new LinkedList<URL>();
-        result.addAll(pr.getSources());
-        result.addAll(pr.getBinaries());
-        result.addAll(pr.getUnknownRoots());
-        return result;
-    }
+    
+        
 
     public static class PRI implements FilteringPathResourceImplementation {
 
@@ -512,32 +470,7 @@ public class PathRegistryTest extends NbTestCase {
             event.setPropagationId(propId);
             this.support.firePropertyChange(event);
         }
-    }
-
-    private static void gc () {
-        System.gc();
-        long[][] spaces = new long[100][];
-        for (int i=0; i<spaces.length; i++) {
-            spaces[i] = new long[1000];
-        }
-        System.gc();
-        spaces = null;
-        System.gc();
-    }
-
-    private void assertEquals (FileObject[] expected, Collection<? extends URL> result) throws IOException {
-        assertEquals(expected.length, result.size());
-        Set<URL> expectedUrls = new HashSet<URL> ();
-        for (FileObject fo : expected) {
-            expectedUrls.add(fo.getURL());
-        }
-        for (URL url : result) {
-            if (!expectedUrls.remove (url)) {
-                assertTrue (String.format("Unknown URL: %s in: %s", url, expectedUrls),false);
-            }
-        }
-        assertEquals(expectedUrls.toString(),0,expectedUrls.size());
-    }
+    }        
     
 
     private static class MutableClassPathImplementation implements ClassPathImplementation {
@@ -671,25 +604,7 @@ public class PathRegistryTest extends NbTestCase {
 
     }
 
-    public static class DeadLockSFBQImpl implements SourceForBinaryQueryImplementation {
-
-        private final static Object lock = new String ("Lock");
-
-        public DeadLockSFBQImpl () {
-        }
-
-        public static Object getLock () {
-            return lock;
-        }
-
-        public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            synchronized (lock) {
-                lock.toString();
-            }
-            return null;
-        }
-    }
-
+    
     public static class FooPathRecognizer extends PathRecognizer {
         
         @Override
@@ -707,33 +622,31 @@ public class PathRegistryTest extends NbTestCase {
 
         @Override
         public Set<String> getMimeType() {
-            return Collections.singleton("text/foo");
+            return Collections.singleton(MIME);
         }        
 
     }
 
-    private static class PRListener implements PathRegistryListener {
+    public static class EmbPathRecognizer extends PathRecognizer {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
-        private final PathRegistry pr = PathRegistry.getDefault();
-
-        public PRListener () {
-            this.pr.addPathRegistryListener(this);
-        }
-                    
-        public boolean await () throws InterruptedException {
-            try {
-                return this.latch.await(5000, TimeUnit.MILLISECONDS);
-            } finally {
-                this.pr.removePathRegistryListener(this);
-            }
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.singleton(SOURCES);
         }
 
-        public void pathsChanged(PathRegistryEvent event) {
-            if (this.pr == event.getSource()) {
-                latch.countDown();
-            }
+        @Override
+        public Set<String> getBinaryPathIds() {
+            final Set<String> res = new HashSet<String>();
+            res.add(PLATFORM);
+            res.add(LIBS);
+            return res;
         }
+
+        @Override
+        public Set<String> getMimeType() {
+            return Collections.singleton(EMIME);
+        }
+
     }
 
     public static class OpenProject implements  OpenProjectsTrampoline {
@@ -789,6 +702,158 @@ public class PathRegistryTest extends NbTestCase {
 
         public void setMainProject(Project project) {
             
+        }
+
+    }
+
+    private static class FooIndexerFactory extends CustomIndexerFactory {
+
+        private final FooIndexer indexer = new FooIndexer();
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return this.indexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "foo";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+    }
+
+    private static class FooIndexer extends CustomIndexer {
+
+        private Set<URL> expectedFiles = new HashSet<URL>();
+        private CountDownLatch latch;
+
+        public void setExpectedFile (URL... files) {
+            expectedFiles.clear();
+            expectedFiles.addAll(Arrays.asList(files));
+            latch = new CountDownLatch(expectedFiles.size());
+        }
+
+        public boolean await () throws InterruptedException {
+            return this.latch.await(TIME, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            for (Indexable i : files) {
+                if (expectedFiles.remove(i.getURL())) {
+                    latch.countDown();
+                }
+
+            }
+        }
+
+    }
+
+    private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
+
+        private EmbIndexer indexer = new EmbIndexer ();
+
+        @Override
+        public EmbeddingIndexer createIndexer() {
+            return indexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "emb";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+    }
+
+    private static class EmbIndexer extends EmbeddingIndexer {
+
+        private Set<URL> expectedFiles = new HashSet<URL>();
+        private CountDownLatch latch;
+
+        public void setExpectedFile (URL... files) {
+            expectedFiles.clear();
+            expectedFiles.addAll(Arrays.asList(files));
+            latch = new CountDownLatch(expectedFiles.size());
+        }
+
+        public boolean await () throws InterruptedException {
+            return this.latch.await(TIME, TimeUnit.MILLISECONDS);
+        }
+
+
+        @Override
+        protected void index(Result parserResult, Context context) {
+            try {
+                final URL url = parserResult.getSnapshot().getSource().getFileObject().getURL();
+                if (expectedFiles.remove(url)) {
+                    latch.countDown();
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
+    private static class EmbParserFactory extends ParserFactory {
+
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new EmbParser();
+        }
+
+    }
+
+    private static class EmbParser extends Parser {
+
+        private EmbResult result;
+
+        @Override
+        public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {            
+            result = new EmbResult(snapshot);
+        }
+
+        @Override
+        public Result getResult(Task task) throws ParseException {
+            return result;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener changeListener) {
+
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener changeListener) {
+
+        }
+
+    }
+
+    private static class EmbResult extends Parser.Result {
+
+        public EmbResult(final Snapshot snapshot) {
+            super(snapshot);
+        }
+
+
+        @Override
+        protected void invalidate() {
         }
 
     }

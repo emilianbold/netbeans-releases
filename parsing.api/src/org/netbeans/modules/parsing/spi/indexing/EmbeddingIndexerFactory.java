@@ -49,13 +49,8 @@ public abstract class EmbeddingIndexerFactory {
      * Creates  new {@link Indexer}.
      * @return an indexer
      */
-    public abstract CustomIndexer createIndexer ();
-
-    /**
-     * Returns a mime type of handled embedding.
-     * @return
-     */
-    public abstract String getMimeType ();
+    public abstract EmbeddingIndexer createIndexer ();
+    
 
     /**
      * Return the name of this indexer. This name should be unique because GSF

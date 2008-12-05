@@ -40,17 +40,51 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.net.URL;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexImpl {
+public class FileObjectIndexable implements IndexableImpl {
 
-    public void addDocument (IndexDocumentImpl document);
+    private final FileObject root;
+    private final FileObject file;
 
-    public void removeDocument (String relativePath);
+    public FileObjectIndexable (final FileObject root, final FileObject file) {
+        assert root != null;
+        assert file != null;
+        this.root = root;
+        this.file = file;
+    }
 
-    public void store () throws IOException;
+    public long getLastModified() {
+        return this.file.lastModified().getTime();
+    }
+
+    public String getName() {
+        return this.file.getName();
+    }
+
+    public String getRelativePath() {
+        return FileUtil.getRelativePath(root, file);
+    }
+
+    public URL getURL() {
+        try {
+            return this.file.getURL();
+        } catch (FileStateInvalidException ex) {
+            //deleted
+            return null;
+        }
+    }
+
+    public InputStream openInputStream() throws IOException {
+        return this.file.getInputStream();
+    }
+
 }

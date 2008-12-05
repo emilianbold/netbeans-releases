@@ -39,43 +39,74 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.lang.management.MemoryUsage;
+import java.util.List;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexManager {
+class LMListener {
 
-    private static LuceneIndexManager instance;
-    private volatile boolean invalid;
+    //@GuardedBy(LMListener.class)
+    private static MemoryPoolMXBean cachedPool;
 
-    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
+    private MemoryPoolMXBean pool;
 
-    private LuceneIndexManager() {}
+    private static final float DEFAULT_HEAP_LIMIT = 0.9f;
 
+    private final float heapLimit;
 
-    public static synchronized LuceneIndexManager getDefault () {
-        if (instance == null) {
-            instance = new LuceneIndexManager();
-        }
-        return instance;
+    public LMListener () {
+        this (DEFAULT_HEAP_LIMIT);
     }
 
-    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
+    public LMListener (final float heapLimit) {
+        this.heapLimit = heapLimit;
+        this.pool = findPool();
+        assert pool != null;
+    }
+
+    public float getHeapLimit () {
+        return this.heapLimit;
+    }
+    
+    public boolean isLowMemory () {
+        if (this.pool != null) {
+            final MemoryUsage usage = this.pool.getUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
+            }
         }
-        LuceneIndex li = indexes.get(root);
-        if (create && li == null) {
-            li = new LuceneIndex(root);
-            indexes.put(root,li);
+        return false;
+    }
+
+    private static synchronized MemoryPoolMXBean findPool () {
+        if (cachedPool == null || !cachedPool.isValid()) {
+            final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+            for (MemoryPoolMXBean pool : pools) {
+                if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
+                    cachedPool = pool;
+                    break;
+                }
+            }
+            assert cachedPool != null : dumpMemoryPoolMXBean (pools);
         }
-        return li;
-    }   
+        return cachedPool;
+    }
+
+    private static String dumpMemoryPoolMXBean (List<MemoryPoolMXBean> pools) {
+        StringBuilder sb = new StringBuilder ();
+        for (MemoryPoolMXBean pool : pools) {
+            sb.append(String.format("Pool: %s Type: %s TresholdSupported: %s\n", pool.getName(), pool.getType(), pool.isUsageThresholdSupported() ? Boolean.TRUE : Boolean.FALSE));
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
 
 }
