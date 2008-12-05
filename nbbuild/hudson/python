@@ -25,8 +25,8 @@ rm -rf $DIST/
 BUILDNUMBER=`echo $BUILD_ID | tr -d _-` 
 BUILDNUM=$BUILD_TAG
 
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dcluster.config=python verify-libs-and-licenses build-nozip || exit 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER verify-libs-and-licenses build-nozip || exit 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dcluster.config=python verify-libs-and-licenses build-nozip || exit 
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER verify-libs-and-licenses build-nozip || exit 
 
 cd nbbuild
 rm -f netbeans/nb.cluster.*
