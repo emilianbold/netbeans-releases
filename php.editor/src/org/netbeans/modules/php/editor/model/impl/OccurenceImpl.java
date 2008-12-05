@@ -54,6 +54,7 @@ class OccurenceImpl implements Occurence {
     private ModelElement declaration;
     private List<? extends ModelElement> allDeclarations;
     private FileScope fileScope;
+    private ModelElement gotDeclaration;
 
 
     public OccurenceImpl(List<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScope fileScope) {
@@ -91,6 +92,9 @@ class OccurenceImpl implements Occurence {
 
     @SuppressWarnings("unchecked")
     public List<? extends ModelElement> getAllDeclarations() {
+        if ((gotDeclaration != null)) {
+            return Collections.<ModelElement>emptyList();
+        }
         if (allDeclarations == null) {
             allDeclarations = Collections.<ModelElement>emptyList();
             ModelScopeImpl modelScope = (ModelScopeImpl) ModelUtils.getModelScope(geModelElement());
@@ -135,5 +139,13 @@ class OccurenceImpl implements Occurence {
 
     public ModelElement getDeclaration() {
         return geModelElement();
+    }
+
+    public void setGotoDeclaratin(ModelElement gotDeclaration) {
+        this.gotDeclaration = gotDeclaration;
+    }
+
+    public ModelElement gotoDeclaratin() {
+        return (gotDeclaration != null) ? gotDeclaration : getDeclaration();
     }
 }

@@ -92,9 +92,10 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         });
         Model model = ModelFactory.getModel(parameter);
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
-        Occurence caretOccurence = occurencesSupport.getOccurence();
+        Occurence caretOccurence = occurencesSupport.getOccurence();        
         if (caretOccurence != null) {
-            if (caretOccurence.getDeclaration() != null && !caretOccurence.getDeclaration().getPhpKind().equals(PhpKind.INCLUDE)) {
+            ModelElement decl = caretOccurence.getDeclaration();
+            if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
                 List<Occurence> allOccurences = caretOccurence.getAllOccurences();
                 for (Occurence occurence : allOccurences) {
                     result.add(occurence.getOccurenceRange());

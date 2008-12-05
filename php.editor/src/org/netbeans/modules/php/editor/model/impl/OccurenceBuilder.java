@@ -575,11 +575,13 @@ class OccurenceBuilder {
                 List<MethodScope> methods = new ArrayList<MethodScope>();
                 for (ClassScope clz : elems) {
                     methods.addAll(CachedModelSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
+                }
+                if (!elems.isEmpty()) {
+                    OccurenceImpl occurenceImpl = new OccurenceImpl(elems, nodeInfo.getRange(), fileScope);
+                    if (!methods.isEmpty()) {
+                        occurenceImpl.setGotoDeclaratin(ModelUtils.getFirst(methods));
                     }
-                if (!methods.isEmpty()) {
-                    fileScope.addOccurence(ModelUtils.getFirst(elems), new OccurenceImpl(methods, nodeInfo.getRange(), fileScope));
-                } else if (!elems.isEmpty()) {
-                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
+                    fileScope.addOccurence(occurenceImpl);
                 }
 
             }

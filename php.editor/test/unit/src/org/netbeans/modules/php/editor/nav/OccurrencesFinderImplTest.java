@@ -78,6 +78,30 @@ public class OccurrencesFinderImplTest extends TestBase {
                                true);
     }*/
 
+    public void testGotoConstructTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "class MyClassConstr  {",
+                "class ^MyClassConstr^  {",
+                "class MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
+                "class MyClassConstr2 extends ^MyClassConstr^  {}//MyClassConstr2",
+                "$a = new MyClassConstr();",
+                "$a = new ^MyCla|ssConstr^();"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testGotoConstructTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "class MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
+                "class ^MyClassConstr2^ extends MyClassConstr  {}//MyClassConstr2",
+                "$b = new MyClassConstr2();",
+                "$b = new ^MyClass|Constr2^();"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
     public void testParamVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",
