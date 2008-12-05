@@ -144,7 +144,7 @@ public class CKit extends CCKit {
                             doc.insertString(endPos, endString, null);
                             // then start line
                             doc.insertString(startPos, insertStartCommentString, null);
-                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
+//                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
                         } catch (BadLocationException e) {
                             target.getToolkit().beep();
                         }
@@ -231,7 +231,7 @@ public class CKit extends CCKit {
                                 // remove start line
                                 doc.remove(startLineStartPos, startLineEndPos - startLineStartPos);
                             }
-                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
+//                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
                         } catch (BadLocationException e) {
                             target.getToolkit().beep();
                         }
