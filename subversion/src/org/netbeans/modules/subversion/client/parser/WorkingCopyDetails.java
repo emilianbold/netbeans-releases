@@ -498,7 +498,7 @@ public class WorkingCopyDetails {
                         
                         // base file idx
                         fileIdx += keyword.length(); 
-                        
+                        boolean isKeyword = true;
                         // 3. now check if there is somthing like "$", ":$" after the keyword                                
                         if(checkFollowingString(baseLine, fileIdx + 1, "$")) {
                             fileIdx += 1;
@@ -510,12 +510,21 @@ public class WorkingCopyDetails {
                                 return false;
                             }
                             fileIdx += spaces + 3;                                
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":")) {
+                            int spaces = getSpacesCount(baseLine, fileIdx + 2);
+                            if(spaces > 0) {
+                                fileIdx += spaces + 2;
+                            } else {
+                                isKeyword = false;
+                            }
                         } else {
-                            // it's not a keyword -> rollback the index and keep comparing 
-                            fileIdx -= keyword.length();
-                            break; 
+                            isKeyword = false;
                         }
-                                                
+                        if(!isKeyword) {
+                            // it's not a keyword -> rollback the index and keep comparing
+                            fileIdx -= keyword.length();
+                            break;
+                        }
                         // 4. it was a correctly closed keyword -> skip the chars until the next '$'
                         // for the modified file - '$Id: '
                         modifiedIdx += keyword.length() + 1;       //                  
