@@ -156,7 +156,7 @@ public class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                String type = expressionType(node, typesForSymbol);
+                String type = expressionTypeOfRHS(node, typesForSymbol, index);
 
                 // null element in types set means that we are not able to infer
                 // the expression
@@ -221,8 +221,20 @@ public class RubyTypeAnalyzer {
         }
     }
 
-    /** Called on AsgnNodes to compute RHS */
-    private String expressionType(Node node, final Map<String, Set<String>> typesForSymbol) {
+    public static String expressionTypeOfRHS(final Node node) {
+        return expressionTypeOfRHS(node, null);
+    }
+    
+    public static String expressionTypeOfRHS(final Node node, final RubyIndex index) {
+        Map<String, Set<String>> typesForSymbol = new HashMap<String, Set<String>>();
+        return expressionTypeOfRHS(node, typesForSymbol, index);
+    }
+
+    /** Called on AsgnNodes to compute RHS. */
+    public static String expressionTypeOfRHS(
+            final Node node,
+            final Map<String, Set<String>> typesForSymbol,
+            final RubyIndex index) {
         // If it's a simple assignment, e.g. "= 5" it will have a single
         // child node
         // If it's a method call, it's slightly more complicated:
@@ -521,7 +533,7 @@ public class RubyTypeAnalyzer {
     }
 
     /** Look up the right return type for the given finder call */
-    private String pickFinderType(CallNode call, String method, String model) {
+    private static String pickFinderType(CallNode call, String method, String model) {
         // Dynamic finders
         boolean multiple;
         if (method.startsWith("find_all")) { // NOI18N
@@ -563,7 +575,7 @@ public class RubyTypeAnalyzer {
         }
     }
 
-    private String getTypeForSymbol(final Map<String, Set<String>> typesForSymbol, final String name) {
+    private static String getTypeForSymbol(final Map<String, Set<String>> typesForSymbol, final String name) {
         return getLast(typesForSymbol.get(name));
     }
 

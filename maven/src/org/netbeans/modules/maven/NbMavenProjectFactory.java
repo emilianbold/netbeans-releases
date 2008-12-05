@@ -70,8 +70,7 @@ public class NbMavenProjectFactory implements ProjectFactory {
         
         File project = new File(projectDir, "pom.xml"); // NOI18N
         if (project.isFile() && 
-            "archetype-resources".equalsIgnoreCase(projectDir.getName()) && //NOI18N
-            "resources".equalsIgnoreCase(projectDir.getParentFile().getName())) { //NOI18N
+            project.getAbsolutePath().contains("resources" + File.separator + "archetype-resources")) { //NOI18N
             //this is an archetype resource, happily ignore..
             return false;
         }
@@ -96,8 +95,7 @@ public class NbMavenProjectFactory implements ProjectFactory {
             return null;
         }
         if (projectDiskFile.isFile() && 
-            "archetype-resources".equalsIgnoreCase(fileObject.getName()) && //NOI18N
-            "resources".equalsIgnoreCase(fileObject.getParent().getName())) { //NOI18N
+            projectDiskFile.getAbsolutePath().contains("resources" + File.separator + "archetype-resources")) { //NOI18N
             //this is an archetype resource, happily ignore..
             return null;
         }

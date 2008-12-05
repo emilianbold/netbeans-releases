@@ -200,7 +200,8 @@ public class TableWidget extends Widget{
                 if(widgets==null|| widgets.isEmpty())
                     scene.addObject(userObject, this);
                 else {
-                    scene.removeObject(userObject);
+                    if(scene.isObject(userObject))
+                        scene.removeObject(userObject);
                     widgets = new ArrayList<Widget>(widgets);
                     widgets.add(this);
                     scene.addObject(userObject, widgets.toArray(new Widget[widgets.size()]));
@@ -213,12 +214,14 @@ public class TableWidget extends Widget{
                 ObjectScene scene =(ObjectScene) getScene();
                 List<Widget> widgets = scene.findWidgets(userObject);
                 if(widgets!=null && widgets.contains(this)) {
-                    if(widgets.size()==1) 
-                        scene.removeObject(userObject);
-                    else {
+                    if(widgets.size()==1) {
+                        if(scene.isObject(userObject))
+                            scene.removeObject(userObject);
+                    } else {
                         widgets = new ArrayList<Widget>(widgets);
                         widgets.remove(this);
-                        scene.removeObject(userObject);
+                        if(scene.isObject(userObject))
+                            scene.removeObject(userObject);
                         scene.addObject(userObject, widgets.toArray(new Widget[widgets.size()]));
                     }
                 }

@@ -78,6 +78,46 @@ public class OccurrencesFinderImplTest extends TestBase {
                                true);
     }*/
 
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {",
+                "function test($^hello^) {",
+                "* @param Book $hello",
+                "* @param Book $^he|llo^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testMarkReturnsOnConstructorTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Author",
+                "^funct|ion ^__construct() {}//Author"
+                );
+        performTestOccurrences(markTest, true);
+    }
+    public void testMarkReturnsOnConstructorTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Book",
+                "^funct|ion ^__construct() {}//Book"
+                );
+        performTestOccurrences(markTest, true);
+    }
+    public void testClsVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "class Author {",
+                "class ^Author^ {",
+                " * @property Author $author hello this is doc",
+                " * @property ^Author^ $author hello this is doc",
+                "* @return Author",
+                "* @return ^Aut|hor^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
     public void testIfaceTest() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/ifaceTest.php",

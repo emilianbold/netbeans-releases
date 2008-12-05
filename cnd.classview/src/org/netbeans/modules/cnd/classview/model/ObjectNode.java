@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.classview.model;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -55,27 +54,19 @@ import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * @author Vladimir Kvasihn
  */
 public abstract class ObjectNode extends BaseNode implements ChangeListener {
     private PersistentKey key;
-    private final InstanceContent ic;
     
     public ObjectNode(CsmOffsetableDeclaration declaration) {
-        this(declaration, Children.LEAF, new InstanceContent());
+        this(declaration, Children.LEAF);
     }
 
     public ObjectNode(CsmOffsetableDeclaration declaration, Children children) {
-        this(declaration, children, new InstanceContent());
-    }
-    
-    private ObjectNode(CsmOffsetableDeclaration declaration, Children children, InstanceContent ic) {
-        super(children, new AbstractLookup(ic));
-        this.ic = ic;
+        super(children);
         setObject(declaration);
     }
     
@@ -89,8 +80,6 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     }
     
     protected void setObject(CsmOffsetableDeclaration declaration) {
-        ic.setPairs(Collections.<AbstractLookup.Pair>emptyList());
-        ic.add(declaration.getUID());
         key = PersistentKey.createKey(declaration);
     }
     

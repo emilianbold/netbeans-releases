@@ -41,25 +41,47 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardPanel1.WizardStorage;
+import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
+import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -78,6 +100,33 @@ public class ImportProject {
     private String buildCommand = "${MAKE} all";  // NOI18N
     private String cleanCommand = "${MAKE} clean";  // NOI18N
     private String buildResult = "";  // NOI18N
+    private Project makeProject;
+    private boolean runMake;
+
+    public ImportProject(WizardStorage wizardStorage) {
+        String path = wizardStorage.getPath().trim();
+        dirF = new File(path);
+        name = dirF.getName();
+        makefileName = "Makefile-"+name+".mk"; // NOI18N
+        workingDir = path;
+        File file = new File(path + "/Makefile"); // NOI18N
+        if (file.exists() && file.isFile() && file.canRead()) {
+            makefilePath = file.getAbsolutePath();
+        } else {
+            file = new File(path + "/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                makefilePath = file.getAbsolutePath();
+            } else {
+                file = new File(path + "/configure"); // NOI18N
+                configurePath = file.getAbsolutePath();
+                configureArguments = wizardStorage.getFlags();
+                runConfigure = true;
+                file = new File(path + "/Makefile"); // NOI18N
+                makefilePath = file.getAbsolutePath();
+            }
+        }
+        runMake = wizardStorage.isBuildProject();
+    }
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
@@ -96,12 +145,12 @@ public class ImportProject {
         }
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
-        File makefileFile = new File(makefilePath);
         if (makefilePath != null && makefilePath.length() > 0) {
             makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
             makefilePath = FilePathAdaptor.normalize(makefilePath);
             importantItems.add(makefilePath);
         }
+        boolean postponeModel = false;
         if (configurePath != null && configurePath.length() > 0) {
             File configureFile = new File(configurePath);
             configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
@@ -122,15 +171,29 @@ public class ImportProject {
                 // Possibly run the configure script
                 if (runConfigure) {
                     // If no makefile, create empty one so it shows up in Interesting Files
-                    if (!makefileFile.exists()) {
-                        makefileFile.createNewFile();
+                    //if (!makefileFile.exists()) {
+                    //    makefileFile.createNewFile();
+                    //}
+                    final boolean userRunMake = runMake;
+                    ExecutionListener listener = new ExecutionListener() {
+                        public void executionStarted() {
+                        }
+                        public void executionFinished(int rc) {
+                            if (userRunMake) {
+                                makeProject();
+                            }
+                        }
+                    };
+                    if (runMake) {
+                        runMake = false;
+                        postponeModel = true;
                     }
-                    ShellRunAction.performAction(node);
+                    ShellRunAction.performAction(node, listener);
                 }
             } catch (DataObjectNotFoundException e) {
             }
         }
-        Iterator importantItemsIterator = importantItems.iterator();
+        Iterator<String> importantItemsIterator = importantItems.iterator();
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
@@ -152,11 +215,147 @@ public class ImportProject {
         };
         List<SourceFolderInfo> sources = new ArrayList<SourceFolderInfo>();
         sources.add(info);
-        Project makeProject = ProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[]{extConf},sources.iterator()); // NOI18N
+        makeProject = ProjectGenerator.createProject(dirF, name, makefileName, 
+                new MakeConfiguration[]{extConf}, sources.iterator(), importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(dirF);
         resultSet.add(dir);
-        //OpenProjects.getDefault().open(new Project[]{p}, false);
-        //OpenProjects.getDefault().setMainProject(p);
+        OpenProjects.getDefault().open(new Project[]{makeProject}, false);
+        OpenProjects.getDefault().setMainProject(makeProject);
+        if (runMake) {
+            makeProject();
+            postponeModel = true;
+        }
+        if (postponeModel) {
+            switchModel(false);
+        } else {
+            CsmModel model = CsmModelAccessor.getModel();
+            if (model instanceof ModelImpl) {
+                NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+                MODEL_LISTENER.importer = this;
+                MODEL_LISTENER.p = model.getProject(np);
+                CsmListeners.getDefault().addProgressListener(MODEL_LISTENER);
+            }
+        }
+
         return resultSet;
     }
+
+    private void makeProject(){
+        String path = dirF.getAbsolutePath();
+        File file = new File(path + "/Makefile"); // NOI18N
+        if (file.exists() && file.isFile() && file.canRead()) {
+            makefilePath = file.getAbsolutePath();
+        } else {
+            file = new File(path + "/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                makefilePath = file.getAbsolutePath();
+            }
+        }
+        FileObject makeFileObject = FileUtil.toFileObject(file);
+        DataObject dObj;
+        try {
+            dObj = DataObject.find(makeFileObject);
+            Node node = dObj.getNodeDelegate();
+            ExecutionListener listener = new ExecutionListener() {
+                public void executionStarted() {
+                }
+                public void executionFinished(int rc) {
+                    discovery();
+                }
+            };
+            MakeAction.execute(node, "", listener); // NOI18N
+        } catch (DataObjectNotFoundException ex) {
+        }
+    }
+
+    private DiscoveryProvider getProvider(String id){
+       Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
+        for(DiscoveryProvider provider : providers.allInstances()){
+            provider.clean();
+            if (id.equals(provider.getID())) {
+                return provider;
+            }
+        }
+        return null;
+    }
+
+    private void modelDiscovery() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+        map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
+        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+        boolean does = false;
+        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+        if (extension != null) {
+            if (extension.canApply(map, makeProject)) {
+                try {
+                    extension.apply(map, makeProject);
+                    does = true;
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        if (!does) {
+            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+            DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
+            provider.getProperty("folder").setValue(dirF.getAbsolutePath()); // NOI18N
+            map.put(DiscoveryWizardDescriptor.PRIVIDER, provider); 
+            map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
+            DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+            descriptor.setProject(makeProject);
+            SelectConfigurationPanel.buildModel(descriptor);
+            try {
+                DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
+                generator.makeProject();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private void discovery() {
+        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+        if (extension != null) {
+            final Map<String, Object> map = new HashMap<String, Object>();
+            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+            if (extension.canApply(map, makeProject)) {
+                try {
+                    extension.apply(map, makeProject);
+                    switchModel(true);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void switchModel(boolean state) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            if (state) {
+                ((ModelImpl) model).enableProject(np);
+            } else {
+                ((ModelImpl) model).disableProject(np);
+            }
+        }
+    }
+
+    private static final MyListener MODEL_LISTENER  = new MyListener();
+    private static class MyListener extends CsmProgressAdapter{
+        private CsmProject p;
+        private ImportProject importer;
+        @Override
+        public void projectParsingFinished(CsmProject project) {
+            if (project.equals(p)) {
+                CsmListeners.getDefault().removeProgressListener(this);
+                importer.modelDiscovery();
+                p = null;
+                importer = null;
+            }
+        }
+    }
 }
+
