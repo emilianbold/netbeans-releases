@@ -74,7 +74,7 @@ public class InstantRenamerImpl implements InstantRenamer {
             }
             if (decl instanceof VariableName) {
                 VariableName varName = (VariableName) decl;
-                if (!varName.isGloballyVisible()) {                    
+                if (!varName.isGloballyVisible() && !varName.representsThis()) {
                     return checkAll(caretOccurence);
                 }
             } else if (decl instanceof MethodScope) {
