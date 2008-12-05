@@ -89,6 +89,22 @@ public class OccurrencesFinderImplTest extends TestBase {
         performTestOccurrences(markTest, true);
     }
 
+    public void testMarkReturnsOnConstructorTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Author",
+                "^funct|ion ^__construct() {}//Author"
+                );
+        performTestOccurrences(markTest, true);
+    }
+    public void testMarkReturnsOnConstructorTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Book",
+                "^funct|ion ^__construct() {}//Book"
+                );
+        performTestOccurrences(markTest, true);
+    }
     public void testClsVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",

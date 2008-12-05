@@ -1,6 +1,7 @@
 <?php
 class Author {
     public $name;
+    function __construct() {}//Author
 }
 
 /**
@@ -8,6 +9,7 @@ class Author {
  */
 class Book {
     public $Title;
+    function __construct() {}//Book
 }
 
 /**
