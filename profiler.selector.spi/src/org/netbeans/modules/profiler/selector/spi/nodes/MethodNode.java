@@ -48,11 +48,6 @@ import javax.swing.Icon;
  * @author Jaroslav Bachorik
  */
 abstract public class MethodNode extends SelectorNode {
-
-    public static enum Modifier {
-
-        STATIC, PUBLIC, PROTECTED, PRIVATE
-    }
     public static final Comparator<MethodNode> COMPARATOR = new Comparator<MethodNode>() {
 
         public int compare(MethodNode o1, MethodNode o2) {

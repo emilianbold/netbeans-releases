@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodsNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.Modifier;
 
 /**
  *
@@ -94,16 +95,16 @@ public class JavaMethodNode extends MethodNode {
             for (javax.lang.model.element.Modifier modifier : method.getModifiers()) {
                 switch (modifier) {
                     case STATIC:
-                        modifiers.add(MethodNode.Modifier.STATIC);
+                        modifiers.add(Modifier.STATIC);
                         break;
                     case PUBLIC:
-                        modifiers.add(MethodNode.Modifier.PUBLIC);
+                        modifiers.add(Modifier.PUBLIC);
                         break;
                     case PROTECTED:
-                        modifiers.add(MethodNode.Modifier.PROTECTED);
+                        modifiers.add(Modifier.PROTECTED);
                         break;
                     case PRIVATE:
-                        modifiers.add(MethodNode.Modifier.PRIVATE);
+                        modifiers.add(Modifier.PRIVATE);
                         break;
                 }
             }
