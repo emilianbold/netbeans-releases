@@ -47,12 +47,14 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
@@ -176,6 +178,11 @@ public abstract class GroovyTestCase extends JellyTestCase {
         super.tearDown();
         project = null;
         projectName = null;
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+            //ignore
+        }
     }
 
     /**
@@ -184,6 +191,15 @@ public abstract class GroovyTestCase extends JellyTestCase {
      * @return name of the project
      */
     protected abstract String getProjectName();
+
+    /**
+     * Get a Project instance used by test case
+     *
+     * @return a Project instance
+     */
+    protected Project getProject() {
+        return project;
+    }
 
     /**
      * Get <code>Node</code> for the project used by test case
@@ -260,6 +276,39 @@ public abstract class GroovyTestCase extends JellyTestCase {
         Project p = ((org.openide.nodes.Node) node.getOpenideNode()).getLookup().lookup(Project.class);
         assertNotNull("Project instance has not been found", p); //NOI18N
         return p;
+    }
+
+    /**
+     * Helper method to be used by subclasses to create new file of given
+     * <code>fileType</code> from <i>Groovy</i> category
+     *
+     * @param p project where to create new file
+     * @param fileType file type name from web services category
+     */
+    protected void createNewGroovyFile(Project p, String fileType) {
+        // Groovy
+        //XXX - where is it?
+        String groovyLabel = "Groovy"; //NOI18N
+        createNewFile(p, groovyLabel, fileType);
+    }
+
+    /**
+     * Helper method to be used by subclasses to create new file of given
+     * <code>fileType</code> from <code>fileCategory</code> category
+     *
+     * @param p project where to create new file
+     * @param fileType file type name from web services category
+     */
+    protected void createNewFile(Project p, String fileCategory, String fileType) {
+        // file category & filetype selection step
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        new EventTool().waitNoEvent(500);
+        nfwo.treeCategories().setComparator(new Operator.DefaultStringComparator(true, true));
+        nfwo.lstFileTypes().setComparator(new Operator.DefaultStringComparator(true, true));
+        nfwo.cboProject().selectItem(p.toString());
+        nfwo.selectCategory(fileCategory);
+        nfwo.selectFileType(fileType);
+        nfwo.next();
     }
 
     /**
