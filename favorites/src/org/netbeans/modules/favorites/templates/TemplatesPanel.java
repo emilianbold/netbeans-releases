@@ -159,6 +159,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 final Node [] nodes = (Node []) evt.getNewValue ();
                 deleteButton.setEnabled (nodes != null && nodes.length > 0);
                 renameButton.setEnabled (nodes != null && nodes.length == 1);
+                addButton.setEnabled (nodes != null && nodes.length == 1);
                 duplicateButton.setEnabled (nodes != null && nodes.length == 1 && nodes [0].isLeaf ());
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
@@ -178,7 +179,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         duplicateButton.setEnabled (false);
         moveUpButton.setEnabled (false);
         moveDownButton.setEnabled (false);
-        addButton.setEnabled (true);
+        addButton.setEnabled (false);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                Node firstNode = templatesRootNode.getChildren ().getNodeAt (0);
+                try {
+                    manager.setSelectedNodes (new Node[]{firstNode});
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(TemplatesPanel.class.getName()).log(Level.FINE, ex.getLocalizedMessage (), ex);
+                }
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        view.requestFocus ();
+                    }
+                });
+            }
+        });
     }
     
     static Node getTemplateRootNode () {

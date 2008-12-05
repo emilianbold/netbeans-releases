@@ -63,6 +63,7 @@ import org.netbeans.modules.ruby.RubyCompletionItem.DbItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.MethodItem;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedConstant;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -165,7 +166,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             if (method != null) {
                 // TODO - if the lhs is "foo.bar." I need to split this
                 // up and do it a bit more cleverly
-                types = createTypeAnalyzer(request, method).getTypes(_lhs);
+                types = getTypesForConstant(lhs);
+                if (types.isEmpty()) {
+                    types = createTypeAnalyzer(request, method).getTypes(_lhs);
+                }
                 if (!types.isEmpty() && call.isLHSConstant()) {
                     // lhs is not a class or module, is a constant for which we have
                     // type-inference. Clumsy -> polish infrastructure..
@@ -601,5 +605,29 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
     private static RubyTypeAnalyzer createTypeAnalyzer(final CompletionRequest request, final Node root) {
         return new RubyTypeAnalyzer(request.index, root, request.node, request.astOffset, request.lexOffset, request.doc, request.fileObject);
+    }
+
+    private Set<? extends String> getTypesForConstant(final String fqn) {
+        int lastColon2 = fqn.lastIndexOf("::"); // NOI18N
+        String module;
+        String constant;
+        if (lastColon2 != -1) {
+            constant = fqn.substring(lastColon2 + 2);
+            module = fqn.substring(0, lastColon2);
+        } else {
+            constant = fqn;
+            module = "Kernel";
+        }
+        Set<IndexedConstant> constants = getIndex().getConstants(module, constant);
+        for (IndexedConstant indexedConstant : constants) {
+            if (module.equals(indexedConstant.getFqn())) {
+                String type = indexedConstant.getType();
+                if (type != null) {
+                    return Collections.singleton(type);
+                }
+            }
+        }
+        return Collections.emptySet();
+
     }
 }

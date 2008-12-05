@@ -640,13 +640,10 @@ public final class RubyIndex {
         String name = typeIndex == -1 ? signature : signature.substring(0, typeIndex);
         int flags = 0;
 
-        // TODO: use the type, once properly indexed
-//        if (typeIndex != -1) {
-//             String type = signature.substring(typeIndex + 1);
-//        }
+        String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
-        IndexedConstant m =
-            IndexedConstant.create(this, name, fqn, clz, fileUrl, require, flags, context);
+        IndexedConstant m =IndexedConstant.create(
+                this, name, fqn, clz, fileUrl, require, flags, context, type);
 
         return m;
     }

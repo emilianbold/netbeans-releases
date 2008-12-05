@@ -86,21 +86,15 @@ public class RemoteClient implements Cancellable {
     private final RemoteConfiguration configuration;
     private final InputOutput io;
     private final String baseRemoteDirectory;
+    private final boolean preservePermissions;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
     private volatile boolean cancelled = false;
 
     /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
+     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.spi.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String, boolean)
      */
     public RemoteClient(RemoteConfiguration configuration) {
-        this(configuration, null, null);
-    }
-
-    /**
-     * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String)
-     */
-    public RemoteClient(RemoteConfiguration configuration, InputOutput io) {
-        this(configuration, io, null);
+        this(configuration, null, null, false);
     }
 
     /**
@@ -111,12 +105,15 @@ public class RemoteClient implements Cancellable {
      * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
      *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
      *                                      set as default base remote directory. Can be <code>null</code>.
+     * @param preservePermissions <code>true</code> if permissions should be preserved; please note that this is not supported for local
+     *                            files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
      */
-    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory) {
+    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions) {
         assert configuration != null;
 
         this.configuration = configuration;
         this.io = io;
+        this.preservePermissions = preservePermissions;
 
         // base remote directory
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
@@ -131,8 +128,10 @@ public class RemoteClient implements Cancellable {
         assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
+            LOGGER.fine(String.format("Remote client created with configuration: %s, base remote directory: %s, preserve permissions: %b",
+                    configuration, baseRemoteDirectory, preservePermissions));
         }
+
 
         // remote client itself
         org.netbeans.modules.php.project.connections.spi.RemoteClient client = null;
@@ -311,15 +310,39 @@ public class RemoteClient implements Cancellable {
             } finally {
                 is.close();
                 if (success) {
-                    success = moveRemoteFile(fileName, tmpFileName);
+                    int oldPermissions = -1;
+                    if (preservePermissions) {
+                        oldPermissions = remoteClient.getPermissions(fileName);
+                        LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
+                    } else {
+                        LOGGER.fine("Permissions are not preserved.");
+                    }
+
+                    success = moveRemoteFile(tmpFileName, fileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
+                    }
+
+                    if (preservePermissions && success && oldPermissions != -1) {
+                        int newPermissions = remoteClient.getPermissions(fileName);
+                        LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
+                        if (oldPermissions != newPermissions) {
+                            LOGGER.fine(String.format("Setting permissions %d for %s.", oldPermissions, fileName));
+                            boolean permissionsSet = remoteClient.setPermissions(oldPermissions, fileName);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(String.format("Permissions for %s set: %s", fileName, permissionsSet));
+                                LOGGER.fine(String.format("Permissions for %s read: %s", fileName, remoteClient.getPermissions(fileName)));
+                            }
+                            if (!permissionsSet) {
+                                transferPartiallyFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_PermissionsNotSet", oldPermissions, file.getName()));
+                            }
+                        }
                     }
                 }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getFailureMessage(fileName, true));
+                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(fileName, true));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
@@ -329,38 +352,38 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private boolean moveRemoteFile(String fileName, String tmpFileName) throws RemoteException {
-        String oldPath = fileName + REMOTE_TMP_OLD_SUFFIX;
-        boolean moved = remoteClient.rename(tmpFileName, fileName);
+    private boolean moveRemoteFile(String source, String target) throws RemoteException {
+        boolean moved = remoteClient.rename(source, target);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpFileName, fileName, moved));
+            LOGGER.fine(String.format("File %s directly renamed to %s: %s", source, target, moved));
         }
         if (moved) {
             return true;
         }
         // possible cleanup
+        String oldPath = target + REMOTE_TMP_OLD_SUFFIX;
         remoteClient.deleteFile(oldPath);
 
         // try to move the old file, move the new file, delete the old file
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
         }
-        moved = remoteClient.rename(fileName, oldPath);
+        moved = remoteClient.rename(target, oldPath);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("(1) File %s renamed to %s: %s", fileName, oldPath, moved));
+            LOGGER.fine(String.format("(1) File %s renamed to %s: %s", target, oldPath, moved));
         }
         if (!moved) {
             return false;
         }
-        moved = remoteClient.rename(tmpFileName, fileName);
+        moved = remoteClient.rename(source, target);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpFileName, fileName, moved));
+            LOGGER.fine(String.format("(2) File %s renamed to %s: %s", source, target, moved));
         }
         if (!moved) {
             // try to restore the original file
-            boolean restored = remoteClient.rename(oldPath, fileName);
+            boolean restored = remoteClient.rename(oldPath, target);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPath, fileName, restored));
+                LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPath, target, restored));
             }
         } else {
             boolean deleted = remoteClient.deleteFile(oldPath);
@@ -555,7 +578,7 @@ public class RemoteClient implements Cancellable {
                 os.close();
                 if (success) {
                     // move the file
-                    success = moveLocalFile(localFile, tmpLocalFile);
+                    success = moveLocalFile(tmpLocalFile, localFile);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
                     }
@@ -563,7 +586,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
+                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(file.getName(), false));
                     boolean deleted = tmpLocalFile.delete();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
@@ -575,17 +598,17 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private boolean moveLocalFile(final File localFile, final File tmpLocalFile) {
+    private boolean moveLocalFile(final File source, final File target) {
         final boolean[] moved = new boolean[1];
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
-                File oldPath = new File(localFile.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
-                String tmpLocalFileName = tmpLocalFile.getName();
-                String localFileName = localFile.getName();
+                File oldPath = new File(target.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
+                String tmpLocalFileName = source.getName();
+                String localFileName = target.getName();
                 String oldPathName = oldPath.getName();
 
-                if (!localFile.exists()) {
-                    moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
+                if (!target.exists()) {
+                    moved[0] = renameLocalFileTo(source, target);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
                     }
@@ -602,20 +625,20 @@ public class RemoteClient implements Cancellable {
                 }
                 // intentional usage of java.io.File!!
                 //  (if the file is opened in the editor, it's not closed, just refreshed)
-                moved[0] = localFile.renameTo(oldPath);
+                moved[0] = target.renameTo(oldPath);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
                 }
                 if (!moved[0]) {
                     return;
                 }
-                moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
+                moved[0] = renameLocalFileTo(source, target);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
                 }
-                if (!moved[0] && oldPath.exists() && !localFile.exists()) {
+                if (!moved[0] && oldPath.exists() && !target.exists()) {
                     // try to restore the original file
-                    boolean restored = renameLocalFileTo(oldPath, localFile);
+                    boolean restored = renameLocalFileTo(oldPath, target);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPathName, localFileName, restored));
                     }
@@ -655,6 +678,19 @@ public class RemoteClient implements Cancellable {
         }
     }
 
+    private void transferPartiallyFailed(TransferInfo transferInfo, TransferFile file, String reason) {
+        if (!transferInfo.isPartiallyFailed(file)) {
+            transferInfo.addPartiallyFailed(file, reason);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Partially failed: " + file + ", reason: " + reason);
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Partially failed: " + file + ", reason: " + reason + " [ignored, partially failed already]");
+            }
+        }
+    }
+
     private void transferIgnored(TransferInfo transferInfo, TransferFile file, String reason) {
         if (!transferInfo.isIgnored(file)) {
             transferInfo.addIgnored(file, reason);
@@ -668,7 +704,7 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private String getFailureMessage(String fileName, boolean upload) {
+    private String getUploadDownloadFailureMessage(String fileName, boolean upload) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
             message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_CannotUploadFile" : "MSG_CannotDownloadFile", fileName);

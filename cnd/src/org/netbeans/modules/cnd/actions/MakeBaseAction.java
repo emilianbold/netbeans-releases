@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
-import java.io.IOException;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
@@ -69,6 +69,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
+        performAction(node, target, null);
+    }
+
+    protected void performAction(Node node, String target, ExecutionListener listener) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -83,24 +87,23 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
         // Tab Name
         String tabName = getString("MAKE_LABEL", node.getName());
-        if (target != null && target.length() > 0)
+        if (target != null && target.length() > 0) {
             tabName += " " + target; // NOI18N
+        } // NOI18N
 
         String developmentHost = getDevelopmentHost(fileObject);
         // Execute the makefile
-        try {
-            new NativeExecutor(
-                    developmentHost,
-                    buildDir.getPath(),
-                    executable,
-                    arguments,
-                    prepareEnv(developmentHost),
-                    tabName,
-                    "make", // NOI18N
-                    false,
-                    true,
-                    false).execute();
-        } catch (IOException ioe) {
-        }
+        NativeExecutor nativeExecutor = new NativeExecutor(
+                developmentHost,
+                buildDir.getPath(),
+                executable,
+                arguments,
+                prepareEnv(developmentHost),
+                tabName,
+                "make", // NOI18N
+                false,
+                true,
+                false);
+        new ShellExecuter(nativeExecutor, listener).execute();
     }
 }
