@@ -41,15 +41,23 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorListModel;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorSpinnerModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,6 +67,8 @@ public class SVGComboBoxCD extends ComponentDescriptor{
     
     private static final String FCN = "org.netbeans.microedition.svg.SVGComboBox"; //NOI18N
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, FCN); 
+    
+    public static final String PROP_MODEL = "comboboxModel";    // NOI18N
     
     static {
         SVGComponentCD.addPairType( TYPEID, SVGComboBoxEventSourceCD.TYPEID );
@@ -76,11 +86,28 @@ public class SVGComboBoxCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
+                new PropertyDescriptor(PROP_MODEL, 
+                        MidpTypes.TYPEID_JAVA_CODE, 
+                        MidpTypes.createJavaCodeValue(""), true, true, 
+                        MidpVersionable.MIDP_2)
                 );
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
+                         "DISP_ComboBoxModel"), 
+                  PropertyEditorListModel.createInstance(
+                          NbBundle.getMessage( SVGListCD.class, 
+                          "LBL_ComboBoxModel"), NbBundle.getMessage( 
+                                  SVGComboBoxCD.class, "TXT_ComboBoxModel")), PROP_MODEL); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
