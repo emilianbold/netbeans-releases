@@ -243,6 +243,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         }
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        assert nls != null : " The notificationLineSupport was not attached to the panel."; //NOI18N
+    }
+
     void setSelectedScope(String type) {
         comScope.setSelectedItem(type);
     }
