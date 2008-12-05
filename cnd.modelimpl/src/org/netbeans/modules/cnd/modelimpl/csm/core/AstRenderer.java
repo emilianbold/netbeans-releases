@@ -186,6 +186,20 @@ public class AstRenderer {
                         }
                     }
                     break;
+                case CPPTokenTypes.CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
+                    try {
+                        container.addDeclaration(new ConstructorDefinitionImpl(token, file, null));
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
+                    break;
+                case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
+                    try {
+                        container.addDeclaration(new DestructorDefinitionImpl(token, file));
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
+                    break;
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
