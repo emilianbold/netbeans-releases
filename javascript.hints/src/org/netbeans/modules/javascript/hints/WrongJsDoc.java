@@ -38,7 +38,6 @@ import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Hint;
@@ -49,7 +48,7 @@ import org.netbeans.modules.javascript.editing.AstElement;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.FunctionAstElement;
 import org.netbeans.modules.javascript.editing.JsParseResult;
-import org.netbeans.modules.javascript.editing.JsUtils;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
@@ -66,7 +65,7 @@ public class WrongJsDoc extends JsAstRule {
     }
     
     public boolean appliesTo(RuleContext context) {
-        return JsUtils.isJsFile(context.compilationInfo.getFileObject());
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.parserResult.getSnapshot().getSource().getMimeType());
     }
 
     public Set<Integer> getKinds() {
@@ -74,7 +73,7 @@ public class WrongJsDoc extends JsAstRule {
     }
     
     public void run(JsRuleContext context, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         Node node = context.node;
         
         AstElement element = (AstElement)node.element;
@@ -173,7 +172,7 @@ public class WrongJsDoc extends JsAstRule {
             }
 
             List<HintFix> fixList = Collections.<HintFix>singletonList(new MoreInfoFix("wrongjsdoc")); // NOI18N
-            Hint desc = new Hint(this, label, info.getFileObject(), lexRange, fixList, 1450);
+            Hint desc = new Hint(this, label, info.getSnapshot().getSource().getFileObject(), lexRange, fixList, 1450);
             result.add(desc);
         }
     }

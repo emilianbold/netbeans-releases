@@ -69,7 +69,7 @@ public class RuleContext {
     
     /** The CompilationInfo corresponding to this rule context */
     @NonNull
-    public ParserResult compilationInfo;
+    public ParserResult parserResult;
     
     /** The document */
     @NonNull
