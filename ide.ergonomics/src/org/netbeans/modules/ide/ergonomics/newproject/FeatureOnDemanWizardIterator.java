@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -71,7 +70,6 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     public static final String DELEGATE_ITERATOR = "delegate-iterator"; // NOI18N
     
     private WizardDescriptor.InstantiatingIterator delegateIterator;
-    private Boolean doInstall = null;
     private Boolean doEnable = null;
     private FileObject template;
     private LicenseStep licenseStep = null;
@@ -132,46 +130,8 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
             panels.add (new DescriptionStep ());
-            //panels.add (new ToBeContinuedStep ());
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
-//                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "ToBeContinuedStep_Name")
-            
-            };
-            String[] steps = new String [panels.size ()];
-            assert steps.length == names.length : "As same names as steps must be";
-            int i = 0;
-            for (WizardDescriptor.Panel p : panels) {
-                Component c = p.getComponent ();
-                // Default step name to component name of panel. Mainly useful
-                // for getting the name of the target chooser to appear in the
-                // list of steps.
-                steps [i] = c.getName ();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty ("WizardPanel_contentData", steps);
-                }
-                i ++;
-            }
-        }
-    }
-    
-    private void createPanelsForInstall () {
-        if (panels == null) {
-            panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
-            panels.add (new DescriptionStep ());
-            licenseStep = new LicenseStep ();
-            panels.add (licenseStep);
-            panels.add (new InstallStep ());
-            panels.add (new ToBeContinuedStep ());
-            names = new String [] {
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "LicenseStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "InstallStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "ToBeContinuedStep_Name")
             
             };
             String[] steps = new String [panels.size ()];
@@ -200,11 +160,9 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
             panels.add (new DescriptionStep ());
             panels.add (new EnableStep ());
-            panels.add (new ToBeContinuedStep ());
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "EnableStep_Name"),
-                NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "ToBeContinuedStep_Name")
             
             };
             String[] steps = new String [panels.size ()];
@@ -347,17 +305,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
                     o + " is instanceof WizardDescriptor.InstantiatingIterator or null";
                 delegateIterator = (WizardDescriptor.InstantiatingIterator) o;
                 if (delegateIterator == null) {
-                    if (doInstall == null && doEnable == null) {
-                        o = wiz.getProperty (CHOSEN_ELEMENTS_FOR_INSTALL);
-                        assert o == null || o instanceof Collection :
-                            o + " is instanceof Collection<UpdateElement> or null.";
-                        if (o != null && ! ((Collection) o).isEmpty ()) {
-                            doInstall = Boolean.TRUE;
-                            panels = null;
-                            createPanelsForInstall ();
-                        }
-                    }
-                    if (doInstall == null && doEnable == null) {
+                    if (doEnable == null) {
                         o = wiz.getProperty (CHOSEN_ELEMENTS_FOR_ENABLE);
                         if (o != null && ! ((Collection) o).isEmpty ()) {
                             doEnable = Boolean.TRUE;
