@@ -116,12 +116,18 @@ class CodeMarkerBuilder {
         String scopeName = currentScope.getName();
         for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
             Scope scope = entry.getValue();
+            Scope parentScope = scope.getInScope();
+            Scope parentCurrentScope = currentScope.getInScope();
+
             MethodDeclarationInfo nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
-                Identifier functionName = function.getFunctionName();
-                OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                if (parentCurrentScope != null && parentScope != null &&
+                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                    FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
+                    Identifier functionName = function.getFunctionName();
+                    OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
+                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                }
             }
         }
     }
@@ -131,9 +137,15 @@ class CodeMarkerBuilder {
         String scopeName = currentScope.getName();
         for (Entry<ASTNodeInfo<ReturnStatement>, Scope> entry : returnStatements.entrySet()) {
             Scope scope = entry.getValue();
+            Scope parentScope = scope.getInScope();
+            Scope parentCurrentScope = currentScope.getInScope();
+
             ASTNodeInfo<ReturnStatement> nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
+                if (parentCurrentScope != null && parentScope != null &&
+                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
+                }
             }
         }
     }

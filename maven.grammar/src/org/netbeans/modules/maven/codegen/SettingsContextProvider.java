@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.performance.mobility.dialogs;
+package org.netbeans.modules.maven.codegen;
 
-import org.netbeans.jellytools.Bundle;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkleint
  */
-public class SecurityManagerDialogTest  extends MobilityToolsDialogsTest {
+public class SettingsContextProvider implements CodeGeneratorContextProvider {
 
-    /**
-     * Creates a new instance of SecurityManagerDialog
-     * @param testName the name of the test
-     */
-    public SecurityManagerDialogTest(String testName) {
-        super(testName);
-        // "Keystores"
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
-        // "Keystores manager"        
-        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
+    public void runTaskWithinContext(Lookup context, Task task) {
+        JTextComponent component = context.lookup(JTextComponent.class);
+        if (component != null) {
+            DataObject dobj = NbEditorUtilities.getDataObject(component.getDocument());
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                ModelSource ms = Utilities.createModelSource(fo, true);
+                SettingsModel model = SettingsModelFactory.getDefault().getModel(ms);
+                if (model != null) {
+                    Lookup newContext = new ProxyLookup(context, Lookups.fixed(model));
+                    task.run(newContext);
+                    return;
+                }
+            }
+        }
+        task.run(context);
     }
-    /**
-     * Creates a new instance of SecurityManagerDialog
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this nam 
-     */
-    public SecurityManagerDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        // "Keystores"
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
-        // "Keystores manager"        
-        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
-    }
-
 
 }

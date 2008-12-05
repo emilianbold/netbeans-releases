@@ -41,20 +41,16 @@
 
 package org.netbeans.performance.mobility.dialogs;
 
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -65,10 +61,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CloseProjectPropertyTest extends PerformanceTestCase {
 
-    
-      private NbDialogOperator jdo ;
-      private int index;
-        
+    private NbDialogOperator jdo ;
     private static String testProjectName = "MobileApplicationVisualMIDlet";  
     
     /**
@@ -77,8 +70,8 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
      */
     public CloseProjectPropertyTest(String testName) {
         super(testName);
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /**
@@ -88,8 +81,8 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
      */
     public CloseProjectPropertyTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public static NbTestSuite suite() {
@@ -106,11 +99,6 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-                
-       // ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
-        new CloseAllDocumentsAction().performAPI();
-       new EventTool().waitNoEvent(1000);
-
     }
     
     public void prepare(){
@@ -137,7 +125,6 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
- 
        JButtonOperator okButton = new JButtonOperator(jdo,"OK");
        okButton.push();
        return null;
@@ -147,12 +134,4 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
     public void close(){
     }
 
-    @Override
-    protected void shutdown() {
-       //  ProjectSupport.closeProject(testProjectName);
-    }
-    
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new CloseProjectProperty("measureTime"));
-//    }
 }
