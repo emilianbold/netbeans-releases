@@ -101,7 +101,7 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
                         File file = getReferencedFile();
                         if ( file.exists() && file.isFile()) {
                             SceneManager.log(Level.INFO, "Dropping file " + file.getPath()); //NOI18N
-                            insert( dObj.getModel().getSVGBody(file, null), target); 
+                            insertToTextComponent( dObj.getModel().getSVGBody(file, null), target);
                             return true;
                         } else {
                             SceneManager.log(Level.SEVERE, "Nothing to drop, file " + file + " not found"); //NOI18N
@@ -120,7 +120,7 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         //return getCookieSet().getLookup();
     }       
     
-    private static void insert( final String text, final JTextComponent target) {
+    public static void insertToTextComponent( final String text, final JTextComponent target) {
         final Document doc = target.getDocument();
         
         if ( doc instanceof BaseDocument) {
