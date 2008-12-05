@@ -47,10 +47,8 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -61,12 +59,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -83,11 +78,7 @@ import org.openide.util.TaskListener;
 public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private ContentPanel panel;
-    private boolean isValid = false;
     private ProgressHandle handle = null;
-    private JComponent progressComponent;
-    private JLabel mainLabel;
-    private Collection<UpdateElement> forInstall = null;
     private Collection<UpdateElement> forEnable = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private static FindComponentModules finder = null;
@@ -115,9 +106,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
     public boolean isValid () {
         return false;
-//        return isValid &&
-//                ((forInstall != null && ! forInstall.isEmpty ()) ||
-//                (forEnable != null && ! forEnable.isEmpty ()));
     }
 
     public synchronized void addChangeListener (ChangeListener l) {
@@ -163,46 +151,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                             }
                         });
                 findingTask.waitFinished();
-   //             presentFindingModules ();
             }
         }
     };
 
     private void presentModulesForActivation () {
-        forInstall = getFinder ().getModulesForInstall ();
         forEnable = getFinder ().getModulesForEnable ();
-        if (forInstall != null && ! forInstall.isEmpty ()) {
-            presentModulesForInstall ();
-        } else if (forEnable != null && ! forEnable.isEmpty ()) {
+        if (forEnable != null && ! forEnable.isEmpty ()) {
             presentModulesForEnable ();
         } else {
             presentNone ();
         }
-    }
-
-    private void presentModulesForInstall () {
-        if (handle != null) {
-            handle.finish ();
-            panel.replaceComponents ();
-            handle = null;
-        }
-        Collection<UpdateElement> elems = getFinder ().getModulesForInstall ();
-        if (elems != null && !elems.isEmpty ()) {
-            isValid = true;
-            Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
-            String names = ModulesInstaller.presentUpdateElements (visible);
-            panel.replaceComponents(
-                new JLabel(getBundle ("DescriptionStep_BrokenModulesFound", visible.size(), names))
-            );
-            forInstall = elems;
-        } else {
-            panel.replaceComponents (
-                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                new JLabel ()
-            );
-            isValid = false;
-        }
-        fireChange ();
     }
     
     private void presentNone () {
@@ -210,7 +169,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
             new JLabel ()
         );
-        isValid = false;
     }
     
     private void presentModulesForEnable () {
@@ -221,7 +179,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
         Collection<UpdateElement> elems = getFinder ().getModulesForEnable ();
         if (elems != null && !elems.isEmpty ()) {
-            isValid = true;
             Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
             final String names = ModulesInstaller.presentUpdateElements (visible);
             final JPanel[] pan = new JPanel[1];
@@ -251,7 +208,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
                 new JLabel ()
             );
-            isValid = false;
         }
         fireChange ();
     }
@@ -259,17 +215,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private FindComponentModules getFinder () {
         assert finder != null : "Finder needs to be created first!";
         return finder;
-    }
-
-    private void presentFindingModules () {
-        handle = ProgressHandleFactory.createHandle (ContentPanel.FINDING_MODULES);
-        progressComponent = ProgressHandleFactory.createProgressComponent (handle);
-        mainLabel = new JLabel (getBundle ("DescriptionStep_FindingRuns_Wait"));
-        JLabel detailLabel = new JLabel (getBundle ("DescriptionStep_FindingRuns"));
-
-        handle.setInitialDelay (0);
-        handle.start ();
-        panel.replaceComponents (mainLabel, progressComponent, detailLabel);
     }
 
     private static String getBundle (String key, Object... params) {
@@ -280,25 +225,12 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         wd = settings;
         Object o = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
-        FileObject fo = (FileObject) o;
-        info = FoDFileSystem.getInstance ().whichProvides(fo);
+        FileObject fileObject = (FileObject) o;
+        info = FoDFileSystem.getInstance ().whichProvides(fileObject);
         finder = new FindComponentModules(info);
     }
 
     public void storeSettings (WizardDescriptor settings) {
-        if (forInstall != null && ! forInstall.isEmpty ()) {
-            settings.putProperty (FeatureOnDemanWizardIterator.CHOSEN_ELEMENTS_FOR_INSTALL, forInstall);
-            Collection<UpdateElement> notNeedApproveLicense = new HashSet<UpdateElement> ();
-            for (UpdateElement el : forInstall) {
-                if (UpdateUnitProvider.CATEGORY.STANDARD == el.getSourceCategory ()) {
-                    notNeedApproveLicense.add (el);
-                }
-            }
-            if (! notNeedApproveLicense.isEmpty ()) {
-                settings.putProperty (FeatureOnDemanWizardIterator.APPROVED_ELEMENTS, notNeedApproveLicense);
-            }
-            fireChange ();
-        }
         if (forEnable != null && ! forEnable.isEmpty ()) {
             settings.putProperty (FeatureOnDemanWizardIterator.CHOSEN_ELEMENTS_FOR_ENABLE, forEnable);
             fireChange ();
