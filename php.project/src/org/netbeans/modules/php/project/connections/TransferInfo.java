@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +51,8 @@ public final class TransferInfo {
     // file, reason
     private final Map<TransferFile, String> failed = new HashMap<TransferFile, String>();
     // file, reason
+    private final Map<TransferFile, String> partiallyFailed = new HashMap<TransferFile, String>();
+    // file, reason
     private final Map<TransferFile, String> ignored = new HashMap<TransferFile, String>();
     private long runtime;
 
@@ -61,6 +62,10 @@ public final class TransferInfo {
 
     public Map<TransferFile, String> getFailed() {
         return Collections.unmodifiableMap(failed);
+    }
+
+    public Map<TransferFile, String> getPartiallyFailed() {
+        return Collections.unmodifiableMap(partiallyFailed);
     }
 
     public Map<TransferFile, String> getIgnored() {
@@ -79,6 +84,10 @@ public final class TransferInfo {
         return failed.containsKey(transferFile);
     }
 
+    public boolean isPartiallyFailed(TransferFile transferFile) {
+        return partiallyFailed.containsKey(transferFile);
+    }
+
     public boolean isIgnored(TransferFile transferFile) {
         return ignored.containsKey(transferFile);
     }
@@ -91,6 +100,10 @@ public final class TransferInfo {
         return !failed.isEmpty();
     }
 
+    public boolean hasAnyPartiallyFailed() {
+        return !partiallyFailed.isEmpty();
+    }
+
     public boolean hasAnyIgnored() {
         return !ignored.isEmpty();
     }
@@ -101,12 +114,18 @@ public final class TransferInfo {
     }
 
     void addFailed(TransferFile transferFile, String reason) {
-        assert !transfered.contains(transferFile) && !ignored.containsKey(transferFile);
+        assert !transfered.contains(transferFile) && !ignored.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
         failed.put(transferFile, reason);
     }
 
+    void addPartiallyFailed(TransferFile transferFile, String reason) {
+        // can be in transfered
+        assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
+        partiallyFailed.put(transferFile, reason);
+    }
+
     void addIgnored(TransferFile transferFile, String reason) {
-        assert !transfered.contains(transferFile) && !failed.containsKey(transferFile);
+        assert !transfered.contains(transferFile) && !failed.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
         ignored.put(transferFile, reason);
     }
 
@@ -122,6 +141,8 @@ public final class TransferInfo {
         sb.append(transfered);
         sb.append(", failed: "); // NOI18N
         sb.append(failed);
+        sb.append(", partially failed: "); // NOI18N
+        sb.append(partiallyFailed);
         sb.append(", ignored: "); // NOI18N
         sb.append(ignored);
         sb.append(", runtime: "); // NOI18N
