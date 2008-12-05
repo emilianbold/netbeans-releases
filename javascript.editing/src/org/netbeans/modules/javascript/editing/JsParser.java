@@ -463,134 +463,134 @@ public class JsParser extends Parser {
 
         int lineno = 0;
 
-/** todo: merge conflict, commented out
-            try {
-                final List<Error> allErrors = new ArrayList<Error>();
-                // Absorb all errors, don't pass to the main listeners. We'll
-                // adjust the errors later.
-                context.listener = new ParseListener() {
+//todo: merge conflict, commented out
+//            try {
+//                final List<Error> allErrors = new ArrayList<Error>();
+//                // Absorb all errors, don't pass to the main listeners. We'll
+//                // adjust the errors later.
+//                context.listener = new ParseListener() {
+//
+//                    public void started(ParseEvent e) {
+//                    }
+//
+//                    public void finished(ParseEvent e) {
+//                    }
+//
+//                    public void error(Error e) {
+//                        DefaultError error = (DefaultError)e;
+//                        int start = error.getStartPosition();
+//                        int end = error.getEndPosition();
+//                        if (start != -1) {
+//                            // Fix the source offsets: I'm compiling
+//                            // just the "function { }" part so the source offsets
+//                            // are all wrong; add in the location of function
+//                            start += oldFunctionStart;
+//                        }
+//                        if (end != -1) {
+//                            end += oldFunctionStart;
+//                        }
+//                        error.setOffsets(start, end);
+//                        allErrors.add(error);
+//                    }
+//
+//                    public void exception(Exception e) {
+//                    }
+//                };
+//
+//
+//                FunctionNode newFunction = parser.parseFunction(source, context.file.getNameExt(), lineno);
+//                if (newFunction == null) {
+//                    // Perform some basic cleanup of trailing dots, commas, etc.
+//                    if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
+//                        String oldSource = context.source;
+//                        int oldCaretOffset = context.caretOffset;
+//                        context.source = source;
+//                        context.caretOffset -= oldFunctionStart;
+//                        boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
+//                        context.source = oldSource;
+//                        context.caretOffset = oldCaretOffset;
+//
+//                        if (ok) {
+//                            assert context.sanitizedSource != null;
+//                            sanitizedSource = true;
+//                            context.sanitized = Sanitize.EDITED_DOT;
+//                            parser = createParser(context, source, sanitizedSource, sanitizing);
+//                            newFunction = parser.parseFunction(context.sanitizedSource, context.file.getNameExt(), lineno);
+//                        }
+//                    }
+//                }
+//
+//                if (newFunction == null) {
+//                    return null;
+//                }
+//                // TODO:
+//                // (0) Look up the AST node corresponding to the edit region. See if the damage
+//                //    region goes beyond the function limit (uh oh, if you add inside the method body
+//                //    the damage region will be new
+//                // (0) Find out if the change happened inside a function, and if so, which one
+//                // (1) Get the exact source code for the given function.
+//                //    If the edit list is accurate, then the delta should let me access the }
+//                //    -directly- !
+//                // (1) Parse
+//                // (2) Surgery on the AST to insert the node
+//                // (3) Update all the offsets in the AST
+//                // (4) Return a new parser result, or consider updating cached info in the parser result!
+//                // (5) Deal with the AstNodeAdapter somehow? Ah, don't reuse that!
+//                // Update offsets
+//                // set current/modified function context in the result object
+//                // update the error set! (notifyError) Note - update entire function body range, not just
+//                //   the modified range!
+//
+//                // Adjust the offsets in function nodes: They should be relative to
+//                // where the old function started in the document
+//                adjustOffsets(newFunction, 0, oldFunctionStart);
+//
+//                // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
+//                int limit = lexToAst(translatedSource, history.getOriginalEnd());
+//                if (limit == -1) {
+//                    return null;
+//                }
+//                int delta = history.getSizeDelta();
+//
+//                adjustOffsets(root, limit, delta);
+//
+//                setParentRefs(newFunction, oldFunction.getParentNode());
+//                oldFunction.getParentNode().replaceChild(oldFunction, newFunction);
+//
+//                if (oldFunction.labelNode != null) {
+//                    newFunction.labelNode = oldFunction.labelNode;
+//                    oldFunction.labelNode.setLabelledNode(newFunction);
+//                }
+//
+//                context.sanitized = sanitizing;
+//                //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
+//
+//                AstNodeAdapter ast = new AstNodeAdapter(null, root);
+//                JsParseResult r = createParseResult(context.file, root, ast /*, realRoot, result*/);
+//
+//                JsParseResult.IncrementalParse incrementalInfo =
+//                        new JsParseResult.IncrementalParse(oldFunction, newFunction,
+//                            oldFunctionStart, limit, delta, previousResult);
+//                r.setIncrementalParse(incrementalInfo);
+//
+//                if (sanitizedSource) {
+//                    OffsetRange sanitizedRange = new OffsetRange(
+//                            context.sanitizedRange.getStart()+oldFunctionStart,
+//                            context.sanitizedRange.getEnd()+oldFunctionStart);
+//                    r.setSanitized(context.sanitized, sanitizedRange, context.sanitizedContents);
+//                }
+//                r.setSource(source);
+//
+//                // Add in the errors from last time
+//                for (Error e : result.getDiagnostics()) {
 
-                    public void started(ParseEvent e) {
-                    }
-
-                    public void finished(ParseEvent e) {
-                    }
-
-                    public void error(Error e) {
-                        DefaultError error = (DefaultError)e;
-                        int start = error.getStartPosition();
-                        int end = error.getEndPosition();
-                        if (start != -1) {
-                            // Fix the source offsets: I'm compiling
-                            // just the "function { }" part so the source offsets
-                            // are all wrong; add in the location of function
-                            start += oldFunctionStart;
-                        }
-                        if (end != -1) {
-                            end += oldFunctionStart;
-                        }
-                        error.setOffsets(start, end);
-                        allErrors.add(error);
-                    }
-
-                    public void exception(Exception e) {
-                    }
-                };
-
-
-                FunctionNode newFunction = parser.parseFunction(source, context.file.getNameExt(), lineno);
-                if (newFunction == null) {
-                    // Perform some basic cleanup of trailing dots, commas, etc.
-                    if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
-                        String oldSource = context.source;
-                        int oldCaretOffset = context.caretOffset;
-                        context.source = source;
-                        context.caretOffset -= oldFunctionStart;
-                        boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
-                        context.source = oldSource;
-                        context.caretOffset = oldCaretOffset;
-
-                        if (ok) {
-                            assert context.sanitizedSource != null;
-                            sanitizedSource = true;
-                            context.sanitized = Sanitize.EDITED_DOT;
-                            parser = createParser(context, source, sanitizedSource, sanitizing);
-                            newFunction = parser.parseFunction(context.sanitizedSource, context.file.getNameExt(), lineno);
-                        }
-                    }
-                }
-
-                if (newFunction == null) {
-                    return null;
-                }
-                // TODO:
-                // (0) Look up the AST node corresponding to the edit region. See if the damage
-                //    region goes beyond the function limit (uh oh, if you add inside the method body
-                //    the damage region will be new
-                // (0) Find out if the change happened inside a function, and if so, which one
-                // (1) Get the exact source code for the given function.
-                //    If the edit list is accurate, then the delta should let me access the }
-                //    -directly- !
-                // (1) Parse
-                // (2) Surgery on the AST to insert the node
-                // (3) Update all the offsets in the AST
-                // (4) Return a new parser result, or consider updating cached info in the parser result!
-                // (5) Deal with the AstNodeAdapter somehow? Ah, don't reuse that!
-                // Update offsets
-                // set current/modified function context in the result object
-                // update the error set! (notifyError) Note - update entire function body range, not just
-                //   the modified range!
-
-                // Adjust the offsets in function nodes: They should be relative to
-                // where the old function started in the document
-                adjustOffsets(newFunction, 0, oldFunctionStart);
-
-                // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
-                int limit = lexToAst(translatedSource, history.getOriginalEnd());
-                if (limit == -1) {
-                    return null;
-                }
-                int delta = history.getSizeDelta();
-                
-                adjustOffsets(root, limit, delta);
-
-                setParentRefs(newFunction, oldFunction.getParentNode());
-                oldFunction.getParentNode().replaceChild(oldFunction, newFunction);
-
-                if (oldFunction.labelNode != null) {
-                    newFunction.labelNode = oldFunction.labelNode;
-                    oldFunction.labelNode.setLabelledNode(newFunction);
-                }
-
-                context.sanitized = sanitizing;
-                //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
-
-                AstNodeAdapter ast = new AstNodeAdapter(null, root);
-                JsParseResult r = createParseResult(context.file, root, ast /*, realRoot, result*/);
-
-                JsParseResult.IncrementalParse incrementalInfo = 
-                        new JsParseResult.IncrementalParse(oldFunction, newFunction,
-                            oldFunctionStart, limit, delta, previousResult);
-                r.setIncrementalParse(incrementalInfo);
-
-                if (sanitizedSource) {
-                    OffsetRange sanitizedRange = new OffsetRange(
-                            context.sanitizedRange.getStart()+oldFunctionStart,
-                            context.sanitizedRange.getEnd()+oldFunctionStart);
-                    r.setSanitized(context.sanitized, sanitizedRange, context.sanitizedContents);
-                }
-                r.setSource(source);
-
-                // Add in the errors from last time
-                for (Error e : result.getDiagnostics()) {
-*/
         try {
             final List<Error> allErrors = new ArrayList<Error>();
             // Absorb all errors, don't pass to the main listeners. We'll
             // adjust the errors later.
             context.errorHandler = new ParseErrorHandler() {
                 public void error(Error e) {
->>>>>>> other
+//todo: end of merge conflict other
                     DefaultError error = (DefaultError)e;
                     int start = error.getStartPosition();
                     int end = error.getEndPosition();
