@@ -70,6 +70,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.Test;
 import org.netbeans.core.startup.layers.LayerCacheManager;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
@@ -182,8 +183,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Enumeration<String> attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
                 String name = attrs.nextElement();
-                
                 if (fo.getAttribute(name) == null) {
+                    CharSequence warning = Log.enable("", Level.WARNING);
+                    if (
+                        fo.getAttribute("class:" + name) != null &&
+                        fo.getAttribute(name) == null &&
+                        warning.length() == 0
+                    ) {
+                        // ok, factory method returned null
+                        continue;
+                    }
+
                     errors.add ("File: " + fo + " attribute name: " + name);
                 }
             }
