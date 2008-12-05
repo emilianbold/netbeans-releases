@@ -45,18 +45,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
   <!-- Lines marked as erroneous: -->
-  <folder name="Editors">
-    <folder name="AnnotationTypes">
-      <file name="org-mevenide-netbeans-project-error.xml" url="error-annotation.xml"/>
-      <folder name="StatusForAnnotationType">
-          <file name="org-mevenide-netbeans-project-error">
-              <attr name="status" stringvalue="error" />
-              <attr name="browseable" boolvalue="true" />
-              <!--attr name="color" stringvalue="0xFF8080" /-->
-          </file>
-      </folder>
-    </folder>
-  </folder>  
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="Maven.instance">

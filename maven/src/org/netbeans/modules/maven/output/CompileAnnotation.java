@@ -66,19 +66,19 @@ import org.openide.windows.OutputListener;
  * compile error editor annotation
  * @author  Milos Kleint 
  */
-public final class CompileAnnotation extends Annotation implements PropertyChangeListener, OutputListener {
+public final class CompileAnnotation /*extends Annotation */implements /*PropertyChangeListener,*/ OutputListener {
     
-    private static final Set<CompileAnnotation> hyperlinks = new WeakSet<CompileAnnotation>(); // Set<Hyperlink>
-    private boolean dead = false;
+//    private static final Set<CompileAnnotation> hyperlinks = new WeakSet<CompileAnnotation>(); // Set<Hyperlink>
+//    private boolean dead = false;
     
-    public static void detachAllAnnotations() {
-        synchronized (hyperlinks) {
-            Iterator it = hyperlinks.iterator();
-            while (it.hasNext()) {
-                ((CompileAnnotation)it.next()).destroy();
-            }
-        }
-    }
+//    public static void detachAllAnnotations() {
+//        synchronized (hyperlinks) {
+//            Iterator it = hyperlinks.iterator();
+//            while (it.hasNext()) {
+//                ((CompileAnnotation)it.next()).destroy();
+//            }
+//        }
+//    }
     
     File clazzfile; //for tests..
     private int lineNum;
@@ -92,9 +92,9 @@ public final class CompileAnnotation extends Annotation implements PropertyChang
         } catch (NumberFormatException exc) {
             lineNum = -1;
         }
-        synchronized (hyperlinks) {
-            hyperlinks.add(this);
-        }
+//        synchronized (hyperlinks) {
+//            hyperlinks.add(this);
+//        }
         
     }
     
@@ -124,14 +124,14 @@ public final class CompileAnnotation extends Annotation implements PropertyChang
                     try {
                         Line l = ed.getLineSet().getOriginal(lineNum - 1);
                         if (! l.isDeleted()) {
-                            l.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
+                            l.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.
                         ed.open();
                     }
                 }
-                attachAllInFile(ed, this);
+//                attachAllInFile(ed, this);
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -142,85 +142,85 @@ public final class CompileAnnotation extends Annotation implements PropertyChang
         }
     }
     
-    private static void attachAllInFile(EditorCookie cook, CompileAnnotation annot) {
-        Set<CompileAnnotation> newSet = null;
-        synchronized (hyperlinks) {
-            newSet = new HashSet<CompileAnnotation>(hyperlinks);
-        }
-        Iterator it = newSet.iterator();
-        while (it.hasNext()) {
-            CompileAnnotation ann = (CompileAnnotation)it.next();
-            if (ann.getFile().equals(annot.getFile())) {
-                if (ann.getLine() != -1) {
-                    Line l = cook.getLineSet().getOriginal(ann.getLine() - 1);
-                    if (! l.isDeleted()) {
-                        ann.attachAsNeeded(l);
-                    }
-                }
-                
-            }
-        }
-    }
+//    private static void attachAllInFile(EditorCookie cook, CompileAnnotation annot) {
+//        Set<CompileAnnotation> newSet = null;
+//        synchronized (hyperlinks) {
+//            newSet = new HashSet<CompileAnnotation>(hyperlinks);
+//        }
+//        Iterator it = newSet.iterator();
+//        while (it.hasNext()) {
+//            CompileAnnotation ann = (CompileAnnotation)it.next();
+//            if (ann.getFile().equals(annot.getFile())) {
+//                if (ann.getLine() != -1) {
+//                    Line l = cook.getLineSet().getOriginal(ann.getLine() - 1);
+//                    if (! l.isDeleted()) {
+//                        ann.attachAsNeeded(l);
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
     
     /** Called when a line is cleared from the buffer of known lines.
      * @param ev the event describing the line
      */
     public void outputLineCleared(OutputEvent ev) {
-        doDetach();
+//        doDetach();
     }
     
-    void destroy() {
-        doDetach();
-        dead = true;
-    }
-    
-    private synchronized void attachAsNeeded(Line l) {
-        if (getAttachedAnnotatable() == null) {
-            Annotatable ann = l;
-            attach(ann);
-            ann.addPropertyChangeListener(this);
-        }
-    }
-    
-    
-    private synchronized void doDetach() {
-        Annotatable ann = getAttachedAnnotatable();
-        if (ann != null) {
-            ann.removePropertyChangeListener(this);
-            detach();
-        }
-        synchronized (hyperlinks) {
-            hyperlinks.remove(this);
-        }
-    }
-    
-    public void propertyChange(PropertyChangeEvent ev) {
-        if (dead) {
-            return;
-        }
-        String prop = ev.getPropertyName();
-        if (    prop == null 
-             || prop.equals(Annotatable.PROP_TEXT) 
-             || prop.equals(Annotatable.PROP_DELETED)) {
-            doDetach();
-        }
-    }
-    
-    public String getAnnotationType() {
-        return "org-codehaus-mevenide-netbeans-project-error"; // NOI18N
-    }
-    
-    public String getShortDescription() {
-        return text;
-    }
-    
-    public File getFile() {
-        return clazzfile;
-    }
-    
-    public int getLine() {
-        return lineNum;
-    }
+//    void destroy() {
+//        doDetach();
+//        dead = true;
+//    }
+//
+//    private synchronized void attachAsNeeded(Line l) {
+//        if (getAttachedAnnotatable() == null) {
+//            Annotatable ann = l;
+//            attach(ann);
+//            ann.addPropertyChangeListener(this);
+//        }
+//    }
+//
+//
+//    private synchronized void doDetach() {
+//        Annotatable ann = getAttachedAnnotatable();
+//        if (ann != null) {
+//            ann.removePropertyChangeListener(this);
+//            detach();
+//        }
+//        synchronized (hyperlinks) {
+//            hyperlinks.remove(this);
+//        }
+//    }
+//
+//    public void propertyChange(PropertyChangeEvent ev) {
+//        if (dead) {
+//            return;
+//        }
+//        String prop = ev.getPropertyName();
+//        if (    prop == null
+//             || prop.equals(Annotatable.PROP_TEXT)
+//             || prop.equals(Annotatable.PROP_DELETED)) {
+//            doDetach();
+//        }
+//    }
+//
+//    public String getAnnotationType() {
+//        return "org-codehaus-mevenide-netbeans-project-error"; // NOI18N
+//    }
+//
+//    public String getShortDescription() {
+//        return text;
+//    }
+//
+//    public File getFile() {
+//        return clazzfile;
+//    }
+//
+//    public int getLine() {
+//        return lineNum;
+//    }
     
     @Override
     public String toString() {
