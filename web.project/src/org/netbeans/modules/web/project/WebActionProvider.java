@@ -274,6 +274,18 @@ class WebActionProvider implements ActionProvider {
         if (command.equals(COMMAND_RUN_SINGLE)) {
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
+            FileObject[] rootz = project.getTestSourceRoots().getRoots();
+            FileObject file = files[0];
+
+            if(SourceUtils.getMainClasses(files[0]).isEmpty() == true)
+            {
+                String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return null;
+            }
+
             if (files != null) {
                 targetNames = setupRunSingle(p, files);
             } else {
@@ -409,6 +421,18 @@ class WebActionProvider implements ActionProvider {
             setDirectoryDeploymentProperty(p);
                         
             FileObject[] files = findTestSources(context, false);
+            FileObject[] rootz = project.getTestSourceRoots().getRoots();
+            FileObject file = files[0];
+
+            if(SourceUtils.getMainClasses(files[0]).isEmpty() == true)
+            {
+                String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return null;
+            }
+            
             if (files != null) {
                 targetNames = setupDeubgRunSingle(p, files);
             } else {

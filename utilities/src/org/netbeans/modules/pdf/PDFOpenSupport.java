@@ -46,6 +46,11 @@ import java.io.IOException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import static org.openide.util.Utilities.OS_MAC;
@@ -66,6 +71,7 @@ class PDFOpenSupport implements OpenCookie {
     static final String FALLBACK_VIEWER_NAME = "acroread";              //NOI18N
 
     private File f;
+    private DataObject dObj;
     
     /**
      * @exception  java.lang.IllegalArgumentException
@@ -73,11 +79,23 @@ class PDFOpenSupport implements OpenCookie {
      */
     public PDFOpenSupport(File f) {
         this.f = f;
+        try {
+            this.dObj = DataObject.find(FileUtil.toFileObject(f));
+        } catch (DataObjectNotFoundException ex) {
+        }
+    }
+
+    public PDFOpenSupport(DataObject dObj) {
+        this.dObj = dObj;
+        this.f = FileUtil.toFile(dObj.getPrimaryFile());
     }
 
     public void open() {
+        if(dObj != null){
+            f = FileUtil.toFile(dObj.getPrimaryFile());
+        }
         final String filePath = f.getAbsolutePath();
-
+ 
         if (Utilities.isWindows()) {
             /*
              * To run the PDF viewer, we need to execute:

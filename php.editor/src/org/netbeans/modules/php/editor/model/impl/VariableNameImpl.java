@@ -45,6 +45,7 @@ import java.util.Map;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -127,8 +128,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     @Override
     public String getNormalizedName() {
-        String in = getIn();
-        return (in != null && !isGloballyVisible()) ? in+getName() : getName();
+        ScopeImpl inScope = getInScope();
+        if (inScope instanceof MethodScope && representsThis()) {
+            inScope = inScope.getInScope();
+        }
+        return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
 
     public List<? extends TypeScope> getTypes(int offset) {
@@ -146,5 +150,13 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
      */
     void setGloballyVisible(boolean globallyVisible) {
         this.globallyVisible = globallyVisible;
+    }
+
+    public boolean representsThis() {
+        ScopeImpl inScope = getInScope();
+        if (inScope instanceof MethodScope && getName().equals("$this")) {//NOI18N
+            return true;
+        }
+        return false;
     }
 }

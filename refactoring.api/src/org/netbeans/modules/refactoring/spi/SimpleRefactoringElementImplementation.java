@@ -43,6 +43,7 @@ package org.netbeans.modules.refactoring.spi;
 
 import java.awt.Container;
 import javax.swing.JEditorPane;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.impl.PreviewManager;
 import org.openide.DialogDisplayer;
@@ -99,6 +100,7 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         JEditorPane[] panes=editSupp.getOpenedPanes();
         
         if (panes!=null) {
+            JumpList.checkAddEntry();
             panes[0].setCaretPosition(bounds.getEnd().getOffset());
             panes[0].moveCaretPosition(beginPos.getOffset());
             getTopComponent(panes[0]).requestActive();

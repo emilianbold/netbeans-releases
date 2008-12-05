@@ -41,7 +41,10 @@ package org.netbeans.modules.mobility.svgcore.items;
 
 import org.netbeans.modules.mobility.svgcore.items.form.*;
 import java.io.IOException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  * @author akorostelev
@@ -57,10 +60,10 @@ public abstract class SVGBasicShape extends SVGComponentDrop{
         mySnippetPath = snippetPath;
     }
 
-    protected boolean doTransfer() {
+    protected boolean doTransfer(SVGDataObject svgDataObject) {
         try {
             String snippet = getSnippet();
-            String id = getSVGDataObject().getModel().mergeImage(snippet, false);
+            String id = svgDataObject.getModel().mergeImage(snippet, false);
             setSelection(id);
             return true;
         } catch (Exception ex) {
@@ -69,6 +72,18 @@ public abstract class SVGBasicShape extends SVGComponentDrop{
         return false;
     }
     
+    @Override
+    protected boolean doTransfer(JTextComponent target) {
+        try {
+            String snippet = getSnippet();
+            insertToTextComponent(snippet, target);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+
     protected String getSnippet() throws IOException{
         String text = getSnippetString();
         return replaceCoordinates(text);
