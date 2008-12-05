@@ -156,6 +156,7 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
         try {
             super.visit(node);
         } finally {
