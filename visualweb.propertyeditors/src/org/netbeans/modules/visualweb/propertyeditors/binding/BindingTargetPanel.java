@@ -87,6 +87,7 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.nodes.UIDataVarNod
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
 import com.sun.data.provider.DataProvider;
 import javax.sql.RowSet;
+import org.openide.awt.Mnemonics;
 
 public class BindingTargetPanel extends JPanel {
     JLabel targetLabel = new JLabel();
@@ -114,7 +115,6 @@ public class BindingTargetPanel extends JPanel {
         tree.getAccessibleContext().setAccessibleName(bundle.getMessage("TARGET_BINDING_TREE_ACCESS_NAME"));
         tree.getAccessibleContext().setAccessibleDescription(bundle.getMessage("TARGET_BINDING_TREE_ACCESS_DESC"));
         targetLabel.setLabelFor(tree);
-        targetLabel.setDisplayedMnemonic(bundle.getMessage("TARGET_LABEL_DISPLAYED_MNEMONIC").charAt(0));
     }
 
     protected BindingTargetCallback bindingCallback;
@@ -448,8 +448,7 @@ public class BindingTargetPanel extends JPanel {
 
     void jbInit() throws Exception {
 
-        targetLabel.setText(bundle.getMessage("selectTarget")); //NOI18N
-        targetLabel.setDisplayedMnemonic(bundle.getMessage("selectTargeDisplayedMnemonic").charAt(0)); //NOI18N
+        Mnemonics.setLocalizedText(targetLabel, bundle.getMessage("selectTarget"));
         tree.setModel(treeModel);
         tree.setEditable(false);
         tree.setShowsRootHandles(true);
