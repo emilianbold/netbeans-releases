@@ -44,14 +44,17 @@ package org.netbeans.modules.terminal.api;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -65,11 +68,14 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.StreamTerm;
-import org.netbeans.lib.termsupport.TermExecutor;
 import org.netbeans.lib.richexecution.Program;
 import org.netbeans.lib.termsupport.DefaultFindState;
 import org.netbeans.lib.termsupport.FindState;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.termsupport.TermExecutor;
+import org.netbeans.lib.termsupport.TermOptions;
+import org.netbeans.modules.terminal.TermAdvancedOption;
+import org.openide.util.NbPreferences;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for
@@ -109,6 +115,10 @@ public class Terminal extends JComponent {
     private final StreamTerm term;
     private final FindState findState;
 
+    private static final Preferences prefs =
+        NbPreferences.forModule(TermAdvancedOption.class);
+    private final TermOptions termOptions;
+    private final TermOptionsPCL termOptionsPCL = new TermOptionsPCL();
 
     private static final String PROP_ACTIONS = "Terminal_ACTIONS";
     private static final String PROP_TITLE = "Terminal_TITLE";
@@ -122,7 +132,16 @@ public class Terminal extends JComponent {
     private boolean closing;
     private boolean closed;
 
+    private class TermOptionsPCL implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            applyTermOptions(false);
+        }
+    }
+
+
     Terminal(TerminalContainer termTopComponent, String name) {
+        termOptions = TermOptions.getDefault(prefs);
+
         this.terminalContainer = termTopComponent;
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
@@ -135,6 +154,9 @@ public class Terminal extends JComponent {
         term.setEmulation("ansi");
         term .setBackground(Color.white);
         term.setHistorySize(4000);
+
+        termOptions.addPropertyChangeListener(termOptionsPCL);
+        applyTermOptions(true);
 
         term.getScreen().addMouseListener(new MouseAdapter() {
             @Override
@@ -175,6 +197,39 @@ public class Terminal extends JComponent {
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    private void applyTermOptions(boolean initial) {
+        Font font = term.getFont();
+        if (font != null) {
+            Font newFont = new Font(font.getName(),
+                                    font.getStyle(),
+                                    termOptions.getFontSize());
+            term.setFont(newFont);
+        } else {
+            Font newFont = new Font("monospaced",
+                                    java.awt.Font.PLAIN,
+                                    termOptions.getFontSize());
+            term.setFont(newFont);
+        }
+
+        term.setBackground(termOptions.getBackground());
+        term.setForeground(termOptions.getForeground());
+        term.setHighlightColor(termOptions.getSelectionBackground());
+        term.setHistorySize(termOptions.getHistorySize());
+        term.setTabSize(termOptions.getTabSize());
+
+        term.setClickToType(termOptions.getClickToType());
+        term.setScrollOnInput(termOptions.getScrollOnInput());
+        term.setScrollOnOutput(termOptions.getScrollOnOutput());
+        if (initial)
+            term.setHorizontallyScrollable(!termOptions.getLineWrap());
+
+        // If we change the font from smaller to bigger, the size
+        // calculations go awry and the last few lines are forever hidden.
+        setSize(getPreferredSize());
+        validate();
+
     }
 
     /**
@@ -355,7 +410,7 @@ public class Terminal extends JComponent {
 
     private final class WrapAction extends AbstractAction {
         public WrapAction() {
-            super("Wrap text");
+            super("Wrap lines");
             // LATER KeyStroke accelerator = Utilities.stringToKey("A-R");
             putValue(BOOLEAN_STATE_ACTION_KEY, true);
         }
@@ -450,6 +505,7 @@ public class Terminal extends JComponent {
         if (closed)
             return;
         terminalContainer.reaped(this);
+        termOptions.removePropertyChangeListener(termOptionsPCL);
         closed = true;
     }
 

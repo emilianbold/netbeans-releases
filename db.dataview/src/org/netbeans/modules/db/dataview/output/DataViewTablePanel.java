@@ -60,7 +60,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 
 /**
  * Renders rows and columns of a given ResultSet via JTable.
@@ -271,10 +270,10 @@ class DataViewTablePanel extends JPanel {
                 dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
+                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                java.util.logging.Logger.getLogger(DataViewTablePanel.class.getName()).log(Level.SEVERE, ""+ex);
             }
             tableUI.revalidate();
             tableUI.repaint();

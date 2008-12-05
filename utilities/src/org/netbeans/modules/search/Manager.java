@@ -593,7 +593,7 @@ final class Manager {
                 if ((pendingTasks & SEARCHING) != 0) {
                     notifySearchPending(CLEANING_RESULT);       //invariant #1
                 }
-                startCleaning();
+//                startCleaning();
             } else if ((pendingTasks & SEARCHING) != 0) {
                 startSearching();
             } else if ((pendingTasks & REPLACING) != 0) {
@@ -615,7 +615,7 @@ final class Manager {
             ResultModel resultModel = pendingSearchTask.getResultModel();
 //            callOnWindowFromAWT("setResultModel",                       //NOI18N
 //                                resultModel);
-            resultModelToClean = resultModel;
+//            resultModelToClean = resultModel;
 
             if (outputWriterRef != null) {
                 SearchDisplayer.clearOldOutput(outputWriterRef);
@@ -688,10 +688,9 @@ final class Manager {
     
     /**
      */
-    private void startCleaning() {
+    void startCleaning(ResultModel resultModel) {
         synchronized (lock) {
-            Runnable cleaner = new CleanTask(resultModelToClean);
-            resultModelToClean = null;
+            Runnable cleaner = new CleanTask(resultModel);
             
             RequestProcessor.Task task;
             task = RequestProcessor.getDefault().create(cleaner);

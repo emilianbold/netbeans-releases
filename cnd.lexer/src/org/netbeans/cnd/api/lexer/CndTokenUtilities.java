@@ -375,17 +375,17 @@ public class CndTokenUtilities {
 
     private static final class TokenItemImpl<T extends CppTokenId> extends TokenItem.AbstractItem<T> {
 
-        public TokenItemImpl(T tokenID, PartType pt, int index, int offset, CharSequence text) {
-            super(tokenID, pt, index, offset, text);
+        public TokenItemImpl(T tokenID, PartType pt, int offset, CharSequence text) {
+            super(tokenID, pt, offset, text);
         }
 
         private static <T extends CppTokenId> TokenItem<T> create(TokenSequence<T> ts) {
             Token<T> token = ts.token();
-            return new TokenItemImpl<T>(token.id(), token.partType(), ts.index(), ts.offset(), token.text());
+            return new TokenItemImpl<T>(token.id(), token.partType(), ts.offset(), token.text());
         }
 
         private static <T extends CppTokenId> TokenItem<T> create(Token<T> token, int offset) {
-            return new TokenItemImpl<T>(token.id(), token.partType(), -1, offset, token.text());
+            return new TokenItemImpl<T>(token.id(), token.partType(), offset, token.text());
         }
     }
     private static final Set<String> skipWSCategories = new HashSet<String>(1);

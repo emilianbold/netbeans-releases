@@ -41,10 +41,12 @@
 
 package org.netbeans.performance.mobility;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.mobility.dialogs.*;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.dialogs.*;
+
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -62,8 +64,7 @@ public class MeasureMobilityDialogsTest  {
 
         // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(NewConfigurationDialogTest.class)
-                // needs to be fixed .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
-                .addTest(SecurityManagerDialogTest.class)
+                .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
                 .addTest(QuickRunDialogTest.class)
                 .addTest(ProjectPropertiesDialogTest.class)
                 .addTest(CloseProjectPropertyTest.class)

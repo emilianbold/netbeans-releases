@@ -328,6 +328,8 @@ final class ResultView extends TopComponent {
         ReplaceTask rTask = searchToReplaceMap.remove(sTask);
         replaceToSearchMap.remove(rTask);
 
+        Manager.getInstance().startCleaning(sTask.getResultModel());
+
         validate();
     }
 
