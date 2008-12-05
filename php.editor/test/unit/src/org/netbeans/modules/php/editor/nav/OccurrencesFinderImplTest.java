@@ -78,6 +78,17 @@ public class OccurrencesFinderImplTest extends TestBase {
                                true);
     }*/
 
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {",
+                "function test($^hello^) {",
+                "* @param Book $hello",
+                "* @param Book $^he|llo^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
     public void testClsVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",

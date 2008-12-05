@@ -553,10 +553,10 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTags(String queryName, FileScope fileScope) {
+    private void buildDocTagsForClasses(String queryName, FileScope fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
-            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+            if (Kind.CLASS.equals(nodeInfo.getKind()) && queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = null;
                 elems = CachedModelSupport.getClasses(nodeInfo.getName(), fileScope);
                 if (elems != null && !elems.isEmpty()) {
@@ -566,7 +566,7 @@ class OccurenceBuilder {
             }
         }
     }
-
+    
     private void buildClassInstanceCreation(String queryName, FileScope fileScope) {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
@@ -669,6 +669,26 @@ class OccurenceBuilder {
         }
     }
 
+    private void buildDocTagsForVars(String queryName, FileScope fileScope) {
+        for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
+            PhpDocTypeTagInfo nodeInfo = entry.getKey();
+            String name = nodeInfo.getName();
+            Scope scope = entry.getValue();
+            if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope && queryName.equalsIgnoreCase(name)) {
+                VariableScope varScope = (VariableScope) entry.getValue();
+                List<? extends ModelElement> elems = varScope.getVariables(name);
+                if (elems.isEmpty()) {
+                    elems = fileScope.getVariables(name);
+                }
+
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
     private void buildVariables(String queryName, FileScope fileScope) {
         for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
             ASTNodeInfo<Variable> nodeInfo = entry.getKey();
@@ -702,6 +722,7 @@ class OccurenceBuilder {
 
                 case VARIABLE:
                     buildVariables(name, fileScope);
+                    buildDocTagsForVars(name, fileScope);
                     break;
 
                 case STATIC_METHOD:
@@ -733,7 +754,7 @@ class OccurenceBuilder {
                     buildClassNames(name, fileScope);
                     buildClassIDs(name, fileScope);
                     buildClassDeclarations(name, fileScope);
-                    buildDocTags(name, fileScope);
+                    buildDocTagsForClasses(name, fileScope);
                     buildClassInstanceCreation(name, fileScope);
                     buildInterfaceIDs(name, fileScope);
                     buildInterfaceDeclarations(name, fileScope);
