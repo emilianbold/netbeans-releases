@@ -156,11 +156,21 @@ made subject to such option by the copyright holder.
 
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
-    	<format property="buildnumber" pattern="yyMMdd"/>
+    	<format property="buildstamp" pattern="yyMMdd"/>
     </tstamp>
     <tstamp>
     	<format property="buildday" pattern="d MMM yyyy" locale="en" />
     </tstamp>
+
+    <property environment="hudson"/>
+    <condition property="buildnumber" value="${hudson.JOB_NAME}-#${hudson.BUILD_NUMBER}-on-${buildstamp}">
+      <and>
+        <isset property="hudson.JOB_NAME"/>
+        <isset property="hudson.BUILD_NUMBER"/>
+      </and>
+    </condition>
+    <property name="buildnumber" value="${buildstamp}"/>
+    <echo message="${buildnumber}"/>
   </target>
 
   <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
