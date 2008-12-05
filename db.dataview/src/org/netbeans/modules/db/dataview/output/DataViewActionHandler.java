@@ -151,9 +151,7 @@ class DataViewActionHandler {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
             if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)){
                 execHelper.executeDeleteRow(rsTable);
-             }else{                
-                dataViewUI.enableDeleteBtn(false);
-            }
+             }
         }
     }
 

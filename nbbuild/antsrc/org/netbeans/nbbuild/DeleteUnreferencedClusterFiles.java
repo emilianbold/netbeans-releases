@@ -125,7 +125,7 @@ public class DeleteUnreferencedClusterFiles extends Task {
         pseudoTests.put("testMissingFiles", missingFiles.length() > 0 ? "Some files were missing" + missingFiles : null);
         pseudoTests.put("testExtraFiles", extraFiles.length() > 0 ? "Some extra files were present" + extraFiles : null);
         pseudoTests.put("testDuplicatedFiles", duplicatedFiles.length() > 0 ? "Some files were registered in two or more NBMs" + duplicatedFiles : null);
-        JUnitReportWriter.writeReport(this, report, pseudoTests);
+        JUnitReportWriter.writeReport(this, null, report, pseudoTests);
     }
 
     private void scanForExtraFiles(File d, String prefix, Set<String> files, String cluster, StringBuilder extraFiles) {

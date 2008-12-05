@@ -137,7 +137,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                             }
                         } else {
                             if(!createJmaki)
-                                result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile.getInputStream(), overwrite).generate(pHandle));
+                                result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile, overwrite).generate(pHandle));
                         }
                     } catch(Exception iox) {
                         Exceptions.printStackTrace(iox);

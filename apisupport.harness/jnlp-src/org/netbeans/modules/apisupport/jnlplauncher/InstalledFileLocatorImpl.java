@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.Iterator;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Special locator for JNLP mode.
@@ -54,6 +55,7 @@ import org.openide.util.NbBundle;
  * entry inserted by common.xml -> <makenjnlp>.
  * @author Jesse Glick
  */
+@ServiceProvider(service=InstalledFileLocator.class, supersedes="org.netbeans.core.startup.InstalledFileLocatorImpl")
 public class InstalledFileLocatorImpl extends InstalledFileLocator {
 
     public InstalledFileLocatorImpl() {}

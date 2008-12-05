@@ -63,14 +63,16 @@ public class SvnModuleConfig {
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
+    private static final String FILE_SELECTOR_PREFIX        = "fileSelector";                               // NOI18N
     
-    public static final String KEY_RECENT_URL = "repository.recentURL";                                        // NOI18N
+    public static final String KEY_RECENT_URL = "repository.recentURL";                                     // NOI18N
     private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
 
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
     private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
     
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
+
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -151,7 +153,15 @@ public class SvnModuleConfig {
     public void setSavePassword(boolean bl) {
         getPreferences().putBoolean(SAVE_PASSWORD, bl);
     }
-    
+
+    public String getFileSelectorPreset(String hash) {
+        return getPreferences().get(FILE_SELECTOR_PREFIX + "-" + hash, "");
+    }
+
+    public void setFileSelectorPreset(String hash, String path) {
+        getPreferences().put(FILE_SELECTOR_PREFIX + "-" + hash, path);
+    }
+
     public RepositoryConnection getRepositoryConnection(String url) {
         if(url.endsWith("/")) url = url.substring(0, url.length() - 1);
         List<RepositoryConnection> rcs = getRecentUrls();

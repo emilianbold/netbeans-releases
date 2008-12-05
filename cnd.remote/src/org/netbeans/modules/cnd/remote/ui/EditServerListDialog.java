@@ -217,7 +217,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
      */
     private void showAddServerDialog() {
         assert desc != null : "Internal Error: Set DialogDescriptor before calling AddServer";
-        final int idx = lstDevHosts.getSelectedIndex();
         AddServerDialog dlg = new AddServerDialog();
         if (dlg.createNewRecord()) {
             String server = dlg.getServerName();

@@ -40,8 +40,10 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -69,6 +72,18 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringUtils {
+
+    public static CsmObject convertToCsmObjectIfNeeded(CsmObject referencedObject) {
+        if (CsmKindUtilities.isInclude(referencedObject)) {
+            referencedObject = ((CsmInclude) referencedObject).getIncludeFile();
+        } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
+            CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
+            if (decl != null) {
+                referencedObject = decl;
+            }
+        }
+        return referencedObject;
+    }
 
     private CsmRefactoringUtils() {}
     
@@ -159,15 +174,21 @@ public class CsmRefactoringUtils {
         return container == null ? null : CsmUtilities.getFileObject(container);
     }
     
-    public static CsmReference findReference(Lookup lookup) {
-        CsmReference ref = lookup.lookup(CsmReference.class);
-        if (ref == null) {
-            Node node = lookup.lookup(Node.class);
-            if (node != null) {
-                ref = CsmReferenceResolver.getDefault().findReference(node);
+    public static CsmObject findContextObject(Lookup lookup) {
+        CsmObject out = lookup.lookup(CsmObject.class);
+        if (out == null) {
+            CsmUID uid = lookup.lookup(CsmUID.class);
+            if (uid != null) {
+                out = (CsmObject) uid.getObject();
+            }
+            if (out == null) {
+                Node node = lookup.lookup(Node.class);
+                if (node != null) {
+                    out = CsmReferenceResolver.getDefault().findReference(node);
+                }
             }
         }
-        return ref;
+        return out;
     }
     
     @SuppressWarnings("unchecked")
@@ -202,7 +223,7 @@ public class CsmRefactoringUtils {
         return handler == null ? null : handler.getObject();
     }
     
-    public static boolean isSupportedReference(CsmReference ref) {
+    public static boolean isSupportedReference(CsmObject ref) {
         return ref != null;
     }    
     

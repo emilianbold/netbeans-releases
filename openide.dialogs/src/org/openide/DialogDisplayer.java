@@ -522,6 +522,7 @@ public abstract class DialogDisplayer {
                     dialog.notificationLine.setToolTipText (msg);
                 } else {
                     prepareMessage(dialog.notificationLine, null, null);
+                    dialog.notificationLine.setToolTipText (null);
                 }
                 dialog.notificationLine.setText(msg);
             }

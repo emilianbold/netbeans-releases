@@ -30,7 +30,7 @@ public class ResourceTypeImpl extends NamedImpl implements ResourceType {
     }
 
     public void addParam(Param param) {
-        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_RESOURCE.types());
+        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_PARAM.types());
     }
 
     public void removeParam(Param param) {
@@ -42,23 +42,11 @@ public class ResourceTypeImpl extends NamedImpl implements ResourceType {
     }
 
     public void addMethod(Method method) {
-        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_RESOURCE.types());
+        addAfter(METHOD_PROPERTY, method, TypeCollection.FOR_METHOD.types());
     }
 
     public void removeMethod(Method method) {
         removeChild(METHOD_PROPERTY, method);
-    }
-    
-    public Collection<ResourceType> getResource() {
-        return getChildren(ResourceType.class);
-    }
-
-    public void addResource(ResourceType resource) {
-        addAfter(RESOURCE_PROPERTY, resource, TypeCollection.FOR_RESOURCE.types());
-    }
-
-    public void removeResource(ResourceType resource) {
-        removeChild(RESOURCE_PROPERTY, resource);
     }
 
     public String getId() {
@@ -67,30 +55,6 @@ public class ResourceTypeImpl extends NamedImpl implements ResourceType {
 
     public void setId(String base) {
         setAttribute(ID_PROPERTY, WadlAttribute.ID, base);
-    }
-
-    public String getType() {
-        return getAttribute(WadlAttribute.TYPE);
-    }
-
-    public void setType(String base) {
-        setAttribute(TYPE_PROPERTY, WadlAttribute.TYPE, base);
-    }
-
-    public String getQueryType() {
-        return getAttribute(WadlAttribute.QUERY_TYPE);
-    }
-
-    public void setQueryType(String base) {
-        setAttribute(QUERY_TYPE_PROPERTY, WadlAttribute.QUERY_TYPE, base);
-    }
-
-    public String getPath() {
-        return getAttribute(WadlAttribute.PATH);
-    }
-
-    public void setPath(String base) {
-        setAttribute(PATH_PROPERTY, WadlAttribute.PATH, base);
     }
 
     public void accept(WadlVisitor visitor) {

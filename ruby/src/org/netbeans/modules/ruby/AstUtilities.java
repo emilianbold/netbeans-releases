@@ -1990,7 +1990,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
-        if (!RubyCodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
+        if (!RubyMethodCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
                 methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder, NameKind.PREFIX)) {
 
             return guessedName;

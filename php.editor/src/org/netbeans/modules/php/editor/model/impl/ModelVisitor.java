@@ -104,9 +104,10 @@ public final class ModelVisitor extends DefaultVisitor {
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
     private ModelBuilder modelBuilder;
+    private CompilationInfo info;
 
     public ModelVisitor(CompilationInfo info) {
-        this(info, -1);
+        this(info, -1);        
     }
 
     public ModelVisitor(CompilationInfo info, int offset) {
@@ -114,6 +115,11 @@ public final class ModelVisitor extends DefaultVisitor {
         occurencesBuilder = new OccurenceBuilder(offset);
         markerBuilder = new CodeMarkerBuilder(offset);
         this.modelBuilder = new ModelBuilder(this.fileScope, occurencesBuilder.getOffset());
+        this.info = info;
+    }
+
+    public CompilationInfo getCompilationInfo() {
+        return this.info;
     }
 
     @Override
@@ -150,6 +156,7 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
         try {
             super.visit(node);
         } finally {
@@ -244,17 +251,21 @@ public final class ModelVisitor extends DefaultVisitor {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        occurencesBuilder.prepare(Kind.IFACE, node.getClassName(), scope);
     }
 
     @Override
     public void visit(ClassConstantDeclaration node) {
         //ScopeImpl scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
-        assert scope != null && scope instanceof ClassScopeImpl;
-        ClassScopeImpl classScope = (ClassScopeImpl) scope;
+        //TODO: constants can be also in ifaces
+        assert scope != null && scope instanceof TypeScopeImpl;
         List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
+        TypeScopeImpl typeScope = (TypeScopeImpl) scope;
+        //InterfaceScopeImpl interfaceScopeImpl = (InterfaceScopeImpl) scope;
+
         for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-            ClassConstantElement element = classScope.createElement(nodeInfo);
+            ClassConstantElement element = typeScope.createElement(nodeInfo);
             occurencesBuilder.prepare(nodeInfo, element);
         }
         super.visit(node);
@@ -618,24 +629,32 @@ public final class ModelVisitor extends DefaultVisitor {
         return atOffset;
     }
 
-    private VariableScope findNearestVarScope(FileScope scope, int offset, VariableScope atOffset) {
+    private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
         buildOccurences();
-        List<Occurence<? extends ModelElement>> occurences = scope.getOccurences();
-        for (Occurence<? extends ModelElement> occ : occurences) {
-            ModelElement modelElement = occ.getDeclaration();
-            if (modelElement.getNameRange().getStart() <= offset) {
-                if (atOffset == null || atOffset.getOffset() < modelElement.getOffset()) {
-                    if (modelElement instanceof VariableScope) {
-                        FileObject fileObject = modelElement.getFileObject();
-                        if (fileObject == scope.getFileObject()) {
-                            atOffset = (VariableScope) modelElement;
+        List<? extends ModelElementImpl> elements = ((ScopeImpl)scope).getElements();
+        for (ModelElementImpl varScope : elements) {
+            if (varScope instanceof ClassScope) {
+                atOffset = findNearestVarScope((ClassScope)varScope, offset, atOffset);
+            }
+            if (varScope instanceof VariableScope) {
+                if (varScope.getNameRange().getStart() <= offset) {
+                    if (atOffset == null || atOffset.getOffset() < varScope.getOffset()) {
+                        if (varScope instanceof VariableScope) {
+                            FileObject fileObject = varScope.getFileObject();
+                            if (fileObject == scope.getFileObject()) {
+                                atOffset = (VariableScope) varScope;
+                            }
                         }
                     }
                 }
             }
+
         }
         if (atOffset == null) {
-            atOffset = scope;
+            while (scope != null && !(scope instanceof VariableScope)) {
+                scope = scope.getInScope();
+            }
+            atOffset = (VariableScope) scope;
         }
         return atOffset;
     }

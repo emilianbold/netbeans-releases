@@ -1,4 +1,5 @@
 [usersubs]
+nbpython-commits@netbeans.org=o.jython/*,o.antlr3/*,python.console/*,python.core/*,python.debugger/*,python.editor/*,python.help/*,python.platform/*,python.project/*,python.options/*,python.tests/*
 cvs@ant.netbeans.org=o.apache.tools.ant.module*/*,ant.*/*,project.ant/*
 cvs@apisupport.netbeans.org=apisupport.*/*,timers/*
 cvs@autoupdate.netbeans.org=autoupdate.*/*

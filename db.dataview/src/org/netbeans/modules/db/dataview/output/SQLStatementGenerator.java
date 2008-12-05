@@ -208,11 +208,11 @@ class SQLStatementGenerator {
         if (pk != null) {
             count = 0;
             sql.append(", PRIMARY KEY (");
-            for (String col : pk.getColumnNames()) {
-                sql.append(table.getQuoter().quoteIfNeeded(col));
+            for (String col : pk.getColumnNames()) {                
                 if (count++ > 0) {
                     sql.append(", ");
                 }
+                sql.append(table.getQuoter().quoteIfNeeded(col));
             }
             sql.append(")");
         }

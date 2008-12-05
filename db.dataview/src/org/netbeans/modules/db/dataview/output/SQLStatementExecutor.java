@@ -88,6 +88,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             try {
                 handle.switchToIndeterminate();
                 dataView.setInfoStatusText(""); // NOI18N
+                errorMsg = "";  // NOI18N
                 dataView.disableButtons();
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
@@ -148,10 +149,10 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         } else {
             rollback(conn);
             reinstateToolbar();
-            errorMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
+            errorMsg = cmdName +" "+ NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
             
-            NotifyDescriptor nd = new NotifyDescriptor.Exception(new DBException(errorMsg, ex));
+            NotifyDescriptor nd = new NotifyDescriptor.Message(new DBException(errorMsg, ex).getMessage(), NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
     }

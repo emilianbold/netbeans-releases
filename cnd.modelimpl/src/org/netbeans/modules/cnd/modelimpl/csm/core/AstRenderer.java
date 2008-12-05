@@ -175,6 +175,9 @@ public class AstRenderer {
                                 // this is a template method specialization declaration (without a definition)
                                 container.addDeclaration(new FunctionImplEx(token, file, null));
                             } else {
+                                if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
+                                    break;
+                                }
                                 FunctionImpl funct = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext());
                                 container.addDeclaration(funct);
                                 if (NamespaceImpl.isNamespaceScope(funct)) {
@@ -881,6 +884,8 @@ public class AstRenderer {
         while (child != null) {
             switch (child.getType()) {
                 case CPPTokenTypes.LITERAL_template:
+                    child = skipTemplateSibling(child);
+                    continue;
                 case CPPTokenTypes.LITERAL_inline:
                 case CPPTokenTypes.LITERAL__inline:
                 case CPPTokenTypes.LITERAL___inline:
@@ -893,9 +898,6 @@ public class AstRenderer {
         if (child == null) {
             return false;
         }
-        if (child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = child.getNextSibling();
-        }
         child = getFirstSiblingSkipQualifiers(child);
         if (child == null) {
             return false;
@@ -905,6 +907,9 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_TYPE_COMPOUND:
             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                 child = getFirstSiblingSkipQualifiers(child.getNextSibling());
+                while (child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
+                    child = child.getNextSibling();
+                }
                 if (child != null) {
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
                             child.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
@@ -916,6 +921,9 @@ public class AstRenderer {
                             FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace, !isRenderingLocalContext());
                             if (container != null) {
                                 container.addDeclaration(ftdecl);
+                            }
+                            if (NamespaceImpl.isNamespaceScope(ftdecl)) {
+                                currentNamespace.addDeclaration(ftdecl);
                             }
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
@@ -1144,7 +1152,7 @@ public class AstRenderer {
         AST typeAST = ast.getFirstChild();
         AST tokType = typeAST;
         if (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
-            typeAST = tokType = tokType.getNextSibling();
+            typeAST = tokType = skipTemplateSibling(tokType);
         }
         tokType = getFirstSiblingSkipQualifiers(tokType);
         if (tokType == null) {
@@ -1602,6 +1610,35 @@ public class AstRenderer {
     public static boolean isStatement(int tokenType) {
         return CPPTokenTypes.CSM_STATEMENTS_START < tokenType &&
                 tokenType < CPPTokenTypes.CSM_STATEMENTS_END;
+    }
+
+    private AST skipTemplateSibling(AST template) {
+        assert template.getType() == CPPTokenTypes.LITERAL_template;
+        AST next = template.getNextSibling();
+        if (template.getFirstChild() != null) {
+            // this is template node
+            return next;
+        } else {
+            // this is plain template literal
+            int balance = 0;
+            while (next != null) {
+                switch (next.getType()) {
+                    case CPPTokenTypes.LESSTHAN:
+                        balance++;
+                        break;
+                    case CPPTokenTypes.GREATERTHAN:
+                        --balance;
+                        if (balance == 0) {
+                            return next.getNextSibling();
+                        } else if (balance < 0) {
+                            return null;
+                        }
+                        break;
+                }
+                next = next.getNextSibling();
+            }
+        }
+        return null;
     }
 //    public ExpressionBase renderExpression(ExpressionBase parent) {
 //        

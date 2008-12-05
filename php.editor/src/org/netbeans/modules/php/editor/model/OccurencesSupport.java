@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 
 /**
@@ -53,10 +54,12 @@ public final class OccurencesSupport {
         this.offset = offset;
     }
 
+    @CheckForNull
     public Occurence<? extends ModelElement> getOccurence() {
         return modelVisitor.getOccurence(offset);
     }
 
+    @CheckForNull
     public CodeMarker getCodeMarker() {
         return modelVisitor.getCodeMarker(offset);
     }

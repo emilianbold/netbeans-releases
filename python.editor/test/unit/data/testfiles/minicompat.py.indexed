@@ -1,0 +1,37 @@
+
+
+Document 0
+Searchable Keys:
+  class : GetattrMagic
+  class-ig : getattrmagic
+  in : minicompat
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : NewStyle
+  class-ig : newstyle
+  in : minicompat
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  item : EmptyNodeList;C;;
+  item : False;D;;
+  item : GetattrMagic;C;;
+  item : NewStyle;C;;
+  item : NodeList;C;;
+  item : StringTypes;D;;
+  item : True;D;;
+  item : __all__;D;;
+  item : _isinstance;D;|PRIVATE|;
+  item : defproperty;F;;klass,name,doc;
+  item : isinstance;F;;obj,type_or_seq;
+  item : xml;I;|PRIVATE|;
+  module : minicompat
+
+Not Searchable Keys:

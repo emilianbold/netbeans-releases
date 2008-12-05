@@ -90,6 +90,8 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
             case PREPROCESSOR_IDENTIFIER:
             case PREPROCESSOR_USER_INCLUDE:
             case PREPROCESSOR_SYS_INCLUDE:
+            case PREPROCESSOR_INCLUDE:
+            case PREPROCESSOR_INCLUDE_NEXT:
                 return true;
         }
         return false;
