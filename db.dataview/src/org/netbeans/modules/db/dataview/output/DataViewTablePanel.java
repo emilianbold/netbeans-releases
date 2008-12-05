@@ -271,7 +271,7 @@ class DataViewTablePanel extends JPanel {
                 dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
+                NotifyDescriptor nd = new NotifyDescriptor.Exception(new DBException(dbe.getMessage()));
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
