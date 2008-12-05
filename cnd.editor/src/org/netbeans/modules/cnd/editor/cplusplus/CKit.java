@@ -56,7 +56,6 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.lib.NavigationHistory;
 
 public class CKit extends CCKit {
 
