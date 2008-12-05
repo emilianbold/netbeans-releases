@@ -150,19 +150,32 @@ public final class SaveAsTemplateAction extends NodeAction {
         /** an instance */
         private static FolderNodeAcceptor instance;
 
+        private DataFolder rootFolder;
+
         /** singleton */
-        private FolderNodeAcceptor() {
+        private FolderNodeAcceptor (DataFolder root) {
+            this.rootFolder = root;
         }
 
         /** accepts a selected folder */
-        public final boolean acceptNodes(Node[] nodes) {
-            if (nodes == null || nodes.length != 1) return false;
-            return nodes[0].getCookie(DataFolder.class) != null;
+        public boolean acceptNodes (Node[] nodes) {
+            boolean res = false;
+            if (nodes == null || nodes.length != 1) {
+                res = false;
+            } else {
+                Node n = nodes [0];
+                DataFolder df = n.getCookie(DataFolder.class);
+                if (df != null) {
+                    res = ! rootFolder.equals (df);
+                }
+            }
+            return res;
         }
 
         /** getter for an instance */
         static FolderNodeAcceptor getInstance() {
-            if (instance == null) instance = new FolderNodeAcceptor();
+            DataFolder rootFolder = NewTemplateAction.getTemplateRoot ().getCookie (DataFolder.class);
+            if (instance == null) instance = new FolderNodeAcceptor(rootFolder);
             return instance;
         }
     } // end of FolderNodeAcceptor inner class
