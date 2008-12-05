@@ -1,0 +1,67 @@
+
+
+Document 0
+Searchable Keys:
+  class : LoadSet
+  class-ig : loadset
+  in : jreload
+  member : __getattr__;F;;self,name;
+  member : __init__;c;|CONSTRUCTOR|;self,name,path;
+  member : __repr__;F;;self;
+  member : _mgr;D;|PRIVATE|;
+  member : _name;D;|PRIVATE|;
+  member : _top;D;|PRIVATE|;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : _LoaderFactory
+  class-ig : _loaderfactory
+  extends : JavaLoaderFactory
+  in : jreload
+  member : __init__;c;|CONSTRUCTOR|;self,path;
+  member : makeLoader;F;;self;
+  member : vfs;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 2
+Searchable Keys:
+  class : _Unload
+  class-ig : _unload
+  in : jreload
+  member : __call__;F;;self;
+  member : __init__;c;|CONSTRUCTOR|;self,ls;
+  member : do_unload;F;;self,pkg;
+  member : loader;D;;
+  member : ls;D;;
+  member : ls_name;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 3
+Searchable Keys:
+  item : LoadSet;C;;
+  item : PyJavaClass;I;;
+  item : PyJavaPackage;I;;
+  item : _LoaderFactory;C;|PRIVATE|;
+  item : _Unload;C;|PRIVATE|;
+  item : __version__;D;;
+  item : _do_reload;F;|PRIVATE|;ls_name,mgr,pkg;
+  item : _is_lazy;I;|PRIVATE|;
+  item : _reload;D;|PRIVATE|;
+  item : imp;I;;
+  item : jxxload_help;I;;
+  item : makeLoadSet;F;;name,path;
+  item : reload;F;;ls;
+  item : sys;I;;
+  item : unloadf;F;;ls;
+  module : jreload
+
+Not Searchable Keys:

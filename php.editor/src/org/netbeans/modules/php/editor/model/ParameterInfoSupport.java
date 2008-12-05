@@ -49,12 +49,15 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -82,6 +85,7 @@ public class ParameterInfoSupport {
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
             PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE);
+
 
     private enum State {
 
@@ -215,7 +219,12 @@ public class ParameterInfoSupport {
             } else {
                 if (state.equals(State.METHOD)) {
                     state = State.STOP;
-                    metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                    PHPTokenId id = token.id();
+                    if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
+                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
+                    } else {
+                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                    }
                     break;
                 }
             }
@@ -227,8 +236,7 @@ public class ParameterInfoSupport {
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {
-                    FunctionScope functionScope = (FunctionScope) element;
-                    return new ParameterInfo(new ArrayList<String>(functionScope.getParameters()), commasCount, offset);
+                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, offset);
                 }
             }
         }
@@ -315,12 +323,12 @@ public class ParameterInfoSupport {
     }
 
     private static ParameterInfo parametersNodeImpl(final int caretOffset, final CompilationInfo info) {
-        final ParameterInfo[] pis = new ParameterInfo[1];
+        final ParameterInfo[] retval = new ParameterInfo[1];
         DefaultVisitor visitor = new DefaultVisitor() {
 
             @Override
             public void scan(ASTNode node) {
-                if (node != null) {
+                if (node != null && retval[0] == null) {
                     OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                     if (range.containsInclusive(caretOffset)) {
                         super.scan(node);
@@ -329,14 +337,31 @@ public class ParameterInfoSupport {
             }
 
             @Override
+            public void visit(ClassInstanceCreation node) {
+                if (retval[0] == null) {
+                    ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
+                    retval[0] = createParameterInfo(nodeInfo,node.ctorParams());
+                    super.visit(node);
+                }
+            }
+
+
+            @Override
             public void visit(FunctionInvocation node) {
+                if (retval[0] == null) {
+                    ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
+                    retval[0] = createParameterInfo(nodeInfo,node.getParameters());
+                    super.visit(node);
+                }
+            }
+
+            private ParameterInfo createParameterInfo(ASTNodeInfo nodeInfo, List<Expression> parameters) {
                 int idx = -1;
-                int anchor = -1;
-                OffsetRange offsetRange = new OffsetRange(node.getFunctionName().getEndOffset(), node.getEndOffset());
+                ASTNode node = nodeInfo.getOriginalNode();
+                int anchor  = nodeInfo.getRange().getEnd();
+                OffsetRange offsetRange = new OffsetRange(anchor, node.getEndOffset());
                 if (offsetRange.containsInclusive(caretOffset)) {
-                    anchor = node.getFunctionName().getEndOffset();
                     idx = 0;
-                    List<Expression> parameters = node.getParameters();
                     for (int i = 0; i < parameters.size(); i++) {
                         Expression expression = parameters.get(i);
                         offsetRange = new OffsetRange(expression.getStartOffset(), expression.getEndOffset());
@@ -349,30 +374,41 @@ public class ParameterInfoSupport {
                             }
                         }
                     }
-                }
-                if (anchor != -1) {
                     final Model model = ModelFactory.getModel(info);
-                    OccurencesSupport occurencesSupport = model.getOccurencesSupport((node.getFunctionName().getStartOffset() + node.getFunctionName().getEndOffset()) / 2);
+                    OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence<? extends ModelElement> occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
                         ModelElement declaration = occurence.getDeclaration();
                         if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
                             FunctionScope functionScope = (FunctionScope) declaration;
-                            pis[0] = new ParameterInfo(new ArrayList<String>(functionScope.getParameters()), idx, anchor);
+                            return new ParameterInfo(toParamNames(functionScope), idx, anchor);
                         }
                     }
                 }
-                super.visit(node);
+                return null;
             }
         };
         Program root = Utils.getRoot(info);
         if (root != null) {
             visitor.scan(root);
-            if (pis[0] != null) {
-                return pis[0];
+            if (retval[0] != null) {
+                return retval[0];
             }
         }
         return ParameterInfo.NONE;
     }
 
+    @CheckForNull
+    private static List<String> toParamNames(FunctionScope functionScope) {
+        List<String> paramNames = new ArrayList<String>();
+        List<? extends Parameter> parameters = functionScope.getParameters();
+        for (Parameter parameter : parameters) {
+            if (parameter.isMandatory()) {
+                paramNames.add(parameter.getName());
+            } else {
+                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue());
+            }
+        }
+        return paramNames;
+    }
 }

@@ -39,27 +39,25 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableContainerImpl {
-    private List<? extends String> paremeters;
+    private List<? extends Parameter> paremeters;
     private String returnType;
 
     //new contructors
@@ -78,9 +76,33 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         this(inScope, indexedFunction, PhpKind.FUNCTION);
     }
 
-    protected FunctionScopeImpl(ScopeImpl inScope, IndexedFunction element, PhpKind kind) {
+    protected FunctionScopeImpl(ScopeImpl inScope, final IndexedFunction element, PhpKind kind) {
         super(inScope, element, kind);
-        this.paremeters = element.getParameters();
+        List<Parameter> parameters = new ArrayList<Parameter>();
+
+        final List<String> pams = element.getParameters();
+        final int  mandatoryArgSize = pams.size() - element.getOptionalArgs().length;
+
+        for (int i = 0; i < pams.size(); i++) {
+            final String paramName = pams.get(i);
+            final int idx = i;
+            parameters.add(new Parameter() {
+                public String getName() {
+                    return paramName;
+                }
+
+                public String getDefaultValue() {
+                    //TODO: evaluate def.values not in index
+                    return "";//NOI18N
+                }
+
+                public boolean isMandatory() {
+                    return idx < mandatoryArgSize;
+                }
+            });
+
+        }
+        this.paremeters = parameters;
         this.returnType =  element.getReturnType();
     }
 
@@ -92,13 +114,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         return retval;
     }
     
-    FunctionScopeImpl(ScopeImpl inScope, String name, Union2<String/*url*/,FileObject> file,
+    /*FunctionScopeImpl(ScopeImpl inScope, String name, Union2<String,FileObject> file,
             OffsetRange offsetRange, PhpKind kind, List<? extends String> paremeters, PhpModifiers modifiers, String returnType) {
         super(inScope, name, file, offsetRange, kind, modifiers);
         this.paremeters = paremeters;
         this.returnType = returnType;
         assert paremeters != null;
-    }
+    }*/
 
     public final List<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?
@@ -107,8 +129,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     }
 
     @NonNull
-    public List<? extends String> getParameters() {
+    public List<? extends String> getParameterNames() {
         assert paremeters != null;
+        List<String> parameterNames = new ArrayList<String>();
+        for (Parameter parameter : paremeters) {
+            parameterNames.add(parameter.getName());
+        }
+        return parameterNames;
+    }
+
+    @NonNull
+    public List<? extends Parameter> getParameters() {
         return paremeters;
     }
 
@@ -137,7 +168,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         }
         sb.append("] ");
         sb.append(super.toString()).append("(");
-        List<? extends String> parameters = getParameters();
+        List<? extends String> parameters = getParameterNames();
         for (int i = 0; i < parameters.size(); i++) {
             String param = parameters.get(i);
             if (i > 0) sb.append(",");

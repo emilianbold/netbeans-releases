@@ -45,7 +45,8 @@ import java.util.List;
  * @author Radek Matous
  */
 public interface FunctionScope extends Scope, VariableScope {
-    List<? extends String> getParameters();
+    List<? extends String> getParameterNames();
+    List<? extends Parameter> getParameters();
     List<? extends TypeScope> getReturnTypes();
 
 }

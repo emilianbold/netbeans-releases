@@ -324,7 +324,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return getMethods(cls, "", modifiers);
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, ClassScopeImpl cls, final String... queryName) {
+    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, TypeScopeImpl cls, final String... queryName) {
         List<ClzConstantElementImpl> retval = new ArrayList<ClzConstantElementImpl>();
         for (String name : queryName) {
             Collection<IndexedConstant> constants = getIndex().getClassConstants(null, cls.getName(), name, nameKind);
@@ -337,7 +337,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(ClassScopeImpl aThis, final String... queryName) {
+    public List<? extends ClzConstantElementImpl> getConstants(TypeScopeImpl aThis, final String... queryName) {
         return getConstants(NameKind.EXACT_NAME, aThis, queryName);
     }
 

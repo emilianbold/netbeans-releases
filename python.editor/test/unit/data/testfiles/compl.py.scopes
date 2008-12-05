@@ -1,0 +1,34 @@
+=============================================
+<file-top>: Module : OffsetRange[0,309>
+MyClass [bound][class][def][read][called][node=ClassDef]
+Super [bound][class][def][read][node=ClassDef]
+SuperSuper [bound][class][def][read][node=ClassDef]
+x [bound][data][read][node=Name]
+
+    =============================================
+    class SuperSuper: ClassDef : OffsetRange[0,75>
+    mysupersupermethod [bound][function][def][node=FunctionDef]
+
+        =============================================
+        mysupersupermethod: FunctionDef : OffsetRange[22,75>
+        self [bound][param][data][unused][node=Name]
+
+    =============================================
+    class Super: ClassDef : OffsetRange[75,154>
+    mysupermethod [bound][function][def][node=FunctionDef]
+
+        =============================================
+        mysupermethod: FunctionDef : OffsetRange[104,154>
+        self [bound][param][data][unused][node=Name]
+
+    =============================================
+    class MyClass: ClassDef : OffsetRange[154,283>
+    mymethod [bound][function][def][node=FunctionDef]
+
+        =============================================
+        mymethod: FunctionDef : OffsetRange[180,283>
+        dir [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        mysupersupermethod : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+

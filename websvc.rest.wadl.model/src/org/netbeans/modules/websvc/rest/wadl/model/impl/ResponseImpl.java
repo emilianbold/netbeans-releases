@@ -29,7 +29,7 @@ public class ResponseImpl extends NamedImpl implements Response {
         return getChildren(Param.class);
     }
     public void addParam(Param param) {
-        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_RESPONSE.types());
+        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_PARAM.types());
     }
 
     public void removeParam(Param param) {
@@ -41,7 +41,7 @@ public class ResponseImpl extends NamedImpl implements Response {
     }
 
     public void addRepresentation(Representation rep) {
-        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_RESPONSE.types());
+        addAfter(REPRESENTATION_PROPERTY, rep, TypeCollection.FOR_REPRESENTATION.types());
     }
 
     public void removeRepresentation(Representation rep) {
@@ -53,7 +53,7 @@ public class ResponseImpl extends NamedImpl implements Response {
     }
 
     public void addFault(Fault fault) {
-        addAfter(FAULT_PROPERTY, fault, TypeCollection.FOR_RESPONSE.types());
+        addAfter(FAULT_PROPERTY, fault, TypeCollection.FOR_FAULT.types());
     }
 
     public void removeFault(Fault fault) {

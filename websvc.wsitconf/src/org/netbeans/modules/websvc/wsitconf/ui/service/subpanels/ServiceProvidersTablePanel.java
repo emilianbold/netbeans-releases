@@ -131,7 +131,7 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
                     new NotifyDescriptor.Confirmation(NbBundle.getMessage
                     (ServiceProvidersTablePanel.class, "MSG_ServiceProviderConfirmDelete", spe.getEndpoint()),  //NOI18N
                     NotifyDescriptor.YES_NO_OPTION);
-            DialogDisplayer.getDefault().notifyLater(notifyDesc);
+            DialogDisplayer.getDefault().notify(notifyDesc);
             return (notifyDesc.getValue() == NotifyDescriptor.YES_OPTION);
         }
     }

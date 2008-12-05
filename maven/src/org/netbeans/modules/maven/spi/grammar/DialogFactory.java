@@ -66,9 +66,9 @@ public final class DialogFactory {
      *
      *
      */
-    public static String[] showDependencyDialog(Project prj) {
+    public static String[] showDependencyDialog(Project prj, boolean showDepMan) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
-        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject());
+        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan);
         DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
         dd.setClosingOptions(new Object[]{
                     pnl.getOkButton(),

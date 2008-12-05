@@ -87,6 +87,7 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        log("Executing: "+this.getName());
         clearWorkDir();
     }
     protected static WizardOperator invokeImporterWizard() {
@@ -189,6 +190,12 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
         TreePath path = tree.findPath(nodePath);
         tree.selectPath(path);
         return propsDialog;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        log("Test "+this.getName()+" completed");
     }
 
 }

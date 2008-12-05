@@ -70,8 +70,10 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
      * @param scene
      * @param method
      */
-    public RequestWidget(ObjectScene scene, Request request, WadlModel model) throws IOException {
-        super(scene, request, model);
+    public RequestWidget(ObjectScene scene, Method method, WadlModel model) throws IOException {
+        super(scene, 
+              !method.getRequest().isEmpty()?method.getRequest().iterator().next():
+                  model.getFactory().createRequest(), model);
         initUI();
     }
 
@@ -128,29 +130,29 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
     }
 
     private void createContentChildren(Widget containerWidget) {
-        if (getRequest() != null) {
-            try {
-                ParametersWidget headerParamsWidget = new ParametersWidget(
-                        NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Header"), 
-                        ParamStyle.HEADER, getObjectScene(), getRequest(), 
-                        ParametersWidget.getParameters(getRequest().getParam(), 
+        try {
+            ParametersWidget headerParamsWidget = new ParametersWidget(
+                    NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Header"),
+                        ParamStyle.HEADER, getObjectScene(), getRequest(),
+                        getWadlComponent(),
+                        ParametersWidget.getParameters(getRequest().getParam(),
                         ParamStyle.HEADER), getModel());
-                containerWidget.addChild(headerParamsWidget);
+            containerWidget.addChild(headerParamsWidget);
 
-                ParametersWidget queryParamsWidget = new ParametersWidget(
-                        NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"), 
-                        ParamStyle.QUERY, getObjectScene(), getRequest(), 
-                        ParametersWidget.getParameters(getRequest().getParam(), 
+            ParametersWidget queryParamsWidget = new ParametersWidget(
+                    NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"),
+                        ParamStyle.QUERY, getObjectScene(), getRequest(),
+                        getWadlComponent(),
+                        ParametersWidget.getParameters(getRequest().getParam(),
                         ParamStyle.QUERY), getModel());
-                containerWidget.addChild(queryParamsWidget);
+            containerWidget.addChild(queryParamsWidget);
 
-                BodyWidget bodyWidget = new BodyWidget(
-                        NbBundle.getMessage(BodyWidget.class, "LBL_Body", "Request"), 
-                        getObjectScene(), getRequest(), getModel());
-                containerWidget.addChild(bodyWidget);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            BodyWidget bodyWidget = new BodyWidget(
+                    NbBundle.getMessage(BodyWidget.class, "LBL_Body", "Request"),
+                    getObjectScene(), getRequest(), getModel());
+            containerWidget.addChild(bodyWidget);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

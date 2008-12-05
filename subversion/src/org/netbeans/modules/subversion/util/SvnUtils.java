@@ -822,6 +822,7 @@ public class SvnUtils {
      */
     public static List<String> getMatchinIgnoreParterns(List<String> patterns, String value, boolean onlyFirstMatch)  {
         List<String> ret = new ArrayList<String>();
+        if(patterns == null) return ret;
         for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
             try {
                 // may contain shell patterns (almost identical to RegExp)

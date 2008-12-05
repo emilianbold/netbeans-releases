@@ -60,6 +60,9 @@ public class JspBreakpointsNodeModel implements NodeModel {
     public static final String LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
     
+    public static final String LINE_BREAKPOINT_DISABLED =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";   
+    
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o instanceof JspLineBreakpoint) {
             JspLineBreakpoint b = (JspLineBreakpoint) o;
@@ -86,7 +89,13 @@ public class JspBreakpointsNodeModel implements NodeModel {
     
     public String getIconBase (Object o) throws UnknownTypeException {
         if (o instanceof JspLineBreakpoint) {
-            return LINE_BREAKPOINT;
+            JspLineBreakpoint breakpoint = (JspLineBreakpoint)o;
+            if (breakpoint.isEnabled()) {
+                return LINE_BREAKPOINT;
+            }
+            else {
+                return LINE_BREAKPOINT_DISABLED;
+            }
         }
         throw new UnknownTypeException (o);
     }

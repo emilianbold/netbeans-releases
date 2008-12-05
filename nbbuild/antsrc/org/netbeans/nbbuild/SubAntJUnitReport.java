@@ -64,6 +64,9 @@ public class SubAntJUnitReport extends Task {
     public void setBuildPath(Path buildPath) {
         this.buildPath = buildPath;
     }
+    public void addConfiguredBuildPath(Path buildPath) {
+        this.buildPath = buildPath;
+    }
 
     private String targetToRun;
     public void setTarget(String target) {
@@ -136,8 +139,7 @@ public class SubAntJUnitReport extends Task {
                 log("Exiting: " + path);
             }
         }
-        // XXX would be nice to permit the 'classname' field to be customized in output...
-        JUnitReportWriter.writeReport(this, report, pseudoTests);
+        JUnitReportWriter.writeReport(this, SubAntJUnitReport.class.getName() + "." + targetToRun, report, pseudoTests);
     }
 
 }

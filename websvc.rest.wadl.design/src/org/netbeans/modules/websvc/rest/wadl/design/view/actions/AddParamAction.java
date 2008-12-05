@@ -57,8 +57,6 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 /**
  *
@@ -68,6 +66,7 @@ public class AddParamAction<T extends WadlComponent> extends AbstractAction impl
     public static final String ADD_PARAM = "ADD_PARAM";
     
     private T parent;
+    private T ancestor;
     private WadlModel model;
     private ParamStyle type;
 
@@ -75,7 +74,7 @@ public class AddParamAction<T extends WadlComponent> extends AbstractAction impl
      * Creates a new instance of AddParamAction
      * @param implementationClass fileobject of service implementation class
      */
-    public AddParamAction(ParamStyle type, T parent, WadlModel model) {
+    public AddParamAction(ParamStyle type, T parent, T ancestor, WadlModel model) {
         super(getName());
         putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
             ("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png")));
@@ -83,6 +82,8 @@ public class AddParamAction<T extends WadlComponent> extends AbstractAction impl
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddParamAction.class, "LBL_AddParam_mnem_pos")));
         this.type = type;
         this.parent=parent;
+        assert ancestor.getModel() == model;
+        this.ancestor = ancestor;
         this.model = model;
     }
     
@@ -117,8 +118,12 @@ public class AddParamAction<T extends WadlComponent> extends AbstractAction impl
             if(parent instanceof Resource) {
                 ((Resource)parent).addParam(param);
             } else if(parent instanceof Request) {
+                if(parent.getParent() == null)
+                    ((Method)ancestor).addRequest((Request) parent);
                 ((Request)parent).addParam(param);
             } else if(parent instanceof Response) {
+                if(parent.getParent() == null)
+                    ((Method)ancestor).addResponse((Response) parent);
                 ((Response)parent).addParam(param);
             } else if(parent instanceof RepresentationType) {
                 ((RepresentationType)parent).addParam(param);

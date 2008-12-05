@@ -75,14 +75,12 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
 
     private ImageLabelWidget headerLabelWidget;
     private Widget buttons;
-//    private ButtonWidget viewButton;
-    private Widget listWidget;
-    private TabbedPaneWidget tabbedWidget;
     private AddMethodAction addMethod;
     private AddResourceAction addResource;
     private Widget containerWidget;
     ParametersWidget templateParamsWidget;
     ParametersWidget queryParamsWidget;
+    private ResourceType resourceRef;
 
     
     /**
@@ -90,13 +88,24 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
      * @param scene
      * @param operation
      */
-    public ResourceWidget(ObjectScene scene, Widget containerWidget, Resource response, WadlModel model) throws IOException {
-        super(scene, response, model);
+    public ResourceWidget(ObjectScene scene, Widget containerWidget, Resource resource, WadlModel model) throws IOException {
+        super(scene, resource, model);
         this.containerWidget = containerWidget;
 
-        addMethod = new AddMethodAction(getResource(), model);
+        String type = resource.getType();
+        if(type != null) {
+            if(type.indexOf("#") != -1)
+                type = type.substring(type.indexOf("#")+1);
+            for(ResourceType child:model.getApplication().getResourceType()) {
+                if(type.equals(child.getId())) {
+                    this.resourceRef = child;
+                }
+            }
+        }
+
+        addMethod = new AddMethodAction(getResourceRef()!=null?getResourceRef():getResource(),
+                getResource().getPath(), model);
         addMethod.addPropertyChangeListener(this);
-//        addMethod.addPropertyChangeListener(DesignView.getListMethodsWidget());
         addResource = new AddResourceAction(getResource(), model);
         addResource.addPropertyChangeListener(this);
         getActions().addAction(ActionFactory.createPopupMenuAction(
@@ -109,6 +118,10 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
     
     public Resource getResource() {
         return (Resource) getWadlComponent();
+    }
+
+    public ResourceType getResourceRef() {
+        return this.resourceRef;
     }
     
     public String getPath() {
@@ -125,17 +138,7 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
         String serviceUrl = sb.toString();
         final int skipLen = serviceUrl.length() - path.length();
         final String serviceBase = serviceUrl.substring(0, skipLen);
-        headerLabelWidget = new ImageLabelWidget(getScene(), image, serviceUrl) {
-            private Object key = new Object();
-            protected void notifyAdded() {
-                super.notifyAdded();
-                getObjectScene().addObject(key,headerLabelWidget);
-            }
-            protected void notifyRemoved() {
-                super.notifyRemoved();
-                getObjectScene().removeObject(key);
-            }
-        };
+        headerLabelWidget = new ImageLabelWidget(getScene(), image, serviceUrl);
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         headerLabelWidget.setLabelEditor(new TextFieldInplaceEditor(){
             public boolean isEnabled(Widget widget) {
@@ -191,57 +194,32 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
     public void createContent() throws IOException {
         super.createContent();
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
-        
-        templateParamsWidget = new ParametersWidget(NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Template"), 
-                ParamStyle.TEMPLATE, getObjectScene(), getResource(),
-                ParametersWidget.getParameters(getResource().getParam(), ParamStyle.HEADER), getModel());
+
+        ResourceType ref = getResourceRef()!=null?getResourceRef():getResource();
+        templateParamsWidget = new ParametersWidget(
+                NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Template"),
+                ParamStyle.TEMPLATE, getObjectScene(), ref, ref.getParent(),
+                ParametersWidget.getParameters(ref.getParam(), ParamStyle.HEADER), getModel());
         getContentWidget().addChild(templateParamsWidget);
 
-        queryParamsWidget = new ParametersWidget(NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"),
-                ParamStyle.QUERY, getObjectScene(), getResource(),
-                ParametersWidget.getParameters(getResource().getParam(), ParamStyle.QUERY), getModel());
+        queryParamsWidget = new ParametersWidget(
+                NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"),
+                ParamStyle.QUERY, getObjectScene(), ref, ref.getParent(),
+                ParametersWidget.getParameters(ref.getParam(), ParamStyle.QUERY), getModel());
         templateParamsWidget.setTitle(NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"));
         getContentWidget().addChild(queryParamsWidget);
 
-        for (Method m : getResource().getMethod()) {
+        for (Method m : ref.getMethod()) {
             MethodWidget methodWidget = new MethodWidget(getObjectScene(), this, m, getModel());
             getContentWidget().addChild(methodWidget);
         }
 
         //then display the sub-resources
-        for (Resource r : getResource().getResource()) {
-            ResourceWidget resourceWidget = new ResourceWidget(getObjectScene(), this, r, getModel());
-            getContentWidget().addChild(resourceWidget);
-        }
-    }
-
-    protected void collapseWidget() {
-        if(buttons!=null && buttons.getParentWidget()!=null) {
-            getHeaderWidget().revalidate(true);
-            buttons.removeChild(getExpanderWidget());
-            getHeaderWidget().removeChild(buttons);
-            getHeaderWidget().addChild(getExpanderWidget());
-        }
-        super.collapseWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
-    }
-
-    protected void expandWidget() {
-        if(buttons!=null && buttons.getParentWidget()==null) {
-            getHeaderWidget().revalidate(true);
-            getHeaderWidget().removeChild(getExpanderWidget());
-            buttons.addChild(getExpanderWidget());
-            getHeaderWidget().addChild(buttons);
-        }
-        super.expandWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
+        if(ref == null) {
+            for (Resource r : getResource().getResource()) {
+                ResourceWidget resourceWidget = new ResourceWidget(getObjectScene(), this, r, getModel());
+                getContentWidget().addChild(resourceWidget);
+            }
         }
     }
 

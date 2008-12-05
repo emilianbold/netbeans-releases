@@ -87,6 +87,7 @@ import org.openide.filesystems.FileObject;
  */
 public class VariousUtils {
 
+    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:";
     public static final String FUNCTION_TYPE_PREFIX = "fn:";
     public static final String METHOD_TYPE_PREFIX = "mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:";
@@ -349,6 +350,9 @@ public class VariousUtils {
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
                     assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
                         assert i == 0;
@@ -389,6 +393,21 @@ public class VariousUtils {
                             break;
                         }
                         stack.push(type.getName());
+                        operation = null;
+                    } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
+                        ClassScope cls = ModelUtils.getFirst(CachedModelSupport.getClasses(frag, topScope));
+                        if (cls == null) {
+                            semiTypeName = null;
+                            break;
+                        } else {
+                            MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getMethods(cls, "__construct",topScope, PHPIndex.ANY_ATTR));//NOI18N
+                            if (meth != null) {
+                                retval.push(meth);
+                            } else {
+                                return emptyStack;
+                            }
+                        }
+                        stack.push(cls.getName());
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
                         String[] frgs = frag.split("\\.");
