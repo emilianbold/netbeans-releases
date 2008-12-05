@@ -131,7 +131,7 @@ public class NodeRegistry implements ChangeListener {
         }
     }
 
-    public void refresh() {
+    public synchronized void refresh() {
         for (NodeProvider provider : providers) {
             provider.refresh();
         }

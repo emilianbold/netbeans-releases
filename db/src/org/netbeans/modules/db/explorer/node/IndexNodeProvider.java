@@ -49,11 +49,11 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
  *
  * @author Rob Englander
  */
-public class SchemaNodeProvider extends NodeProvider {
+public class IndexNodeProvider extends NodeProvider {
 
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -71,52 +71,58 @@ public class SchemaNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public SchemaNodeProvider createInstance(Lookup lookup) {
-                SchemaNodeProvider provider = new SchemaNodeProvider(lookup);
+            public IndexNodeProvider createInstance(Lookup lookup) {
+                IndexNodeProvider provider = new IndexNodeProvider(lookup);
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final MetadataElementHandle<Catalog> catalogHandle;
-    private MetadataModel metaDataModel;
+    private final MetadataElementHandle handle;
+    private final MetadataModel metaDataModel;
 
-    private SchemaNodeProvider(Lookup lookup) {
-        super(lookup, new SchemaComparator());
+    private IndexNodeProvider(Lookup lookup) {
+        super(lookup, new IndexComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
+        handle = getLookup().lookup(MetadataElementHandle.class);
         metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
-    public Catalog getCatalog() {
-        DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
+    public Table getTable() {
+        DataWrapper<Table> wrapper = new DataWrapper<Table>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Catalog catalog = catalogHandle.resolve(metaData);
-                    wrapper.setObject(catalog);
+                    Table table = (Table)handle.resolve(metaData);
+                    wrapper.setObject(table);
                 }
             }
         );
 
         return wrapper.getObject();
     }
-
+    @Override
     protected synchronized void initialize() {
-        Catalog cat = getCatalog();
-
         List<Node> newList = new ArrayList<Node>();
 
-        if (cat != null) {
-            Schema syntheticSchema = cat.getSyntheticSchema();
+        Table table = getTable();
 
-            if (syntheticSchema != null) {
-                updateNode(newList, syntheticSchema, metaDataModel);
-            } else {
-                Collection<Schema> schemas = cat.getSchemas();
-                for (Schema schema : schemas) {
-                    updateNode(newList, schema, metaDataModel);
+        if (table != null) {
+            Collection<Index> indexes = table.getIndexes();
+
+            for (Index index : indexes) {
+                MetadataElementHandle<Index> h = MetadataElementHandle.create(index);
+                Collection<Node> matches = getNodes(h);
+                if (matches.size() > 0) {
+                    newList.addAll(matches);
+                } else {
+                    NodeDataLookup lookup = new NodeDataLookup();
+                    lookup.add(connection);
+                    lookup.add(metaDataModel);
+                    lookup.add(h);
+
+                    newList.add(IndexNode.create(lookup, this));
                 }
             }
         }
@@ -124,25 +130,10 @@ public class SchemaNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    private void updateNode(List<Node> newList, Schema schema, MetadataModel metadataModel) {
-        MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
-        Collection<Node> matches = getNodes(schemaHandle);
-        if (matches.size() > 0) {
-            newList.addAll(matches);
-        } else {
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
-            lookup.add(schemaHandle);
-            lookup.add(metadataModel);
+    static class IndexComparator implements Comparator<Node> {
 
-            newList.add(SchemaNode.create(lookup, SchemaNodeProvider.this));
-        }
-    }
-
-    static class SchemaComparator implements Comparator<Node> {
-
-        public int compare(Node node1, Node node2) {
-            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
+        public int compare(Node model1, Node model2) {
+            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
 
     }

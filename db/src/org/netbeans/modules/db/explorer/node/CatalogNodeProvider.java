@@ -46,9 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -82,43 +85,55 @@ public class CatalogNodeProvider extends NodeProvider {
 
     @Override
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
 
-        Metadata metaData = getLookup().lookup(Metadata.class);
+        final MetadataModel metaDataModel = getLookup().lookup(MetadataModel.class);
 
-        if (metaData != null) {
-            metaData.refresh();
-            Collection<Catalog> catalogs = metaData.getCatalogs();
+        if (metaDataModel != null) {
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Collection<Catalog> catalogs = metaData.getCatalogs();
 
-            String defaultCatalog = metaData.getDefaultCatalog().getName();
+                            String defaultCatalog = metaData.getDefaultCatalog().getName();
 
-            for (Catalog catalog : catalogs) {
-                if (catalog.getName() != null || catalogs.size() == 1) {
+                            for (Catalog catalog : catalogs) {
+                                if (catalog.getName() != null || catalogs.size() == 1) {
 
-                    boolean use = true;
-                    if (defaultCatalog != null) {
-                        use = defaultCatalog.equals(catalog.getName());
-                    }
+                                    boolean use = true;
+                                    if (defaultCatalog != null) {
+                                        use = defaultCatalog.equals(catalog.getName());
+                                    }
 
-                    if (use) {
-                        MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
-                        Collection<Node> matches = getNodes(catalogHandle);
-                        if (matches.size() > 0) {
-                            newList.addAll(matches);
-                        } else {
-                            NodeDataLookup lookup = new NodeDataLookup();
-                            lookup.add(connection);
-                            lookup.add(catalogHandle);
-                            lookup.add(metaData);
+                                    if (use) {
+                                        MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
+                                        Collection<Node> matches = getNodes(catalogHandle);
+                                        if (matches.size() > 0) {
+                                            newList.addAll(matches);
+                                        } else {
+                                            NodeDataLookup lookup = new NodeDataLookup();
+                                            lookup.add(connection);
+                                            lookup.add(catalogHandle);
+                                            lookup.add(metaDataModel);
 
-                            newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
+                                            newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
+                                        }
+                                    }
+                                }
+                            }
+
+                            CatalogNodeProvider.this.setNodes(newList);
                         }
                     }
-                }
+                );
+            } catch (MetadataModelException e) {
+
             }
+        } else {
+           setNodes(newList);
         }
 
-        setNodes(newList);
     }
 
     static class CatalogComparator implements Comparator<Node> {

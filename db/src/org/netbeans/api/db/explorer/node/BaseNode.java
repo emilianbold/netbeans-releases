@@ -108,7 +108,7 @@ public abstract class BaseNode extends AbstractNode {
      */
     protected abstract void initialize();
 
-    public void refresh() {
+    public synchronized void refresh() {
         nodeRegistry.refresh();
         update();
     }
@@ -140,8 +140,15 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     protected void remove() {
+        remove(false);
+    }
+
+    protected void remove(boolean refreshProvider) {
         isRemoved = true;
         nodeProvider.removeNode(this);
+        if (refreshProvider) {
+            nodeProvider.refresh();
+        }
     }
 
     /**

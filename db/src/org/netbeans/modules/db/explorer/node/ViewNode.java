@@ -42,8 +42,16 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.View;
 
@@ -67,7 +75,8 @@ public class ViewNode extends BaseNode implements SchemaProvider {
         return node;
     }
 
-    private Metadata metaData;
+    private String name;
+    private MetadataModel metaDataModel;
     private MetadataElementHandle<View> viewHandle;
 
     private ViewNode(NodeDataLookup lookup, NodeProvider provider) {
@@ -75,33 +84,60 @@ public class ViewNode extends BaseNode implements SchemaProvider {
     }
 
     protected void initialize() {
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
         viewHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        View view = getView();
+        name = view.getName();
     }
 
+    public View getView() {
+        DataWrapper<View> wrapper = new DataWrapper<View>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    View view = viewHandle.resolve(metaData);
+                    wrapper.setObject(view);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropView(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_VIEW);
+    }
+
+
     public Schema getSchema() {
-        View view = viewHandle.resolve(metaData);
+        View view = getView();
         return view.getParent();
     }
 
     @Override
     public String getName() {
-        View view = viewHandle.resolve(metaData);
-        if (view == null) {
-            return "";
-        }
-
-        return view.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        View view = viewHandle.resolve(metaData);
-        if (view == null) {
-            return "";
-        }
-
-        return view.getName();
+        return getName();
     }
 
     @Override

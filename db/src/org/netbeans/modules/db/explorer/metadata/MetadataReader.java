@@ -37,56 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.action;
+package org.netbeans.modules.db.explorer.metadata;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
-import org.netbeans.modules.db.explorer.node.TableNode;
-import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
- * @author Rob Englander
+ * @author rob
  */
-public class AddColumnAction extends BaseAction {
+public class MetadataReader {
 
-    @Override
-    public String getName() {
-        return bundle().getString("AddColumn"); // NOI18N
+    public static class DataWrapper<C> {
+        C object;
+
+        public DataWrapper() {
+            object = null;
+        }
+
+        public DataWrapper(C obj) {
+            object = obj;
+        }
+
+        public void setObject(C obj) {
+            object = obj;
+        }
+
+        public C getObject() {
+            return object;
+        }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        boolean result = activatedNodes.length == 1 &&
-                activatedNodes[0].getLookup().lookup(TableNode.class) != null;
-
-        return result;
+    public interface MetadataReadListener {
+        public void run(Metadata metaData, DataWrapper wrapper);
     }
 
-    @Override
-    protected void performAction(final Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
-                    final DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
+    private MetadataReader() {
 
-                    try {
-                        final AddTableColumnDialog dlg = new AddTableColumnDialog(connection.getConnector().getDatabaseSpecification(), node);
-                        if (dlg.run()) {
-                            node.refresh();
-                        }
-                    } catch(Exception exc) {
-                        Logger.getLogger("global").log(Level.INFO, null, exc);
-                        DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
+    }
+
+    public static void readModel(MetadataModel model, DataWrapper wrapper, MetadataReadListener listener) {
+        MetadataReader reader = new MetadataReader();
+        reader.read(model, wrapper, listener);
+    }
+
+    private void read(MetadataModel model, final DataWrapper wrapper, final MetadataReadListener listener) {
+        try {
+            model.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        listener.run(metaData, wrapper);
                     }
                 }
-            }
-        );
-    }
+            );
+        } catch (MetadataModelException e) {
 
+        }
+    }
 }

@@ -46,8 +46,8 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -96,9 +96,9 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
 
-                Metadata metaData = getLookup().lookup(Metadata.class);
-                if (metaData != null) {
-                    lookup.add(metaData);
+                MetadataModel metaDataModel = getLookup().lookup(MetadataModel.class);
+                if (metaDataModel != null) {
+                    lookup.add(metaDataModel);
                 }
 
                 MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);

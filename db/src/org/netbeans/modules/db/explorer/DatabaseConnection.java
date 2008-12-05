@@ -878,7 +878,11 @@ public class DatabaseConnection implements DBConnection {
     public DatabaseConnector getConnector() {
         return connector;
     }
-    
+
+    public void notifyChange() {
+        propertySupport.firePropertyChange("changed", null, null);
+    }
+
     public void disconnect() throws DatabaseException {
         setConnection(null);
         ConnectionNodeInfo cni = findConnectionNodeInfo(getName());

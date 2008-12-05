@@ -42,8 +42,16 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
@@ -66,7 +74,8 @@ public class ProcedureNode extends BaseNode {
         return node;
     }
 
-    private Metadata metaData;
+    private String name;
+    private MetadataModel metaDataModel;
     private MetadataElementHandle<Procedure> procedureHandle;
 
     private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
@@ -74,28 +83,54 @@ public class ProcedureNode extends BaseNode {
     }
 
     protected void initialize() {
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
         procedureHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        Procedure proc = getProcedure();
+        name = proc.getName();
+    }
+
+    public Procedure getProcedure() {
+        DataWrapper<Procedure> wrapper = new DataWrapper<Procedure>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Procedure procedure = procedureHandle.resolve(metaData);
+                    wrapper.setObject(procedure);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropProcedure(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_PROCEDURE);
     }
 
     @Override
     public String getName() {
-        Procedure procedure = procedureHandle.resolve(metaData);
-        if (procedure == null) {
-            return "";
-        }
-
-        return procedure.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        Procedure procedure = procedureHandle.resolve(metaData);
-        if (procedure == null) {
-            return "";
-        }
-
-        return procedure.getName();
+        return getName();
     }
 
     @Override

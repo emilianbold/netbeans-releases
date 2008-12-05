@@ -106,13 +106,13 @@ public abstract class NodeProvider implements Lookup.Provider {
         return Collections.unmodifiableCollection(nodeSet);
     }
 
-    public void refresh() {
+    public synchronized void refresh() {
         initialized = false;
-        synchronized (nodeSet) {
-            for (Node child : nodeSet) {
-                if (child instanceof BaseNode) {
-                    ((BaseNode)child).refresh();
-                }
+        TreeSet<Node> nodes = (TreeSet<Node>)nodeSet.clone();
+
+        for (Node child : nodes) {
+            if (child instanceof BaseNode) {
+                ((BaseNode)child).refresh();
             }
         }
     }

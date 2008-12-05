@@ -46,8 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.openide.nodes.Node;
@@ -76,36 +80,51 @@ public class ProcedureNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private MetadataElementHandle<Schema> schemaHandle;
-    private Metadata metaData;
+    private MetadataModel metaDataModel;
 
     private ProcedureNodeProvider(Lookup lookup) {
         super(lookup, new ProcedureComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+    }
+
+    public Schema getSchema() {
+        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Schema schema = schemaHandle.resolve(metaData);
+                    wrapper.setObject(schema);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     protected synchronized void initialize() {
-        // TODO this should just refresh the schema, not the
-        // entire metadata
-        metaData.refresh();
-        Schema schema = schemaHandle.resolve(metaData);
-
+        //metaData.refresh();
+        Schema schema = getSchema();
+        //schema.refresh();
+        
         List<Node> newList = new ArrayList<Node>();
 
-        Collection<Procedure> procedures = schema.getProcedures();
-        for (Procedure procedure : procedures) {
-            MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
-            Collection<Node> matches = getNodes(handle);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(metaData);
-                lookup.add(handle);
+        if (schema != null) {
+            Collection<Procedure> procedures = schema.getProcedures();
+            for (Procedure procedure : procedures) {
+                MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
+                Collection<Node> matches = getNodes(handle);
+                if (matches.size() > 0) {
+                    newList.addAll(matches);
+                } else {
+                    NodeDataLookup lookup = new NodeDataLookup();
+                    lookup.add(connection);
+                    lookup.add(metaDataModel);
+                    lookup.add(handle);
 
-                newList.add(ProcedureNode.create(lookup, this));
+                    newList.add(ProcedureNode.create(lookup, this));
+                }
             }
         }
 

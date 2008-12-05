@@ -42,9 +42,12 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 
 /**
  *
@@ -66,8 +69,10 @@ public class CatalogNode extends BaseNode {
         return node;
     }
 
+    private String name;
+
     private MetadataElementHandle<Catalog> catalogHandle;
-    private Metadata metaData;
+    private MetadataModel metaDataModel;
 
     private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
@@ -75,31 +80,37 @@ public class CatalogNode extends BaseNode {
 
     protected void initialize() {
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+
+        MetadataReader.readModel(metaDataModel, null,
+            new MetadataReader.MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Catalog catalog = catalogHandle.resolve(metaData);
+                    renderNames(catalog);
+                }
+            }
+        );
     }
 
     @Override
     public String getName() {
-        return renderName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return renderName();
+        return name;
     }
 
-    private String renderName() {
-        Catalog catalog = catalogHandle.resolve(metaData);
+    private void renderNames(Catalog catalog) {
         if (catalog == null) {
-            return "";
+            name = "";
         }
 
-        String name = catalog.getName();
+        name = catalog.getName();
         if (name == null) {
             name = "Default"; // NOI18N
         }
-        
-        return name;
     }
 
     @Override

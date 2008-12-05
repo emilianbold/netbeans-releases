@@ -42,8 +42,16 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
@@ -67,7 +75,8 @@ public class TableNode extends BaseNode implements SchemaProvider {
         return node;
     }
 
-    private Metadata metaData;
+    private String name;
+    private MetadataModel metaDataModel;
     private MetadataElementHandle<Table> tableHandle;
 
     private TableNode(NodeDataLookup lookup, NodeProvider provider) {
@@ -75,22 +84,46 @@ public class TableNode extends BaseNode implements SchemaProvider {
     }
 
     protected void initialize() {
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        Table table = getTable();
+        name = table.getName();
+    }
+
+    public Table getTable() {
+        DataWrapper<Table> wrapper = new DataWrapper<Table>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Table table = tableHandle.resolve(metaData);
+                    wrapper.setObject(table);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     public Schema getSchema() {
-        Table table = tableHandle.resolve(metaData);
+        Table table = getTable();
         return table.getParent();
     }
 
     @Override
     public void refresh() {
-        metaData.refresh();
-        Table table = tableHandle.resolve(metaData);
+        MetadataReader.readModel(metaDataModel, null,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    metaData.refresh();
+                }
+            }
+        );
+
+        Table table = getTable();
 
         if (table == null) {
-            remove();
+            remove(true);
         } else {
             table.refresh();
             super.refresh();
@@ -98,23 +131,32 @@ public class TableNode extends BaseNode implements SchemaProvider {
     }
 
     @Override
-    public String getName() {
-        Table table = tableHandle.resolve(metaData);
-        if (table == null) {
-            return "";
-        }
+    public void destroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        Specification spec = connector.getDatabaseSpecification();
 
-        return table.getName();
+        try {
+            AbstractCommand command = spec.createCommandDropTable(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        return connector.supportsCommand(Specification.DROP_TABLE);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        Table table = tableHandle.resolve(metaData);
-        if (table == null) {
-            return "";
-        }
-
-        return table.getName();
+        return getName();
     }
 
     @Override

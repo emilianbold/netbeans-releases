@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.explorer;
 
 import java.sql.Connection;
-import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
@@ -58,7 +57,7 @@ public class DatabaseConnector {
     // Thread-safe, no synchronization
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private DatabaseConnection con;
+    private DatabaseConnection databaseConnection;
     private Connection connection = null;
     private SpecificationFactory factory;
     private boolean readOnly = false;
@@ -68,7 +67,7 @@ public class DatabaseConnector {
 
 
     public DatabaseConnector(DatabaseConnection conn) {
-        con = conn;
+        databaseConnection = conn;
 
         try {
             factory = new SpecificationFactory();
@@ -78,7 +77,7 @@ public class DatabaseConnector {
     }
 
     public DatabaseConnection getDatabaseConnection() {
-        return con;
+        return databaseConnection;
     }
 
     public void setRememberPassword(boolean val) {
@@ -99,12 +98,12 @@ public class DatabaseConnector {
     
     public void connect() throws DatabaseException {
         try {
-            Connection theConnection = con.getConnection();
-            con.connectAsync();
+            Connection theConnection = databaseConnection.getConnection();
+            databaseConnection.connectAsync();
 
             readOnly = false;
 
-            spec = (Specification) factory.createSpecification(con, theConnection);
+            spec = (Specification) factory.createSpecification(databaseConnection, theConnection);
             //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
@@ -114,7 +113,7 @@ public class DatabaseConnector {
             else
                 drvSpec.setMetaData(spec.getMetaData());
             drvSpec.setCatalog(theConnection.getCatalog());
-            drvSpec.setSchema(con.getSchema());
+            drvSpec.setSchema(databaseConnection.getSchema());
             setConnection(theConnection); // fires change
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage(), e);
@@ -150,9 +149,9 @@ public class DatabaseConnector {
         if (connection != null) {
             String message = null;
             try {
-                con.disconnect();
+                Connection con = connection;
                 setConnection(null); // fires change
-                //connection.close();
+                con.close();
             } catch (Exception exc) {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
@@ -166,6 +165,8 @@ public class DatabaseConnector {
             if (message != null) {
                 throw new DatabaseException(message);
             }
+
+            databaseConnection.disconnect();
         }
     }
 
@@ -181,8 +182,18 @@ public class DatabaseConnector {
             connected = false;
         }
 
-        //con.getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
+        //databaseConnection.getConnectionPCS().firePropertyChange(CONNECTION, oldval, databaseConnection);
         notifyChange();
+    }
+
+    public boolean supportsCommand(String cmd) {
+        boolean supported = true;
+
+        if (spec.getCommandProperties(cmd).containsKey("Supported")) {
+            supported = spec.getCommandProperties(cmd).get("Supported").toString().equals("true");
+        }
+
+        return supported;
     }
 
     public void addChangeListener(ChangeListener listener) {

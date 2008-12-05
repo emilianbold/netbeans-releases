@@ -46,9 +46,13 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
@@ -77,13 +81,41 @@ public class ColumnNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle handle;
-    private final Metadata metaData;
+    private final MetadataModel metaDataModel;
 
     private ColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
-        metaData = getLookup().lookup(Metadata.class);
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+    }
+
+    public Table getTable() {
+        DataWrapper<Table> wrapper = new DataWrapper<Table>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Table table = (Table)handle.resolve(metaData);
+                    wrapper.setObject(table);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    public View getView() {
+        DataWrapper<View> wrapper = new DataWrapper<View>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    View view = (View)handle.resolve(metaData);
+                    wrapper.setObject(view);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     @Override
@@ -92,13 +124,13 @@ public class ColumnNodeProvider extends NodeProvider {
 
         Collection<Column> columns;
         try {
-            Table table = (Table)handle.resolve(metaData);
+            Table table = getTable();
             if (table == null) {
                 return;
             }
             columns = table.getColumns();
         } catch (ClassCastException e) {
-            View view = (View)handle.resolve(metaData);
+            View view = getView();
             if (view == null) {
                 return;
             }
@@ -113,7 +145,7 @@ public class ColumnNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(metaData);
+                lookup.add(metaDataModel);
                 lookup.add(h);
 
                 newList.add(ColumnNode.create(lookup, this));
@@ -129,7 +161,7 @@ public class ColumnNodeProvider extends NodeProvider {
             ColumnNode n1 = (ColumnNode)node1;
             ColumnNode n2 = (ColumnNode)node2;
             int result = 1;
-            if (n1.getOrdinalPosition() < n2.getOrdinalPosition()) {
+            if (n1.getPosition() < n2.getPosition()) {
                 result = -1;
             }
             return result;

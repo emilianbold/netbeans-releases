@@ -39,63 +39,61 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Rob Englander
  */
-public class SchemaNodeProvider extends NodeProvider {
+public class IndexNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/index.gif";
+    private static final String FOLDER = "Index"; //NOI18N
 
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
+    /**
+     * Create an instance of IndexNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the IndexNode instance
+     */
+    public static IndexNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        IndexNode node = new IndexNode(dataLookup, provider);
+        node.setup();
+        return node;
     }
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public SchemaNodeProvider createInstance(Lookup lookup) {
-                SchemaNodeProvider provider = new SchemaNodeProvider(lookup);
-                return provider;
-            }
-        };
-    }
-
-    private final DatabaseConnection connection;
-    private final MetadataElementHandle<Catalog> catalogHandle;
+    private String name;
     private MetadataModel metaDataModel;
+    private MetadataElementHandle<Index> indexHandle;
 
-    private SchemaNodeProvider(Lookup lookup) {
-        super(lookup, new SchemaComparator());
-        connection = getLookup().lookup(DatabaseConnection.class);
-        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
+    private IndexNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
-    public Catalog getCatalog() {
-        DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
+    protected void initialize() {
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        indexHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        Index index = getIndex();
+        name = index.getName();
+    }
+
+    public Index getIndex() {
+        DataWrapper<Index> wrapper = new DataWrapper<Index>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Catalog catalog = catalogHandle.resolve(metaData);
-                    wrapper.setObject(catalog);
+                    Index index = indexHandle.resolve(metaData);
+                    wrapper.setObject(index);
                 }
             }
         );
@@ -103,47 +101,23 @@ public class SchemaNodeProvider extends NodeProvider {
         return wrapper.getObject();
     }
 
-    protected synchronized void initialize() {
-        Catalog cat = getCatalog();
-
-        List<Node> newList = new ArrayList<Node>();
-
-        if (cat != null) {
-            Schema syntheticSchema = cat.getSyntheticSchema();
-
-            if (syntheticSchema != null) {
-                updateNode(newList, syntheticSchema, metaDataModel);
-            } else {
-                Collection<Schema> schemas = cat.getSchemas();
-                for (Schema schema : schemas) {
-                    updateNode(newList, schema, metaDataModel);
-                }
-            }
-        }
-
-        setNodes(newList);
+    public Schema getSchema() {
+        Index index = getIndex();
+        return (Schema)index.getParent().getParent();
     }
 
-    private void updateNode(List<Node> newList, Schema schema, MetadataModel metadataModel) {
-        MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
-        Collection<Node> matches = getNodes(schemaHandle);
-        if (matches.size() > 0) {
-            newList.addAll(matches);
-        } else {
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
-            lookup.add(schemaHandle);
-            lookup.add(metadataModel);
-
-            newList.add(SchemaNode.create(lookup, SchemaNodeProvider.this));
-        }
+    @Override
+    public String getName() {
+        return name;
     }
 
-    static class SchemaComparator implements Comparator<Node> {
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
 
-        public int compare(Node node1, Node node2) {
-            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
-        }
-
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
     }
 }

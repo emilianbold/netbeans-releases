@@ -49,11 +49,10 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.DatabaseConnector;
-import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.openide.util.RequestProcessor;
 
@@ -124,28 +123,25 @@ public class ConnectionNode extends BaseNode {
                     }
 
                     if (connected && model == null) {
-                        try {
-                            model = MetadataModels.createModel(conn, connection.getSchema());
-                            //model = MetadataModelManager.get(connection.getDatabaseConnection());
+                        model = MetadataModels.createModel(conn, connection.getSchema());
+                        //model = MetadataModelManager.get(connection.getDatabaseConnection());
 
-                            NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                            lookup.add(model);
+                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                        lookup.add(model);
 
-                            model.runReadAction(
-                                new Action<Metadata>() {
-                                    public void run(Metadata parameter) {
-                                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                                        lookup.add(parameter);
-                                        refresh();
-                                    }
+                        MetadataReader.readModel(model, null,
+                            new MetadataReader.MetadataReadListener() {
+                                public void run(Metadata metaData, DataWrapper wrapper) {
+                                    NodeDataLookup lookup = (NodeDataLookup)getLookup();
+                                    lookup.add(model);
+                                    refresh();
                                 }
-                            );
-                        } catch (MetadataModelException e) {
-                        }
+                            }
+                        );
                     } else if (!connected) {
                         model = null;
                         NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                        Metadata md = lookup.lookup(Metadata.class);
+                        MetadataModel md = lookup.lookup(MetadataModel.class);
                         if (md != null) {
                             lookup.remove(md);
                         }

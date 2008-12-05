@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
@@ -48,58 +47,69 @@ import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadList
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
-public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
-    private static final String DEFAULTICONBASE = "org/netbeans/modules/db/resources/folder.gif";
-    private static final String FOLDER = "Schema"; //NOI18N
+public class IndexColumnNode extends BaseNode {
+    private static final String ICONDOWN = "org/netbeans/modules/db/resources/indexDown.gif";
+    private static final String ICONUP = "org/netbeans/modules/db/resources/indexUp.gif";
+    private static final String FOLDER = "IndexColumn"; //NOI18N
 
     /**
-     * Create an instance of SchemaNode.
+     * Create an instance of IndexColumnNode.
      *
      * @param dataLookup the lookup to use when creating node providers
-     * @return the SchemaNode instance
+     * @return the IndexColumnNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        SchemaNode node = new SchemaNode(dataLookup, provider);
+    public static IndexColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        IndexColumnNode node = new IndexColumnNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
     private String name;
     private String icon;
-
-    private MetadataElementHandle<Schema> schemaHandle;
     private MetadataModel metaDataModel;
+    private MetadataElementHandle<IndexColumn> indexColumnHandle;
 
-    private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+    private IndexColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
     protected void initialize() {
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
         metaDataModel = getLookup().lookup(MetadataModel.class);
-        Schema schema = getSchema();
-        renderNames(schema);
+        indexColumnHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        IndexColumn column = getIndexColumn();
+        name = column.getName();
+        if (column.getOrdering() == Ordering.DESCENDING) {
+            icon = ICONUP;
+        } else {
+            icon = ICONDOWN;
+        }
     }
 
-    public Schema getSchema() {
-        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+    public IndexColumn getIndexColumn() {
+        DataWrapper<IndexColumn> wrapper = new DataWrapper<IndexColumn>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Schema schema = schemaHandle.resolve(metaData);
-                    wrapper.setObject(schema);
+                    IndexColumn column = indexColumnHandle.resolve(metaData);
+                    wrapper.setObject(column);
                 }
             }
         );
 
         return wrapper.getObject();
+    }
+
+    public int getPosition() {
+        IndexColumn column = getIndexColumn();
+        return column.getPosition();
     }
 
     @Override
@@ -109,25 +119,7 @@ public class SchemaNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return name;
-    }
-
-    private void renderNames(Schema schema) {
-        if (schema == null) {
-            name = "";
-        }
-
-        name = schema.getName();
-        if (name == null) {
-            name = schema.getParent().getName();
-        }
-
-        icon = ICONBASE;
-        if (schema != null) {
-            if (schema.isDefault()) {
-                icon = DEFAULTICONBASE;
-            }
-        }
+        return getName();
     }
 
     @Override

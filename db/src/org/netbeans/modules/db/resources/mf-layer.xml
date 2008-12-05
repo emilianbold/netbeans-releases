@@ -237,14 +237,14 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-AddColumnAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
                     <file name="org-netbeans-modules-db-explorer-action-ViewDataAction.instance">
-                        <attr name="position" intvalue="150"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="150"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-AddColumnAction.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
@@ -252,6 +252,16 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="350"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-GrabTableAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-RecreateTableAction.instance">
+                        <attr name="position" intvalue="450"/>
                     </file>
                 </folder>
             </folder>
@@ -316,6 +326,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="IndexList">
                 <folder name="NodeProviders">
+                    <file name="IndexNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.IndexNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
@@ -328,6 +343,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="ForeignKeyList">
                 <folder name="NodeProviders">
+                    <file name="ForeignKeyNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ForeignKeyNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
