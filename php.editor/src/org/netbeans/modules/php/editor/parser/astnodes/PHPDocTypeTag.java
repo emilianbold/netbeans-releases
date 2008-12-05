@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,6 +49,10 @@ import java.util.List;
  * @author Petr Pisl
  */
 public class PHPDocTypeTag extends PHPDocTag {
+
+    public static final List<String> ORDINAL_TYPES = Arrays.asList(
+        "NULL", "INT", "INTEGER", "BOOL", "STRING"
+        );
 
     private final List<PHPDocNode> types;
 
