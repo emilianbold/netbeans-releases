@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,74 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.mobility.svgcore.items;
 
-import org.netbeans.modules.mobility.svgcore.items.form.*;
-import java.io.IOException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-
 /**
+ * SVGBasicShape implementation for polygone.
+ * loads snippet text from polygone_snippet.xml_template
+ * <p>
+ * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%
+ *
  * @author akorostelev
  */
-public abstract class SVGBasicShape extends SVGComponentDrop{
+public class Polygon extends SVGBasicShape {
 
-    /**
-     * @param snippetPath
-     */
-    protected SVGBasicShape(String snippetPath) {
-        assert snippetPath != null 
-                : "snippet path == null";//NOI18N
-        mySnippetPath = snippetPath;
+    private static final String SNIPPET_PATH = "polygone_snippet.xml_template";   //NOI18N
+
+    public Polygon() {
+        super(SNIPPET_PATH);
     }
 
-    protected boolean doTransfer(SVGDataObject svgDataObject) {
-        try {
-            String snippet = getSnippet();
-            String id = svgDataObject.getModel().mergeImage(snippet, false);
-            setSelection(id);
-            return true;
-        } catch (Exception ex) {
-            SceneManager.error("Error during image merge", ex); //NOI18N
-        }
-        return false;
-    }
-    
-    @Override
-    protected boolean doTransfer(JTextComponent target) {
-        try {
-            String snippet = getSnippet();
-            insertToTextComponent(snippet, target);
-            return true;
-        } catch (Exception ex) {
-            SceneManager.error("Error during image merge", ex); //NOI18N
-        }
-        return false;
-    }
-
-    protected String getSnippet() throws IOException{
-        String text = loadSnippetString();
-        return replaceCoordinates(text);
-    }
-
-    /**
-     * loads snippet string from resource file,
-     * which part is specified in conbstructor.
-     * Path is relative to current class -
-     * getClass().getResourceAsStream(PATH) is used to load resource.
-     * @return snippet String
-     * @throws java.io.IOException
-     */
-    protected String loadSnippetString() throws IOException{
-        return loadSnippetString(getClass(), mySnippetPath);
-    }
-  
-    private String mySnippetPath;
 }

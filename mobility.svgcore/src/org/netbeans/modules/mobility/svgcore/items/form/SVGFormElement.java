@@ -100,12 +100,20 @@ public abstract class SVGFormElement extends SVGComponentDrop{
         return false;
     }
 
-    protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGFormElement.class, mySnippetPath);
+    /**
+     * loads snippet string from resource file,
+     * which part is specified in conbstructor.
+     * Path is relative to current class -
+     * getClass().getResourceAsStream(PATH) is used to load resource.
+     * @return snippet String
+     * @throws java.io.IOException
+     */
+    protected String loadSnippetString() throws IOException{
+        return loadSnippetString(SVGFormElement.class, mySnippetPath);
     }
 
     private String getSnippet(String id) throws IOException {
-        String text = getSnippetString();
+        String text = loadSnippetString();
         String withId = text.replace(ID_PATTERN, id);
         return replaceCoordinates(withId);
     }
