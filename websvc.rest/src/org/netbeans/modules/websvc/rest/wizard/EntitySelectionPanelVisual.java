@@ -512,7 +512,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
                                             public void run() {
                                                 removeElement(MSG_RETRIEVING);
-                                                for (Entity entity : builder.getEntities()) {
+                                                for (Entity entity : builder.getValidEntities()) {
                                                     addElement(entity);
                                                 }
                                                 updateButtons();

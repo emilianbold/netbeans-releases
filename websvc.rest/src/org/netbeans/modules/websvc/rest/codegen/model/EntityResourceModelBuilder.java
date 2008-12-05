@@ -97,6 +97,16 @@ public class EntityResourceModelBuilder {
         return ret;
     }
 
+    public List<Entity> getValidEntities() {
+        List<Entity> ret = new ArrayList<Entity>();
+        for (EntityClassInfo info : entityClassInfoMap.values()) {
+            if (info.getIdFieldInfo() != null) {
+                ret.add(info.getEntity());
+            }
+        }
+        return ret;
+    }
+
     public Set<EntityClassInfo> getEntityInfos() {
         return new HashSet<EntityClassInfo>(entityClassInfoMap.values());
     }
