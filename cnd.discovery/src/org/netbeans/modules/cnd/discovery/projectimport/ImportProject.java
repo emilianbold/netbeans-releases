@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -57,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -102,6 +104,8 @@ public class ImportProject {
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
+    private boolean postponeModel;
+
 
     public ImportProject(WizardStorage wizardStorage) {
         String path = wizardStorage.getPath().trim();
@@ -150,7 +154,6 @@ public class ImportProject {
             makefilePath = FilePathAdaptor.normalize(makefilePath);
             importantItems.add(makefilePath);
         }
-        boolean postponeModel = false;
         if (configurePath != null && configurePath.length() > 0) {
             File configureFile = new File(configurePath);
             configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
@@ -228,13 +231,7 @@ public class ImportProject {
         if (postponeModel) {
             switchModel(false);
         } else {
-            CsmModel model = CsmModelAccessor.getModel();
-            if (model instanceof ModelImpl) {
-                NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-                MODEL_LISTENER.importer = this;
-                MODEL_LISTENER.p = model.getProject(np);
-                CsmListeners.getDefault().addProgressListener(MODEL_LISTENER);
-            }
+            postModelDiscovery();
         }
 
         return resultSet;
@@ -251,20 +248,27 @@ public class ImportProject {
                 makefilePath = file.getAbsolutePath();
             }
         }
-        FileObject makeFileObject = FileUtil.toFileObject(file);
-        DataObject dObj;
-        try {
-            dObj = DataObject.find(makeFileObject);
-            Node node = dObj.getNodeDelegate();
-            ExecutionListener listener = new ExecutionListener() {
-                public void executionStarted() {
-                }
-                public void executionFinished(int rc) {
-                    discovery();
-                }
-            };
-            MakeAction.execute(node, "", listener); // NOI18N
-        } catch (DataObjectNotFoundException ex) {
+        if (file.exists()) {
+            FileObject makeFileObject = FileUtil.toFileObject(file);
+            DataObject dObj;
+            try {
+                dObj = DataObject.find(makeFileObject);
+                Node node = dObj.getNodeDelegate();
+                ExecutionListener listener = new ExecutionListener() {
+                    public void executionStarted() {
+                    }
+                    public void executionFinished(int rc) {
+                        discovery();
+                    }
+                };
+                MakeAction.execute(node, "", listener); // NOI18N
+            } catch (DataObjectNotFoundException ex) {
+            }
+        } else {
+            runMake = false;
+            postponeModel = false;
+            switchModel(true);
+            postModelDiscovery();
         }
     }
 
@@ -331,9 +335,30 @@ public class ImportProject {
         }
     }
 
+    private void postModelDiscovery() {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final CsmProject p = model.getProject(np);
+            CsmProgressListener listener = new CsmProgressAdapter() {
+
+                @Override
+                public void projectParsingFinished(CsmProject project) {
+                    if (project.equals(p)) {
+                        ImportProject.listeners.remove(p);
+                        CsmListeners.getDefault().removeProgressListener(this);
+                        modelDiscovery();
+                    }
+                }
+            };
+            CsmListeners.getDefault().addProgressListener(listener);
+            ImportProject.listeners.put(p, listener);
+        }
+    }
+
     private void switchModel(boolean state) {
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl) {
+        if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 ((ModelImpl) model).enableProject(np);
@@ -343,19 +368,5 @@ public class ImportProject {
         }
     }
 
-    private static final MyListener MODEL_LISTENER  = new MyListener();
-    private static class MyListener extends CsmProgressAdapter{
-        private CsmProject p;
-        private ImportProject importer;
-        @Override
-        public void projectParsingFinished(CsmProject project) {
-            if (project.equals(p)) {
-                CsmListeners.getDefault().removeProgressListener(this);
-                importer.modelDiscovery();
-                p = null;
-                importer = null;
-            }
-        }
-    }
+    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
 }
-
