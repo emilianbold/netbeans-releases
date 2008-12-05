@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -310,13 +311,17 @@ public class WebProjectRestSupport extends RestSupport {
         return null;
     }
 
-    public FileObject getWebXml() {
+    public FileObject getWebXml() throws IOException {
         return getWebXml(project);
     }
 
-    public static FileObject getWebXml(Project project) {
+    public static FileObject getWebXml(Project project) throws IOException {
         WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
-
+        if(jp == null) {
+            throw new IOException(
+                    NbBundle.getMessage(WebProjectRestSupport.class,
+                    "MSG_InvalidWebProject", project.getProjectDirectory()));
+        }
         return jp.getDeploymentDescriptor();
     }
 

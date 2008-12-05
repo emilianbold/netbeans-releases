@@ -62,10 +62,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.State;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -243,7 +245,19 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             try {
                 FileObject projectRoot = FileUtil.toFileObject(projectDir);
                 Project p = ProjectManager.getDefault().findProject(projectRoot);
-                if (! RestUtils.isRestEnabled(p)) {
+//                if (! RestUtils.isRestEnabled(p)) {
+//                    rejecteds.add(p);
+//                    continue;
+//                }
+                boolean reject = true;
+                try {
+                    ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
+                    if(servletMap != null) { //Cannot find Servlet Adaptor in web.xml
+                        reject = false;
+                    }
+                } catch(Exception ex) { // project may not be a web module
+                }
+                if(reject) {
                     rejecteds.add(p);
                     continue;
                 }
