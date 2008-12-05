@@ -86,19 +86,27 @@ public class ListMethodsWidget extends Widget implements PropertyChangeListener 
     private void initUI() {
         setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, AbstractTitledWidget.RADIUS/2));
+        List<Method> rList = new ArrayList<Method>();
         Collection<Resources> resources = model.getApplication().getResources();
         if(!resources.isEmpty()) {
-            List<Method> rList = new ArrayList<Method>();
             getMethodRecursively(model.getApplication(), rList);
-            for(Method m:rList) {
-                MethodWidget methodWidget = null;
-                try {
-                    methodWidget = new MethodWidget((ObjectScene) getScene(), this, m, model, true);
-                    addChild(methodWidget);
-                    map.put(m, methodWidget);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        }
+        for(Method m:model.getApplication().getMethod()) {
+            rList.add(m);
+        }
+        for(ResourceType rType:model.getApplication().getResourceType()) {
+            for(Method child:rType.getMethod()) {
+                rList.add(child);
+            }
+        }
+        for(Method m:rList) {
+            MethodWidget methodWidget = null;
+            try {
+                methodWidget = new MethodWidget((ObjectScene) getScene(), this, m, model, true);
+                addChild(methodWidget);
+                map.put(m, methodWidget);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

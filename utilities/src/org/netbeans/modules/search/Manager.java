@@ -67,6 +67,7 @@ import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCO
  *
  * @see <a href="doc-files/manager-state-diagram.png">State diagram</a>
  * @author  Marian Petras
+ * @author  kaktus
  */
 final class Manager {
     
@@ -208,6 +209,8 @@ final class Manager {
         
         synchronized (lock) {
             SearchTask newSearchTask = lastSearchTask.createNewGeneration();
+            if(lastSearchTask.getResultModel() != null)
+                ResultView.getInstance().addSearchPair(lastSearchTask.getResultModel().getResultView(), newSearchTask);
             lastSearchTask = null;
             scheduleSearchTask(newSearchTask);
         }
@@ -330,15 +333,23 @@ final class Manager {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(getClass(), "MSG_Success"));    //NOI18N
             if (searchWindowOpen) {
-                callOnWindowFromAWT("closeAndSendFocusToEditor", false);//NOI18N
+                Method theMethod;
+                try {
+                    theMethod = ResultView.class.getDeclaredMethod(
+                                                        "closeAndSendFocusToEditor",  //NOI18N
+                                                        ReplaceTask.class);
+                } catch (NoSuchMethodException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                callOnWindowFromAWT(theMethod, new Object[]{currentReplaceTask} , false);//NOI18N
             }
         } else {
             String msgKey = (resultStatus == PRE_CHECK_FAILED)
                             ? "MSG_Issues_found_during_precheck"        //NOI18N
                             : "MSG_Issues_found_during_replace";        //NOI18N
             String title = NbBundle.getMessage(getClass(), msgKey);
-            displayIssuesFromAWT(title,
-                                 currentReplaceTask.getProblems(),
+            displayIssuesFromAWT(currentReplaceTask,
+                                 title,
                                  resultStatus != PRE_CHECK_FAILED);
             if (resultStatus == PRE_CHECK_FAILED) {
                 offerRescanAfterIssuesFound();
@@ -372,7 +383,16 @@ final class Manager {
              * to the EventQueue thread, we use invokeLater(...) and not
              * invokeAndWait(...).
              */
-            callOnWindowFromAWT("rescan", false);                       //NOI18N
+            Method theMethod;
+            try {
+                theMethod = ResultView.class.getDeclaredMethod(
+                                                    "rescan",  //NOI18N
+                                                    ReplaceTask.class);
+            } catch (NoSuchMethodException ex) {
+                throw new IllegalStateException(ex);
+            }
+
+            callOnWindowFromAWT(theMethod, new Object[]{currentReplaceTask}, false);
         }
     }
     
@@ -400,13 +420,14 @@ final class Manager {
     
     /**
      */
-    private void displayIssuesFromAWT(String title,
-                                      String[] issues,
+    private void displayIssuesFromAWT(ReplaceTask task,
+                                      String title,
                                       boolean att) {
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
                                                 "displayIssuesToUser",  //NOI18N
+                                                ReplaceTask.class,
                                                 String.class,
                                                 String[].class,
                                                 Boolean.TYPE);
@@ -414,7 +435,7 @@ final class Manager {
             throw new IllegalStateException(ex);
         }
         callOnWindowFromAWT(theMethod,
-                            new Object[] {title, issues, Boolean.valueOf(att)},
+                            new Object[] {task, title, task.getProblems(), Boolean.valueOf(att)},
                             false);
     }
     

@@ -1,0 +1,547 @@
+
+
+Document 0
+Searchable Keys:
+  class : ArithmeticError
+  class-ig : arithmeticerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : AssertionError
+  class-ig : assertionerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  class : AttributeError
+  class-ig : attributeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 3
+Searchable Keys:
+  class : BaseException
+  class-ig : baseexception
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  class : DeprecationWarning
+  class-ig : deprecationwarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 5
+Searchable Keys:
+  class : EOFError
+  class-ig : eoferror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 6
+Searchable Keys:
+  class : EnvironmentError
+  class-ig : environmenterror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 7
+Searchable Keys:
+  class : Exception
+  class-ig : exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 8
+Searchable Keys:
+  class : FloatingPointError
+  class-ig : floatingpointerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 9
+Searchable Keys:
+  class : FutureWarning
+  class-ig : futurewarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 10
+Searchable Keys:
+  class : GeneratorExit
+  class-ig : generatorexit
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 11
+Searchable Keys:
+  class : IOError
+  class-ig : ioerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 12
+Searchable Keys:
+  class : ImportError
+  class-ig : importerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 13
+Searchable Keys:
+  class : ImportWarning
+  class-ig : importwarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 14
+Searchable Keys:
+  class : IndexError
+  class-ig : indexerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 15
+Searchable Keys:
+  class : KeyError
+  class-ig : keyerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 16
+Searchable Keys:
+  class : KeyboardInterrupt
+  class-ig : keyboardinterrupt
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 17
+Searchable Keys:
+  class : LookupError
+  class-ig : lookuperror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 18
+Searchable Keys:
+  class : MemoryError
+  class-ig : memoryerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 19
+Searchable Keys:
+  class : NameError
+  class-ig : nameerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 20
+Searchable Keys:
+  class : NotImplementedError
+  class-ig : notimplementederror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 21
+Searchable Keys:
+  class : OSError
+  class-ig : oserror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 22
+Searchable Keys:
+  class : OverflowError
+  class-ig : overflowerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 23
+Searchable Keys:
+  class : PendingDeprecationWarning
+  class-ig : pendingdeprecationwarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 24
+Searchable Keys:
+  class : ReferenceError
+  class-ig : referenceerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 25
+Searchable Keys:
+  class : RuntimeError
+  class-ig : runtimeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 26
+Searchable Keys:
+  class : RuntimeWarning
+  class-ig : runtimewarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 27
+Searchable Keys:
+  class : StandardError
+  class-ig : standarderror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 28
+Searchable Keys:
+  class : StopIteration
+  class-ig : stopiteration
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 29
+Searchable Keys:
+  class : SyntaxError
+  class-ig : syntaxerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 30
+Searchable Keys:
+  class : SyntaxWarning
+  class-ig : syntaxwarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 31
+Searchable Keys:
+  class : SystemError
+  class-ig : systemerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 32
+Searchable Keys:
+  class : SystemExit
+  class-ig : systemexit
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 33
+Searchable Keys:
+  class : TypeError
+  class-ig : typeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 34
+Searchable Keys:
+  class : UnboundLocalError
+  class-ig : unboundlocalerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 35
+Searchable Keys:
+  class : UnicodeDecodeError
+  class-ig : unicodedecodeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 36
+Searchable Keys:
+  class : UnicodeEncodeError
+  class-ig : unicodeencodeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 37
+Searchable Keys:
+  class : UnicodeError
+  class-ig : unicodeerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 38
+Searchable Keys:
+  class : UnicodeTranslateError
+  class-ig : unicodetranslateerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 39
+Searchable Keys:
+  class : UnicodeWarning
+  class-ig : unicodewarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 40
+Searchable Keys:
+  class : UserWarning
+  class-ig : userwarning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 41
+Searchable Keys:
+  class : ValueError
+  class-ig : valueerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 42
+Searchable Keys:
+  class : Warning
+  class-ig : warning
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 43
+Searchable Keys:
+  class : WindowsError
+  class-ig : windowserror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 44
+Searchable Keys:
+  class : ZeroDivisionError
+  class-ig : zerodivisionerror
+  extends : Exception
+  in : exceptions
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 45
+Searchable Keys:
+  item : ArithmeticError;C;|DOCUMENTED|DOC_ONLY|;
+  item : AssertionError;C;|DOCUMENTED|DOC_ONLY|;
+  item : AttributeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : BaseException;C;|DOCUMENTED|DOC_ONLY|;
+  item : DeprecationWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : EOFError;C;|DOCUMENTED|DOC_ONLY|;
+  item : EnvironmentError;C;|DOCUMENTED|DOC_ONLY|;
+  item : Exception;C;|DOCUMENTED|DOC_ONLY|;
+  item : FloatingPointError;C;|DOCUMENTED|DOC_ONLY|;
+  item : FutureWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : GeneratorExit;C;|DOCUMENTED|DOC_ONLY|;
+  item : IOError;C;|DOCUMENTED|DOC_ONLY|;
+  item : ImportError;C;|DOCUMENTED|DOC_ONLY|;
+  item : ImportWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : IndexError;C;|DOCUMENTED|DOC_ONLY|;
+  item : KeyError;C;|DOCUMENTED|DOC_ONLY|;
+  item : KeyboardInterrupt;C;|DOCUMENTED|DOC_ONLY|;
+  item : LookupError;C;|DOCUMENTED|DOC_ONLY|;
+  item : MemoryError;C;|DOCUMENTED|DOC_ONLY|;
+  item : NameError;C;|DOCUMENTED|DOC_ONLY|;
+  item : NotImplementedError;C;|DOCUMENTED|DOC_ONLY|;
+  item : OSError;C;|DOCUMENTED|DOC_ONLY|;
+  item : OverflowError;C;|DOCUMENTED|DOC_ONLY|;
+  item : PendingDeprecationWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : ReferenceError;C;|DOCUMENTED|DOC_ONLY|;
+  item : RuntimeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : RuntimeWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : StandardError;C;|DOCUMENTED|DOC_ONLY|;
+  item : StopIteration;C;|DOCUMENTED|DOC_ONLY|;
+  item : SyntaxError;C;|DOCUMENTED|DOC_ONLY|;
+  item : SyntaxWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : SystemError;C;|DOCUMENTED|DOC_ONLY|;
+  item : SystemExit;C;|DOCUMENTED|DOC_ONLY|;
+  item : TypeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnboundLocalError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnicodeDecodeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnicodeEncodeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnicodeError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnicodeTranslateError;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnicodeWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : UserWarning;C;|DOCUMENTED|DOC_ONLY|;
+  item : ValueError;C;|DOCUMENTED|DOC_ONLY|;
+  item : Warning;C;|DOCUMENTED|DOC_ONLY|;
+  item : WindowsError;C;|DOCUMENTED|DOC_ONLY|;
+  item : ZeroDivisionError;C;|DOCUMENTED|DOC_ONLY|;
+  module : exceptions
+
+Not Searchable Keys:
+  modattrs : S

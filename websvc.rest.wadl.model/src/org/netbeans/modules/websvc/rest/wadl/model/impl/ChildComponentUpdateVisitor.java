@@ -237,6 +237,15 @@ public class ChildComponentUpdateVisitor<T extends WadlComponent> implements Wad
             } else if (operation == null) {
                 canAdd = true;
             }
+        } else if (parent instanceof Application) {
+            Application target = (Application)parent;
+            if (operation == Operation.ADD) {
+                addChild(Application.METHOD_PROPERTY, method);
+            } else if (operation == Operation.REMOVE) {
+                target.removeMethod(method);
+            } else if (operation == null) {
+                canAdd = true;
+            }
         } else {
             checkOperationOnUnmatchedParent();
         }
@@ -261,6 +270,15 @@ public class ChildComponentUpdateVisitor<T extends WadlComponent> implements Wad
             } else if (operation == null) {
                 canAdd = true;
             }
+        } else if (parent instanceof Application) {
+            Application target = (Application)parent;
+            if (operation == Operation.ADD) {
+                addChild(Application.REPRESENTATION_PROPERTY, rep);
+            } else if (operation == Operation.REMOVE) {
+                target.removeRepresentation(rep);
+            } else if (operation == null) {
+                canAdd = true;
+            }
         } else {
             checkOperationOnUnmatchedParent();
         }
@@ -271,6 +289,15 @@ public class ChildComponentUpdateVisitor<T extends WadlComponent> implements Wad
             Response target = (Response)parent;
             if (operation == Operation.ADD) {
                 addChild(Response.FAULT_PROPERTY, fault);
+            } else if (operation == Operation.REMOVE) {
+                target.removeFault(fault);
+            } else if (operation == null) {
+                canAdd = true;
+            }
+        } else if (parent instanceof Application) {
+            Application target = (Application)parent;
+            if (operation == Operation.ADD) {
+                addChild(Application.FAULT_PROPERTY, fault);
             } else if (operation == Operation.REMOVE) {
                 target.removeFault(fault);
             } else if (operation == null) {

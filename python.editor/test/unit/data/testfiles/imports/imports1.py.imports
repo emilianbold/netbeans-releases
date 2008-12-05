@@ -1,0 +1,9 @@
+Requires user interaction: No
+Unused imports:
+    bar
+    foo
+    module1
+    module2
+    module3
+    module4:Class1
+    module5:Class2:Class3

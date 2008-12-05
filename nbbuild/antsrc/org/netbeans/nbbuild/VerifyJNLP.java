@@ -118,7 +118,7 @@ public class VerifyJNLP extends Task {
                 validate(new File(basedir, incl), results);
             }
         }
-        JUnitReportWriter.writeReport(this, failOnError ? null : report, results);
+        JUnitReportWriter.writeReport(this, null, failOnError ? null : report, results);
     }
 
     private static void error(File jnlp, Map<String,String> results, String key, String message) {

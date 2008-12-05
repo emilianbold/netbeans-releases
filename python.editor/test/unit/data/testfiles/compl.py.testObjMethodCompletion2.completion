@@ -1,0 +1,6 @@
+Code completion result for source line:
+self.|mysupersupermethod()
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     mymethod()                                 
+METHOD     mysupermethod()                            
+METHOD     mysupersupermethod()                       

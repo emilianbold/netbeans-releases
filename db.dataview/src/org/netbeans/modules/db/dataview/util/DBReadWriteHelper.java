@@ -411,7 +411,8 @@ public class DBReadWriteHelper {
         } catch (Exception e) {
             String type = DataViewUtils.getStdSqlType(colType);
             String colName = col.getQualifiedName();
-            String errMsg = "Please enter valid data for " + colName + " of " + type + " type";
+            int precision = col.getPrecision();
+            String errMsg = "Please enter valid data for " + colName + " of datatype " + type +"(" +precision +")";
             throw new DBException(errMsg);
         }
     }

@@ -1,0 +1,161 @@
+
+
+Document 0
+Searchable Keys:
+  class : dict
+  class-ig : dict
+  in : stdtypes
+  member : clear;F;|DOCUMENTED|DOC_ONLY|;;
+  member : copy;F;|DOCUMENTED|DOC_ONLY|;;
+  member : dict;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;arg;
+  member : fromkeys;F;|DOCUMENTED|DOC_ONLY|;seq,value;
+  member : get;F;|DOCUMENTED|DOC_ONLY|;key,default;
+  member : has_key;F;|DOCUMENTED|DOC_ONLY|;key;
+  member : items;F;|DOCUMENTED|DOC_ONLY|;;
+  member : iteritems;F;|DOCUMENTED|DOC_ONLY|;;
+  member : iterkeys;F;|DOCUMENTED|DOC_ONLY|;;
+  member : itervalues;F;|DOCUMENTED|DOC_ONLY|;;
+  member : keys;F;|DOCUMENTED|DOC_ONLY|;;
+  member : pop;F;|DOCUMENTED|DOC_ONLY|;key,default;
+  member : popitem;F;|DOCUMENTED|DOC_ONLY|;;
+  member : setdefault;F;|DOCUMENTED|DOC_ONLY|;key,default;
+  member : update;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : values;F;|DOCUMENTED|DOC_ONLY|;;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : file
+  class-ig : file
+  in : stdtypes
+  member : __bases__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __dict__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __enter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __exit__;F;|DOCUMENTED|DOC_ONLY|;exc_type,exc_val,exc_tb;
+  member : __members__;A;|DOCUMENTED|DEPRECATED|DOC_ONLY|;
+  member : __methods__;A;|DOCUMENTED|DEPRECATED|DOC_ONLY|;
+  member : __name__;A;|DOCUMENTED|DOC_ONLY|;
+  member : close;F;|DOCUMENTED|DOC_ONLY|;;
+  member : closed;A;|DOCUMENTED|DOC_ONLY|;
+  member : encoding;A;|DOCUMENTED|DOC_ONLY|;
+  member : errors;A;|DOCUMENTED|DOC_ONLY|;
+  member : fileno;F;|DOCUMENTED|DOC_ONLY|;;
+  member : flush;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isatty;F;|DOCUMENTED|DOC_ONLY|;;
+  member : mode;A;|DOCUMENTED|DOC_ONLY|;
+  member : name;A;|DOCUMENTED|DOC_ONLY|;
+  member : newlines;A;|DOCUMENTED|DOC_ONLY|;
+  member : next;F;|DOCUMENTED|DOC_ONLY|;;
+  member : read;F;|DOCUMENTED|DOC_ONLY|;size;
+  member : readline;F;|DOCUMENTED|DOC_ONLY|;size;
+  member : readlines;F;|DOCUMENTED|DOC_ONLY|;sizehint;
+  member : seek;F;|DOCUMENTED|DOC_ONLY|;offset,whence;
+  member : softspace;A;|DOCUMENTED|DOC_ONLY|;
+  member : tell;F;|DOCUMENTED|DOC_ONLY|;;
+  member : truncate;F;|DOCUMENTED|DOC_ONLY|;size;
+  member : write;F;|DOCUMENTED|DOC_ONLY|;str;
+  member : writelines;F;|DOCUMENTED|DOC_ONLY|;sequence;
+  member : xreadlines;F;|DOCUMENTED|DEPRECATED|DOC_ONLY|;;
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  class : float
+  class-ig : float
+  in : stdtypes
+  member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : as_integer_ratio;F;|DOCUMENTED|DOC_ONLY|;;
+  member : capitalize;F;|DOCUMENTED|DOC_ONLY|;;
+  member : center;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : count;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : decode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
+  member : encode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
+  member : endswith;F;|DOCUMENTED|DOC_ONLY|;suffix,start,end;
+  member : expandtabs;F;|DOCUMENTED|DOC_ONLY|;tabsize;
+  member : find;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : format;F;|DOCUMENTED|DOC_ONLY|;format_string,*args,**kwargs;
+  member : fromhex;F;|DOCUMENTED|DOC_ONLY|;s;
+  member : hex;F;|DOCUMENTED|DOC_ONLY|;;
+  member : index;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : isalnum;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isalpha;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isdecimal;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isdigit;F;|DOCUMENTED|DOC_ONLY|;;
+  member : islower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isnumeric;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isspace;F;|DOCUMENTED|DOC_ONLY|;;
+  member : istitle;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isupper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : join;F;|DOCUMENTED|DOC_ONLY|;seq;
+  member : ljust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : lower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : lstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : next;F;|DOCUMENTED|DOC_ONLY|;;
+  member : partition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : replace;F;|DOCUMENTED|DOC_ONLY|;old,new,count;
+  member : rfind;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : rindex;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : rjust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : rpartition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : rsplit;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
+  member : rstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : split;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
+  member : splitlines;F;|DOCUMENTED|DOC_ONLY|;keepends;
+  member : startswith;F;|DOCUMENTED|DOC_ONLY|;prefix,start,end;
+  member : strip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : swapcase;F;|DOCUMENTED|DOC_ONLY|;;
+  member : title;F;|DOCUMENTED|DOC_ONLY|;;
+  member : translate;F;|DOCUMENTED|DOC_ONLY|;table,deletechars;
+  member : upper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : zfill;F;|DOCUMENTED|DOC_ONLY|;width;
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  class : set
+  class-ig : set
+  in : stdtypes
+  member : add;F;|DOCUMENTED|DOC_ONLY|;elem;
+  member : clear;F;|DOCUMENTED|DOC_ONLY|;;
+  member : copy;F;|DOCUMENTED|DOC_ONLY|;;
+  member : difference;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : difference_update;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : discard;F;|DOCUMENTED|DOC_ONLY|;elem;
+  member : intersection;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : intersection_update;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : isdisjoint;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : issubset;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : issuperset;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : pop;F;|DOCUMENTED|DOC_ONLY|;;
+  member : remove;F;|DOCUMENTED|DOC_ONLY|;elem;
+  member : set;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;iterable;
+  member : set<other;F;|DOCUMENTED|DOC_ONLY|;;
+  member : set>other;F;|DOCUMENTED|DOC_ONLY|;;
+  member : symmetric_difference;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : symmetric_difference_update;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : union;F;|DOCUMENTED|DOC_ONLY|;other;
+  member : update;F;|DOCUMENTED|DOC_ONLY|;other;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  item : dict;C;|DOCUMENTED|DOC_ONLY|;
+  item : file;C;|DOCUMENTED|DOC_ONLY|;
+  item : float;C;|DOCUMENTED|DOC_ONLY|;
+  item : set;C;|DOCUMENTED|DOC_ONLY|;
+  module : stdtypes
+
+Not Searchable Keys:
+  modattrs : S

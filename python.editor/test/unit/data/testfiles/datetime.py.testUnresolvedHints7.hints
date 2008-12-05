@@ -1,0 +1,27 @@
+        return _build_struct_time(self.year, self.month, self.day,
+                                                         ----
+HINT:Undefined name "self.day"
+HINT:Undefined name "self.month"
+HINT:Undefined name "self.year"
+        y, m, d = self.year, self.month, self.day
+                                         ----
+HINT:Undefined name "self.day"
+HINT:Undefined name "self.month"
+HINT:Undefined name "self.year"
+            year = self.year
+                   ----
+HINT:Undefined name "self.year"
+            month = self.month
+                    ----
+HINT:Undefined name "self.month"
+            day = self.day
+                  ----
+HINT:Undefined name "self.day"
+            raise ValuError("astimezone() requires an aware datetime")
+                  ---------
+HINT:Undefined name "ValuError"
+        days = _ymd2ord(self.year, self.month, self.day)
+                                               ----
+HINT:Undefined name "self.day"
+HINT:Undefined name "self.month"
+HINT:Undefined name "self.year"

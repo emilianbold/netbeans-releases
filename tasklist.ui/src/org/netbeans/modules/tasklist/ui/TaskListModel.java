@@ -50,6 +50,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.modules.tasklist.impl.TaskList;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -128,14 +129,9 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
                 }
                 case COL_LOCATION: {
                     FileObject fo = Accessor.getResource( t );
-                    if( null == fo )
-                        return null;
-                    if( fo.isFolder() )
-                        return fo.getPath();
-                    fo = fo.getParent();
-                    if( null == fo )
-                        return null;
-                    return fo.getPath();
+                    if( null == fo || fo.isFolder() )
+                        return FileUtil.getFileDisplayName( fo );
+                    return FileUtil.getFileDisplayName( fo.getParent() );
                 }
                 case COL_LINE:
                     int lineNo = Accessor.getLine( t );

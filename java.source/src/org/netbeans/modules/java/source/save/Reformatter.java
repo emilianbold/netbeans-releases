@@ -477,6 +477,10 @@ public class Reformatter implements ReformatTask {
             ExpressionTree pkg = node.getPackageName();
             if (pkg != null) {
                 blankLines(cs.getBlankLinesBeforePackage());
+                if (!node.getPackageAnnotations().isEmpty()) {
+                    wrapList(cs.wrapAnnotations(), false, false, node.getPackageAnnotations());
+                    newline();
+                }
                 accept(PACKAGE);
                 int old = indent;
                 indent += continuationIndentSize;

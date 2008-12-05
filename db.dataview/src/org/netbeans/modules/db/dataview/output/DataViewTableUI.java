@@ -681,13 +681,8 @@ class DataViewTableUI extends ExtendedJTable {
                 public boolean isCellEditable(EventObject evt) {
                     int clickcount;
                     if (evt instanceof MouseEvent) {
-                        if (System.getProperty("os.name").contains("Mac")) {
-                            clickcount = 1;
-                            return ((MouseEvent) evt).getClickCount() >= clickcount;
-                        } else {
-                            clickcount = 2;
-                            return ((MouseEvent) evt).getClickCount() >= clickcount;
-                        }
+                        clickcount = 2;
+                        return ((MouseEvent) evt).getClickCount() >= clickcount;
                     }
                     return true;
                 }

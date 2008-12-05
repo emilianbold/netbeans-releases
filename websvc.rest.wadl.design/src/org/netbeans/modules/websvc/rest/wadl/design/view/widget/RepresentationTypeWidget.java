@@ -67,6 +67,7 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
     ParametersWidget queryParamsWidget;
     RemoveBodyElementAction removeAction;
     private Widget parent;
+    private RepresentationType repRef;
     
     /**
      * Creates a new instance of MethodWidget
@@ -77,6 +78,18 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
             WadlModel model) throws IOException {
         super(scene, rep, model);
         this.parent = parent;
+
+        String href = rep.getHref();
+        if(href != null) {
+            if(href.indexOf("#") != -1)
+                href = href.substring(href.indexOf("#")+1);
+            for(RepresentationType child:model.getApplication().getRepresentationType()) {
+                if(href.equals(child.getId())) {
+                    this.repRef = child;
+                }
+            }
+        }
+
         removeAction = new RemoveBodyElementAction(Collections.singleton(rep), model);
         removeAction.addPropertyChangeListener((PropertyChangeListener) parent);
         initUI();
@@ -86,7 +99,10 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
     protected abstract Paint getTitlePaint(Rectangle bounds);
 
     public RepresentationType getRepresentationType() {
-        return (RepresentationType) getWadlComponent();
+        if(this.repRef == null)
+            return (RepresentationType) getWadlComponent();
+        else
+            return this.repRef;
     }
 
     @Override
@@ -116,7 +132,12 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
 
             //Display Methods combobox
             JComboBox cb = new JComboBox(MediaType.values(false));
-            cb.setSelectedItem(getRepresentationType().getMediaType().toLowerCase());
+            String mediaType = getRepresentationType().getMediaType();
+            if(mediaType == null)
+                mediaType = MediaType.PLAIN.value();
+            if(!mediaType.equals(MediaType.fromValue(mediaType).value()))
+                cb.addItem(mediaType);
+            cb.setSelectedItem(mediaType.toLowerCase());
             cb.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
@@ -135,6 +156,7 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
             queryParamsWidget = new ParametersWidget(
                     NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"),
                     ParamStyle.QUERY, getObjectScene(), getRepresentationType(),
+                    getRepresentationType().getParent(),
                     ParametersWidget.getParameters(getRepresentationType().getParam(), ParamStyle.QUERY),
                     getModel());
             getContentWidget().addChild(queryParamsWidget);
