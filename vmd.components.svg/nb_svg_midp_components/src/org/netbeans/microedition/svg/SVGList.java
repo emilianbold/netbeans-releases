@@ -393,9 +393,9 @@ public class SVGList extends SVGComponent implements DataListener {
         int getSelectedIndex();
     }
     
-    public static class DefaultListMoldel implements ListModel {
+    public static class DefaultListModel implements ListModel {
         
-        public DefaultListMoldel( Vector data ){
+        public DefaultListModel( Vector data ){
             myListeners = new Vector(1);
             myData = new Vector();
             for ( int i=0; i<data.size() ; i++ ){

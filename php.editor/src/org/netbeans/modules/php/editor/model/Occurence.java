@@ -44,10 +44,11 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 /**
  * @author Radek Matous
  */
-public interface Occurence<TDeclaration extends ModelElement> {
-    TDeclaration getDeclaration();
-    List<? extends TDeclaration> getAllDeclarations();
-    List<Occurence<? extends ModelElement>> getAllOccurences();
-    int getOffset();
-    OffsetRange getOffsetRange();
+public interface Occurence{
+    ModelElement getDeclaration();
+    /**mostly the same as getDeclaration. In case of __constructor are different*/
+    ModelElement gotoDeclaratin();
+    List<? extends ModelElement> getAllDeclarations();
+    List<Occurence> getAllOccurences();
+    OffsetRange getOccurenceRange();
 }

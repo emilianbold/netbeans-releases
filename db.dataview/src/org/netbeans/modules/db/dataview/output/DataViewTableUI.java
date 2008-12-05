@@ -58,13 +58,16 @@ import java.awt.event.MouseEvent;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractCellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -75,6 +78,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -119,12 +123,15 @@ class DataViewTableUI extends ExtendedJTable {
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(String.class, new ResultSetCellRenderer());
         setDefaultRenderer(Number.class, new ResultSetCellRenderer());
+        setDefaultRenderer(Boolean.class, new ResultSetCellRenderer());
         setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer());
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
         setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
-
+        setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
+        //setDefaultEditor(String.class, new NullValueCellEditor());
+        
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
@@ -568,6 +575,28 @@ class DataViewTableUI extends ExtendedJTable {
         }
     }
 
+    private static class BooleanCellRenderer extends DefaultTableCellRenderer.UIResource {
+
+        JCheckBox cb;
+
+        public BooleanCellRenderer() {
+            super();
+            cb = new JCheckBox();
+            cb.setHorizontalAlignment(0);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            cb.setSelected(((Boolean) value).booleanValue());
+            if (!isSelected) {
+                cb.setBackground(table.getBackground());
+            } else {
+                cb.setBackground(table.getSelectionBackground());
+            }
+            return cb;
+        }
+    }
+
     private static class GeneratedResultSetCellRenderer extends ResultSetCellRenderer {
 
         static Color gray = new Color(245, 245, 245);
@@ -592,12 +621,13 @@ class DataViewTableUI extends ExtendedJTable {
         final TableCellRenderer DATE_RENDERER = new DateRenderer();
         final TableCellRenderer DATETIME_RENDERER = new DateTimeRenderer();
         final TableCellRenderer STRING_RENDERER = new StringRenderer();
+        final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof Number) {
+            } else if (value instanceof String) {
                 return STRING_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Number) {
                 return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -607,6 +637,8 @@ class DataViewTableUI extends ExtendedJTable {
                 return DATE_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Time) {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if (value instanceof Boolean) {
+                return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (c instanceof JComponent) {
@@ -634,13 +666,13 @@ class DataViewTableUI extends ExtendedJTable {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
             if (isSelected) {
-                if (obj.equals(value)) {
+                if (value.equals(obj)) {
                     c.setForeground(gray);
                 } else {
                     c.setForeground(Color.ORANGE);
                 }
             } else {
-                if (obj.equals(value)) {
+                if (value.equals(obj)) {
                     c.setForeground(table.getForeground());
                 } else {
                     c.setForeground(green);
@@ -799,8 +831,7 @@ class DataViewTableUI extends ExtendedJTable {
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             panel.removeAll();
             Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-
-            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);            
             if (dbCol.isGenerated()) {
                 editable = false;
             } else if (!tablePanel.isEditable()) {
@@ -846,6 +877,74 @@ class DataViewTableUI extends ExtendedJTable {
             } else {
                 JOptionPane.showMessageDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
             }
+        }
+    }
+
+    public class BooleanTableCellEditor extends AbstractCellEditor
+            implements ActionListener, TableCellEditor {
+
+        private int row, column;
+        private boolean editable = true;
+        private JTable table;
+        private JCheckBox cb;
+
+        public BooleanTableCellEditor(JCheckBox cb) {
+            this.cb = cb;
+            cb.setHorizontalAlignment(0);
+        }
+
+        @Override
+        public void addCellEditorListener(CellEditorListener celleditorlistener) {
+            super.addCellEditorListener(celleditorlistener);
+            cb.addActionListener(this);
+        }
+
+        @Override
+        public void removeCellEditorListener(CellEditorListener celleditorlistener) {
+            super.removeCellEditorListener(celleditorlistener);
+            cb.removeActionListener(this);
+        }
+
+        public Object getCellEditorValue() {            
+            return new Boolean(cb.isSelected());
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject evt) {
+            int clickcount;
+            if (evt instanceof MouseEvent) {
+                clickcount = 2;
+                return ((MouseEvent) evt).getClickCount() >= clickcount;
+            }
+            return false;
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if (value != null) {
+                cb.setSelected(((Boolean) value).booleanValue());
+            } else {
+                cb.setSelected(false);
+            }
+            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+            if (dbCol.isGenerated()) {
+                editable = false;
+            } else if (!tablePanel.isEditable()) {
+                editable = false;
+            } else {
+                editable = dbCol.isEditable();
+            }
+            cb.setEnabled(editable);
+
+            this.table = table;
+            this.row = row;
+            this.column = column;
+
+            return cb;
+        }
+
+        public void actionPerformed(ActionEvent actionevent) {
+            table.setValueAt(getCellEditorValue(), row, column);
+            setRowSelectionInterval(row, row);
         }
     }
 }

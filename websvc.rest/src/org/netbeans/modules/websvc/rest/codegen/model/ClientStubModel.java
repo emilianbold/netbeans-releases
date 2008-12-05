@@ -65,12 +65,15 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanelVisual;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * ClientStubModel
@@ -88,8 +91,8 @@ public class ClientStubModel {
         return new SourceModeler(p);
     }
     
-    public ResourceModel createModel(InputStream is) {
-        return new WadlModeler(is);
+    public ResourceModel createModel(FileObject wadl) {
+        return new WadlModeler(wadl);
     }
 
     public static String normalizeName(final String name) {
@@ -124,6 +127,8 @@ public class ClientStubModel {
         public void addResource(Resource m) {
             resourceList.add(m);
         }
+
+        public abstract State validate();
         
         public abstract void build() throws IOException;
     }
@@ -143,7 +148,17 @@ public class ClientStubModel {
             return srcMap.get(className);
         }
 
+        public State validate() {
+            return State.VALID;
+        }
+
         public void build() throws IOException {
+            State state = validate();
+            if(state != State.VALID) {
+                throw new IOException(
+                        NbBundle.getMessage(ClientStubsSetupPanelVisual.class,
+                        "MSG_ProjectsWithoutREST")+", "+state.value());
+            }
             List<JavaSource> sources = JavaSourceHelper.getJavaSources(p);
             List<JavaSource> staticR = new ArrayList<JavaSource>();
             List<JavaSource> dynamicR = new ArrayList<JavaSource>();
@@ -603,21 +618,67 @@ public class ClientStubModel {
     public class WadlModeler extends ResourceModel {
 
         private Map<String, Resource> staticRMap = new HashMap<String, Resource>();
-        private InputStream is;
+        private FileObject fo;
         private String baseUrl;
 
-        public WadlModeler(InputStream is) {
-            this.is = is;
+        public WadlModeler(FileObject fo) {
+            this.fo = fo;
         }
         
         public String getBaseUrl() {
             return baseUrl;
         }
 
+        public State validate() {
+            InputStream is = null;
+            try {
+                is = fo.getInputStream();
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                Document doc = db.parse(is);
+
+                Node app = doc.getDocumentElement();
+                if(app == null)
+                    return State.APP_MISSING;
+                List<Node> resourcesList = getChildNodes(app, "resources");
+                if(resourcesList == null || resourcesList.size() == 0)
+                    return State.RESOURCES_MISSING;
+                Node resources = resourcesList.get(0);
+
+                //App base
+                String base = getAttributeValue(resources, "base");
+                if(base == null || base.trim().equals(""))
+                    return State.BASE_URL_NULL;
+
+                //Resources
+                List<Node> resourceNodes = getChildNodes(resources, "resource");
+                if(resourceNodes.isEmpty())
+                    return State.EMPTY_RESOURCES;
+            } catch (Exception ex) {
+                return State.INVALID;
+            } finally {
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+            return State.VALID;
+        }
+
         public void build() throws IOException {
+            State state = validate();
+            if(state != State.VALID) {
+                throw new IOException(
+                        NbBundle.getMessage(ClientStubsSetupPanelVisual.class,
+                        "MSG_"+state.value()));
+            }
             List<Node> staticR = new ArrayList<Node>();
             List<Node> dynamicR = new ArrayList<Node>();
+            InputStream is = null;
             try {
+                is = fo.getInputStream();
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document doc = db.parse(is);
@@ -671,6 +732,13 @@ public class ClientStubModel {
                 }
             } catch (Exception ex) {
                 throw new IOException(ex.getMessage());
+            } finally {
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                    }
+                }
             }
         }
 
@@ -1272,6 +1340,24 @@ public class ClientStubModel {
 
         public int compare(Object o1, Object o2) {
             return ((Representation)o1).getMime().compareTo(((Representation)o2).getMime());
+        }
+    }
+
+    public static enum State {
+        VALID("VALID"),
+        INVALID("INVALID"),
+        APP_MISSING("APP_MISSING"),
+        RESOURCES_MISSING("RESOURCES_MISSING"),
+        BASE_URL_NULL("BASE_URL_NULL"),
+        EMPTY_RESOURCES("EMPTY_RESOURCES");
+        String value;
+
+        State(String value) {
+            this.value = value;
+        }
+
+        public String value() {
+            return value;
         }
     }
 }

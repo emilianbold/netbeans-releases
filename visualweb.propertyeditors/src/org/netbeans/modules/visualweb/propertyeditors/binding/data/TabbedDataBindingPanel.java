@@ -60,6 +60,7 @@ import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
 import com.sun.data.provider.DataProvider;
 import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.faces.FacesDesignProject;
+import org.openide.awt.Mnemonics;
 
 public class TabbedDataBindingPanel extends DataBindingPanel implements BindingTargetCallback {
 
@@ -105,7 +106,6 @@ public class TabbedDataBindingPanel extends DataBindingPanel implements BindingT
         // find the current value
         valueTextField.setText(prop.getValueSource());
         valueLabel.setLabelFor(valueTextField);
-        valueLabel.setDisplayedMnemonic(bundle.getMessage("VALUE_EXP_DISPLAYED_MNEMONIC").charAt(0));
         valueTextField.getAccessibleContext().setAccessibleName(bundle.getMessage("VALUE_EXP_ACCESS_NAME"));
         valueTextField.getAccessibleContext().setAccessibleDescription(bundle.getMessage("VALUE_EXP_ACCESS_DESC"));
 
@@ -127,7 +127,7 @@ public class TabbedDataBindingPanel extends DataBindingPanel implements BindingT
         this.setLayout(gridBagLayout1);
         String lbl_current = bundle.getMessage("LBL_Current");
         String lbl_setting = bundle.getMessage("LBL_Setting");
-        valueLabel.setText(lbl_current + " " + designProperty.getPropertyDescriptor().getDisplayName() + " " + lbl_setting); //NOI18N
+        Mnemonics.setLocalizedText(valueLabel, lbl_current + " " + designProperty.getPropertyDescriptor().getDisplayName() + " " + lbl_setting); // NOI18N
         if (showExpr && bindingPanels.size() > 0) {
             this.add(valueLabel,
                     new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER,

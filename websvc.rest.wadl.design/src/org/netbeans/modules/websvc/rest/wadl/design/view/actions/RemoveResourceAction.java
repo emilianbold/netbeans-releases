@@ -92,7 +92,7 @@ public class RemoveResourceAction extends AbstractAction{
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if(resources.size()<1) return;
+        if(resources == null || resources.isEmpty()) return;
         boolean singleSelection = resources.size()==1;
         String methodName = singleSelection?resources.iterator().next().getPath():""+resources.size();
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation
