@@ -611,14 +611,16 @@ class SQLExecutionHelper {
         }
 
         // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
-        cntResultSet = null;
-        try {
-            cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
-            setTotalCount(cntResultSet);
-            return;
-        } catch (SQLException e) {
-        } finally {
-            DataViewUtils.closeResources(cntResultSet);
+        if (isSelect && !isGroupByUsedInSelect(sql)) {
+            cntResultSet = null;
+            try {
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
+                setTotalCount(cntResultSet);
+                return;
+            } catch (SQLException e) {
+            } finally {
+                DataViewUtils.closeResources(cntResultSet);
+            }
         }
 
         // get the count from resultset
@@ -647,6 +649,10 @@ class SQLExecutionHelper {
 
     private boolean isLimitUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(LIMIT_CLAUSE) != -1;
+    }
+
+    private boolean isGroupByUsedInSelect(String sql) {
+        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(" COUNT(*) ") != -1;
     }
 
     static String millisecondsToSeconds(long ms) {
