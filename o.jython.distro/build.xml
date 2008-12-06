@@ -37,6 +37,7 @@
         <ant dir="${jython_build}/jython" target="developer-build" inheritall="false" inheritrefs="false">
             <property name="dist.dir" value="${cluster}/jython-${jython_src_version}"/>
         </ant>
+        <copy tofile="build/license" file="external/jython-2.5-license.txt"/>
     </target>
 
     <target name="release" depends="init">
