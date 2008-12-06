@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -76,7 +77,11 @@ public class LogReader {
     private List<SourceFileProperties> result;
     
     public LogReader(String fileName, String root){
-        this.root = root;
+        if (root.length()>0) {
+            this.root = FileUtil.normalizeFile(new File(root)).getAbsolutePath();
+        } else {
+            this.root = root;
+        }
         this.fileName = fileName;
        
         // XXX
@@ -182,7 +187,7 @@ public class LogReader {
             return false;
         }
 
-        if (workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
+        if (Utilities.isWindows() && workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
             workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
         }
 
@@ -196,6 +201,16 @@ public class LogReader {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
+            }
+            if (Utilities.isWindows() && workDir.length()>3 &&
+                workDir.charAt(0)=='/' &&
+                workDir.charAt(2)=='/'){
+                String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
+                if (new File(d).exists()) {
+                    if (TRACE) {System.err.print(message);}
+                    setWorkingDir(d);
+                    return true;
+                }
             }
             if (baseWorkingDir != null) {
                 dir = baseWorkingDir + File.separator + workDir;
@@ -310,7 +325,7 @@ public class LogReader {
     
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
-        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();;
+        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
     
     private boolean parseLine(String line){

@@ -75,6 +75,7 @@ public final class DBException extends Exception {
                 SQLException e = (SQLException) t;
                 buf.append("Error code ").append(e.getErrorCode());
                 buf.append(", SQL state ").append(e.getSQLState());
+                buf.append("\n");
             }
         }
         buf.append(super.getMessage());

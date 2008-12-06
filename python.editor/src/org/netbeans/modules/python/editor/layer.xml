@@ -376,6 +376,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
             </file>        
+            <!-- Missing init.htm
             <file name="init.py" url="templates/init.template">
                 <attr name="position" intvalue="901"/>
                 <attr name="templateCategory" stringvalue="python"/>
@@ -385,6 +386,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
             </file>
+            -->
             
             <file name="pythonPackage">
                 <attr name="position" intvalue="905"/>

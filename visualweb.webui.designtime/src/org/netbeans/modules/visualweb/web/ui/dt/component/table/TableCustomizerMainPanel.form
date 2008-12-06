@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.JList" name="jList1">
     </Component>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -107,11 +111,8 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="addDataProviderButton">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_DATAPROVIDER_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_DP_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_DP_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -122,6 +123,9 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDataProviderButtonActionPerformed"/>
                       </Events>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
                           <BorderConstraints direction="East"/>
@@ -223,9 +227,6 @@
                           <SubComponents>
                             <Component class="javax.swing.JButton" name="addButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                                   <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_TO_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                                 </Property>
@@ -244,9 +245,6 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="removeButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="REMOVE_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                                   <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="REMOVE_FROM_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                                 </Property>
@@ -280,9 +278,6 @@
                           <SubComponents>
                             <Component class="javax.swing.JButton" name="removeAllButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="REMOVE_ALL_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                                   <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="REMOVE_ALL_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                                 </Property>
@@ -301,9 +296,6 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="addAllButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_ALL_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                                   <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ADD_ALL_BUTTON" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                                 </Property>
@@ -348,11 +340,8 @@
                           <SubComponents>
                             <Component class="javax.swing.JButton" name="upButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="UP_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="UP_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="UP_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                                 </Property>
                                 <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                                   <Insets value="[2, 7, 2, 7]"/>
@@ -366,14 +355,14 @@
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="upButtonActionPerformed"/>
                               </Events>
+                              <AuxValues>
+                                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                              </AuxValues>
                             </Component>
                             <Component class="javax.swing.JButton" name="downButton">
                               <Properties>
-                                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="DOWN_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                                </Property>
                                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="DOWN_BUTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                                  <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="DOWN_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                                 </Property>
                                 <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                                   <Insets value="[2, 7, 2, 7]"/>
@@ -387,16 +376,16 @@
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downButtonActionPerformed"/>
                               </Events>
+                              <AuxValues>
+                                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                              </AuxValues>
                             </Component>
                           </SubComponents>
                         </Container>
                         <Component class="javax.swing.JButton" name="newColumnButton">
                           <Properties>
-                            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="NEW_BUTTON_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                            </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="NEW_BUTTON_LABEL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="NEW_BUTTON_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                             </Property>
                           </Properties>
                           <AccessibilityProperties>
@@ -407,6 +396,9 @@
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newColumnButtonActionPerformed"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                               <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="1.0"/>
@@ -417,14 +409,11 @@
                     </Container>
                     <Component class="javax.swing.JLabel" name="lblAvailableColumns">
                       <Properties>
-                        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="AVAUILABLE_COLUMN_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                           <ComponentRef name="availableColumns"/>
                         </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="AVAILABLE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="AVAILABLE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -432,6 +421,9 @@
                           <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="AVAILABLE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="1" gridWidth="2" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="6" insetsRight="6" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -440,16 +432,16 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="lblSelectedColumns">
                       <Properties>
-                        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECTED_COLUMN_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                           <ComponentRef name="selectedColumns"/>
                         </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECTED_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECTED_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="3" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="6" insetsBottom="6" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -512,16 +504,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblHorzAlign">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HORIZONTAL_ALIGN_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="cbxHorzAlign"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HORIZONTAL_ALIGN_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HORIZONTAL_ALIGN_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="6" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -530,16 +522,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblHeaderText">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HEADER_TEXT_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtHeader"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HEADER_TEXT_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="HEADER_TEXT_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -548,16 +540,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblFooterText">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="COLUMN_FOOTER_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtFooter"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="FOOTER_TEXT_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="FOOTER_TEXT_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -596,14 +588,11 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblComponentType">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="COMPONENT_TYPE_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="cbxComponentType"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="COMPONENT_TYPE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="COMPONENT_TYPE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>
@@ -611,6 +600,9 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECT_COLUMN_TYPE_ACCESS_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </AccessibilityProperties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="3" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -634,16 +626,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblValueExpression">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VALUE_TYPE_TYPE_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtValueExpression"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VALUE_EXPRESSION_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VALUE_EXPRESSION_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="4" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -667,16 +659,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblVertAlign">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VERTICAL_ALIGN_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="cbxVertAlign"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VERTICAL_ALIGN_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="VERTICAL_ALIGN_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="2" gridY="6" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="9" anchor="13" weightX="0.0" weightY="0.0"/>
@@ -707,11 +699,8 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="cbSortable">
                   <Properties>
-                    <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SORT_CHECKBOX_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SORTABLE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SORTABLE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>
@@ -719,6 +708,9 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="MAKE_COLUMN_SORTABLE_ACCESS_DESC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </AccessibilityProperties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="7" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -727,14 +719,11 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="WIDTH_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="widthField"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="WIDTH_LABEL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="WIDTH_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>
@@ -742,6 +731,9 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="WIDTH_ACCESS_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </AccessibilityProperties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="5" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -794,16 +786,16 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="lblTableTitle">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="TABLE_TITLE_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtTableTitle"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="TITLE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="TITLE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="10" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -812,14 +804,11 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblTableSummary">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="TABLE_SUMMARY_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtTableSummary"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SUMMARY_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SUMMARY_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>
@@ -827,6 +816,9 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="EMPTY_MESSAGE_ACCESS_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </AccessibilityProperties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -880,16 +872,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblTableFooter">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="TABLE_FOOTER_DISPLAYED_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtTableSummary"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="FOOTER_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="FOOTER_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -898,16 +890,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblEmptyDataMsg">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="EMPTY_MESSAGE_DISPLAYED_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="txtEmptyDataMsg"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="EMPTY_DATA_MSG_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="EMPTY_DATA_MSG_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="0" gridY="3" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="10" insetsBottom="0" insetsRight="10" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -951,11 +943,8 @@
                   <SubComponents>
                     <Component class="javax.swing.JCheckBox" name="cbSelectAllRowsButton">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_SELECT_ALL_ROWS_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECT_ALL_ROWS_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SELECT_ALL_ROWS_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -963,6 +952,9 @@
                           <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_SELECT_ALL_ACCESS_DESC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="0" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="10" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
@@ -971,11 +963,8 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="cbDeselectAllRowsButton">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_DESELECT_ALL_ROWS_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="DESELECT_ALL_ROWS_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="DESELECT_ALL_ROWS_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -983,6 +972,9 @@
                           <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_DESELECT_ALL_ACCESS_DESC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -1003,14 +995,11 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="lblPageSize">
                           <Properties>
-                            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="PAGINATION_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                            </Property>
                             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                               <ComponentRef name="txtPageRows"/>
                             </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="PAGE_SIZE_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                              <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="PAGE_SIZE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                             </Property>
                             <Property name="enabled" type="boolean" value="false"/>
                           </Properties>
@@ -1019,6 +1008,9 @@
                               <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="PAGE_ROWS_ACCESS_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                             </Property>
                           </AccessibilityProperties>
+                          <AuxValues>
+                            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                          </AuxValues>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
                               <BorderConstraints direction="West"/>
@@ -1047,11 +1039,8 @@
                     </Container>
                     <Component class="javax.swing.JCheckBox" name="cbEnablePagination">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ENABLE_PAGINATION_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ENABLE_PAGINATION_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="ENABLE_PAGINATION_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -1062,6 +1051,9 @@
                       <Events>
                         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="cbEnablePaginationStateChanged"/>
                       </Events>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="4" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -1070,11 +1062,8 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="cbClearSortButton">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="CLEAR_SORT_CHECKBOX_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_CLEAR_SORT_BUTTON_LBL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_CLEAR_SORT_BUTTON_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -1082,6 +1071,9 @@
                           <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_CLEAR_SORT_ACCESS_DESC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -1090,11 +1082,8 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="cbSortPanelButton">
                       <Properties>
-                        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_SORT_CHECKBOX_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_SORT_PANEL_TOGGLE_BUTTON" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_SORT_PANEL_TOGGLE_BUTTON" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </Properties>
                       <AccessibilityProperties>
@@ -1102,6 +1091,9 @@
                           <ResourceString bundle="org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle.properties" key="SHOW_TOGGLE_SORT_ACCESS_DESC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
+                      <AuxValues>
+                        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                           <GridBagConstraints gridX="0" gridY="3" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>

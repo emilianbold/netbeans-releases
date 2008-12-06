@@ -70,7 +70,6 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
@@ -104,7 +103,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 public final class DatabaseResourceWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -134,15 +132,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
         generator.init(wizard);
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        if (Templates.getTargetFolder(wizard) == null) {
+        if (Templates.getTargetFolder(wizard) == null && sourceGroups.length > 0) {
             Templates.setTargetFolder(wizard, sourceGroups[0].getRootFolder());
         }
 
     }
 
     public Set instantiate() throws IOException {
-        Component c = WindowManager.getDefault().getMainWindow();
-
         // create the pu first if needed
         if (helper.getPersistenceUnit() != null) {
             try {
@@ -334,7 +330,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
-                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
+                        new DatabaseTablesWizardPanel(wizardTitle, wizard),
                         new EntityClassesPanel.WizardPanel(),
                         new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
                         "LBL_RestResourcesAndClasses"), wizard)
