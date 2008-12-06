@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -102,17 +103,18 @@ public class NbModuleSuite {
         final List<Item> tests;
         final Class<? extends TestCase> latestTestCaseClass;
         final List<String> clusterRegExp;
-        final String moduleRegExp;
+        /** each odd is cluster reg exp, each even is module reg exp */
+        final List<String> moduleRegExp;
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
 
         private Configuration(
             List<String> clusterRegExp,
-            String moduleRegExp,
-            ClassLoader parent, 
+            List<String> moduleRegExp,
+            ClassLoader parent,
             List<Item> testItems,
-            Class<? extends TestCase> latestTestCase, 
+            Class<? extends TestCase> latestTestCase,
             boolean reuseUserDir,
             boolean gui
         ) {
@@ -157,12 +159,38 @@ public class NbModuleSuite {
         /** By default only modules on classpath of the test are enabled, 
          * the rest are just autoloads. If you need to enable more, you can
          * specify that with this method. To enable all available modules
-         * in all clusters pass in <code>".*"</code>.
+         * in all clusters pass in <code>".*"</code>. Since 1.55 this method
+         * is cummulative.
+         * 
          * @param regExp regular expression to match code name base of modules
          * @return clone of this configuration with enable modules set to regExp value
          */
         public Configuration enableModules(String regExp) {
-            return new Configuration(clusterRegExp, regExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            if (regExp == null) {
+                return this;
+            }
+            return enableModules(".*", regExp);
+        }
+
+        /** By default only modules on classpath of the test are enabled,
+         * the rest are just autoloads. If you need to enable more, you can
+         * specify that with this method. To enable all available modules in
+         * one cluster, use this method and pass <code>".*"</code> as list of
+         * modules. This method is cumulative.
+         *
+         * @param clusterRegExp regular expression to match clusters
+         * @param moduleRegExp regular expression to match code name base of modules
+         * @return clone of this configuration with enable modules set to regExp value
+         * @since 1.55
+         */
+        public Configuration enableModules(String clusterRegExp, String moduleRegExp) {
+            List<String> arr = new ArrayList<String>();
+            if (this.moduleRegExp != null) {
+                arr.addAll(this.moduleRegExp);
+            }
+            arr.add(clusterRegExp);
+            arr.add(moduleRegExp);
+            return new Configuration(this.clusterRegExp, arr, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         Configuration classLoader(ClassLoader parent) {
@@ -786,34 +814,49 @@ public class NbModuleSuite {
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
         private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
         
-        private static void turnModules(File ud, TreeSet<String> modules, String regExp, File... clusterDirs) throws IOException {
+        private static void turnModules(File ud, TreeSet<String> modules, List<String> regExp, File... clusterDirs) throws IOException {
+            if (regExp == null) {
+                return;
+            }
             File config = new File(new File(ud, "config"), "Modules");
             config.mkdirs();
 
-            Pattern modPattern = regExp == null ? null : Pattern.compile(regExp);
-            for (File c : clusterDirs) {
-                File modulesDir = new File(new File(c, "config"), "Modules");
-                File[] allModules = modulesDir.listFiles();
-                if (allModules == null) {
-                    continue;
+            Iterator<String> it = regExp.iterator();
+            for (;;) {
+                if (!it.hasNext()) {
+                    break;
                 }
-                for (File m : allModules) {
-                    String n = m.getName();
-                    if (n.endsWith(".xml")) {
-                        n = n.substring(0, n.length() - 4);
-                    }
-                    n = n.replace('-', '.');
-
-                    String xml = asString(new FileInputStream(m), true);
-                    
-                    boolean contains = modules.contains(n);
-                    if (!contains && modPattern != null) {
-                        contains = modPattern.matcher(n).matches();
-                    }
-                    if (!contains) {
+                String clusterReg = it.next();
+                String moduleReg = it.next();
+                Pattern modPattern = Pattern.compile(moduleReg);
+                for (File c : clusterDirs) {
+                    if (!c.getName().matches(clusterReg)) {
                         continue;
                     }
-                    enableModule(xml, contains, new File(config, m.getName()));
+
+                    File modulesDir = new File(new File(c, "config"), "Modules");
+                    File[] allModules = modulesDir.listFiles();
+                    if (allModules == null) {
+                        continue;
+                    }
+                    for (File m : allModules) {
+                        String n = m.getName();
+                        if (n.endsWith(".xml")) {
+                            n = n.substring(0, n.length() - 4);
+                        }
+                        n = n.replace('-', '.');
+
+                        String xml = asString(new FileInputStream(m), true);
+
+                        boolean contains = modules.contains(n);
+                        if (!contains && modPattern != null) {
+                            contains = modPattern.matcher(n).matches();
+                        }
+                        if (!contains) {
+                            continue;
+                        }
+                        enableModule(xml, contains, new File(config, m.getName()));
+                    }
                 }
             }
         }

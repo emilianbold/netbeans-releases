@@ -206,6 +206,28 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.two", "OK");
         assertProperty("ins.three", "No");
     }
+    public void testCumulativeUseOfModules() throws Exception {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+        System.setProperty("ins.java", "No");
+        System.setProperty("en.one", "No");
+
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(
+            AskForOrgOpenideUtilEnumClass.class
+        )
+        .enableModules("ide.*", "org.netbeans.modules.java.platform.*")
+        .enableModules("platf.*", "org.openide.util.enumerations")
+        .enableModules("ide.*", "org.openide.loaders.*")
+        .gui(false)
+        .addTest(NbModuleSuiteIns.class);
+        Test instance = NbModuleSuite.create(config);
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("en.one", "OK");
+        assertProperty("ins.java", "No"); // no Windows as it is not in ide cluster
+        assertProperty("ins.two", "OK");
+    }
 
     public void testAccessExtraDefinedAutoload() {
         System.setProperty("en.one", "No");
