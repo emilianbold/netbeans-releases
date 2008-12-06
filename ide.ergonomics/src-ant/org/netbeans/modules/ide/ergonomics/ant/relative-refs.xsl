@@ -7,13 +7,10 @@
         <xsl:element name="filesystem">
             <xsl:element name="folder">
                 <xsl:attribute name="name">Templates</xsl:attribute>
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Project</xsl:attribute>
-                    <xsl:apply-templates
-                        select="//*/folder[@name='Templates']/folder[@name='Project']/*"
-                        mode="project-wizard"
-                    />
-                </xsl:element>
+                <xsl:apply-templates
+                    select="//*/folder[@name='Templates']/*"
+                    mode="project-wizard"
+                />
             </xsl:element>
         </xsl:element>
     </xsl:template>
@@ -37,17 +34,24 @@
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr[@urlvalue]" mode="project-wizard">
-        <xsl:element name="attr">
-            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:attribute name="urlvalue">
-                <xsl:text>nbresloc:/org/netbeans/modules/ide/ergonomics/</xsl:text>
-                <xsl:value-of select="$cluster.name"/>
-                <xsl:text>/</xsl:text>
-                <xsl:call-template name="filename">
-                    <xsl:with-param name="text" select="@urlvalue"/>
-                </xsl:call-template>
-            </xsl:attribute>
-        </xsl:element>
+        <xsl:choose>
+            <xsl:when test="contains(@urlvalue,'javax/swing/beaninfo/')">
+                <xsl:copy-of select="."/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:element name="attr">
+                    <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+                    <xsl:attribute name="urlvalue">
+                        <xsl:text>nbresloc:/org/netbeans/modules/ide/ergonomics/</xsl:text>
+                        <xsl:value-of select="$cluster.name"/>
+                        <xsl:text>/</xsl:text>
+                        <xsl:call-template name="filename">
+                            <xsl:with-param name="text" select="@urlvalue"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </xsl:element>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     <xsl:template match="attr" mode="project-wizard">
         <xsl:copy-of select="."/>

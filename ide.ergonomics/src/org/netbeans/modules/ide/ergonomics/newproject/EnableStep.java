@@ -230,7 +230,11 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
             };
         }
 
-        assert o != null && o instanceof WizardDescriptor.InstantiatingIterator :
+        if (o == null) {
+            return null;
+        }
+
+        assert o instanceof WizardDescriptor.InstantiatingIterator :
             o + " is not null and instanceof WizardDescriptor.InstantiatingIterator";
         return (WizardDescriptor.InstantiatingIterator<?>)o;
     }

@@ -39,13 +39,9 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.awt.Image;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,37 +49,51 @@ import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class VerifyFullIDETest extends NbTestCase {
-    public VerifyFullIDETest(String n) {
+public class DynamicVerifyTest extends NbTestCase {
+    public DynamicVerifyTest(String n) {
         super(n);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        NbTestSuite all = new NbTestSuite();
+        Test full = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(VerifyFullIDETest.class).
+            addTest(DynamicVerifyTest.class).
             addTest(ProjectTemplatesCheck.class).
+            addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
             enableModules(".*")
         );
+        Test ergonomics = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            addTest(PerClusterEnablementCheck.class).
+            addTest(ProjectTemplatesCheck.class).
+            addTest(AllClustersProcessedCheck.class).
+            addTest(EnableKitRefreshesLayersCheck.class).
+            addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal").
+            gui(false).
+            clusters("ergonomics.*").
+            clusters(".*").
+            enableModules("ide.*", ".*")
+        );
+
+        all.addTest(full);
+        all.addTest(ergonomics);
+
+        return all;
     }
 
     public void testGetAllProjectFactories() throws Exception {
@@ -121,52 +131,6 @@ public class VerifyFullIDETest extends NbTestCase {
 
         if (!all.isEmpty()) {
             fail("No all IDE projects are registered for ergonomics mode:\n" + sb);
-        }
-    }
-
-    public void testGetAllProjectTemplates() throws Exception {
-        List<XMLFileSystem> all = new ArrayList<XMLFileSystem>();
-
-        for (FeatureInfo fi : Feature2LayerMapping.features()) {
-            all.add(FeatureInfoAccessor.DEFAULT.getInternal(fi).getXMLFileSystem());
-        }
-
-        MultiFileSystem mfs = new MultiFileSystem(all.toArray(new FileSystem[0]));
-        FileObject orig = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
-        Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
-        while (allTemplates.hasMoreElements()) {
-            FileObject fo = allTemplates.nextElement();
-            if (fo.getPath().equals("Templates/Project/Import")) {
-                continue;
-            }
-            if (fo.getPath().equals("Templates/Project/Samples")) {
-                continue;
-            }
-
-            FileObject clone = mfs.findResource(fo.getPath());
-
-            assertNotNull("Both files exist: " + fo, clone);
-
-            Enumeration<String> allAttributes = fo.getAttributes();
-            while (allAttributes.hasMoreElements()) {
-                String name = allAttributes.nextElement();
-                if ("templateWizardIterator".equals(name)) {
-                    name = "instantiatingIterator";
-                }
-
-                Object attr = clone.getAttribute(name);
-                assertNotNull(
-                    "Attribute " + name + " present in clone on " + fo, attr
-                );
-
-                if (attr instanceof URL) {
-                    URL u = (URL)attr;
-                    int read = u.openStream().read(new byte[4096]);
-                    if (read <= 0) {
-                        fail("Resource shall exist: " + fo + " attr: " + name + " value: " + attr);
-                    }
-                }
-            }
         }
     }
 
