@@ -420,7 +420,6 @@ public class MergeOneRepoOperator extends JDialogOperator {
      */
     public void verify() {
         lblEndingWithRevision();
-        lblStartingWithRevision();
         lblFirstRepositoryFolder();
         lblEmptyMeansRepositoryHEAD();
         lblEmptyMeansRepositoryHEAD2();

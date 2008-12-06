@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -99,6 +100,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
@@ -871,43 +873,51 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             if (typeName != null){
-                Collection<IndexedFunction> methods = includeInherited ?
-                    request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
-                    request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
+                // the type can be defined as mixed type and then we need to combine all types
+                StringTokenizer stringTokenizer = new StringTokenizer(typeName, "|"); //NOI18N
+                while (stringTokenizer.hasMoreElements()) {
+                    String tokenType = stringTokenizer.nextToken().trim();
+                    if (PHPDocTypeTag.ORDINAL_TYPES.contains(tokenType.toUpperCase())) {
+                        continue;
+                    }
+                    Collection<IndexedFunction> methods = includeInherited ?
+                        request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask) :
+                        request.index.getMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
 
-                for (IndexedFunction method : methods){
-                    if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-                        for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            if (!invalidProposalsForClsMembers.contains(method.getName())) {
-                                proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                    for (IndexedFunction method : methods){
+                        if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
+                            for (int i = 0; i <= method.getOptionalArgs().length; i ++){
+                                if (!invalidProposalsForClsMembers.contains(method.getName())) {
+                                    proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                                }
                             }
                         }
                     }
-                }
 
-                String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
-                        ? request.prefix.substring(1) : request.prefix;
-                Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllFields(request.result, typeName, prefix, nameKind, attrMask) :
-                    request.index.getFields(request.result, typeName, prefix, nameKind, attrMask);
+                    String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
+                            ? request.prefix.substring(1) : request.prefix;
+                    Collection<IndexedConstant> properties = includeInherited ?
+                        request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask) :
+                        request.index.getFields(request.result, tokenType, prefix, nameKind, attrMask);
 
-                for (IndexedConstant prop : properties){
-                    if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                        PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
+                    for (IndexedConstant prop : properties){
+                        if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
+                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
 
-                        if (!staticContext) {
-                            item.doNotInsertDollarPrefix();
+                            if (!staticContext) {
+                                item.doNotInsertDollarPrefix();
+                            }
+
+                            proposals.add(item);
                         }
-
-                        proposals.add(item);
                     }
-                }
 
-                if (staticContext) {
-                    Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
-                            request.result, typeName, request.prefix, nameKind);
-                    for (IndexedConstant constant : classConstants) {
-                        proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
+                    if (staticContext) {
+                        Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
+                                request.result, tokenType, request.prefix, nameKind);
+                        for (IndexedConstant constant : classConstants) {
+                            proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
+                        }
                     }
                 }
             }

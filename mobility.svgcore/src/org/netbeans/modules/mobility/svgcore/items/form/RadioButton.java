@@ -42,6 +42,8 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
@@ -71,8 +73,8 @@ public class RadioButton extends SVGFormElement{
     //
     
     @Override
-    protected boolean doTransfer() {
-        SVGFileModel model = getSVGDataObject().getModel();
+    protected boolean doTransfer(SVGDataObject svgDataObject) {
+        SVGFileModel model = svgDataObject.getModel();
         try {
             String idFrame = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON_FRAME, false);
             String id1 = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, false);
@@ -89,6 +91,25 @@ public class RadioButton extends SVGFormElement{
         return false;
     }
     
+    @Override
+    protected boolean doTransfer(JTextComponent target) {
+        SVGDataObject svgDataObject = SVGDataObject.getActiveDataObject(target);
+        SVGFileModel model = svgDataObject.getModel();
+        try {
+            String idFrame = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON_FRAME, false);
+            String id1 = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, false);
+            String id2 = model.createUniqueId(SVGComponentsSupport.ID_PREFIX_RADIOBUTTON, false,
+                    new HashSet(Arrays.asList(id1)) );
+
+            String snippet = getSnippet(idFrame, id1, id2);
+            insertToTextComponent(snippet, target);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+
     private String getSnippet(String idFrame, String id1, String id2) throws IOException{
         String text = getSnippetString();
         String withIdFrame = text.replace(ID_PATTERN_FRAME, idFrame);

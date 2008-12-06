@@ -288,7 +288,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
             }
             jEditorPane1.setContentType("text/html"); // NOI18N
-            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage()+"</font></body></html>";
+            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage().replaceAll("\\n", "<br>")+"</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
@@ -331,7 +331,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/html"); // NOI18N
-            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage()+"</font></body></html>";
+            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage().replaceAll("\\n", "<br>")+"</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
