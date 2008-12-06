@@ -630,6 +630,7 @@ class SQLExecutionHelper {
                 totalRows++;
             }
             dataView.getDataViewPageContext().setTotalRows(totalRows);
+            return;
         } catch (SQLException e) {
         } finally {
             DataViewUtils.closeResources(cntResultSet);
