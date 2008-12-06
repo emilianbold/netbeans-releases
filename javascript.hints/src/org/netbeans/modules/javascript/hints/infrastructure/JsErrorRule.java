@@ -54,8 +54,7 @@ public abstract class JsErrorRule implements ErrorRule, UserConfigurableRule {
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public abstract void run(JsRuleContext context, Error error,
-             List<Hint> result);
+    public abstract void run(JsRuleContext context, Error error, List<Hint> result);
 
 
 //    public void run(org.netbeans.modules.gsf.spi.hints.JsRuleContext context, List<Hint> result) {

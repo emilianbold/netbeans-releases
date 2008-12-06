@@ -479,7 +479,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         }
         OffsetRange range = desc.getRange();
         List<org.netbeans.spi.editor.hints.Fix> fixList;
-        ParserResult info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         
         if (desc.getFixes() != null && desc.getFixes().size() > 0) {
             fixList = new ArrayList<org.netbeans.spi.editor.hints.Fix>(desc.getFixes().size());
@@ -517,7 +517,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     
     public final void refreshHints(RuleContext context) {
         List<ErrorDescription> result = getHints(this, context);
-        HintsController.setErrors(context.compilationInfo.getSnapshot().getSource().getFileObject(),
+        HintsController.setErrors(context.parserResult.getSnapshot().getSource().getFileObject(),
                 context.caretOffset == -1 ? HintsTask.class.getName() : SuggestionsTask.class.getName(), result);
     }
     
@@ -598,7 +598,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     public RuleContext createRuleContext (ParserResult parserResult, Language language, int caretOffset, int selectionStart, int selectionEnd) {
         RuleContext context = provider.createRuleContext();
         context.manager = this;
-        context.compilationInfo = parserResult;
+        context.parserResult = parserResult;
         context.caretOffset = caretOffset;
         context.selectionStart = selectionStart;
         context.selectionEnd = selectionEnd;

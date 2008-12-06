@@ -65,7 +65,7 @@ public class SemanticHighlighterFactory extends AbstractTaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
-        return Collections.singleton(new SemanticHighlighter(snapshot));
+        return Collections.singleton(new SemanticHighlighter());
     }
 
 

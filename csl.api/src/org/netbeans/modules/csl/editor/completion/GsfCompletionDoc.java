@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.editor.completion;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -78,7 +79,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         this.language = LanguageRegistry.getInstance().getLanguageByMimeType(controller.getSnapshot().getMimeType());
         if (elementHandle != null && elementHandle.getMimeType() != null) {
             Language embeddedLanguage = LanguageRegistry.getInstance().getLanguageByMimeType(elementHandle.getMimeType());
-            if (embeddedLanguage != null && embeddedLanguage.getParser() != null) {
+            if (embeddedLanguage != null && embeddedLanguage.getParser(Collections.singleton(controller.getSnapshot())) != null) {
                 language = embeddedLanguage;
             }
         }
