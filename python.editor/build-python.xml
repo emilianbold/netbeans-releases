@@ -68,6 +68,7 @@ made subject to such option by the copyright holder.
             <property name="scan.binaries" value="true"/>
             
             <buildpath location="o.antlr3"/>
+            <buildpath location="o.jython.distro"/>
             <buildpath location="o.jython"/>
             <buildpath location="python.core"/>
             <buildpath location="python.debugger"/>
@@ -93,15 +94,15 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf"/>
 
             <buildpath location="o.antlr3"/>
+            <buildpath location="o.jython.distro"/>
             <buildpath location="o.jython"/>
-            <buildpath location="python.editor"/>
-            <buildpath location="python.console"/>
             <buildpath location="python.core"/>
             <buildpath location="python.debugger"/>
-            <buildpath location="python.editor"/>
-            <buildpath location="python.help"/>
             <buildpath location="python.platform"/>
+            <buildpath location="python.console"/>
+            <buildpath location="python.editor"/>
             <buildpath location="python.project"/>
+            <buildpath location="python.help"/>
             <buildpath location="python.options"/>
             <buildpath location="python.kit"/>
         </subant>
