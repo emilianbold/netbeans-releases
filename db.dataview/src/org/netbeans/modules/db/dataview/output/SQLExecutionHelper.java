@@ -196,12 +196,13 @@ class SQLExecutionHelper {
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
+        final int[] rows = rsTable.getSelectedRows();
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                int[] rows = rsTable.getSelectedRows();
+                
                 for (int j = 0; j < rows.length && !error; j++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -228,7 +229,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");//"MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -246,7 +247,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.decrementRowSize(rsTable.getSelectedRows().length);
+                dataView.decrementRowSize(rows.length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -586,30 +587,60 @@ class SQLExecutionHelper {
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt) {
+
+        // Case for LIMIT n OFFSET m
+        if (isSelect && isLimitUsedInSelect(sql)) {
+            try {
+                String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
+                int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
+                dataView.getDataViewPageContext().setTotalRows(rCnt);
+                return;
+            } catch (NumberFormatException nex) {
+            }
+        }
+
+        // Try SELECT COUNT(*) FROM (sqlquery) alias
         ResultSet cntResultSet = null;
         try {
-            if (isSelect && !isGroupByUsedInSelect(sql) && !isDistinctUsedInSelect(sql)) {
-                if (isLimitUsedInSelect(sql)) {
-                    try {
-                        String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
-                        int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
-                        dataView.getDataViewPageContext().setTotalRows(rCnt);
-                    } catch (NumberFormatException nex) {
-                        cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
-                        setTotalCount(cntResultSet);
-                    }
-                } else {
-                    cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
-                    setTotalCount(cntResultSet);
-                }
-            } else {
-                setTotalCount(null);
-            }
+            cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
+            setTotalCount(cntResultSet);
+            return;
         } catch (SQLException e) {
-            setTotalCount(null);
         } finally {
             DataViewUtils.closeResources(cntResultSet);
         }
+
+        // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
+        if (isSelect && !isGroupByUsedInSelect(sql)) {
+            cntResultSet = null;
+            try {
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
+                setTotalCount(cntResultSet);
+                return;
+            } catch (SQLException e) {
+            } finally {
+                DataViewUtils.closeResources(cntResultSet);
+            }
+        }
+
+        // get the count from resultset
+        cntResultSet = null;
+        int totalRows = 0;
+        try {
+            cntResultSet = stmt.executeQuery(sql);
+            while(cntResultSet.next()){
+                totalRows++;
+            }
+            dataView.getDataViewPageContext().setTotalRows(totalRows);
+            return;
+        } catch (SQLException e) {
+        } finally {
+            DataViewUtils.closeResources(cntResultSet);
+        }
+
+        // Unable to compute the total rows
+        setTotalCount(null);
+
     }
 
     private boolean isSelectStatement(String queryString) {
@@ -621,11 +652,7 @@ class SQLExecutionHelper {
     }
 
     private boolean isGroupByUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" GROUP BY ") != -1; // NOI18N
-    }
-
-    private boolean isDistinctUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" DISTINCT ") != -1; // NOI18N
+        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(" COUNT(*) ") != -1;
     }
 
     static String millisecondsToSeconds(long ms) {

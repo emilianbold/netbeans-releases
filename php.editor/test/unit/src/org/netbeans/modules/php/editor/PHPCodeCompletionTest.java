@@ -635,6 +635,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testTypeInCatch() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);
     }
+
+    public void testMixedType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBookMagazine()->^", false);
+    }
+    public void testMixedType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "$bm->^", false);
+    }
+    public void testMixedType03() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
+    }
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);

@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
  * Holds DB PrimaryKey meta info of a given table.
@@ -53,6 +54,7 @@ import java.sql.SQLException;
  */
 public final class DBPrimaryKey extends DBObject<DBTable> {
     private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
+    private static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
     private List<String> columnNames;
     private String name;
     private DBTable parent;
@@ -61,7 +63,12 @@ public final class DBPrimaryKey extends DBObject<DBTable> {
         assert rs != null;
         columnNames = new ArrayList<String>();
         while (rs.next()) {
+            name = rs.getString(RS_COLUMN_NAME);
             columnNames.add(rs.getString(RS_COLUMN_NAME));
+            String tmpName = rs.getString(RS_KEY_NAME);
+            if (!DataViewUtils.isNullString(tmpName) && name == null) {
+                name = tmpName;
+            }
         }
     }
 

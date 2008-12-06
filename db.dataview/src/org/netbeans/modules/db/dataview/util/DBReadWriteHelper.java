@@ -66,7 +66,6 @@ public class DBReadWriteHelper {
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
-
     public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
         switch (colType) {
             case Types.BIT:
@@ -216,7 +215,7 @@ public class DBReadWriteHelper {
                 // BLOB exists, so try to read the data from it
                 byte[] blobData = null;
                 if (blob != null) {
-                    blobData = blob.getBytes(1, 255);
+                    blobData = blob.getBytes(1, Math.min((int)blob.length() , 2000));
                 }
                 Byte[] internal = new Byte[blobData.length];
                 for (int i = 0; i < blobData.length; i++) {
@@ -236,7 +235,7 @@ public class DBReadWriteHelper {
                 }
                 // CLOB exists, so try to read the data from it
                 if (clob != null) {
-                    return clob.getSubString(1, 255);
+                    return clob.getSubString(1, Math.min((int)clob.length() , 2000));
                 }
             }
             case Types.OTHER:
@@ -331,7 +330,7 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "Invalid Data for" +jdbcType + "type --", e);
+            mLogger.log(Level.SEVERE, "Invalid Data for" + jdbcType + "type --", e);
             throw new DBException("Invalid Data for " + jdbcType + " type ", e);
         }
     }
@@ -345,7 +344,20 @@ public class DBReadWriteHelper {
             switch (colType) {
                 case Types.BIT:
                 case Types.BOOLEAN:
-                    return (valueObj instanceof Boolean) ? valueObj : new Boolean(valueObj.toString());
+                    if (valueObj instanceof Boolean) {
+                        return valueObj;
+                    } else {
+                        String str = valueObj.toString();
+                        if ((str.equalsIgnoreCase("true")) || (str.equalsIgnoreCase("1"))) {
+                            return Boolean.TRUE;
+                        } else if ((str.equalsIgnoreCase("false")) || (str.equalsIgnoreCase("0"))) {
+                            return Boolean.FALSE;
+                        } else {
+                            String errMsg = "Values must be true/false or numeric 0 or 1";
+                            throw new DBException(errMsg);
+                        }
+                    }
+                //return (valueObj instanceof Boolean) ? valueObj : new Boolean(valueObj.toString());
 
                 case Types.TIMESTAMP:
                     return valueObj instanceof Timestamp ? valueObj : new TimestampType().convert(valueObj);
@@ -412,7 +424,8 @@ public class DBReadWriteHelper {
             String type = DataViewUtils.getStdSqlType(colType);
             String colName = col.getQualifiedName();
             int precision = col.getPrecision();
-            String errMsg = "Please enter valid data for " + colName + " of datatype " + type +"(" +precision +")";
+            String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
+            errMsg += "\nCause: "+ e.getMessage();
             throw new DBException(errMsg);
         }
     }

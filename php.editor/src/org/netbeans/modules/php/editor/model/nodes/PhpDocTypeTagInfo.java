@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
 /**
  *
@@ -51,24 +52,30 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
 
     private PHPDocTypeTag typeTag;
+    private Kind kind;
 
-    private PhpDocTypeTagInfo(PHPDocTypeTag typeTag, PHPDocNode node) {
+    private PhpDocTypeTagInfo(PHPDocTypeTag typeTag, PHPDocNode node, Kind kind) {
         super(node);
         this.typeTag = typeTag;
+        this.kind = kind;
     }
 
     public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag) {
         List<PhpDocTypeTagInfo> retval = new ArrayList<PhpDocTypeTagInfo>();
         List<PHPDocNode> types = typeTag.getTypes();
         for (PHPDocNode docNode : types) {
-            retval.add(new PhpDocTypeTagInfo(typeTag, docNode));
+            retval.add(new PhpDocTypeTagInfo(typeTag, docNode, Kind.CLASS));
+        }
+        if (typeTag instanceof PHPDocVarTypeTag) {
+            PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) typeTag;
+            retval.add(new PhpDocTypeTagInfo(typeTag, varTypeTag.getVariable(),Kind.VARIABLE));
         }
         return retval;
     }
 
     @Override
     public Kind getKind() {
-        return Kind.CLASS;
+        return kind;
     }
 
     @Override
@@ -86,6 +93,9 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     @Override
     public OffsetRange getRange() {
         PHPDocNode node = getOriginalNode();
+        if (Kind.VARIABLE.equals(getKind())) {
+            return new OffsetRange(node.getStartOffset()+1, node.getStartOffset()+getName().length());
+        }
         return new OffsetRange(node.getStartOffset(), node.getStartOffset()+getName().length());
     }
 }

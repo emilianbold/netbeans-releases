@@ -27,9 +27,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.elements;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
@@ -89,16 +86,6 @@ public class CsmRefactoringElementImpl extends
 
     public PositionBounds getPosition() {
         return bounds;
-    }
-
-    @Override
-    public void openInEditor() {
-        // remember last position
-        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-        if (lastFocusedComponent != null) {
-            JumpList.addEntry(lastFocusedComponent, lastFocusedComponent.getSelectionStart());
-        }
-        super.openInEditor();
     }
     
     public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {

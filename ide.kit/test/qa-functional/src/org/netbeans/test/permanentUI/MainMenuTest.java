@@ -240,7 +240,7 @@ public class MainMenuTest extends JellyTestCase {
      */
     public void testFile_ProjectGroupSubMenu() {
         String goldenFile = getMainMenuGoldenFile("File-Project_Group");
-        oneSubMenuTest("File|Project Group", goldenFile);
+        oneSubMenuTest("File|Project Group", goldenFile, true);
     }
 
     /**
@@ -249,7 +249,7 @@ public class MainMenuTest extends JellyTestCase {
      */
     public void testNavigate_InspectSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Navigate-Inspect");
-        oneSubMenuTest("Navigate|Inspect",  goldenFile);
+        oneSubMenuTest("Navigate|Inspect",  goldenFile, true);
     }
 
     /**
@@ -258,7 +258,7 @@ public class MainMenuTest extends JellyTestCase {
      */
     public void testView_CodeFoldsSubMenu() {
         String goldenFile = getMainMenuGoldenFile("View-Code_Folds");
-        oneSubMenuTest("View|Code Folds", goldenFile);
+        oneSubMenuTest("View|Code Folds", goldenFile, false);
     }
 
     /**
@@ -267,107 +267,107 @@ public class MainMenuTest extends JellyTestCase {
      */
     public void testView_ToolbarsSubMenu() {
         String goldenFile = getMainMenuGoldenFile("View-Toolbars");
-        oneSubMenuTest("View|Toolbars", goldenFile);
+        oneSubMenuTest("View|Toolbars", goldenFile, true);
     }
 
     public void testProfile_AdvancedCommandsSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Profile-Advanced_Commands");
-        oneSubMenuTest("Profile|Advanced Commands", goldenFile);
+        oneSubMenuTest("Profile|Advanced Commands", goldenFile, true);
     }
 
     public void testProfile_ProfileOtherSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Profile-Profile_Other");
-        oneSubMenuTest("Profile|Profile Other", goldenFile);
+        oneSubMenuTest("Profile|Profile Other", goldenFile, true);
     }
 
     public void testRun_SetMainProjectSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Run-Set_Main_Project");
-        oneSubMenuTest("Run|Set Main Project", goldenFile);
+        oneSubMenuTest("Run|Set Main Project", goldenFile, false);
     }
 
     public void testDebug_StackSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Debug-Stack");
-        oneSubMenuTest("Debug|Stack", goldenFile);
+        oneSubMenuTest("Debug|Stack", goldenFile, true);
     }
 
     public void testSource_PreprocessorBlocksSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Source-Preprocessor_Blocks");
-        oneSubMenuTest("Source|Preprocessor Blocks", goldenFile);
+        oneSubMenuTest("Source|Preprocessor Blocks", goldenFile, false);
     }
 
     public void testTools_InternationalizationSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Tools-Internationalization");
-        oneSubMenuTest("Tools|Internationalization", goldenFile);
+        oneSubMenuTest("Tools|Internationalization", goldenFile, true);
     }
 
     public void testTools_PaletteSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Tools-Palette");
-        oneSubMenuTest("Tools|Palette", goldenFile);
+        oneSubMenuTest("Tools|Palette", goldenFile, true);
     }
 
     public void testVersioning_CVSSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-CVS");
-        oneSubMenuTest("Versioning|CVS", goldenFile);
+        oneSubMenuTest("Versioning|CVS", goldenFile, true);
     }
 
     public void testVersioning_CVS_BranchesSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-CVS-Branches");
-        oneSubMenuTest("Versioning|CVS|Branches", goldenFile);
+        oneSubMenuTest("Versioning|CVS|Branches", goldenFile, true);
     }
 
     public void testVersioning_LocalHistorySubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-Local_History");
-        oneSubMenuTest("Versioning|Local History", goldenFile);
+        oneSubMenuTest("Versioning|Local History", goldenFile, true);
     }
 
     public void testVersioning_Mercurial_MergeSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Merge");
-        oneSubMenuTest("Versioning|Mercurial|Merge", goldenFile);
+        oneSubMenuTest("Versioning|Mercurial|Merge", goldenFile, true);
     }
 
     public void testVersioning_Mercurial_RecoverSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Recover");
-        oneSubMenuTest("Versioning|Mercurial|Recover", goldenFile);
+        oneSubMenuTest("Versioning|Mercurial|Recover", goldenFile, true);
     }
 
     public void testVersioning_Mercurial_ShareSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Share");
-        oneSubMenuTest("Versioning|Mercurial|Share", goldenFile);
+        oneSubMenuTest("Versioning|Mercurial|Share", goldenFile, true);
     }
 
     public void testVersioning_Mercurial_ShowSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Show");
-        oneSubMenuTest("Versioning|Mercurial|Show", goldenFile);
+        oneSubMenuTest("Versioning|Mercurial|Show", goldenFile, true);
     }
 
     public void testWindow_DebuggingSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Debugging");
-        oneSubMenuTest("Window|Debugging",  goldenFile);
+        oneSubMenuTest("Window|Debugging",  goldenFile, true);
     }
 
     public void testWindow_NavigatingSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Navigating");
-        oneSubMenuTest("Window|Navigating", goldenFile);
+        oneSubMenuTest("Window|Navigating", goldenFile, true);
     }
 
     public void testWindow_OtherSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Other");
-        oneSubMenuTest("Window|Other", goldenFile);
+        oneSubMenuTest("Window|Other", goldenFile, true);
     }
 
     public void testWindow_OutputSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Output");
-        oneSubMenuTest("Window|Output", goldenFile);
+        oneSubMenuTest("Window|Output", goldenFile, true);
     }
 
     public void testWindow_ProfilingSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Profiling");
-        oneSubMenuTest("Window|Profiling", goldenFile);
+        oneSubMenuTest("Window|Profiling", goldenFile, true);
     }
 
     public void testWindow_VersioningSubMenu() {
         String goldenFile = getMainMenuGoldenFile("Window-Versioning");
-        oneSubMenuTest("Window|Versioning", goldenFile);
+        oneSubMenuTest("Window|Versioning", goldenFile, true);
     }
 
     /**
@@ -432,7 +432,7 @@ public class MainMenuTest extends JellyTestCase {
      * @param goldenFileName to be tested
      * @return difference between submenuName and goldenFileName
      */
-    private void oneSubMenuTest(String submenuPath, String goldenFileName) throws IllegalArgumentException {
+    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean pushMenu) throws IllegalArgumentException {
         NbMenuItem permanentMenu = Utilities.readSubmenuStructureFromFile(goldenFileName);
         assertNotNull("Nothing read from " + goldenFileName, permanentMenu); //was the file read correctly?
         PrintStream ideFile = null;
@@ -450,7 +450,8 @@ public class MainMenuTest extends JellyTestCase {
             Utilities.printMenuStructure(goldenFile, permanentMenu, "   ", 1);
 
             ideFile = new PrintStream(menuItemsLogFile);
-            pushMainMenuItem(submenuPath);
+            if(pushMenu) //there are cases when we don't want to push the submenuPath 
+                pushMainMenuItem(submenuPath);
             String submenuItems[] = submenuPath.split("\\|");
             assertTrue("submenuPath must be >= 2. - " + submenuPath, submenuItems.length >= 2); //check the size
             NbMenuItem mainM = getMainMenuItem(submenuItems[0]);
@@ -464,7 +465,7 @@ public class MainMenuTest extends JellyTestCase {
             submenuItem.setMnemo((char)0); //remove the mnemonic of the submenu item because it is not in the perm ui spec too
             //System.out.println("IDE MENU:");
             //Utilities.printMenuStructure(System.out, submenuItem, "   ", 100);
-            Utilities.printMenuStructure(ideFile, submenuItem, "   ", 2);
+            Utilities.printMenuStructure(ideFile, submenuItem, "   ", 1);
             //System.out.println("-------------SUBMENU-----------------");
             //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
 
