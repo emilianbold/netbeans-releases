@@ -265,12 +265,12 @@ class InsertRecordTableUI extends JTable {
             Component parent = WindowManager.getDefault().getMainWindow();
 
             if (editable) {
-                int result = JOptionPane.showOptionDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+                int result = JOptionPane.showOptionDialog(parent, pane, table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
                 if (result == JOptionPane.OK_OPTION) {
                     table.setValueAt(textArea.getText(), row, column);
                 }
             } else {
-                JOptionPane.showMessageDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
+                JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
             }
         }
     }
