@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.rest.wizard;
 import java.awt.Component;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -69,6 +68,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
         return false;
     }
     
+    @Override
     public boolean isValid() {
         Project project = Templates.getProject(wizardDescriptor);
         RestSupport support = project.getLookup().lookup(RestSupport.class);
@@ -97,16 +97,6 @@ public final class EntitySelectionPanel extends AbstractPanel {
     }
     
     private PersistenceUnit getPersistenceUnit(Project project) {
-        return getPersistenceUnit(wizardDescriptor, project);
+        return Util.getPersistenceUnit(wizardDescriptor, project);
     }
-    
-    static PersistenceUnit getPersistenceUnit(WizardDescriptor wizard, Project project) {
-        PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
-        if (pu == null) {
-            pu = new PersistenceHelper(project).getPersistenceUnit();
-            wizard.putProperty(WizardProperties.PERSISTENCE_UNIT, pu);
-        }
-        return pu;
-    }
-
 }
