@@ -601,13 +601,15 @@ class SQLExecutionHelper {
 
         // Try SELECT COUNT(*) FROM (sqlquery) alias
         ResultSet cntResultSet = null;
-        try {
-            cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
-            setTotalCount(cntResultSet);
-            return;
-        } catch (SQLException e) {
-        } finally {
-            DataViewUtils.closeResources(cntResultSet);
+        if (isSelect) {
+            try {
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
+                setTotalCount(cntResultSet);
+                return;
+            } catch (SQLException e) {
+            } finally {
+                DataViewUtils.closeResources(cntResultSet);
+            }
         }
 
         // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
