@@ -227,6 +227,10 @@ class SQLStatementGenerator {
         return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length()); // NOI18N
     }
 
+    static String getCountAsSubQuery(String queryString) {
+        return "SELECT COUNT(*) FROM (" + queryString + ") C"; // NOI18N
+    }
+
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
         if (and) {
             result.append(sep);
