@@ -1219,7 +1219,7 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="users_getInfo_response">
+    <xsd:element name="users_getinfo_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="user" type="user" minOccurs="0" maxOccurs="unbounded" />

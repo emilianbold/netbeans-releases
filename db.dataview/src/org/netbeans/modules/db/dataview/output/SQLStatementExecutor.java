@@ -67,7 +67,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     private String titleMsg;
     private volatile RequestProcessor.Task task;
     private long startTime;
-    
+
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;
         this.titleMsg = msg;
@@ -143,16 +143,14 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         if (!error && commit(conn)) {
             long executionTime = System.currentTimeMillis() - startTime;
             String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-            String infoMsg = cmdName + " " + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_execution_success", execTimeStr);
+            String infoMsg = cmdName + " " + NbBundle.getMessage(SQLStatementExecutor.class, "MSG_execution_success", execTimeStr);
             dataView.setInfoStatusText(infoMsg);
             executeOnSucess(); // delegate 
         } else {
             rollback(conn);
             reinstateToolbar();
-            System.out.println("errorMsg 1 "+errorMsg);
-            errorMsg = cmdName +" "+ NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
+            errorMsg = cmdName + " " + NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failed") + " " + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
-            System.out.println("errorMsg 2 "+errorMsg);
             NotifyDescriptor nd = new NotifyDescriptor.Message(new DBException(errorMsg, ex).getMessage(), NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
@@ -165,7 +163,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.setAutoCommit(newState);
                 return lastState;
             }
-        } catch (SQLException e) {            
+        } catch (SQLException e) {
         }
         return newState;
     }
@@ -185,7 +183,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.commit();
             }
         } catch (SQLException e) {
-            String msg = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failure_to_commit");
+            String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_to_commit");
             ex = new DBException(msg, e);
             dataView.setErrorStatusText(ex);
             return false;
@@ -199,7 +197,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.rollback();
             }
         } catch (SQLException e) {
-            String msg  = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failure_rollback");
+            String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_rollback");
             dataView.setErrorStatusText(new DBException(msg, e));
         }
     }
