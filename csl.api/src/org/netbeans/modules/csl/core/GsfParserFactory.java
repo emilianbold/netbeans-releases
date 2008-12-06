@@ -59,7 +59,7 @@ public final class GsfParserFactory extends ParserFactory {
         assert snapshots.size() > 0;
         String mimeType = snapshots.iterator().next().getMimeType();
         Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        return l == null ? null : l.getParser();
+        return l == null ? null : l.getParser(snapshots);
     }
 
 }

@@ -59,7 +59,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -82,17 +81,14 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
-    private final Snapshot snapshot;
-    
     /** Creates a new instance of SemanticHighlighter */
-    SemanticHighlighter(Snapshot snapshot) {
-        this.snapshot = snapshot;
+    SemanticHighlighter() {
     }
 
-    public Document getDocument() {
-        return snapshot.getSource().getDocument();
-    }
-
+//    public Document getDocument() {
+//        return snapshot.getSource().getDocument();
+//    }
+//
     @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
@@ -120,8 +116,7 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
     public @Override void run(ParserResult info, SchedulerEvent event) {
         resume();
         
-        Document doc = getDocument();
-
+        Document doc = info.getSnapshot().getSource().getDocument();
         if (doc == null) {
             return;
         }

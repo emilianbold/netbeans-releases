@@ -86,6 +86,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
     public @Override void run(Result result, SchedulerEvent event) {
         resume();
 
+        semanticHighlights = null;
+        
         if (isCancelled()) {
             return;
         }
