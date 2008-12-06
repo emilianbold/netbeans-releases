@@ -31,6 +31,16 @@ public class NbModuleSuiteIns extends TestCase implements Visitor {
         }
     }
 
+    public void testWindowSystem() {
+        try {
+            ClassLoader l = NbModuleSuiteIns.class.getClassLoader();
+            Class<?> access = l.loadClass("org.netbeans.api.java.platform.JavaPlatform");
+            System.setProperty("ins.java", "OK");
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     public void testSecond() {
         System.setProperty("ins.two", "OK");
     }

@@ -73,6 +73,7 @@ import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.Log;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -183,7 +184,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Enumeration<String> attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
                 String name = attrs.nextElement();
-                if (fo.getAttribute(name) == null) {
+                
+                Object attr = fo.getAttribute(name);
+                if (attr == null) {
                     CharSequence warning = Log.enable("", Level.WARNING);
                     if (
                         fo.getAttribute("class:" + name) != null &&
@@ -196,6 +199,20 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
                     errors.add ("File: " + fo + " attribute name: " + name);
                 }
+
+                if (attr instanceof URL) {
+                    URL u = (URL) attr;
+                    int read = -1;
+                    try {
+                        read = u.openStream().read(new byte[4096]);
+                    } catch (IOException ex) {
+                        errors.add(ex.getMessage());
+                    }
+                    if (read <= 0) {
+                        errors.add("URL Resource shall exist: " + fo + " attr: " + name + " value: " + attr);
+                    }
+                }
+
             }
         }
         

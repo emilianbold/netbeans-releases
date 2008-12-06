@@ -82,10 +82,6 @@ public class UMLSetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-    public void closeWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
     public void closeAllDocuments() {
         CommonUtilities.closeAllDocuments();
     }

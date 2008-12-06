@@ -3,13 +3,10 @@
     <xsl:output method="xml" omit-xml-declaration="yes"/>
     <xsl:param name="cluster.name"/>
 
-    <xsl:template match="filesystem/folder[@name='Templates']/folder[@name='Project']">
+    <xsl:template match="filesystem/folder[@name='Templates']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Templates</xsl:attribute>
-            <xsl:element name="folder">
-                <xsl:attribute name="name">Project</xsl:attribute>
-                <xsl:apply-templates mode="project-wizard"/>
-            </xsl:element>
+            <xsl:apply-templates mode="project-wizard"/>
         </xsl:element>
     </xsl:template>
 
