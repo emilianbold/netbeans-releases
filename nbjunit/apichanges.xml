@@ -55,6 +55,22 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.clustersMulti">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite's clusters method can be called multiple times</summary>
+        <version major="1" minor="55"/>
+        <date day="1" month="12" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="incompatible" binary="compatible" source="compatible" modification="yes"/>
+        <description>
+            <p>Semantics of
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#clusters(java.lang.String)">
+            Configuration.clusters</a> method has been extended. It can now be
+            called multiple times to accumulate the results.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="Log.assertInstancesWithNames">
         <api name="nbjunit"/>
         <summary>Log.assertInstances can take list of names one is searching for</summary>

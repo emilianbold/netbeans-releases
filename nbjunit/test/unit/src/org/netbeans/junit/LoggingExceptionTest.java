@@ -78,7 +78,7 @@ public class LoggingExceptionTest extends NbTestCase {
         LogRecord rec = new LogRecord(Level.WARNING, "Cannot process {0}");
         rec.setThrown(ex);
         rec.setParameters(new Object[] { "Jardo" });
-        Logger.global.log(rec);
+        Logger.getLogger("global").log(rec);
         
         File[] arr = getWorkDir().listFiles();
         assertEquals("One log file", 1, arr.length);
@@ -99,7 +99,7 @@ public class LoggingExceptionTest extends NbTestCase {
     }
     public void testLoggedExceptionIsPrintedNoFormat() throws Exception {
         Exception ex = new IOException("Ahoj");
-        Logger.global.log(Level.WARNING, "No format Jardo", ex);
+        Logger.getLogger("global").log(Level.WARNING, "No format Jardo", ex);
         
         File[] arr = getWorkDir().listFiles();
         assertEquals("One log file", 1, arr.length);
