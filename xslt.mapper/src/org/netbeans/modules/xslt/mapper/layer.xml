@@ -669,7 +669,7 @@
             </file>
             <file name="substring-after">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/substing_after16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/substring-after16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="substring-after"/>
                 <attr name="Function" stringvalue="substring-after"/>
@@ -1131,7 +1131,9 @@
             </file>
             <file name="local-name">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
+                <!-- local_name is not present
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/local_name16.png"/>
+                -->
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="local-name"/>
                 <attr name="Function" stringvalue="local-name"/>

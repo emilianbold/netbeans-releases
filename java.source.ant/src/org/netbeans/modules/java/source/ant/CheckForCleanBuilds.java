@@ -42,13 +42,14 @@ package org.netbeans.modules.java.source.ant;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Lahoda
  */
-@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=90)
-public class HideOverrideTaskWarning extends AntLogger {
+@ServiceProvider(service=AntLogger.class, position=90)
+public class CheckForCleanBuilds extends AntLogger {
 
     public static ThreadLocal<Boolean> cleanBuild = new ThreadLocal<Boolean>() {
         @Override
@@ -58,28 +59,15 @@ public class HideOverrideTaskWarning extends AntLogger {
     };
     
     @Override
-    public int[] interestedInLogLevels(AntSession session) {
-        return new int[] {AntEvent.LOG_WARN};
-    }
-
-    @Override
     public boolean interestedInSession(AntSession session) {
         return true;
     }
 
     @Override
     public boolean interestedInAllScripts(AntSession session) {
-        // XXX BAD!!! Please fix this to only check your snippets. -jglick
         return true;
     }
     
-    @Override
-    public void messageLogged(AntEvent event) {
-        if (!event.isConsumed() && event.getMessage().startsWith("Trying to override old definition of task javac")) { // NOI18N
-            event.consume();
-        }
-    }
-
     @Override
     public void buildStarted(AntEvent event) {
         String[] targets = event.getSession().getOriginatingTargets();
