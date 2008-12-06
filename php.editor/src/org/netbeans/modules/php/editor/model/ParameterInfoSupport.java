@@ -376,7 +376,7 @@ public class ParameterInfoSupport {
                     }
                     final Model model = ModelFactory.getModel(info);
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
-                    Occurence<? extends ModelElement> occurence = occurencesSupport.getOccurence();
+                    Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
                         ModelElement declaration = occurence.getDeclaration();
                         if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {

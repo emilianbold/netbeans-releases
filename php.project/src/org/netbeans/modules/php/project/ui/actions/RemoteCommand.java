@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
@@ -119,7 +120,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected RemoteClient getRemoteClient(InputOutput io) {
-        return new RemoteClient(getRemoteConfiguration(), io, getRemoteDirectory());
+        return new RemoteClient(getRemoteConfiguration(), io, getRemoteDirectory(), ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()));
     }
 
     protected RemoteConfiguration getRemoteConfiguration() {
@@ -178,6 +179,13 @@ public abstract class RemoteCommand extends Command {
         if (transferInfo.hasAnyFailed()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteFailed"));
             for (Map.Entry<TransferFile, String> entry : transferInfo.getFailed().entrySet()) {
+                printError(err, maxRelativePath, entry.getKey(), entry.getValue());
+            }
+        }
+
+        if (transferInfo.hasAnyPartiallyFailed()) {
+            err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemotePartiallyFailed"));
+            for (Map.Entry<TransferFile, String> entry : transferInfo.getPartiallyFailed().entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
             }
         }
@@ -251,6 +259,10 @@ public abstract class RemoteCommand extends Command {
     private int getRelativePathMaxSize(TransferInfo transferInfo) {
         int max = getRelativePathMaxSize(transferInfo.getTransfered());
         int size = getRelativePathMaxSize(transferInfo.getFailed().keySet());
+        if (size > max) {
+            max = size;
+        }
+        size = getRelativePathMaxSize(transferInfo.getPartiallyFailed().keySet());
         if (size > max) {
             max = size;
         }

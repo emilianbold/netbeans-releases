@@ -358,6 +358,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         // must not offer FALSE from Object
         checkCompletion("testfiles/constants1.rb", "Fcntl::F^");
     }
+
+    // TODO uncomment when reindexed
+//    public void testIndexedConstantMethods() throws Exception {
+//        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");
+//    }
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

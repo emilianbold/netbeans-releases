@@ -38,20 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
+
+import java.io.IOException;
+import org.openide.util.Exceptions;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.WizardOperator;
-
+import org.netbeans.jellytools.actions.CloseAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test Open Mobile project
  *
@@ -59,8 +65,9 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class OpenMobileProjectTest extends PerformanceTestCase {
 
-    private static String projectName = "MobileApplicationVisualMIDlet_Open";
+    private static String projectName = "MobileApplicationVisualMIDlet";
     private JButtonOperator openButton;
+    protected static ProjectsTabOperator projectsTab = null;
 
     /**
      * Creates a new instance of OpenMobileProject
@@ -97,17 +104,15 @@ public class OpenMobileProjectTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
+        new CloseAction().perform(getProjectNode(projectName));
     }
 
     public void prepare() {
         new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
-
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
-
         JTextComponentOperator path = new JTextComponentOperator(opd, 1);
         openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
-
-        String paths = CommonUtilities.getProjectsDir() + projectName;
+        String paths = getDataDir().toString()+ java.io.File.separator + projectName;
         path.setText(paths);
     }
 
@@ -118,11 +123,22 @@ public class OpenMobileProjectTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-//        ProjectSupport.closeProject(projectName);
-
+        new CloseAction().perform(getProjectNode(projectName));
     }
 
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new OpenMobileProject("measureTime"));
-//    }
+    public void shutdown() {
+        try {
+            this.openDataProjects(projectName);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    protected Node getProjectNode(String projectName) {
+        if (projectsTab == null) {
+            projectsTab = new ProjectsTabOperator();
+        }
+        return projectsTab.getProjectRootNode(projectName);
+    }
+
 }
