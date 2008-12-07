@@ -73,6 +73,7 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -384,13 +385,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     @Override
     protected org.openide.filesystems.FileObject handleRename(String str) throws java.io.IOException {
-        if ("".equals(str)) // NOI18N
-            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName"));  //NOI18N
-        
-        org.openide.filesystems.FileObject retValue;
-        
-        retValue = super.handleRename(str);
-        return retValue;
+        if (!Utilities.isJavaIdentifier(str)) {
+            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName", str));  //NOI18N
+        }
+        return super.handleRename(str);
     }
     
     public void addSaveCookie(SaveCookie cookie){

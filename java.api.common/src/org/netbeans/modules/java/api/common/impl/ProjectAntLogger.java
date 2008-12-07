@@ -39,51 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.api.common;
+package org.netbeans.modules.java.api.common.impl;
 
 import java.io.File;
-import java.io.IOException;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Logger which should suppress or prettify typical Ant output from build-impl.xml.
  */
+@ServiceProvider(service=AntLogger.class, position=50)
 public class ProjectAntLogger extends AntLogger {
 
-    private Class<?> projectClass;
-    private String[] messages;
-
-    public ProjectAntLogger(Class projectClass, String[] messages) {
-        this.projectClass = projectClass;
-        this.messages = messages;
-    }
-    
     @Override
     public boolean interestedInSession(AntSession session) {
-        // Even if the initiating project is not a J2SEProject, suppress these messages.
+        // Even if the initiating project is not an Ant-based project, suppress these messages.
         // However disable our tricks when running at VERBOSE or higher.
         return session.getVerbosity() <= AntEvent.LOG_INFO;
-    }
-    
-    private boolean isKnownProject(final File dir) {
-        FileObject projdir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        try {
-            Project proj = ProjectManager.getDefault().findProject(projdir);
-            if (proj != null) {
-                // Check if it is a J2SEProject.
-                return proj.getLookup().lookup(projectClass) != null;
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        return false;
     }
     
     @Override
@@ -92,12 +66,12 @@ public class ProjectAntLogger extends AntLogger {
             File parent = script.getParentFile();
             if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
                 File parent2 = parent.getParentFile();
-                if (parent2 != null && parent2.canRead()) {
-                    return isKnownProject(parent2);
+                if (parent2 != null && parent2.isFile()) {
+                    return true;
                 }
             }
         }
-        // Was not a J2SEProject's nbproject/build-impl.xml; ignore it.
+        // Was not a nbproject/build-impl.xml; ignore it.
         return false;
     }
     
@@ -108,15 +82,7 @@ public class ProjectAntLogger extends AntLogger {
     
     @Override
     public String[] interestedInTasks(AntSession session) {
-        // XXX will eventually need them all anyway; as is, could list just javac
-        return AntLogger.ALL_TASKS;
-    }
-    
-    @Override
-    public int[] interestedInLogLevels(AntSession session) {
-        return new int[] {
-            AntEvent.LOG_WARN,
-        };
+        return new String[] {"javac"};
     }
     
     @Override
@@ -128,24 +94,6 @@ public class ProjectAntLogger extends AntLogger {
                 // Some error was thrown from build-impl.xml#compile. Ignore it; generally
                 // it will have been a compilation error which we do not wish to show.
                 session.consumeException(t);
-            }
-        }
-    }
-
-    @Override
-    public void messageLogged(AntEvent event) {
-        // #43968 - filter out following message
-        if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
-            event.getMessage().startsWith("Trying to override old definition of " + // NOI18N
-                "task http://www.netbeans.org/ns/")) { // NOI18N
-            event.consume();
-        } else if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
-            event.getMessage().startsWith("Trying to override old definition of task copy")) { // NOI18N
-            event.consume();
-        } else for (String msg : messages) {
-            if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
-                event.getMessage().startsWith(msg)) { // NOI18N
-                event.consume();
             }
         }
     }
