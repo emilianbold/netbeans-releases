@@ -152,16 +152,7 @@ public class DBPrimaryKeyTest extends NbTestCase {
         List<String> result = instance.getColumnNames();
         assertEquals("TINYINTC", result.get(0));
     }
-
-    /**
-     * Test of hashCode method, of class DBPrimaryKey.
-     */
-    public void testHashCode() {
-        DBPrimaryKey instance = getDBPrimaryKey();
-        int expResult = -1247008397;
-        int result = instance.hashCode();
-        assertEquals(expResult, result);
-    }    
+    
     /**
      * Test of toString method, of class DBPrimaryKey.
      */

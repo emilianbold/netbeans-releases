@@ -58,8 +58,6 @@ derby\.log
 ^bpel.samples/src/org/netbeans/modules/bpel/samples/resources/zip$
 ^o.n.soa.libs.wsdl4j/external/wsdl4j-1\.5\.2$
 ^o.n.soa.libs.xmlbeans/external/xmlbeans-2\.1\.0$
-^o.jython/jython-build$
-^o.jython/release$
 ^performance/enterprise/test/.*\.sh$
 ^performance/enterprise/test/qa-functional/data/PerformanceTestData$
 ^performance/enterprise/test/qa-functional/data/PerformanceTestData/nbproject/build-impl\.xml$

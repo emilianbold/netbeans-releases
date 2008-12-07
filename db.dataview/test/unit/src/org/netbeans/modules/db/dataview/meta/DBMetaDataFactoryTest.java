@@ -106,7 +106,7 @@ public class DBMetaDataFactoryTest extends NbTestCase {
      * Test of getDBType method, of class DBMetaDataFactory.
      */
     public void testGetDBType() throws Exception {
-        int expResult = 9;
+        int expResult = 8;
         int result = dbMeta.getDBType();
         assertEquals(expResult, result);
     }
