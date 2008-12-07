@@ -99,7 +99,8 @@ class SQLExecutionHelper {
                 } else {
                     msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_connection_failure", dv.getDatabaseConnection());
                 }
-                dv.setErrorStatusText(new DBException(msg));
+                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
                 return;
             }
 
@@ -229,7 +230,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -316,7 +317,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -365,7 +366,7 @@ class SQLExecutionHelper {
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
-                    mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n");
+                    mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n"); // NOI18N
                     truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
 
                     executeSQLStatement(stmt, truncateSql);
@@ -417,10 +418,10 @@ class SQLExecutionHelper {
                         return;
                     }
                 } catch (SQLException sqlEx) {
-                    //List<Object[]> rows = new ArrayList<Object[]>();
-                    //dataView.getDataViewPageContext().setCurrentRows(rows);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "." + NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close"), title, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                    String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "\n" + msg, title,
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                     if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
                         dataView.removeComponents();
@@ -490,8 +491,7 @@ class SQLExecutionHelper {
 
                 Object[] row = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
-                    int type = tblMeta.getColumn(i).getJdbcType();
-                    row[i] = DBReadWriteHelper.readResultSet(rs, type, i + 1);
+                    row[i] = DBReadWriteHelper.readResultSet(rs, tblMeta.getColumn(i), i + 1);
                 }
                 rows.add(row);
                 rowCnt++;
@@ -500,7 +500,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.log(Level.SEVERE, "Failed to set up table model" + e);
+            mLogger.log(Level.SEVERE, "Failed to set up table model" + e); // NOI18N
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -518,7 +518,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.log(Level.SEVERE, "Could not get total row count " + ex);
+            mLogger.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
         }
     }
 
@@ -540,7 +540,7 @@ class SQLExecutionHelper {
             stmt.setFetchSize(pageSize);
         } catch (SQLException e) {
             // ignore -  used only as a hint to the driver to optimize
-            LOGGER.log(Level.INFO, e.getMessage(), e);
+            LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
         }
 
         try {
@@ -550,7 +550,7 @@ class SQLExecutionHelper {
                 stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
             }
         } catch (SQLException exc) {
-            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc);
+            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
         }
         return stmt;
     }
@@ -576,7 +576,7 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds");
+        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds"); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
 
         synchronized (dataView) {
@@ -599,7 +599,7 @@ class SQLExecutionHelper {
             }
         }
 
-        // Try SELECT COUNT(*) FROM (sqlquery) alias
+        // SELECT COUNT(*) FROM (sqlquery) alias
         ResultSet cntResultSet = null;
         if (isSelect) {
             try {
@@ -625,7 +625,7 @@ class SQLExecutionHelper {
             }
         }
 
-        // get the count from resultset
+        // In worse case, get the count from resultset
         cntResultSet = null;
         int totalRows = 0;
         try {
@@ -654,7 +654,7 @@ class SQLExecutionHelper {
     }
 
     private boolean isGroupByUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(" COUNT(*) ") != -1;
+        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(" COUNT(*) ") != -1; // NOI18N
     }
 
     static String millisecondsToSeconds(long ms) {
