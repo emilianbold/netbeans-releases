@@ -63,7 +63,7 @@ public class BinaryToStringConverter {
     /**
      * List of characters considered "printable".
      */
-    private static String printable = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"; // NOI18N
+    private static String printable = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? "; // NOI18N
 
     /**
      * Convert from an array of Bytes into a string.

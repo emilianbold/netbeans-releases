@@ -66,40 +66,44 @@ public class DataViewUtils {
 
 
     static {
-        JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.STRUCT), "struct"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BINARY), "binary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIT), "bit"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BLOB), "blob"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BOOLEAN), "boolean"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.CHAR), "char"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.CLOB), "clob"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DATE), "date"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DECIMAL), "decimal"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DISTINCT), "distinct"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DOUBLE), "double"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.FLOAT), "float"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.INTEGER), "integer"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARBINARY), "longvarbinary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARCHAR), "longvarchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.NUMERIC), "numeric"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.REAL), "real"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.SMALLINT), "smallint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIME), "time");  // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIMESTAMP), "timestamp");  // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT), "tinyint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY), "varbinary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR), "varchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.JAVA_OBJECT), "java_object"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.OTHER), "other"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.REF), "ref"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DATALINK), "datalink"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY /*2003*/), "array"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.STRUCT /*2002*/), "struct"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT /*-5*/), "bigint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.SMALLINT /*5*/), "smallint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BINARY /*-2*/), "binary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BIT /*-7*/), "bit"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BLOB /*2004*/), "blob"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BOOLEAN /*16*/), "boolean"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.CHAR /*1*/), "char"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.CLOB /*2005*/), "clob"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DATE /*91*/), "date"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DECIMAL /*3*/), "decimal"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DISTINCT /*2001*/), "distinct"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DOUBLE /*8*/), "double"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.FLOAT /*6*/), "float"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.INTEGER /*4*/), "integer"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARBINARY /*-4*/), "longvarbinary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARCHAR /*-1*/), "longvarchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.NUMERIC /*2*/), "numeric"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.REAL /*7*/), "real"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TIME /*92*/), "time");  // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TIMESTAMP /*93*/), "timestamp");  // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT /*-6*/), "tinyint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY /*-3*/), "varbinary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR /*12*/), "varchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.JAVA_OBJECT /*2000*/), "java_object"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.OTHER /*1111*/), "other"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.REF /*2006*/), "ref"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DATALINK /*70*/), "datalink"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(-9 /* NVARCHAR */), "nvarchar"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(-8 /* ROWID */), "rowid"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(-15 /*NCHAR */), "nchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(-16 /*LONGNVARCHAR */), "longnvarchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(2011 /*NCLOB */), "nclob"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(2009 /*SQLXML */), "sqlxml"); // NOI18N
 
-        JDBC_SQL_MAP.put(String.valueOf(Types.NULL), "null"); // NOI18N
+
+        JDBC_SQL_MAP.put(String.valueOf(Types.NULL /*0*/), "null"); // NOI18N
     }
 
     public static String getStdSqlType(int dataType) throws IllegalArgumentException {
@@ -138,7 +142,6 @@ public class DataViewUtils {
 
     public static boolean isPrecisionRequired(int jdbcType) {
         switch (jdbcType) {
-            case Types.BIT:
             case Types.BIGINT:
             case Types.BOOLEAN:
             case Types.INTEGER:
@@ -195,6 +198,7 @@ public class DataViewUtils {
             case -9:  //NVARCHAR
             case -8:  //ROWID
             case -15: //NCHAR
+            case -16: //NLONGVARCHAR
                 return true;
             default:
                 return false;
@@ -235,13 +239,6 @@ public class DataViewUtils {
         }
     }
 
-    /**
-     * Generates HTML-formatted String containing detailed information on the given
-     * SQLDBColumn instance.
-     *
-     * @param column SQLDBColumn whose metadata are to be displayed in the tooltip
-     * @return String containing HTML-formatted column metadata
-     */
     public static String getColumnToolTip(DBColumn column) {
         boolean pk = column.isPrimaryKey();
         boolean fk = column.isForeignKey();
@@ -254,36 +251,18 @@ public class DataViewUtils {
         strBuf.append(column.getName()).append("</b> </td> </tr>");
 
         strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_type")).append("</td> <td> &nbsp; : &nbsp; <b>");
-
         strBuf.append(DataViewUtils.getStdSqlType(column.getJdbcType()).toUpperCase()).append("</b> </td> </tr>");
 
-        switch (column.getJdbcType()) {
-            case Types.CHAR:
-            case Types.VARCHAR:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_length")).append("</td> <td> &nbsp; : &nbsp; <b>");
-                break;
-            default:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_precision")).append("</td> <td> &nbsp; : &nbsp; <b>");
+        if (isString(column.getJdbcType())) {
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_length")).append("</td> <td> &nbsp; : &nbsp; <b>");
+        } else {
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_precision")).append("</td> <td> &nbsp; : &nbsp; <b>");
         }
         strBuf.append(column.getPrecision()).append("</b> </td> </tr>");
 
-        switch (column.getJdbcType()) {
-            case Types.CHAR:
-            case Types.DATE:
-            case Types.INTEGER:
-            case Types.SMALLINT:
-            case Types.TIME:
-            case Types.TIMESTAMP:
-            case Types.TINYINT:
-            case Types.VARCHAR:
-            case Types.VARBINARY:
-
-                // Do nothing - scale is meaningless for these types.
-                break;
-
-            default:
-                strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_scale")).append("</td> <td> &nbsp; : &nbsp; <b>");
-                strBuf.append(column.getScale()).append("</b> </td> </tr>");
+        if (isScaleRequired(column.getJdbcType())) {
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_scale")).append("</td> <td> &nbsp; : &nbsp; <b>");
+            strBuf.append(column.getScale()).append("</b> </td> </tr>");
         }
 
         if (pk) {
@@ -328,48 +307,22 @@ public class DataViewUtils {
 
         return str.toString();
     }
-    
-    /** HTML_SUBSTITUTES is a list of character substitutes for XML_ILLEGALS. */
-    public static final String[] HTML_ALLOWABLES = { "&amp;", "&quot;", "&lt;", "&gt;"};
+    public static final String[] HTML_ALLOWABLES = {"&amp;", "&quot;", "&lt;", "&gt;"};
+    public static final String[] HTML_ILLEGALS = {"&", "\"", "<", ">"};
 
-    /** HTML_ILLEGALS is a list of character strings not parseable by XML. */
-    public static final String[] HTML_ILLEGALS = { "&", "\"", "<", ">"};
-
-    
     public static String escapeHTML(String string) {
         return replaceInString(string, HTML_ILLEGALS, HTML_ALLOWABLES);
     }
-    
-    /**
-     * The replaceInString method is used to replace a list of strings within a string
-     * with a list of substitute strings.
-     *
-     * @param originalString is the string requiring replacements.
-     * @param victims is an array of string victims.
-     * @param replacements is an array of corresponding replacements.
-     * @return String after replacement.
-     */
-    public static String replaceInString(String originalString, String[] victims, String[] replacements) {
 
+    public static String replaceInString(String originalString, String[] victims, String[] replacements) {
         StringBuffer resultBuffer = new StringBuffer();
         boolean bReplaced = false;
 
-        // For all characters in the original string
         for (int charPosition = 0; charPosition < originalString.length(); charPosition++) {
-
-            // Walk through all the replacement candidates.
             for (int nSelected = 0; !bReplaced && (nSelected < victims.length); nSelected++) {
-
-                // If charPosition designates a replacement.
                 if (originalString.startsWith(victims[nSelected], charPosition)) {
-
-                    // Add the new replacement.
                     resultBuffer.append(replacements[nSelected]);
-
-                    // Mark this position as a replacement.
                     bReplaced = true;
-
-                    // Step over the replaced string.
                     charPosition += victims[nSelected].length() - 1;
                 }
             }
@@ -377,16 +330,12 @@ public class DataViewUtils {
             if (!bReplaced) {
                 resultBuffer.append(originalString.charAt(charPosition));
             } else {
-                // Reset for the next character.
                 bReplaced = false;
             }
         }
-
-        // Return the result as a string
         return resultBuffer.toString();
     }
 
-    /* Private no-arg constructor; this class should not be instantiable. */
     private DataViewUtils() {
     }
 }
