@@ -629,11 +629,27 @@ class SQLExecutionHelper {
         cntResultSet = null;
         int totalRows = 0;
         try {
+            // reset fetch size
+            int fetchSize = dataView.getDataViewPageContext().getPageSize();
+            try {
+                fetchSize = stmt.getFetchSize();
+                stmt.setFetchSize(20000);
+            } catch (SQLException sqe) {
+                // ignore
+            }
+
             cntResultSet = stmt.executeQuery(sql);
             while(cntResultSet.next()){
                 totalRows++;
             }
             dataView.getDataViewPageContext().setTotalRows(totalRows);
+
+            // set to old value
+            try {
+                stmt.setFetchSize(fetchSize);
+            } catch (SQLException sqe) {
+                // ignore
+            }
             return;
         } catch (SQLException e) {
         } finally {
