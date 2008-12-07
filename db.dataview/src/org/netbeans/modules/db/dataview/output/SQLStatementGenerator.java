@@ -83,7 +83,7 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if (dbcol.isGenerated() || insertedRow[i].equals("<DEFAULT>")) {
+            if (dbcol.isGenerated() || (insertedRow[i] != null && insertedRow[i].equals("<DEFAULT>"))) {
                 continue;
             }
 
@@ -195,6 +195,8 @@ class SQLStatementGenerator {
                         sql.append(")");
                     }
                 }
+            } else {
+                sql.append(typeName);
             }
 
             if (DataViewUtils.isBinary(col.getJdbcType()) && isdb2) {
@@ -230,10 +232,16 @@ class SQLStatementGenerator {
     static String getCountSQLQuery(String queryString) {
         // User may type "FROM" in either lower, upper or mixed case
         String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
-        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length()); // NOI18N
+        queryString = queryString.substring(splitByFrom[0].length());
+
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
+        return "SELECT COUNT(*) " + queryString; // NOI18N
     }
 
     static String getCountAsSubQuery(String queryString) {
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
         return "SELECT COUNT(*) FROM (" + queryString + ") C2668"; // NOI18N
     }
 
