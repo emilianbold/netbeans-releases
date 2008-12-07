@@ -40,13 +40,9 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import java.util.ArrayList;
 import java.util.Comparator;
-import javax.lang.model.element.TypeElement;
+import java.util.List;
 import javax.swing.Icon;
 
 
@@ -54,41 +50,87 @@ import javax.swing.Icon;
  *
  * @author Jaroslav Bachorik
  */
-public class ClassNode extends AbstractClassNode {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+abstract public class ClassNode extends ContainerNode {
+    private boolean anonymous;
 
+    /**
+     * A {@linkplain Comparator} able to compare {@linkplain ClassNode} instances
+     */
     public static final Comparator COMPARATOR = new Comparator<ClassNode>() {
         public int compare(ClassNode o1, ClassNode o2) {
             return o1.toString().compareTo(o2.toString());
         }
     };
 
+    private static class ClassChildren extends SelectorChildren<ClassNode> {
+        protected List<SelectorNode> prepareChildren(final ClassNode parent) {
+            List<SelectorNode> contents = new ArrayList<SelectorNode>();
+            SelectorNode content = null;
 
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
+            if (!parent.isAnonymous()) { // no constructors for anonymous inner classes
+                content = parent.getConstructorsNode();
 
-    private final ClientUtils.SourceCodeSelection signature;
+                if (content != null && !content.isLeaf()) {
+                    contents.add(content);
+                }
+            }
 
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
+            content = parent.getMethodsNode();
+
+            if (content != null && !content.isLeaf()) {
+                contents.add(content);
+            }
+
+            content = parent.getInnerClassesNode();
+
+            if (content != null && !content.isLeaf()) {
+                contents.add(content);
+            }
+
+            return contents;
+        }
+    }
+
 
     /** Creates a new instance of ClassNode */
-    public ClassNode(final ClasspathInfo cpInfo, final Icon icon, final TypeElement classElement, final ContainerNode parent) {
-        super(cpInfo, icon, classElement, parent);
-        signature = new ClientUtils.SourceCodeSelection(ElementUtilities.getBinaryName(classElement), "*", ""); // NOI18N
+    public ClassNode(String className, String displayName, Icon icon, boolean isAnonymous, final ContainerNode parent) {
+        super(className, displayName, icon, parent);
+        this.anonymous = isAnonymous;
     }
 
-    public ClassNode(final ClasspathInfo cpInfo, final Icon icon, final TypeElement classElement, final String className,
-                     final ContainerNode parent) {
-        super(cpInfo, icon, classElement, className, parent);
-        signature = new ClientUtils.SourceCodeSelection(ElementUtilities.getBinaryName(classElement), "*", ""); // NOI18N
+    public ClassNode(String className, String displayName, boolean isAnonymous, final ContainerNode parent) {
+        super(className, displayName, IconResource.CLASS_ICON, parent);
+        this.anonymous = isAnonymous;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public ClientUtils.SourceCodeSelection getSignature() {
-        return signature;
-    }
-
-    protected SelectorChildren getChildren() {
+    final protected SelectorChildren getChildren() {
         return new ClassChildren();
     }
+
+    /**
+     * Is class an anonymous one
+     * @return Returns true if the {@linkplain ClassNode} represents an anonymous class; false otherwise
+     *
+     */
+    final public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    /**
+     * The implementation will take care of generating the appropriate {@linkplain ConstructorsNode} instance
+     * @return Returns a specific {@linkplain ConstructorsNode} instance or NULL
+     */
+    abstract protected ConstructorsNode getConstructorsNode();
+
+    /**
+     * The implementation will take care of generating the appropriate {@linkplain MethodsNode} instance
+     * @return Returns a specific {@linkplain MethodsNode} instance or NULL
+     */
+    abstract protected MethodsNode getMethodsNode();
+
+    /**
+     * The implementation will take care of generating the appropriate {@linkplain InnerClassesNode} instance
+     * @return Returns a specific {@linkplain InnerClassesNode} instance or NULL
+     */
+    abstract protected InnerClassesNode getInnerClassesNode();
 }
