@@ -1,4 +1,4 @@
-mylocal:VARIABLE:[]:ESCAPED{mylocal}:
+mylocal:VARIABLE:[]:ESCAPED{mylocal} : ESCAPED{Fixnum}:
 Foobyy:CLASS:[]:ESCAPED{Foobyy}:
   hello:METHOD:[PUBLIC]:ESCAPED{hello}:
 $anotherglobal:GLOBAL:[]:ESCAPED{$anotherglobal}:
