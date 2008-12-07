@@ -86,7 +86,7 @@ public class DatabaseOption {
 
     static final long serialVersionUID =-13629330831657810L;
     
-    public DatabaseOption() {
+    private DatabaseOption() {
         super();
         drivers = new Vector();
         connections = new Vector();
