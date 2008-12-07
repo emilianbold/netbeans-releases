@@ -79,15 +79,13 @@ public class DynamicVerifyTest extends NbTestCase {
         );
         Test ergonomics = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(PerClusterEnablementCheck.class).
             addTest(ProjectTemplatesCheck.class).
             addTest(AllClustersProcessedCheck.class).
-            addTest(EnableKitRefreshesLayersCheck.class).
             addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
-            enableModules("ide.*", ".*")
+            enableModules("ide[0-9]*", ".*")
         );
 
         all.addTest(full);
