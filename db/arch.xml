@@ -548,11 +548,6 @@ made subject to such option by the copyright holder.
    </api>
   </p>
   <p>
-   <api group="java" name="org.openide.options" type="import" category="official">
-    Various settings of the Database Explorer, including the list of connections, are saved using a SystemOption.
-   </api>
-  </p>
-  <p>
    <api group="java" name="org.openide.windows" type="import" category="official">
     Needed in the Database Explorer UI (the Execute Command top component).
    </api>

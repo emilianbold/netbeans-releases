@@ -215,7 +215,7 @@ public class DBReadWriteHelper {
                 // BLOB exists, so try to read the data from it
                 byte[] blobData = null;
                 if (blob != null) {
-                    blobData = blob.getBytes(1, 255);
+                    blobData = blob.getBytes(1, Math.min((int)blob.length() , 2000));
                 }
                 Byte[] internal = new Byte[blobData.length];
                 for (int i = 0; i < blobData.length; i++) {
@@ -235,7 +235,7 @@ public class DBReadWriteHelper {
                 }
                 // CLOB exists, so try to read the data from it
                 if (clob != null) {
-                    return clob.getSubString(1, 255);
+                    return clob.getSubString(1, Math.min((int)clob.length() , 2000));
                 }
             }
             case Types.OTHER:

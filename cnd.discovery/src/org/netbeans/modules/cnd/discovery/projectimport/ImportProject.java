@@ -319,6 +319,7 @@ public class ImportProject {
     }
 
     private void discovery() {
+        boolean done = false;
         final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             final Map<String, Object> map = new HashMap<String, Object>();
@@ -326,12 +327,18 @@ public class ImportProject {
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
             if (extension.canApply(map, makeProject)) {
                 try {
+                    done = true;
                     extension.apply(map, makeProject);
                     switchModel(true);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
+        }
+        if (!done){
+            postponeModel = false;
+            switchModel(true);
+            postModelDiscovery();
         }
     }
 

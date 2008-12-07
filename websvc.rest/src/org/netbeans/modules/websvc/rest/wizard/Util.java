@@ -61,8 +61,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.support.Inflector;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -412,5 +413,14 @@ public class Util {
                 ClassPath.getClassPath(fileObject, ClassPath.BOOT), // JDK classes
                 ClassPath.getClassPath(fileObject, ClassPath.COMPILE), // classpath from dependent projects and libraries
                 ClassPath.getClassPath(fileObject, ClassPath.SOURCE)); // source classpath
+    }
+
+    public static PersistenceUnit getPersistenceUnit(WizardDescriptor wizard, Project project) {
+        PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
+        if (pu == null) {
+            pu = new PersistenceHelper(project).getPersistenceUnit();
+            wizard.putProperty(WizardProperties.PERSISTENCE_UNIT, pu);
+        }
+        return pu;
     }
 }

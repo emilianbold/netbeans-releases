@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -61,7 +62,6 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.options.SystemOption;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -69,8 +69,11 @@ import org.openide.util.NbBundle;
 * These connections will be restored at startup, drivers will be placed in Drivers
 * directory owned by Database node.
 */
-public class DatabaseOption extends SystemOption {
-    
+public class DatabaseOption {
+
+     /** The support for firing property changes */
+    private PropertyChangeSupport propertySupport;
+
     private static boolean debugMode;
     private static Vector drivers;
     private static Vector connections;
@@ -79,6 +82,7 @@ public class DatabaseOption extends SystemOption {
     private static boolean autoConn = true;
 
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
+    private static DatabaseOption INSTANCE = new DatabaseOption();
 
     static final long serialVersionUID =-13629330831657810L;
     
@@ -87,8 +91,17 @@ public class DatabaseOption extends SystemOption {
         drivers = new Vector();
         connections = new Vector();
         debugMode = false;
+        propertySupport = new PropertyChangeSupport(this);
         
         deleteAdaptorsFolder();
+    }
+
+    public static DatabaseOption getDefault() {
+        return INSTANCE;
+     }
+
+    public PropertyChangeSupport getPropertySupport() {
+        return propertySupport;
     }
 
     /** Returns vector of registered drivers */
@@ -111,7 +124,7 @@ public class DatabaseOption extends SystemOption {
             return;
         
         debugMode = flag;
-        firePropertyChange(PROP_DEBUG_MODE, !debugMode ? Boolean.TRUE : Boolean.FALSE, debugMode ? Boolean.TRUE : Boolean.FALSE);
+        propertySupport.firePropertyChange(PROP_DEBUG_MODE, !debugMode ? Boolean.TRUE : Boolean.FALSE, debugMode ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Sets vector of available drivers.
@@ -134,7 +147,7 @@ public class DatabaseOption extends SystemOption {
     }
 
     public void save() {
-        firePropertyChange(null, null, null);
+        propertySupport.firePropertyChange(null, null, null);
     }
 
     /** Name of the option */
@@ -146,13 +159,11 @@ public class DatabaseOption extends SystemOption {
     public String toString() {
         return (drivers != null ? drivers.size() : 0) + " drivers, " + (connections != null ? connections.size() : 0) + " connections"; //NOI18N
     }
-    
-    /** Writes data
+
+     /** Writes data
     * @param out ObjectOutputStream
     */
     public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        
         out.writeObject(null);
         out.writeObject(getConnections());
     }
@@ -161,15 +172,14 @@ public class DatabaseOption extends SystemOption {
     * @param in ObjectInputStream
     */
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        
         drivers = (Vector) in.readObject();
         if (drivers != null)
             lookForDrivers();
 
         connections = (Vector) in.readObject();
     }
-        
+
+
     private Vector createDrivers(Map drvMap) {
         Vector def = (Vector) drvMap.get("defaultdriverlist"); //NOI18N
         Vector rvec = null;
