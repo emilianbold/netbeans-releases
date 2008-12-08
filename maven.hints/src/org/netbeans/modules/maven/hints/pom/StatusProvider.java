@@ -205,7 +205,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     EditorCookie ed = dobj.getCookie(EditorCookie.class);
                     if (ed != null) {
                         JEditorPane[] panes = ed.getOpenedPanes();
-                        if (panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
+                        if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
                             HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
                             ok = true;
                         }
