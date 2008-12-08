@@ -116,11 +116,13 @@ public class GrailsActionsTest extends GrailsTestCase {
         //from a domain class
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo); //NOI18N
         assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
         //from a view
         oa.perform(getViewNode("book|edit")); //NOI18N
         eo = new EditorOperator("edit.gsp"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo); //NOI18N
         assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
     }
@@ -135,11 +137,13 @@ public class GrailsActionsTest extends GrailsTestCase {
         //from a domain class
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo);
         assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
         //from a controller
         oa.perform(getControllerNode("BookController")); //NOI18N
         eo = new EditorOperator("BookController.groovy"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo);
         assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
     }
@@ -155,6 +159,7 @@ public class GrailsActionsTest extends GrailsTestCase {
         //from a view
         oa.perform(getViewNode("book|list")); //NOI18N
         final EditorOperator eo = new EditorOperator("list.gsp"); //NOI18N
+        assertNotNull(eo);
         assertTrue(a.isEnabled());
         SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -163,10 +168,10 @@ public class GrailsActionsTest extends GrailsTestCase {
             }
         });
         assertTrue(getActiveTC().endsWith("domain" + File.separator + "Book.groovy")); //NOI18N
-        eo.close(false);
         //from a controller
         oa.perform(getControllerNode("BookController")); //NOI18N
         final EditorOperator eo2 = new EditorOperator("BookController.groovy"); //NOI18N
+        assertNotNull(eo2);
         assertTrue(a.isEnabled());
         SwingUtilities.invokeAndWait(new Runnable() {
 
