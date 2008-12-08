@@ -105,8 +105,8 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testParamVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",
-                "function test($hello) {",
-                "function test($^hello^) {",
+                "function test($hello) {//function",
+                "function test($^hello^) {//function",
                 "* @param Book $hello",
                 "* @param Book $^he|llo^"
                 );

@@ -182,8 +182,8 @@ public final class ModelVisitor extends DefaultVisitor {
 
         try {
             //super.visit(node);
-            scan(node.getFunction().getBody());
             scan(node.getFunction().getFormalParameters());
+            scan(node.getFunction().getBody());
         } finally {
             modelBuilder.reset();
         }
