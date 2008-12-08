@@ -292,14 +292,16 @@ public final class DBMetaDataFactory {
                 splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
                 fromsql = fromsql.substring(0, splitByFrom[0].length());
             }
-            StringTokenizer t = new StringTokenizer(fromsql, " ,");
+            if (!sql.toUpperCase().contains("JOIN")) {
+                StringTokenizer t = new StringTokenizer(fromsql, ",");
 
-            if (t.hasMoreTokens()) {
-                tableName = t.nextToken();
-            }
+                if (t.hasMoreTokens()) {
+                    tableName = t.nextToken().trim();
+                }
 
-            if (t.hasMoreTokens()) {
-                tableName = "";
+                if (t.hasMoreTokens()) {
+                    tableName = "";
+                }
             }
         }
         String[] splitByDot = tableName.split("\\.");
