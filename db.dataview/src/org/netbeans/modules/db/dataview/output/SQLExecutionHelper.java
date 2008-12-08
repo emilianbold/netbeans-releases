@@ -203,7 +203,7 @@ class SQLExecutionHelper {
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                
+
                 for (int j = 0; j < rows.length && !error; j++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -563,7 +563,7 @@ class SQLExecutionHelper {
             }
         }
 
-        mLogger.log(Level.FINE, "Executing Statement: " + sql);
+        mLogger.log(Level.FINE, "Executing Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -639,7 +639,7 @@ class SQLExecutionHelper {
             }
 
             cntResultSet = stmt.executeQuery(sql);
-            while(cntResultSet.next()){
+            while (cntResultSet.next()) {
                 totalRows++;
             }
             dataView.getDataViewPageContext().setTotalRows(totalRows);

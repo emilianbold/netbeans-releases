@@ -238,12 +238,12 @@ public class DataView {
     }
 
     synchronized void removeComponents() {
-        dataViewUI.getParent().setVisible(false);        
+        dataViewUI.getParent().setVisible(false);
         dataViewUI.removeAll();
         dataViewUI.repaint();
         dataViewUI.revalidate();
     }
-    
+
     void setInfoStatusText(String statusText) {
         if (statusText != null) {
             StatusDisplayer.getDefault().setStatusText(statusText);

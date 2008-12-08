@@ -45,10 +45,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBForeignKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -60,59 +58,6 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 public class DataViewUtils {
-
-    public static final int JDBCSQL_TYPE_UNDEFINED = -65535;
-    private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
-
-
-    static {
-        JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY /*2003*/), "array"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.STRUCT /*2002*/), "struct"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT /*-5*/), "bigint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.SMALLINT /*5*/), "smallint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BINARY /*-2*/), "binary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIT /*-7*/), "bit"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BLOB /*2004*/), "blob"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.BOOLEAN /*16*/), "boolean"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.CHAR /*1*/), "char"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.CLOB /*2005*/), "clob"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DATE /*91*/), "date"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DECIMAL /*3*/), "decimal"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DISTINCT /*2001*/), "distinct"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DOUBLE /*8*/), "double"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.FLOAT /*6*/), "float"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.INTEGER /*4*/), "integer"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARBINARY /*-4*/), "longvarbinary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARCHAR /*-1*/), "longvarchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.NUMERIC /*2*/), "numeric"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.REAL /*7*/), "real"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIME /*92*/), "time");  // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIMESTAMP /*93*/), "timestamp");  // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT /*-6*/), "tinyint"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY /*-3*/), "varbinary"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR /*12*/), "varchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.JAVA_OBJECT /*2000*/), "java_object"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.OTHER /*1111*/), "other"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.REF /*2006*/), "ref"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(Types.DATALINK /*70*/), "datalink"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(-9 /* NVARCHAR */), "nvarchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(-8 /* ROWID */), "rowid"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(-15 /*NCHAR */), "nchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(-16 /*LONGNVARCHAR */), "longnvarchar"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(2011 /*NCLOB */), "nclob"); // NOI18N
-        JDBC_SQL_MAP.put(String.valueOf(2009 /*SQLXML */), "sqlxml"); // NOI18N
-
-
-        JDBC_SQL_MAP.put(String.valueOf(Types.NULL /*0*/), "null"); // NOI18N
-    }
-
-    public static String getStdSqlType(int dataType) throws IllegalArgumentException {
-        Object o = JDBC_SQL_MAP.get(String.valueOf(dataType));
-        if (o instanceof String) {
-            return (String) o;
-        }
-        return "OTHER"; // NOI18N
-    }
 
     public static boolean isNumeric(int jdbcType) {
         switch (jdbcType) {
@@ -312,8 +257,8 @@ public class DataViewUtils {
 
         return str.toString();
     }
-    public static final String[] HTML_ALLOWABLES = {"&amp;", "&quot;", "&lt;", "&gt;"};
-    public static final String[] HTML_ILLEGALS = {"&", "\"", "<", ">"};
+    public static final String[] HTML_ALLOWABLES = {"&amp;", "&quot;", "&lt;", "&gt;"}; // NOI18N
+    public static final String[] HTML_ILLEGALS = {"&", "\"", "<", ">"}; // NOI18N
 
     public static String escapeHTML(String string) {
         return replaceInString(string, HTML_ILLEGALS, HTML_ALLOWABLES);

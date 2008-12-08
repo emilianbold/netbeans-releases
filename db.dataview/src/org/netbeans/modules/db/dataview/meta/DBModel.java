@@ -121,7 +121,7 @@ public final class DBModel extends DBObject<Object> {
         return this.tables.get(fqTableName);
     }
 
-    public int getDBType(){
+    public int getDBType() {
         return dbType;
     }
 

@@ -47,7 +47,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -75,9 +74,9 @@ public final class DBMetaDataFactory {
     public static final int DERBY = 6;
     public static final int SYBASE = 7;
     public static final int AXION = 8;
-    private Connection dbconn; // db connection
+    private Connection dbconn;
     private int dbType = -1;
-    private DatabaseMetaData dbmeta; // db metadata
+    private DatabaseMetaData dbmeta;
 
     public DBMetaDataFactory(Connection dbconn) throws SQLException {
         assert dbconn != null;
@@ -188,7 +187,7 @@ public final class DBMetaDataFactory {
 
             int sqlTypeCode = rsMeta.getColumnType(i);
             String sqlTypeStr = rsMeta.getColumnTypeName(i);
-            if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {               
+            if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
                 if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
                     sqlTypeCode = java.sql.Types.TIMESTAMP;
                 } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
@@ -275,8 +274,8 @@ public final class DBMetaDataFactory {
         try {
             rs = dbmeta.getColumns(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName(), "%");
             while (rs.next()) {
-                String defaultValue = rs.getString("COLUMN_DEF");
-                DBColumn col = table.getColumn(rs.getString("COLUMN_NAME"));
+                String defaultValue = rs.getString("COLUMN_DEF"); // NOI18N
+                DBColumn col = table.getColumn(rs.getString("COLUMN_NAME")); // NOI18N
 
                 if (col != null && defaultValue != null && defaultValue.trim().length() != 0) {
                     col.setDefaultValue(defaultValue.trim());
@@ -288,19 +287,18 @@ public final class DBMetaDataFactory {
         }
     }
 
-
     private void adjustTableMetadata(String sql, DBTable table) {
         String tableName = "";
-        if (sql.toUpperCase().contains("FROM")) {
+        if (sql.toUpperCase().contains("FROM")) { // NOI18N
             // User may type "FROM" in either lower, upper or mixed case
             String[] splitByFrom = sql.toUpperCase().split("FROM"); // NOI18N
             String fromsql = sql.substring(sql.length() - splitByFrom[1].length());
-            if (fromsql.toUpperCase().contains("WHERE")) {
+            if (fromsql.toUpperCase().contains("WHERE")) { // NOI18N
                 splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
                 fromsql = fromsql.substring(0, splitByFrom[0].length());
             }
-            if (!sql.toUpperCase().contains("JOIN")) {
-                StringTokenizer t = new StringTokenizer(fromsql, ",");
+            if (!sql.toUpperCase().contains("JOIN")) { // NOI18N
+                StringTokenizer t = new StringTokenizer(fromsql, ","); // NOI18N
 
                 if (t.hasMoreTokens()) {
                     tableName = t.nextToken().trim();
@@ -311,7 +309,7 @@ public final class DBMetaDataFactory {
                 }
             }
         }
-        String[] splitByDot = tableName.split("\\.");
+        String[] splitByDot = tableName.split("\\."); // NOI18N
         if (splitByDot.length == 3) {
             table.setCatalogName(unQuoteIfNeeded(splitByDot[0]));
             table.setSchemaName(unQuoteIfNeeded(splitByDot[1]));
@@ -325,7 +323,7 @@ public final class DBMetaDataFactory {
     }
 
     private String unQuoteIfNeeded(String id) {
-        String quoteStr = "\"";
+        String quoteStr = "\""; // NOI18N
         try {
             quoteStr = dbmeta.getIdentifierQuoteString().trim();
         } catch (SQLException e) {

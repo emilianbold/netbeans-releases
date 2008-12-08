@@ -71,7 +71,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
 
-    /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
@@ -86,7 +85,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         Action enterAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                 executeBtnActionPerformed(null);
+                executeBtnActionPerformed(null);
             }
         };
 
@@ -281,7 +280,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
             }
             jEditorPane1.setContentType("text/html"); // NOI18N
-            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage().replaceAll("\\n", "<br>")+"</font></body></html>";
+            String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
@@ -324,7 +323,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/html"); // NOI18N
-            String str = "<html> <body><font color="+"#FF0000"+">"+ex.getMessage().replaceAll("\\n", "<br>")+"</font></body></html>";
+            String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
@@ -468,21 +467,18 @@ class InsertRecordDialog extends javax.swing.JDialog {
         });
     }
 
-    // TODO: Fix DBMetadataFactory to discover whether the column has DEFAULT
-    // and only then allow to set the value to DEFAULT
     private Object[] getInsertValues() throws DBException {
         Object[] insertData = new Object[colValueTextField.length];
         for (int i = 0; i < colValueTextField.length; i++) {
             JTextField textField = colValueTextField[i];
             DBColumn col = dataView.getDataViewDBTable().getColumn(i);
             Object val;
-            if(col.isGenerated()) {
+            if (col.isGenerated()) {
                 val = null;
-            }
-            else if (col.isNullable() && textField.getText().equals("<NULL>") && !textField.isEditable()) {
+            } else if (col.isNullable() && textField.getText().equals("<NULL>") && !textField.isEditable()) { // NOI18N
                 val = null;
-            } else if(textField.getText().equals("<DEFAULT>") && !textField.isEditable()){
-                val = "<DEFAULT>";
+            } else if (textField.getText().equals("<DEFAULT>") && !textField.isEditable()) { // NOI18N
+                val = "<DEFAULT>"; // NOI18N
             } else {
                 val = DBReadWriteHelper.validate(textField.getText(), col);
             }

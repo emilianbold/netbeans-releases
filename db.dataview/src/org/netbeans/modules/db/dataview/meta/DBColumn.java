@@ -213,7 +213,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return generated;
     }
 
-    public boolean hasDefault(){
+    public boolean hasDefault() {
         return defaultValue != null && defaultValue.trim().length() != 0;
     }
 
@@ -232,8 +232,8 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     void setPrimaryKey(boolean newFlag) {
         primaryKey = newFlag;
     }
-    
-    void setEditable(boolean editable){
+
+    void setEditable(boolean editable) {
         this.editable = editable;
     }
 }
