@@ -299,7 +299,8 @@ public class SQLEditorSupport extends DataEditorSupport
         if (existingFile.exists()) {
             NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplace", fileName),
-                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"));
+                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"),
+                    NotifyDescriptor.YES_NO_OPTION);
             DialogDisplayer.getDefault().notify(confirm);
             if (confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
                 super.saveAs(folder, fileName);
