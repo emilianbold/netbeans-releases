@@ -70,6 +70,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
@@ -176,15 +177,23 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 PHPDocBlock docComment = (PHPDocBlock)comment;
                                 ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docComment, caretOffset);
                                 PHPDocNode node = null;
-                                if (hierarchy.length > 0 && hierarchy[0] instanceof PHPDocTypeTag) {
-                                    for (PHPDocNode type : ((PHPDocTypeTag)hierarchy[0]).getTypes()) {
-                                        if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
-                                            node = type;
-                                            break;
+                                if (hierarchy.length > 0 ) {
+                                    if (hierarchy[0] instanceof PHPDocTypeTag) {
+                                        for (PHPDocNode type : ((PHPDocTypeTag) hierarchy[0]).getTypes()) {
+                                            if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
+                                                node = type;
+                                                break;
+                                            }
+                                        }
+                                        if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getValue().toUpperCase())) {
+                                            result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                                         }
                                     }
-                                    if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getValue().toUpperCase())) {
-                                        result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                    if (hierarchy[0] instanceof PHPDocVarTypeTag) {
+                                        node = ((PHPDocVarTypeTag)hierarchy[0]).getVariable();
+                                        if (node != null && node.getStartOffset() < caretOffset && caretOffset < node.getEndOffset()) {
+                                            result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                        }
                                     }
                                 }
                             }
