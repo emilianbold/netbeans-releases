@@ -68,7 +68,6 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
-import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
@@ -217,10 +216,16 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
-    private Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
-        if (CsmKindUtilities.isOffsetable(csmObject)) {
-            FileObject fo = CsmUtilities.getFileObject(((CsmOffsetable)csmObject).getContainingFile());
-            if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
+    private static Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
+        CsmFile csmFile = null; 
+        if (CsmKindUtilities.isFile(csmObject)) {
+            csmFile = (CsmFile) csmObject;
+        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
+            csmFile = ((CsmOffsetable)csmObject).getContainingFile();
+        }
+        if (csmFile != null) {
+            FileObject fo = CsmUtilities.getFileObject(csmFile);
+            if (!CsmRefactoringUtils.isRefactorable(fo)) {
                 problem = createProblem(problem, true, getCannotRename(fo));
             }            
         }
