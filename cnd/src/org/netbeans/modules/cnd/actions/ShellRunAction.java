@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -81,11 +82,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null);
+        performAction(node, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener) {
-	ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener) {
+        ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
         }
@@ -120,10 +121,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Tab Name
         String tabName = getString("RUN_LABEL", node.getName());
         
-	String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
+        String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
-	String[] args = bes.getArguments(); // from properties
+        String[] args = bes.getArguments(); // from properties
 
         String developmentHost = getDevelopmentHost(fileObject);
         // Windows: The command is usually of the from "/bin/sh", but this
@@ -162,7 +163,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             false,
             true,
             false);
-
+        if (outputListener != null) {
+            nativeExecutor.setOutputListener(outputListener);
+        }
         new ShellExecuter(nativeExecutor, listener).execute();
     }
     

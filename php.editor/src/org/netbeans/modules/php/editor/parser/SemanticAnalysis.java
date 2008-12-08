@@ -295,7 +295,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
                 if (!isPrivate) {
-                    addOffsetRange(variable.getName(), ColoringAttributes.FIELD_SET);
+                    addOffsetRange(variable.getName(), coloring);
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();

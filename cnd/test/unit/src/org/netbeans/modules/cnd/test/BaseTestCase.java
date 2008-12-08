@@ -231,7 +231,12 @@ public abstract class BaseTestCase extends NbTestCase {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
                 remoteHKey = ui.substring(0,m) + ui.substring(n);
-                RemoteUserInfo.getUserInfo(remoteHKey, false).setPassword(remotePassword, false);
+                RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(remoteHKey);
+                if (rui == null) {
+                    System.err.println("There is no valid RemoteUserInfoAccessor.");
+                    return false;
+                }
+                rui.setPassword(remotePassword, false);
                 System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + remotePassword);
             } else {
                 remoteHKey = ui;

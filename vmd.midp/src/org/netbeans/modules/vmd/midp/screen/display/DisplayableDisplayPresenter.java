@@ -54,7 +54,6 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEdi
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
