@@ -204,6 +204,10 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
                 contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
+            } catch (DuplicateRealmException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchRealmException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (ComponentLookupException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (PlexusContainerException ex) {
@@ -275,7 +279,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 }
             }
         }
-        
+
         //figure if a repository was removed from list, remove from context.
         Set<String> currents = new HashSet<String>();
         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
@@ -519,7 +523,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         }
         fireChangeIndex(repo);
     }
-    
+
     private void fireChangeIndex(final RepositoryInfo repo) {
         if (MUTEX.isWriteAccess()) {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -532,7 +536,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         assert !MUTEX.isWriteAccess() && !MUTEX.isReadAccess();
         repo.fireChangeIndex();
     }
-    
+
 
     private File getDefaultIndexLocation() {
         String userdir = System.getProperty("netbeans.user"); //NOI18N
