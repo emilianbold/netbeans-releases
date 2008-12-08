@@ -176,7 +176,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 PHPDocBlock docComment = (PHPDocBlock)comment;
                                 ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docComment, caretOffset);
                                 PHPDocNode node = null;
-                                if (hierarchy[0] instanceof PHPDocTypeTag) {
+                                if (hierarchy.length > 0 && hierarchy[0] instanceof PHPDocTypeTag) {
                                     for (PHPDocNode type : ((PHPDocTypeTag)hierarchy[0]).getTypes()) {
                                         if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
                                             node = type;
