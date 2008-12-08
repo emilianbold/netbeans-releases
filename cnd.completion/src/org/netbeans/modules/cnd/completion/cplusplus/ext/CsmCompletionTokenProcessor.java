@@ -839,9 +839,22 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         addTokenTo(top);
                                     //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    } else {
-                                        errorState = true;
+                                        break;
                                     }
+                                    int cnt = expStack.size();
+                                    CsmCompletionExpression gen = null;
+                                    for (int i = 0; i < cnt; i++) {
+                                        CsmCompletionExpression expr = peekExp(i + 1);
+                                        if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                            gen = expr;
+                                            break;
+                                        }
+                                    }
+                                    if (gen != null) {
+                                        pushExp(createTokenExp(VARIABLE));
+                                        break;
+                                    }
+                                    errorState = true;
                                     break;
                                 case TYPE_REFERENCE:
                                     if (getValidExpID(peekExp2()) == METHOD_OPEN) {
