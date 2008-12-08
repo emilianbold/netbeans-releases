@@ -324,7 +324,7 @@ public abstract class CommonConfigurationXMLCodec
 
             if (publicLocation) {
                 writeToolsSetBlock(xes, makeConfiguration);
-                if (makeConfiguration.isCompileConfiguration()) {
+                if (makeConfiguration.isCompileConfiguration() || makeConfiguration.isQmakeConfiguration()) {
                     writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
                 if (makeConfiguration.isMakefileConfiguration()) {

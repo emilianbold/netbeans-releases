@@ -78,6 +78,9 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
     private static final String BRACES_MATCH_COLORING = "nbeditor-bracesMatching-match"; //NOI18N
     private static final String BRACES_MISMATCH_COLORING = "nbeditor-bracesMatching-mismatch"; //NOI18N
     
+    private static final String BRACES_MATCH_MULTICHAR_COLORING = "nbeditor-bracesMatching-match-multichar"; //NOI18N
+    private static final String BRACES_MISMATCH_MULTICHAR_COLORING = "nbeditor-bracesMatching-mismatch-multichar"; //NOI18N
+
     private final JTextComponent component;
     private final Document document;
     
@@ -87,6 +90,8 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
     private final OffsetsBag bag;
     private final AttributeSet bracesMatchColoring;
     private final AttributeSet bracesMismatchColoring;
+    private final AttributeSet bracesMatchMulticharColoring;
+    private final AttributeSet bracesMismatchMulticharColoring;
 
     public BracesMatchHighlighting(JTextComponent component, Document document) {
         this.document = document;
@@ -98,8 +103,12 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         AttributeSet match = fcs.getFontColors(BRACES_MATCH_COLORING);
         AttributeSet mismatch = fcs.getFontColors(BRACES_MISMATCH_COLORING);
+        AttributeSet matchMultichar = fcs.getFontColors(BRACES_MATCH_MULTICHAR_COLORING);
+        AttributeSet mismatchMultichar = fcs.getFontColors(BRACES_MISMATCH_MULTICHAR_COLORING);
         this.bracesMatchColoring = match != null ? match : SimpleAttributeSet.EMPTY;
         this.bracesMismatchColoring = mismatch != null ? mismatch : SimpleAttributeSet.EMPTY;
+        this.bracesMatchMulticharColoring = matchMultichar != null ? matchMultichar : SimpleAttributeSet.EMPTY;
+        this.bracesMismatchMulticharColoring = mismatchMultichar != null ? mismatchMultichar : SimpleAttributeSet.EMPTY;
         
         // Create and hook up the highlights bag
         this.bag = new OffsetsBag(document, true);
@@ -217,7 +226,9 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
                 c.getDot(), 
                 bag, 
                 bracesMatchColoring, 
-                bracesMismatchColoring
+                bracesMismatchColoring,
+                bracesMatchMulticharColoring,
+                bracesMismatchMulticharColoring
             );
         }
     }

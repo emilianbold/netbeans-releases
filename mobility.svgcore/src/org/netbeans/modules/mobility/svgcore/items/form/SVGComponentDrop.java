@@ -87,7 +87,7 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         return new Default(snippet);
     }
     
-    protected static String getSnippetString(Class clazz, String relatedSnippetPath) throws IOException{
+    protected static String loadSnippetString(Class clazz, String relatedSnippetPath) throws IOException{
         InputStream is = clazz.getResourceAsStream(relatedSnippetPath);
         assert is != null : relatedSnippetPath + " resource Input Stream is null";//NOI18N
         BufferedReader in = new BufferedReader(new InputStreamReader(is));

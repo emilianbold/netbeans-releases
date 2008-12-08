@@ -50,6 +50,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="highlight-caret-row" bgColor="darkGray"/>
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="green" foreColor="white" />
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red" foreColor="white"/>
+    <fontcolor name="nbeditor-bracesMatching-match-multichar" bgColor="green" foreColor="white" />
+    <fontcolor name="nbeditor-bracesMatching-mismatch-multichar" bgColor="red" foreColor="white"/>
     <fontcolor name="highlight-search" bgColor="fff6f88b"/>
     <fontcolor name="inc-search" bgColor="ffff9900"/>
     <fontcolor name="line-number" foreColor="white"/>

@@ -288,9 +288,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current value of given expression
      */
-    public Variable evaluate (String expression)
+    public Variable evaluate (String expression) throws InvalidExpressionException {
+        return evaluate(expression, null);
+    }
+
+    /**
+     * Evaluates given expression in the current context.
+     *
+     * @param expression a expression to be evaluated
+     *
+     * @return current value of given expression
+     */
+    public Variable evaluate (String expression, CallStackFrame csf)
     throws InvalidExpressionException {
-        Value v = evaluateIn (expression);
+        Value v = evaluateIn (expression, csf);
         return getLocalsTreeModel ().getVariable (v);
     }
 
@@ -630,9 +641,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by AbstractVariable.
      */
     public Value evaluateIn (String expression) throws InvalidExpressionException {
+        return evaluateIn(expression, null);
+    }
+
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value evaluateIn (String expression, CallStackFrame csf) throws InvalidExpressionException {
         Expression expr = null;
         expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
-        return evaluateIn (expr);
+        return evaluateIn (expr, csf);
     }
 
     //PATCH 48174
@@ -647,11 +665,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
-    public Value evaluateIn (Expression expression)
-    throws InvalidExpressionException {
+    public Value evaluateIn (Expression expression) throws InvalidExpressionException {
+        return evaluateIn(expression, null);
+    }
+    /**
+     * Used by WatchesModel & BreakpointImpl.
+     */
+    public Value evaluateIn (Expression expression, CallStackFrame c) throws InvalidExpressionException {
         synchronized (LOCK) {
-
-            CallStackFrameImpl csf = (CallStackFrameImpl)getCurrentCallStackFrame ();
+            CallStackFrameImpl csf;
+            if (c instanceof CallStackFrameImpl) {
+                csf = (CallStackFrameImpl) c;
+            } else {
+                csf = (CallStackFrameImpl)getCurrentCallStackFrame ();
+            }
             if (csf != null) {
                 JPDAThread frameThread = csf.getThread();
                 try {
