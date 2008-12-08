@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
@@ -54,6 +55,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
@@ -192,6 +194,10 @@ public class PersistenceUtil {
                 Object propVal = table.getProperty(key);
                 props.put(key, propVal.toString());
             }
+        }
+        else
+        {
+            UMLLogger.logMessage("Absent resource table.", Level.WARNING);
         }
     }
     
