@@ -38,8 +38,11 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -178,11 +181,13 @@ public class ImportProject {
                     //    makefileFile.createNewFile();
                     //}
                     final boolean userRunMake = runMake;
+                    //final File configureLog = createTempFile("configure");
                     ExecutionListener listener = new ExecutionListener() {
                         public void executionStarted() {
                         }
                         public void executionFinished(int rc) {
                             if (userRunMake && rc == 0) {
+                                //parseConfigureLog(configureLog);
                                 makeProject();
                             }
                         }
@@ -191,7 +196,7 @@ public class ImportProject {
                         runMake = false;
                         postponeModel = true;
                     }
-                    ShellRunAction.performAction(node, listener);
+                    ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
                 }
             } catch (DataObjectNotFoundException e) {
             }
@@ -237,6 +242,34 @@ public class ImportProject {
         return resultSet;
     }
 
+//    private void parseConfigureLog(File configureLog){
+//        try {
+//            BufferedReader reader = new BufferedReader(new FileReader(configureLog));
+//            while (true) {
+//                String line;
+//                line = reader.readLine();
+//                if (line == null) {
+//                    break;
+//                }
+//            }
+//            reader.close();
+//        } catch (FileNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//    }
+
+    private File createTempFile(String prefix) {
+        try {
+            File file = File.createTempFile(prefix, ".log"); // NOI18N
+            file.deleteOnExit();
+            return file;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
     private void makeProject(){
         String path = dirF.getAbsolutePath();
         File file = new File(path + "/Makefile"); // NOI18N
@@ -254,14 +287,23 @@ public class ImportProject {
             try {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
+                final File makeLog = createTempFile("make");
                 ExecutionListener listener = new ExecutionListener() {
                     public void executionStarted() {
                     }
                     public void executionFinished(int rc) {
-                        discovery(rc);
+                        discovery(rc, makeLog);
                     }
                 };
-                MakeAction.execute(node, "", listener); // NOI18N
+                Writer outputListener = null;
+                if (makeLog != null){
+                    try {
+                        outputListener = new BufferedWriter(new FileWriter(makeLog));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                MakeAction.execute(node, "", listener, outputListener); // NOI18N
             } catch (DataObjectNotFoundException ex) {
             }
         } else {
@@ -318,13 +360,30 @@ public class ImportProject {
         }
     }
 
-    private void discovery(int rc) {
+    private void discovery(int rc, File makeLog) {
         boolean done = false;
+        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (rc == 0) {
-            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    try {
+                        done = true;
+                        extension.apply(map, makeProject);
+                        switchModel(true);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+        if (!done && makeLog != null){
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
                 if (extension.canApply(map, makeProject)) {
                     try {
