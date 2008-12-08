@@ -145,12 +145,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             return false;
         }
         Set<Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        if (nodes.size() > 1) {
-            return false;
-        }
-        CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
-        if (CsmRefactoringUtils.isSupportedReference(ctx)) {
-            return true;
+        // only one node can be renamed at once
+        if (nodes.size() == 1) {
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
+            if (CsmRefactoringUtils.isSupportedReference(ctx)) {
+                return true;
+            }
         }
         return false;
     }
@@ -221,35 +221,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
 
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/);
-    }
-
-    public static abstract class ElementTask implements Runnable {
-
-        private RefactoringUI ui;
-        private final CsmObject ctx;
-
-        public ElementTask(CsmObject ctx) {
-            this.ctx = ctx;
-        }
-
-        public void cancel() {
-        }
-
-        public final void run() {
-            if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
-                return;
-            }
-            ui = createRefactoringUI(ctx);
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-            if (ui != null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
-            }
-        }
-
-        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement);
     }
 
     public static abstract class NodeToFileObjectTask implements Runnable {
