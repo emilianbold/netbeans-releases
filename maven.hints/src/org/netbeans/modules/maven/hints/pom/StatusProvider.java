@@ -61,7 +61,6 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
