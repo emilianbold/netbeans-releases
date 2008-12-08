@@ -183,12 +183,15 @@ public class PersistenceUtil {
             props = new HashMap<String, String>();
         }
         ResourceTable table = widget.getResourceTable();
-        Set<String> propertyNames = table.getLocalPropertyNames();
-        for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
+        if(table!=null)
         {
-            String key = it.next();
-            Object propVal = table.getProperty(key);
-            props.put(key, propVal.toString());
+            Set<String> propertyNames = table.getLocalPropertyNames();
+            for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
+            {
+                String key = it.next();
+                Object propVal = table.getProperty(key);
+                props.put(key, propVal.toString());
+            }
         }
     }
     
