@@ -127,13 +127,13 @@ class DataViewTableUI extends ExtendedJTable {
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
         setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
-        
+
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 3;
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
         setRowHeight(getFontMetrics(getFont()).getHeight() + 5);
 
         dView = dataView;
@@ -513,7 +513,7 @@ class DataViewTableUI extends ExtendedJTable {
 
         public StringRenderer() {
             super();
-            super.putClientProperty("html.disable", Boolean.TRUE);
+            super.putClientProperty("html.disable", Boolean.TRUE); // NOI18N
         }
     }
 
@@ -668,10 +668,10 @@ class DataViewTableUI extends ExtendedJTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
-            if(value == null){
+            if (value == null) {
                 return c;
             }
-            
+
             if (isSelected) {
                 if (value.equals(obj)) {
                     c.setForeground(gray);
@@ -870,7 +870,7 @@ class DataViewTableUI extends ExtendedJTable {
         private JPanel panel = new JPanel(new BorderLayout());
         private JTable table;
         private int row, column;
-        
+
         public StringTableCellEditor(final JTextField textField) {
             super(textField);
             customEditorButton.addActionListener(this);
@@ -939,6 +939,5 @@ class DataViewTableUI extends ExtendedJTable {
             setEditable(column, c);
             return c;
         }
-
     }
 }

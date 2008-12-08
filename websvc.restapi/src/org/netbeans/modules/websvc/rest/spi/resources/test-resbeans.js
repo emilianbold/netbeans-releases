@@ -1365,9 +1365,11 @@ WADLParser.prototype = {
                     return null;
                 } else {
                     if(ts.wdr.hasResource(n2)) {
-                        var cat = new category(n, ts.wdr.getUniqueCategoryId(pathVal+'_1'), uri, cName);
-                        createChildNodes2(n2, cat);
-                        return cat;
+                        //Stop recursion when inner resources have reference to static resource.
+                        return null;
+//                        var cat = new category(n, ts.wdr.getUniqueCategoryId(pathVal+'_1'), uri, cName);
+//                        createChildNodes2(n2, cat);
+//                        return cat;
                     } else {
                         return new item(n2, pathVal, uri, cName);
                     }

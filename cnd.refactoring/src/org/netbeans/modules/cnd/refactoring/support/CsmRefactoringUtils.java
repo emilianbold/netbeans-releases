@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
@@ -73,6 +74,13 @@ import org.openide.util.Lookup;
  */
 public class CsmRefactoringUtils {
 
+    public static boolean isRefactorable(FileObject fo) {
+        if (fo != null && (FileUtil.getArchiveFile(fo) != null || !fo.canWrite())) {
+            return false;
+        }
+        return true;
+    }
+    
     public static CsmObject convertToCsmObjectIfNeeded(CsmObject referencedObject) {
         if (CsmKindUtilities.isInclude(referencedObject)) {
             referencedObject = ((CsmInclude) referencedObject).getIncludeFile();

@@ -277,7 +277,7 @@ class OccurenceBuilder {
 
     void prepare(PHPDocTypeTag pHPDocTag, Scope scope) {
         if (canBePrepared(pHPDocTag, scope)) {
-            List<? extends PhpDocTypeTagInfo> infos = PhpDocTypeTagInfo.create(pHPDocTag);
+            List<? extends PhpDocTypeTagInfo> infos = PhpDocTypeTagInfo.create(pHPDocTag, scope);
             for (PhpDocTypeTagInfo typeTagInfo : infos) {
                 docTags.put(typeTagInfo, scope);
                 setOccurenceAsCurrent(typeTagInfo);
@@ -690,6 +690,33 @@ class OccurenceBuilder {
             }
         }
     }
+    private void buildDocTagsForFields(String queryName, FileScope fileScope) {
+        for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
+            PhpDocTypeTagInfo nodeInfo = entry.getKey();
+            String name = nodeInfo.getName();
+            Scope scope = entry.getValue();
+            if (Kind.FIELD.equals(nodeInfo.getKind()) && scope instanceof ClassScope && queryName.equalsIgnoreCase(name)) {
+                List<? extends ClassScope> classes = CachedModelSupport.getClasses(scope.getName(), scope);
+
+                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                if (!classes.isEmpty()) {
+                    for (ClassScope clz : classes) {
+                        List<? extends ModelElement> fields = CachedModelSupport.getInheritedFields(
+                                clz, queryName, fileScope);
+                        //TODO: if not found, then lookup inherited
+                        //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
+                        allFields.addAll(fields);
+                        if (allFields.isEmpty()) {
+                            fileScope.addOccurence(new OccurenceImpl(clz, nodeInfo.getRange(), fileScope));
+                        }
+                    }
+                } 
+                if (!allFields.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl(allFields, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+    }
 
     private void buildVariables(String queryName, FileScope fileScope) {
         for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
@@ -737,6 +764,7 @@ class OccurenceBuilder {
                     buildFieldDeclarations(name, fileScope);
                     buildFieldInvocations(name, fileScope);
                     buildStaticFieldInvocations(name, fileScope);
+                    buildDocTagsForFields(name, fileScope);
                     break;
 
                 case CONSTANT:

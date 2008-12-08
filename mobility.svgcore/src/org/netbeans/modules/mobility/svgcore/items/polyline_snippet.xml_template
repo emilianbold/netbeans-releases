@@ -1,0 +1,1 @@
+<polyline transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" points="0,0 0,20 20,20 20,40 40,40 40,60" fill="blue" stroke="black" stroke-width="1"/>

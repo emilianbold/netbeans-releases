@@ -42,10 +42,10 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;
-import org.openide.util.Lookup;
 
 /**
  * Factory to support C/C++ refactorings
@@ -55,17 +55,19 @@ import org.openide.util.Lookup;
 public class CsmRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup look = refactoring.getRefactoringSource();
-        if (refactoring instanceof WhereUsedQuery) {
-            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
-            if (CsmRefactoringUtils.isSupportedReference(ref)) {
+        CsmObject ref = CsmRefactoringUtils.findContextObject(refactoring.getRefactoringSource());
+        if (CsmRefactoringUtils.isSupportedReference(ref)) {
+            if (refactoring instanceof WhereUsedQuery) {
                 return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
-            }
-        } else if (refactoring instanceof RenameRefactoring) {
-            CsmObject ref = CsmRefactoringUtils.findContextObject(look);
-            if (CsmRefactoringUtils.isSupportedReference(ref)) {
+            } else if (refactoring instanceof RenameRefactoring) {
                 return new CsmRenameRefactoringPlugin((RenameRefactoring)refactoring);
-            }            
+            } else if (refactoring instanceof ChangeParametersRefactoring) {
+                return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
+//            } else if (refactoring instanceof EncapsulateFieldRefactoring) {
+//                return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
+//            } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
+//                return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
+            }
         }
         return null;
     }

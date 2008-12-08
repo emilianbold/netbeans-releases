@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -51,6 +52,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -335,7 +337,22 @@ PropertyChangeListener {
                     }
                     theDebugger = debugger;
                 }
-                value = theDebugger.evaluate (expression).getValue ();
+                CallStackFrame csf = null;
+                try {
+                    CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
+                    if (topFramePtr.length > 0) csf = topFramePtr[0];
+                } catch (AbsentInformationException aiex) {}
+                try {
+                value = ((Variable) theDebugger.getClass().getMethod("evaluate", String.class, CallStackFrame.class).
+                        invoke(theDebugger, expression, csf)).getValue();
+                } catch (InvocationTargetException itex) {
+                    if (itex.getTargetException() instanceof InvalidExpressionException) {
+                        throw (InvalidExpressionException) itex.getTargetException();
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                //value = theDebugger.evaluate (expression, csf).getValue ();
                 value = backslashEscapePattern.matcher (value).
                     replaceAll ("\\\\\\\\");
                 value = dollarEscapePattern.matcher (value).
