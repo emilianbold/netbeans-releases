@@ -287,7 +287,7 @@ public class ImportProject {
             try {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
-                final File makeLog = createTempFile("make");
+                final File makeLog = createTempFile("make"); // NOI18N
                 ExecutionListener listener = new ExecutionListener() {
                     public void executionStarted() {
                     }
