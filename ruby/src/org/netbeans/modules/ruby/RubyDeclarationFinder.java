@@ -118,7 +118,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class RubyDeclarationFinder extends RubyBaseDeclarationFinder
+public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
         implements org.netbeans.modules.gsf.api.DeclarationFinder {
 
     /** An increasing number; I will be using this number modulo the  */
@@ -283,8 +283,9 @@ public class RubyDeclarationFinder extends RubyBaseDeclarationFinder
                         return DeclarationLocation.NONE;
                     }
 
-                    RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
-                    DeclarationLocation l = cdf.getClassDeclaration(info, classes, null, null, index);
+                    RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(null, null, null, index, null);
+                    DeclarationLocation l = cdf.getElementDeclaration(classes, null);
+
                     if (l != null) {
                         return l;
                     }
@@ -435,14 +436,14 @@ public class RubyDeclarationFinder extends RubyBaseDeclarationFinder
                 return findMethod(name, fqn, types, call, info, astOffset, lexOffset, path, closest, index);
             } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
                 // try Class usage
-                RubyClassDeclarationFinder classDF = new RubyClassDeclarationFinder();
-                DeclarationLocation decl = classDF.findClassDeclaration(info, root, path, index, closest);
+                RubyClassDeclarationFinder classDF = new RubyClassDeclarationFinder(info, root, path, index, closest);
+                DeclarationLocation decl = classDF.findClassDeclaration();
                 if (decl != DeclarationLocation.NONE) {
                     return decl;
                 }
                 // try Constant usage
-                RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder();
-                decl = constantDF.findConstantDeclaration(info, root, path, index, closest);
+                RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder(info, root, path, index, closest);
+                decl = constantDF.findConstantDeclaration();
                 return decl;
             } else if (closest instanceof SymbolNode) {
                 String name = ((SymbolNode)closest).getName();

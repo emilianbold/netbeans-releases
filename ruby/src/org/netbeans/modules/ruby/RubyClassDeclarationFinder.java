@@ -52,28 +52,38 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
-import org.netbeans.modules.ruby.elements.IndexedElement;
 
-final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
+final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<IndexedClass> {
 
-    DeclarationLocation findClassDeclaration(
+    private final Node classNode;
+
+    RubyClassDeclarationFinder() {
+        this(null, null, null, null, null);
+    }
+    
+    RubyClassDeclarationFinder(
             final CompilationInfo info,
             final Node root,
             final AstPath path,
             final RubyIndex index,
-            final Node closest) {
-        String className = ((INameNode) closest).getName();
+            final Node classNode) {
+        super(info, root, path, index);
+        this.classNode = classNode;
+    }
+
+    DeclarationLocation findClassDeclaration() {
+        String className = ((INameNode)classNode).getName();
         // Disable local class searching for now - it should instead be a
         // criterion for increasing match priority
         Node localClass = null; // findClassDeclaration(root, className);
 
         if (localClass != null) {
             // Ensure that we have the right FQN if specific
-            if (closest instanceof Colon2Node) {
+            if (classNode instanceof Colon2Node) {
                 AstPath classPath = new AstPath(root, localClass);
 
                 if (classPath.leaf() != null) {
-                    String fqn1 = AstUtilities.getFqn((Colon2Node) closest);
+                    String fqn1 = AstUtilities.getFqn((Colon2Node) classNode);
                     String fqn2 = AstUtilities.getFqnName(classPath);
 
                     if (fqn1.equals(fqn2)) {
@@ -87,8 +97,8 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
             }
         }
 
-        if (closest instanceof Colon2Node) {
-            className = AstUtilities.getFqn((Colon2Node) closest);
+        if (classNode instanceof Colon2Node) {
+            className = AstUtilities.getFqn((Colon2Node) classNode);
         }
 
         // E.g. for "include Assertions" within Test::Unit::TestCase, try looking
@@ -145,46 +155,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
             }
         }
 
-        return getClassDeclaration(info, classes, path, closest, index);
-    }
-
-    DeclarationLocation getClassDeclaration(
-            final CompilationInfo info,
-            final Set<IndexedClass> classes,
-            final AstPath path,
-            final Node closest,
-            final RubyIndex index) {
-        
-        final IndexedClass candidate =
-                findBestClassMatch(classes, path, closest, index);
-
-        if (candidate != null) {
-            IndexedElement com = candidate;
-            Node node = AstUtilities.getForeignNode(com, (Node[]) null);
-
-            DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
-
-            if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
-                // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
-                // don't ask user!
-                int not_nodoced = 0;
-                for (final IndexedClass clz : classes) {
-                    if (!clz.isNoDoc()) {
-                        not_nodoced++;
-                    }
-                }
-                if (not_nodoced >= 2) {
-                    for (final IndexedClass clz : classes) {
-                        loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
-                    }
-                }
-            }
-
-            return loc;
-        }
-
-        return DeclarationLocation.NONE;
+        return getElementDeclaration(classes, classNode);
     }
 
     Node findClass(
@@ -223,44 +194,11 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
         return null;
     }
 
-    IndexedClass findBestClassMatch(
-            final Set<? extends IndexedClass> classSet,
-            final AstPath path,
-            final Node reference,
-            final RubyIndex index) {
-        // Make sure that the best fit method actually has a corresponding valid
-        // source location and parse tree
-        Set<IndexedClass> classes = new HashSet<IndexedClass>(classSet);
-
-        while (!classes.isEmpty()) {
-            IndexedClass clz = findBestClassMatchHelper(classes, path, reference, index);
-            Node node = AstUtilities.getForeignNode(clz, (Node[]) null);
-
-            if (node != null) {
-                return clz;
-            }
-
-            // TODO: Sort results, then pick candidate number modulo methodSelector
-            if (!classes.contains(clz)) {
-                // Avoid infinite loop when we somehow don't find the node for
-                // the best class and we keep trying it
-                classes.remove(classes.iterator().next());
-            } else {
-                classes.remove(clz);
-            }
-        }
-
-        return null;
-    }
-
+    @Override
     // Now that I have a common RubyObject superclass, can I combine this and
     // findBestMethodMatchHelper since there's a lot of code duplication that
     // could be shared by just operating on RubyObjects ?
-    private IndexedClass findBestClassMatchHelper(
-            final Set<? extends IndexedClass> origClasses,
-            final AstPath path,
-            final Node reference,
-            final RubyIndex index) {
+    IndexedClass findBestMatchHelper(Set<? extends IndexedClass> origClasses) {
         Set<? extends IndexedClass> classes = new HashSet<IndexedClass>(origClasses);
         // 1. First see if the reference is fully qualified. If so the job should
         //   be easier: prune the result set down
@@ -268,8 +206,8 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
         // best candidate
         Set<IndexedClass> candidates = new HashSet<IndexedClass>();
 
-        if (reference instanceof Colon2Node) {
-            String fqn = AstUtilities.getFqn((Colon2Node) reference);
+        if (classNode instanceof Colon2Node) {
+            String fqn = AstUtilities.getFqn((Colon2Node) classNode);
 
             while ((fqn != null) && (fqn.length() > 0)) {
                 for (IndexedClass clz : classes) {
@@ -410,4 +348,6 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder {
             return null;
         }
     }
+
+
 }

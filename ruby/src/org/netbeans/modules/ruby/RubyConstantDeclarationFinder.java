@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.HashSet;
 import java.util.Set;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.Node;
@@ -46,17 +45,22 @@ import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
-import org.netbeans.modules.ruby.elements.IndexedElement;
 
-final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder {
+final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<IndexedConstant> {
 
-    DeclarationLocation findConstantDeclaration(
+    private final Node constantNode;
+
+    RubyConstantDeclarationFinder(
             final CompilationInfo info,
             final Node root,
             final AstPath path,
             final RubyIndex index,
             final Node constantNode) {
+        super(info, root, path, index);
+        this.constantNode = constantNode;
+    }
 
+    DeclarationLocation findConstantDeclaration() {
         Set<? extends IndexedConstant> constants;
         if (constantNode instanceof Colon2Node) {
             String constantFqn = AstUtilities.getFqn((Colon2Node) constantNode);
@@ -68,69 +72,13 @@ final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder {
             constants = index.getConstants(className, constantName);
         }
 
-        return getConstantDeclaration(constants);
+        return getElementDeclaration(constants, constantNode);
     }
 
-    private DeclarationLocation getConstantDeclaration(
-            final Set<? extends IndexedConstant> constants) {
-        
-        final IndexedConstant candidate =
-                findBestConstantMatch(constants);
-
-        if (candidate != null) {
-            IndexedElement com = candidate;
-            Node node = AstUtilities.getForeignNode(com, (Node[]) null);
-
-            DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
-
-            if (!CHOOSE_ONE_DECLARATION && constants.size() > 1) {
-                // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
-                // don't ask user!
-                int not_nodoced = 0;
-                for (final IndexedConstant clz : constants) {
-                    if (!clz.isNoDoc()) {
-                        not_nodoced++;
-                    }
-                }
-                if (not_nodoced >= 2) {
-                    for (final IndexedConstant clz : constants) {
-                        loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
-                    }
-                }
-            }
-
-            return loc;
-        }
-
-        return DeclarationLocation.NONE;
-    }
-
-    private IndexedConstant findBestConstantMatch(
-            final Set<? extends IndexedConstant> origConstants) {
-        // Make sure that the best fit method actually has a corresponding valid
-        // source location and parse tree
-        Set<IndexedConstant> constants = new HashSet<IndexedConstant>(origConstants);
-
-        while (!constants.isEmpty()) {
-            IndexedConstant constant = constants.isEmpty() ? null : constants.iterator().next();
-            Node foreign = AstUtilities.getForeignNode(constant, (Node[]) null);
-
-            if (foreign != null) {
-                return constant;
-            }
-
-            // TODO: Sort results, then pick candidate number modulo methodSelector
-            if (!constants.contains(constant)) {
-                // Avoid infinite loop when we somehow don't find the node for
-                // the best class and we keep trying it
-                constants.remove(constants.iterator().next());
-            } else {
-                constants.remove(constant);
-            }
-        }
-
-        return null;
+    @Override
+    IndexedConstant findBestMatchHelper(final Set<? extends IndexedConstant> constants) {
+        // trivial implementation - seems to be enough for now
+        return constants.isEmpty() ? null : constants.iterator().next();
     }
 
 }

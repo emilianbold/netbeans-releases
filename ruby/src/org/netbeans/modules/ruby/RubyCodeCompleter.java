@@ -1641,8 +1641,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         IndexedElement candidate = null;
 
         if (!classes.isEmpty()) {
-            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
-            candidate = cdf.findBestClassMatch(classes, path, path.leaf(), index);
+            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(info, null, path, index, path.leaf());
+            candidate = cdf.findBestElementMatch(classes);
         } else if (!methods.isEmpty()) {
             RubyDeclarationFinder finder = new RubyDeclarationFinder();
             candidate = finder.findBestMethodMatch(name, methods, doc, astOffset, lexOffset, path,
