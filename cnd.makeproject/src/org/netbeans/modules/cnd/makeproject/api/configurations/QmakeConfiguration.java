@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -48,11 +49,21 @@ import org.openide.util.NbBundle;
  */
 public class QmakeConfiguration implements Cloneable {
 
-    private StringConfiguration template;
+    private static final String[] TEMPLATE_NAMES = new String[] {
+        getString("QmakeTemplateApp"), // NOI18N
+        getString("QmakeTemplateLib") // NOI18N
+    };
+
+    private static final String[] TEMPLATE_OPTIONS = new String[] {
+        "app", // NOI18N
+        "lib" // NOI18N
+    };
+
+    private IntConfiguration template;
     private StringConfiguration config;
 
     public QmakeConfiguration() {
-        template = new StringConfiguration(null, "app"); // NOI18N
+        template = new IntConfiguration(null, 0, TEMPLATE_NAMES, TEMPLATE_OPTIONS);
         config = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -63,18 +74,18 @@ public class QmakeConfiguration implements Cloneable {
         basic.setName("QmakeGeneral"); // NOI18N
         basic.setDisplayName(getString("QmakeGeneralTxt")); // NOI18N
         basic.setShortDescription(getString("QmakeGeneralHint")); // NOI18N
-        basic.put(new StringNodeProp(template, "TEMPLATE", getString("QmakeTemplateTxt"), getString("QmakeTemplateHint"))); // NOI18N
+        basic.put(new IntNodeProp(template, true, null, getString("QmakeTemplateTxt"), getString("QmakeTemplateHint"))); // NOI18N
         basic.put(new StringNodeProp(config, "CONFIG", getString("QmakeConfigTxt"), getString("QmakeConfigHint"))); // NOI18N
         sheet.put(basic);
 
         return sheet;
     }
 
-    public StringConfiguration getTemplate() {
+    public IntConfiguration getTemplate() {
         return template;
     }
 
-    public void setTemplate(StringConfiguration template) {
+    public void setTemplate(IntConfiguration template) {
         this.template = template;
     }
 
