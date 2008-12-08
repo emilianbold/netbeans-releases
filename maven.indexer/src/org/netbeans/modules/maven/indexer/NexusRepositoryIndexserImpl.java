@@ -134,6 +134,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
+    private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
     private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
@@ -160,22 +161,6 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     public NexusRepositoryIndexserImpl() {
         //to prevent MaxClauseCount exception (will investigate better way)
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
-
-        try {
-            PlexusContainer embedder;
-            ContainerConfiguration config = new DefaultContainerConfiguration();
-            embedder = new DefaultPlexusContainer(config);
-
-            repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-            indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
-            searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
-            remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
-            contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (PlexusContainerException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         lookup = Lookups.singleton(this);
     }
 
@@ -187,9 +172,31 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         return lookup;
     }
 
+    private void initIndexer () {
+        if (!inited) {
+            try {
+                PlexusContainer embedder;
+                ContainerConfiguration config = new DefaultContainerConfiguration();
+                embedder = new DefaultPlexusContainer(config);
+
+                repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+                indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
+                searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
+                remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
+                contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+                inited = true;
+            } catch (ComponentLookupException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (PlexusContainerException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     //always call from mutex.writeAccess
     private void loadIndexingContext(final RepositoryInfo... repoids) throws IOException {
         assert MUTEX.isWriteAccess();
+        initIndexer();
 
         for (RepositoryInfo info : repoids) {
             IndexingContext context = indexer.getIndexingContexts().get(info.getId());
@@ -363,9 +370,11 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         try {
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run() throws Exception {
-                    for (IndexingContext ic : indexer.getIndexingContexts().values()) {
-                        LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
-                        indexer.removeIndexingContext(ic, false);
+                    if (inited) {
+                        for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                            LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
+                            indexer.removeIndexingContext(ic, false);
+                        }
                     }
                     return null;
                 }
