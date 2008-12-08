@@ -455,7 +455,7 @@ public final class RailsServerManager {
                                 if (status == ServerStatus.NOT_STARTED) {
                                     // Server startup somehow failed...
                                     if(LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine("Server starup failed, server type is: " +
+                                        LOGGER.fine("Server startup failed, server type is: " +
                                                ((server != null) ? server : instance));
                                     }
                                     break;
