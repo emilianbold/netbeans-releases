@@ -1837,9 +1837,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.apisupport.dir}/**/*.jar" />
         </jars>
       </input>
-      <input name="j2ee" >
+      <input name="enterprise" >
         <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.j2ee.dir}/**/*.jar" />
+          <include name="${nb.cluster.enterprise.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="nb" >
