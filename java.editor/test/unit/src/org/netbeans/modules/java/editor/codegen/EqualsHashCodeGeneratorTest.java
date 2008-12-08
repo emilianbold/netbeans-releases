@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,13 +23,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;
 import org.netbeans.api.java.source.CancellableTask;
@@ -37,7 +44,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.junit.MockServices;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -209,6 +217,99 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         TaskImpl t = new TaskImpl();
         
         js.runUserActionTask(t, false);
+    }
+    
+    public void testX() throws Exception {
+        EqualsHashCodeGenerator.randomNumber = 1;
+        
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {\n" +
+                             "  private byte b;\n" +
+                             "  private int[] x;\n" +
+                             "  private String[] y;\n" +
+                             "  private String s;\n" +
+                             "  private Object o;\n";
+
+        String what2 =
+            "}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t).commit();
+
+        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
+
+        String golden = "\nimport java.util.Arrays;\n" +
+                        "class X {\n" +
+                        "  private byte b;\n" +
+                        "  private int[] x;\n" +
+                        "  private String[] y;\n" +
+                        "  private String s;\n" +
+                        "  private Object o;\n" +
+                        "    @Override\n" +
+                        "    public int hashCode() {\n" +
+                        "        int hash = 1;\n" +
+                        "        hash = 1 * hash + this.b;\n" +
+                        "        hash = 1 * hash + Arrays.hashCode(this.x);\n" +
+                        "        hash = 1 * hash + Arrays.deepHashCode(this.y);\n" +
+                        "        hash = 1 * hash + (this.s != null ? this.s.hashCode() : 0);\n" +
+                        "        hash = 1 * hash + (this.o != null ? this.o.hashCode() : 0);\n" +
+                        "        return hash;\n" +
+                        "    }\n" +
+                        "    @Override\n" +
+                        "    public boolean equals(Object obj) {\n" +
+                        "        if (obj == null) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (getClass() != obj.getClass()) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        final X other = (X) obj;\n" +
+                        "        if (this.b != other.b) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (Arrays.equals(this.x, other.x)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (Arrays.deepEquals(this.y, other.y)) {\n" +
+                        "            return false;\n" +
+                        "        }" +
+                        "        if ((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.o != other.o && (this.o == null || !this.o.equals(other.o))) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}\n";
+
+        result = result.replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
+        
+        assertEquals(golden, result);
     }
     
     private static final class DD extends DialogDisplayer {
