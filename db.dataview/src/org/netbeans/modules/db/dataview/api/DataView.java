@@ -143,6 +143,10 @@ public class DataView {
         return delegate.getEditButtons();
     }
 
+    public void setEditable(boolean editable) {
+        delegate.setEditable(editable);
+    }
+
     private DataView() {
     }
 }

@@ -72,18 +72,6 @@ public class DataViewUtilsTest extends NbTestCase {
     }
 
     /**
-     * Test of getStdSqlType method, of class DataViewUtils.
-     */
-    public void testGetStdSqlType() {
-        int dataType = 4;
-        String expResult = "integer";
-        String result = DataViewUtils.getStdSqlType(dataType);
-        assertEquals(expResult, result);
-        assertEquals("varchar", DataViewUtils.getStdSqlType(12));
-        assertEquals("numeric", DataViewUtils.getStdSqlType(2));
-    }
-
-    /**
      * Test of isNumeric method, of class DataViewUtils.
      */
     public void testIsNumeric() {
@@ -135,7 +123,7 @@ public class DataViewUtilsTest extends NbTestCase {
      * Test of getColumnToolTip method, of class DataViewUtils.
      */
     public void testGetColumnToolTip() {
-        DBColumn column = new DBColumn(table, "colName", 12, 10, 5, true, false);
+        DBColumn column = new DBColumn(table, "colName", 12, "varchar", 10, 5, true, false);
         String expResult = "<html> <table border=0 cellspacing=0 cellpadding=0 ><tr> <td>&nbsp;Name</td> " +
                 "<td> &nbsp; : &nbsp; <b>colName</b> </td> </tr><tr> <td>&nbsp;Type</td> " +
                 "<td> &nbsp; : &nbsp; <b>VARCHAR</b> </td> </tr><tr> <td>&nbsp;Length</td> " +
@@ -146,7 +134,7 @@ public class DataViewUtilsTest extends NbTestCase {
                 "<td> &nbsp; : &nbsp; <b>colNameF</b> </td> </tr><tr> <td>&nbsp;Type</td> <td> &nbsp; : &nbsp; " +
                 "<b>FLOAT</b> </td> </tr><tr> <td>&nbsp;Precision</td> <td> &nbsp; : &nbsp; <b>5</b> </td> </tr>" +
                 "<tr> <td>&nbsp;Scale</td> <td> &nbsp; : &nbsp; <b>10</b> </td> </tr></table> </html>";
-        column = new DBColumn(table, "colNameF", 6, 10, 5, true, false);
+        column = new DBColumn(table, "colNameF", 6, "float" ,10, 5, true, false);
         result = DataViewUtils.getColumnToolTip(column);
         assertEquals(expResult, result);
     }

@@ -181,7 +181,7 @@ class DataViewTablePanel extends JPanel {
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e);
+            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e); // NOI18N
         }
         return colWidthList;
     }
