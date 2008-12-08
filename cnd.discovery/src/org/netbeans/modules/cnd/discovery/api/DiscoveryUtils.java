@@ -58,6 +58,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DiscoveryUtils {
+
     private DiscoveryUtils() {
     }
     public static final List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
@@ -294,24 +295,28 @@ public class DiscoveryUtils {
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-isystem")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-include")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-imacros")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
@@ -320,6 +325,7 @@ public class DiscoveryUtils {
                 }
                 if (defaultSearchPath.startsWith("I,")){ // NOI18N
                     defaultSearchPath = defaultSearchPath.substring(2);
+                    defaultSearchPath = removeQuotes(defaultSearchPath);
                     userIncludes.add(defaultSearchPath);
                 }
             } else if (option.equals("-K")){ // NOI18N
@@ -409,6 +415,15 @@ public class DiscoveryUtils {
             }
         }
         return what;
+    }
+
+    private static String removeQuotes(String path) {
+        if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
+            path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N
+
+            path = path.substring(1, path.length() - 1); // NOI18N
+        }
+        return path;
     }
 
 }

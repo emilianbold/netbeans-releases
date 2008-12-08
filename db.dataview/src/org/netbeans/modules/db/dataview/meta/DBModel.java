@@ -117,7 +117,7 @@ public final class DBModel extends DBObject<Object> {
     }
 
     public DBTable getTable(String fqTableName) {
-        return (DBTable) this.tables.get(fqTableName);
+        return this.tables.get(fqTableName);
     }
 
     @Override

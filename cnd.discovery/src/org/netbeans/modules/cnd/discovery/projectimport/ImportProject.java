@@ -182,7 +182,7 @@ public class ImportProject {
                         public void executionStarted() {
                         }
                         public void executionFinished(int rc) {
-                            if (userRunMake) {
+                            if (userRunMake && rc == 0) {
                                 makeProject();
                             }
                         }
@@ -258,7 +258,7 @@ public class ImportProject {
                     public void executionStarted() {
                     }
                     public void executionFinished(int rc) {
-                        discovery();
+                        discovery(rc);
                     }
                 };
                 MakeAction.execute(node, "", listener); // NOI18N
@@ -318,20 +318,29 @@ public class ImportProject {
         }
     }
 
-    private void discovery() {
-        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-        if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
-            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
-            if (extension.canApply(map, makeProject)) {
-                try {
-                    extension.apply(map, makeProject);
-                    switchModel(true);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+    private void discovery(int rc) {
+        boolean done = false;
+        if (rc == 0) {
+            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    try {
+                        done = true;
+                        extension.apply(map, makeProject);
+                        switchModel(true);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
+        }
+        if (!done){
+            postponeModel = false;
+            switchModel(true);
+            postModelDiscovery();
         }
     }
 

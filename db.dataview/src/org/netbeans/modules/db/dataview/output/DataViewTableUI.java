@@ -58,13 +58,11 @@ import java.awt.event.MouseEvent;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractCellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -78,7 +76,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -130,7 +127,6 @@ class DataViewTableUI extends ExtendedJTable {
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
         setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
-        //setDefaultEditor(String.class, new NullValueCellEditor());
         
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
@@ -231,7 +227,7 @@ class DataViewTableUI extends ExtendedJTable {
                     Object o = getValueAt(getSelectedRow(), getSelectedColumn());
                     String output = (o != null) ? o.toString() : ""; //NOI18N
 
-                    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+                    ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
                     StringSelection strSel = new StringSelection(output);
                     clipboard.setContents(strSel, strSel);
                 } catch (ArrayIndexOutOfBoundsException exc) {
@@ -466,7 +462,7 @@ class DataViewTableUI extends ExtendedJTable {
                     output.append('\n'); //NOI18N
 
                 }
-                ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+                ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
                 StringSelection strSel = new StringSelection(output.toString());
                 clipboard.setContents(strSel, strSel);
             }
@@ -628,7 +624,9 @@ class DataViewTableUI extends ExtendedJTable {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof String) {
-                return STRING_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component c = STRING_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setTableCellToolTip(c, value);
+                return c;
             } else if (value instanceof Number) {
                 return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Timestamp) {
@@ -641,12 +639,17 @@ class DataViewTableUI extends ExtendedJTable {
                 return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                if (c instanceof JComponent) {
-                    String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>" +
-                            DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;") + "</td></tr></table></html>";
-                    ((JComponent) c).setToolTipText(tooltip);
-                }
+                setTableCellToolTip(c, value);
                 return c;
+            }
+        }
+
+        private void setTableCellToolTip(Component c, Object value) {
+            if (c instanceof JComponent) {
+                String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>"; // NOI18N
+                tooltip += DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;"); // NOI18N
+                tooltip += "</td></tr></table></html>"; // NOI18N
+                ((JComponent) c).setToolTipText(tooltip);
             }
         }
     }
@@ -665,6 +668,10 @@ class DataViewTableUI extends ExtendedJTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
+            if(value == null){
+                return c;
+            }
+            
             if (isSelected) {
                 if (value.equals(obj)) {
                     c.setForeground(gray);
@@ -696,7 +703,8 @@ class DataViewTableUI extends ExtendedJTable {
 
     private class ResultSetTableCellEditor extends DefaultCellEditor {
 
-        Object val;
+        protected Object val;
+        protected boolean editable = true;
 
         public ResultSetTableCellEditor(final JTextField textField) {
             super(textField);
@@ -739,6 +747,54 @@ class DataViewTableUI extends ExtendedJTable {
 
             textField.addActionListener(delegate);
             textField.addKeyListener(new Control0KeyListener());
+        }
+
+        public ResultSetTableCellEditor(final JCheckBox checkBox) {
+            super(checkBox);
+            checkBox.setFont(getFont());
+            delegate = new EditorDelegate() {
+
+                @Override
+                public void setValue(Object value) {
+                    val = value;
+                    checkBox.setSelected((value != null) ? checkBox.isSelected() : false); // NOI18N
+                }
+
+                @Override
+                public boolean isCellEditable(EventObject evt) {
+                    int clickcount;
+                    if (evt instanceof MouseEvent) {
+                        clickcount = 2;
+                        return ((MouseEvent) evt).getClickCount() >= clickcount;
+                    }
+                    return true;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    Boolean bolVal = new Boolean(checkBox.isSelected());
+                    if (val == null && !checkBox.isSelected()) { // NOI18N
+                        return null;
+                    } else {
+                        return bolVal;
+                    }
+                }
+            };
+
+            checkBox.addActionListener(delegate);
+            checkBox.addKeyListener(new Control0KeyListener());
+        }
+
+        protected void setEditable(int column, Component c) {
+            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+            if (dbCol.isGenerated()) {
+                editable = false;
+            } else if (!tablePanel.isEditable()) {
+                editable = false;
+            } else {
+                editable = dbCol.isEditable();
+            }
+            c.setEnabled(editable);
         }
     }
 
@@ -814,8 +870,7 @@ class DataViewTableUI extends ExtendedJTable {
         private JPanel panel = new JPanel(new BorderLayout());
         private JTable table;
         private int row, column;
-        private boolean editable = true;
-
+        
         public StringTableCellEditor(final JTextField textField) {
             super(textField);
             customEditorButton.addActionListener(this);
@@ -831,16 +886,7 @@ class DataViewTableUI extends ExtendedJTable {
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             panel.removeAll();
             Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);            
-            if (dbCol.isGenerated()) {
-                editable = false;
-            } else if (!tablePanel.isEditable()) {
-                editable = false;
-            } else {
-                editable = dbCol.isEditable();
-            }
-
-            c.setEnabled(editable);
+            setEditable(column, c);
 
             panel.add(c);
             panel.add(customEditorButton, BorderLayout.EAST);
@@ -870,81 +916,29 @@ class DataViewTableUI extends ExtendedJTable {
             Component parent = WindowManager.getDefault().getMainWindow();
 
             if (editable) {
-                int result = JOptionPane.showOptionDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+                int result = JOptionPane.showOptionDialog(parent, pane, table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
                 if (result == JOptionPane.OK_OPTION) {
                     table.setValueAt(textArea.getText(), row, column);
                 }
             } else {
-                JOptionPane.showMessageDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
+                JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
             }
         }
     }
 
-    public class BooleanTableCellEditor extends AbstractCellEditor
-            implements ActionListener, TableCellEditor {
-
-        private int row, column;
-        private boolean editable = true;
-        private JTable table;
-        private JCheckBox cb;
+    public class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor {
 
         public BooleanTableCellEditor(JCheckBox cb) {
-            this.cb = cb;
+            super(cb);
             cb.setHorizontalAlignment(0);
         }
 
         @Override
-        public void addCellEditorListener(CellEditorListener celleditorlistener) {
-            super.addCellEditorListener(celleditorlistener);
-            cb.addActionListener(this);
-        }
-
-        @Override
-        public void removeCellEditorListener(CellEditorListener celleditorlistener) {
-            super.removeCellEditorListener(celleditorlistener);
-            cb.removeActionListener(this);
-        }
-
-        public Object getCellEditorValue() {            
-            return new Boolean(cb.isSelected());
-        }
-
-        @Override
-        public boolean isCellEditable(EventObject evt) {
-            int clickcount;
-            if (evt instanceof MouseEvent) {
-                clickcount = 2;
-                return ((MouseEvent) evt).getClickCount() >= clickcount;
-            }
-            return false;
-        }
-
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            if (value != null) {
-                cb.setSelected(((Boolean) value).booleanValue());
-            } else {
-                cb.setSelected(false);
-            }
-            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
-            if (dbCol.isGenerated()) {
-                editable = false;
-            } else if (!tablePanel.isEditable()) {
-                editable = false;
-            } else {
-                editable = dbCol.isEditable();
-            }
-            cb.setEnabled(editable);
-
-            this.table = table;
-            this.row = row;
-            this.column = column;
-
-            return cb;
+            Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            setEditable(column, c);
+            return c;
         }
 
-        public void actionPerformed(ActionEvent actionevent) {
-            table.setValueAt(getCellEditorValue(), row, column);
-            setRowSelectionInterval(row, row);
-        }
     }
 }

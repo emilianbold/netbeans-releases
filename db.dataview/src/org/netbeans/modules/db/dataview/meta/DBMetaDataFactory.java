@@ -55,8 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -68,7 +66,6 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  */
 public final class DBMetaDataFactory {
 
-    private static Logger LOGGER = Logger.getLogger(DBMetaDataFactory.class.getName());
     public static final int DB2 = 0;
     public static final int ORACLE = 1;
     public static final int SQLSERVER = 2;
@@ -235,6 +232,14 @@ public final class DBMetaDataFactory {
             if (sqlTypeCode == java.sql.Types.DATE && dbType == ORACLE) {
                 sqlTypeCode = java.sql.Types.TIMESTAMP;
                 displaySize = 22;
+            }
+
+            //Handle MySQL BIT(n) where n > 1
+            if (sqlTypeCode == java.sql.Types.VARBINARY && dbType == MYSQL) {
+                String sqlTypeStr = rsMeta.getColumnTypeName(i);
+                if (sqlTypeStr.startsWith("BIT")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.BIT;
+                }
             }
 
             // The SQL Server timestamp type is a JDBC BINARY type with the fixed length of 8 bytes.

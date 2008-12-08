@@ -55,10 +55,6 @@ public final class DBException extends Exception {
         super(message, cause);
     }
 
-    public DBException(Throwable cause) {
-        super(cause);
-    }
-
     @Override
     public String getMessage() {
         StringBuffer buf = new StringBuffer();
@@ -75,9 +71,12 @@ public final class DBException extends Exception {
                 SQLException e = (SQLException) t;
                 buf.append("Error code ").append(e.getErrorCode());
                 buf.append(", SQL state ").append(e.getSQLState());
+                buf.append("\n");
             }
+            buf.append(super.getMessage() + " " + t.getMessage());
+        } else {
+            buf.append(super.getMessage());
         }
-        buf.append(super.getMessage());
 
         return buf.toString();
     }

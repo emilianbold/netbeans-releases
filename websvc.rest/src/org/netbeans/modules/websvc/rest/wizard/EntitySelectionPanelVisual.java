@@ -375,8 +375,8 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         }
 
         if (persistenceUnit == null) {
-            if (EntitySelectionPanel.getPersistenceUnit(settings, project) != null) {
-                persistenceUnit = EntitySelectionPanel.getPersistenceUnit(settings, project).getName();
+            if (Util.getPersistenceUnit(settings, project) != null) {
+                persistenceUnit = Util.getPersistenceUnit(settings, project).getName();
             }
         }
 
@@ -512,7 +512,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
                                             public void run() {
                                                 removeElement(MSG_RETRIEVING);
-                                                for (Entity entity : builder.getEntities()) {
+                                                for (Entity entity : builder.getValidEntities()) {
                                                     addElement(entity);
                                                 }
                                                 updateButtons();

@@ -182,7 +182,7 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
             //Also add injection member variables
             Map<String, String> fieldsMap = new HashMap<String, String>();
             JavaSourceHelper.getAvailableFieldSignature(getTargetSource(), fieldsMap);
-            String[] annotations = new String[]{Constants.JAVA_ANNOTATION_RESOURCE};
+            String[] annotations = new String[]{Constants.JAVA_ANNOTATION_PACKAGE+Constants.JAVA_ANNOTATION_RESOURCE};
             Object[] annotationAttrs = new Object[]{null};
             List<ParameterInfo> injectionParams = Util.getAuthenticatorMethodParametersForWeb();
             for (ParameterInfo p : injectionParams) {

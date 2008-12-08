@@ -4,7 +4,6 @@
     <module name="org.netbeans.modules.db/1"/>
     <instanceof class="java.lang.Object"/>
     <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
     <instanceof class="org.netbeans.modules.db.explorer.DatabaseOption"/>
     <instanceof class="java.io.Serializable"/>
     <instanceof class="java.io.Externalizable"/>
