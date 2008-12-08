@@ -40,83 +40,40 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**
- *
+ * An abstract superclass for a node containing class' constructors
  * @author Jaroslav Bachorik
  */
-public class ConstructorsNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
+abstract public class ConstructorsNode extends ContainerNode {
     private static class Children extends GreedySelectorChildren<ConstructorsNode> {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
         protected List<SelectorNode> prepareChildren(final ConstructorsNode parent) {
-            final List<SelectorNode> constructorNodes = new ArrayList<SelectorNode>();
-
-            try {
-                JavaSource js = JavaSource.create(parent.cpInfo, new FileObject[0]);
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationController controller)
-                                 throws Exception {
-                            controller.toPhase(JavaSource.Phase.RESOLVED);
-
-                            TypeElement classElement = SourceUtils.resolveClassByName(parent.getClassHandle().getBinaryName(),
-                                                                                      controller);
-                            List<ExecutableElement> methods = ElementFilter.constructorsIn(classElement.getEnclosedElements());
-
-                            for (ExecutableElement method : methods) {
-                                constructorNodes.add(new ConstructorNode(parent.cpInfo, method, parent));
-                            }
-                        }
-                    }, true);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            final List<SelectorNode> constructorNodes = parent.getConstructorNodes(parent);
 
             return constructorNodes;
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private ClasspathInfo cpInfo;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
     /** Creates a new instance of ConstructorsNode */
-    public ConstructorsNode(ClasspathInfo cpInfo, ClassNode parent) {
+    public ConstructorsNode(ClassNode parent) {
         super(NbBundle.getMessage(ConstructorsNode.class, "Constructors_DisplayName"), IconResource.CONSTRUCTORS_ICON, parent); // NOI18N
-        this.cpInfo = cpInfo;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public ElementHandle<TypeElement> getClassHandle() {
-        return ((ClassNode) getParent()).getClassHandle();
-    }
-
-    protected SelectorChildren getChildren() {
+    final protected SelectorChildren getChildren() {
         return new Children();
     }
+
+    final protected ClassNode getParentClass() {
+        return (ClassNode)getParent();
+    }
+
+    /**
+     * Subclasses will override this method to provide their own list of constructors
+     * @param parent The {@linkplain ConstructorsNode} 
+     * @return
+     */
+    abstract protected List<SelectorNode> getConstructorNodes(ConstructorsNode parent);
 }
