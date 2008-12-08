@@ -54,7 +54,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -79,8 +78,6 @@ public class InstantiationProviderImpl extends CsmInstantiationProvider {
             CsmType paramValue = params.get(i);
             if(templateParam != null && paramValue != null) {
                 mapping.put(templateParam, paramValue);
-            } else {
-                break;
             }
         }
         return Instantiation.create(template, mapping);
