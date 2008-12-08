@@ -47,9 +47,6 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -63,11 +60,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.plaf.synth.Region;
 import javax.swing.plaf.synth.SynthConstants;
 import javax.swing.plaf.synth.SynthContext;
@@ -87,6 +88,8 @@ import org.openide.loaders.DataObject;
  */
 final class ToolbarContainer extends JPanel {
 
+    static final String PROP_DRAGGER = "_toolbar_dragger_"; //NOI18N
+
     private static final Logger LOG = Logger.getLogger(Toolbar.class.getName());
 
     private final Toolbar toolbar;
@@ -99,13 +102,21 @@ final class ToolbarContainer extends JPanel {
     private int dropIndex = -1;
     private boolean dropBefore;
 
+    /** TOP of toolbar empty border. */
+    private static final int TOP = 2;
+    /** LEFT of toolbar empty border. */
+    private static final int LEFT = 3;
+    /** BOTTOM of toolbar empty border. */
+    private static final int BOTTOM = 2;
+    /** RIGHT of toolbar empty border. */
+    private static final int RIGHT = 3;
+
     public ToolbarContainer( Toolbar toolbar, final DnDSupport dnd, boolean dragable ) {
         super( new BorderLayout() );
         setOpaque(false);
         this.toolbar = toolbar;
         this.dnd = dnd;
         this.dragable = dragable;
-//        add( toolbar, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
         add( toolbar, BorderLayout.CENTER );
         toolbar.addContainerListener( new ContainerListener() {
 
@@ -117,7 +128,28 @@ final class ToolbarContainer extends JPanel {
                 dnd.unregister(e.getChild());
             }
         });
-//        add( new JLabel("test"), BorderLayout.EAST );
+
+        String lAndF = UIManager.getLookAndFeel().getID();
+
+        if( lAndF.equals("Windows") ) { //NOI18N
+            //Get rid of extra height, also allow for minimalist main
+            //window
+            toolbar.setBorder( Boolean.getBoolean("netbeans.small.main.window") //NOI18N
+                    ? BorderFactory.createEmptyBorder(1,1,1,1)
+                    : BorderFactory.createEmptyBorder()); //NOI18N
+
+        } else if( !"Aqua".equals(lAndF) && !"GTK".equals(lAndF) ){ //NOI18N
+            Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
+
+            if( b==null || b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder )
+                b = BorderFactory.createEtchedBorder( EtchedBorder.LOWERED );
+
+            toolbar.setBorder( new CompoundBorder( b, new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT) ) );
+        }
+
+        if( !"Aqua".equals(lAndF) ) { //NOI18N
+            toolbar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
+        }
     }
 
     @Override
@@ -126,8 +158,7 @@ final class ToolbarContainer extends JPanel {
         if( null == dragger && isDragable() ) {
             dragger = createDragger();
             dragger.setToolTipText(Actions.cutAmpersand(toolbar.getDisplayName()));
-//            add( dragger, new GridBagConstraints(0, 0, 1, 1, 0.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0));
-            add( dragger, BorderLayout.WEST );
+            addToolbarDragger();
         }
         registerDnd();
         if( null == dropTarget ) {
@@ -168,6 +199,22 @@ final class ToolbarContainer extends JPanel {
     @Override
     public String getName() {
         return null == toolbar ? super.getName() : toolbar.getName();
+    }
+
+    private void addToolbarDragger() {
+        Component oldDragger = null;
+        for( Component c : toolbar.getComponents() ) {
+            if( !(c instanceof JComponent) )
+                continue;
+            JComponent jc = (JComponent) c;
+            if( Boolean.TRUE.equals( jc.getClientProperty(PROP_DRAGGER) ) ) {
+                oldDragger = c;
+                break;
+            }
+        }
+        if( null != oldDragger )
+            toolbar.remove(oldDragger);
+        toolbar.add( dragger, 0 );
     }
 
     /**
@@ -224,6 +271,7 @@ final class ToolbarContainer extends JPanel {
             dragarea = (JPanel)new ToolbarBump();
         }
         dragarea.setCursor( Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR) );
+        dragarea.putClientProperty(PROP_DRAGGER, Boolean.TRUE);
         return dragarea;
     }
 
