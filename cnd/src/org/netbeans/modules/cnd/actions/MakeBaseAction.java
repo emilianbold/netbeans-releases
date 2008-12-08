@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
+import java.io.Writer;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
@@ -69,10 +70,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
-        performAction(node, target, null);
+        performAction(node, target, null, null);
     }
 
-    protected void performAction(Node node, String target, ExecutionListener listener) {
+    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -104,6 +105,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 false,
                 true,
                 false);
+        if (outputListener != null) {
+            nativeExecutor.setOutputListener(outputListener);
+        }
         new ShellExecuter(nativeExecutor, listener).execute();
     }
 }
