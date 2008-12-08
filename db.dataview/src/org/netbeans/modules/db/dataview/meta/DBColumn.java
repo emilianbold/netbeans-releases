@@ -50,6 +50,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
     private boolean foreignKey;
     private int jdbcType;
+    private String typeName;
     private String columnName;
     private boolean nullable;
     private boolean editable = true;
@@ -59,13 +60,15 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     private int scale;
     private boolean generated;
     private int displaySize;
+    private String defaultValue;
 
-    public DBColumn(DBTable table, String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
+    public DBColumn(DBTable table, String colName, int sqlJdbcType, String dbTypeName, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
         super();
 
         setParentObject(table);
         columnName = colName;
         jdbcType = sqlJdbcType;
+        typeName = dbTypeName;
 
         precision = colPrecision;
         scale = colScale;
@@ -135,6 +138,10 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return jdbcType;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
     public String getName() {
         return this.columnName;
     }
@@ -149,6 +156,10 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
 
     public int getDisplaySize() {
         return displaySize;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
     public void setDisplaySize(int displaySize) {
@@ -200,6 +211,14 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
 
     public boolean isGenerated() {
         return generated;
+    }
+
+    public boolean hasDefault(){
+        return defaultValue != null && defaultValue.trim().length() != 0;
+    }
+
+    void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     void setForeignKey(boolean newFlag) {

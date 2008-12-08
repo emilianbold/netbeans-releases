@@ -136,23 +136,6 @@ public final class DBMetaDataFactory {
         return dbtype;
     }
 
-    public Map<Integer, String> buildDBSpecificDatatypeMap() throws SQLException {
-        Map<Integer, String> typeInfoMap = new HashMap<Integer, String>();
-        ResultSet typeInfo = dbmeta.getTypeInfo();
-        String typeName = null;
-        Integer type = null;
-        int jdbcType = 0;
-        while (typeInfo.next()) {
-            typeName = typeInfo.getString("TYPE_NAME");
-            jdbcType = typeInfo.getInt("DATA_TYPE");
-            type = new Integer(jdbcType);
-            if (!typeInfoMap.containsKey(type)) {
-                typeInfoMap.put(type, typeName);
-            }
-        }
-        return typeInfoMap;
-    }
-
     private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) {
         ResultSet rs = null;
         try {
@@ -182,6 +165,7 @@ public final class DBMetaDataFactory {
     public synchronized Collection<DBTable> generateDBTables(ResultSet rs, String sql, boolean isSelect) throws SQLException {
         Map<String, DBTable> tables = new LinkedHashMap<String, DBTable>();
         String noTableName = "UNKNOWN"; // NOI18N
+
         // get table column information
         ResultSetMetaData rsMeta = rs.getMetaData();
         for (int i = 1; i <= rsMeta.getColumnCount(); i++) {
@@ -203,8 +187,8 @@ public final class DBMetaDataFactory {
             }
 
             int sqlTypeCode = rsMeta.getColumnType(i);
-            if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
-                String sqlTypeStr = rsMeta.getColumnTypeName(i);
+            String sqlTypeStr = rsMeta.getColumnTypeName(i);
+            if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {               
                 if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
                     sqlTypeCode = java.sql.Types.TIMESTAMP;
                 } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
@@ -236,7 +220,6 @@ public final class DBMetaDataFactory {
 
             //Handle MySQL BIT(n) where n > 1
             if (sqlTypeCode == java.sql.Types.VARBINARY && dbType == MYSQL) {
-                String sqlTypeStr = rsMeta.getColumnTypeName(i);
                 if (sqlTypeStr.startsWith("BIT")) { // NOI18N
                     sqlTypeCode = java.sql.Types.BIT;
                 }
@@ -254,7 +237,8 @@ public final class DBMetaDataFactory {
             }
 
             // create a table column and add it to the vector
-            DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
+            //String typeName = typeInfo.containsKey(sqlTypeCode) ? typeInfo.get(sqlTypeCode) : DataViewUtils.getStdSqlType(sqlTypeCode);
+            DBColumn col = new DBColumn(table, colName, sqlTypeCode, sqlTypeStr, scale, precision, isNullable, autoIncrement);
             col.setOrdinalPosition(position);
             col.setDisplayName(displayName);
             col.setDisplaySize(displaySize);
@@ -271,16 +255,39 @@ public final class DBMetaDataFactory {
             }
         }
 
+        DBModel dbModel = new DBModel();
+        dbModel.setDBType(getDBType());
         for (DBTable tbl : tables.values()) {
             if (DataViewUtils.isNullString(tbl.getName())) {
                 continue;
             }
             checkPrimaryKeys(tbl);
             checkForeignKeys(tbl);
+            dbModel.addTable(tbl);
+            populateDefaults(tbl);
         }
 
         return tables.values();
     }
+
+    private void populateDefaults(DBTable table) {
+        ResultSet rs = null;
+        try {
+            rs = dbmeta.getColumns(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName(), "%");
+            while (rs.next()) {
+                String defaultValue = rs.getString("COLUMN_DEF");
+                DBColumn col = table.getColumn(rs.getString("COLUMN_NAME"));
+
+                if (col != null && defaultValue != null && defaultValue.trim().length() != 0) {
+                    col.setDefaultValue(defaultValue.trim());
+                }
+            }
+        } catch (SQLException e) {
+        } finally {
+            DataViewUtils.closeResources(rs);
+        }
+    }
+
 
     private void adjustTableMetadata(String sql, DBTable table) {
         String tableName = "";

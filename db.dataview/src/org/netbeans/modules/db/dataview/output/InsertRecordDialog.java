@@ -47,10 +47,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -60,8 +56,6 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
-import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.util.NbBundle;
@@ -338,17 +332,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
     JTextField[] colValueTextField;
 
     private void addInputFields() {
-        Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
-        Map<Integer, String> typeInfo = Collections.emptyMap();
-        try {
-            if (conn != null) {
-                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-                typeInfo = dbMeta.buildDBSpecificDatatypeMap();
-            }
-        } catch (SQLException ex) {
-            // ignore
-        }
-
         int rows = dataView.getDataViewDBTable().getColumnCount();
         JLabel[] colNameLabel = new JLabel[rows];
         JLabel[] colDataType = new JLabel[rows];
@@ -403,8 +386,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
             colDataType[i].setFont(colDataType[i].getFont()); // NOI18N
             colDataType[i].getAccessibleContext().setAccessibleName(colDataType[i].getName());
             colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
-            Integer typeInt = new Integer(col.getJdbcType());
-            String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
+            String typeName = col.getTypeName();
 
             colDataType[i].setText(typeName.replace("(", "").replace(")", ""));
             colDataType[i].setDisplayedMnemonicIndex(-1);

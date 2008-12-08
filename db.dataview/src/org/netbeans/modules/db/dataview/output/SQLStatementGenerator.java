@@ -43,7 +43,6 @@ package org.netbeans.modules.db.dataview.output;
 import java.sql.Connection;
 import java.sql.Types;
 import java.util.List;
-import java.util.Map;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
@@ -165,9 +164,7 @@ class SQLStatementGenerator {
             throw new DBException(msg);
         }
         
-        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-        boolean isdb2 = dbMeta.getDBType() == DBMetaDataFactory.DB2? true : false;
-        Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();
+        boolean isdb2 = table.getParentObject().getDBType() == DBMetaDataFactory.DB2? true : false;
 
         StringBuffer sql = new StringBuffer();
         List<DBColumn> columns = table.getColumnList();
@@ -178,8 +175,7 @@ class SQLStatementGenerator {
                 sql.append(", ");
             }
 
-            Integer typeInt = new Integer(col.getJdbcType());
-            String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
+            String typeName = col.getTypeName();
             sql.append(col.getQualifiedName()).append(" ");
 
             int scale = col.getScale();
@@ -203,12 +199,16 @@ class SQLStatementGenerator {
                 sql.append("  FOR BIT DATA ");
             }
 
+            if (col.hasDefault()) {
+                sql.append(" DEFAULT ").append(col.getDefaultValue()).append(" ");
+            }
+            
             if (!col.isNullable()) {
                 sql.append(" NOT NULL");
             }
 
             if(col.isGenerated()){
-                sql.append(" ").append(getAutoIncrementText(dbMeta));
+                sql.append(" ").append(getAutoIncrementText(table.getParentObject().getDBType()));
             }
         }
 
@@ -316,8 +316,8 @@ class SQLStatementGenerator {
         }
     }
 
-    private String getAutoIncrementText(DBMetaDataFactory dbMeta) throws Exception {
-        switch (dbMeta.getDBType()) {
+    private String getAutoIncrementText(int dbType) throws Exception {
+        switch (dbType) {
             case DBMetaDataFactory.MYSQL:
                 return "AUTO_INCREMENT";
 

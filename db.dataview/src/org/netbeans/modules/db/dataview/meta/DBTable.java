@@ -172,6 +172,16 @@ public final class DBTable extends DBObject<DBModel> {
         return columns;
     }
 
+    public DBColumn getColumn(String name) {
+        Collection<DBColumn> list = columns.values();
+        for (DBColumn dBColumn : list) {
+            if(dBColumn.getName().equalsIgnoreCase(name)){
+                return dBColumn;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String getDisplayName() {
         return this.getFullyQualifiedName();

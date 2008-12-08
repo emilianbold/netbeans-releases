@@ -251,7 +251,7 @@ public class DataViewUtils {
         strBuf.append(column.getName()).append("</b> </td> </tr>");
 
         strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_type")).append("</td> <td> &nbsp; : &nbsp; <b>");
-        strBuf.append(DataViewUtils.getStdSqlType(column.getJdbcType()).toUpperCase()).append("</b> </td> </tr>");
+        strBuf.append(column.getTypeName()).append("</b> </td> </tr>");
 
         if (isString(column.getJdbcType())) {
             strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_length")).append("</td> <td> &nbsp; : &nbsp; <b>");
@@ -279,6 +279,11 @@ public class DataViewUtils {
         if (generated) {
             strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_generated")).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
+
+        if (column.hasDefault()) {
+            strBuf.append("<tr> <td>&nbsp;").append(NbBundle.getMessage(DataViewUtils.class, "TOOLTIP_column_default")).append("</td> <td> &nbsp; : &nbsp; <b>").append(column.getDefaultValue()).append("</b> </td> </tr>");
+        }
+
         strBuf.append("</table> </html>");
         return strBuf.toString();
     }
