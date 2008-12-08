@@ -1056,6 +1056,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                     CsmCompletionExpression gen = null;
                                     for (int i = 0; i < cnt; i++) {
                                         CsmCompletionExpression expr = peekExp(i + 1);
+                                        if (expr.getExpID() == PARENTHESIS_OPEN) {
+                                            break;
+                                        }
                                         if (expr.getExpID() == GENERIC_TYPE_OPEN) {
                                             gen = expr;
                                             break;
