@@ -183,7 +183,8 @@ public class GrailsActionsTest extends GrailsTestCase {
      */
     public void testStopApp() {
         //XXX - better to have ability to not open browser during run
-        //      (remove TestURLDisplayer)
+        //      (remove TestURLDisplayer, can be changed after
+        //       http://www.netbeans.org/issues/show_bug.cgi?id=154920)
         runGrailsApp();
         stopGrailsApp();
     }
