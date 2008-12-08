@@ -41,6 +41,7 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.TableModel;
@@ -82,7 +83,7 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if (dbcol.isGenerated()) {
+            if (dbcol.isGenerated() || (insertedRow[i] != null && insertedRow[i].equals("<DEFAULT>"))) {
                 continue;
             }
 
@@ -124,7 +125,8 @@ class SQLStatementGenerator {
 
         updateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0)).append(" SET "); // NOI18N
 
-        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ").append(getQualifiedValue(type, value).toString()).append(" WHERE "); // NOI18N
+        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ");
+        rawUpdateStmt.append(getQualifiedValue(type, value).toString()).append(" WHERE "); // NOI18N
 
         updateStmt.append(tblMeta.getQualifiedName(col)).append(" = ? WHERE "); // NOI18N
         values.add(value);
@@ -178,17 +180,23 @@ class SQLStatementGenerator {
 
             Integer typeInt = new Integer(col.getJdbcType());
             String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
-            sql.append(col.getQualifiedName()).append(" ").append(typeName);
+            sql.append(col.getQualifiedName()).append(" ");
 
             int scale = col.getScale();
             int precision = col.getPrecision();
             if (precision > 0 && DataViewUtils.isPrecisionRequired(col.getJdbcType(), isdb2)) {
-                sql.append("(").append(precision);
-                if (scale > 0 && DataViewUtils.isScaleRequired(col.getJdbcType())) {
-                    sql.append(", ").append(scale).append(")");
+                if(typeName.contains("(")){ // Handle MySQL Binary Type
+                    sql.append(typeName.replace("(", "(" + precision));
                 } else {
-                    sql.append(")");
+                    sql.append(typeName).append("(").append(precision);
+                    if (scale > 0 && DataViewUtils.isScaleRequired(col.getJdbcType())) {
+                        sql.append(", ").append(scale).append(")");
+                    } else {
+                        sql.append(")");
+                    }
                 }
+            } else {
+                sql.append(typeName);
             }
 
             if (DataViewUtils.isBinary(col.getJdbcType()) && isdb2) {
@@ -224,11 +232,17 @@ class SQLStatementGenerator {
     static String getCountSQLQuery(String queryString) {
         // User may type "FROM" in either lower, upper or mixed case
         String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
-        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length()); // NOI18N
+        queryString = queryString.substring(splitByFrom[0].length());
+
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
+        return "SELECT COUNT(*) " + queryString; // NOI18N
     }
 
     static String getCountAsSubQuery(String queryString) {
-        return "SELECT COUNT(*) FROM (" + queryString + ") C"; // NOI18N
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
+        return "SELECT COUNT(*) FROM (" + queryString + ") C2668"; // NOI18N
     }
 
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
@@ -293,7 +307,9 @@ class SQLStatementGenerator {
         if (val == null) {
             return "NULL"; // NOI18N
         }
-        if (DataViewUtils.isNumeric(type)) {
+        if(type == Types.BIT && !(val instanceof Boolean)){
+            return "b'" + val + "'";
+        } else if (DataViewUtils.isNumeric(type)) {
             return val;
         } else {
             return "'" + val + "'"; // NOI18N

@@ -120,7 +120,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
         public void executionFinished(int rc) {
-            if (step == 1) {
+            if (step == 1 && rc == 0) {
                 setEnabled(true);
             }
         }

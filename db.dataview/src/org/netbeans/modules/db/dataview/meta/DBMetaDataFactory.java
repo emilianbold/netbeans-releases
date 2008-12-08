@@ -234,6 +234,14 @@ public final class DBMetaDataFactory {
                 displaySize = 22;
             }
 
+            //Handle MySQL BIT(n) where n > 1
+            if (sqlTypeCode == java.sql.Types.VARBINARY && dbType == MYSQL) {
+                String sqlTypeStr = rsMeta.getColumnTypeName(i);
+                if (sqlTypeStr.startsWith("BIT")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.BIT;
+                }
+            }
+
             // The SQL Server timestamp type is a JDBC BINARY type with the fixed length of 8 bytes.
             // A Transact-SQL timestamp != an ANSI SQL-92 timestamp.
             // If its a SQL style timestamp you are after use a datetime data type.

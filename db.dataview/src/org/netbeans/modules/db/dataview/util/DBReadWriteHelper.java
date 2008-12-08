@@ -66,9 +66,14 @@ public class DBReadWriteHelper {
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
-    public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
+    public static Object readResultSet(ResultSet rs, DBColumn col, int index) throws SQLException {
+        int colType = col.getJdbcType();
+
+        if (colType == Types.BIT && col.getPrecision() <= 1) {
+            colType = Types.BOOLEAN;
+        }
+
         switch (colType) {
-            case Types.BIT:
             case Types.BOOLEAN: {
                 boolean bdata = rs.getBoolean(index);
                 if (rs.wasNull()) {
@@ -174,11 +179,12 @@ public class DBReadWriteHelper {
             // JDBC/ODBC bridge JDK1.4 brings back -9 for nvarchar columns in
             // MS SQL Server tables.
             // -8 is ROWID in Oracle.
-            // JDBC introduced NCHAR(-15), and NVARCHAR (-9)
+            // JDBC introduced NCHAR(-15), and NVARCHAR (-9), NLONGVARCHAR (-16)
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:
             case -15:
+            case -16:
             case -9:
             case -8: {
                 String sdata = rs.getString(index);
@@ -188,6 +194,8 @@ public class DBReadWriteHelper {
                     return sdata;
                 }
             }
+
+            case Types.BIT:
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY: {
@@ -199,7 +207,11 @@ public class DBReadWriteHelper {
                     for (int i = 0; i < bdata.length; i++) {
                         internal[i] = new Byte(bdata[i]);
                     }
-                    return BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+                    String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+                    if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
+                        return bStr.substring(bStr.length() - col.getPrecision());
+                    }
+                    return bStr;
                 }
             }
             case Types.BLOB: {
@@ -215,7 +227,7 @@ public class DBReadWriteHelper {
                 // BLOB exists, so try to read the data from it
                 byte[] blobData = null;
                 if (blob != null) {
-                    blobData = blob.getBytes(1, Math.min((int)blob.length() , 2000));
+                    blobData = blob.getBytes(1, Math.min((int) blob.length(), 2000));
                 }
                 Byte[] internal = new Byte[blobData.length];
                 for (int i = 0; i < blobData.length; i++) {
@@ -223,7 +235,8 @@ public class DBReadWriteHelper {
                 }
                 return BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.HEX, false);
             }
-            case Types.CLOB: {
+            case Types.CLOB:
+            case 2011: /*NCLOB */ {
                 // We always get the CLOB, even when we are not reading the contents.
                 // Since the CLOB is just a pointer to the CLOB data rather than the
                 // data itself, this operation should not take much time (as opposed
@@ -235,7 +248,7 @@ public class DBReadWriteHelper {
                 }
                 // CLOB exists, so try to read the data from it
                 if (clob != null) {
-                    return clob.getSubString(1, Math.min((int)clob.length() , 2000));
+                    return clob.getSubString(1, Math.min((int) clob.length(), 2000));
                 }
             }
             case Types.OTHER:
@@ -252,6 +265,10 @@ public class DBReadWriteHelper {
             if (valueObj == null) {
                 ps.setNull(index, jdbcType);
                 return;
+            }
+
+            if (jdbcType == Types.BIT && valueObj instanceof Boolean) {
+                jdbcType = Types.BOOLEAN;
             }
 
             switch (jdbcType) {
@@ -301,6 +318,10 @@ public class DBReadWriteHelper {
                     ps.setTime(index, (Time) new TimeType().convert(valueObj));
                     break;
 
+                case Types.BIT:
+                    ps.setBytes(index, convertBitStringToBytes(valueObj.toString()));
+                    break;
+
                 case Types.BINARY:
                 case Types.VARBINARY:
                     ps.setBytes(index, valueObj.toString().getBytes());
@@ -317,11 +338,13 @@ public class DBReadWriteHelper {
                 case -15:
                 case -9:
                 case -8:
+                case -16:
                     ps.setString(index, valueObj.toString());
                     break;
 
                 case Types.CLOB:
                 case Types.LONGVARCHAR:
+                case 2011: /*NCLOB */
                     String charVal = valueObj.toString();
                     ps.setCharacterStream(index, new StringReader(charVal), charVal.length());
                     break;
@@ -340,10 +363,15 @@ public class DBReadWriteHelper {
         if (valueObj == null) {
             return null;
         }
+
+
+        if (colType == Types.BIT && col.getPrecision() <= 1) {
+            colType = Types.BOOLEAN;
+        }
+
         try {
             switch (colType) {
-                case Types.BIT:
-                case Types.BOOLEAN:
+                case Types.BOOLEAN: {
                     if (valueObj instanceof Boolean) {
                         return valueObj;
                     } else {
@@ -357,7 +385,7 @@ public class DBReadWriteHelper {
                             throw new DBException(errMsg);
                         }
                     }
-                //return (valueObj instanceof Boolean) ? valueObj : new Boolean(valueObj.toString());
+                }
 
                 case Types.TIMESTAMP:
                     return valueObj instanceof Timestamp ? valueObj : new TimestampType().convert(valueObj);
@@ -404,6 +432,20 @@ public class DBReadWriteHelper {
                     }
                     return valueObj;
 
+                case Types.BIT:
+                    if (valueObj.toString().length() > col.getPrecision()) {
+                        String colName = col.getQualifiedName();
+                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
+                        throw new DBException(errMsg);
+                    }
+                    if (valueObj.toString().trim().length() == 0) {
+                        String colName = col.getQualifiedName();
+                        String errMsg = "Invalid data for column " + colName;
+                        throw new DBException(errMsg);
+                    }
+                    convertBitStringToBytes(valueObj.toString());
+                    return valueObj;
+
                 case Types.BINARY:
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
@@ -425,9 +467,32 @@ public class DBReadWriteHelper {
             String colName = col.getQualifiedName();
             int precision = col.getPrecision();
             String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
-            errMsg += "\nCause: "+ e.getMessage();
+            errMsg += "\nCause: " + e.getMessage();
             throw new DBException(errMsg);
         }
+    }
+
+    public static byte[] convertBitStringToBytes(String s) throws DBException {
+        int shtBits = s.length() % 8;
+        s = (shtBits > 0 ? "00000000".substring(0, 8 - shtBits) + s : s);
+
+        byte[] buf = new byte[s.length() / 8];
+
+        int bit = 0, index = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if ('1' == s.charAt(i)) {
+                int b = 1 << (7 - bit);
+                buf[index] |= b;
+            } else if ('0' != s.charAt(i)) {
+                throw new DBException(s.charAt(i) + "found at character " + i + "; 0 or 1 expected. ");
+            }
+            bit++;
+            if (bit > 7) {
+                bit = 0;
+                index++;
+            }
+        }
+        return buf;
     }
 
     public static boolean isNullString(String str) {
