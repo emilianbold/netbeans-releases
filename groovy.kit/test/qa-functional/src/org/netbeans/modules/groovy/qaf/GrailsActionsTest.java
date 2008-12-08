@@ -40,6 +40,7 @@
 package org.netbeans.modules.groovy.qaf;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
@@ -116,12 +117,12 @@ public class GrailsActionsTest extends GrailsTestCase {
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
         a.performPopup(eo); //NOI18N
-        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
+        assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
         //from a view
         oa.perform(getViewNode("book|edit")); //NOI18N
         eo = new EditorOperator("edit.gsp"); //NOI18N
         a.performPopup(eo); //NOI18N
-        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
+        assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
     }
 
     /**
@@ -135,12 +136,12 @@ public class GrailsActionsTest extends GrailsTestCase {
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
         a.performPopup(eo);
-        assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
+        assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
         //from a controller
         oa.perform(getControllerNode("BookController")); //NOI18N
         eo = new EditorOperator("BookController.groovy"); //NOI18N
         a.performPopup(eo);
-        assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
+        assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
     }
 
     /**
@@ -161,7 +162,7 @@ public class GrailsActionsTest extends GrailsTestCase {
                 a.actionPerformed(new ActionEvent(eo.txtEditorPane().getSource(), -1, null));
             }
         });
-        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
+        assertTrue(getActiveTC().endsWith("domain" + File.separator + "Book.groovy")); //NOI18N
         eo.close(false);
         //from a controller
         oa.perform(getControllerNode("BookController")); //NOI18N
@@ -173,7 +174,7 @@ public class GrailsActionsTest extends GrailsTestCase {
                 a.actionPerformed(new ActionEvent(eo2.txtEditorPane().getSource(), -1, null));
             }
         });
-        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
+        assertTrue(getActiveTC().endsWith("domain" + File.separator + "Book.groovy")); //NOI18N
     }
 
     /**
