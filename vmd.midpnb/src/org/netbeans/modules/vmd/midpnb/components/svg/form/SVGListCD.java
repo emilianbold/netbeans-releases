@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
@@ -56,7 +57,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorListModel;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorSpinnerModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,8 +86,8 @@ public class SVGListCD extends ComponentDescriptor{
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
                 new PropertyDescriptor(PROP_MODEL, 
-                        MidpTypes.TYPEID_JAVA_CODE, 
-                        MidpTypes.createJavaCodeValue(""), true, true, 
+                        MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), 
+                        PropertyValue.createNull(), true, true, 
                         MidpVersionable.MIDP_2)
                 );
     }
@@ -111,7 +111,8 @@ public class SVGListCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGListEventSourceCD.TYPEID )
+                new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
+                new SVGListModelFooter()
         );
     }
 

@@ -38,19 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
-
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
+
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test create CreateMobilityProject
  *
@@ -117,19 +117,11 @@ public class CreateMobilityProjectTest extends PerformanceTestCase {
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-        log("================= Destination directory={" + directory + "}");
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().clearText();
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().typeText(directory);
-
         project_name = project_type + "_" + (index++);
-        log("================= Project name=" + project_name + "}");
         wizard_location.txtProjectName().clearText();
-        new EventTool().waitNoEvent(1000);
-
         wizard_location.txtProjectName().typeText(project_name);
     }
 
@@ -140,11 +132,6 @@ public class CreateMobilityProjectTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-//        ProjectSupport.closeProject(project_name);
-        new EventTool().waitNoEvent(2000);
     }
 
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new CreateMobilityProject("testCreateMobilityProject"));
-//    }
 }

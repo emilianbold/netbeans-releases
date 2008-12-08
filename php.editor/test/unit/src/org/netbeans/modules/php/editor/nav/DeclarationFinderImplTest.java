@@ -57,6 +57,28 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {//function",
+                "function test($^hello) {//function",
+                "* @param Book $hello",
+                "* @param Book $he|llo"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testParamVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {//method",
+                "function test($^hello) {//method",
+                "$tmp = $hello;",
+                "$tmp = $hel|lo;"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
     public void testClsVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",

@@ -44,7 +44,6 @@ import java.io.IOException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  * @author akorostelev
@@ -85,12 +84,20 @@ public abstract class SVGBasicShape extends SVGComponentDrop{
     }
 
     protected String getSnippet() throws IOException{
-        String text = getSnippetString();
+        String text = loadSnippetString();
         return replaceCoordinates(text);
     }
-    
-    protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGBasicShape.class, mySnippetPath);
+
+    /**
+     * loads snippet string from resource file,
+     * which part is specified in conbstructor.
+     * Path is relative to current class -
+     * getClass().getResourceAsStream(PATH) is used to load resource.
+     * @return snippet String
+     * @throws java.io.IOException
+     */
+    protected String loadSnippetString() throws IOException{
+        return loadSnippetString(getClass(), mySnippetPath);
     }
   
     private String mySnippetPath;

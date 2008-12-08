@@ -67,7 +67,6 @@ public class MeasureUMLSetupTest_1 extends NbTestSuite {
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(UMLSetup.class)
             .addTest("closeMemoryToolbar")
-            .addTest("closeWelcome")
 
             .addTest("openJEditModelProject")
             .addTest("openJEditProject")

@@ -41,8 +41,8 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.List;
-import java.util.Map;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
@@ -82,12 +82,12 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if (dbcol.isGenerated()) {
+            if (dbcol.isGenerated() || (insertedRow[i] != null && insertedRow[i].equals("<DEFAULT>"))) { // NOI18N
                 continue;
             }
 
             if (insertedRow[i] == null && !dbcol.isNullable()) {
-                throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class,"MSG_nullable_check"));
+                throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
             }
 
             if (comma) {
@@ -116,7 +116,7 @@ class SQLStatementGenerator {
         int type = dbcol.getJdbcType();
 
         if (!dbcol.isNullable() && value == null) {
-            throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class,"MSG_nullable_check"));
+            throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
         }
 
         StringBuilder updateStmt = new StringBuilder();
@@ -124,7 +124,8 @@ class SQLStatementGenerator {
 
         updateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0)).append(" SET "); // NOI18N
 
-        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ").append(getQualifiedValue(type, value).toString()).append(" WHERE "); // NOI18N
+        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ");
+        rawUpdateStmt.append(getQualifiedValue(type, value).toString()).append(" WHERE "); // NOI18N
 
         updateStmt.append(tblMeta.getQualifiedName(col)).append(" = ? WHERE "); // NOI18N
         values.add(value);
@@ -147,8 +148,7 @@ class SQLStatementGenerator {
     }
 
     // TODO: Support for FK, and other constraint and Index recreation.
-    // TODO: Discover default value and use them while recreating the table
-    String generateCreateStatement(DBTable table) throws DBException, Exception{
+    String generateCreateStatement(DBTable table) throws DBException, Exception {
 
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
         String msg = "";
@@ -162,61 +162,68 @@ class SQLStatementGenerator {
             dataView.setErrorStatusText(new DBException(msg));
             throw new DBException(msg);
         }
-        
-        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-        boolean isdb2 = dbMeta.getDBType() == DBMetaDataFactory.DB2? true : false;
-        Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();
+
+        boolean isdb2 = table.getParentObject().getDBType() == DBMetaDataFactory.DB2 ? true : false;
 
         StringBuffer sql = new StringBuffer();
         List<DBColumn> columns = table.getColumnList();
-        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append(" (");
+        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append(" ("); // NOI18N
         int count = 0;
         for (DBColumn col : columns) {
             if (count++ > 0) {
-                sql.append(", ");
+                sql.append(", "); // NOI18N
             }
 
-            Integer typeInt = new Integer(col.getJdbcType());
-            String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
-            sql.append(col.getQualifiedName()).append(" ").append(typeName);
+            String typeName = col.getTypeName();
+            sql.append(col.getQualifiedName()).append(" ");
 
             int scale = col.getScale();
             int precision = col.getPrecision();
             if (precision > 0 && DataViewUtils.isPrecisionRequired(col.getJdbcType(), isdb2)) {
-                sql.append("(").append(precision);
-                if (scale > 0 && DataViewUtils.isScaleRequired(col.getJdbcType())) {
-                    sql.append(", ").append(scale).append(")");
+                if (typeName.contains("(")) { // Handle MySQL Binary Type // NOI18N
+                    sql.append(typeName.replace("(", "(" + precision)); // NOI18N
                 } else {
-                    sql.append(")");
+                    sql.append(typeName).append("(").append(precision); // NOI18N
+                    if (scale > 0 && DataViewUtils.isScaleRequired(col.getJdbcType())) {
+                        sql.append(", ").append(scale).append(")"); // NOI18N
+                    } else {
+                        sql.append(")"); // NOI18N
+                    }
                 }
+            } else {
+                sql.append(typeName);
             }
 
             if (DataViewUtils.isBinary(col.getJdbcType()) && isdb2) {
-                sql.append("  FOR BIT DATA ");
+                sql.append("  FOR BIT DATA "); // NOI18N
+            }
+
+            if (col.hasDefault()) {
+                sql.append(" DEFAULT ").append(col.getDefaultValue()).append(" "); // NOI18N
             }
 
             if (!col.isNullable()) {
-                sql.append(" NOT NULL");
+                sql.append(" NOT NULL"); // NOI18N
             }
 
-            if(col.isGenerated()){
-                sql.append(" ").append(getAutoIncrementText(dbMeta));
+            if (col.isGenerated()) {
+                sql.append(" ").append(getAutoIncrementText(table.getParentObject().getDBType()));
             }
         }
 
         DBPrimaryKey pk = table.getPrimaryKey();
         if (pk != null) {
             count = 0;
-            sql.append(", PRIMARY KEY (");
-            for (String col : pk.getColumnNames()) {                
+            sql.append(", PRIMARY KEY ("); // NOI18N
+            for (String col : pk.getColumnNames()) {
                 if (count++ > 0) {
-                    sql.append(", ");
+                    sql.append(", "); // NOI18N
                 }
                 sql.append(table.getQuoter().quoteIfNeeded(col));
             }
-            sql.append(")");
+            sql.append(")"); // NOI18N
         }
-        sql.append(")");
+        sql.append(")"); // NOI18N
 
         return sql.toString();
     }
@@ -224,7 +231,17 @@ class SQLStatementGenerator {
     static String getCountSQLQuery(String queryString) {
         // User may type "FROM" in either lower, upper or mixed case
         String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
-        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length()); // NOI18N
+        queryString = queryString.substring(splitByFrom[0].length());
+
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
+        return "SELECT COUNT(*) " + queryString; // NOI18N
+    }
+
+    static String getCountAsSubQuery(String queryString) {
+        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
+        queryString = queryString.substring(0, splitByOrderBy[0].length());
+        return "SELECT COUNT(*) FROM (" + queryString + ") C2668"; // NOI18N
     }
 
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
@@ -262,7 +279,8 @@ class SQLStatementGenerator {
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
-                        Object val = model.getValueAt(rowNum, i);
+                        //Object val = model.getValueAt(rowNum, i);
+                        Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
                         if (val != null) {
                             keySelected = true;
                             and = addSeparator(and, result, raw, " AND "); // NOI18N
@@ -274,9 +292,10 @@ class SQLStatementGenerator {
             }
         }
 
-        if(key == null || !keySelected) {
+        if (key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
-                Object val = model.getValueAt(rowNum, i);
+                //Object val = model.getValueAt(rowNum, i);
+                Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
                 and = addSeparator(and, result, raw, " AND "); // NOI18N
                 generateNameValue(i, result, raw, val, values, types);
             }
@@ -287,25 +306,27 @@ class SQLStatementGenerator {
         if (val == null) {
             return "NULL"; // NOI18N
         }
-        if (DataViewUtils.isNumeric(type)) {
+        if (type == Types.BIT && !(val instanceof Boolean)) {
+            return "b'" + val + "'"; // NOI18N
+        } else if (DataViewUtils.isNumeric(type)) {
             return val;
         } else {
             return "'" + val + "'"; // NOI18N
         }
     }
 
-    private String getAutoIncrementText(DBMetaDataFactory dbMeta) throws Exception {
-        switch (dbMeta.getDBType()) {
+    private String getAutoIncrementText(int dbType) throws Exception {
+        switch (dbType) {
             case DBMetaDataFactory.MYSQL:
-                return "AUTO_INCREMENT";
+                return "AUTO_INCREMENT"; // NOI18N
 
             case DBMetaDataFactory.PostgreSQL:
-                return "SERIAL";
+                return "SERIAL"; // NOI18N
 
             case DBMetaDataFactory.SQLSERVER:
-                return "IDENTITY";
+                return "IDENTITY"; // NOI18N
             default:
-                return "GENERATED ALWAYS AS IDENTITY";
+                return "GENERATED ALWAYS AS IDENTITY"; // NOI18N
         }
     }
 }

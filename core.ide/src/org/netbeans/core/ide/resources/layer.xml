@@ -51,24 +51,10 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Services">
-        <folder name="IndentEngine">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
-        </folder>
         <folder name="MIMEResolver">
             <file name="plain-text-resolver.xml" url="plain-text-resolver.xml">
                 <attr name="position" intvalue="140"/>
             </file>
-        </folder>
-    </folder>
-    
-    <folder name="Templates">
-        <folder name="Services">
-            <folder name="IndentEngine">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
-            </folder>
         </folder>
     </folder>
     

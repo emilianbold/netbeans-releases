@@ -434,7 +434,11 @@ class GroovyParser implements Parser {
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
                 // but for now it is faster to use javac only for sources
-                bootPath, compilePath, sourcePath);
+
+                // null happens in GSP
+                bootPath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : bootPath,
+                compilePath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : compilePath,
+                sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
         CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource, waitJavaScanFinished);

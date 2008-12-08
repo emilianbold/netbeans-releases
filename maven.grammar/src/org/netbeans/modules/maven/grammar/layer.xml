@@ -55,6 +55,9 @@ made subject to such option by the copyright holder.
                 <folder name="x-maven-profile+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
+                <folder name="x-maven-settings+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -115,6 +118,19 @@ made subject to such option by the copyright holder.
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-maven-grammar-CodeTemplates.xml" url="profile-abbreviations.xml"/>
                     </folder>
+                </folder>
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-maven-codegen-ProfilesContextProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-maven-settings+xml">
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-maven-codegen-SettingsContextProvider.instance"/>
+                </folder>
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-maven-codegen-MirrorGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -60,7 +60,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 
 /**
  * Renders rows and columns of a given ResultSet via JTable.
@@ -182,7 +181,7 @@ class DataViewTablePanel extends JPanel {
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e);
+            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e); // NOI18N
         }
         return colWidthList;
     }

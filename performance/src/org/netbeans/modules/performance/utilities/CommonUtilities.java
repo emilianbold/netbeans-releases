@@ -188,27 +188,6 @@ public class CommonUtilities {
     }
     
     /**
-     * Close Welcome.
-     */
-    public static void closeWelcome(){
-        TopComponentOperator tComponent = null;
-        try {
-            tComponent = new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.welcome.Bundle", "LBL_Tab_Title"));
-        } catch(TimeoutExpiredException tex) {
-            // Do nothing
-            try {
-                    tComponent = new TopComponentOperator("Welcome");
-                } catch(TimeoutExpiredException tex2) {
-                    // Do nothing
-                }            
-        }        
-
-        if(tComponent == null) { return; }
-        new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-        tComponent.close();
-    }
-    
-    /**
      * Close BluePrints.
      */
     public static void closeBluePrints(){
