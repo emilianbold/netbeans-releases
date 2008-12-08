@@ -623,7 +623,7 @@ public class MakeActionProvider implements ActionProvider {
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
                 } else if (conf.isQmakeConfiguration()) {
-                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
+                    RunDialogPanel.addElementToExecutablePicklist(conf.getLinkerConfiguration().getOutputValue());
                 } else {
                     assert false;
                 }

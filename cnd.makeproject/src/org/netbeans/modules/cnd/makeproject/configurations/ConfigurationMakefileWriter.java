@@ -201,7 +201,7 @@ public class ConfigurationMakefileWriter {
         bw.write(conf.getQmakeConfiguration().getTemplate().getValue());
         bw.write('\n'); // NOI18N
         bw.write("TARGET = "); // NOI18N
-        bw.write(conf.getQmakeConfiguration().getTarget().getValue());
+        bw.write(conf.expandMacros(getOutput(conf)));
         bw.write('\n'); // NOI18N
         bw.write("CONFIG += "); // NOI18N
         bw.write(conf.getQmakeConfiguration().getConfig().getValue());
@@ -251,6 +251,24 @@ public class ConfigurationMakefileWriter {
             bw.write(' '); // NOI18N
             bw.write(item.getPath());
         }
+        bw.write('\n'); // NOI18N
+
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+
+        bw.write("DEFINES += "); // NOI18N
+        bw.write(conf.getCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, "")); // NOI18N
+        bw.write(' '); // NOI18N
+        bw.write(conf.getCCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, "")); // NOI18N
+        bw.write('\n'); // NOI18N
+
+        bw.write("INCLUDEPATH += "); // NOI18N
+        bw.write(conf.getCCompilerConfiguration().getIncludeDirectories().getOption(cs, "")); // NOI18N
+        bw.write(' '); // NOI18N
+        bw.write(conf.getCCCompilerConfiguration().getIncludeDirectories().getOption(cs, "")); // NOI18N
+        bw.write('\n'); // NOI18N
+
+        bw.write("LIBS += "); // NOI18N
+        bw.write(conf.getLinkerConfiguration().getLibrariesConfiguration().getOption(cs, "")); // NOI18N
         bw.write('\n'); // NOI18N
 
         bw.close();
@@ -680,7 +698,7 @@ public class ConfigurationMakefileWriter {
         } else if (conf.isMakefileConfiguration()) {
             return conf.getMakefileConfiguration().getOutput().getValue();
         } else if (conf.isQmakeConfiguration()) {
-            return conf.getQmakeConfiguration().getTarget().getValue();
+            return conf.getLinkerConfiguration().getOutputValue();
         }
         assert false;
         return null;

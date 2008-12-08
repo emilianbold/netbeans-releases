@@ -49,12 +49,10 @@ import org.openide.util.NbBundle;
 public class QmakeConfiguration implements Cloneable {
 
     private StringConfiguration template;
-    private StringConfiguration target;
     private StringConfiguration config;
 
     public QmakeConfiguration() {
         template = new StringConfiguration(null, "app"); // NOI18N
-        target = new StringConfiguration(null, "dist/qtapp"); // NOI18N
         config = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -66,7 +64,6 @@ public class QmakeConfiguration implements Cloneable {
         basic.setDisplayName(getString("QmakeGeneralTxt")); // NOI18N
         basic.setShortDescription(getString("QmakeGeneralHint")); // NOI18N
         basic.put(new StringNodeProp(template, "TEMPLATE", getString("QmakeTemplateTxt"), getString("QmakeTemplateHint"))); // NOI18N
-        basic.put(new StringNodeProp(target, "TARGET", getString("QmakeTargetTxt"), getString("QmakeTargetHint"))); // NOI18N
         basic.put(new StringNodeProp(config, "CONFIG", getString("QmakeConfigTxt"), getString("QmakeConfigHint"))); // NOI18N
         sheet.put(basic);
 
@@ -81,14 +78,6 @@ public class QmakeConfiguration implements Cloneable {
         this.template = template;
     }
 
-    public StringConfiguration getTarget() {
-        return target;
-    }
-
-    public void setTarget(StringConfiguration target) {
-        this.target = target;
-    }
-
     public StringConfiguration getConfig() {
         return config;
     }
@@ -99,7 +88,6 @@ public class QmakeConfiguration implements Cloneable {
 
     public void assign(QmakeConfiguration other) {
         getTemplate().setValue(other.getTemplate().getValue());
-        getTarget().setValue(other.getTarget().getValue());
         getConfig().setValue(other.getConfig().getValue());
     }
 
@@ -108,7 +96,6 @@ public class QmakeConfiguration implements Cloneable {
         try {
             QmakeConfiguration clone = (QmakeConfiguration) super.clone();
             clone.setTemplate(getTemplate().clone());
-            clone.setTarget(getTarget().clone());
             clone.setConfig(getConfig().clone());
             return clone;
         } catch (CloneNotSupportedException ex) {
