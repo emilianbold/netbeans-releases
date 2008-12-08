@@ -59,14 +59,7 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
      * @see org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter#generateClassInitializationFooter(org.netbeans.modules.vmd.api.codegen.MultiGuardedSection)
      */
     @Override
-    public void generateClassInitializationFooter( MultiGuardedSection arg0 ) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter#generateClassInitializationHeader(org.netbeans.modules.vmd.api.codegen.MultiGuardedSection)
-     */
-    @Override
-    public void generateClassInitializationHeader( MultiGuardedSection section ) {
+    public void generateClassInitializationFooter( MultiGuardedSection section ) {
         PropertyValue value = null;
         if ( getComponent().getType().equals( SVGListCD.TYPEID) ){
             value = getComponent().readProperty( SVGListCD.PROP_MODEL);
@@ -86,6 +79,10 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
             section.getWriter().write("java.util.Vector vector = new java.util.Vector();\n");  //NOI18N
             List<PropertyValue> list = value.getArray();
             
+            if ( list == null ){
+                return;
+            }
+            
             for (PropertyValue propertyValue : list) {
                 String item = propertyValue.getPrimitiveValue().toString();
                 section.getWriter().write( "vector.addElement(\""+ item +"\");\n");
@@ -95,13 +92,20 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
                     generateDirectAccessCode(getComponent()) +".setModel(");
             if ( getComponent().getType().equals( SVGListCD.TYPEID) ){
                 section.getWriter().write( "new org.netbeans.microedition.svg." +
-                		"SVGList.DefaultListModel(vector));\n");  // NOI18N
+                        "SVGList.DefaultListModel(vector));\n");  // NOI18N
             }
             else if ( getComponent().getType().equals( SVGComboBoxCD.TYPEID) ){
                 section.getWriter().write( "new org.netbeans.microedition.svg." +
                         "SVGComboBox.DefaultModel(vector));\n");  // NOI18N
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter#generateClassInitializationHeader(org.netbeans.modules.vmd.api.codegen.MultiGuardedSection)
+     */
+    @Override
+    public void generateClassInitializationHeader( MultiGuardedSection section ) {
     }
 
 }
