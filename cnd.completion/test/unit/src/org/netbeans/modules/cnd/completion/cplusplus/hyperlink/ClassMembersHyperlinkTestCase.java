@@ -700,6 +700,9 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ154775() throws Exception {
         // IZ#154775: Unresolved inner type of instantiation
         performTest("iz154775.cc", 14, 20, "iz154775.cc", 9, 5);
+
+        performTest("iz154775.cc", 31, 24, "iz154775.cc", 23, 5);
+        performTest("iz154775.cc", 32, 24, "iz154775.cc", 27, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {
