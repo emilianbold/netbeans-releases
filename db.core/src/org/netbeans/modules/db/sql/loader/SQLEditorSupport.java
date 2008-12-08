@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -293,8 +294,9 @@ public class SQLEditorSupport extends DataEditorSupport
 
     @Override
     public void saveAs( FileObject folder, String fileName ) throws IOException {
-        FileObject existingFo = FileUtil.createData(folder, fileName);
-        if (existingFo != null) {
+        String fn = FileUtil.getFileDisplayName(folder) + File.separator + fileName; 
+        File existingFile = FileUtil.normalizeFile(new File(fn));
+        if (existingFile.exists()) {
             NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplace", fileName),
                     NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"));
