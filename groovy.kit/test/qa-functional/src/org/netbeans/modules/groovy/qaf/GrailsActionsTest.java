@@ -88,7 +88,7 @@ public class GrailsActionsTest extends GrailsTestCase {
      *
      */
     public void testGenerateAll() {
-        //Generate all
+        //Generate All
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
         getDomainClassNode("Book").performPopupAction(label); //NOI18N
         waitFor("generate-all", "Finished generation for domain class"); //NOI18N
@@ -99,11 +99,10 @@ public class GrailsActionsTest extends GrailsTestCase {
      *
      */
     public void testCreateView() {
-        //see: http://www.netbeans.org/issues/show_bug.cgi?id=154909
-        //Create view
-//        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_CreateViewAction");
-//        getDomainClassNode("Author").performPopupAction(label); //NOI18N
-//        waitFor("generate-views", "Finished generation for domain class"); //NOI18N
+        //Generate Views
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateViewsAction");
+        getDomainClassNode("Author").performPopupAction(label); //NOI18N
+        waitFor("generate-views", "Finished generation for domain class"); //NOI18N
     }
 
     /**
