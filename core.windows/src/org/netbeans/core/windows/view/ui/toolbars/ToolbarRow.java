@@ -474,6 +474,8 @@ class ToolbarRow extends JPanel {
     }
 
     private static final boolean isMetalLaF = "Metal".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isNimbusLaF = "Nimbus".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isGTKLaF = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     /**
      * Layout of a single toolbar row.
      */
@@ -582,7 +584,7 @@ class ToolbarRow extends JPanel {
             int x = 0;
             for( Component c : leftBars ) {
                 int barWidth = bar2width.get(c);
-                if( isMetalLaF && leftBars.indexOf(c) == leftBars.size()-1 ) {
+                if( (isMetalLaF || isNimbusLaF || isGTKLaF) && leftBars.indexOf(c) == leftBars.size()-1 ) {
                     //stretch the last left bar across the remaining free space
                     //up to the first right bar / right border of the toolbar row
                     int rightBarsWidth = 0;
