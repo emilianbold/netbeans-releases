@@ -83,16 +83,16 @@ import org.openide.util.Exceptions;
 public class SVGFormFileObjectListener implements FileChangeListener, ActiveViewSupport.Listener {
 
     private WeakReference<DesignComponent> component;
-    private WeakReference<DesignComponent> imageComponent;
-    private String propertyName;
+    //private WeakReference<DesignComponent> imageComponent;
+    //private String propertyName;
     private DataEditorView.Kind activatedView;
 
     public SVGFormFileObjectListener(DesignComponent component, DesignComponent imageComponent, String propertyName) {
         assert (component != null);
         assert (imageComponent != null);
         this.component = new WeakReference<DesignComponent>(component);
-        this.imageComponent = new WeakReference<DesignComponent>(imageComponent);
-        this.propertyName = propertyName;
+        //this.imageComponent = new WeakReference<DesignComponent>(imageComponent);
+        //this.propertyName = propertyName;
     }
 
     public void fileFolderCreated(FileEvent fe) {
