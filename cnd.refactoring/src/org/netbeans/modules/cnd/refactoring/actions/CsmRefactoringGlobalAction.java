@@ -85,7 +85,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
     }
 
     protected void setMnemonic(char m) {
-        putValue(Action.MNEMONIC_KEY, new Integer(m));
+        putValue(Action.MNEMONIC_KEY, Integer.valueOf(m));
     }
 
     private static String trim(String arg) {
