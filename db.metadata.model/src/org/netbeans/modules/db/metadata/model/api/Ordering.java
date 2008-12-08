@@ -40,36 +40,10 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
+ * Defines an ordering for a metadata element
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
-
-    MetadataElement() {}
-
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
-
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
-    }
+public enum Ordering {
+    ASCENDING, DESCENDING, NOT_SUPPORTED
 }
