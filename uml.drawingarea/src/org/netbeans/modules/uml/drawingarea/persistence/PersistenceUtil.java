@@ -137,7 +137,6 @@ public class PersistenceUtil {
         nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
         nodeWriter.setLocation(widget.getPreferredLocation());
 
-//        nodeWriter.setSize(widget.getBounds().getSize());
         Rectangle bnd = widget.getBounds();//border need correction for selection border sizes
         if (bnd != null)
         {
@@ -188,9 +187,7 @@ public class PersistenceUtil {
         for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
         {
             String key = it.next();
-//            System.out.println(" Scene property = " + key);
             Object propVal = table.getProperty(key);
-//            System.out.println(" property value = " + propVal.toString());
             props.put(key, propVal.toString());
         }
     }
