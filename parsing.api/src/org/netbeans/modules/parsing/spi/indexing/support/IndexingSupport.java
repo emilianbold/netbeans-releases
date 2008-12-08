@@ -51,7 +51,6 @@ import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -60,7 +59,7 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 //@NotThreadSafe
-public class IndexingSupport {
+public final class IndexingSupport {
 
     static {
         SupportAccessor.setInstance(new MyAccessor());
