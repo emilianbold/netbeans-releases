@@ -621,19 +621,9 @@ public final class RubyIndex {
     }
 
     public IndexedConstant createConstant(String signature, SearchResult map) {
-        String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
-        String module = map.getValue(RubyIndexer.FIELD_IN);
-
-        if (clz == null) {
-            // Module method?
-            clz = module;
-        } else if ((module != null) && (module.length() > 0)) {
-            clz = module + "::" + clz;
-        }
-
         String fileUrl = map.getPersistentUrl();
 
-        String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
+        String classFQN = map.getValue(RubyIndexer.FIELD_FQN_NAME);
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
         int typeIndex = signature.indexOf(';');
@@ -643,7 +633,7 @@ public final class RubyIndex {
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
         IndexedConstant m =IndexedConstant.create(
-                this, name, fqn, clz, fileUrl, require, flags, context, type);
+                this, name, classFQN, fileUrl, require, flags, context, type);
 
         return m;
     }

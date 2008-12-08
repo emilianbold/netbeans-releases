@@ -1638,12 +1638,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // Try to pick the best match among many documentation entries: Heuristic time.
         // Similar to heuristics used for Go To Declaration: Prefer long documentation,
         // prefer documentation related to the require-statements in this file, etc.
-        RubyDeclarationFinder finder = new RubyDeclarationFinder();
         IndexedElement candidate = null;
 
         if (!classes.isEmpty()) {
-            candidate = finder.findBestClassMatch(classes, path, path.leaf(), index);
+            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
+            candidate = cdf.findBestClassMatch(classes, path, path.leaf(), index);
         } else if (!methods.isEmpty()) {
+            RubyDeclarationFinder finder = new RubyDeclarationFinder();
             candidate = finder.findBestMethodMatch(name, methods, doc, astOffset, lexOffset, path,
                     path.leaf(), index);
         }
