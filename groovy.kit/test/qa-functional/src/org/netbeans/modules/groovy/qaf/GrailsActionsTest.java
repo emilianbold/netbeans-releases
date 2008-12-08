@@ -54,6 +54,7 @@ import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
 import org.openide.windows.TopComponent;
 
 /**
+ * Tests for actions available on Grails projects
  *
  * @author lukas
  */
@@ -81,6 +82,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         return "GrailsActions"; //NOI18N
     }
 
+    /**
+     * Test Generate all action on the domain class node
+     *
+     */
     public void testGenerateAll() {
         //Generate all
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
@@ -88,6 +93,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         waitFor("generate-all", "Finished generation for domain class"); //NOI18N
     }
 
+    /**
+     * Test Create view action on the domain class node
+     *
+     */
     public void testCreateView() {
         //XXX - grails create-view should be called instead of a wizard
         //Create view
@@ -95,6 +104,10 @@ public class GrailsActionsTest extends GrailsTestCase {
 //        getDomainClassNode("Author").performPopupAction(label); //NOI18N
     }
 
+    /**
+     * Test Go to Controller action
+     *
+     */
     public void testGotoController() {
         //Go to Grails Controller
         Action a = getGrailsNavigateAction("CTL_GotoControllerAction"); //NOI18N
@@ -110,6 +123,10 @@ public class GrailsActionsTest extends GrailsTestCase {
 //        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
     }
 
+    /**
+     * Test Go to View action
+     *
+     */
     public void testGotoView() {
         //Go to Grails View
         Action a = getGrailsNavigateAction("CTL_GotoViewAction"); //NOI18N
@@ -125,6 +142,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
     }
 
+    /**
+     * Test Go to Domain class action
+     *
+     */
     public void testGotoDomainClass() throws InterruptedException, InvocationTargetException {
         //XXX - no direct UI entry to this action
         final GotoDomainClassAction a = new GotoDomainClassAction();
@@ -148,6 +169,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
     }
 
+    /**
+     * Test grails project Run and Stop actions
+     *
+     */
     public void testStopApp() {
         //XXX - better to have ability to not open browser during run
         //      (remove TestURLDisplayer)
@@ -181,7 +206,7 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     private Action getGrailsNavigateAction(String key) {
-        String groupLabel = "Navigate";
+        String groupLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.Bundle", "Editors/text/x-gsp/Popup/goto");
         String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", key);
         return new Action(null, groupLabel + "|" + actionLabel); //NOI18N
     }
