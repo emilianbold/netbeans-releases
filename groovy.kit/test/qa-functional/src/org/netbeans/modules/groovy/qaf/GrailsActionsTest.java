@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -185,6 +186,19 @@ public class GrailsActionsTest extends GrailsTestCase {
         //      (remove TestURLDisplayer)
         runGrailsApp();
         stopGrailsApp();
+    }
+
+    /**
+     * Test Create war project action
+     *
+     */
+    public void testCreateWar() {
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "LBL_CreateWarFile");
+        getProjectRootNode().performPopupAction(label);
+        waitFor("war", "Done creating WAR"); //NOI18N
+        FilesTabOperator fto = FilesTabOperator.invoke();
+        Node n = new Node(fto.getProjectNode(getProjectName()), getProjectName() + "-0.1.war"); //NOI18N
+        assertNotNull(n);
     }
 
     private Node getDomainClassNode(String domainClass) {
