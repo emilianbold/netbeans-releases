@@ -219,7 +219,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         js.runUserActionTask(t, false);
     }
     
-    public void testX() throws Exception {
+    public void test142212() throws Exception {
         EqualsHashCodeGenerator.randomNumber = 1;
         
         FileObject java = FileUtil.createData(fo, "X.java");
