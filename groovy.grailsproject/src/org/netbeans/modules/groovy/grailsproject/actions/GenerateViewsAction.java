@@ -36,15 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import org.openide.util.NbBundle;
 
-public final class GenerateAllAction extends GenerateAction {
+/**
+ *
+ * @author Petr Hejl
+ */
+public final class GenerateViewsAction extends GenerateAction {
 
-    public GenerateAllAction() {
-        super("generate-all", NbBundle.getMessage(GenerateAllAction.class, "CTL_GenerateAllAction"));
+    public GenerateViewsAction() {
+        super("generate-views", NbBundle.getMessage(GenerateViewsAction.class, "CTL_GenerateViewsAction"));
     }
 
 }
-
