@@ -53,7 +53,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 import javax.swing.text.StyledDocument;

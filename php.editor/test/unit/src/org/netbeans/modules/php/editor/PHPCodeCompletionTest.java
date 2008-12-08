@@ -139,6 +139,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
     }
 
+    public void testTypesInPHPDOC4() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|^", false);
+    }
+
+    public void testTypesInPHPDOC5() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|   text|^", false);
+    }
+
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
@@ -626,6 +634,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testTypeInCatch() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);
+    }
+
+    public void testMixedType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBookMagazine()->^", false);
+    }
+    public void testMixedType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "$bm->^", false);
+    }
+    public void testMixedType03() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
     }
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {

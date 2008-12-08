@@ -62,8 +62,8 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
 
     private CachedModelSupport cachedModelSupport;
     private IndexScopeImpl indexScope;
-    private Map<ModelElement, List<Occurence<? extends ModelElement>>> occurences =
-            new HashMap<ModelElement, List<Occurence<? extends ModelElement>>>();
+    private Map<ModelElement, List<Occurence>> occurences =
+            new HashMap<ModelElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
 
     public VariableNameImpl createElement(Program program, Variable node) {
@@ -94,16 +94,16 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
         codeMarkers.add(codeMarkerImpl);
     }
 
-    void addOccurence(Occurence<? extends ModelElement> occurence) {
+    void addOccurence(Occurence occurence) {
         final ModelElement declaration = occurence.getDeclaration();
         addOccurence(declaration, occurence);
     }
 
-    void addOccurence(final ModelElement declaration, Occurence<? extends ModelElement> occurence) {
-        List<Occurence<? extends ModelElement>> ocList = occurences.get(declaration);
+    void addOccurence(final ModelElement declaration, Occurence occurence) {
+        List<Occurence> ocList = occurences.get(declaration);
         if (ocList == null) {
-            ocList = new ArrayList<Occurence<? extends ModelElement>>();
-            List<Occurence<? extends ModelElement>> old = occurences.put(declaration, ocList);
+            ocList = new ArrayList<Occurence>();
+            List<Occurence> old = occurences.put(declaration, ocList);
             assert old == null;
         }
         assert occurence != null;
@@ -117,21 +117,21 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     /**
      * @return the occurences
      */
-    List<Occurence<? extends ModelElement>> getOccurences() {
-        List<Occurence<? extends ModelElement>> ocList = new ArrayList<Occurence<? extends ModelElement>>();
-        Collection<List<Occurence<? extends ModelElement>>> values = occurences.values();
-        for (List<Occurence<? extends ModelElement>> list : values) {
+    List<Occurence> getOccurences() {
+        List<Occurence> ocList = new ArrayList<Occurence>();
+        Collection<List<Occurence>> values = occurences.values();
+        for (List<Occurence> list : values) {
             ocList.addAll(list);
         }
         return ocList;
     }
 
-    List<Occurence<? extends ModelElement>> getAllOccurences(ModelElement declaration) {
-        final List<Occurence<? extends ModelElement>> retval = occurences.get(declaration);
-        return retval != null ? retval : Collections.<Occurence<? extends ModelElement>>emptyList();
+    List<Occurence> getAllOccurences(ModelElement declaration) {
+        final List<Occurence> retval = occurences.get(declaration);
+        return retval != null ? retval : Collections.<Occurence>emptyList();
     }
 
-    List<Occurence<? extends ModelElement>> getAllOccurences(Occurence<? extends ModelElement> occurence) {
+    List<Occurence> getAllOccurences(Occurence occurence) {
         return getAllOccurences(occurence.getDeclaration());
     }
 

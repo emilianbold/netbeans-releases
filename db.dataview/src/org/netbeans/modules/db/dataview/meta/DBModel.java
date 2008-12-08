@@ -53,6 +53,7 @@ public final class DBModel extends DBObject<Object> {
 
     private static final String FQ_TBL_NAME_SEPARATOR = "."; // NOI18N
     private Map<String, DBTable> tables;
+    private int dbType;
 
     public DBModel() {
         tables = new HashMap<String, DBTable>();
@@ -117,7 +118,11 @@ public final class DBModel extends DBObject<Object> {
     }
 
     public DBTable getTable(String fqTableName) {
-        return (DBTable) this.tables.get(fqTableName);
+        return this.tables.get(fqTableName);
+    }
+
+    public int getDBType() {
+        return dbType;
     }
 
     @Override
@@ -132,5 +137,9 @@ public final class DBModel extends DBObject<Object> {
     @Override
     public String toString() {
         return this.getDisplayName();
+    }
+
+    void setDBType(int dbType) {
+        this.dbType = dbType;
     }
 }

@@ -1,0 +1,267 @@
+
+
+Document 0
+Searchable Keys:
+  class : FunctionTestCase
+  class-ig : functiontestcase
+  extends : TestCase
+  in : unittest
+  member : __description;D;|PRIVATE|;
+  member : __init__;c;|CONSTRUCTOR|;self,testFunc,setUp,tearDown,description;
+  member : __repr__;F;;self;
+  member : __setUpFunc;D;|PRIVATE|;
+  member : __str__;F;;self;
+  member : __tearDownFunc;D;|PRIVATE|;
+  member : __testFunc;D;|PRIVATE|;
+  member : id;F;;self;
+  member : runTest;F;;self;
+  member : setUp;F;;self;
+  member : shortDescription;F;;self;
+  member : tearDown;F;;self;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : TestCase
+  class-ig : testcase
+  in : unittest
+  member : __call__;F;;self,args,kwds;
+  member : __init__;c;|CONSTRUCTOR|;self,methodName;
+  member : __repr__;F;;self;
+  member : __str__;F;;self;
+  member : _exc_info;F;|PRIVATE|;self;
+  member : _testMethodDoc;D;|PRIVATE|;
+  member : _testMethodName;D;|PRIVATE|;
+  member : assertAlmostEqual;F;;self,first,second,places,msg;
+  member : assertAlmostEquals;F;;self,first,second,places,msg;
+  member : assertEqual;F;;self,first,second,msg;
+  member : assertEquals;F;;self,first,second,msg;
+  member : assertFalse;F;;self,expr,msg;
+  member : assertNotAlmostEqual;F;;self,first,second,places,msg;
+  member : assertNotAlmostEquals;F;;self,first,second,places,msg;
+  member : assertNotEqual;F;;self,first,second,msg;
+  member : assertNotEquals;F;;self,first,second,msg;
+  member : assertRaises;F;;self,excClass,callableObj,args,kwargs;
+  member : assertTrue;F;;self,expr,msg;
+  member : assert_;F;;self,expr,msg;
+  member : countTestCases;F;;self;
+  member : debug;F;;self;
+  member : defaultTestResult;F;;self;
+  member : fail;F;;self,msg;
+  member : failIf;F;;self,expr,msg;
+  member : failIfAlmostEqual;F;;self,first,second,places,msg;
+  member : failIfEqual;F;;self,first,second,msg;
+  member : failUnless;F;;self,expr,msg;
+  member : failUnlessAlmostEqual;F;;self,first,second,places,msg;
+  member : failUnlessEqual;F;;self,first,second,msg;
+  member : failUnlessRaises;F;;self,excClass,callableObj,args,kwargs;
+  member : failureException;D;;
+  member : id;F;;self;
+  member : run;F;;self,result;
+  member : setUp;F;;self;
+  member : shortDescription;F;;self;
+  member : tearDown;F;;self;
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  class : TestLoader
+  class-ig : testloader
+  in : unittest
+  member : getTestCaseNames;F;;self,testCaseClass;
+  member : loadTestsFromModule;F;;self,module;
+  member : loadTestsFromName;F;;self,name,module;
+  member : loadTestsFromNames;F;;self,names,module;
+  member : loadTestsFromTestCase;F;;self,testCaseClass;
+  member : sortTestMethodsUsing;D;;
+  member : suiteClass;D;;
+  member : testMethodPrefix;D;;
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  class : TestProgram
+  class-ig : testprogram
+  in : unittest
+  member : USAGE;D;|PRIVATE|;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,module,defaultTest,argv,testRunner,testLoader;
+  member : createTests;F;|PRIVATE|;self;
+  member : defaultTest;D;;
+  member : module;D;;
+  member : parseArgs;F;|PRIVATE|;self,argv;
+  member : progName;D;;
+  member : runTests;F;|PRIVATE|;self;
+  member : test;D;;
+  member : testLoader;D;;
+  member : testNames;D;;
+  member : testRunner;D;;
+  member : usageExit;F;|PRIVATE|;self,msg;
+  member : verbosity;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 4
+Searchable Keys:
+  class : TestResult
+  class-ig : testresult
+  in : unittest
+  member : __init__;c;|CONSTRUCTOR|;self;
+  member : __repr__;F;;self;
+  member : _count_relevant_tb_levels;F;|PRIVATE|;self,tb;
+  member : _exc_info_to_string;F;|PRIVATE|;self,err,test;
+  member : _is_relevant_tb_level;F;|PRIVATE|;self,tb;
+  member : addError;F;;self,test,err;
+  member : addFailure;F;;self,test,err;
+  member : addSuccess;F;;self,test;
+  member : errors;D;;
+  member : failures;D;;
+  member : shouldStop;D;;
+  member : startTest;F;;self,test;
+  member : stop;F;;self;
+  member : stopTest;F;;self,test;
+  member : testsRun;D;;
+  member : wasSuccessful;F;;self;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  class : TestSuite
+  class-ig : testsuite
+  in : unittest
+  member : __call__;F;;self,args,kwds;
+  member : __init__;c;|CONSTRUCTOR|;self,tests;
+  member : __iter__;F;;self;
+  member : __repr__;F;;self;
+  member : __str__;F;;self;
+  member : _tests;D;|PRIVATE|;
+  member : addTest;F;;self,test;
+  member : addTests;F;;self,tests;
+  member : countTestCases;F;;self;
+  member : debug;F;;self;
+  member : run;F;;self,result;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  class : TextTestRunner
+  class-ig : texttestrunner
+  in : unittest
+  member : __init__;c;|CONSTRUCTOR|;self,stream,descriptions,verbosity;
+  member : _makeResult;F;|PRIVATE|;self;
+  member : descriptions;D;;
+  member : run;F;;self,test;
+  member : stream;D;;
+  member : verbosity;D;;
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  class : _TextTestResult
+  class-ig : _texttestresult
+  extends : TestResult
+  in : unittest
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,stream,descriptions,verbosity;
+  member : addError;F;|PRIVATE|;self,test,err;
+  member : addFailure;F;|PRIVATE|;self,test,err;
+  member : addSuccess;F;|PRIVATE|;self,test;
+  member : descriptions;D;;
+  member : dots;D;;
+  member : getDescription;F;|PRIVATE|;self,test;
+  member : printErrorList;F;|PRIVATE|;self,flavour,errors;
+  member : printErrors;F;|PRIVATE|;self;
+  member : separator1;D;|PRIVATE|;
+  member : separator2;D;|PRIVATE|;
+  member : showAll;D;;
+  member : startTest;F;|PRIVATE|;self,test;
+  member : stream;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 8
+Searchable Keys:
+  class : _WritelnDecorator
+  class-ig : _writelndecorator
+  in : unittest
+  member : __getattr__;F;|PRIVATE|;self,attr;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,stream;
+  member : stream;D;;
+  member : writeln;F;|PRIVATE|;self,arg;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 9
+Searchable Keys:
+  class : main
+  class-ig : main
+  in : unittest
+  member : USAGE;D;|PRIVATE|;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,module,defaultTest,argv,testRunner,testLoader;
+  member : createTests;F;|PRIVATE|;self;
+  member : defaultTest;D;;
+  member : module;D;;
+  member : parseArgs;F;|PRIVATE|;self,argv;
+  member : progName;D;;
+  member : runTests;F;|PRIVATE|;self;
+  member : test;D;;
+  member : testLoader;D;;
+  member : testNames;D;;
+  member : testRunner;D;;
+  member : usageExit;F;|PRIVATE|;self,msg;
+  member : verbosity;D;;
+
+Not Searchable Keys:
+
+
+Document 10
+Searchable Keys:
+  item : False;D;|PRIVATE|;
+  item : FunctionTestCase;C;;
+  item : TestCase;C;;
+  item : TestLoader;C;;
+  item : TestProgram;C;|PRIVATE|;
+  item : TestResult;C;;
+  item : TestSuite;C;;
+  item : TextTestRunner;C;;
+  item : True;D;|PRIVATE|;
+  item : _TextTestResult;C;|PRIVATE|;
+  item : _WritelnDecorator;C;|PRIVATE|;
+  item : __all__;D;;
+  item : __author__;D;|PRIVATE|;
+  item : __email__;D;|PRIVATE|;
+  item : __metaclass__;D;|PRIVATE|;
+  item : __unittest;D;|PRIVATE|;
+  item : __version__;D;|PRIVATE|;
+  item : _makeLoader;F;|PRIVATE|;prefix,sortUsing,suiteClass;
+  item : _strclass;F;|PRIVATE|;cls;
+  item : defaultTestLoader;D;;
+  item : findTestCases;F;;module,prefix,sortUsing,suiteClass;
+  item : getTestCaseNames;F;;testCaseClass,prefix,sortUsing;
+  item : isinstance;F;|PRIVATE|;obj,clsinfo;
+  item : main;C;;
+  item : makeSuite;F;;testCaseClass,prefix,sortUsing,suiteClass;
+  item : os;I;|PRIVATE|;
+  item : sys;I;|PRIVATE|;
+  item : time;I;|PRIVATE|;
+  item : traceback;I;|PRIVATE|;
+  item : types;I;|PRIVATE|;
+  module : unittest
+
+Not Searchable Keys:

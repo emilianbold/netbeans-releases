@@ -91,6 +91,22 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 if (isStoped) {
                     break;
                 }
+                String restrictSourceRoot = null;
+                ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
+                if (p != null) {
+                    String s = (String)p.getValue();
+                    if (s.length() > 0){
+                        restrictSourceRoot = FileUtil.normalizeFile(new File(s)).getAbsolutePath();
+                    }
+                }
+                String restrictCompileRoot = null;
+                p = getProperty(RESTRICT_COMPILE_ROOT);
+                if (p != null) {
+                    String s = (String)p.getValue();
+                    if (s.length() > 0){
+                        restrictCompileRoot = FileUtil.normalizeFile(new File(s)).getAbsolutePath();
+                    }
+                }
                 for(SourceFileProperties f : getSourceFileProperties(file, map)){
                     if (isStoped) {
                         break;
@@ -99,17 +115,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (name == null) {
                         continue;
                     }
-                    ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
-                    if (p != null) {
-                        String s = (String)p.getValue();
-                        if (s.length() > 0 && !name.startsWith(s)){
+                    if (restrictSourceRoot != null) {
+                        if (!name.startsWith(restrictSourceRoot)){
                             continue;
                         }
                     }
-                    p = getProperty(RESTRICT_COMPILE_ROOT);
-                    if (p != null) {
-                        String s = (String)p.getValue();
-                        if (s.length() > 0 && f.getCompilePath() != null && !f.getCompilePath().startsWith(s)){
+                    if (restrictCompileRoot != null) {
+                        if (f.getCompilePath() != null && !f.getCompilePath().startsWith(restrictCompileRoot)){
                             continue;
                         }
                     }

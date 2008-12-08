@@ -477,6 +477,10 @@ public class Reformatter implements ReformatTask {
             ExpressionTree pkg = node.getPackageName();
             if (pkg != null) {
                 blankLines(cs.getBlankLinesBeforePackage());
+                if (!node.getPackageAnnotations().isEmpty()) {
+                    wrapList(cs.wrapAnnotations(), false, false, node.getPackageAnnotations());
+                    newline();
+                }
                 accept(PACKAGE);
                 int old = indent;
                 indent += continuationIndentSize;
@@ -1704,9 +1708,8 @@ public class Reformatter implements ReformatTask {
             accept(COLON);
             int old = indent;
             indent += indentSize;
-            for (Iterator<? extends StatementTree> it = node.getStatements().iterator(); it.hasNext();) {
-                StatementTree stat = it.next();
-                if (stat.getKind() == Tree.Kind.BLOCK && !it.hasNext()) {
+            for (StatementTree stat : node.getStatements()) {
+                if (stat.getKind() == Tree.Kind.BLOCK) {
                     indent = old;
                     scan(stat, p);
                 } else {

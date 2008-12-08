@@ -92,8 +92,6 @@ final class ResultView extends TopComponent {
      */
     private static Reference<ResultView> instance = null;
     
-    private IssuesPanel issuesPanel;
-
     private JPopupMenu pop;
     private PopupListener popL;
     private CloseListener closeL;
@@ -211,30 +209,17 @@ final class ResultView extends TopComponent {
 
     /**
      */
-    void displayIssuesToUser(String title, String[] problems, boolean reqAtt) {
+    void displayIssuesToUser(ReplaceTask task, String title, String[] problems, boolean reqAtt) {
         assert EventQueue.isDispatchThread();
-        assert issuesPanel == null;
 
-        issuesPanel = new IssuesPanel(title, problems);
-        add(issuesPanel, ISSUES_CARD);
-        contentCards.show(this, ISSUES_CARD);
-
+        IssuesPanel issuesPanel = new IssuesPanel(title, problems);
+        searchToViewMap.get(replaceToSearchMap.get(task)).displayIssues(issuesPanel);
         if (!isOpened()) {
             open();
         }
         if (reqAtt) {
             requestAttention(true);
         }
-    }
-
-    /**
-     */
-    void removeIssuesPanel() {
-        if (issuesPanel != null) {
-            remove(issuesPanel);
-            issuesPanel = null;
-        }
-        contentCards.show(this, RESULTS_CARD);
     }
 
     @Override
@@ -334,11 +319,17 @@ final class ResultView extends TopComponent {
             }
         } else if (comp instanceof ResultViewPanel)  {
             remove(comp);
-//            setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
             close();
         } else {
             close();
         }
+        SearchTask sTask = viewToSearchMap.remove(panel);
+        searchToViewMap.remove(sTask);
+        ReplaceTask rTask = searchToReplaceMap.remove(sTask);
+        replaceToSearchMap.remove(rTask);
+
+        Manager.getInstance().startCleaning(sTask.getResultModel());
+
         validate();
     }
 
@@ -347,10 +338,6 @@ final class ResultView extends TopComponent {
         assert EventQueue.isDispatchThread();
 
         Manager.getInstance().searchWindowClosed();
-
-        if (issuesPanel != null) {
-            removeIssuesPanel();
-        }
     }
     
     /**
@@ -366,8 +353,8 @@ final class ResultView extends TopComponent {
     void notifySearchPending(final SearchTask task,final int blockingTask) {
         assert EventQueue.isDispatchThread();
         
-        removeIssuesPanel();
-        
+        ResultViewPanel panel = task.getResultModel().getResultView();
+        panel.removeIssuesPanel();
         String msgKey = null;
         switch (blockingTask) {
             case Manager.SEARCHING:
@@ -382,7 +369,6 @@ final class ResultView extends TopComponent {
             default:
                 assert false;
         }
-        ResultViewPanel panel = task.getResultModel().getResultView();
         panel.setRootDisplayName(NbBundle.getMessage(ResultView.class, msgKey));
         panel.setBtnStopEnabled(true);
         panel.setBtnReplaceEnabled(false);
@@ -395,11 +381,8 @@ final class ResultView extends TopComponent {
         ResultViewPanel panel = task.getResultModel().getResultView();
         switch (changeType) {
             case Manager.EVENT_SEARCH_STARTED:
-                removeIssuesPanel();
-                if (!searchMap.containsKey(task))
-                    addTabPanel(panel);
-                else
-                    updateTabTitle(panel);
+                panel.removeIssuesPanel();
+                updateTabTitle(panel);
                 panel.searchStarted();
                 break;
             case Manager.EVENT_SEARCH_FINISHED:
@@ -424,39 +407,51 @@ final class ResultView extends TopComponent {
 //        mainPanel.updateShowAllDetailsBtn();
     }
 
-    private Map<SearchTask, ResultViewPanel> searchMap = new HashMap();
+    private Map<SearchTask, ResultViewPanel> searchToViewMap = new HashMap();
+    private Map<ResultViewPanel, SearchTask> viewToSearchMap = new HashMap();
 
     void addSearchPair(ResultViewPanel panel, SearchTask task){
-        searchMap.put(task, panel);
+        if ((task != null) && (panel != null)){
+            SearchTask oldTask = viewToSearchMap.get(panel);
+            if (oldTask != null){
+                searchToViewMap.remove(oldTask);
+            }
+            searchToViewMap.put(task, panel);
+            viewToSearchMap.put(panel, task);
+        }
+    }
+
+    private Map<ReplaceTask, SearchTask> replaceToSearchMap = new HashMap();
+    private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
+
+    void addReplacePair(ReplaceTask taskReplace, ResultViewPanel panel){
+        if ((taskReplace != null) && (panel != null)){
+            SearchTask taskSearch = viewToSearchMap.get(panel);
+            replaceToSearchMap.put(taskReplace, taskSearch);
+            searchToReplaceMap.put(taskSearch, taskReplace);
+        }
     }
 
     synchronized ResultViewPanel initiateResultView(SearchTask task){
         assert EventQueue.isDispatchThread();
 
-        ResultViewPanel panel = searchMap.get(task);
-        if (panel == null)
+        ResultViewPanel panel = searchToViewMap.get(task);
+        if (panel == null){
             panel = new ResultViewPanel();
+            addSearchPair(panel, task);
+            addTabPanel(panel);
+        }
         panel.setName("Results for '" + task.getSearchCriteria().getTextPatternExpr() + "'"); //NOI18N
         return panel;
     }
     
-    /** Set new model. */
-/*
-    synchronized void setResultModel(final ResultModel resultModel) {
-        assert EventQueue.isDispatchThread();
-        
-        if (resultModel == null) {
-            return;
-        }
-        mainPanel.setResultModel(resultModel);
-    }
-*/
     /**
      */
-    void closeAndSendFocusToEditor() {
+    void closeAndSendFocusToEditor(ReplaceTask task) {
         assert EventQueue.isDispatchThread();
-        
-        close();
+
+        removePanel(searchToViewMap.get(replaceToSearchMap.get(task)));
+//        close();
         
         Mode m = WindowManager.getDefault().findMode("editor");         //NOI18N
         if (m != null) {
@@ -469,11 +464,19 @@ final class ResultView extends TopComponent {
         
     /**
      */
-    void rescan() {
+    void rescan(ReplaceTask task) {
         assert EventQueue.isDispatchThread();
-        
-        removeIssuesPanel();
-        Manager.getInstance().scheduleSearchTaskRerun();
+
+        SearchTask lastSearchTask = replaceToSearchMap.get(task);
+        SearchTask newSearchTask = lastSearchTask.createNewGeneration();
+        if(lastSearchTask.getResultModel() != null){
+            ResultViewPanel panel = lastSearchTask.getResultModel().getResultView();
+            if (panel != null){
+                ResultView.getInstance().addSearchPair(lastSearchTask.getResultModel().getResultView(), newSearchTask);
+                panel.removeIssuesPanel();
+            }
+        }
+        Manager.getInstance().scheduleSearchTask(newSearchTask);
     }
 
     @Override

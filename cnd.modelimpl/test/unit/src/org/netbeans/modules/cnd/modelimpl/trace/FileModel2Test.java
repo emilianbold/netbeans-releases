@@ -175,4 +175,8 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz151957_namespace_alias.cc");
     }
 
+    public void testIZ154349() throws Exception {
+        // IZ#154349: wrongly flagged errors for destructor during template specialization
+        performTest("iz154349.cc");
+    }
 }

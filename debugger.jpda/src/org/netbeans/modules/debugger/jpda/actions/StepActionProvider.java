@@ -205,10 +205,7 @@ implements Executor {
                 getDebuggerImpl ().resume ();
             }
         } catch (VMDisconnectedException e) {
-            ErrorManager.getDefault().notify(ErrorManager.USER,
-                ErrorManager.getDefault().annotate(e,
-                    NbBundle.getMessage(StepActionProvider.class,
-                        "VMDisconnected")));
+            // Debugger is disconnected => the action will be ignored.
         }
         //S ystem.out.println("/nStepAction.doAction end");
     }

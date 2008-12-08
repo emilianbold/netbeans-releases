@@ -78,6 +78,124 @@ public class OccurrencesFinderImplTest extends TestBase {
                                true);
     }*/
 
+    public void testGotoConstructTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "class MyClassConstr  {",
+                "class ^MyClassConstr^  {",
+                "class MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
+                "class MyClassConstr2 extends ^MyClassConstr^  {}//MyClassConstr2",
+                "$a = new MyClassConstr();",
+                "$a = new ^MyCla|ssConstr^();"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testGotoConstructTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "class MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
+                "class ^MyClassConstr2^ extends MyClassConstr  {}//MyClassConstr2",
+                "$b = new MyClassConstr2();",
+                "$b = new ^MyClass|Constr2^();"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {//function",
+                "function test($^hello^) {//function",
+                "* @param Book $hello",
+                "* @param Book $^he|llo^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testMarkReturnsOnConstructorTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Author",
+                "^funct|ion ^__construct() {}//Author"
+                );
+        performTestOccurrences(markTest, true);
+    }
+    public void testMarkReturnsOnConstructorTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function __construct() {}//Book",
+                "^funct|ion ^__construct() {}//Book"
+                );
+        performTestOccurrences(markTest, true);
+    }
+    public void testClsVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "class Author {",
+                "class ^Author^ {",
+                " * @property Author $author hello this is doc",
+                " * @property ^Author^ $author hello this is doc",
+                "* @return Author",
+                "* @return ^Aut|hor^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testIfaceTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "class mycls implements myface {",
+                "class mycls implements ^my|face^ {",
+                "interface myface {",
+                "interface ^myface^ {",
+                "myface::RECOVER_ORIG;",
+                "^myface^::RECOVER_ORIG;",
+                "function function_face(myface $a) {",
+                "function function_face(^myface^ $a) {"
+                );
+
+        performTestOccurrences(ifaceTest, true);
+    }
+
+    public void testIfaceTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 1;",
+                "const ^REC|OVER_ORIG^ = 1;",
+                "mycls::RECOVER_ORIG;",
+                "mycls::^RECOVER_ORIG^;"
+                );
+
+        performTestOccurrences(ifaceTest, true);
+    }
+
+    public void testIfaceTest3() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "class mycls implements myface {",
+                "class ^my|cls^ implements myface {",
+                "mycls::RECOVER_ORIG;",
+                "^mycls^::RECOVER_ORIG;",
+                "function function_cls(mycls $a) {",
+                "function function_cls(^mycls^ $a) {"
+                );
+
+        performTestOccurrences(ifaceTest, true);
+    }
+
+    public void testIfaceTest4() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 2;",
+                "const ^RECOV|ER_ORIG^ = 2;",
+                "myface::RECOVER_ORIG;",
+                "myface::^RECOVER_ORIG^;"
+                );
+
+        performTestOccurrences(ifaceTest, true);
+    }
+
     public void testOccurrences3() throws Exception {
         performTestOccurrences("<?php\n" +
                                "$name = \"test\";\n" +

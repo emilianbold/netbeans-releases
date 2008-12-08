@@ -83,16 +83,16 @@ import org.openide.util.Exceptions;
 public class SVGFormFileObjectListener implements FileChangeListener, ActiveViewSupport.Listener {
 
     private WeakReference<DesignComponent> component;
-    private WeakReference<DesignComponent> imageComponent;
-    private String propertyName;
+    //private WeakReference<DesignComponent> imageComponent;
+    //private String propertyName;
     private DataEditorView.Kind activatedView;
 
     public SVGFormFileObjectListener(DesignComponent component, DesignComponent imageComponent, String propertyName) {
         assert (component != null);
         assert (imageComponent != null);
         this.component = new WeakReference<DesignComponent>(component);
-        this.imageComponent = new WeakReference<DesignComponent>(imageComponent);
-        this.propertyName = propertyName;
+        //this.imageComponent = new WeakReference<DesignComponent>(imageComponent);
+        //this.propertyName = propertyName;
     }
 
     public void fileFolderCreated(FileEvent fe) {
@@ -304,26 +304,19 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
             DesignComponent form)
     {
         TypeID type = component.getType();
-        if ( type.equals( SVGRadioButtonCD.TYPEID )){
-            String group = component.readProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP).
-                getPrimitiveValue().toString();
-            List<PropertyValue> list = form.readProperty( 
+        if ( type.equals( SVGButtonGroupCD.TYPEID )){
+            List<PropertyValue> list =  form.readProperty( 
                     SVGFormCD.PROP_COMPONENTS).getArray();
             for (PropertyValue propertyValue : list) {
-                String name = propertyValue.getComponent().readProperty( 
-                        ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().toString();
-                if ( group.equals(name)){
-                    ArraySupport.remove( propertyValue.getComponent(), 
-                            SVGButtonGroupCD.PROP_BUTTONS, component );
+                DesignComponent desComponent = propertyValue.getComponent();
+                if ( desComponent.getType().equals( SVGRadioButtonCD.TYPEID)){
+                    DesignComponent buttonGroup = desComponent.readProperty( 
+                            SVGRadioButtonCD.PROP_BUTTON_GROUP).getComponent();
+                    if ( component.equals(buttonGroup)){
+                        desComponent.writeProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP, 
+                                PropertyValue.createNull());
+                    }
                 }
-            }
-        }
-        else if ( type.equals( SVGButtonGroupCD.TYPEID )){
-            List<PropertyValue> list =  component.readProperty( 
-                    SVGButtonGroupCD.PROP_BUTTONS).getArray();
-            for (PropertyValue propertyValue : list) {
-                propertyValue.getComponent().writeProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP, 
-                        MidpTypes.createJavaCodeValue(""));
             }
         }
     }

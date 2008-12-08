@@ -55,6 +55,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
+import javax.swing.JTabbedPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
@@ -62,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -83,7 +85,9 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         List<BuildAction> res = new ArrayList<BuildAction>();
         if (events != null && events.length == 2) {
             if (events[0].getID() == ProjectActionEvent.CLEAN &&
-                events[1].getID() == ProjectActionEvent.BUILD) {
+                events[1].getID() == ProjectActionEvent.BUILD &&
+                (events[1].getConfiguration() instanceof MakeConfiguration)&&
+                ((MakeConfiguration)events[1].getConfiguration()).getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
             }
         }
@@ -116,7 +120,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
         public void executionFinished(int rc) {
-            if (step == 1) {
+            if (step == 1 && rc == 0) {
                 setEnabled(true);
             }
         }
@@ -242,6 +246,19 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             for(Component component : container.getComponents()){
                 if (component instanceof JEditorPane) {
                     return (JEditorPane) component;
+                } else if (component instanceof JTabbedPane){
+                    JTabbedPane jt = (JTabbedPane) component;
+                    if (jt.getComponentCount() > 0) {
+                        Component t = jt.getSelectedComponent();
+                        if (t instanceof JEditorPane) {
+                            return (JEditorPane) t;
+                        } else if (t instanceof Container){
+                            JEditorPane res = findPane((Container)t);
+                            if (res != null) {
+                                return res;
+                            }
+                        }
+                    }
                 } else if (component instanceof Container) {
                     JEditorPane res = findPane((Container)component);
                     if (res != null) {

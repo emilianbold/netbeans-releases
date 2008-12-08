@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -55,6 +56,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_OK;
 import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_WARNING;
 import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_FAILURE;
@@ -68,7 +70,6 @@ import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
  * @author Marian Petras
  */
 final class TestMethodNode extends AbstractNode {
-
     private static final String[] NO_TIME_STATUS_KEYS = new String[] {
                                       null,
                                       "MSG_TestMethodError",            //NOI18N
@@ -83,6 +84,10 @@ final class TestMethodNode extends AbstractNode {
                                       "MSG_TestMethodPassed_HTML",      //NOI18N
                                       "MSG_TestMethodError_HTML",       //NOI18N
                                       "MSG_TestMethodFailed_HTML"};     //NOI18N
+    private static final String[] STATUS_KEYS_HTML_CAUSE = new String[] {
+                                      "MSG_TestMethodPassed_HTML",      //NOI18N
+                                      "MSG_TestMethodError_HTML_cause", //NOI18N
+                                      "MSG_TestMethodFailed_HTML_cause"};//NOI18N
     private static final String[] TIME_STATUS_KEYS_HTML = new String[] {
                                       "MSG_TestMethodPassed_HTML_time", //NOI18N
                                       "MSG_TestMethodError_HTML_time",  //NOI18N
@@ -122,7 +127,22 @@ final class TestMethodNode extends AbstractNode {
 
         String bundleKey;
         Object[] bundleParams;
-        if (testcase.timeMillis == Testcase.NOT_FINISHED_YET) {
+        String cause = null;
+        if (testcase.trouble != null && testcase.trouble.message != null && 
+                !"null".equals(testcase.trouble.message)) { // NOI18N
+            try {
+                cause = XMLUtil.toElementContent(testcase.trouble.message);
+            } catch (CharConversionException ex) {
+                // We're messing with user testoutput - always risky. Don't complain
+                // here, simply fall back to the old behavior of the test runner -
+                // don't include the message
+                cause = null;
+            }
+        }
+        if (cause != null) {
+            bundleKey = STATUS_KEYS_HTML_CAUSE[status];
+            bundleParams = new Object[] { cause };
+        } else if (testcase.timeMillis == Testcase.NOT_FINISHED_YET) {
             bundleKey = STATUS_KEY_INTERRUPTED;
             bundleParams = new Object[] {testcase.name};
         } else if (testcase.timeMillis == Testcase.TIME_UNKNOWN) {
@@ -147,7 +167,22 @@ final class TestMethodNode extends AbstractNode {
         String bundleKey;
         Object bundleParam;
         String color = null;
-        if (testcase.timeMillis == Testcase.NOT_FINISHED_YET) {
+        String cause = null;
+        if (testcase.trouble != null && testcase.trouble.message != null &&
+                !"null".equals(testcase.trouble.message)) { // NOI18N
+            try {
+                cause = XMLUtil.toElementContent(testcase.trouble.message);
+            } catch (CharConversionException ex) {
+                // We're messing with user testoutput - always risky. Don't complain
+                // here, simply fall back to the old behavior of the test runner -
+                // don't include the message
+                cause = null;
+            }
+        }
+        if (cause != null) {
+            bundleKey = STATUS_KEYS_HTML_CAUSE[status];
+            bundleParam = cause;
+        } else if (testcase.timeMillis == Testcase.NOT_FINISHED_YET) {
             bundleKey = STATUS_KEY_INTERRUPTED_HTML;
             bundleParam = null;
             color = COLOR_WARNING;

@@ -63,7 +63,8 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
  * @author PeterLiu
  */
 public class EntityResourceModelBuilder {
-    private Map<String, EntityClassInfo>  entityClassInfoMap;
+
+    private Map<String, EntityClassInfo> entityClassInfoMap;
     EntityResourceBeanModel model;
 
     /** Creates a new instance of ModelBuilder */
@@ -92,6 +93,16 @@ public class EntityResourceModelBuilder {
         List<Entity> ret = new ArrayList<Entity>();
         for (EntityClassInfo info : entityClassInfoMap.values()) {
             ret.add(info.getEntity());
+        }
+        return ret;
+    }
+
+    public List<Entity> getValidEntities() {
+        List<Entity> ret = new ArrayList<Entity>();
+        for (EntityClassInfo info : entityClassInfoMap.values()) {
+            if (info.getIdFieldInfo() != null) {
+                ret.add(info.getEntity());
+            }
         }
         return ret;
     }
@@ -195,9 +206,7 @@ public class EntityResourceModelBuilder {
         return itemBean;
     }
 
-    private void computeRelationship(EntityResourceBean bean, EntityClassInfo info) {
-        String entityClassName = info.getName();
-
+    private void computeRelationship(EntityResourceBean bean, EntityClassInfo info) {      
         for (FieldInfo fieldInfo : info.getFieldInfos()) {
             if (fieldInfo.isRelationship()) {
                 EntityResourceBean foreignBean = null;
@@ -211,20 +220,24 @@ public class EntityResourceModelBuilder {
                 }
 
                 FieldInfo reverseFieldInfo = null;
+                String mappedByField = fieldInfo.getMappedByField();
 
-                for (FieldInfo f : foreignBean.getEntityClassInfo().getFieldInfos()) {
-                    if (f.isOneToOne() || f.isManyToOne()) {
-                        if (f.getSimpleTypeName().equals(entityClassName)) {
-                            reverseFieldInfo = f;
-                            break;
-                        }
-                    } else if (f.isOneToMany() || f.isManyToMany()) {
-                        if (f.getSimpleTypeArgName().equals(entityClassName)) {
-                            reverseFieldInfo = f;
-                            break;
+                if (mappedByField != null) {
+                    reverseFieldInfo = foreignBean.getEntityClassInfo().getFieldInfoByName(mappedByField);
+                } else {
+                    String entityClassName = info.getName();
+                    String fieldName = fieldInfo.getName();
+
+                    for (FieldInfo f : foreignBean.getEntityClassInfo().getFieldInfos()) {
+                        if (f.isRelationship() && (mappedByField = f.getMappedByField()) != null) {
+                            if (mappedByField.equals(fieldName) && f.getEntityClassName().equals(entityClassName)) {
+                                reverseFieldInfo = f;
+                                break;
+                            }
                         }
                     }
                 }
+
                 RelatedEntityResource subResource = new RelatedEntityResource(foreignBean, fieldInfo, reverseFieldInfo);
                 bean.addSubResource(subResource);
 

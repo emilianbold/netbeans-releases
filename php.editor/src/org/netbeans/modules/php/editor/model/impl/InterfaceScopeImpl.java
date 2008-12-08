@@ -88,8 +88,4 @@ final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public List<? extends MethodScope> getInheritedMethods(String queryName) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

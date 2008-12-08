@@ -41,6 +41,8 @@ package org.netbeans.modules.mobility.svgcore.items;
 
 import org.netbeans.modules.mobility.svgcore.items.form.*;
 import java.io.IOException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
@@ -57,10 +59,10 @@ public abstract class SVGBasicShape extends SVGComponentDrop{
         mySnippetPath = snippetPath;
     }
 
-    protected boolean doTransfer() {
+    protected boolean doTransfer(SVGDataObject svgDataObject) {
         try {
             String snippet = getSnippet();
-            String id = getSVGDataObject().getModel().mergeImage(snippet, false);
+            String id = svgDataObject.getModel().mergeImage(snippet, false);
             setSelection(id);
             return true;
         } catch (Exception ex) {
@@ -69,13 +71,33 @@ public abstract class SVGBasicShape extends SVGComponentDrop{
         return false;
     }
     
+    @Override
+    protected boolean doTransfer(JTextComponent target) {
+        try {
+            String snippet = getSnippet();
+            insertToTextComponent(snippet, target);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+
     protected String getSnippet() throws IOException{
-        String text = getSnippetString();
+        String text = loadSnippetString();
         return replaceCoordinates(text);
     }
-    
-    protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGBasicShape.class, mySnippetPath);
+
+    /**
+     * loads snippet string from resource file,
+     * which part is specified in conbstructor.
+     * Path is relative to current class -
+     * getClass().getResourceAsStream(PATH) is used to load resource.
+     * @return snippet String
+     * @throws java.io.IOException
+     */
+    protected String loadSnippetString() throws IOException{
+        return loadSnippetString(getClass(), mySnippetPath);
     }
   
     private String mySnippetPath;

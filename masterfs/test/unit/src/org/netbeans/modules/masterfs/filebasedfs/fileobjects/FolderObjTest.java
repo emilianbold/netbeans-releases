@@ -612,7 +612,36 @@ public class FolderObjTest extends NbTestCase {
         } finally {
             lock.releaseLock();
         }
-    }    
+    }
+
+    /** Tests slashes not allowed for rename (#128818). */
+    public void testRename128818() throws Exception {
+        File test = new File(getWorkDir(), "testrename128818.txt");
+        if (!test.exists()) {
+            assertTrue(test.createNewFile());
+        }
+        FileObject testFo = FileBasedFileSystem.getFileObject(test);
+        assertNotNull(testFo);
+
+        FileLock lock = testFo.lock();
+        assertNotNull(lock);
+        try {
+            try {
+                testFo.rename(lock, "a/b", "abc");
+                fail("Rename should not allow slash in the name.");
+            } catch (IOException ioe) {
+                // OK
+            }
+            try {
+                testFo.rename(lock, "a\\b", "abc");
+                fail("Rename should not allow backslash in the name.");
+            } catch (IOException ioe) {
+                // OK
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
 
     /**
      * Test of getChildren method, of class org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj.

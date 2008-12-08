@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.antlr3</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <subpackages>org.antlr</subpackages>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/stringtemplate-3.2.jar</runtime-relative-path>
+                <binary-origin>external/stringtemplate-3.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/antlr-3.1.1-runtime.jar</runtime-relative-path>
+                <binary-origin>external/antlr-3.1.1-runtime.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/antlr-3.1.1.jar</runtime-relative-path>
+                <binary-origin>external/antlr-3.1.1.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

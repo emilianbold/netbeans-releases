@@ -193,7 +193,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         return cssStyleData.toString();
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -246,9 +246,8 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         gridBagConstraints.weighty = 1.0;
         styleStringPanel.add(styleStringScroll, gridBagConstraints);
 
-        styleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("CSS_STYLE_MNEMONIC").charAt(0));
         styleLabel.setLabelFor(styleTextArea);
-        styleLabel.setText(bundle.getString("CSS_STYLE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(styleLabel, org.openide.util.NbBundle.getMessage(StyleBuilderPanel.class, "CSS_STYLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

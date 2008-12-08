@@ -191,6 +191,10 @@ public class DataView {
         return dataViewUI.getEditButtons();
     }
 
+    public synchronized void setEditable(boolean editable) {
+        dataViewUI.setEditable(editable);
+    }
+
     DataViewDBTable getDataViewDBTable() {
         return tblMeta;
     }
@@ -233,8 +237,11 @@ public class DataView {
         errMessages.clear();
     }
 
-    synchronized void setEditable(boolean editable) {
-        dataViewUI.setEditable(editable);
+    synchronized void removeComponents() {
+        dataViewUI.getParent().setVisible(false);
+        dataViewUI.removeAll();
+        dataViewUI.repaint();
+        dataViewUI.revalidate();
     }
 
     void setInfoStatusText(String statusText) {
@@ -253,8 +260,17 @@ public class DataView {
             errMessages.add(ex);
 
             String title = NbBundle.getMessage(DataView.class, "MSG_error");
-            StatusDisplayer.getDefault().setStatusText(title + ex.getMessage());
+            StatusDisplayer.getDefault().setStatusText(title + ": " + ex.getMessage());
         }
+    }
+
+    synchronized void setErrorStatusText(String message, Throwable ex) {
+        if (ex != null) {
+            errMessages.add(ex);
+        }
+
+        String title = NbBundle.getMessage(DataView.class, "MSG_error");
+        StatusDisplayer.getDefault().setStatusText(title + ": " + message);
     }
 
     void resetToolbar(boolean wasError) {

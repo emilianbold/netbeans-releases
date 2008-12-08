@@ -58,7 +58,7 @@ public final class PhpModifiers extends Modifier {
         for (int mod : bitmask) {
             this.mod |= mod;
         }
-        int accessCheck = 0;
+        /*int accessCheck = 0;
         StringBuilder sb = new StringBuilder("modifiers:");
         if (isPublic()) {
             accessCheck++;
@@ -74,7 +74,7 @@ public final class PhpModifiers extends Modifier {
         }
         if (accessCheck > 1 ) {
             throw new IllegalStateException(sb.toString());
-        }
+        }*/
     }
 
     public int toBitmask() {

@@ -52,13 +52,13 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Whitelist test
+ * Read access test
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  *
  * To run this test do the following:
- * 1. execute test/whitelist/prepare.bat to prepare LimeWare project
- * 2. execute test/whitelist/test.bat to do the measurement
- * 3. execute test/whitelist/unprepare.bat to restore the environment
+ * 1. specify stage = 1 in suite method and run the test
+ *                      to initilize the environment
+ * 2. specify stage = 2 and run the test to perform measurement
  *
  * @author mrkam@netbeans.org
  */
@@ -69,7 +69,7 @@ public class ReadAccessTest extends JellyTestCase {
     private static void initCheckReadAccess() throws IOException {
         if (stage == 2) {
             Set<String> allowedFiles = new HashSet<String>();
-            InputStream is = WhitelistTest.class.getResourceAsStream("allowed-file-reads.txt");
+            InputStream is = ReadAccessTest.class.getResourceAsStream("allowed-file-reads.txt");
             BufferedReader r = new BufferedReader(new InputStreamReader(is));
             for (;;) {
                 String line = r.readLine();

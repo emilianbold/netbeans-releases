@@ -68,6 +68,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JToolBar.Separator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreeCellRenderer;
@@ -80,7 +81,7 @@ import org.openidex.search.SearchType;
 
 /**
  *
- * @author answer
+ * @author kaktus
  */
 class ResultViewPanel extends JPanel{
     /** display the matching string location in context by default? */
@@ -125,6 +126,7 @@ class ResultViewPanel extends JPanel{
      */
     private MessageFormat nodeCountFormatFullText;
 
+    private IssuesPanel issuesPanel;
 
     /**
      * tree view for displaying found objects
@@ -134,6 +136,7 @@ class ResultViewPanel extends JPanel{
     private JSplitPane splitPane;
 
     private final JPanel resultsPanel;
+    private final JToolBar toolBar;
     private JButton btnShowDetails = new JButton();
     private JButton btnModifySearch = new JButton();
     private JButton btnStop = new JButton();
@@ -141,6 +144,7 @@ class ResultViewPanel extends JPanel{
     private JButton btnPrev;
     private JButton btnNext;
     private JToggleButton btnDisplayContext = new JToggleButton();
+    private Separator sepDisplayContext;
 
     /** is the context view visible? */
     private boolean contextViewVisible = false;
@@ -172,7 +176,7 @@ class ResultViewPanel extends JPanel{
 
 
         //Toolbar
-        JToolBar toolBar = new JToolBar(SwingConstants.VERTICAL);
+        toolBar = new JToolBar(SwingConstants.VERTICAL);
         btnDisplayContext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/context.gif", true))); //NOI18N
         btnDisplayContext.setToolTipText(
@@ -183,12 +187,16 @@ class ResultViewPanel extends JPanel{
         btnPrev = new JButton();
         btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/prev.png", true)));    //NOI18N
+        btnPrev.setToolTipText(
+                NbBundle.getMessage(getClass(), "TEXT_BUTTON_PREV_MATCH"));//NOI18N);
         btnNext = new JButton();
         btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/next.png", true)));    //NOI18N
+        btnNext.setToolTipText(
+                NbBundle.getMessage(getClass(), "TEXT_BUTTON_NEXT_MATCH"));//NOI18N);
 
         toolBar.add(btnDisplayContext);
-        toolBar.add(new JToolBar.Separator());
+        toolBar.add(sepDisplayContext = new JToolBar.Separator());
         toolBar.add(btnPrev);
         toolBar.add(btnNext);
         toolBar.setRollover(true);
@@ -509,7 +517,7 @@ class ResultViewPanel extends JPanel{
                             "TEXT_MSG_FOUND_X_NODES_LIMIT",             //NOI18N
                             Integer.valueOf(resultSize),
                             Integer.valueOf(resultModel.getTotalDetailsCount()))
-                            + ' ' + resultModel.getLimitDisplayName());
+                            + ' ' + resultModel.getLimitDisplayName()); //NOI18N
             return;
         }
 
@@ -606,6 +614,31 @@ class ResultViewPanel extends JPanel{
         arrowUpdater.update();
     }
 
+    void displayIssues(IssuesPanel issuesPanel) {
+        if (issuesPanel != null){
+            this.issuesPanel = issuesPanel;
+            remove(toolBar);
+            remove(resultsPanel);
+            add(issuesPanel, BorderLayout.CENTER);
+            validate();
+            repaint();
+        }
+    }
+
+    /**
+     */
+    void removeIssuesPanel() {
+        if (issuesPanel != null) {
+            remove(issuesPanel);
+            add(toolBar, BorderLayout.WEST);
+            add(resultsPanel, BorderLayout.CENTER);
+            issuesPanel = null;
+            validate();
+            repaint();
+        }
+    }
+
+
     /**
      * Enables or disables the <em>Display Context</em> button,
      * according to the result model currently displayed.
@@ -614,7 +647,8 @@ class ResultViewPanel extends JPanel{
      */
     private void updateDisplayContextButton() {
         boolean searchAndReplace = isSearchAndReplace();
-        btnDisplayContext.setEnabled(searchAndReplace);
+        btnDisplayContext.setVisible(searchAndReplace);
+        sepDisplayContext.setVisible(searchAndReplace);
 
         ignoreContextButtonToggle = true;
         try {
@@ -999,8 +1033,9 @@ class ResultViewPanel extends JPanel{
         nodeListener.setSelectionChangeEnabled(false);
         btnReplace.setEnabled(false);
 
-        Manager.getInstance().scheduleReplaceTask(
-                        new ReplaceTask(resultModel.getMatchingObjects()));
+        ReplaceTask taskReplace = new ReplaceTask(resultModel.getMatchingObjects());
+        ResultView.getInstance().addReplacePair(taskReplace, this);
+        Manager.getInstance().scheduleReplaceTask(taskReplace);
     }
 
     void setBtnModifyEnabled(boolean enabled){

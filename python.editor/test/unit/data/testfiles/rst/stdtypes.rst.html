@@ -1,0 +1,2519 @@
+<html><body>
+.. XXX: reference/datamodel and this have quite a few overlaps!
+
+<br><br>
+
+<h2><br><br>
+</h2>
+<h2>Built-in Types
+</h2>
+The following sections describe the standard types that are built into the
+interpreter.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+   Historically (until release 2.2), Python's built-in types have differed from
+   user-defined types because it was not possible to use the built-in types as the
+   basis for object-oriented inheritance. This limitation no longer
+   exists.
+</div>
+The principal built-in types are numerics, sequences, mappings, files, classes,
+instances and exceptions.
+
+<br><br>
+Some operations are supported by several object types; in particular,
+practically all objects can be compared, tested for truth value, and converted
+to a string (with the <a href="func:repr">repr</a> function or the slightly different
+<a href="func:str">str</a> function).  The latter function is implicitly used when an object is
+written by the <a href="func:print">print</a> function.
+
+<br><br>
+
+<br><br>
+<h2>Truth Value Testing
+</h2>
+Any object can be tested for truth value, for use in an <code style="color:#0000e6;">if</code> or
+<code style="color:#0000e6;">while</code> condition or as operand of the Boolean operations below. The
+following values are considered false:
+
+<br><br>
+* <code>None</code>
+* <code>False</code>
+* zero of any numeric type, for example, <code>0</code>, <code>0L</code>, <code>0.0</code>, <code>0j</code>.
+
+<br><br>
+* any empty sequence, for example, <code>''</code>, <code>()</code>, <code>[]</code>.
+
+<br><br>
+* any empty mapping, for example, <code>{}</code>.
+
+<br><br>
+* instances of user-defined classes, if the class defines a <a href="meth:__nonzero__">__nonzero__</a>
+  or <a href="meth:__len__">__len__</a> method, when that method returns the integer zero or
+  <a href="class:bool">bool</a> value <code>False</code>. [#]_
+
+<br><br>
+All other values are considered true --- so objects of many types are always
+true.
+
+<br><br>
+Operations and built-in functions that have a Boolean result always return <code>0</code>
+or <code>False</code> for false and <code>1</code> or <code>True</code> for true, unless otherwise stated.
+(Important exception: the Boolean operations <code>or</code> and <code>and</code> always return
+one of their operands.)
+
+<br><br>
+
+<br><br>
+<h2>Boolean Operations --- <code style="color:#0000e6;">and</code>, <code style="color:#0000e6;">or</code>, <code style="color:#0000e6;">not</code>
+</h2>
+These are the Boolean operations, ordered by ascending priority:
+<pre>+-------------+---------------------------------+-------+
+| Operation   | Result                          | Notes |
++=============+=================================+=======+
+| ``x or y``  | if *x* is false, then *y*, else | \(1)  |
+|             | *x*                             |       |
++-------------+---------------------------------+-------+
+| ``x and y`` | if *x* is false, then *x*, else | \(2)  |
+|             | *y*                             |       |
++-------------+---------------------------------+-------+
+| ``not x``   | if *x* is false, then ``True``, | \(3)  |
+|             | else ``False``                  |       |
++-------------+---------------------------------+-------+
+</pre>
+Notes:
+(1)
+   This is a short-circuit operator, so it only evaluates the second
+   argument if the first one is :const:<code>False</code>.
+
+<br><br>
+(2)
+   This is a short-circuit operator, so it only evaluates the second
+   argument if the first one is :const:<code>True</code>.
+
+<br><br>
+(3)
+   <code>not</code> has a lower priority than non-Boolean operators, so <code>not a == b</code> is
+   interpreted as <code>not (a == b)</code>, and <code>a == not b</code> is a syntax error.
+
+<br><br>
+
+<br><br>
+<h2>Comparisons
+</h2>
+Comparison operations are supported by all objects.  They all have the same
+priority (which is higher than that of the Boolean operations). Comparisons can
+be chained arbitrarily; for example, <code>x &lt; y &lt;= z</code> is equivalent to ``x &lt; y and
+y &lt;= z``, except that <b>y</b> is evaluated only once (but in both cases <b>z</b> is not
+evaluated at all when <code>x &lt; y</code> is found to be false).
+
+<br><br>
+This table summarizes the comparison operations:
+
+<br><br>
+<pre>+------------+-------------------------+-------+
+| Operation  | Meaning                 | Notes |
++============+=========================+=======+
+| ``&lt;``      | strictly less than      |       |
++------------+-------------------------+-------+
+| ``&lt;=``     | less than or equal      |       |
++------------+-------------------------+-------+
+| ``>``      | strictly greater than   |       |
++------------+-------------------------+-------+
+| ``>=``     | greater than or equal   |       |
++------------+-------------------------+-------+
+| ``==``     | equal                   |       |
++------------+-------------------------+-------+
+| ``!=``     | not equal               | \(1)  |
++------------+-------------------------+-------+
+| ``is``     | object identity         |       |
++------------+-------------------------+-------+
+| ``is not`` | negated object identity |       |
++------------+-------------------------+-------+
+</pre>
+Notes:
+(1)
+    <code>!=</code> can also be written <code>&lt;></code>, but this is an obsolete usage
+    kept for backwards compatibility only. New code should always use
+    <code>!=</code>.
+
+<br><br>
+Objects of different types, except different numeric types and different string
+types, never compare equal; such objects are ordered consistently but
+arbitrarily (so that sorting a heterogeneous array yields a consistent result).
+Furthermore, some types (for example, file objects) support only a degenerate
+notion of comparison where any two objects of that type are unequal.  Again,
+such objects are ordered arbitrarily but consistently. The <code>&lt;</code>, <code>&lt;=</code>, <code>></code>
+and <code>>=</code> operators will raise a <a href="exc:TypeError">TypeError</a> exception when any operand is
+a complex number.
+
+<br><br>
+Instances of a class normally compare as non-equal unless the class defines the
+<a href="meth:__cmp__">__cmp__</a> method.  Refer to <code>customization</code>) for information on the
+use of this method to effect object comparisons.
+
+<br><br>
+**Implementation note:** Objects of different types except numbers are ordered
+by their type names; objects of the same types that don't support proper
+comparison are ordered by their address.
+
+<br><br>
+Two more operations with the same syntactic priority, <code>in</code> and <code>not in</code>, are
+supported only by sequence types (below).
+
+<br><br>
+
+<br><br>
+<h2>Numeric Types --- <a href="class:int">int</a>, <a href="class:float">float</a>, <a href="class:long">long</a>, <a href="class:complex">complex</a>
+</h2>
+There are four distinct numeric types: :dfn:`plain integers`, :dfn:`long
+integers`,  :dfn:`floating point numbers`, and :dfn:`complex numbers`. In
+addition, Booleans are a subtype of plain integers. Plain integers (also just
+called :dfn:<code>integers</code>) are implemented using :ctype:<code>long</code> in C, which gives
+them at least 32 bits of precision (<code>sys.maxint</code> is always set to the maximum
+plain integer value for the current platform, the minimum value is
+<code>-sys.maxint - 1</code>).  Long integers have unlimited precision. Floating point
+numbers are implemented using :ctype:<code>double</code> in C. All bets on their precision
+are off unless you happen to know the machine you are working with.
+
+<br><br>
+Complex numbers have a real and imaginary part, which are each implemented using
+:ctype:<code>double</code> in C.  To extract these parts from a complex number <b>z</b>, use
+<code>z.real</code> and <code>z.imag</code>.
+
+<br><br>
+Numbers are created by numeric literals or as the result of built-in functions
+and operators.  Unadorned integer literals (including hex and octal numbers)
+yield plain integers unless the value they denote is too large to be represented
+as a plain integer, in which case they yield a long integer.  Integer literals
+with an <code>'L'</code> or <code>'l'</code> suffix yield long integers (<code>'L'</code> is preferred
+because <code>1l</code> looks too much like eleven!).  Numeric literals containing a
+decimal point or an exponent sign yield floating point numbers.  Appending
+<code>'j'</code> or <code>'J'</code> to a numeric literal yields a complex number with a zero real
+part. A complex numeric literal is the sum of a real and an imaginary part.
+
+<br><br>
+Python fully supports mixed arithmetic: when a binary arithmetic operator has
+operands of different numeric types, the operand with the "narrower" type is
+widened to that of the other, where plain integer is narrower than long integer
+is narrower than floating point is narrower than complex. Comparisons between
+numbers of mixed type use the same rule. [#]_ The constructors <a href="func:int">int</a>,
+<a href="func:long">long</a>, <a href="func:float">float</a>, and <a href="func:complex">complex</a> can be used to produce numbers
+of a specific type.
+
+<br><br>
+All builtin numeric types support the following operations. See
+<code>power</code> and later sections for the operators' priorities.
+
+<br><br>
+<pre>+--------------------+---------------------------------+--------+
+| Operation          | Result                          | Notes  |
++====================+=================================+========+
+| ``x + y``          | sum of *x* and *y*              |        |
++--------------------+---------------------------------+--------+
+| ``x - y``          | difference of *x* and *y*       |        |
++--------------------+---------------------------------+--------+
+| ``x * y``          | product of *x* and *y*          |        |
++--------------------+---------------------------------+--------+
+| ``x / y``          | quotient of *x* and *y*         | \(1)   |
++--------------------+---------------------------------+--------+
+| ``x // y``         | (floored) quotient of *x* and   | (4)(5) |
+|                    | *y*                             |        |
++--------------------+---------------------------------+--------+
+| ``x % y``          | remainder of ``x / y``          | \(4)   |
++--------------------+---------------------------------+--------+
+| ``-x``             | *x* negated                     |        |
++--------------------+---------------------------------+--------+
+| ``+x``             | *x* unchanged                   |        |
++--------------------+---------------------------------+--------+
+| ``abs(x)``         | absolute value or magnitude of  | \(3)   |
+|                    | *x*                             |        |
++--------------------+---------------------------------+--------+
+| ``int(x)``         | *x* converted to integer        | \(2)   |
++--------------------+---------------------------------+--------+
+| ``long(x)``        | *x* converted to long integer   | \(2)   |
++--------------------+---------------------------------+--------+
+| ``float(x)``       | *x* converted to floating point | \(6)   |
++--------------------+---------------------------------+--------+
+| ``complex(re,im)`` | a complex number with real part |        |
+|                    | *re*, imaginary part *im*.      |        |
+|                    | *im* defaults to zero.          |        |
++--------------------+---------------------------------+--------+
+| ``c.conjugate()``  | conjugate of the complex number |        |
+|                    | *c*. (Identity on real numbers) |        |
++--------------------+---------------------------------+--------+
+| ``divmod(x, y)``   | the pair ``(x // y, x % y)``    | (3)(4) |
++--------------------+---------------------------------+--------+
+| ``pow(x, y)``      | *x* to the power *y*            | (3)(7) |
++--------------------+---------------------------------+--------+
+| ``x ** y``         | *x* to the power *y*            | \(7)   |
++--------------------+---------------------------------+--------+
+</pre>
+Notes:
+(1)
+   For (plain or long) integer division, the result is an integer. The result is
+   always rounded towards minus infinity: 1/2 is 0, (-1)/2 is -1, 1/(-2) is -1, and
+   (-1)/(-2) is 0.  Note that the result is a long integer if either operand is a
+   long integer, regardless of the numeric value.
+
+<br><br>
+(2)
+   Conversion from floating point to (long or plain) integer may round or
+   truncate as in C; see functions <a href="func:math.floor">math.floor</a> and <a href="func:math.ceil">math.ceil</a> for
+   well-defined conversions.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Deprecated</b>:  2.6
+      Instead, convert floats to long explicitly with <a href="func:trunc">trunc</a>.
+</div>
+(3)
+   See <code>built-in-funcs</code> for a full description.
+
+<br><br>
+(4)
+   Complex floor division operator, modulo operator, and <a href="func:divmod">divmod</a>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Deprecated</b>:  2.3
+      Instead convert to float using <a href="func:abs">abs</a> if appropriate.
+</div>
+(5)
+   Also referred to as integer division.  The resultant value is a whole integer,
+   though the result's type is not necessarily int.
+
+<br><br>
+(6)
+   float also accepts the strings "nan" and "inf" with an optional prefix "+" 
+   or "-" for Not a Number (NaN) and positive or negative infinity.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+(7)
+   Python defines <code>pow(0, 0)</code> and <code>0 ** 0</code> to be <code>1</code>, as is common for
+   programming languages.
+
+<br><br>
+All <a href="class:numbers.Real">numbers.Real</a> types (<a href="class:int">int</a>, <a href="class:long">long</a>, and
+<a href="class:float">float</a>) also include the following operations:
+
+<br><br>
+<pre>+--------------------+------------------------------------+--------+
+| Operation          | Result                             | Notes  |
++====================+====================================+========+
+| ``trunc(x)``       | *x* truncated to Integral          |        |
++--------------------+------------------------------------+--------+
+| ``round(x[, n])``  | *x* rounded to n digits,           |        |
+|                    | rounding half to even. If n is     |        |
+|                    | omitted, it defaults to 0.         |        |
++--------------------+------------------------------------+--------+
+| ``math.floor(x)``  | the greatest integral float &lt;= *x* |        |
++--------------------+------------------------------------+--------+
+| ``math.ceil(x)``   | the least integral float >= *x*    |        |
++--------------------+------------------------------------+--------+
+</pre>
+.. XXXJH exceptions: overflow (when? what operations?) zerodivision
+
+<br><br>
+
+<br><br>
+<h3>Bit-string Operations on Integer Types
+</h3>
+
+<br><br>
+Plain and long integer types support additional operations that make sense only
+for bit-strings.  Negative numbers are treated as their 2's complement value
+(for long integers, this assumes a sufficiently large number of bits that no
+overflow occurs during the operation).
+
+<br><br>
+The priorities of the binary bitwise operations are all lower than the numeric
+operations and higher than the comparisons; the unary operation <code>~</code> has the
+same priority as the other unary numeric operations (<code>+</code> and <code>-</code>).
+
+<br><br>
+This table lists the bit-string operations sorted in ascending priority:
+
+<br><br>
+<pre>+------------+--------------------------------+----------+
+| Operation  | Result                         | Notes    |
++============+================================+==========+
+| ``x | y``  | bitwise :dfn:`or` of *x* and   |          |
+|            | *y*                            |          |
++------------+--------------------------------+----------+
+| ``x ^ y``  | bitwise :dfn:`exclusive or` of |          |
+|            | *x* and *y*                    |          |
++------------+--------------------------------+----------+
+| ``x &amp; y``  | bitwise :dfn:`and` of *x* and  |          |
+|            | *y*                            |          |
++------------+--------------------------------+----------+
+| ``x &lt;&lt; n`` | *x* shifted left by *n* bits   | (1)(2)   |
++------------+--------------------------------+----------+
+| ``x >> n`` | *x* shifted right by *n* bits  | (1)(3)   |
++------------+--------------------------------+----------+
+| ``~x``     | the bits of *x* inverted       |          |
++------------+--------------------------------+----------+
+</pre>
+Notes:
+(1)
+   Negative shift counts are illegal and cause a <a href="exc:ValueError">ValueError</a> to be raised.
+
+<br><br>
+(2)
+   A left shift by <b>n</b> bits is equivalent to multiplication by <code>pow(2, n)</code>.  A
+   long integer is returned if the result exceeds the range of plain integers.
+
+<br><br>
+(3)
+   A right shift by <b>n</b> bits is equivalent to division by <code>pow(2, n)</code>.
+
+<br><br>
+<h3>Additional Methods on Float
+</h3>
+The float type has some additional methods.
+
+<br><br>
+<a href="meth:float.as_integer_ratio()">float.as_integer_ratio()</a>
+
+<br><br>
+    Return a pair of integers whose ratio is exactly equal to the
+    original float and with a positive denominator.  Raises
+    <a href="exc:OverflowError">OverflowError</a> on infinities and a <a href="exc:ValueError">ValueError</a> on
+    NaNs.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+Two methods support conversion to
+and from hexadecimal strings.  Since Python's floats are stored
+internally as binary numbers, converting a float to or from a
+*decimal* string usually involves a small rounding error.  In
+contrast, hexadecimal strings allow exact representation and
+specification of floating-point numbers.  This can be useful when
+debugging, and in numerical work.
+
+<br><br>
+<a href="meth:float.hex()">float.hex()</a>
+
+<br><br>
+   Return a representation of a floating-point number as a hexadecimal
+   string.  For finite floating-point numbers, this representation
+   will always include a leading <code>0x</code> and a trailing <code>p</code> and
+   exponent.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:float.fromhex(s)">float.fromhex(s)</a>
+   Class method to return the float represented by a hexadecimal
+   string <b>s</b>.  The string <b>s</b> may have leading and trailing
+   whitespace.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+Note that <a href="meth:float.hex">float.hex</a> is an instance method, while
+<a href="meth:float.fromhex">float.fromhex</a> is a class method.
+
+<br><br>
+A hexadecimal string takes the form::
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+   <span style="">[</span><span style="">sign</span><span style="">]</span> <span style="">[</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">0x</span></span><span style="color:#ce7b00;">'</span><span style="">]</span> <span style="">integer</span> <span style="">[</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">.</span></span><span style="color:#ce7b00;">'</span> <span style="">fraction</span><span style="">]</span> <span style="">[</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">p</span></span><span style="color:#ce7b00;">'</span> <span style="">exponent</span><span style="">]</span><span style="color:#000000;"><br></span></pre>
+where the optional <code>sign</code> may by either <code>+</code> or <code>-</code>, <code>integer</code>
+and <code>fraction</code> are strings of hexadecimal digits, and <code>exponent</code>
+is a decimal integer with an optional leading sign.  Case is not
+significant, and there must be at least one hexadecimal digit in
+either the integer or the fraction.  This syntax is similar to the
+syntax specified in section 6.4.4.2 of the C99 standard, and also to
+the syntax used in Java 1.5 onwards.  In particular, the output of
+<a href="meth:float.hex">float.hex</a> is usable as a hexadecimal floating-point literal in
+C or Java code, and hexadecimal strings produced by C's <code>%a</code> format
+character or Java's <code>Double.toHexString</code> are accepted by
+<a href="meth:float.fromhex">float.fromhex</a>.
+
+<br><br>
+Note that the exponent is written in decimal rather than hexadecimal,
+and that it gives the power of 2 by which to multiply the coefficient.
+For example, the hexadecimal string <code>0x3.a7p10</code> represents the
+floating-point number <code>(3 + 10./16 + 7./16**2) * 2.0**10</code>, or
+<code>3740.0</code>::
+
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+   <span style="">>></span><span style="">></span> <span style="">float</span><span style="">.</span><span style="">fromhex</span><span style="">(</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">0x3.a7p10</span></span><span style="color:#ce7b00;">'</span><span style="">)</span><span style="color:#000000;"><br></span>   <span style="color:#000000;">3740.0</span><span style="color:#000000;"><br></span></pre>
+Applying the reverse conversion to <code>3740.0</code> gives a different
+hexadecimal string representing the same number::
+
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+   <span style="">>></span><span style="">></span> <span style="">float</span><span style="">.</span><span style="">hex</span><span style="">(</span><span style="color:#000000;">3740.0</span><span style="">)</span><span style="color:#000000;"><br></span>   <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">0x1.d380000000000p+11</span></span><span style="color:#ce7b00;">'</span><span style="color:#000000;"><br></span></pre>
+<h2>Iterator Types
+</h2>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+Python supports a concept of iteration over containers.  This is implemented
+using two distinct methods; these are used to allow user-defined classes to
+support iteration.  Sequences, described below in more detail, always support
+the iteration methods.
+
+<br><br>
+One method needs to be defined for container objects to provide iteration
+support:
+
+<br><br>
+.. XXX duplicated in reference/datamodel!
+
+<br><br>
+<a href="meth:container.__iter__()">container.__iter__()</a>
+
+<br><br>
+   Return an iterator object.  The object is required to support the iterator
+   protocol described below.  If a container supports different types of
+   iteration, additional methods can be provided to specifically request
+   iterators for those iteration types.  (An example of an object supporting
+   multiple forms of iteration would be a tree structure which supports both
+   breadth-first and depth-first traversal.)  This method corresponds to the
+   <code>tp_iter</code> slot of the type structure for Python objects in the Python/C
+   API.
+
+<br><br>
+The iterator objects themselves are required to support the following two
+methods, which together form the :dfn:`iterator protocol`:
+
+<br><br>
+<a href="meth:iterator.__iter__()">iterator.__iter__()</a>
+
+<br><br>
+   Return the iterator object itself.  This is required to allow both containers
+   and iterators to be used with the <code style="color:#0000e6;">for</code> and <code style="color:#0000e6;">in</code> statements.
+   This method corresponds to the <code>tp_iter</code> slot of the type structure for
+   Python objects in the Python/C API.
+
+<br><br>
+<a href="meth:iterator.next()">iterator.next()</a>
+
+<br><br>
+   Return the next item from the container.  If there are no further items, raise
+   the <a href="exc:StopIteration">StopIteration</a> exception.  This method corresponds to the
+   <code>tp_iternext</code> slot of the type structure for Python objects in the
+   Python/C API.
+
+<br><br>
+Python defines several iterator objects to support iteration over general and
+specific sequence types, dictionaries, and other more specialized forms.  The
+specific types are not important beyond their implementation of the iterator
+protocol.
+
+<br><br>
+The intention of the protocol is that once an iterator's <a href="meth:next">next</a> method
+raises <a href="exc:StopIteration">StopIteration</a>, it will continue to do so on subsequent calls.
+Implementations that do not obey this property are deemed broken.  (This
+constraint was added in Python 2.3; in Python 2.2, various iterators are broken
+according to this rule.)
+
+<br><br>
+Python's :term:<code>generator</code>\s provide a convenient way to implement the iterator
+protocol.  If a container object's <a href="meth:__iter__">__iter__</a> method is implemented as a
+generator, it will automatically return an iterator object (technically, a
+generator object) supplying the <a href="meth:__iter__">__iter__</a> and <a href="meth:next">next</a> methods.
+
+<br><br>
+
+<br><br>
+<h2>Sequence Types --- <a href="class:str">str</a>, <a href="class:unicode">unicode</a>, <a href="class:list">list</a>, <a href="class:tuple">tuple</a>, <a href="class:buffer">buffer</a>, <a href="class:xrange">xrange</a>
+</h2>
+There are six sequence types: strings, Unicode strings, lists, tuples, buffers,
+and xrange objects.
+(For other containers see the built in <a href="class:dict">dict</a>, <a href="class:list">list</a>,
+<a href="class:set">set</a>, and <a href="class:tuple">tuple</a> classes, and the <a href="mod:collections">collections</a>
+module.)
+
+<br><br>
+String literals are written in single or double quotes: <code>'xyzzy'</code>,
+<code>"frobozz"</code>.  See <code>strings</code> for more about string literals.
+Unicode strings are much like strings, but are specified in the syntax
+using a preceding <code>'u'</code> character: <code>u'abc'</code>, <code>u"def"</code>. In addition
+to the functionality described here, there are also string-specific
+methods described in the <code>string-methods</code> section. Lists are
+constructed with square brackets, separating items with commas: <code>[a, b, c]</code>.
+Tuples are constructed by the comma operator (not within square
+brackets), with or without enclosing parentheses, but an empty tuple
+must have the enclosing parentheses, such as <code>a, b, c</code> or <code>()</code>.  A
+single item tuple must have a trailing comma, such as <code>(d,)</code>.
+
+<br><br>
+Buffer objects are not directly supported by Python syntax, but can be created
+by calling the builtin function <a href="func:buffer">buffer</a>.  They don't support
+concatenation or repetition.
+
+<br><br>
+Objects of type xrange are similar to buffers in that there is no specific syntax to
+create them, but they are created using the <a href="func:xrange">xrange</a> function.  They don't
+support slicing, concatenation or repetition, and using <code>in</code>, <code>not in</code>,
+<a href="func:min">min</a> or <a href="func:max">max</a> on them is inefficient.
+
+<br><br>
+Most sequence types support the following operations.  The <code>in</code> and <code>not in</code>
+operations have the same priorities as the comparison operations.  The <code>+</code> and
+<code>*</code> operations have the same priority as the corresponding numeric operations.
+[#]_ Additional methods are provided for <code>typesseq-mutable</code>.
+
+<br><br>
+This table lists the sequence operations sorted in ascending priority
+(operations in the same box have the same priority).  In the table, <b>s</b> and <b>t</b>
+are sequences of the same type; <b>n</b>, <b>i</b> and <b>j</b> are integers:
+
+<br><br>
+<pre>+------------------+--------------------------------+----------+
+| Operation        | Result                         | Notes    |
++==================+================================+==========+
+| ``x in s``       | ``True`` if an item of *s* is  | \(1)     |
+|                  | equal to *x*, else ``False``   |          |
++------------------+--------------------------------+----------+
+| ``x not in s``   | ``False`` if an item of *s* is | \(1)     |
+|                  | equal to *x*, else ``True``    |          |
++------------------+--------------------------------+----------+
+| ``s + t``        | the concatenation of *s* and   | \(6)     |
+|                  | *t*                            |          |
++------------------+--------------------------------+----------+
+| ``s * n, n * s`` | *n* shallow copies of *s*      | \(2)     |
+|                  | concatenated                   |          |
++------------------+--------------------------------+----------+
+| ``s[i]``         | *i*'th item of *s*, origin 0   | \(3)     |
++------------------+--------------------------------+----------+
+| ``s[i:j]``       | slice of *s* from *i* to *j*   | (3)(4)   |
++------------------+--------------------------------+----------+
+| ``s[i:j:k]``     | slice of *s* from *i* to *j*   | (3)(5)   |
+|                  | with step *k*                  |          |
++------------------+--------------------------------+----------+
+| ``len(s)``       | length of *s*                  |          |
++------------------+--------------------------------+----------+
+| ``min(s)``       | smallest item of *s*           |          |
++------------------+--------------------------------+----------+
+| ``max(s)``       | largest item of *s*            |          |
++------------------+--------------------------------+----------+
+</pre>
+Sequence types also support comparisons. In particular, tuples and lists
+are compared lexicographically by comparing corresponding
+elements. This means that to compare equal, every element must compare
+equal and the two sequences must be of the same type and have the same
+length. (For full details see <code>comparisons</code> in the language
+reference.)
+
+<br><br>
+Notes:
+(1)
+   When <b>s</b> is a string or Unicode string object the <code>in</code> and <code>not in</code>
+   operations act like a substring test.  In Python versions before 2.3, <b>x</b> had to
+   be a string of length 1. In Python 2.3 and beyond, <b>x</b> may be a string of any
+   length.
+
+<br><br>
+(2)
+   Values of <b>n</b> less than <code>0</code> are treated as <code>0</code> (which yields an empty
+   sequence of the same type as <b>s</b>).  Note also that the copies are shallow;
+   nested structures are not copied.  This often haunts new Python programmers;
+   consider:
+
+<br><br>
+<code>>>> <span style="">lists</span> <span style="">=</span> <span style="">[</span><span style="">[</span><span style="">]</span><span style="">]</span> <span style="">*</span> <span style="color:#000000;">3</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="color:#000000;"><br></span></code><code>      [[], [], []]</code><br><code>>>> <span style="">lists</span><span style="">[</span><span style="color:#000000;">0</span><span style="">]</span><span style="">.</span><span style="">append</span><span style="">(</span><span style="color:#000000;">3</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="color:#000000;"><br></span></code><code>      [[3], [3], [3]]</code><br>
+<br><br>
+   What has happened is that <code>[[]]</code> is a one-element list containing an empty
+   list, so all three elements of <code>[[]] * 3</code> are (pointers to) this single empty
+   list.  Modifying any of the elements of <code>lists</code> modifies this single list.
+   You can create a list of different lists this way:
+
+<br><br>
+<code>>>> <span style="">lists</span> <span style="">=</span> <span style="">[</span><span style="">[</span><span style="">]</span> <span style="color:#0000e6;">for</span> <span style="">i</span> <span style="color:#0000e6;">in</span> <span style="">range</span><span style="">(</span><span style="color:#000000;">3</span><span style="">)</span><span style="">]</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="">[</span><span style="color:#000000;">0</span><span style="">]</span><span style="">.</span><span style="">append</span><span style="">(</span><span style="color:#000000;">3</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="">[</span><span style="color:#000000;">1</span><span style="">]</span><span style="">.</span><span style="">append</span><span style="">(</span><span style="color:#000000;">5</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="">[</span><span style="color:#000000;">2</span><span style="">]</span><span style="">.</span><span style="">append</span><span style="">(</span><span style="color:#000000;">7</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>>>> <span style="">lists</span><span style="color:#000000;"><br></span></code><code>      [[3], [5], [7]]</code><br>
+<br><br>
+(3)
+   If <b>i</b> or <b>j</b> is negative, the index is relative to the end of the string:
+   <code>len(s) + i</code> or <code>len(s) + j</code> is substituted.  But note that <code>-0</code> is still
+   <code>0</code>.
+
+<br><br>
+(4)
+   The slice of <b>s</b> from <b>i</b> to <b>j</b> is defined as the sequence of items with index
+   <b>k</b> such that <code>i &lt;= k &lt; j</code>.  If <b>i</b> or <b>j</b> is greater than <code>len(s)</code>, use
+   <code>len(s)</code>.  If <b>i</b> is omitted or <code>None</code>, use <code>0</code>.  If <b>j</b> is omitted or
+   <code>None</code>, use <code>len(s)</code>.  If <b>i</b> is greater than or equal to <b>j</b>, the slice is
+   empty.
+
+<br><br>
+(5)
+   The slice of <b>s</b> from <b>i</b> to <b>j</b> with step <b>k</b> is defined as the sequence of
+   items with index  <code>x = i + n*k</code> such that <code>0 &lt;= n &lt; (j-i)/k</code>.  In other words,
+   the indices are <code>i</code>, <code>i+k</code>, <code>i+2*k</code>, <code>i+3*k</code> and so on, stopping when
+   <b>j</b> is reached (but never including <b>j</b>).  If <b>i</b> or <b>j</b> is greater than
+   <code>len(s)</code>, use <code>len(s)</code>.  If <b>i</b> or <b>j</b> are omitted or <code>None</code>, they become
+   "end" values (which end depends on the sign of <b>k</b>).  Note, <b>k</b> cannot be zero.
+   If <b>k</b> is <code>None</code>, it is treated like <code>1</code>.
+
+<br><br>
+(6)
+   If <b>s</b> and <b>t</b> are both strings, some Python implementations such as CPython can
+   usually perform an in-place optimization for assignments of the form <code>s=s+t</code>
+   or <code>s+=t</code>.  When applicable, this optimization makes quadratic run-time much
+   less likely.  This optimization is both version and implementation dependent.
+   For performance sensitive code, it is preferable to use the <a href="meth:str.join">str.join</a>
+   method which assures consistent linear concatenation performance across versions
+   and implementations.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+      Formerly, string concatenation never occurred in-place.
+</div>
+<h3>String Methods
+</h3>
+Below are listed the string methods which both 8-bit strings and Unicode objects
+support. Note that none of these methods take keyword arguments.
+
+<br><br>
+In addition, Python's strings support the sequence type methods
+described in the <code>typesseq</code> section. To output formatted strings
+use template strings or the <code>%</code> operator described in the
+<code>string-formatting</code> section. Also, see the <a href="mod:re">re</a> module for
+string functions based on regular expressions.
+
+<br><br>
+<a href="meth:str.capitalize()">str.capitalize()</a>
+
+<br><br>
+   Return a copy of the string with only its first character capitalized.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.center(width[, fillchar])">str.center(width[, fillchar])</a>
+
+<br><br>
+   Return centered in a string of length <b>width</b>. Padding is done using the
+   specified <b>fillchar</b> (default is a space).
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+      Support for the <b>fillchar</b> argument.
+</div>
+<a href="meth:str.count(sub[, start[, end]])">str.count(sub[, start[, end]])</a>
+   Return the number of occurrences of substring <b>sub</b> in the range [<b>start</b>,
+   <b>end</b>].  Optional arguments <b>start</b> and <b>end</b> are interpreted as in slice
+   notation.
+
+<br><br>
+<a href="meth:str.decode([encoding[, errors]])">str.decode([encoding[, errors]])</a>
+
+<br><br>
+   Decodes the string using the codec registered for <b>encoding</b>. <b>encoding</b>
+   defaults to the default string encoding.  <b>errors</b> may be given to set a
+   different error handling scheme.  The default is <code>'strict'</code>, meaning that
+   encoding errors raise <a href="exc:UnicodeError">UnicodeError</a>.  Other possible values are
+   <code>'ignore'</code>, <code>'replace'</code> and any other name registered via
+   <a href="func:codecs.register_error">codecs.register_error</a>, see section <code>codec-base-classes</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Support for other error handling schemes added.
+</div>
+<a href="meth:str.encode([encoding[,errors]])">str.encode([encoding[,errors]])</a>
+   Return an encoded version of the string.  Default encoding is the current
+   default string encoding.  <b>errors</b> may be given to set a different error
+   handling scheme.  The default for <b>errors</b> is <code>'strict'</code>, meaning that
+   encoding errors raise a <a href="exc:UnicodeError">UnicodeError</a>.  Other possible values are
+   <code>'ignore'</code>, <code>'replace'</code>, <code>'xmlcharrefreplace'</code>, <code>'backslashreplace'</code> and
+   any other name registered via <a href="func:codecs.register_error">codecs.register_error</a>, see section
+   <code>codec-base-classes</code>. For a list of possible encodings, see section
+   <code>standard-encodings</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.0
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Support for <code>'xmlcharrefreplace'</code> and <code>'backslashreplace'</code> and other error
+      handling schemes added.
+</div>
+<a href="meth:str.endswith(suffix[, start[, end]])">str.endswith(suffix[, start[, end]])</a>
+   Return <code>True</code> if the string ends with the specified <b>suffix</b>, otherwise return
+   <code>False</code>.  <b>suffix</b> can also be a tuple of suffixes to look for.  With optional
+   <b>start</b>, test beginning at that position.  With optional <b>end</b>, stop comparing
+   at that position.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.5
+      Accept tuples as <b>suffix</b>.
+</div>
+<a href="meth:str.expandtabs([tabsize])">str.expandtabs([tabsize])</a>
+   Return a copy of the string where all tab characters are replaced by one or
+   more spaces, depending on the current column and the given tab size.  The
+   column number is reset to zero after each newline occurring in the string.
+   If <b>tabsize</b> is not given, a tab size of <code>8</code> characters is assumed.  This
+   doesn't understand other non-printing characters or escape sequences.
+
+<br><br>
+<a href="meth:str.find(sub[, start[, end]])">str.find(sub[, start[, end]])</a>
+
+<br><br>
+   Return the lowest index in the string where substring <b>sub</b> is found, such that
+   <b>sub</b> is contained in the range [<b>start</b>, <b>end</b>].  Optional arguments <b>start</b>
+   and <b>end</b> are interpreted as in slice notation.  Return <code>-1</code> if <b>sub</b> is not
+   found.
+
+<br><br>
+<a href="meth:str.format(format_string, *args, **kwargs)">str.format(format_string, *args, **kwargs)</a>
+
+<br><br>
+   Perform a string formatting operation.  The <b>format_string</b> argument can
+   contain literal text or replacement fields delimited by braces <code>{}</code>.  Each
+   replacement field contains either the numeric index of a positional argument,
+   or the name of a keyword argument.  Returns a copy of <b>format_string</b> where
+   each replacement field is replaced with the string value of the corresponding
+   argument.
+
+<br><br>
+<code>>>> <span style="color:#ce7b00;">"</span><span style="color:#ce7b00"><span style="color:#ce7b00;">The sum of 1 + 2 is {0}</span></span><span style="color:#ce7b00;">"</span><span style="">.</span><span style="">format</span><span style="">(</span><span style="color:#000000;">1</span><span style="">+</span><span style="color:#000000;">2</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'The sum of 1 + 2 is 3'</code><br>
+<br><br>
+   See <code>formatstrings</code> for a description of the various formatting options
+   that can be specified in format strings.
+
+<br><br>
+   This method of string formatting is the new standard in Python 3.0, and
+   should be preferred to the <code>%</code> formatting described in
+   <code>string-formatting</code> in new code.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:str.index(sub[, start[, end]])">str.index(sub[, start[, end]])</a>
+   Like <a href="meth:find">find</a>, but raise <a href="exc:ValueError">ValueError</a> when the substring is not found.
+
+<br><br>
+<a href="meth:str.isalnum()">str.isalnum()</a>
+
+<br><br>
+   Return true if all characters in the string are alphanumeric and there is at
+   least one character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.isalpha()">str.isalpha()</a>
+
+<br><br>
+   Return true if all characters in the string are alphabetic and there is at least
+   one character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.isdigit()">str.isdigit()</a>
+
+<br><br>
+   Return true if all characters in the string are digits and there is at least one
+   character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.islower()">str.islower()</a>
+
+<br><br>
+   Return true if all cased characters in the string are lowercase and there is at
+   least one cased character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.isspace()">str.isspace()</a>
+
+<br><br>
+   Return true if there are only whitespace characters in the string and there is
+   at least one character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.istitle()">str.istitle()</a>
+
+<br><br>
+   Return true if the string is a titlecased string and there is at least one
+   character, for example uppercase characters may only follow uncased characters
+   and lowercase characters only cased ones.  Return false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.isupper()">str.isupper()</a>
+
+<br><br>
+   Return true if all cased characters in the string are uppercase and there is at
+   least one cased character, false otherwise.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.join(seq)">str.join(seq)</a>
+
+<br><br>
+   Return a string which is the concatenation of the strings in the sequence <b>seq</b>.
+   The separator between elements is the string providing this method.
+
+<br><br>
+<a href="meth:str.ljust(width[, fillchar])">str.ljust(width[, fillchar])</a>
+
+<br><br>
+   Return the string left justified in a string of length <b>width</b>. Padding is done
+   using the specified <b>fillchar</b> (default is a space).  The original string is
+   returned if <b>width</b> is less than <code>len(s)</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+      Support for the <b>fillchar</b> argument.
+</div>
+<a href="meth:str.lower()">str.lower()</a>
+   Return a copy of the string converted to lowercase.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.lstrip([chars])">str.lstrip([chars])</a>
+
+<br><br>
+   Return a copy of the string with leading characters removed.  The <b>chars</b>
+   argument is a string specifying the set of characters to be removed.  If omitted
+   or <code>None</code>, the <b>chars</b> argument defaults to removing whitespace.  The <b>chars</b>
+   argument is not a prefix; rather, all combinations of its values are stripped:
+
+<br><br>
+<code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">   spacious   </span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">lstrip</span><span style="">(</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'spacious   '</code><br><code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#0000ff;">www.example.com</span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">lstrip</span><span style="">(</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">cmowz.</span></span><span style="color:#ce7b00;">'</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'example.com'</code><br><div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.2.2
+      Support for the <b>chars</b> argument.
+</div>
+<a href="meth:str.partition(sep)">str.partition(sep)</a>
+   Split the string at the first occurrence of <b>sep</b>, and return a 3-tuple
+   containing the part before the separator, the separator itself, and the part
+   after the separator.  If the separator is not found, return a 3-tuple containing
+   the string itself, followed by two empty strings.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.5
+</div>
+<a href="meth:str.replace(old, new[, count])">str.replace(old, new[, count])</a>
+   Return a copy of the string with all occurrences of substring <b>old</b> replaced by
+   <b>new</b>.  If the optional argument <b>count</b> is given, only the first <b>count</b>
+   occurrences are replaced.
+
+<br><br>
+<a href="meth:str.rfind(sub [,start [,end]])">str.rfind(sub [,start [,end]])</a>
+
+<br><br>
+   Return the highest index in the string where substring <b>sub</b> is found, such that
+   <b>sub</b> is contained within s[start,end].  Optional arguments <b>start</b> and <b>end</b>
+   are interpreted as in slice notation.  Return <code>-1</code> on failure.
+
+<br><br>
+<a href="meth:str.rindex(sub[, start[, end]])">str.rindex(sub[, start[, end]])</a>
+
+<br><br>
+   Like <a href="meth:rfind">rfind</a> but raises <a href="exc:ValueError">ValueError</a> when the substring <b>sub</b> is not
+   found.
+
+<br><br>
+<a href="meth:str.rjust(width[, fillchar])">str.rjust(width[, fillchar])</a>
+
+<br><br>
+   Return the string right justified in a string of length <b>width</b>. Padding is done
+   using the specified <b>fillchar</b> (default is a space). The original string is
+   returned if <b>width</b> is less than <code>len(s)</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+      Support for the <b>fillchar</b> argument.
+</div>
+<a href="meth:str.rpartition(sep)">str.rpartition(sep)</a>
+   Split the string at the last occurrence of <b>sep</b>, and return a 3-tuple
+   containing the part before the separator, the separator itself, and the part
+   after the separator.  If the separator is not found, return a 3-tuple containing
+   two empty strings, followed by the string itself.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.5
+</div>
+<a href="meth:str.rsplit([sep [,maxsplit]])">str.rsplit([sep [,maxsplit]])</a>
+   Return a list of the words in the string, using <b>sep</b> as the delimiter string.
+   If <b>maxsplit</b> is given, at most <b>maxsplit</b> splits are done, the <b>rightmost</b>
+   ones.  If <b>sep</b> is not specified or <code>None</code>, any whitespace string is a
+   separator.  Except for splitting from the right, <a href="meth:rsplit">rsplit</a> behaves like
+   <a href="meth:split">split</a> which is described in detail below.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.4
+</div>
+<a href="meth:str.rstrip([chars])">str.rstrip([chars])</a>
+   Return a copy of the string with trailing characters removed.  The <b>chars</b>
+   argument is a string specifying the set of characters to be removed.  If omitted
+   or <code>None</code>, the <b>chars</b> argument defaults to removing whitespace.  The <b>chars</b>
+   argument is not a suffix; rather, all combinations of its values are stripped:
+
+<br><br>
+<code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">   spacious   </span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">rstrip</span><span style="">(</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      '   spacious'</code><br><code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">mississippi</span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">rstrip</span><span style="">(</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">ipz</span></span><span style="color:#ce7b00;">'</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'mississ'</code><br><div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.2.2
+      Support for the <b>chars</b> argument.
+</div>
+<a href="meth:str.split([sep[, maxsplit]])">str.split([sep[, maxsplit]])</a>
+   Return a list of the words in the string, using <b>sep</b> as the delimiter
+   string.  If <b>maxsplit</b> is given, at most <b>maxsplit</b> splits are done (thus,
+   the list will have at most <code>maxsplit+1</code> elements).  If <b>maxsplit</b> is not
+   specified, then there is no limit on the number of splits (all possible
+   splits are made).
+
+<br><br>
+   If <b>sep</b> is given, consecutive delimiters are not grouped together and are
+   deemed to delimit empty strings (for example, <code>'1,,2'.split(',')</code> returns
+   <code>['1', '', '2']</code>).  The <b>sep</b> argument may consist of multiple characters
+   (for example, <code>'1&lt;>2&lt;>3'.split('&lt;>')</code> returns <code>['1', '2', '3']</code>).
+   Splitting an empty string with a specified separator returns <code>['']</code>.
+
+<br><br>
+   If <b>sep</b> is not specified or is <code>None</code>, a different splitting algorithm is
+   applied: runs of consecutive whitespace are regarded as a single separator,
+   and the result will contain no empty strings at the start or end if the
+   string has leading or trailing whitespace.  Consequently, splitting an empty
+   string or a string consisting of just whitespace with a <code>None</code> separator
+   returns <code>[]</code>.
+
+<br><br>
+   For example, <code>' 1  2   3  '.split()</code> returns <code>['1', '2', '3']</code>, and
+   <code>'  1  2   3  '.split(None, 1)</code> returns <code>['1', '2   3  ']</code>.
+
+<br><br>
+<a href="meth:str.splitlines([keepends])">str.splitlines([keepends])</a>
+
+<br><br>
+   Return a list of the lines in the string, breaking at line boundaries.  Line
+   breaks are not included in the resulting list unless <b>keepends</b> is given and
+   true.
+
+<br><br>
+<a href="meth:str.startswith(prefix[, start[, end]])">str.startswith(prefix[, start[, end]])</a>
+
+<br><br>
+   Return <code>True</code> if string starts with the <b>prefix</b>, otherwise return <code>False</code>.
+   <b>prefix</b> can also be a tuple of prefixes to look for.  With optional <b>start</b>,
+   test string beginning at that position.  With optional <b>end</b>, stop comparing
+   string at that position.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.5
+      Accept tuples as <b>prefix</b>.
+</div>
+<a href="meth:str.strip([chars])">str.strip([chars])</a>
+   Return a copy of the string with the leading and trailing characters removed.
+   The <b>chars</b> argument is a string specifying the set of characters to be removed.
+   If omitted or <code>None</code>, the <b>chars</b> argument defaults to removing whitespace.
+   The <b>chars</b> argument is not a prefix or suffix; rather, all combinations of its
+   values are stripped:
+
+<br><br>
+<code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">   spacious   </span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">strip</span><span style="">(</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'spacious'</code><br><code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#0000ff;">www.example.com</span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">strip</span><span style="">(</span><span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">cmowz.</span></span><span style="color:#ce7b00;">'</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'example'</code><br><div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.2.2
+      Support for the <b>chars</b> argument.
+</div>
+<a href="meth:str.swapcase()">str.swapcase()</a>
+   Return a copy of the string with uppercase characters converted to lowercase and
+   vice versa.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.title()">str.title()</a>
+
+<br><br>
+   Return a titlecased version of the string: words start with uppercase
+   characters, all remaining cased characters are lowercase.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.translate(table[, deletechars])">str.translate(table[, deletechars])</a>
+
+<br><br>
+   Return a copy of the string where all characters occurring in the optional
+   argument <b>deletechars</b> are removed, and the remaining characters have been
+   mapped through the given translation table, which must be a string of length
+   256.
+
+<br><br>
+   You can use the <a href="func:maketrans">maketrans</a> helper function in the <a href="mod:string">string</a> module to
+   create a translation table. For string objects, set the <b>table</b> argument to
+   <code>None</code> for translations that only delete characters:
+
+<br><br>
+<code>>>> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">read this short text</span></span><span style="color:#ce7b00;">'</span><span style="">.</span><span style="">translate</span><span style="">(</span><span style="">None</span><span style="">,</span> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">aeiou</span></span><span style="color:#ce7b00;">'</span><span style="">)</span><span style="color:#000000;"><br></span></code><code>      'rd ths shrt txt'</code><br><div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+      Support for a <code>None</code> <b>table</b> argument.
+</div>
+   For Unicode objects, the <a href="meth:translate">translate</a> method does not accept the optional
+   <b>deletechars</b> argument.  Instead, it returns a copy of the <b>s</b> where all
+   characters have been mapped through the given translation table which must be a
+   mapping of Unicode ordinals to Unicode ordinals, Unicode strings or <code>None</code>.
+   Unmapped characters are left untouched. Characters mapped to <code>None</code> are
+   deleted.  Note, a more flexible approach is to create a custom character mapping
+   codec using the <a href="mod:codecs">codecs</a> module (see <a href="mod:encodings.cp1251">encodings.cp1251</a> for an
+   example).
+
+<br><br>
+<a href="meth:str.upper()">str.upper()</a>
+
+<br><br>
+   Return a copy of the string converted to uppercase.
+
+<br><br>
+   For 8-bit strings, this method is locale-dependent.
+
+<br><br>
+<a href="meth:str.zfill(width)">str.zfill(width)</a>
+
+<br><br>
+   Return the numeric string left filled with zeros in a string of length
+   <b>width</b>.  A sign prefix is handled correctly.  The original string is
+   returned if <b>width</b> is less than <code>len(s)</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2.2
+</div>
+The following methods are present only on unicode objects:
+<a href="meth:unicode.isnumeric()">unicode.isnumeric()</a>
+
+<br><br>
+   Return <code>True</code> if there are only numeric characters in S, <code>False</code>
+   otherwise. Numeric characters include digit characters, and all characters
+   that have the Unicode numeric value property, e.g. U+2155,
+   VULGAR FRACTION ONE FIFTH.
+
+<br><br>
+<a href="meth:unicode.isdecimal()">unicode.isdecimal()</a>
+
+<br><br>
+   Return <code>True</code> if there are only decimal characters in S, <code>False</code>
+   otherwise. Decimal characters include digit characters, and all characters
+   that that can be used to form decimal-radix numbers, e.g. U+0660,
+   ARABIC-INDIC DIGIT ZERO.
+
+<br><br>
+
+<br><br>
+<h3>String Formatting Operations
+</h3>
+String and Unicode objects have one unique built-in operation: the <code>%</code>
+operator (modulo).  This is also known as the string <b>formatting</b> or
+*interpolation* operator.  Given <code>format % values</code> (where <b>format</b> is a string
+or Unicode object), <code>%</code> conversion specifications in <b>format</b> are replaced
+with zero or more elements of <b>values</b>.  The effect is similar to the using
+:cfunc:<code>sprintf</code> in the C language.  If <b>format</b> is a Unicode object, or if any
+of the objects being converted using the <code>%s</code> conversion are Unicode objects,
+the result will also be a Unicode object.
+
+<br><br>
+If <b>format</b> requires a single argument, <b>values</b> may be a single non-tuple
+object. [#]_  Otherwise, <b>values</b> must be a tuple with exactly the number of
+items specified by the format string, or a single mapping object (for example, a
+dictionary).
+
+<br><br>
+A conversion specifier contains two or more characters and has the following
+components, which must occur in this order:
+
+<br><br>
+#. The <code>'%'</code> character, which marks the start of the specifier.
+
+<br><br>
+#. Mapping key (optional), consisting of a parenthesised sequence of characters
+   (for example, <code>(somename)</code>).
+
+<br><br>
+#. Conversion flags (optional), which affect the result of some conversion
+   types.
+
+<br><br>
+#. Minimum field width (optional).  If specified as an <code>'*'</code> (asterisk), the
+   actual width is read from the next element of the tuple in <b>values</b>, and the
+   object to convert comes after the minimum field width and optional precision.
+
+<br><br>
+#. Precision (optional), given as a <code>'.'</code> (dot) followed by the precision.  If
+   specified as <code>'*'</code> (an asterisk), the actual width is read from the next
+   element of the tuple in <b>values</b>, and the value to convert comes after the
+   precision.
+
+<br><br>
+#. Length modifier (optional).
+
+<br><br>
+#. Conversion type.
+
+<br><br>
+When the right argument is a dictionary (or other mapping type), then the
+formats in the string <b>must</b> include a parenthesised mapping key into that
+dictionary inserted immediately after the <code>'%'</code> character. The mapping key
+selects the value to be formatted from the mapping.  For example:
+
+<br><br>
+<code>>>> <span style="color:#0000e6;">print</span> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">%(language)s has %(#)03d quote types.</span></span><span style="color:#ce7b00;">'</span> <span style="">%</span> <span style="">\</span><span style="color:#000000;"><br></span></code><code>   ...       {'language': "Python", "#": 2}</code><br><code>   Python has 002 quote types.</code><br>
+<br><br>
+In this case no <code>*</code> specifiers may occur in a format (since they require a
+sequential parameter list).
+
+<br><br>
+The conversion flag characters are:
+
+<br><br>
+<pre>+---------+---------------------------------------------------------------------+
+| Flag    | Meaning                                                             |
++=========+=====================================================================+
+| ``'#'`` | The value conversion will use the "alternate form" (where defined   |
+|         | below).                                                             |
++---------+---------------------------------------------------------------------+
+| ``'0'`` | The conversion will be zero padded for numeric values.              |
++---------+---------------------------------------------------------------------+
+| ``'-'`` | The converted value is left adjusted (overrides the ``'0'``         |
+|         | conversion if both are given).                                      |
++---------+---------------------------------------------------------------------+
+| ``' '`` | (a space) A blank should be left before a positive number (or empty |
+|         | string) produced by a signed conversion.                            |
++---------+---------------------------------------------------------------------+
+| ``'+'`` | A sign character (``'+'`` or ``'-'``) will precede the conversion   |
+|         | (overrides a "space" flag).                                         |
++---------+---------------------------------------------------------------------+
+</pre>
+A length modifier (<code>h</code>, <code>l</code>, or <code>L</code>) may be present, but is ignored as it
+is not necessary for Python -- so e.g. <code>%ld</code> is identical to <code>%d</code>.
+
+<br><br>
+The conversion types are:
+
+<br><br>
+<pre>+------------+-----------------------------------------------------+-------+
+| Conversion | Meaning                                             | Notes |
++============+=====================================================+=======+
+| ``'d'``    | Signed integer decimal.                             |       |
++------------+-----------------------------------------------------+-------+
+| ``'i'``    | Signed integer decimal.                             |       |
++------------+-----------------------------------------------------+-------+
+| ``'o'``    | Signed octal value.                                 | \(1)  |
++------------+-----------------------------------------------------+-------+
+| ``'u'``    | Obselete type -- it is identical to ``'d'``.        | \(7)  |
++------------+-----------------------------------------------------+-------+
+| ``'x'``    | Signed hexadecimal (lowercase).                     | \(2)  |
++------------+-----------------------------------------------------+-------+
+| ``'X'``    | Signed hexadecimal (uppercase).                     | \(2)  |
++------------+-----------------------------------------------------+-------+
+| ``'e'``    | Floating point exponential format (lowercase).      | \(3)  |
++------------+-----------------------------------------------------+-------+
+| ``'E'``    | Floating point exponential format (uppercase).      | \(3)  |
++------------+-----------------------------------------------------+-------+
+| ``'f'``    | Floating point decimal format.                      | \(3)  |
++------------+-----------------------------------------------------+-------+
+| ``'F'``    | Floating point decimal format.                      | \(3)  |
++------------+-----------------------------------------------------+-------+
+| ``'g'``    | Floating point format. Uses lowercase exponential   | \(4)  |
+|            | format if exponent is less than -4 or not less than |       |
+|            | precision, decimal format otherwise.                |       |
++------------+-----------------------------------------------------+-------+
+| ``'G'``    | Floating point format. Uses uppercase exponential   | \(4)  |
+|            | format if exponent is less than -4 or not less than |       |
+|            | precision, decimal format otherwise.                |       |
++------------+-----------------------------------------------------+-------+
+| ``'c'``    | Single character (accepts integer or single         |       |
+|            | character string).                                  |       |
++------------+-----------------------------------------------------+-------+
+| ``'r'``    | String (converts any python object using            | \(5)  |
+|            | :func:`repr`).                                      |       |
++------------+-----------------------------------------------------+-------+
+| ``'s'``    | String (converts any python object using            | \(6)  |
+|            | :func:`str`).                                       |       |
++------------+-----------------------------------------------------+-------+
+| ``'%'``    | No argument is converted, results in a ``'%'``      |       |
+|            | character in the result.                            |       |
++------------+-----------------------------------------------------+-------+
+</pre>
+Notes:
+
+<br><br>
+(1)
+   The alternate form causes a leading zero (<code>'0'</code>) to be inserted between
+   left-hand padding and the formatting of the number if the leading character
+   of the result is not already a zero.
+
+<br><br>
+(2)
+   The alternate form causes a leading <code>'0x'</code> or <code>'0X'</code> (depending on whether
+   the <code>'x'</code> or <code>'X'</code> format was used) to be inserted between left-hand padding
+   and the formatting of the number if the leading character of the result is not
+   already a zero.
+
+<br><br>
+(3)
+   The alternate form causes the result to always contain a decimal point, even if
+   no digits follow it.
+
+<br><br>
+   The precision determines the number of digits after the decimal point and
+   defaults to 6.
+
+<br><br>
+(4)
+   The alternate form causes the result to always contain a decimal point, and
+   trailing zeroes are not removed as they would otherwise be.
+
+<br><br>
+   The precision determines the number of significant digits before and after the
+   decimal point and defaults to 6.
+
+<br><br>
+(5)
+   The <code>%r</code> conversion was added in Python 2.0.
+
+<br><br>
+   The precision determines the maximal number of characters used.
+
+<br><br>
+(6)
+   If the object or format provided is a <a href="class:unicode">unicode</a> string, the resulting
+   string will also be <a href="class:unicode">unicode</a>.
+
+<br><br>
+   The precision determines the maximal number of characters used.
+
+<br><br>
+(7)
+   See <a href="http://www.python.org/dev/peps/pep-0237/">PEP 237</a>.
+
+<br><br>
+Since Python strings have an explicit length, <code>%s</code> conversions do not assume
+that <code>'\0'</code> is the end of the string.
+
+<br><br>
+.. XXX Examples?
+
+<br><br>
+For safety reasons, floating point precisions are clipped to 50; <code>%f</code>
+conversions for numbers whose absolute value is over 1e25 are replaced by <code>%g</code>
+conversions. [#]_  All other errors raise exceptions.
+
+<br><br>
+Additional string operations are defined in standard modules <a href="mod:string">string</a> and
+<a href="mod:re">re</a>.
+
+<br><br>
+
+<br><br>
+<h3>XRange Type
+</h3>
+The <a href="class:xrange">xrange</a> type is an immutable sequence which is commonly used for
+looping.  The advantage of the <a href="class:xrange">xrange</a> type is that an <a href="class:xrange">xrange</a>
+object will always take the same amount of memory, no matter the size of the
+range it represents.  There are no consistent performance advantages.
+
+<br><br>
+XRange objects have very little behavior: they only support indexing, iteration,
+and the <a href="func:len">len</a> function.
+
+<br><br>
+
+<br><br>
+<h3>Mutable Sequence Types
+</h3>
+List objects support additional operations that allow in-place modification of
+the object. Other mutable sequence types (when added to the language) should
+also support these operations. Strings and tuples are immutable sequence types:
+such objects cannot be modified once created. The following operations are
+defined on mutable sequence types (where <b>x</b> is an arbitrary object):
+
+<br><br>
+<pre>+------------------------------+--------------------------------+---------------------+
+| Operation                    | Result                         | Notes               |
++==============================+================================+=====================+
+| ``s[i] = x``                 | item *i* of *s* is replaced by |                     |
+|                              | *x*                            |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s[i:j] = t``               | slice of *s* from *i* to *j*   |                     |
+|                              | is replaced by the contents of |                     |
+|                              | the iterable *t*               |                     |
++------------------------------+--------------------------------+---------------------+
+| ``del s[i:j]``               | same as ``s[i:j] = []``        |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s[i:j:k] = t``             | the elements of ``s[i:j:k]``   | \(1)                |
+|                              | are replaced by those of *t*   |                     |
++------------------------------+--------------------------------+---------------------+
+| ``del s[i:j:k]``             | removes the elements of        |                     |
+|                              | ``s[i:j:k]`` from the list     |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.append(x)``              | same as ``s[len(s):len(s)] =   | \(2)                |
+|                              | [x]``                          |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.extend(x)``              | same as ``s[len(s):len(s)] =   | \(3)                |
+|                              | x``                            |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.count(x)``               | return number of *i*'s for     |                     |
+|                              | which ``s[i] == x``            |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.index(x[, i[, j]])``     | return smallest *k* such that  | \(4)                |
+|                              | ``s[k] == x`` and ``i &lt;= k &lt;   |                     |
+|                              | j``                            |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.insert(i, x)``           | same as ``s[i:i] = [x]``       | \(5)                |
++------------------------------+--------------------------------+---------------------+
+| ``s.pop([i])``               | same as ``x = s[i]; del s[i];  | \(6)                |
+|                              | return x``                     |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.remove(x)``              | same as ``del s[s.index(x)]``  | \(4)                |
++------------------------------+--------------------------------+---------------------+
+| ``s.reverse()``              | reverses the items of *s* in   | \(7)                |
+|                              | place                          |                     |
++------------------------------+--------------------------------+---------------------+
+| ``s.sort([cmp[, key[,        | sort the items of *s* in place | (7)(8)(9)(10)       |
+| reverse]]])``                |                                |                     |
++------------------------------+--------------------------------+---------------------+
+</pre>
+Notes:
+(1)
+   <b>t</b> must have the same length as the slice it is  replacing.
+
+<br><br>
+(2)
+   The C implementation of Python has historically accepted multiple parameters and
+   implicitly joined them into a tuple; this no longer works in Python 2.0.  Use of
+   this misfeature has been deprecated since Python 1.4.
+
+<br><br>
+(3)
+   <b>x</b> can be any iterable object.
+
+<br><br>
+(4)
+   Raises <a href="exc:ValueError">ValueError</a> when <b>x</b> is not found in <b>s</b>. When a negative index is
+   passed as the second or third parameter to the <a href="meth:index">index</a> method, the list
+   length is added, as for slice indices.  If it is still negative, it is truncated
+   to zero, as for slice indices.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Previously, <a href="meth:index">index</a> didn't have arguments for specifying start and stop
+      positions.
+</div>
+(5)
+   When a negative index is passed as the first parameter to the <a href="meth:insert">insert</a>
+   method, the list length is added, as for slice indices.  If it is still
+   negative, it is truncated to zero, as for slice indices.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Previously, all negative indices were truncated to zero.
+</div>
+(6)
+   The <a href="meth:pop">pop</a> method is only supported by the list and array types.  The
+   optional argument <b>i</b> defaults to <code>-1</code>, so that by default the last item is
+   removed and returned.
+
+<br><br>
+(7)
+   The <a href="meth:sort">sort</a> and <a href="meth:reverse">reverse</a> methods modify the list in place for
+   economy of space when sorting or reversing a large list.  To remind you that
+   they operate by side effect, they don't return the sorted or reversed list.
+
+<br><br>
+(8)
+   The <a href="meth:sort">sort</a> method takes optional arguments for controlling the
+   comparisons.
+
+<br><br>
+   <b>cmp</b> specifies a custom comparison function of two arguments (list items) which
+   should return a negative, zero or positive number depending on whether the first
+   argument is considered smaller than, equal to, or larger than the second
+   argument: <code>cmp=lambda x,y: cmp(x.lower(), y.lower())</code>.  The default value
+   is <code>None</code>.
+
+<br><br>
+   <b>key</b> specifies a function of one argument that is used to extract a comparison
+   key from each list element: <code>key=str.lower</code>.  The default value is <code>None</code>.
+
+<br><br>
+   <b>reverse</b> is a boolean value.  If set to <code>True</code>, then the list elements are
+   sorted as if each comparison were reversed.
+
+<br><br>
+   In general, the <b>key</b> and <b>reverse</b> conversion processes are much faster than
+   specifying an equivalent <b>cmp</b> function.  This is because <b>cmp</b> is called
+   multiple times for each list element while <b>key</b> and <b>reverse</b> touch each
+   element only once.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Support for <code>None</code> as an equivalent to omitting <b>cmp</b> was added.
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+      Support for <b>key</b> and <b>reverse</b> was added.
+</div>
+(9)
+   Starting with Python 2.3, the <a href="meth:sort">sort</a> method is guaranteed to be stable.  A
+   sort is stable if it guarantees not to change the relative order of elements
+   that compare equal --- this is helpful for sorting in multiple passes (for
+   example, sort by department, then by salary grade).
+
+<br><br>
+(10)
+   While a list is being sorted, the effect of attempting to mutate, or even
+   inspect, the list is undefined.  The C implementation of Python 2.3 and newer
+   makes the list appear empty for the duration, and raises <a href="exc:ValueError">ValueError</a> if it
+   can detect that the list has been mutated during a sort.
+
+<br><br>
+
+<br><br>
+<h2>Set Types --- <a href="class:set">set</a>, <a href="class:frozenset">frozenset</a>
+</h2>
+A :dfn:<code>set</code> object is an unordered collection of distinct :term:<code>hashable</code> objects.
+Common uses include membership testing, removing duplicates from a sequence, and
+computing mathematical operations such as intersection, union, difference, and
+symmetric difference.
+(For other containers see the built in <a href="class:dict">dict</a>, <a href="class:list">list</a>,
+and <a href="class:tuple">tuple</a> classes, and the <a href="mod:collections">collections</a> module.)
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.4
+</div>
+Like other collections, sets support <code>x in set</code>, <code>len(set)</code>, and ``for x in
+set``.  Being an unordered collection, sets do not record element position or
+order of insertion.  Accordingly, sets do not support indexing, slicing, or
+other sequence-like behavior.
+
+<br><br>
+There are currently two builtin set types, <a href="class:set">set</a> and <a href="class:frozenset">frozenset</a>.
+The <a href="class:set">set</a> type is mutable --- the contents can be changed using methods
+like <a href="meth:add">add</a> and <a href="meth:remove">remove</a>.  Since it is mutable, it has no hash value
+and cannot be used as either a dictionary key or as an element of another set.
+The <a href="class:frozenset">frozenset</a> type is immutable and :term:<code>hashable</code> --- its contents cannot be
+altered after it is created; it can therefore be used as a dictionary key or as
+an element of another set.
+
+<br><br>
+The constructors for both classes work the same:
+
+<br><br>
+<a href="class:set([iterable])">set([iterable])</a>
+           frozenset([iterable])
+
+<br><br>
+   Return a new set or frozenset object whose elements are taken from
+   <b>iterable</b>.  The elements of a set must be hashable.  To represent sets of
+   sets, the inner sets must be <a href="class:frozenset">frozenset</a> objects.  If <b>iterable</b> is
+   not specified, a new empty set is returned.
+
+<br><br>
+   Instances of <a href="class:set">set</a> and <a href="class:frozenset">frozenset</a> provide the following
+   operations:
+
+<br><br>
+   .. describe:: len(s)
+
+<br><br>
+      Return the cardinality of set <b>s</b>.
+
+<br><br>
+   .. describe:: x in s
+
+<br><br>
+      Test <b>x</b> for membership in <b>s</b>.
+
+<br><br>
+   .. describe:: x not in s
+
+<br><br>
+      Test <b>x</b> for non-membership in <b>s</b>.
+
+<br><br>
+<a href="meth:isdisjoint(other)">isdisjoint(other)</a>
+
+<br><br>
+      Return True if the set has no elements in common with <b>other</b>.  Sets are
+      disjoint if and only if their intersection is the empty set.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:issubset(other)">issubset(other)</a>
+               set &lt;= other
+
+<br><br>
+      Test whether every element in the set is in <b>other</b>.
+
+<br><br>
+<a href="meth:set < other">set < other</a>
+
+<br><br>
+      Test whether the set is a true subset of <b>other</b>, that is,
+      <code>set &lt;= other and set != other</code>.
+
+<br><br>
+<a href="meth:issuperset(other)">issuperset(other)</a>
+               set >= other
+
+<br><br>
+      Test whether every element in <b>other</b> is in the set.
+
+<br><br>
+<a href="meth:set > other">set > other</a>
+
+<br><br>
+      Test whether the set is a true superset of <b>other</b>, that is, ``set >=
+      other and set != other``.
+
+<br><br>
+<a href="meth:union(other, ...)">union(other, ...)</a>
+               set | other | ...
+
+<br><br>
+      Return a new set with elements from both sets.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:intersection(other, ...)">intersection(other, ...)</a>
+               set &amp; other &amp; ...
+
+<br><br>
+      Return a new set with elements common to both sets.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:difference(other, ...)">difference(other, ...)</a>
+               set - other - ...
+
+<br><br>
+      Return a new set with elements in the set that are not in the others.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:symmetric_difference(other)">symmetric_difference(other)</a>
+               set ^ other
+
+<br><br>
+      Return a new set with elements in either the set or <b>other</b> but not both.
+
+<br><br>
+<a href="meth:copy()">copy()</a>
+
+<br><br>
+      Return a new set with a shallow copy of <b>s</b>.
+
+<br><br>
+   Note, the non-operator versions of <a href="meth:union">union</a>, <a href="meth:intersection">intersection</a>,
+   <a href="meth:difference">difference</a>, and <a href="meth:symmetric_difference">symmetric_difference</a>, <a href="meth:issubset">issubset</a>, and
+   <a href="meth:issuperset">issuperset</a> methods will accept any iterable as an argument.  In
+   contrast, their operator based counterparts require their arguments to be
+   sets.  This precludes error-prone constructions like <code>set('abc') &amp; 'cbs'</code>
+   in favor of the more readable <code>set('abc').intersection('cbs')</code>.
+
+<br><br>
+   Both <a href="class:set">set</a> and <a href="class:frozenset">frozenset</a> support set to set comparisons. Two
+   sets are equal if and only if every element of each set is contained in the
+   other (each is a subset of the other). A set is less than another set if and
+   only if the first set is a proper subset of the second set (is a subset, but
+   is not equal). A set is greater than another set if and only if the first set
+   is a proper superset of the second set (is a superset, but is not equal).
+
+<br><br>
+   Instances of <a href="class:set">set</a> are compared to instances of <a href="class:frozenset">frozenset</a>
+   based on their members.  For example, <code>set('abc') == frozenset('abc')</code>
+   returns <code>True</code> and so does <code>set('abc') in set([frozenset('abc')])</code>.
+
+<br><br>
+   The subset and equality comparisons do not generalize to a complete ordering
+   function.  For example, any two disjoint sets are not equal and are not
+   subsets of each other, so <b>all</b> of the following return <code>False</code>: <code>a&lt;b</code>,
+   <code>a==b</code>, or <code>a>b</code>. Accordingly, sets do not implement the <a href="meth:__cmp__">__cmp__</a>
+   method.
+
+<br><br>
+   Since sets only define partial ordering (subset relationships), the output of
+   the <a href="meth:list.sort">list.sort</a> method is undefined for lists of sets.
+
+<br><br>
+   Set elements, like dictionary keys, must be :term:<code>hashable</code>.
+
+<br><br>
+   Binary operations that mix <a href="class:set">set</a> instances with <a href="class:frozenset">frozenset</a>
+   return the type of the first operand.  For example: ``frozenset('ab') |
+   set('bc')`` returns an instance of <a href="class:frozenset">frozenset</a>.
+
+<br><br>
+   The following table lists operations available for <a href="class:set">set</a> that do not
+   apply to immutable instances of <a href="class:frozenset">frozenset</a>:
+
+<br><br>
+<a href="meth:update(other, ...)">update(other, ...)</a>
+               set |= other | ...
+
+<br><br>
+      Update the set, adding elements from <b>other</b>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:intersection_update(other, ...)">intersection_update(other, ...)</a>
+               set &amp;= other &amp; ...
+
+<br><br>
+      Update the set, keeping only elements found in it and <b>other</b>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:difference_update(other, ...)">difference_update(other, ...)</a>
+               set -= other | ...
+
+<br><br>
+      Update the set, removing elements found in others.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+         Accepts multiple input iterables.
+</div>
+<a href="meth:symmetric_difference_update(other)">symmetric_difference_update(other)</a>
+               set ^= other
+
+<br><br>
+      Update the set, keeping only elements found in either set, but not in both.
+
+<br><br>
+<a href="meth:add(elem)">add(elem)</a>
+
+<br><br>
+      Add element <b>elem</b> to the set.
+
+<br><br>
+<a href="meth:remove(elem)">remove(elem)</a>
+
+<br><br>
+      Remove element <b>elem</b> from the set.  Raises <a href="exc:KeyError">KeyError</a> if <b>elem</b> is
+      not contained in the set.
+
+<br><br>
+<a href="meth:discard(elem)">discard(elem)</a>
+
+<br><br>
+      Remove element <b>elem</b> from the set if it is present.
+
+<br><br>
+<a href="meth:pop()">pop()</a>
+
+<br><br>
+      Remove and return an arbitrary element from the set.  Raises
+      <a href="exc:KeyError">KeyError</a> if the set is empty.
+
+<br><br>
+<a href="meth:clear()">clear()</a>
+
+<br><br>
+      Remove all elements from the set.
+
+<br><br>
+   Note, the non-operator versions of the <a href="meth:update">update</a>,
+   <a href="meth:intersection_update">intersection_update</a>, <a href="meth:difference_update">difference_update</a>, and
+   <a href="meth:symmetric_difference_update">symmetric_difference_update</a> methods will accept any iterable as an
+   argument.
+
+<br><br>
+   Note, the <b>elem</b> argument to the <a href="meth:__contains__">__contains__</a>, <a href="meth:remove">remove</a>, and
+   <a href="meth:discard">discard</a> methods may be a set.  To support searching for an equivalent
+   frozenset, the <b>elem</b> set is temporarily mutated during the search and then
+   restored.  During the search, the <b>elem</b> set should not be read or mutated
+   since it does not have a meaningful value.
+<div style="margin: 5px 5px; background: #ddffdd; border-size: 1px; padding: 5px"><b>See Also</b>: 
+
+<br><br>
+   <code>comparison-to-builtin-set</code>
+      Differences between the <a href="mod:sets">sets</a> module and the built-in set types.
+</div>
+<h2>Mapping Types --- <a href="class:dict">dict</a>
+</h2>
+A :dfn:<code>mapping</code> object maps :term:<code>hashable</code> values to arbitrary objects.
+Mappings are mutable objects.  There is currently only one standard mapping
+type, the :dfn:<code>dictionary</code>.  (For other containers see the built in
+<a href="class:list">list</a>, <a href="class:set">set</a>, and <a href="class:tuple">tuple</a> classes, and the
+<a href="mod:collections">collections</a> module.)
+
+<br><br>
+A dictionary's keys are <b>almost</b> arbitrary values.  Values that are not
+:term:<code>hashable</code>, that is, values containing lists, dictionaries or other
+mutable types (that are compared by value rather than by object identity) may
+not be used as keys.  Numeric types used for keys obey the normal rules for
+numeric comparison: if two numbers compare equal (such as <code>1</code> and <code>1.0</code>)
+then they can be used interchangeably to index the same dictionary entry.  (Note
+however, that since computers store floating-point numbers as approximations it
+is usually unwise to use them as dictionary keys.)
+
+<br><br>
+Dictionaries can be created by placing a comma-separated list of <code>key: value</code>
+pairs within braces, for example: <code>{'jack': 4098, 'sjoerd': 4127}</code> or ``{4098:
+'jack', 4127: 'sjoerd'}``, or by the <a href="class:dict">dict</a> constructor.
+
+<br><br>
+<a href="class:dict([arg])">dict([arg])</a>
+
+<br><br>
+   Return a new dictionary initialized from an optional positional argument or from
+   a set of keyword arguments. If no arguments are given, return a new empty
+   dictionary. If the positional argument <b>arg</b> is a mapping object, return a
+   dictionary mapping the same keys to the same values as does the mapping object.
+   Otherwise the positional argument must be a sequence, a container that supports
+   iteration, or an iterator object.  The elements of the argument must each also
+   be of one of those kinds, and each must in turn contain exactly two objects.
+   The first is used as a key in the new dictionary, and the second as the key's
+   value.  If a given key is seen more than once, the last value associated with it
+   is retained in the new dictionary.
+
+<br><br>
+   If keyword arguments are given, the keywords themselves with their associated
+   values are added as items to the dictionary. If a key is specified both in the
+   positional argument and as a keyword argument, the value associated with the
+   keyword is retained in the dictionary. For example, these all return a
+   dictionary equal to <code>{"one": 2, "two": 3}</code>:
+
+<br><br>
+   * <code>dict(one=2, two=3)</code>
+
+<br><br>
+   * <code>dict({'one': 2, 'two': 3})</code>
+
+<br><br>
+   * <code>dict(zip(('one', 'two'), (2, 3)))</code>
+
+<br><br>
+   * <code>dict([['two', 3], ['one', 2]])</code>
+
+<br><br>
+   The first example only works for keys that are valid Python
+   identifiers; the others work with any valid keys.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.3
+      Support for building a dictionary from keyword arguments added.
+</div>
+   These are the operations that dictionaries support (and therefore, custom
+   mapping types should support too):
+
+<br><br>
+   .. describe:: len(d)
+
+<br><br>
+      Return the number of items in the dictionary <b>d</b>.
+
+<br><br>
+   .. describe:: d[key]
+
+<br><br>
+      Return the item of <b>d</b> with key <b>key</b>.  Raises a <a href="exc:KeyError">KeyError</a> if <b>key</b>
+      is not in the map.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.5
+         If a subclass of dict defines a method <a href="meth:__missing__">__missing__</a>, if the key
+         <b>key</b> is not present, the <code>d[key]</code> operation calls that method with
+         the key <b>key</b> as argument.  The <code>d[key]</code> operation then returns or
+         raises whatever is returned or raised by the <code>__missing__(key)</code> call
+         if the key is not present. No other operations or methods invoke
+         <a href="meth:__missing__">__missing__</a>. If <a href="meth:__missing__">__missing__</a> is not defined,
+         <a href="exc:KeyError">KeyError</a> is raised.  <a href="meth:__missing__">__missing__</a> must be a method; it
+         cannot be an instance variable. For an example, see
+         <a href="class:collections.defaultdict">collections.defaultdict</a>.
+</div>
+   .. describe:: d[key] = value
+      Set <code>d[key]</code> to <b>value</b>.
+
+<br><br>
+   .. describe:: del d[key]
+
+<br><br>
+      Remove <code>d[key]</code> from <b>d</b>.  Raises a <a href="exc:KeyError">KeyError</a> if <b>key</b> is not in the
+      map.
+
+<br><br>
+   .. describe:: key in d
+
+<br><br>
+      Return <code>True</code> if <b>d</b> has a key <b>key</b>, else <code>False</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+   .. describe:: key not in d
+      Equivalent to <code>not key in d</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<a href="meth:clear()">clear()</a>
+      Remove all items from the dictionary.
+
+<br><br>
+<a href="meth:copy()">copy()</a>
+
+<br><br>
+      Return a shallow copy of the dictionary.
+
+<br><br>
+<a href="meth:fromkeys(seq[, value])">fromkeys(seq[, value])</a>
+
+<br><br>
+      Create a new dictionary with keys from <b>seq</b> and values set to <b>value</b>.
+
+<br><br>
+      <a href="func:fromkeys">fromkeys</a> is a class method that returns a new dictionary. <b>value</b>
+      defaults to <code>None</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.3
+</div>
+<a href="meth:get(key[, default])">get(key[, default])</a>
+      Return the value for <b>key</b> if <b>key</b> is in the dictionary, else <b>default</b>.
+      If <b>default</b> is not given, it defaults to <code>None</code>, so that this method
+      never raises a <a href="exc:KeyError">KeyError</a>.
+
+<br><br>
+<a href="meth:has_key(key)">has_key(key)</a>
+
+<br><br>
+      <code>dict.has_key(key)</code> is equivalent to <code>key in d</code>, but deprecated.
+
+<br><br>
+<a href="meth:items()">items()</a>
+
+<br><br>
+      Return a copy of the dictionary's list of <code>(key, value)</code> pairs.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+         Keys and values are listed in an arbitrary order which is non-random,
+         varies across Python implementations, and depends on the dictionary's
+         history of insertions and deletions. If <a href="meth:items">items</a>, <a href="meth:keys">keys</a>,
+         <a href="meth:values">values</a>, <a href="meth:iteritems">iteritems</a>, <a href="meth:iterkeys">iterkeys</a>, and
+         <a href="meth:itervalues">itervalues</a> are called with no intervening modifications to the
+         dictionary, the lists will directly correspond.  This allows the
+         creation of <code>(value, key)</code> pairs using <a href="func:zip">zip</a>: ``pairs =
+         zip(d.values(), d.keys())``.  The same relationship holds for the
+         <a href="meth:iterkeys">iterkeys</a> and <a href="meth:itervalues">itervalues</a> methods: ``pairs =
+         zip(d.itervalues(), d.iterkeys())`` provides the same value for
+         <code>pairs</code>. Another way to create the same list is ``pairs = [(v, k) for
+         (k, v) in d.iteritems()]``.
+</div>
+<a href="meth:iteritems()">iteritems()</a>
+      Return an iterator over the dictionary's <code>(key, value)</code> pairs.  See the
+      note for <a href="meth:dict.items">dict.items</a>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<a href="meth:iterkeys()">iterkeys()</a>
+      Return an iterator over the dictionary's keys.  See the note for
+      <a href="meth:dict.items">dict.items</a>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<a href="meth:itervalues()">itervalues()</a>
+      Return an iterator over the dictionary's values.  See the note for
+      <a href="meth:dict.items">dict.items</a>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.2
+</div>
+<a href="meth:keys()">keys()</a>
+      Return a copy of the dictionary's list of keys.  See the note for
+      <a href="meth:dict.items">dict.items</a>.
+
+<br><br>
+<a href="meth:pop(key[, default])">pop(key[, default])</a>
+
+<br><br>
+      If <b>key</b> is in the dictionary, remove it and return its value, else return
+      <b>default</b>.  If <b>default</b> is not given and <b>key</b> is not in the dictionary,
+      a <a href="exc:KeyError">KeyError</a> is raised.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.3
+</div>
+<a href="meth:popitem()">popitem()</a>
+      Remove and return an arbitrary <code>(key, value)</code> pair from the dictionary.
+
+<br><br>
+      <a href="func:popitem">popitem</a> is useful to destructively iterate over a dictionary, as
+      often used in set algorithms.  If the dictionary is empty, calling
+      <a href="func:popitem">popitem</a> raises a <a href="exc:KeyError">KeyError</a>.
+
+<br><br>
+<a href="meth:setdefault(key[, default])">setdefault(key[, default])</a>
+
+<br><br>
+      If <b>key</b> is in the dictionary, return its value.  If not, insert <b>key</b>
+      with a value of <b>default</b> and return <b>default</b>.  <b>default</b> defaults to
+      <code>None</code>.
+
+<br><br>
+<a href="meth:update([other])">update([other])</a>
+
+<br><br>
+      Update the dictionary with the key/value pairs from <b>other</b>, overwriting
+      existing keys.  Return <code>None</code>.
+
+<br><br>
+      <a href="func:update">update</a> accepts either another dictionary object or an iterable of
+      key/value pairs (as a tuple or other iterable of length two).  If keyword
+      arguments are specified, the dictionary is then is updated with those
+      key/value pairs: <code>d.update(red=1, blue=2)</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.4
+          Allowed the argument to be an iterable of key/value pairs and allowed
+          keyword arguments.
+</div>
+<a href="meth:values()">values()</a>
+      Return a copy of the dictionary's list of values.  See the note for
+      <a href="meth:dict.items">dict.items</a>.
+
+<br><br>
+
+<br><br>
+<h2>File Objects
+</h2>
+File objects are implemented using C's <code>stdio</code> package and can be
+created with the built-in <a href="func:open">open</a> function.  File
+objects are also returned by some other built-in functions and methods,
+such as <a href="func:os.popen">os.popen</a> and <a href="func:os.fdopen">os.fdopen</a> and the <a href="meth:makefile">makefile</a>
+method of socket objects. Temporary files can be created using the
+<a href="mod:tempfile">tempfile</a> module, and high-level file operations such as copying,
+moving, and deleting files and directories can be achieved with the
+<a href="mod:shutil">shutil</a> module.
+
+<br><br>
+When a file operation fails for an I/O-related reason, the exception
+<a href="exc:IOError">IOError</a> is raised.  This includes situations where the operation is not
+defined for some reason, like <a href="meth:seek">seek</a> on a tty device or writing a file
+opened for reading.
+
+<br><br>
+Files have the following methods:
+
+<br><br>
+<a href="meth:file.close()">file.close()</a>
+
+<br><br>
+   Close the file.  A closed file cannot be read or written any more. Any operation
+   which requires that the file be open will raise a <a href="exc:ValueError">ValueError</a> after the
+   file has been closed.  Calling <a href="meth:close">close</a> more than once is allowed.
+
+<br><br>
+   As of Python 2.5, you can avoid having to call this method explicitly if you use
+   the <code style="color:#0000e6;">with</code> statement.  For example, the following code will
+   automatically close <b>f</b> when the <code style="color:#0000e6;">with</code> block is exited::
+
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+      <span style="color:#0000e6;">from</span> <span style="">__future__</span> <span style="color:#0000e6;">import</span> <span style="">with_statement</span> <span style="color:#969696;"># This isn't required in Python 2.6</span><span style="color:#000000;"><br></span>      <span style="color:#0000e6;">with</span> <span style="">open</span><span style="">(</span><span style="color:#ce7b00;">"</span><span style="color:#ce7b00"><span style="color:#ce7b00;">hello.txt</span></span><span style="color:#ce7b00;">"</span><span style="">)</span> <span style="color:#0000e6;">as</span> <span style="">f</span><span style="">:</span><span style="color:#000000;"><br></span>          <span style="color:#0000e6;">for</span> <span style="">line</span> <span style="color:#0000e6;">in</span> <span style="">f</span><span style="">:</span><span style="color:#000000;"><br></span>              <span style="color:#0000e6;">print</span> <span style="">line</span><span style="color:#000000;"><br></span></pre>
+   In older versions of Python, you would have needed to do this to get the same
+   effect::
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+      <span style="">f</span> <span style="">=</span> <span style="">open</span><span style="">(</span><span style="color:#ce7b00;">"</span><span style="color:#ce7b00"><span style="color:#ce7b00;">hello.txt</span></span><span style="color:#ce7b00;">"</span><span style="">)</span><span style="color:#000000;"><br></span>      <span style="color:#0000e6;">try</span><span style="">:</span><span style="color:#000000;"><br></span>          <span style="color:#0000e6;">for</span> <span style="">line</span> <span style="color:#0000e6;">in</span> <span style="">f</span><span style="">:</span><span style="color:#000000;"><br></span>              <span style="color:#0000e6;">print</span> <span style="">line</span><span style="color:#000000;"><br></span>      <span style="color:#0000e6;">finally</span><span style="">:</span><span style="color:#000000;"><br></span>          <span style="">f</span><span style="">.</span><span style="">close</span><span style="">(</span><span style="">)</span><span style="color:#000000;"><br></span></pre>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      Not all "file-like" types in Python support use as a context manager for the
+      <code style="color:#0000e6;">with</code> statement.  If your code is intended to work with any file-like
+      object, you can use the function <a href="func:contextlib.closing">contextlib.closing</a> instead of using
+      the object directly.
+</div>
+<a href="meth:file.flush()">file.flush()</a>
+   Flush the internal buffer, like <code>stdio</code>'s :cfunc:<code>fflush</code>.  This may be a
+   no-op on some file-like objects.
+
+<br><br>
+<a href="meth:file.fileno()">file.fileno()</a>
+
+<br><br>
+   Return the integer "file descriptor" that is used by the underlying
+   implementation to request I/O operations from the operating system.  This can be
+   useful for other, lower level interfaces that use file descriptors, such as the
+   <a href="mod:fcntl">fcntl</a> module or <a href="func:os.read">os.read</a> and friends.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      File-like objects which do not have a real file descriptor should <b>not</b> provide
+      this method!
+</div>
+<a href="meth:file.isatty()">file.isatty()</a>
+   Return <code>True</code> if the file is connected to a tty(-like) device, else <code>False</code>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      If a file-like object is not associated with a real file, this method should
+      <b>not</b> be implemented.
+</div>
+<a href="meth:file.next()">file.next()</a>
+   A file object is its own iterator, for example <code>iter(f)</code> returns <b>f</b> (unless
+   <b>f</b> is closed).  When a file is used as an iterator, typically in a
+   <code style="color:#0000e6;">for</code> loop (for example, <code>for line in f: print line</code>), the
+   <a href="meth:next">next</a> method is called repeatedly.  This method returns the next input
+   line, or raises <a href="exc:StopIteration">StopIteration</a> when EOF is hit when the file is open for
+   reading (behavior is undefined when the file is open for writing).  In order to
+   make a <code style="color:#0000e6;">for</code> loop the most efficient way of looping over the lines of a
+   file (a very common operation), the <a href="meth:next">next</a> method uses a hidden read-ahead
+   buffer.  As a consequence of using a read-ahead buffer, combining <a href="meth:next">next</a>
+   with other file methods (like <a href="meth:readline">readline</a>) does not work right.  However,
+   using <a href="meth:seek">seek</a> to reposition the file to an absolute position will flush the
+   read-ahead buffer.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.3
+</div>
+<a href="meth:file.read([size])">file.read([size])</a>
+   Read at most <b>size</b> bytes from the file (less if the read hits EOF before
+   obtaining <b>size</b> bytes).  If the <b>size</b> argument is negative or omitted, read
+   all data until EOF is reached.  The bytes are returned as a string object.  An
+   empty string is returned when EOF is encountered immediately.  (For certain
+   files, like ttys, it makes sense to continue reading after an EOF is hit.)  Note
+   that this method may call the underlying C function :cfunc:<code>fread</code> more than
+   once in an effort to acquire as close to <b>size</b> bytes as possible. Also note
+   that when in non-blocking mode, less data than was requested may be
+   returned, even if no <b>size</b> parameter was given.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      This function is simply a wrapper for the underlying
+      :cfunc:<code>fread</code> C function, and will behave the same in corner cases,
+      such as whether the EOF value is cached.
+</div>
+<a href="meth:file.readline([size])">file.readline([size])</a>
+   Read one entire line from the file.  A trailing newline character is kept in the
+   string (but may be absent when a file ends with an incomplete line). [#]_  If
+   the <b>size</b> argument is present and non-negative, it is a maximum byte count
+   (including the trailing newline) and an incomplete line may be returned. An
+   empty string is returned <b>only</b> when EOF is encountered immediately.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      Unlike <code>stdio</code>'s :cfunc:<code>fgets</code>, the returned string contains null characters
+      (<code>'\0'</code>) if they occurred in the input.
+</div>
+<a href="meth:file.readlines([sizehint])">file.readlines([sizehint])</a>
+   Read until EOF using <a href="meth:readline">readline</a> and return a list containing the lines
+   thus read.  If the optional <b>sizehint</b> argument is present, instead of
+   reading up to EOF, whole lines totalling approximately <b>sizehint</b> bytes
+   (possibly after rounding up to an internal buffer size) are read.  Objects
+   implementing a file-like interface may choose to ignore <b>sizehint</b> if it
+   cannot be implemented, or cannot be implemented efficiently.
+
+<br><br>
+<a href="meth:file.xreadlines()">file.xreadlines()</a>
+
+<br><br>
+   This method returns the same thing as <code>iter(f)</code>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.1
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Deprecated</b>:  2.3
+      Use <code>for line in file</code> instead.
+</div>
+<a href="meth:file.seek(offset[, whence])">file.seek(offset[, whence])</a>
+   Set the file's current position, like <code>stdio</code>'s :cfunc:<code>fseek</code>. The <b>whence</b>
+   argument is optional and defaults to  <code>os.SEEK_SET</code> or <code>0</code> (absolute file
+   positioning); other values are <code>os.SEEK_CUR</code> or <code>1</code> (seek relative to the
+   current position) and <code>os.SEEK_END</code> or <code>2</code>  (seek relative to the file's
+   end).  There is no return value.
+
+<br><br>
+   For example, <code>f.seek(2, os.SEEK_CUR)</code> advances the position by two and
+   <code>f.seek(-3, os.SEEK_END)</code> sets the position to the third to last.
+
+<br><br>
+   Note that if the file is opened for appending
+   (mode <code>'a'</code> or <code>'a+'</code>), any <a href="meth:seek">seek</a> operations will be undone at the
+   next write.  If the file is only opened for writing in append mode (mode
+   <code>'a'</code>), this method is essentially a no-op, but it remains useful for files
+   opened in append mode with reading enabled (mode <code>'a+'</code>).  If the file is
+   opened in text mode (without <code>'b'</code>), only offsets returned by <a href="meth:tell">tell</a> are
+   legal.  Use of other offsets causes undefined behavior.
+
+<br><br>
+   Note that not all file objects are seekable.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+      Passing float values as offset has been deprecated.
+</div>
+<a href="meth:file.tell()">file.tell()</a>
+   Return the file's current position, like <code>stdio</code>'s :cfunc:<code>ftell</code>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      On Windows, <a href="meth:tell">tell</a> can return illegal values (after an :cfunc:<code>fgets</code>)
+      when reading files with Unix-style line-endings. Use binary mode (<code>'rb'</code>) to
+      circumvent this problem.
+</div>
+<a href="meth:file.truncate([size])">file.truncate([size])</a>
+   Truncate the file's size.  If the optional <b>size</b> argument is present, the file
+   is truncated to (at most) that size.  The size defaults to the current position.
+   The current file position is not changed.  Note that if a specified size exceeds
+   the file's current size, the result is platform-dependent:  possibilities
+   include that the file may remain unchanged, increase to the specified size as if
+   zero-filled, or increase to the specified size with undefined new content.
+   Availability:  Windows, many Unix variants.
+
+<br><br>
+<a href="meth:file.write(str)">file.write(str)</a>
+
+<br><br>
+   Write a string to the file.  There is no return value.  Due to buffering, the
+   string may not actually show up in the file until the <a href="meth:flush">flush</a> or
+   <a href="meth:close">close</a> method is called.
+
+<br><br>
+<a href="meth:file.writelines(sequence)">file.writelines(sequence)</a>
+
+<br><br>
+   Write a sequence of strings to the file.  The sequence can be any iterable
+   object producing strings, typically a list of strings. There is no return value.
+   (The name is intended to match <a href="meth:readlines">readlines</a>; <a href="meth:writelines">writelines</a> does not
+   add line separators.)
+
+<br><br>
+Files support the iterator protocol.  Each iteration returns the same result as
+<code>file.readline()</code>, and iteration ends when the <a href="meth:readline">readline</a> method returns
+an empty string.
+
+<br><br>
+File objects also offer a number of other interesting attributes. These are not
+required for file-like objects, but should be implemented if they make sense for
+the particular object.
+
+<br><br>
+<a href="attr:file.closed">file.closed</a>
+
+<br><br>
+   bool indicating the current state of the file object.  This is a read-only
+   attribute; the <a href="meth:close">close</a> method changes the value. It may not be available
+   on all file-like objects.
+
+<br><br>
+<a href="attr:file.encoding">file.encoding</a>
+
+<br><br>
+   The encoding that this file uses. When Unicode strings are written to a file,
+   they will be converted to byte strings using this encoding. In addition, when
+   the file is connected to a terminal, the attribute gives the encoding that the
+   terminal is likely to use (that  information might be incorrect if the user has
+   misconfigured the  terminal). The attribute is read-only and may not be present
+   on all file-like objects. It may also be <code>None</code>, in which case the file uses
+   the system default encoding for converting Unicode strings.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.3
+</div>
+<a href="attr:file.errors">file.errors</a>
+   The Unicode error handler used along with the encoding.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="attr:file.mode">file.mode</a>
+   The I/O mode for the file.  If the file was created using the <a href="func:open">open</a>
+   built-in function, this will be the value of the <b>mode</b> parameter.  This is a
+   read-only attribute and may not be present on all file-like objects.
+
+<br><br>
+<a href="attr:file.name">file.name</a>
+
+<br><br>
+   If the file object was created using <a href="func:open">open</a>, the name of the file.
+   Otherwise, some string that indicates the source of the file object, of the
+   form <code>&lt;...></code>.  This is a read-only attribute and may not be present on all
+   file-like objects.
+
+<br><br>
+<a href="attr:file.newlines">file.newlines</a>
+
+<br><br>
+   If Python was built with the :option:`--with-universal-newlines` option to
+   :program:<code>configure</code> (the default) this read-only attribute exists, and for
+   files opened in universal newline read mode it keeps track of the types of
+   newlines encountered while reading the file. The values it can take are
+   <code>'\r'</code>, <code>'\n'</code>, <code>'\r\n'</code>, <code>None</code> (unknown, no newlines read yet) or a
+   tuple containing all the newline types seen, to indicate that multiple newline
+   conventions were encountered. For files not opened in universal newline read
+   mode the value of this attribute will be <code>None</code>.
+
+<br><br>
+<a href="attr:file.softspace">file.softspace</a>
+
+<br><br>
+   Boolean that indicates whether a space character needs to be printed before
+   another value when using the <code style="color:#0000e6;">print</code> statement. Classes that are trying
+   to simulate a file object should also have a writable <code>softspace</code>
+   attribute, which should be initialized to zero.  This will be automatic for most
+   classes implemented in Python (care may be needed for objects that override
+   attribute access); types implemented in C will have to provide a writable
+   <code>softspace</code> attribute.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      This attribute is not used to control the <code style="color:#0000e6;">print</code> statement, but to
+      allow the implementation of <code style="color:#0000e6;">print</code> to keep track of its internal
+      state.
+</div>
+<h2>Context Manager Types
+</h2>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.5
+</div>
+Python's <code style="color:#0000e6;">with</code> statement supports the concept of a runtime context
+defined by a context manager.  This is implemented using two separate methods
+that allow user-defined classes to define a runtime context that is entered
+before the statement body is executed and exited when the statement ends.
+
+<br><br>
+The :dfn:`context management protocol` consists of a pair of methods that need
+to be provided for a context manager object to define a runtime context:
+
+<br><br>
+<a href="meth:contextmanager.__enter__()">contextmanager.__enter__()</a>
+
+<br><br>
+   Enter the runtime context and return either this object or another object
+   related to the runtime context. The value returned by this method is bound to
+   the identifier in the <code style="color:#0000e6;">as</code> clause of <code style="color:#0000e6;">with</code> statements using
+   this context manager.
+
+<br><br>
+   An example of a context manager that returns itself is a file object. File
+   objects return themselves from __enter__() to allow <a href="func:open">open</a> to be used as
+   the context expression in a <code style="color:#0000e6;">with</code> statement.
+
+<br><br>
+   An example of a context manager that returns a related object is the one
+   returned by <a href="func:decimal.localcontext">decimal.localcontext</a>. These managers set the active
+   decimal context to a copy of the original decimal context and then return the
+   copy. This allows changes to be made to the current decimal context in the body
+   of the <code style="color:#0000e6;">with</code> statement without affecting code outside the
+   <code style="color:#0000e6;">with</code> statement.
+
+<br><br>
+<a href="meth:contextmanager.__exit__(exc_type, exc_val, exc_tb)">contextmanager.__exit__(exc_type, exc_val, exc_tb)</a>
+
+<br><br>
+   Exit the runtime context and return a Boolean flag indicating if any exception
+   that occurred should be suppressed. If an exception occurred while executing the
+   body of the <code style="color:#0000e6;">with</code> statement, the arguments contain the exception type,
+   value and traceback information. Otherwise, all three arguments are <code>None</code>.
+
+<br><br>
+   Returning a true value from this method will cause the <code style="color:#0000e6;">with</code> statement
+   to suppress the exception and continue execution with the statement immediately
+   following the <code style="color:#0000e6;">with</code> statement. Otherwise the exception continues
+   propagating after this method has finished executing. Exceptions that occur
+   during execution of this method will replace any exception that occurred in the
+   body of the <code style="color:#0000e6;">with</code> statement.
+
+<br><br>
+   The exception passed in should never be reraised explicitly - instead, this
+   method should return a false value to indicate that the method completed
+   successfully and does not want to suppress the raised exception. This allows
+   context management code (such as <code>contextlib.nested</code>) to easily detect whether
+   or not an <a href="meth:__exit__">__exit__</a> method has actually failed.
+
+<br><br>
+Python defines several context managers to support easy thread synchronisation,
+prompt closure of files or other objects, and simpler manipulation of the active
+decimal arithmetic context. The specific types are not treated specially beyond
+their implementation of the context management protocol. See the
+<a href="mod:contextlib">contextlib</a> module for some examples.
+
+<br><br>
+Python's :term:<code>generator</code>\s and the <code>contextlib.contextfactory</code> :term:<code>decorator</code>
+provide a convenient way to implement these protocols.  If a generator function is
+decorated with the <code>contextlib.contextfactory</code> decorator, it will return a
+context manager implementing the necessary <a href="meth:__enter__">__enter__</a> and
+<a href="meth:__exit__">__exit__</a> methods, rather than the iterator produced by an undecorated
+generator function.
+
+<br><br>
+Note that there is no specific slot for any of these methods in the type
+structure for Python objects in the Python/C API. Extension types wanting to
+define these methods must provide them as a normal Python accessible method.
+Compared to the overhead of setting up the runtime context, the overhead of a
+single class dictionary lookup is negligible.
+
+<br><br>
+
+<br><br>
+<h2>Other Built-in Types
+</h2>
+The interpreter supports several other kinds of objects. Most of these support
+only one or two operations.
+
+<br><br>
+
+<br><br>
+<h3>Modules
+</h3>
+The only special operation on a module is attribute access: <code>m.name</code>, where
+*m* is a module and <b>name</b> accesses a name defined in <b>m</b>'s symbol table.
+Module attributes can be assigned to.  (Note that the <code style="color:#0000e6;">import</code>
+statement is not, strictly speaking, an operation on a module object; ``import
+foo`` does not require a module object named <b>foo</b> to exist, rather it requires
+an (external) <b>definition</b> for a module named <b>foo</b> somewhere.)
+
+<br><br>
+A special member of every module is <code>__dict__</code>. This is the dictionary
+containing the module's symbol table. Modifying this dictionary will actually
+change the module's symbol table, but direct assignment to the <code>__dict__</code>
+attribute is not possible (you can write <code>m.__dict__['a'] = 1</code>, which defines
+<code>m.a</code> to be <code>1</code>, but you can't write <code>m.__dict__ = {}</code>).  Modifying
+<code>__dict__</code> directly is not recommended.
+
+<br><br>
+Modules built into the interpreter are written like this: ``&lt;module 'sys'
+(built-in)><code>.  If loaded from a file, they are written as </code>&lt;module 'os' from
+'/usr/local/lib/pythonX.Y/os.pyc'>``.
+
+<br><br>
+
+<br><br>
+<h3>Classes and Class Instances
+</h3>
+See <code>objects</code> and <code>class</code> for these.
+
+<br><br>
+
+<br><br>
+<h3>Functions
+</h3>
+Function objects are created by function definitions.  The only operation on a
+function object is to call it: <code>func(argument-list)</code>.
+
+<br><br>
+There are really two flavors of function objects: built-in functions and
+user-defined functions.  Both support the same operation (to call the function),
+but the implementation is different, hence the different object types.
+
+<br><br>
+See <code>function</code> for more information.
+
+<br><br>
+
+<br><br>
+<h3>Methods
+</h3>
+Methods are functions that are called using the attribute notation. There are
+two flavors: built-in methods (such as <a href="meth:append">append</a> on lists) and class
+instance methods.  Built-in methods are described with the types that support
+them.
+
+<br><br>
+The implementation adds two special read-only attributes to class instance
+methods: <code>m.im_self</code> is the object on which the method operates, and
+<code>m.im_func</code> is the function implementing the method.  Calling ``m(arg-1,
+arg-2, ..., arg-n)<code> is completely equivalent to calling </code>m.im_func(m.im_self,
+arg-1, arg-2, ..., arg-n)``.
+
+<br><br>
+Class instance methods are either <b>bound</b> or <b>unbound</b>, referring to whether the
+method was accessed through an instance or a class, respectively.  When a method
+is unbound, its <code>im_self</code> attribute will be <code>None</code> and if called, an
+explicit <code>self</code> object must be passed as the first argument.  In this case,
+<code>self</code> must be an instance of the unbound method's class (or a subclass of
+that class), otherwise a <a href="exc:TypeError">TypeError</a> is raised.
+
+<br><br>
+Like function objects, methods objects support getting arbitrary attributes.
+However, since method attributes are actually stored on the underlying function
+object (<code>meth.im_func</code>), setting method attributes on either bound or unbound
+methods is disallowed.  Attempting to set a method attribute results in a
+<a href="exc:TypeError">TypeError</a> being raised.  In order to set a method attribute, you need to
+explicitly set it on the underlying function object::
+
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+   <span style="color:#0000e6;">class</span> <span style="">C</span><span style="">:</span><span style="color:#000000;"><br></span>       <span style="color:#0000e6;">def</span> <span style="">method</span><span style="">(</span><span style="">self</span><span style="">)</span><span style="">:</span><span style="color:#000000;"><br></span>           <span style="color:#0000e6;">pass</span><span style="color:#000000;"><br></span>   <span style="">c</span> <span style="">=</span> <span style="">C</span><span style="">(</span><span style="">)</span><span style="color:#000000;"><br></span>   <span style="">c</span><span style="">.</span><span style="">method</span><span style="">.</span><span style="">im_func</span><span style="">.</span><span style="">whoami</span> <span style="">=</span> <span style="color:#ce7b00;">'</span><span style="color:#ce7b00"><span style="color:#ce7b00;">my name is c</span></span><span style="color:#ce7b00;">'</span><span style="color:#000000;"><br></span></pre>
+See <code>types</code> for more information.
+
+<br><br>
+<h3>Code Objects
+</h3>
+Code objects are used by the implementation to represent "pseudo-compiled"
+executable Python code such as a function body. They differ from function
+objects because they don't contain a reference to their global execution
+environment.  Code objects are returned by the built-in <a href="func:compile">compile</a> function
+and can be extracted from function objects through their <code>func_code</code>
+attribute. See also the <a href="mod:code">code</a> module.
+
+<br><br>
+A code object can be executed or evaluated by passing it (instead of a source
+string) to the <code style="color:#0000e6;">exec</code> statement or the built-in <a href="func:eval">eval</a> function.
+
+<br><br>
+See <code>types</code> for more information.
+
+<br><br>
+
+<br><br>
+<h3>Type Objects
+</h3>
+Type objects represent the various object types.  An object's type is accessed
+by the built-in function <a href="func:type">type</a>.  There are no special operations on
+types.  The standard module <a href="mod:types">types</a> defines names for all standard built-in
+types.
+
+<br><br>
+Types are written like this: <code>&lt;type 'int'></code>.
+
+<br><br>
+
+<br><br>
+<h3>The Null Object
+</h3>
+This object is returned by functions that don't explicitly return a value.  It
+supports no special operations.  There is exactly one null object, named
+<code>None</code> (a built-in name).
+
+<br><br>
+It is written as <code>None</code>.
+
+<br><br>
+
+<br><br>
+<h3>The Ellipsis Object
+</h3>
+This object is used by extended slice notation (see <code>slicings</code>).  It
+supports no special operations.  There is exactly one ellipsis object, named
+:const:<code>Ellipsis</code> (a built-in name).
+
+<br><br>
+It is written as <code>Ellipsis</code>.
+
+<br><br>
+<h3>Boolean Values
+</h3>
+Boolean values are the two constant objects <code>False</code> and <code>True</code>.  They are
+used to represent truth values (although other values can also be considered
+false or true).  In numeric contexts (for example when used as the argument to
+an arithmetic operator), they behave like the integers 0 and 1, respectively.
+The built-in function <a href="func:bool">bool</a> can be used to cast any value to a Boolean,
+if the value can be interpreted as a truth value (see section Truth Value
+Testing above).
+
+<br><br>
+They are written as <code>False</code> and <code>True</code>, respectively.
+
+<br><br>
+<h3>Internal Objects
+</h3>
+See <code>types</code> for this information.  It describes stack frame objects,
+traceback objects, and slice objects.
+
+<br><br>
+
+<br><br>
+<h2>Special Attributes
+</h2>
+The implementation adds a few special read-only attributes to several object
+types, where they are relevant.  Some of these are not reported by the
+<a href="func:dir">dir</a> built-in function.
+
+<br><br>
+<a href="attr:object.__dict__">object.__dict__</a>
+
+<br><br>
+   A dictionary or other mapping object used to store an object's (writable)
+   attributes.
+
+<br><br>
+<a href="attr:object.__methods__">object.__methods__</a>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Deprecated</b>:  2.2
+      Use the built-in function <a href="func:dir">dir</a> to get a list of an object's attributes.
+      This attribute is no longer available.
+</div>
+<a href="attr:object.__members__">object.__members__</a>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Deprecated</b>:  2.2
+      Use the built-in function <a href="func:dir">dir</a> to get a list of an object's attributes.
+      This attribute is no longer available.
+</div>
+<a href="attr:instance.__class__">instance.__class__</a>
+   The class to which a class instance belongs.
+
+<br><br>
+<a href="attr:class.__bases__">class.__bases__</a>
+
+<br><br>
+   The tuple of base classes of a class object.  If there are no base classes, this
+   will be an empty tuple.
+
+<br><br>
+<a href="attr:class.__name__">class.__name__</a>
+
+<br><br>
+   The name of the class or type.
+
+<br><br>
+.. rubric:: Footnotes
+
+<br><br>
+.. [#] Additional information on these special methods may be found in the Python
+   Reference Manual (<code>customization</code>).
+
+<br><br>
+.. [#] As a consequence, the list <code>[1, 2]</code> is considered equal to <code>[1.0, 2.0]</code>, and
+   similarly for tuples.
+
+<br><br>
+.. [#] They must have since the parser can't tell the type of the operands.
+
+<br><br>
+.. [#] To format only a tuple you should therefore provide a singleton tuple whose only
+   element is the tuple to be formatted.
+
+<br><br>
+.. [#] These numbers are fairly arbitrary.  They are intended to avoid printing endless
+   strings of meaningless digits without hampering correct use and without having
+   to know the exact precision of floating point values on a particular machine.
+
+<br><br>
+.. [#] The advantage of leaving the newline on is that returning an empty string is
+   then an unambiguous EOF indication.  It is also possible (in cases where it
+   might matter, for example, if you want to make an exact copy of a file while
+   scanning its lines) to tell whether the last line of a file ended in a newline
+   or not (yes this happens!).
+</body></html>
