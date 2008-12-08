@@ -191,6 +191,10 @@ public class DataView {
         return dataViewUI.getEditButtons();
     }
 
+    public synchronized void setEditable(boolean editable) {
+        dataViewUI.setEditable(editable);
+    }
+
     DataViewDBTable getDataViewDBTable() {
         return tblMeta;
     }
@@ -231,10 +235,6 @@ public class DataView {
         assert dataViewUI != null;
         dataViewUI.disableButtons();
         errMessages.clear();
-    }
-
-    synchronized void setEditable(boolean editable) {
-        dataViewUI.setEditable(editable);
     }
 
     synchronized void removeComponents() {
