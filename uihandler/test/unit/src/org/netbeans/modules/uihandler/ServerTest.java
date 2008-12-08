@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -130,7 +132,7 @@ public class ServerTest extends NbTestCase {
         
         List<LogRecord> recs = new ArrayList<LogRecord>();
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
-        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs);
+        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs, false);
 
         assertTrue("one query has been sent: " + query, query.isEmpty());
         assertEquals("One reply received", 1, reply.size());
@@ -148,17 +150,36 @@ public class ServerTest extends NbTestCase {
         
         List<LogRecord> recs = new ArrayList<LogRecord>();
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
-        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs);
+        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs, false);
 
         assertTrue("one query has been sent: " + query, query.isEmpty());
         assertEquals("One reply received", 1, reply.size());
         assertEquals("Redirected to nb.org", new URL("http://logger.netbeans.org/welcome/use.html"), redir);
     }
 
-    
+    public void testUploadMessagesLog() throws IOException{
+        byte[] message = "HalloWorld!".getBytes();
+        System.setProperty("netbeans.user", getWorkDirPath());
+        File messages = new File (new File(new File(getWorkDirPath(), "var"), "log"), "messages.log");
+        messages.getParentFile().mkdirs();
+        OutputStream os = new FileOutputStream(messages);
+        os.write(message);
+        os.close();
 
+        LinkedList<String> query = new LinkedList<String>();
+        query.add("<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
+        LinkedList<String> reply = new LinkedList<String>();
+        int port = startServer(query, reply);
+        List<LogRecord> recs = new ArrayList<LogRecord>();
+        recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
 
+        URL u = new URL("http://localhost:" + port);
 
+        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs, true);
+        assertEquals("One reply received", 1, reply.size());
+        String replyString = reply.iterator().next();
+        assertTrue(replyString.contains("Content-Type: x-application/log"));
+        assertTrue(replyString.contains("Content-Type: x-application/gzip"));
+        
+    }
 }
-
-

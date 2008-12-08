@@ -38,19 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
 
+import java.awt.Container;
+import javax.swing.JComponent;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
@@ -64,20 +71,17 @@ public class MIDletViewsSwitchTest extends PerformanceTestCase {
     private Node openNode;
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     private MIDletEditorOperator targetMIDletEditor;
-    private static ActionTracker tr;
 
     public MIDletViewsSwitchTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_PREPARE = 10000;
-        WAIT_AFTER_CLOSE = 5000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public MIDletViewsSwitchTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_PREPARE = 10000;
-        WAIT_AFTER_CLOSE = 5000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -90,8 +94,7 @@ public class MIDletViewsSwitchTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        log(":: initialize");
-        tr = ActionTracker.getInstance();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         targetProject = "MobileApplicationVisualMIDlet";
         midletName = "VisualMIDletMIDP20.java";
 
@@ -107,68 +110,106 @@ public class MIDletViewsSwitchTest extends PerformanceTestCase {
         if (popup == null) {
             throw new Error("Cannot get context menu for node ");
         }
-        log("------------------------- after popup invocation ------------");
-        popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
         try {
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             throw new Error("Cannot push menu item ");
         }
         targetMIDletEditor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
+
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+            public boolean accept(JComponent c) {
+                Container cont = c;
+                do {
+                    if ("o.n.m.vmd.io.editor.EditorTopComponent".equals(cont.getClass().getName())) {
+                        return true;
+                    }
+                    cont = cont.getParent();
+                } while (cont != null);
+                return false;
+            }
+
+            public String getFilterName() {
+                return "Filter for MobilityEditor";
+            }
+        });
+
+
+         repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+            public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+
+                Container cont = c;
+                do {
+                  cn = cont.getName();
+                if ("JScrollPane".equalsIgnoreCase(cn)) {
+                    return false;
+                }
+                cont = cont.getParent();
+
+                } while (cont != null);
+                return false;
+            }
+
+            public String getFilterName() {
+                return "no scrolls";
+            }
+        });
+
     }
 
     public void prepare() {
-        log(":: prepare");
-        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:PREPARE");
         targetMIDletEditor.switchToViewByName(fromView);
-
     }
 
     public ComponentOperator open() {
-        log(":: open");
-        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:OPEN");
         targetMIDletEditor.switchToViewByName(toView);
         return null;
     }
 
     @Override
     public void close() {
-        log(":: close");
-        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:CLOSE");
     }
 
-    @Override
     public void shutdown() {
-        log(":: shutdown");
-        targetMIDletEditor.closeDiscard();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        repaintManager().resetRegionFilters();
     }
 
     public void testFlowToDesignSwitch() {
         fromView = "Flow";
         toView = "Screen";
-        setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
 
     public void testDesignToFlowSwitch() {
         fromView = "Screen";
         toView = "Flow";
-        setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
 
     public void testFlowToSourceSwitch() {
         fromView = "Flow";
         toView = "Source";
-        setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
 
     public void testSourceToFlowSwitch() {
         fromView = "Source";
         toView = "Flow";
-        setJavaEditorCaretFilteringOn();
         doMeasurement();
-
     }
+
+    public void testSourceToAnalyzeSwitch() {
+        fromView = "Source";
+        toView = "Analyze";
+        doMeasurement();
+    }
+
+    public void testAnalyzeToSourceSwitch() {
+        fromView = "Analyze";
+        toView = "Source";
+        doMeasurement();
+    }
+
 }

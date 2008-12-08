@@ -40,7 +40,9 @@
  */
 
 package org.netbeans.modules.cnd.classview.model;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
@@ -51,6 +53,7 @@ import org.openide.nodes.*;
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
 /**
  * @author Vladimir Kvasihn
@@ -61,7 +64,7 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     public ObjectNode(CsmOffsetableDeclaration declaration) {
         this(declaration, Children.LEAF);
     }
-    
+
     public ObjectNode(CsmOffsetableDeclaration declaration, Children children) {
         super(children);
         setObject(declaration);
@@ -95,8 +98,10 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     
     @Override
     public Action[] getActions(boolean context) {
+        List<Action> res = new ArrayList<Action>();
         Action action = createOpenAction();
         if (action != null){
+            res.add(action);
             CsmOffsetableDeclaration decl = getObject();
             CharSequence name = decl.getUniqueName();
             CsmProject project = decl.getContainingFile().getProject();
@@ -117,12 +122,11 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
                 }
                 if (arr.size() > 1){
                     Action more = new MoreDeclarations(arr);
-                    return new Action[] { action, more };
+                    res.add(more);
                 }
             }
-            
-            return new Action[] { action };
         }
-        return new Action[0];
+        res.add(RefactoringActionsFactory.whereUsedAction());
+        return res.toArray(new Action[res.size()]);
     }
 }

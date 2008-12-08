@@ -66,6 +66,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -625,7 +626,12 @@ private class Listener implements ListSelectionListener,  TableModelListener {
         @Override
         public void addNotify() {
             super.addNotify();
-            getParent().setBackground(getBackground());            
+            //#154148
+            if(UIManager.getLookAndFeel().getID().equals("Nimbus")) {
+                getParent().setBackground(new Color(getBackground().getRGB(), false));
+            } else {
+                getParent().setBackground(getBackground());
+            }
         }
         
         

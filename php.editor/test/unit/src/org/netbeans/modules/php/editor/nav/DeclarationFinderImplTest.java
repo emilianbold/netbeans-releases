@@ -57,6 +57,116 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {",
+                "function test($^hello) {",
+                "* @param Book $hello",
+                "* @param Book $he|llo"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testClsVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "class Author {",
+                "class ^Author^ {",
+                " * @property Author $author hello this is doc",
+                " * @property Au|thor $author hello this is doc"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testGotoConstructTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public function ^__construct() {//MyClassConstr",
+                "$a = new MyClassConstr();",
+                "$a = new MyCla|ssConstr();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testGotoConstructTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public ^function __construct() {//MyClassConstr",
+                "$b = new MyClassConstr2();",
+                "$b = new MyCla|ssConstr2();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "interface myface {",
+                "interface ^myface {",
+                "myface::RECOVER_ORIG;",
+                "myf|ace::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 2;",
+                "const ^RECOVER_ORIG = 2;",
+                "myface::RECOVER_ORIG;",
+                "myface::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest3() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "class mycls implements myface {",
+                "class ^mycls implements myface {",
+                "mycls::RECOVER_ORIG;",
+                "myc|ls::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest4() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 1;",
+                "const ^RECOVER_ORIG = 1;",
+                "mycls::RECOVER_ORIG;",
+                "mycls::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest5() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc() {}//mycls",
+                "function ^mfnc^() {}//mycls",
+                "$a->mfnc();//mycls",
+                "$a->mf|nc();//mycls"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest6() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc();//myface",
+                "function ^mfnc^();//myface",
+                "$a->mfnc();//myface",
+                "$a->mfn|c();//myface"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
      public void testImplementsInterface() throws Exception {
         String gotoTest2 = prepareTestFile(
                 "testfiles/classMan.php",
@@ -1936,6 +2046,42 @@ public class DeclarationFinderImplTest extends TestBase {
                 "class Man implements Person {",
                 "^class Man implements Person {");
         performTestSimpleFindDeclaration(-1, userClass, manClass);
+    }
+
+    public void testPHPDocType01() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class ^Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Bo|ok $hello\n" +
+                                         " * @return Magazine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
+    public void testPHPDocType02() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class ^Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Book $hello\n" +
+                                         " * @return Mag|azine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
     }
 
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {

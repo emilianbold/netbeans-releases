@@ -113,8 +113,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private NotificationLineSupport nls;
 
     /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject project) {
-        this.project = project;
+    public AddDependencyPanel(MavenProject mavenProject) {
+        this(mavenProject, true);
+    }
+    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan) {
+        this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -196,9 +199,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         defaultProgressC = progressLabel.getForeground();
         defaultVersionC = txtVersion.getForeground();
         setSearchInProgressUI(false);
-
-        artifactList = new DMListPanel(this, project);
-        artifactPanel.add(artifactList, BorderLayout.CENTER);
+        if (showDepMan) {
+            artifactList = new DMListPanel(this, project);
+            artifactPanel.add(artifactList, BorderLayout.CENTER);
+        } else {
+            tabPane.setEnabledAt(1, false);
+        }
 
     }
 
@@ -235,6 +241,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         if (nls == null) {
             nls = dd.createNotificationLineSupport();
         }
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        assert nls != null : " The notificationLineSupport was not attached to the panel."; //NOI18N
     }
 
     void setSelectedScope(String type) {
@@ -620,14 +632,14 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
 
-        while (localProj.hasParent()) {
-            localProj = localProj.getParent();
+        while (localProj != null) {
             curDM = localProj.getDependencyManagement();
             if (curDM != null) {
                 @SuppressWarnings("unchecked")
                 List<Dependency> ds = curDM.getDependencies();
                 result.addAll(ds);
             }
+            localProj = localProj.getParent();
         }
 
         return result;
@@ -875,10 +887,22 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     depPanel.txtGroupId.setText(vi.getGroupId());
                     depPanel.txtArtifactId.setText(vi.getArtifactId());
                     depPanel.txtVersion.setText(vi.getVersion());
+                    //reset completion.
+                    depPanel.artifactCompleter.setLoading(true);
+                    depPanel.versionCompleter.setLoading(true);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            depPanel.populateArtifact();
+                            depPanel.populateVersion();
+                        }
+                    });
                 } else {
                     depPanel.txtGroupId.setText("");
                     depPanel.txtArtifactId.setText("");
                     depPanel.txtVersion.setText("");
+                    //reset completion.
+                    depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                    depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
                 }
             }
         }
@@ -1023,11 +1047,23 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 NBVersionInfo vi = ((VersionNode)selNodes[0]).getNBVersionInfo();
                 depPanel.txtGroupId.setText(vi.getGroupId());
                 depPanel.txtArtifactId.setText(vi.getArtifactId());
-                depPanel.txtVersion.setText("");
+                depPanel.txtVersion.setText(""); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setLoading(true);
+                depPanel.versionCompleter.setLoading(true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        depPanel.populateArtifact();
+                        depPanel.populateVersion();
+                    }
+                });
             } else {
-                depPanel.txtGroupId.setText("");
-                depPanel.txtArtifactId.setText("");
-                depPanel.txtVersion.setText("");
+                depPanel.txtGroupId.setText(""); //NOI18N
+                depPanel.txtArtifactId.setText(""); //NOI18N
+                depPanel.txtVersion.setText(""); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
             }
         }
 

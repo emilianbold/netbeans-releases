@@ -54,6 +54,7 @@ import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -156,13 +157,13 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
+    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems) throws IOException {
         FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-        return h;
+        return p;
     }
 
     /*
@@ -207,7 +208,7 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator sourceFolders, final Iterator importantItems, boolean saveNow) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final Iterator<String> importantItems, boolean saveNow) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();

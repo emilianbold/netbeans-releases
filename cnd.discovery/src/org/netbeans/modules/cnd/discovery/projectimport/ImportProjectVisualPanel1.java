@@ -36,19 +36,73 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.discovery.wizard.FileChooser;
 import org.openide.util.NbBundle;
 
 public final class ImportProjectVisualPanel1 extends JPanel {
 
+    private final ImportProjectWizardPanel1 controller;
+
     /** Creates new form ImportProjectVisualPanel1 */
-    public ImportProjectVisualPanel1() {
+    public ImportProjectVisualPanel1(ImportProjectWizardPanel1 controller) {
         initComponents();
+        this.controller = controller;
+        projectFolder.setText(controller.getWizardStorage().getPath());
+        configureFlags.setText(controller.getWizardStorage().getFlags());
+        setMainProjectCheckBox.setSelected(controller.getWizardStorage().isSetMain());
+        buildProjectCheckBox.setSelected(controller.getWizardStorage().isBuildProject());
+        addListeners();
+    }
+
+    private void addListeners() {
+        projectFolder.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setPath(projectFolder.getText());
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setPath(projectFolder.getText());
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setPath(projectFolder.getText());
+            }
+        });
+        configureFlags.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setFlags(configureFlags.getText());
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setFlags(configureFlags.getText());
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                controller.getWizardStorage().setFlags(configureFlags.getText());
+            }
+        });
+        setMainProjectCheckBox.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                controller.getWizardStorage().setSetMain(setMainProjectCheckBox.isSelected());
+            }
+        });
+        buildProjectCheckBox.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                controller.getWizardStorage().setBuildProject(buildProjectCheckBox.isSelected());
+            }
+        });
     }
 
     @Override
@@ -135,7 +189,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 193, Short.MAX_VALUE)
+            .add(0, 192, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -180,14 +234,12 @@ public final class ImportProjectVisualPanel1 extends JPanel {
                 JFileChooser.DIRECTORIES_ONLY, false,
                 null,
                 seed,
-                false
-                );
+                false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        //path = FilePathAdaptor.normalize(path);
         projectFolder.setText(path);
 }//GEN-LAST:event_browseButtonActionPerformed
 

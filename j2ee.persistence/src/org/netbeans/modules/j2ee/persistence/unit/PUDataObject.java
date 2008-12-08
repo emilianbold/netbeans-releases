@@ -245,7 +245,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public void addPersistenceUnit(PersistenceUnit persistenceUnit){
         ProviderUtil.makePortableIfPossible(FileOwnerQuery.getOwner(getPrimaryFile()), persistenceUnit);
         getPersistence().addPersistenceUnit(persistenceUnit);
-        modelUpdatedFromUI();
+        modelUpdated();
         firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);
     }
     
@@ -254,7 +254,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
      */
     public void removePersistenceUnit(PersistenceUnit persistenceUnit){
         getPersistence().removePersistenceUnit(persistenceUnit);
-        modelUpdatedFromUI();
+        modelUpdated();
         firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);
     }
     
@@ -274,7 +274,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             }
         }
         persistenceUnit.addClass2(clazz);
-        modelUpdatedFromUI();
+        modelUpdated();
         return true;
     }
     
@@ -286,8 +286,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
      */
     public void removeClass(PersistenceUnit persistenceUnit, String clazz){
         persistenceUnit.removeClass2(clazz);
-        
-        modelUpdatedFromUI();
+        modelUpdated();
     }
     
     
@@ -352,8 +351,15 @@ public class PUDataObject extends XmlMultiViewDataObject {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
     
-    public void modelUpdatedFromUI() {
+    public void modelUpdated() {
         setModified(true);
+        modelSynchronizer.requestUpdateData();
+    }
+    
+    /**
+     * Call this method if the model got updated via UI, such as,visual editor
+     */
+    public void modelUpdatedFromUI() {
         modelSynchronizer.requestUpdateData();
     }
     

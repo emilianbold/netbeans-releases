@@ -55,7 +55,7 @@ public final class OccurencesSupport {
     }
 
     @CheckForNull
-    public Occurence<? extends ModelElement> getOccurence() {
+    public Occurence getOccurence() {
         return modelVisitor.getOccurence(offset);
     }
 

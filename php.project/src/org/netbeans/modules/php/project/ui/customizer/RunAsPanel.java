@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -153,14 +154,13 @@ public final class RunAsPanel extends JPanel {
             return value;
         }
 
-        protected final void markAsModified(JLabel label, String propertyName, String value) {
+        protected final void markAsModified(JComponent label, String propertyName, String value) {
             final String defaultValue = getDefaultValue(propertyName);
             if (currentCfg().isDefault() || value.equals(defaultValue) /*|| defaultValue == null*/) {
                 label.setFont(RunAsPanel.JL_PLAIN_FONT);
             } else {
                 label.setFont(RunAsPanel.JL_BOLD_FONT);
             }
-
         }
 
         protected final String getValue(Configuration configuration, String propertyName) {

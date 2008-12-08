@@ -156,6 +156,7 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
         try {
             super.visit(node);
         } finally {
@@ -250,17 +251,21 @@ public final class ModelVisitor extends DefaultVisitor {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        occurencesBuilder.prepare(Kind.IFACE, node.getClassName(), scope);
     }
 
     @Override
     public void visit(ClassConstantDeclaration node) {
         //ScopeImpl scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
-        assert scope != null && scope instanceof ClassScopeImpl;
-        ClassScopeImpl classScope = (ClassScopeImpl) scope;
+        //TODO: constants can be also in ifaces
+        assert scope != null && scope instanceof TypeScopeImpl;
         List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
+        TypeScopeImpl typeScope = (TypeScopeImpl) scope;
+        //InterfaceScopeImpl interfaceScopeImpl = (InterfaceScopeImpl) scope;
+
         for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-            ClassConstantElement element = classScope.createElement(nodeInfo);
+            ClassConstantElement element = typeScope.createElement(nodeInfo);
             occurencesBuilder.prepare(nodeInfo, element);
         }
         super.visit(node);
@@ -563,7 +568,7 @@ public final class ModelVisitor extends DefaultVisitor {
     }
 
     @CheckForNull
-    public Occurence<? extends ModelElement> getOccurence(int offset) {
+    public Occurence getOccurence(int offset) {
         return findStrictOccurence((FileScope) getModelScope(), offset, null);
     }
 
@@ -571,7 +576,7 @@ public final class ModelVisitor extends DefaultVisitor {
         return findNearestVarScope((FileScope) getModelScope(), offset, null);
     }
 
-    static List<Occurence<? extends ModelElement>> getAllOccurences(ModelScope modelScope, Occurence<? extends ModelElement> occurence) {
+    static List<Occurence> getAllOccurences(ModelScope modelScope, Occurence occurence) {
         ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
         if (declaration instanceof MethodScope) {
             MethodScope methodScope = (MethodScope) declaration;
@@ -610,14 +615,14 @@ public final class ModelVisitor extends DefaultVisitor {
         }
     }
 
-    private Occurence<? extends ModelElement> findStrictOccurence(FileScope scope, int offset,
-            Occurence<? extends ModelElement> atOffset) {
+    private Occurence findStrictOccurence(FileScope scope, int offset,
+            Occurence atOffset) {
         buildOccurences();
         //FileObject fileObject = scope.getFileObject();
-        List<Occurence<? extends ModelElement>> occurences = scope.getOccurences();
-        for (Occurence<? extends ModelElement> occ : occurences) {
+        List<Occurence> occurences = scope.getOccurences();
+        for (Occurence occ : occurences) {
             assert occ != null;
-            if (occ.getOffsetRange().containsInclusive(offset)) {
+            if (occ.getOccurenceRange().containsInclusive(offset)) {
                 atOffset = occ;
             }
         }
@@ -646,6 +651,9 @@ public final class ModelVisitor extends DefaultVisitor {
 
         }
         if (atOffset == null) {
+            while (scope != null && !(scope instanceof VariableScope)) {
+                scope = scope.getInScope();
+            }
             atOffset = (VariableScope) scope;
         }
         return atOffset;

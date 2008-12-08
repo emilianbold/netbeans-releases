@@ -228,7 +228,7 @@ public class ProjectCreator {
         extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());
         extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(getProjectLevelMacros());
         extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(getProjectLevelMacros());
-        Iterator importantItemsIterator = null;
+        Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
             makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
@@ -256,7 +256,7 @@ public class ProjectCreator {
      * @throws IOException in case something went wrong
      */
     public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
-                            Iterator sourceFiles, Iterator importantItems,
+                            Iterator sourceFiles, Iterator<String> importantItems,
                             Set<String> folders, Set<String> libs) throws IOException {
         FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
@@ -273,7 +273,7 @@ public class ProjectCreator {
 
     //Create a project with specified project folder, makefile, name, source files and important items
     private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
-            Configuration[] confs, Iterator sourceFiles, Iterator importantItems) throws IOException {
+            Configuration[] confs, Iterator sourceFiles, Iterator<String> importantItems) throws IOException {
         //Create a helper object
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, TYPE);
         Element data = h.getPrimaryConfigurationData(true);

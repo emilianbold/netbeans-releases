@@ -3040,7 +3040,8 @@ public class CasualDiff {
             LOG.log(INFO, "-----\n" + origText + "-----\n");
             LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
-            printer.eatChars(from-to);
+            if (to >= 0)
+                printer.eatChars(from-to);
             return;
         } else if (to > origText.length()) {
             // #99333, #97801: Debug message for the issues.

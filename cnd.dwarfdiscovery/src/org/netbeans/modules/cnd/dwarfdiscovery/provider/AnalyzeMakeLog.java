@@ -260,8 +260,6 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     return myFileProperties;
                 }
                 
-                
-                
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();

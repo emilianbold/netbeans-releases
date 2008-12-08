@@ -692,6 +692,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154112.cc", 20, 19, "iz154112.cc", 13, 5);
     }
 
+    public void testIZ154594() throws Exception {
+        // IZ#154594: completion fails on expressions with keyword template
+        performTest("iz154594.cc", 15, 32, "iz154594.cc", 12, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

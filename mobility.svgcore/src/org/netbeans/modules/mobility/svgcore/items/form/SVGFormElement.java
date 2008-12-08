@@ -40,6 +40,8 @@
 package org.netbeans.modules.mobility.svgcore.items.form;
 
 import java.io.IOException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
@@ -69,8 +71,8 @@ public abstract class SVGFormElement extends SVGComponentDrop{
         mySnippetPath = snippetPath;
     }
 
-    protected boolean doTransfer() {
-        SVGFileModel model = getSVGDataObject().getModel();
+    protected boolean doTransfer(SVGDataObject svgDataObject) {
+        SVGFileModel model = svgDataObject.getModel();
         try {
             String id = model.createUniqueId(myIdPrefix, false);
             String snippet = getSnippet(id);
@@ -83,16 +85,39 @@ public abstract class SVGFormElement extends SVGComponentDrop{
         return false;
     }
     
-    private String getSnippet(String id) throws IOException{
-        String text = getSnippetString();
+    @Override
+    protected boolean doTransfer(JTextComponent target) {
+        SVGDataObject svgDataObject = SVGDataObject.getActiveDataObject(target);
+        SVGFileModel model = svgDataObject.getModel();
+        try {
+            String id = model.createUniqueId(myIdPrefix, false);
+            String snippet = getSnippet(id);
+            insertToTextComponent(snippet, target);
+            return true;
+        } catch (Exception ex) {
+            SceneManager.error("Error during image merge", ex); //NOI18N
+        }
+        return false;
+    }
+
+    /**
+     * loads snippet string from resource file,
+     * which part is specified in conbstructor.
+     * Path is relative to current class -
+     * getClass().getResourceAsStream(PATH) is used to load resource.
+     * @return snippet String
+     * @throws java.io.IOException
+     */
+    protected String loadSnippetString() throws IOException{
+        return loadSnippetString(SVGFormElement.class, mySnippetPath);
+    }
+
+    private String getSnippet(String id) throws IOException {
+        String text = loadSnippetString();
         String withId = text.replace(ID_PATTERN, id);
         return replaceCoordinates(withId);
     }
     
-    protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGFormElement.class, mySnippetPath);
-    }
-  
     private String myIdPrefix;
     private String mySnippetPath;
 }

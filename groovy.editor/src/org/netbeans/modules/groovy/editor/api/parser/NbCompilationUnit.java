@@ -45,8 +45,13 @@ import groovy.lang.GroovyClassLoader;
 import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
+import java.util.Stack;
 import java.util.concurrent.ExecutionException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -54,6 +59,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -87,11 +93,7 @@ public final class NbCompilationUnit extends CompilationUnit {
                         public void run(CompilationController controller) throws Exception {
                             TypeElement typeElement = controller.getElements().getTypeElement(name);
                             if (typeElement != null) {
-                                int modifiers = 0;
-                                if (typeElement.getKind().isInterface()) {
-                                    modifiers = Opcodes.ACC_INTERFACE;
-                                }
-                                classNodes[0] = new ClassNode(name, modifiers, null);
+                                classNodes[0] = createClassNode(name, typeElement);
                             }
                         }
                     };
@@ -109,6 +111,42 @@ public final class NbCompilationUnit extends CompilationUnit {
                 }
             }
             return classNodes[0];
+        }
+
+        private static ClassNode createClassNode(String name, TypeElement typeElement) {
+            int modifiers = 0;
+            ClassNode superClass = null;
+
+            if (typeElement.getKind().isInterface()) {
+                modifiers = Opcodes.ACC_INTERFACE;
+            } else {
+                // initialize supertypes
+                // super class is required for try {} catch block exception type
+                Stack<DeclaredType> supers = new Stack<DeclaredType>();
+                while (typeElement != null && (typeElement.getSuperclass().getKind() != TypeKind.NONE)
+                        && (typeElement.getSuperclass().getKind() == TypeKind.DECLARED)) {
+
+                    DeclaredType superType = (DeclaredType) typeElement.getSuperclass();
+                    supers.push(superType);
+
+                    Element element = superType.asElement();
+                    if ((element.getKind() == ElementKind.CLASS
+                            || element.getKind() == ElementKind.ENUM) && (element instanceof TypeElement)) {
+
+                        typeElement = (TypeElement) element;
+                        continue;
+                    }
+
+                    typeElement = null;
+                }
+
+                for (DeclaredType type : supers) {
+                    // FIXME modifiers
+                    superClass = new ClassNode(Utilities.getClassName(type).toString(),
+                            0, superClass);
+                }
+            }
+            return new ClassNode(name, modifiers, superClass);
         }
 
     }

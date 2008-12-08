@@ -99,6 +99,17 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
         myRadioButton = null;
     }
     
+    @Override
+    public Boolean canEditAsText() {
+        return false;
+    }
+    
+    @Override
+    public String getAsText() {
+        return NbBundle.getMessage( PropertyEditorSpinnerModel.class, 
+                "TXT_ButtonGroup");
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#getCustomEditor()
      */
@@ -202,15 +213,13 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
                   oldValue[0] = desComponent.readProperty(SVGRadioButtonCD.PROP_BUTTON_GROUP);
             }
         });
-        if (oldValue[0].getPrimitiveValue().equals(text)) {
+        if ( text!=null &&  text.equals(oldValue[0].getPrimitiveValue())) {
             return;
         }
         
         desComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-                desComponent.writeProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP, 
-                        MidpTypes.createJavaCodeValue(text));
                 List<PropertyValue> list = desComponent.getParentComponent().
                         readProperty( SVGFormCD.PROP_COMPONENTS).getArray();
                 for (PropertyValue propertyValue : list) {
@@ -219,23 +228,20 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
                     {
                         DesignComponent buttonGroup = propertyValue.getComponent();
                         if ( buttonGroup.readProperty( ClassCD.PROP_INSTANCE_NAME).
-                                getPrimitiveValue().toString().equals( 
-                                        oldValue[0].getPrimitiveValue().toString()))
-                        {
-                            ArraySupport.remove( buttonGroup , 
-                                    SVGButtonGroupCD.PROP_BUTTONS , desComponent );
-                        }
-                        if ( buttonGroup.readProperty( ClassCD.PROP_INSTANCE_NAME).
                                 getPrimitiveValue().toString().equals( text))
                         {
-                            MidpArraySupport.append( buttonGroup, 
-                                    SVGButtonGroupCD.PROP_BUTTONS , desComponent );
+                            PropertyEditorButtonGroup.super.setValue( 
+                                    PropertyValue.createComponentReference( buttonGroup));
+                            return;
                         }
                     }
                 }
+                PropertyEditorButtonGroup.super.setValue( 
+                        PropertyValue.createNull());
+                /*desComponent.writeProperty( SVGRadioButtonCD.PROP_BUTTON_GROUP, 
+                        PropertyValue.createComponentReference(text));*/
             }
         });
-        super.setValue(MidpTypes.createJavaCodeValue(text));
     }
     
     private class CustomEditor extends JPanel implements ActionListener {
@@ -283,9 +289,17 @@ public class PropertyEditorButtonGroup extends PropertyEditorUserCode
             }*/
         }
         
-        void setValue(PropertyValue value) {
-            String group = value.getPrimitiveValue().toString();
-            myCombobox.setSelectedItem( group );
+        void setValue(final PropertyValue value) {
+            if ( value.getComponent() == null ){
+                return;
+            }
+            value.getComponent().getDocument().getTransactionManager().readAccess(
+                    new Runnable() {
+                        public void run() {
+                            String group = value.getComponent().readProperty( ClassCD.PROP_INSTANCE_NAME).toString();
+                            myCombobox.setSelectedItem( group );
+                        }
+                    });
         }
         
         String getValue(){

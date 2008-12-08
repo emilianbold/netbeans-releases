@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -48,10 +47,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -61,8 +56,6 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
-import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.util.NbBundle;
@@ -78,7 +71,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
 
-    /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
@@ -93,7 +85,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         Action enterAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                 executeBtnActionPerformed(null);
+                executeBtnActionPerformed(null);
             }
         };
 
@@ -287,10 +279,9 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 jSplitPane1.setBottomComponent(jScrollPane2);
                 previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
             }
-            jEditorPane1.setForeground(Color.red);
-            jEditorPane1.setContentType("text/plain"); // NOI18N
-            jEditorPane1.setText(ex.getMessage());
-
+            jEditorPane1.setContentType("text/html"); // NOI18N
+            String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
+            jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
         dispose();
@@ -331,26 +322,15 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 jEditorPane1.setText(sql);
             }
         } catch (DBException ex) {
-            jEditorPane1.setContentType("text/plain"); // NOI18N
-            jEditorPane1.setForeground(Color.red);
-            jEditorPane1.setText(ex.getMessage());
+            jEditorPane1.setContentType("text/html"); // NOI18N
+            String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
+            jEditorPane1.setText(str);//ex.getMessage());
             return;
         }
     }
     JTextField[] colValueTextField;
 
     private void addInputFields() {
-        Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
-        Map<Integer, String> typeInfo = Collections.emptyMap();
-        try {
-            if (conn != null) {
-                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-                typeInfo = dbMeta.buildDBSpecificDatatypeMap();
-            }
-        } catch (SQLException ex) {
-            // ignore
-        }
-
         int rows = dataView.getDataViewDBTable().getColumnCount();
         JLabel[] colNameLabel = new JLabel[rows];
         JLabel[] colDataType = new JLabel[rows];
@@ -405,10 +385,9 @@ class InsertRecordDialog extends javax.swing.JDialog {
             colDataType[i].setFont(colDataType[i].getFont()); // NOI18N
             colDataType[i].getAccessibleContext().setAccessibleName(colDataType[i].getName());
             colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
-            Integer typeInt = new Integer(col.getJdbcType());
-            String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
+            String typeName = col.getTypeName();
 
-            colDataType[i].setText(typeName);
+            colDataType[i].setText(typeName.replace("(", "").replace(")", ""));
             colDataType[i].setDisplayedMnemonicIndex(-1);
 
             colNameLabel[i].setLabelFor(colValueTextField[i]);
@@ -437,6 +416,16 @@ class InsertRecordDialog extends javax.swing.JDialog {
                         Toolkit.getDefaultToolkit().beep();
                     } else if (colValueTextField[index].isEditable()) {
                         colValueTextField[index].setText("<NULL>"); // NOI18N
+                        colValueTextField[index].setEditable(false);
+                    } else if (!colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText(""); // NOI18N
+                        colValueTextField[index].setEditable(true);
+                    }
+                } else if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_1) {
+                    if (col.isGenerated() || !col.isNullable()) {
+                        Toolkit.getDefaultToolkit().beep();
+                    } else if (colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText("<DEFAULT>"); // NOI18N
                         colValueTextField[index].setEditable(false);
                     } else if (!colValueTextField[index].isEditable()) {
                         colValueTextField[index].setText(""); // NOI18N
@@ -484,8 +473,12 @@ class InsertRecordDialog extends javax.swing.JDialog {
             JTextField textField = colValueTextField[i];
             DBColumn col = dataView.getDataViewDBTable().getColumn(i);
             Object val;
-            if ((col.isNullable() || col.isGenerated()) && !textField.isEditable()) {
+            if (col.isGenerated()) {
                 val = null;
+            } else if (col.isNullable() && textField.getText().equals("<NULL>") && !textField.isEditable()) { // NOI18N
+                val = null;
+            } else if (textField.getText().equals("<DEFAULT>") && !textField.isEditable()) { // NOI18N
+                val = "<DEFAULT>"; // NOI18N
             } else {
                 val = DBReadWriteHelper.validate(textField.getText(), col);
             }

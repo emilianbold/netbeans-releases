@@ -70,7 +70,7 @@ public class PDFDataObject extends MultiDataObject {
         // [PENDING] try also Java-implemented reader
         File f = FileUtil.toFile(pf);
         if (f != null) {
-            cookies.add(new PDFOpenSupport(f));
+            cookies.add(new PDFOpenSupport(this));
         }
     }
 

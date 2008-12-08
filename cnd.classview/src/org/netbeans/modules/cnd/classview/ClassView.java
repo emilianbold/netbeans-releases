@@ -53,6 +53,9 @@ import javax.accessibility.AccessibleRole;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import javax.swing.*;
 import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.text.*;
@@ -61,37 +64,59 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 /**
  * View as such
  * @author Vladimir Kvasihn
  */
-public class ClassView extends JComponent implements ExplorerManager.Provider, Accessible {
+public class ClassView extends JComponent implements ExplorerManager.Provider, Accessible, PropertyChangeListener, Lookup.Provider {
     
     /** composited view */
     protected BeanTreeView view;
     private ClassViewModel model;// = new ClassViewModel();
     private ViewMouseListener mouseListener = new ViewMouseListener();
-    private ExplorerManager manager;
-    
+    private final ExplorerManager manager = new ExplorerManager();
+    private final InstanceContent selectedNodes = new InstanceContent();
+    private final Lookup lookup = new AbstractLookup(selectedNodes);
+
     private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events"); // NOI18N
     
     public ClassView() {
         setLayout(new BorderLayout());
         //init();
-        manager = new ExplorerManager();
+        manager.addPropertyChangeListener(this);
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         setupRootContext(createEmptyRoot());
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            selectedNodes.setPairs(Collections.<AbstractLookup.Pair>emptyList());
+            for (Node n : (Node[]) evt.getNewValue()) {
+                selectedNodes.add(n);
+                if (n instanceof AbstractCsmNode) {
+                    CsmObject csmObject = ((AbstractCsmNode) n).getCsmObject();
+                    if (csmObject != null) {
+                        selectedNodes.add(csmObject);
+                    }
+                }
+            }
+        }
+    }
+
     /*package local*/ void selectInClasses(final CsmOffsetableDeclaration decl) {
-      	CsmModelAccessor.getModel().enqueue(new Runnable() {
-	    public void run() {
+        CsmModelAccessor.getModel().enqueue(new Runnable() {
+
+            public void run() {
                 ClassViewModel currentModel = getModel();
-		if (currentModel != null) {
+                if (currentModel != null) {
                     Node node = currentModel.findDeclaration(decl);
                     if (node != null) {
                         try {
@@ -101,12 +126,15 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
                             Exceptions.printStackTrace(ex);
                         }
                     }
-		}
-	    }
-	}, "Class View: select in classes"); // NOI18N
-
+                }
+            }
+        }, "Class View: select in classes"); // NOI18N
     }
-    
+
+    public Lookup getLookup() {
+        return lookup;
+    }
+
     private void init(){
         view = new BeanTreeView();
         view.setRootVisible(false);
@@ -224,7 +252,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     }
     
     /*package local*/ void startup() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: startup()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesV: startup()");} // NOI18N
         ClassViewModel currentModel = getModel();
         setModel(new ClassViewModel());
         if( currentModel != null ) {
@@ -240,7 +268,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     }
     
     /*package local*/ void shutdown() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: shutdown()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesV: shutdown()");} // NOI18N
         addRemoveViewListeners(false);
         ClassViewModel currentModel = getModel();
         if( currentModel != null ) {
@@ -260,20 +288,16 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
     }
     
     /*package local*/ void projectOpened(final CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectOpened() "+project); // NOI18N
-//	CsmModelAccessor.getModel().enqueue(new Runnable() {
-//	    public void run() {
-                ClassViewModel currentModel = getModel();
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesV: projectOpened() "+project);} // NOI18N
+        ClassViewModel currentModel = getModel();
 		if (currentModel != null) {
 		    currentModel.openProject(project);
 		    setupRootContext(currentModel.getRoot());
 		}
-//	    }
-//	}, "Class View: creating project node"); // NOI18N
     }
     
     /*package local*/ void projectClosed(CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesV: projectClosed() " + project); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesV: projectClosed() " + project);} // NOI18N
         ClassViewModel currentModel = getModel();
         if (currentModel != null && !getExplorerManager().getRootContext().isLeaf()) {
             currentModel.closeProject(project);
@@ -311,7 +335,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
             } catch (PropertyVetoException ex) {
                 ex.printStackTrace();
             }
-            if (Diagnostic.DEBUG) Diagnostic.trace("ClassesV: setupRootContext() " + rc); // NOI18N
+            if (Diagnostic.DEBUG) {Diagnostic.trace("ClassesV: setupRootContext() " + rc);} // NOI18N
             getExplorerManager().setRootContext(rc);
         }
     }

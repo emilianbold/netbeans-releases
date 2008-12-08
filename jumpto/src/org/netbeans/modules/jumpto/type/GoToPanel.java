@@ -65,12 +65,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -91,7 +91,8 @@ public class GoToPanel extends javax.swing.JPanel {
     
     // Time when the serach stared (for debugging purposes)
     long time = -1;
-    
+
+    private final SearchHistory searchHistory;
     
     /** Creates new form GoToPanel */
     public GoToPanel( ContentProvider contentProvider ) throws IOException {
@@ -126,7 +127,14 @@ public class GoToPanel extends javax.swing.JPanel {
         caseSensitive.setSelected(UiOptions.GoToTypeDialog.getCaseSensitive());
         caseSensitive.addItemListener(pl);
         matchesList.addListSelectionListener(pl);                       
-                
+
+        searchHistory = new SearchHistory(GoToPanel.class, nameField);
+    }
+
+    @Override
+    public void removeNotify() {
+        searchHistory.saveHistory();
+        super.removeNotify();
     }
     
     /** Sets the model from different therad

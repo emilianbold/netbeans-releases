@@ -59,8 +59,8 @@ public class DateType extends TimestampType {
 
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
     private final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
-        new SimpleDateFormat("yyyy-MM-dd", LOCALE),
-        new SimpleDateFormat("MM-dd-yyyy", LOCALE),
+        new SimpleDateFormat("yyyy-MM-dd", LOCALE), // NOI18N
+        new SimpleDateFormat("MM-dd-yyyy", LOCALE), // NOI18N
         DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
     };
 

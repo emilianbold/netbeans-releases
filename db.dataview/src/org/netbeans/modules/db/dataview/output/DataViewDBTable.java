@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,9 +72,9 @@ class DataViewDBTable {
             cols.addAll(tbl.getColumnList());
         }
         Collections.sort(cols, new ColumnOrderComparator());
-        columns = Collections.unmodifiableList(cols);        
+        columns = Collections.unmodifiableList(cols);
     }
-    
+
     public DBTable geTable(int index) {
         return dbTables[index];
     }
@@ -130,7 +129,7 @@ class DataViewDBTable {
         }
         return columnTooltipStr;
     }
-    
+
     final class ColumnOrderComparator implements Comparator<DBColumn> {
 
         private ColumnOrderComparator() {
@@ -139,5 +138,5 @@ class DataViewDBTable {
         public int compare(DBColumn col1, DBColumn col2) {
             return col1.getOrdinalPosition() - col2.getOrdinalPosition();
         }
-    }    
+    }
 }

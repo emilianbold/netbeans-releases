@@ -171,8 +171,12 @@ public class GenerateCodeAction extends CookieAction
             } // for
         } // else - more than one node selected
 
-        UMLProjectProperties prjProps = 
-            retrieveUMLProject().getUMLProjectProperties();
+        UMLProject pr=retrieveUMLProject();
+        if(pr==null)
+        {
+            return;
+        }
+        UMLProjectProperties prjProps =pr.getUMLProjectProperties();
         
         String targetFolderName = prjProps.getCodeGenFolderLocation();
         boolean hasTargetJavaPrj = true;

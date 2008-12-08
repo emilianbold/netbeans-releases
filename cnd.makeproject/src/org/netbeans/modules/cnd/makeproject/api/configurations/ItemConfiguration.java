@@ -331,14 +331,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public Object clone() {
         ItemConfiguration i = new ItemConfiguration(getConfiguration(), getItem());
 
-        i.setExcluded((BooleanConfiguration) getExcluded().clone());
+        i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
 
-        i.setCustomToolConfiguration((CustomToolConfiguration) getCustomToolConfiguration().clone());
-        i.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
-        i.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
-        i.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
-        i.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
+        i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+        i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+        i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
         return i;
     }
 

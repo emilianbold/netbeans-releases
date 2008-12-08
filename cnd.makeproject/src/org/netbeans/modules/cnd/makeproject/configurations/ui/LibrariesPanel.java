@@ -224,7 +224,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public LibraryItem copyAction(LibraryItem o) {
             LibraryItem libraryItem = o;
-            return (LibraryItem) libraryItem.clone();
+            return libraryItem.clone();
         }
     }
 
