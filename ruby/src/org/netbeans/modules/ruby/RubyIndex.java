@@ -1401,7 +1401,12 @@ public final class RubyIndex {
         return globals;
     }
 
-    public Set<IndexedConstant> getConstants(String classFqn, String prefix) {
+    public Set<? extends IndexedConstant> getConstants(final String constantFqn) {
+        String[] parts = RubyUtils.parseConstantName(constantFqn);
+        return getConstants(parts[0], parts[1]);
+    }
+
+    public Set<? extends IndexedConstant> getConstants(String classFqn, String prefix) {
         boolean haveRedirected = false;
 
         if ((classFqn == null) || classFqn.equals(OBJECT)) {
