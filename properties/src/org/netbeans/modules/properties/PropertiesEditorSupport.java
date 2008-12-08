@@ -67,6 +67,8 @@ import java.nio.charset.CharsetDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -79,6 +81,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetEncoder;
 import org.openide.ErrorManager;
@@ -93,10 +96,12 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -137,12 +142,23 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** Generated serial version UID. */
     static final long serialVersionUID =1787354011149868490L;
     
+    /** can hold the right charset to be used during save, needed for communication
+     * between saveFromKitToStream and saveDocument
+     */
+    private static Map<DataObject,Charset> charsets = Collections.synchronizedMap(new HashMap<DataObject,Charset>());
     
     /** Constructor. */
     public PropertiesEditorSupport(PropertiesFileEntry entry) {
         super(new Environment(entry),
               org.openide.util.lookup.Lookups.singleton(entry.getDataObject()));
         this.myEntry = entry;
+    }
+    
+    /** Getter for the environment that was provided in the constructor.
+    * @return the environment
+    */
+    final CloneableEditorSupport.Env desEnv() {
+        return (CloneableEditorSupport.Env) env;
     }
     
     /** 
@@ -170,6 +186,18 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     @Override
     protected CloneableEditor createCloneableEditor() {
         return new PropertiesEditor(this);
+    }
+
+    /** Getter of the data object that this support is associated with.
+    * @return data object passed in constructor
+    */
+    public final DataObject getDataObject () {
+        return myEntry.getDataObject();
+    }
+
+    private boolean isEnvReadOnly() {
+        CloneableEditorSupport.Env myEnv = desEnv();
+        return myEnv instanceof Environment && !((Environment) myEnv).getFileImpl().canWrite();
     }
     
     /**
@@ -524,13 +552,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /** Helper method. Saves this entry. */
     private void saveThisEntry() throws IOException {
-        super.saveDocument();
+        FileSystem.AtomicAction aa = new SaveImpl(this);
+        FileUtil.runAtomicAction(aa);
+//        super.saveDocument();
         // #32777 - it can happen that save operation was interrupted
         // and file is still modified. Mark it unmodified only when it is really
         // not modified.
         if (!env.isModified()) {
             myEntry.setModified(false);
         }
+    }
+
+    final void superSaveDoc() throws IOException {
+        super.saveDocument();
     }
     
     /**
@@ -674,9 +708,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 if(this.entry != null)
                     super.entry = this.entry;
         }
-    }
+        }
 
-    
+
     /** Nested class. Implementation of <code>ClonableEditorSupport.Env</code> interface. */
     private static class Environment implements CloneableEditorSupport.Env,
     PropertyChangeListener, SaveCookie {
@@ -685,10 +719,15 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         static final long serialVersionUID = 354528097109874355L;
             
         /** Entry on which is support build. */
-        protected PropertiesFileEntry entry;
-            
+        private PropertiesFileEntry entry;
+
         /** Lock acquired after the first modification and used in <code>save</code> method. */
         private transient FileLock fileLock;
+
+        /** The file object this environment is associated to.
+        * This file object can be changed by a call to refresh file.
+        */
+        private transient FileObject fileObject;
             
         /** Spport for firing of property changes. */
         private transient PropertyChangeSupport propSupp;
@@ -707,7 +746,18 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             entry.getFile().addFileChangeListener(new EnvironmentListener(this));
             entry.addPropertyChangeListener(this);
         }
+        /** Getter for the file to work on.
+        * @return the file
+        */
+        private FileObject getFileImpl () {
+            // updates the file if there was a change
+            changeFile();
+            return fileObject;
+        }
 
+        protected final DataObject getDataObject() {
+            return entry.getDataObject();
+        }
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Adds property listener. */
         public void addPropertyChangeListener(PropertyChangeListener l) {
             LOG.finer("Environment.addPropertyChangeListener(...)");    //NOI18N
@@ -826,6 +876,20 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             
             entry.setModified(false);
         }
+        /**
+         * Called from the <code>EnvironmentListener</code>.
+         */
+        final void updateDocumentProperty () {
+            //Update document TitleProperty
+            EditorCookie ec = getDataObject().getCookie(EditorCookie.class);
+            if (ec != null) {
+                StyledDocument doc = ec.getDocument();
+                if (doc != null) {
+                    doc.putProperty(Document.TitleProperty,
+                    FileUtil.getFileDisplayName(getDataObject().getPrimaryFile()));
+                }
+            }
+        }
 
         /**
          * Implements <code>CloneableEditorSupport.Env</code> interface.
@@ -833,7 +897,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @return the mime type to use for the document
          */
         public String getMimeType() {
-            return entry.getFile().getMIMEType();
+            return getFileImpl().getMIMEType();
         }
             
         /**
@@ -841,8 +905,59 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * The time when the data has been modified. */
         public Date getTime() {
             // #32777 - refresh file object and return always the actual time
-            entry.getFile().refresh(false);
-            return entry.getFile().lastModified();
+            getFileImpl().refresh();
+            return getFileImpl().lastModified();
+        }
+
+        /** Method that allows subclasses to notify this environment that
+        * the file associated with this support has changed and that
+        * the environment should listen on modifications of different
+        * file object.
+        */
+        protected final void changeFile () {
+            FileObject newFile = entry.getFile ();
+            if (newFile.equals (fileObject)) {
+                // the file has not been updated
+                return;
+            }
+
+            boolean lockAgain;
+            if (fileLock != null) {
+// <> NB #61818 In case the lock was not active (isValid() == false), the new lock was taken,
+// which seems to be incorrect. There is taken a lock on new file, while it there wasn't on the old one.
+//                fileLock.releaseLock ();
+//                lockAgain = true;
+// =====
+                if(fileLock.isValid()) {
+                    LOG.fine("changeFile releaseLock: " + fileLock + " for " + fileObject); // NOI18N
+                    fileLock.releaseLock ();
+                    lockAgain = true;
+                } else {
+                    fileLock = null;
+                    lockAgain = false;
+                }
+// </>
+            } else {
+                lockAgain = false;
+            }
+
+            boolean wasNull = fileObject == null;
+
+            fileObject = newFile;
+            LOG.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
+            fileObject.addFileChangeListener (new EnvironmentListener(this));
+
+            if (lockAgain) { // refresh lock
+                try {
+                    fileLock = entry.takeLock ();
+                    LOG.fine("changeFile takeLock: " + fileLock + " for " + fileObject); // NOI18N
+                } catch (IOException e) {
+                    Logger.getLogger(PropertiesEditorSupport.class.getName()).log(Level.WARNING, null, e);
+                }
+            }
+            if (!wasNull) {
+                firePropertyChange("expectedTime", null, getTime()); // NOI18N
+            }
         }
             
         /**
@@ -852,7 +967,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          */
         public InputStream inputStream() throws IOException {
             LOG.finer("Environment.inputStream()");                     //NOI18N
-            return entry.getFile().getInputStream();
+            return getFileImpl().getInputStream();
         }
             
         /**
@@ -862,7 +977,22 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          */
         public OutputStream outputStream() throws IOException {
             LOG.finer("Environment.outputStream()");                    //NOI18N
-            return entry.getFile().getOutputStream(fileLock);
+            if (fileLock == null || !fileLock.isValid()) {
+                fileLock = entry.takeLock ();
+            }
+            LOG.fine("outputStream after takeLock: " + fileLock + " for " + fileObject); // NOI18N
+            try {
+                return getFileImpl ().getOutputStream (fileLock);
+            } catch (IOException fse) {
+	        // [pnejedly] just retry once.
+		// Ugly workaround for #40552
+                if (fileLock == null || !fileLock.isValid()) {
+                    fileLock = entry.takeLock ();
+                }
+                LOG.fine("ugly workaround for #40552: " + fileLock + " for " + fileObject); // NOI18N
+                return getFileImpl ().getOutputStream (fileLock);
+            }
+//            return entry.getFile().getOutputStream(fileLock);
         }
 
         /**
@@ -875,7 +1005,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             // Do saving job. Note it gets editor support, not open support.
             ((PropertiesEditorSupport)findCloneableOpenSupport()).saveThisEntry();
         }
-            
+
         /** Fires property change.
          * @param name the name of property that changed
          * @param oldValue old value
@@ -955,6 +1085,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             }
         }
 
+        /** Called from the <code>EnvironmentListener</code>.
+         */
+        final void fileRenamed () {
+            //#151787: Sync timestamp when svn client changes timestamp externally during rename.
+            firePropertyChange("expectedTime", null, getTime()); // NOI18N
+        }
         
         /** Called from the <code>EnvironmentListener</code>.
          * The components are going to be closed anyway and in case of
@@ -1000,12 +1136,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             }
             Environment environment = reference.get();
             if (environment != null) {
-                if(!environment.entry.getFile().equals(evt.getFile()) ) {
+                if(!environment.getFileImpl().equals(evt.getFile()) ) {
                     // If the FileObject was changed.
                     // Remove old listener from old FileObject.
                     evt.getFile().removeFileChangeListener(this);
                     // Add new listener to new FileObject.
-                    environment.entry.getFile().addFileChangeListener(new EnvironmentListener(environment));
+                    environment.getFileImpl().addFileChangeListener(new EnvironmentListener(environment));
                     return;
                 }
 
@@ -1019,6 +1155,15 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 } else {
                     environment.fileChanged(evt.isExpected(), evt.getTime());
                 }
+            }
+        }
+        
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            Environment myEnv = this.reference.get();
+            if (myEnv != null) {
+                myEnv.updateDocumentProperty();
+                myEnv.fileRenamed();
             }
         }
     } // End of nested class EnvironmentListener.
@@ -1266,4 +1411,40 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return atomicFlag;
         }
     } // End of nested class TimeStamp.
+
+    private static class SaveImpl implements AtomicAction {
+        private static final SaveImpl DEFAULT = new SaveImpl(null);
+        private final PropertiesEditorSupport des;
+
+        public SaveImpl(PropertiesEditorSupport des) {
+            this.des = des;
+        }
+
+        public void run() throws IOException {
+            if (des.desEnv().isModified() && des.isEnvReadOnly()) {
+                IOException e = new IOException("File is read-only: " + ((Environment) des.env).getFileImpl()); // NOI18N
+//                UIException.annotateUser(e, null, org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class, "MSG_FileReadOnlySaving", new java.lang.Object[]{((org.netbeans.modules.properties.PropertiesEditorSupport.Environment) des.env).getFileImpl().getNameExt()}), null, null);
+                throw e;
+            }
+            DataObject tmpObj = des.getDataObject();
+            Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+            try {
+                charsets.put(tmpObj, c);
+                des.superSaveDoc();
+            } finally {
+                charsets.remove(tmpObj);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null && getClass() == obj.getClass();
+        }
+    }
+
 }
