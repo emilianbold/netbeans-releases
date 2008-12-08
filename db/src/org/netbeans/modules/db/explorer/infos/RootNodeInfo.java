@@ -69,7 +69,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
-import org.openide.options.SystemOption;
 import org.openide.util.Exceptions;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements 
@@ -138,7 +137,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             return;
         }
         
-        option.addPropertyChangeListener(new PropertyChangeListener() {
+        option.getPropertySupport().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 if (e.getPropertyName() == null) {
                     sfactory.setDebugMode(option.getDebugMode());
@@ -153,7 +152,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     
     public static synchronized DatabaseOption getOption() {
         if (option == null)
-            option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, true);
+            option = DatabaseOption.getDefault();
 
         return option;
     }

@@ -55,6 +55,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
+import javax.swing.JTabbedPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
@@ -245,6 +246,19 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             for(Component component : container.getComponents()){
                 if (component instanceof JEditorPane) {
                     return (JEditorPane) component;
+                } else if (component instanceof JTabbedPane){
+                    JTabbedPane jt = (JTabbedPane) component;
+                    if (jt.getComponentCount() > 0) {
+                        Component t = jt.getSelectedComponent();
+                        if (t instanceof JEditorPane) {
+                            return (JEditorPane) t;
+                        } else if (t instanceof Container){
+                            JEditorPane res = findPane((Container)t);
+                            if (res != null) {
+                                return res;
+                            }
+                        }
+                    }
                 } else if (component instanceof Container) {
                     JEditorPane res = findPane((Container)component);
                     if (res != null) {
