@@ -38,16 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.refactoring.ui;
+package org.netbeans.modules.cnd.refactoring.actions;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -56,8 +53,6 @@ import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -106,6 +101,25 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         task.run();
     }
 
+    /**
+     * returns true if refactorable element is selected
+     */
+    @Override
+    public boolean canRename(Lookup lookup) {
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+            return false;
+        }
+        Set<Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        // only one node can be renamed at once
+        if (nodes.size() == 1) {
+            CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
+            if (CsmRefactoringUtils.isSupportedReference(ctx)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public void doRename(final Lookup lookup) {
         Runnable task;
@@ -127,35 +141,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             };
         }
         task.run();
-//        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
 
-    private static String getActionName(Action action) {
-        String arg = (String) action.getValue(Action.NAME);
-        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
-        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
-    }
-
-    /**
-     * returns true if refactorable element is selected
-     */
-    @Override
-    public boolean canRename(Lookup lookup) {
-        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
-            return false;
-        }
-        Set<Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        // only one node can be renamed at once
-        if (nodes.size() == 1) {
-            CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
-            if (CsmRefactoringUtils.isSupportedReference(ctx)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static abstract class TextComponentTask implements Runnable {
+    /*package*/ static abstract class TextComponentTask implements Runnable {
 
         private JTextComponent textC;
         private int caret;
@@ -193,7 +181,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset);
     }
 
-    public static abstract class NodeToElementTask implements Runnable {
+    /*package*/ static abstract class NodeToElementTask implements Runnable {
 
         private Lookup context;
         private RefactoringUI ui;
@@ -220,62 +208,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             }
         }
 
-        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/);
-    }
-
-    public static abstract class NodeToFileObjectTask implements Runnable {
-
-        private Collection<? extends Node> nodes;
-        private RefactoringUI ui;
-        public NonRecursiveFolder pkg[];
-        Collection<CsmObject> handles = new ArrayList<CsmObject>();
-
-        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
-            this.nodes = nodes;
-        }
-
-        public void cancel() {
-        }
-
-        public void run() {
-            FileObject[] fobs = new FileObject[nodes.size()];
-            pkg = new NonRecursiveFolder[fobs.length];
-            int i = 0;
-            for (Node node : nodes) {
-                DataObject dob = node.getCookie(DataObject.class);
-                if (dob != null) {
-                    fobs[i] = dob.getPrimaryFile();
-//                    Source source = RetoucheUtils.getSource(fobs[i]);
-//                    assert source != null;
-//                    try {
-//                        source.runUserActionTask(this, false);
-//                    } catch (IllegalArgumentException ex) {
-//                        ex.printStackTrace();
-//                    } catch (IOException ex) {
-//                        ex.printStackTrace();
-//                    }
-
-                    pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
-                }
-            }
-            UI.openRefactoringUI(createRefactoringUI(fobs, handles));
-        }
-
-        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<CsmObject> handles);
+        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement);
     }
 
     static boolean isFromEditor(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null && ec.getOpenedPanes() != null) {
-            // This doesn't seem to work well - a lot of the time, I'm right clicking
-            // on the editor and it still has another activated view (this is on the mac)
-            // and as a result does file-oriented refactoring rather than the specific
-            // editor node...
-            //            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            //            if (activetc instanceof CloneableEditorSupport.Pane) {
-            //
             return true;
-        //            }
         }
 
         return false;
