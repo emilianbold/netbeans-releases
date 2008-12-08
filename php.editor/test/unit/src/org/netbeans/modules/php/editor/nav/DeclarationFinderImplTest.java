@@ -57,6 +57,50 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {//function",
+                "function test($^hello) {//function",
+                "* @param Book $hello",
+                "* @param Book $he|llo"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testParamVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {//method",
+                "function test($^hello) {//method",
+                "$tmp = $hello;",
+                "$tmp = $hel|lo;"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testClsVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "class Author {",
+                "class ^Author^ {",
+                " * @property Author $author hello this is doc",
+                " * @property Au|thor $author hello this is doc"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
+    public void testClsVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                " * @property Author $author hello this is doc",
+                " * @property Author $^author hello this is doc",
+                "$this->author;",
+                "$this->auth|or;"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
     public void testGotoConstructTest() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/gotoConstrTest.php",
@@ -2024,6 +2068,54 @@ public class DeclarationFinderImplTest extends TestBase {
                 "class Man implements Person {",
                 "^class Man implements Person {");
         performTestSimpleFindDeclaration(-1, userClass, manClass);
+    }
+
+    public void testPHPDocType01() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class ^Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Bo|ok $hello\n" +
+                                         " * @return Magazine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
+    public void testPHPDocType02() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class ^Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Book $hello\n" +
+                                         " * @return Mag|azine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
+    public void testPHPDocParamName() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "/**\n" +
+                                         " *\n" +
+                                         " * @param  string $he|llo\n" +
+                                         " */\n" +
+                                        "function test($^hello) {\n" +
+                                         "}\n" +
+                                         "?> ");
     }
 
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {

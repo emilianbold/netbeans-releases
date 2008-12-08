@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.jython.distro" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.jython.distro</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <!--
+    <propertyfile file="../o.jython/nbproject/project.properties"/>
+-->
+
+    <target name="files-init" depends="projectized-common.files-init">
+        <!-- Override module.files definition performed by parent, used for NBMs etc. -->
+        <patternset id="module.files" includes="${release.files},${extra.module.files}">
+            <!-- Standard includes (from common definition) -->
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="config/Modules/${code.name.base.dashes}.xml"/>
+            <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
+            <!-- Jython+Rails stuff -->
+            <include name="jython-${jython_src_version}/**"/>
+            <exclude name="jython-${jython_src_version}/**/netbeans-index-*.zip"/>
+        </patternset>
+    </target>    
+
+    <target name="build-jython-bin">
+        <echo>Build Jython binary distribution from source</echo>
+        <delete dir="${jython_build}"/>
+        <mkdir dir="${jython_build}"/>
+        <unzip dest="${jython_build}">
+            <fileset dir="external/">
+                <include name="jython-${jython_src_version}.zip"/>
+            </fileset>
+        </unzip>
+        <!-- Run target in Jython's own build.xml file to build distro -->
+        <ant dir="${jython_build}/jython" target="developer-build" inheritall="false" inheritrefs="false">
+            <property name="dist.dir" value="${cluster}/jython-${jython_src_version}"/>
+        </ant>
+        <copy tofile="build/license" file="external/jython-2.5-license.txt"/>
+    </target>
+
+    <target name="release" depends="init">
+        <property name="jython_dir" location="${cluster}/jython-${jython_src_version}"/>
+    
+        <!-- Build Jython from source (using its own build files -->
+        <antcall target="build-jython-bin"/>
+
+        <chmod perm="ugo+x">
+          <fileset dir="${jython_dir}/">
+            <include name="bin/*"/>
+          </fileset>
+        </chmod>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <delete dir="${jython_build}"/>
+        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
+        <delete dir="jython_build"/>
+    </target>
+
+</project>

@@ -316,9 +316,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         if (component == null || getPropertyNames() == null) {
             return null;
         }
-        String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
-        if (databinding != null) {
-            return databinding;
+        String databindingAsText = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
+        if (databindingAsText != null) {
+            return databindingAsText;
         }
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);

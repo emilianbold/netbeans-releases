@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -156,6 +157,7 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
         try {
             super.visit(node);
         } finally {
@@ -181,15 +183,15 @@ public final class ModelVisitor extends DefaultVisitor {
 
         try {
             //super.visit(node);
-            scan(node.getFunction().getBody());
             scan(node.getFunction().getFormalParameters());
+            scan(node.getFunction().getBody());
         } finally {
             modelBuilder.reset();
         }
     }
 
     @Override
-    public void visit(FieldsDeclaration node) {
+    public void visit(FieldsDeclaration node) {        
         modelBuilder.build(node, occurencesBuilder);
         /*ScopeImpl scope = modelBuilder.getCurrentScope();
         assert scope != null && scope instanceof ClassScopeImpl;
@@ -531,7 +533,14 @@ public final class ModelVisitor extends DefaultVisitor {
     }
     @Override
     public void visit(PHPDocVarTypeTag node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(node, currentScope);
+        for (PhpDocTypeTagInfo phpDocTypeTagInfo : tagInfos) {
+            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
+                new FieldElementImpl(currentScope, phpDocTypeTagInfo.getTypeName(), phpDocTypeTagInfo);
+            }
+        }
+        occurencesBuilder.prepare(node, currentScope);
         super.visit(node);
     }
 
@@ -567,7 +576,7 @@ public final class ModelVisitor extends DefaultVisitor {
     }
 
     @CheckForNull
-    public Occurence<? extends ModelElement> getOccurence(int offset) {
+    public Occurence getOccurence(int offset) {
         return findStrictOccurence((FileScope) getModelScope(), offset, null);
     }
 
@@ -575,7 +584,7 @@ public final class ModelVisitor extends DefaultVisitor {
         return findNearestVarScope((FileScope) getModelScope(), offset, null);
     }
 
-    static List<Occurence<? extends ModelElement>> getAllOccurences(ModelScope modelScope, Occurence<? extends ModelElement> occurence) {
+    static List<Occurence> getAllOccurences(ModelScope modelScope, Occurence occurence) {
         ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
         if (declaration instanceof MethodScope) {
             MethodScope methodScope = (MethodScope) declaration;
@@ -614,14 +623,14 @@ public final class ModelVisitor extends DefaultVisitor {
         }
     }
 
-    private Occurence<? extends ModelElement> findStrictOccurence(FileScope scope, int offset,
-            Occurence<? extends ModelElement> atOffset) {
+    private Occurence findStrictOccurence(FileScope scope, int offset,
+            Occurence atOffset) {
         buildOccurences();
         //FileObject fileObject = scope.getFileObject();
-        List<Occurence<? extends ModelElement>> occurences = scope.getOccurences();
-        for (Occurence<? extends ModelElement> occ : occurences) {
+        List<Occurence> occurences = scope.getOccurences();
+        for (Occurence occ : occurences) {
             assert occ != null;
-            if (occ.getOffsetRange().containsInclusive(offset)) {
+            if (occ.getOccurenceRange().containsInclusive(offset)) {
                 atOffset = occ;
             }
         }

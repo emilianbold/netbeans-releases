@@ -80,8 +80,8 @@ public class ProjectGenerator {
 	return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
     }
 
-    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders) throws IOException {
-    	return MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, null);
+    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems) throws IOException {
+    	return MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, importantItems);
     }
     
     public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {

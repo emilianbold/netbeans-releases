@@ -40,10 +40,13 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardPanel1.WizardStorage;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -53,6 +56,7 @@ import org.openide.util.actions.CallableSystemAction;
 public final class ImportProjectWizardAction extends CallableSystemAction {
 
     private WizardDescriptor.Panel[] panels;
+    private WizardStorage storage;
 
     public void performAction() {
         @SuppressWarnings("unchecked")
@@ -65,7 +69,12 @@ public final class ImportProjectWizardAction extends CallableSystemAction {
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            // do something
+            try {
+                new ImportProject(storage).create();
+                // do something
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -75,9 +84,9 @@ public final class ImportProjectWizardAction extends CallableSystemAction {
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            panels = new WizardDescriptor.Panel[]{
-                        new ImportProjectWizardPanel1()
-                    };
+            ImportProjectWizardPanel1 panel = new ImportProjectWizardPanel1();
+            storage = panel.getWizardStorage();
+            panels = new WizardDescriptor.Panel[]{panel};
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -89,7 +98,7 @@ public final class ImportProjectWizardAction extends CallableSystemAction {
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
                     // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step

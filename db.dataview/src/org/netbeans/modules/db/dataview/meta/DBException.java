@@ -55,10 +55,6 @@ public final class DBException extends Exception {
         super(message, cause);
     }
 
-    public DBException(Throwable cause) {
-        super(cause);
-    }
-
     @Override
     public String getMessage() {
         StringBuffer buf = new StringBuffer();
@@ -75,22 +71,13 @@ public final class DBException extends Exception {
                 SQLException e = (SQLException) t;
                 buf.append("Error code ").append(e.getErrorCode());
                 buf.append(", SQL state ").append(e.getSQLState());
+                buf.append("\n");
             }
-            buf.append(super.getMessage()).append(" -- ").append(t.toString()); // NOI18N
+            buf.append(super.getMessage() + " " + t.getMessage());
         } else {
             buf.append(super.getMessage());
         }
-        return buf.toString();
-    }
 
-    public static String getMessage(Throwable t) {
-        StringBuffer buf = new StringBuffer();
-        if (t instanceof SQLException) {
-            SQLException e = (SQLException) t;
-            buf.append("Error code ").append(e.getErrorCode());
-            buf.append(", SQL state ").append(e.getSQLState());
-        }
-        buf.append(" -- ").append(t.getMessage()); // NOI18N
         return buf.toString();
     }
 }

@@ -79,7 +79,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         String className = "";
         FileObject preselectedFolder = parentStep.project.getProjectDirectory().getFileObject(cat.getRelativePath());
 
-        switch(cat){
+        switch (cat) {
             case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewDomain"));

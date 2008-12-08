@@ -62,9 +62,16 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +89,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     public OffsetRange getReferenceSpan(Document doc, final int caretOffset) {
         List<TokenSequence<?>> ets = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, false);
-
+        boolean inDocComment = false;
         ets = new LinkedList<TokenSequence<?>>(ets);
 
         Collections.reverse(ets);
@@ -93,6 +100,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                 if (t.id() == PHPTokenId.PHP_VARIABLE || t.id() == PHPTokenId.PHP_STRING) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
+
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT) {
+                    inDocComment = true;
+                    break;
                 }
             }
         }
@@ -105,42 +117,89 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             final OffsetRange[] result = new OffsetRange[1];
 
             try {
-                model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                if (!inDocComment) {
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
 
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationInfo parameter) throws Exception {
-                        List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
-
-                        if (path.size() == 0) {
-                            return;
+                        public void cancel() {
                         }
 
-                        path = new LinkedList<ASTNode>(path);
+                        public void run(CompilationInfo parameter) throws Exception {
+                            List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
 
-                        Collections.reverse(path);
+                            if (path.size() == 0) {
+                                return;
+                            }
 
-                        Scalar where = null;
-                        for (ASTNode n : path) {
-                            if (n instanceof Include) {
-                                FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
-                                if (file != null && where != null) {
-                                    result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
-                                    break;
+                            path = new LinkedList<ASTNode>(path);
+
+                            Collections.reverse(path);
+
+                            Scalar where = null;
+                            for (ASTNode n : path) {
+                                if (n instanceof Include) {
+                                    FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
+                                    if (file != null && where != null) {
+                                        result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
+                                        break;
+                                    }
+                                } else if (n instanceof FunctionInvocation) {
+                                    FunctionInvocation functionInvocation = (FunctionInvocation) n;
+                                    String fncName = CodeUtils.extractFunctionName(functionInvocation);
+                                    if (fncName != null && fncName.equals("constant")) {
+                                        result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
+                                    }
+                                } else if (n instanceof Scalar) {
+                                    where = (Scalar) n;
                                 }
-                            } else if (n instanceof FunctionInvocation) {
-                                FunctionInvocation functionInvocation = (FunctionInvocation) n;
-                                String fncName = CodeUtils.extractFunctionName(functionInvocation);
-                                if (fncName != null && fncName.equals("constant")) {
-                                    result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
-                                }
-                            } else if (n instanceof Scalar) {
-                                where = (Scalar) n;
                             }
                         }
-                    }
-                }, true);
+                    }, true);
+                }
+                else {
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationInfo parameter) throws Exception {
+                            Program program = Utils.getRoot(parameter);
+                            Comment comment = null;
+                            for (Comment comm : program.getComments()) {
+                                if (comm.getStartOffset() < caretOffset && caretOffset < comm.getEndOffset()) {
+                                    comment = comm;
+                                    break;
+                                }
+                                if (caretOffset < comm.getStartOffset()) {
+                                    break;
+                                }
+                            }
+                            if (comment != null && comment instanceof PHPDocBlock) {
+                                PHPDocBlock docComment = (PHPDocBlock)comment;
+                                ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docComment, caretOffset);
+                                PHPDocNode node = null;
+                                if (hierarchy.length > 0 ) {
+                                    if (hierarchy[0] instanceof PHPDocTypeTag) {
+                                        for (PHPDocNode type : ((PHPDocTypeTag) hierarchy[0]).getTypes()) {
+                                            if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
+                                                node = type;
+                                                break;
+                                            }
+                                        }
+                                        if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getValue().toUpperCase())) {
+                                            result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                        }
+                                    }
+                                    if (hierarchy[0] instanceof PHPDocVarTypeTag) {
+                                        node = ((PHPDocVarTypeTag)hierarchy[0]).getVariable();
+                                        if (node != null && node.getStartOffset() < caretOffset && caretOffset < node.getEndOffset()) {
+                                            result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }, true);
+                }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -156,9 +215,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     public static DeclarationLocation findDeclarationImpl(CompilationInfo info, int caretOffset) {
         DeclarationLocation retval = DeclarationLocation.NONE;
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
-        Occurence<? extends ModelElement> underCaret = occurencesSupport.getOccurence();
+        Occurence underCaret = occurencesSupport.getOccurence();
         if (underCaret != null) {
-            ModelElement declaration = underCaret.getDeclaration();
+            ModelElement declaration = underCaret.gotoDeclaratin();
             retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset());
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
             if (info.getFileObject() == declaration.getFileObject()) {

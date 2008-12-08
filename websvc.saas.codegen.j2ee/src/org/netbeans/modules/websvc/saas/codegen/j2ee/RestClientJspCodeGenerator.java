@@ -110,6 +110,10 @@ public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
         return getCustomMethodBody(paramDecl, paramUse, getResultPattern(), indent2);
     }
 
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+    }
+
     public String findSubresourceLocatorUriTemplate() {
         String subresourceLocatorUriTemplate = getAvailableUriTemplate();
         if (!subresourceLocatorUriTemplate.endsWith("/")) {

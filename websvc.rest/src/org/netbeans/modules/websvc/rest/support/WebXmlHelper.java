@@ -149,9 +149,12 @@ public class WebXmlHelper {
     }
     
     private FileObject getWebXml(Project project) {
-        RestSupport rs = RestUtils.getRestSupport(project);
-        if (rs != null) {
-            return ((WebProjectRestSupport) rs).getWebXml();
+        try {
+            RestSupport rs = RestUtils.getRestSupport(project);
+            if (rs != null) {
+                return ((WebProjectRestSupport) rs).getWebXml();
+            }
+        } catch(Exception iox) {
         }
         return null;
     }

@@ -1901,6 +1901,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         constExp.setType("double"); // NOI18N
                         break;
 
+                    case TEMPLATE:
                     case TYPENAME:
                         // OK, just skip it
                         break;

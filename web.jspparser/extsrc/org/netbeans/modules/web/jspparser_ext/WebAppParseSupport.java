@@ -183,26 +183,33 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     private final RequestProcessor.Task tldChangeTask;
 
-    /** Creates a new instance of WebAppParseSupport */
-    public WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
+    // #152482 - this escaped from constructor
+    public static WebAppParseProxy create(JspParserImpl jspParser, WebModule wm) {
+        WebAppParseSupport instance = new WebAppParseSupport(jspParser, wm);
+
+        // register file listener (listen to changes of tld files, web.xml)
+        try {
+            FileSystem fs = wm.getDocumentBase().getFileSystem();
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(instance.fileSystemListener, fs));
+        } catch (FileStateInvalidException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+
+        // register weak class path listeners
+        ClassPath compileCP = ClassPath.getClassPath(instance.wmRoot, ClassPath.COMPILE);
+        compileCP.addPropertyChangeListener(WeakListeners.propertyChange(instance, compileCP));
+        ClassPath executeCP = ClassPath.getClassPath(instance.wmRoot, ClassPath.EXECUTE);
+        executeCP.addPropertyChangeListener(WeakListeners.propertyChange(instance, executeCP));
+
+        return instance;
+    }
+
+    private WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
         this.jspParser = jspParser;
         this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
         fileSystemListener = new FileSystemListener();
-        initOptions(true);
-        // register file listener (listen to changes of tld files, web.xml)
-        try {
-            FileSystem fs = wm.getDocumentBase().getFileSystem();
-            fs.addFileChangeListener(FileUtil.weakFileChangeListener(fileSystemListener, fs));
-        } catch (FileStateInvalidException ex) {
-            LOG.log(Level.INFO, null, ex);
-        }
-        // register weak class path listeners
-        ClassPath compileCP = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
-        compileCP.addPropertyChangeListener(WeakListeners.propertyChange(this, compileCP));
-        ClassPath executeCP = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-        executeCP.addPropertyChangeListener(WeakListeners.propertyChange(this, executeCP));
 
         // request procesor tasks
         RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
@@ -213,6 +220,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         // init tag library cache
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
+
+        initOptions(true);
     }
 
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor

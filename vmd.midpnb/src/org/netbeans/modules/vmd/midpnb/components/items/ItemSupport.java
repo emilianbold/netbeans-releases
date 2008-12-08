@@ -53,10 +53,8 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import java.awt.*;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 
 /**
  *

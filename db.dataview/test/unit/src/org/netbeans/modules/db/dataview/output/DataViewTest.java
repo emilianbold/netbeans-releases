@@ -147,6 +147,7 @@ public class DataViewTest extends NbTestCase {
             assertEquals(expResult.getQualifiedName(0), result.getQualifiedName(0));
             assertEquals(expResult.getColumnCount(), result.getColumnCount());
             assertEquals(expResult.getColumnType(2), result.getColumnType(2));
+            rset.close();
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -175,13 +176,13 @@ public class DataViewTest extends NbTestCase {
         String sqlStr = context.getSqlSelect();
         int pagSize = 4;
         DataView instance = DataView.create(dbconn, sqlStr, pagSize);
-        String expResult = "select * from simpletable;";
+        String expResult = "select * from simpletable";
         String result = instance.getSQLString();
         assertEquals(expResult, result);
     }
 
     public void testGetUpdatedRowContext() {
-        String selectStr = "select * from simpletable;";
+        String selectStr = "select * from simpletable";
         int pageSize = 5;
         DataView instance = DataView.create(dbconn, selectStr, pageSize);
         instance.createComponents();
@@ -193,7 +194,7 @@ public class DataViewTest extends NbTestCase {
      * Test of getSQLExecutionHelper method, of class DataView.
      */
     public void testGetSQLExecutionHelper() {
-        String selectStr = "select * from simpletable;";
+        String selectStr = "select * from simpletable";
         int pageSize = 5;
         DataView instance = DataView.create(dbconn, selectStr, pageSize);
         SQLExecutionHelper result = instance.getSQLExecutionHelper();
@@ -207,7 +208,7 @@ public class DataViewTest extends NbTestCase {
      * Test of getSQLStatementGenerator method, of class DataView.
      */
     public void testGetSQLStatementGenerator() {
-        String sqlStr = "select * from simpletable;";
+        String sqlStr = "select * from simpletable";
         int pageSize = 5;
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
         SQLStatementGenerator expResult = new SQLStatementGenerator(instance);

@@ -77,12 +77,8 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
-import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGComponentEventSourceOrder;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
