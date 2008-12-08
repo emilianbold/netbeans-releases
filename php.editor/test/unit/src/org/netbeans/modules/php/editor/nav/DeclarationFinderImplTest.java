@@ -2106,6 +2106,18 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>\n");
     }
 
+    public void testPHPDocParamName() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "/**\n" +
+                                         " *\n" +
+                                         " * @param  string $he|llo\n" +
+                                         " */\n" +
+                                        "function test($^hello) {\n" +
+                                         "}\n" +
+                                         "?> ");
+    }
+
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
 
