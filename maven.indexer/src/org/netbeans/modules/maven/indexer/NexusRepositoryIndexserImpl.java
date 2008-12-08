@@ -41,6 +41,8 @@ package org.netbeans.modules.maven.indexer;
 import hidden.org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
+import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
+import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
@@ -70,6 +72,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -88,6 +91,8 @@ import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -118,7 +123,6 @@ import org.sonatype.nexus.index.creator.JarFileContentsIndexCreator;
 import org.sonatype.nexus.index.creator.MinimalArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.search.SearchEngine;
 import org.sonatype.nexus.index.updater.IndexUpdater;
-import sun.nio.cs.ext.ISCII91;
 
 /**
  *
@@ -165,6 +169,19 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         try {
             PlexusContainer embedder;
             ContainerConfiguration config = new DefaultContainerConfiguration();
+            //#154755 - start
+            ClassWorld world = new ClassWorld();
+            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
+            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
+            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
+            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
+            // and the Dependency Injection won't work.
+            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
+            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/maven"); //NOI18N
+            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/plexus"); //NOI18N
+            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/maven"); //NOI18N
+            config.setClassWorld(world);
+            //#154755 - end
             embedder = new DefaultPlexusContainer(config);
 
             repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
@@ -172,6 +189,10 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
             remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
             contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+        } catch (NoSuchRealmException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (DuplicateRealmException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         } catch (PlexusContainerException ex) {

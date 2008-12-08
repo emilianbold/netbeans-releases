@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -167,7 +168,7 @@ public final class Utilities {
 
     public static Set<Modifier> modelModifiersToGsf(Set<javax.lang.model.element.Modifier> modifiers) {
 
-        Set<Modifier> ret = new HashSet<Modifier>();
+        Set<Modifier> ret = new LinkedHashSet<Modifier>();
 
         if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)) {
             ret.add(Modifier.STATIC);
@@ -186,10 +187,16 @@ public final class Utilities {
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }
-    
+
+    public static CharSequence getClassName(TypeMirror type) {
+        assert type != null;
+        return new ClassNameVisitor().visit(type, null);
+    }
+
     public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
+        if (type == null) {
             return ""; //NOI18N
+        }
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
 
@@ -302,5 +309,39 @@ public final class Utilities {
             }
             return DEFAULT_VALUE;
         }
-    }    
+    }
+
+    private static class ClassNameVisitor extends SimpleTypeVisitor6<StringBuilder,Void> {
+
+        private ClassNameVisitor() {
+            super(new StringBuilder());
+        }
+
+
+        @Override
+        public StringBuilder defaultAction(TypeMirror t, Void p) {
+            return DEFAULT_VALUE.append(t);
+        }
+
+        @Override
+        public StringBuilder visitDeclared(DeclaredType t, Void p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement) e;
+                return DEFAULT_VALUE.append(te.getQualifiedName().toString());
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
+            }
+        }
+
+        @Override
+        public StringBuilder visitError(ErrorType t, Void p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement) e;
+                return DEFAULT_VALUE.append(te.getQualifiedName().toString());
+            }
+            return DEFAULT_VALUE;
+        }
+    }
 }

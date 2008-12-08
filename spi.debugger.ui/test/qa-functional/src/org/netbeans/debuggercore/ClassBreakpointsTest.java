@@ -293,6 +293,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
             dialog.ok();
 
+	    //new EventTool().waitNoEvent(500);
             new DebugProjectAction().performMenu();
             //Class breakpoint hit for class examples.advanced.Helper.");
             try {
@@ -303,8 +304,10 @@ public class ClassBreakpointsTest extends JellyTestCase {
                     throw e;
                 }
             }
+            
             new ContinueAction().perform();
             try {
+                new EventTool().waitNoEvent(1500);
                 Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
             } catch (Throwable e) {
                 if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1.")) {

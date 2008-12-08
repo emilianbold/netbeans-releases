@@ -140,6 +140,8 @@ tokens {
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -696,8 +698,18 @@ template_explicit_specialization
 				"explicit-specialisation ctor definition\n", LT(1).getLine());
 		}
 		ctor_definition
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-         //     { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+	|
+	// Template explicit specialisation dtor definition
+		(dtor_declarator[true] LCURLY)=>
+		{if(statementTrace >= 1)
+			printf("template_explicit_specialization_0b[%d]: template " +
+				"explicit-specialisation dtor definition\n", LT(1).getLine());
+		}
+		dtor_definition
+		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        { #template_explicit_specialization = #(#[CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 	| 
         // Template explicit specialisation ctor declaration 
 		(ctor_declarator[false] SEMICOLON)=>
@@ -1963,9 +1975,9 @@ direct_declarator
 		(options {greedy=true;} :function_attribute_specification)?
 		id = idInBalanceParensHard                                                     
 		{declaratorID(id, qiFun);}                
-		LPAREN! //{declaratorParameterList(false);}
+		LPAREN //{declaratorParameterList(false);}
 		(parameter_list)?
-		RPAREN! //{declaratorEndParameterList(false);}                
+		RPAREN //{declaratorEndParameterList(false);}                
 		(tq = cv_qualifier)*
 		(exception_specification)?
 		(options {greedy=true;} :function_attribute_specification)?
@@ -2183,7 +2195,7 @@ ctor_declarator[boolean definition]
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
-	LPAREN! (parameter_list)? RPAREN!
+	LPAREN (parameter_list)? RPAREN
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
@@ -2233,6 +2245,13 @@ superclass_init
         {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
 
+dtor_definition
+	:
+	dtor_head[true]
+	dtor_body
+	;
+
+
 dtor_head[boolean definition]
 	:
 	dtor_decl_spec
@@ -2280,10 +2299,14 @@ dtor_scope_override
 
 
 dtor_declarator[boolean definition]
+{String q;}
 	:	
 	//({definition}? dtor_scope_override)
-        dtor_scope_override
-	TILDE ID
+//        dtor_scope_override
+//	TILDE ID
+
+        q = qualified_dtor_id
+
        (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
@@ -2293,13 +2316,34 @@ dtor_declarator[boolean definition]
 	(exception_specification)?        
 	;
 
-protected
-dtor_scope_override
-        {String q;}
-        :
-        q = scope_override        
-        { if( q.length() > 0 ) #dtor_scope_override = #(#[CSM_QUALIFIED_ID, q], #dtor_scope_override); } 
-        ;
+// This matches a generic qualified identifier ::T::B::foo
+// that is satisfactory for a ctor (no operator, no trailing <>)
+qualified_dtor_id returns [String q = ""]
+	{
+	    String so;
+	    StringBuilder  qitem = new StringBuilder();
+	}
+	:
+	so = scope_override
+	{qitem.append(so);}	
+    TILDE
+    id:ID
+    {   
+        qitem.append("~");
+        qitem.append(id.getText());
+        q = qitem.toString();
+        #qualified_dtor_id = #(#[CSM_QUALIFIED_ID, q], #qualified_dtor_id);
+    }
+	;
+
+
+//protected
+//dtor_scope_override
+//        {String q;}
+//        :
+//        q = scope_override
+//        { if( q.length() > 0 ) #dtor_scope_override = #(#[CSM_QUALIFIED_ID, q], #dtor_scope_override); }
+//        ;
 
       
 

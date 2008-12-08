@@ -47,7 +47,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -55,8 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -68,7 +65,6 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  */
 public final class DBMetaDataFactory {
 
-    private static Logger LOGGER = Logger.getLogger(DBMetaDataFactory.class.getName());
     public static final int DB2 = 0;
     public static final int ORACLE = 1;
     public static final int SQLSERVER = 2;
@@ -78,9 +74,9 @@ public final class DBMetaDataFactory {
     public static final int DERBY = 6;
     public static final int SYBASE = 7;
     public static final int AXION = 8;
-    private Connection dbconn; // db connection
+    private Connection dbconn;
     private int dbType = -1;
-    private DatabaseMetaData dbmeta; // db metadata
+    private DatabaseMetaData dbmeta;
 
     public DBMetaDataFactory(Connection dbconn) throws SQLException {
         assert dbconn != null;
@@ -139,23 +135,6 @@ public final class DBMetaDataFactory {
         return dbtype;
     }
 
-    public Map<Integer, String> buildDBSpecificDatatypeMap() throws SQLException {
-        Map<Integer, String> typeInfoMap = new HashMap<Integer, String>();
-        ResultSet typeInfo = dbmeta.getTypeInfo();
-        String typeName = null;
-        Integer type = null;
-        int jdbcType = 0;
-        while (typeInfo.next()) {
-            typeName = typeInfo.getString("TYPE_NAME");
-            jdbcType = typeInfo.getInt("DATA_TYPE");
-            type = new Integer(jdbcType);
-            if (!typeInfoMap.containsKey(type)) {
-                typeInfoMap.put(type, typeName);
-            }
-        }
-        return typeInfoMap;
-    }
-
     private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) {
         ResultSet rs = null;
         try {
@@ -185,6 +164,7 @@ public final class DBMetaDataFactory {
     public synchronized Collection<DBTable> generateDBTables(ResultSet rs, String sql, boolean isSelect) throws SQLException {
         Map<String, DBTable> tables = new LinkedHashMap<String, DBTable>();
         String noTableName = "UNKNOWN"; // NOI18N
+
         // get table column information
         ResultSetMetaData rsMeta = rs.getMetaData();
         for (int i = 1; i <= rsMeta.getColumnCount(); i++) {
@@ -206,8 +186,8 @@ public final class DBMetaDataFactory {
             }
 
             int sqlTypeCode = rsMeta.getColumnType(i);
+            String sqlTypeStr = rsMeta.getColumnTypeName(i);
             if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
-                String sqlTypeStr = rsMeta.getColumnTypeName(i);
                 if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
                     sqlTypeCode = java.sql.Types.TIMESTAMP;
                 } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
@@ -237,6 +217,13 @@ public final class DBMetaDataFactory {
                 displaySize = 22;
             }
 
+            //Handle MySQL BIT(n) where n > 1
+            if (sqlTypeCode == java.sql.Types.VARBINARY && dbType == MYSQL) {
+                if (sqlTypeStr.startsWith("BIT")) { // NOI18N
+                    sqlTypeCode = java.sql.Types.BIT;
+                }
+            }
+
             // The SQL Server timestamp type is a JDBC BINARY type with the fixed length of 8 bytes.
             // A Transact-SQL timestamp != an ANSI SQL-92 timestamp.
             // If its a SQL style timestamp you are after use a datetime data type.
@@ -249,7 +236,8 @@ public final class DBMetaDataFactory {
             }
 
             // create a table column and add it to the vector
-            DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
+            //String typeName = typeInfo.containsKey(sqlTypeCode) ? typeInfo.get(sqlTypeCode) : DataViewUtils.getStdSqlType(sqlTypeCode);
+            DBColumn col = new DBColumn(table, colName, sqlTypeCode, sqlTypeStr, scale, precision, isNullable, autoIncrement);
             col.setOrdinalPosition(position);
             col.setDisplayName(displayName);
             col.setDisplaySize(displaySize);
@@ -266,38 +254,62 @@ public final class DBMetaDataFactory {
             }
         }
 
+        DBModel dbModel = new DBModel();
+        dbModel.setDBType(getDBType());
         for (DBTable tbl : tables.values()) {
             if (DataViewUtils.isNullString(tbl.getName())) {
                 continue;
             }
             checkPrimaryKeys(tbl);
             checkForeignKeys(tbl);
+            dbModel.addTable(tbl);
+            populateDefaults(tbl);
         }
 
         return tables.values();
     }
 
+    private void populateDefaults(DBTable table) {
+        ResultSet rs = null;
+        try {
+            rs = dbmeta.getColumns(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName(), "%");
+            while (rs.next()) {
+                String defaultValue = rs.getString("COLUMN_DEF"); // NOI18N
+                DBColumn col = table.getColumn(rs.getString("COLUMN_NAME")); // NOI18N
+
+                if (col != null && defaultValue != null && defaultValue.trim().length() != 0) {
+                    col.setDefaultValue(defaultValue.trim());
+                }
+            }
+        } catch (SQLException e) {
+        } finally {
+            DataViewUtils.closeResources(rs);
+        }
+    }
+
     private void adjustTableMetadata(String sql, DBTable table) {
         String tableName = "";
-        if (sql.toUpperCase().contains("FROM")) {
+        if (sql.toUpperCase().contains("FROM")) { // NOI18N
             // User may type "FROM" in either lower, upper or mixed case
             String[] splitByFrom = sql.toUpperCase().split("FROM"); // NOI18N
             String fromsql = sql.substring(sql.length() - splitByFrom[1].length());
-            if (fromsql.toUpperCase().contains("WHERE")) {
+            if (fromsql.toUpperCase().contains("WHERE")) { // NOI18N
                 splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
                 fromsql = fromsql.substring(0, splitByFrom[0].length());
             }
-            StringTokenizer t = new StringTokenizer(fromsql, " ,");
+            if (!sql.toUpperCase().contains("JOIN")) { // NOI18N
+                StringTokenizer t = new StringTokenizer(fromsql, ","); // NOI18N
 
-            if (t.hasMoreTokens()) {
-                tableName = t.nextToken();
-            }
+                if (t.hasMoreTokens()) {
+                    tableName = t.nextToken().trim();
+                }
 
-            if (t.hasMoreTokens()) {
-                tableName = "";
+                if (t.hasMoreTokens()) {
+                    tableName = "";
+                }
             }
         }
-        String[] splitByDot = tableName.split("\\.");
+        String[] splitByDot = tableName.split("\\."); // NOI18N
         if (splitByDot.length == 3) {
             table.setCatalogName(unQuoteIfNeeded(splitByDot[0]));
             table.setSchemaName(unQuoteIfNeeded(splitByDot[1]));
@@ -311,7 +323,7 @@ public final class DBMetaDataFactory {
     }
 
     private String unQuoteIfNeeded(String id) {
-        String quoteStr = "\"";
+        String quoteStr = "\""; // NOI18N
         try {
             quoteStr = dbmeta.getIdentifierQuoteString().trim();
         } catch (SQLException e) {

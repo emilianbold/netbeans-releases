@@ -69,6 +69,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -465,6 +466,8 @@ public class WizardDescriptor extends DialogDescriptor {
         super.setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         super.setClosingOptions(new Object[] { finishOption, cancelButton });
 
+        createNotificationLineSupport ();
+
         // attach the change listener to iterator
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
@@ -534,10 +537,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        //callUninitialize ();
         data = data.clone(panels);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        //callInitialize ();
 
         updateState();
     }
@@ -553,10 +558,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        //callUninitialize ();
         data = new SettingsAndIterator<Data>(panels, settings);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        //callInitialize ();
 
         updateState();
     }
@@ -789,6 +796,28 @@ public class WizardDescriptor extends DialogDescriptor {
         return newObjects;
     }
 
+    @Override
+    void clearMessages () {
+        putProperty (PROP_ERROR_MESSAGE, null);
+    }
+
+    @Override
+    void setErrorMessage (String msg) {
+        putProperty (PROP_ERROR_MESSAGE, msg);
+    }
+
+    @Override
+    void setInformationMessage (String msg) {
+        putProperty (PROP_INFO_MESSAGE, msg);
+    }
+
+    @Override
+    void setWarningMessage (String msg) {
+        putProperty (PROP_WARNING_MESSAGE, msg);
+    }
+
+
+
     /** Updates buttons to reflect the current state of the panels.
     * Can be overridden by subclasses
     * to change the options to special values. In such a case use:
@@ -808,9 +837,25 @@ public class WizardDescriptor extends DialogDescriptor {
             });
         }
     }
+
+    private static final Set<String> logged = new HashSet<String>();
+    @SuppressWarnings("unchecked")
+    private static void checkComponent(Panel<?> pnl) {
+        String name = pnl.getClass().getName();
+        if (pnl instanceof Component && logged.add(name)) {
+          Logger.getLogger(WizardDescriptor.class.getName()).warning(
+            name + " is both a " + //NOI18N
+            "WizardDescriptor.Panel and a Component.  This is illegal " + //NOI18N
+            "because Component.isValid() conflicts with " + //NOI18N
+            "Panel.isValid().  See umbrella issue 154624 and " + //NOI18N
+            "issues 150223, 134601, 99680 and " + //NOI18N
+            "many others for why this is a Bad Thing."); //NOI18N
+        }
+    }
+
     private <A> void updateStateOpen(SettingsAndIterator<A> data) {
         Panel<A> p = data.getIterator(this).current();
-
+        checkComponent(p);
         // listeners on the panel
         if (data.current != p) {
             if (data.current != null) {
@@ -823,6 +868,7 @@ public class WizardDescriptor extends DialogDescriptor {
             // It's here to allow dynamic change of panels in wizard
             // (which can be done in storeSettings method)
             p = data.getIterator(this).current();
+            checkComponent(p);
 
             // add to new, detach old change listener and attach new one
             data.getIterator(this).removeChangeListener(weakChangeListener);
@@ -2527,6 +2573,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 m_lblMessage.setToolTipText (msg);
             } else {
                 prepareMessage(m_lblMessage, null, null);
+                m_lblMessage.setToolTipText (null);
             }
             m_lblMessage.setText(msg);
         }

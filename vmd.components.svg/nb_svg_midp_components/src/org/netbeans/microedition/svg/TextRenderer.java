@@ -66,13 +66,13 @@ class TextRenderer {
     }
     
     String truncateToShownText( String text , float boundWidth ) {
-        int count = (int)(boundWidth/myLetterWidth);
+        int count = Math.max( 0, (int)(boundWidth/myLetterWidth));
         String result = text;
         result = text.substring( 0 , Math.min( text.length(), count + 1));
 
         float width = getTextWidth(result);
         boolean isShort = true;
-        while ( width > boundWidth) {
+        while ( width > boundWidth && result.length() >0 ) {
             result = result.substring(0, result.length() - 1);
             width = getTextWidth(result);
             isShort = false;
@@ -104,12 +104,21 @@ class TextRenderer {
     }
     
     float doGetTextWidth(final String text) {
-        float width = 0;
+        float width =0;
         if (text.length() > 0) {
             getForm().invokeAndWaitSafely(new Runnable() {
                 public void run() {
                     getHiddenTextElement().setTrait(SVGComponent.TRAIT_TEXT, 
                             text);
+                    while ( getHiddenTextElement().getTrait( 
+                            SVGComponent.TRAIT_TEXT )!=text )
+                    {
+                        try {
+                            Thread.sleep(50);
+                        }
+                        catch (InterruptedException e) {
+                        }
+                    }
                 }
             });
             SVGRect bBox = getHiddenTextElement().getBBox();

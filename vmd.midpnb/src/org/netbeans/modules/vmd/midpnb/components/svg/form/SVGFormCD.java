@@ -40,22 +40,27 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.vmd.midpnb.components.svg.*;
 import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.Versionable;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
@@ -70,6 +75,8 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
@@ -78,6 +85,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midpnb.actions.EditSVGFileAction;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKindPresenter;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLazyInitFactory;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
@@ -230,6 +239,7 @@ public class SVGFormCD extends ComponentDescriptor {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 } else if (value.getType() == SVGRadioButtonCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                    generateSVGButtonSelectedSetter( section , value.getComponent());
                 } else if (value.getType() == SVGTextFieldCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 } else if (value.getType() == SVGSliderCD.TYPEID) {
@@ -242,9 +252,36 @@ public class SVGFormCD extends ComponentDescriptor {
     private static void generateSVGFormAddComponentCode(MultiGuardedSection section, DesignComponent svgForm, DesignComponent componentToAdd) {
         section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(svgForm));
         section.getWriter().write(".add(" + CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
+        if ( componentToAdd.getType().equals( SVGRadioButtonCD.TYPEID )){
+            PropertyValue value = componentToAdd.readProperty(
+                    SVGRadioButtonCD.PROP_BUTTON_GROUP);
+            if ( value.getKind().equals( PropertyValue.Kind.USERCODE) ){
+                section.getWriter().write( value.getUserCode() +".add("+
+                        CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
+            }
+            else {
+                if ( value.getComponent() == null ){
+                    return;
+                }
+                section.getWriter().write( CodeReferencePresenter.generateAccessCode(
+                        value.getComponent()) +".add("+
+                        CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
+            }
+        }
 
     }
-
+    
+    private static void generateSVGButtonSelectedSetter(MultiGuardedSection section, 
+            DesignComponent button)
+    {
+        Object value = button.readProperty( SVGRadioButtonCD.PROP_SELECTED ).
+            getPrimitiveValue();
+        if ( (Boolean ) value ){
+            section.getWriter().write( CodeReferencePresenter.
+                    generateAccessCode( button )+".setSelected( true );\n");
+        }
+    }
+    
     final class SVGComponentEventSourceOrder extends FlowPinOrderPresenter {
 
         static final String CATEGORY_ID = "SVGComponent"; //NOI18N

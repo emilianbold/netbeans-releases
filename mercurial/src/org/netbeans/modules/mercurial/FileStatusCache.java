@@ -448,7 +448,6 @@ public class FileStatusCache {
         
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir, interestingFiles);
-        assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
         //if(interestingFiles != null) {
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {

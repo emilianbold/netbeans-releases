@@ -1,0 +1,26 @@
+
+
+Document 0
+Searchable Keys:
+  class : Colors
+  class-ig : colors
+  constant : BLUE;String
+  constant : GREEN;String
+  constant : RED;String
+  fqn : Colors
+
+Not Searchable Keys:
+  attrs : |MODULE|
+  requires : rexml/rexml
+
+
+Document 1
+Searchable Keys:
+  class : Converter
+  class-ig : converter
+  fqn : Colors::Converter
+
+Not Searchable Keys:
+  attrs : |MODULE|
+  in : Colors
+  requires : rexml/rexml

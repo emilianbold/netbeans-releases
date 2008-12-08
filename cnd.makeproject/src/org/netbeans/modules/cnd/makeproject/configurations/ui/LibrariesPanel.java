@@ -144,7 +144,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         return myListEditorPanel.getListData();
     }
 
-    private Object getPropertyValue() throws IllegalStateException {
+    private ArrayList<LibraryItem> getPropertyValue() throws IllegalStateException {
         return new ArrayList<LibraryItem>(getListData());
     }
 
@@ -224,7 +224,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public LibraryItem copyAction(LibraryItem o) {
             LibraryItem libraryItem = o;
-            return (LibraryItem) libraryItem.clone();
+            return libraryItem.clone();
         }
     }
 

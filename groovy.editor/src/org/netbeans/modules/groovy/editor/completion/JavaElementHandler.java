@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -69,7 +68,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -94,7 +92,7 @@ public final class JavaElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, String[] typeParameters, boolean emphasise) {
+            String prefix, int anchor, String[] typeParameters, boolean emphasise, Set<AccessLevel> levels) {
         JavaSource javaSource = createJavaSource();
 
         if (javaSource == null) {
@@ -106,7 +104,7 @@ public final class JavaElementHandler {
         Map<MethodSignature, CompletionItem> result = Collections.synchronizedMap(new HashMap<MethodSignature, CompletionItem>());
         try {
             javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, typeParameters,
-                    Collections.singleton(AccessLevel.PUBLIC), prefix, anchor, result, emphasise), true);
+                    levels, prefix, anchor, result, emphasise), true);
         } catch (IOException ex) {
             LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
             return Collections.emptyMap();
@@ -121,7 +119,7 @@ public final class JavaElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getMethods(String className,
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
             String prefix, int anchor, boolean emphasise) {
         JavaSource javaSource = createJavaSource();
 
@@ -164,67 +162,6 @@ public final class JavaElementHandler {
         }
 
         return javaSource;
-    }
-
-    public static enum ClassType {
-
-        CLASS,
-
-        SUPERCLASS,
-
-        SUPERINTERFACE
-    }
-
-    private static enum AccessLevel {
-
-        PUBLIC {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PUBLIC);
-                    }
-                };
-            }
-        },
-
-        PACKAGE {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        Set<Modifier> modifiers = e.getModifiers();
-                        return !modifiers.contains(Modifier.PUBLIC)
-                                && !modifiers.contains(Modifier.PROTECTED)
-                                && !modifiers.contains(Modifier.PRIVATE);
-                    }
-                };
-            }
-        },
-
-        PROTECTED {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PROTECTED);
-                    }
-                };
-            }
-        },
-
-        PRIVATE {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PRIVATE);
-                    }
-                };
-            }
-        };
-
-        public abstract ElementAcceptor getAcceptor();
     }
 
     private static class MethodCompletionHelper implements Task<CompilationController> {
@@ -273,7 +210,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }
@@ -391,7 +328,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }

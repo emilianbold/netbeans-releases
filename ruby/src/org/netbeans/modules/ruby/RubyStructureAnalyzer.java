@@ -59,6 +59,7 @@ import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.CommentNode;
+import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.ConstNode;
 import org.jruby.nb.ast.DefnNode;
 import org.jruby.nb.ast.DefsNode;
@@ -550,8 +551,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case CONSTDECLNODE: {
+            ConstDeclNode constNode = (ConstDeclNode) node;
+
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
+
+            co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(constNode));
             co.setIn(in);
 
             if (parent != null) {
@@ -976,6 +981,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
     private class RubyStructureItem implements StructureItem {
+        
         AstElement node;
         ElementKind kind;
         CompilationInfo info;
@@ -1018,6 +1024,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     formatter.parameters(false);
                     formatter.appendHtml(")");
                 }
+            }
+
+            if (node.getType() != null) {
+                formatter.appendHtml(" : ");
+                formatter.appendText(node.getType());
             }
 
             return formatter.getText();

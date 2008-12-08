@@ -19,6 +19,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -70,9 +71,10 @@ public class DiffTest extends JellyTestCase {
 
     public void testDiffFile() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
+            TestKit.showStatusLabels();
             TestKit.closeProject(PROJECT_NAME);
             
             if (TestKit.getOsName().indexOf("Mac") > -1)

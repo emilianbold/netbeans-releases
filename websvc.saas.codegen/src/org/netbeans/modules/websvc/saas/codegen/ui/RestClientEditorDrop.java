@@ -119,7 +119,7 @@ public class RestClientEditorDrop implements ActiveEditorDrop {
                     if(response)
                         Util.doGenerateCode(codegen, dialog, errors);
                 } catch (Exception ioe) {
-                    if(ioe.getMessage().equals(Constants.UNSUPPORTED_DROP)) {
+                    if(Constants.UNSUPPORTED_DROP.equals(ioe.getMessage())) {
                         Util.showUnsupportedDropMessage(new Object[] {
                             targetSource.getNameExt(), "Java Client"});
                         return;

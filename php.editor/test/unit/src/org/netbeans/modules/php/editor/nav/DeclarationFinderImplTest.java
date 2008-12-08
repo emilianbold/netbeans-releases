@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +49,7 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Jan Lahoda, Radek Matous
  */
 public class DeclarationFinderImplTest extends TestBase {
 
@@ -59,41 +57,136 @@ public class DeclarationFinderImplTest extends TestBase {
         super(testName);
     }
 
-    private String preaperTestFile(String filePath) throws IOException {
-        String retval = TestUtilities.copyFileToString(new File(getDataDir(), filePath));
-        return retval;
+    public void testParamVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "function test($hello) {",
+                "function test($^hello) {",
+                "* @param Book $hello",
+                "* @param Book $he|llo"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
     }
 
-    private String prepareTestFile(String filePath, String... texts) throws IOException {
-        String retval = preaperTestFile(filePath);
-        assert texts != null && texts.length%2 == 0;
-        for (int i = 0; i+1 < texts.length; i++) {
-            String originalText = texts[i];
-            String replacement = texts[++i];
-            retval = retval.replace(originalText, replacement);
-        }        
-        return retval;
+    public void testClsVarPropInPhpDocTest() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                "class Author {",
+                "class ^Author^ {",
+                " * @property Author $author hello this is doc",
+                " * @property Au|thor $author hello this is doc"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
     }
 
-    /*TODO: not implemented yet
+    public void testGotoConstructTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public function ^__construct() {//MyClassConstr",
+                "$a = new MyClassConstr();",
+                "$a = new MyCla|ssConstr();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testGotoConstructTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/gotoConstrTest.php",
+                "public function __construct() {//MyClassConstr",
+                "public ^function __construct() {//MyClassConstr",
+                "$b = new MyClassConstr2();",
+                "$b = new MyCla|ssConstr2();"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "interface myface {",
+                "interface ^myface {",
+                "myface::RECOVER_ORIG;",
+                "myf|ace::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest2() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 2;",
+                "const ^RECOVER_ORIG = 2;",
+                "myface::RECOVER_ORIG;",
+                "myface::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest3() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "class mycls implements myface {",
+                "class ^mycls implements myface {",
+                "mycls::RECOVER_ORIG;",
+                "myc|ls::RECOVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest4() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "const RECOVER_ORIG = 1;",
+                "const ^RECOVER_ORIG = 1;",
+                "mycls::RECOVER_ORIG;",
+                "mycls::REC|OVER_ORIG;"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest5() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc() {}//mycls",
+                "function ^mfnc^() {}//mycls",
+                "$a->mfnc();//mycls",
+                "$a->mf|nc();//mycls"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
+
+    public void testIfaceTest6() throws Exception {
+        String ifaceTest = prepareTestFile(
+                "testfiles/ifaceTest.php",
+                "function mfnc();//myface",
+                "function ^mfnc^();//myface",
+                "$a->mfnc();//myface",
+                "$a->mfn|c();//myface"
+                );
+        performTestSimpleFindDeclaration(-1, ifaceTest);
+    }
 
      public void testImplementsInterface() throws Exception {
-        String manClass = preaperTestFile(
+        String gotoTest2 = prepareTestFile(
                 "testfiles/classMan.php",
                 "implements Person {",
-                "implements P|erson {");
-        String personClass = preaperTestFile(
+                "implements P|erson {"
+                );
+        String gotoTest = prepareTestFile(
                 "testfiles/classPerson.php",
-                "interface Person {", 
-                "^interface Person {");
-        performTestSimpleFindDeclaration(-1, manClass, personClass);
-    }*/
+                "interface Person {",
+                "^interface Person {"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTest2, gotoTest);
+
+    }
 
     public void testGotoTypeClsIface() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
-                "^interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration {}",
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
                 "interface ifaceDeclaration2 extends ifaceDec|laration  {}"
                 );
@@ -103,7 +196,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
-                "^interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration {}",
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration implements ifaceDecl|aration {}"
                 );
@@ -113,7 +206,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
-                "^interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
                 "class clsDeclaration2 implements ifaceDec|laration, ifaceDeclaration2 {}"
                 );
@@ -123,7 +216,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
-                "^class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration3 extends clsDeclaration {}",
                 "class clsDeclaration3 extends clsDeclarat|ion {}"
                 );
@@ -133,7 +226,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
-                "^interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ^ifaceDeclaration2 extends ifaceDeclaration  {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDecla|ration2 {}"
                 );
@@ -157,7 +250,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
-                "^interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration {}",
                 "ifaceDeclaration $ifaceDeclarationVar,",
                 "ifaceD|eclaration $ifaceDeclarationVar,"
                 );
@@ -167,7 +260,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
-                "^interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ^ifaceDeclaration2 extends ifaceDeclaration  {}",
                 "ifaceDeclaration2 $ifaceDeclaration2Var,",
                 "ifaceD|eclaration2 $ifaceDeclaration2Var,"
                 );
@@ -190,7 +283,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
-                "^class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDeclaration implements ifaceDeclaration {}",
                 "clsDeclaration  $clsDeclarationVar,",
                 "clsD|eclaration  $clsDeclarationVar,"
                 );
@@ -200,7 +293,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "^class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class ^clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
                 "clsDeclaration2 $clsDeclaration2Var,",
                 "clsDeclara|tion2 $clsDeclaration2Var,,"
                 );
@@ -210,7 +303,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration3 extends clsDeclaration {}",
-                "^class clsDeclaration3 extends clsDeclaration {}",
+                "class ^clsDeclaration3 extends clsDeclaration {}",
                 "clsDeclaration3 $clsDeclaration3Var,",
                 "clsDe|claration3 $clsDeclaration3Var,"
                 );
@@ -220,7 +313,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration4 extends clsDeclaration3 implements ifaceDeclaration4 {}",
-                "^class clsDeclaration4 extends clsDeclaration3 implements ifaceDeclaration4 {}",
+                "class ^clsDeclaration4 extends clsDeclaration3 implements ifaceDeclaration4 {}",
                 "clsDeclaration4 $clsDeclaration4Var",
                 "clsDeclar|ation4 $clsDeclaration4Var"
                 );
@@ -230,7 +323,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
-                "^class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDeclaration implements ifaceDeclaration {}",
                 "} catch (clsDeclaration $cex) {",
                 "} catch (clsDecla|ration $cex) {"
                 );
@@ -240,7 +333,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
-                "^class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDeclaration implements ifaceDeclaration {}",
                 "if ($cex instanceof clsDeclaration) {",
                 "if ($cex instanceof clsDecl|aration) {"
                 );
@@ -250,7 +343,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "} catch (clsDeclaration $cex) {",
-                "} catch (clsDeclaration ^$cex) {",
+                "} catch (clsDeclaration $^cex) {",
                 "if ($cex instanceof clsDeclaration) {",
                 "if ($c|ex instanceof clsDeclaration) {"
                 );
@@ -260,7 +353,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private static $^static_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= self::$static_array[$idx++];",
                 "$result .= self::$static_a|rray[$idx++];"
                 );
@@ -270,7 +363,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private static $^static_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= self::$static_array[$instance_array[$idx]];",
                 "$result .= self::$static|_array[$instance_array[$idx]];"
                 );
@@ -280,7 +373,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private $^field_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= $this->field_array[$idx++];",
                 "$result .= $this->field_a|rray[$idx++];"
                 );
@@ -290,7 +383,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private $^field_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= $this->field_array[$instance_array[$idx]];",
                 "$result .= $this->field_|array[$instance_array[$idx]];"
                 );
@@ -300,7 +393,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$instance_array[$idx];",
                 "$instan|ce_array[$idx];"
                 );
@@ -310,7 +403,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= self::$static_array[$instance_array[$idx]];",
                 "$result .= self::$static_array[$instance_|array[$idx]];"
                 );
@@ -320,7 +413,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
-                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array = array('', 'thousand ', 'million ', 'billion ');",
                 "$result .= $this->field_array[$instance_array[$idx]];",
                 "$result .= $this->field_array[$instan|ce_array[$idx]];"
                 );
@@ -330,7 +423,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx = 1;",
-                "^$idx = 1;",
+                "$^idx = 1;",
                 "$result .= self::$static_array[$idx++];",
                 "$result .= self::$static_array[$id|x++];"
                 );
@@ -340,7 +433,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx = 1;",
-                "^$idx = 1;",
+                "$^idx = 1;",
                 "$result .= $this->field_array[$idx++];",
                 "$result .= $this->field_array[$i|dx++];"
                 );
@@ -350,7 +443,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx = 1;",
-                "^$idx = 1;",
+                "$^idx = 1;",
                 "$result .= self::$static_array[$instance_array[$idx]];",
                 "$result .= self::$static_array[$instance_array[$id|x]];"
                 );
@@ -360,7 +453,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx = 1;",
-                "^$idx = 1;",
+                "$^idx = 1;",
                 "$result .= $this->field_array[$instance_array[$idx]];",
                 "$result .= $this->field_array[$instance_array[$id|x]];"
                 );
@@ -370,7 +463,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx2 = 1;",
-                "^$idx2 = 1;",
+                "$^idx2 = 1;",
                 "$instance_array2[$idx2];",
                 "$instance_array2[$idx|2];"
                 );
@@ -380,7 +473,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
-                "^$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
                 "$instance_array2[$idx2];",
                 "$instance_a|rray2[$idx2];"
                 );
@@ -390,7 +483,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$idx3 = 1;",
-                "^$idx3 = 1;",
+                "$^idx3 = 1;",
                 "$instance_array3[$idx3];",
                 "$instance_array3[$id|x3];"
                 );
@@ -400,7 +493,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoarray.php",
                 "$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
-                "^$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
                 "$instance_array3[$idx3];",
                 "$instance_ar|ray3[$idx3];"
                 );
@@ -415,7 +508,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/basicTest.php",
                 "function funcWithRefParam(&$param) {",
-                "function funcWithRefParam(&^$param) {",
+                "function funcWithRefParam(&$^param) {",
                 "$param++;",
                 "$par|am++;;"
                 );
@@ -425,7 +518,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "Animal::$count;",
                 "Animal::$cou|nt;"
                 );
@@ -435,7 +528,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "static $animalSpecies = array();",
-                "^static $animalSpecies = array();",
+                "static $^animalSpecies = array();",
                 "$species = self::$animalSpecies;",
                 "$species = self::$animalSpec|ies;"
                 );
@@ -445,7 +538,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "static $animalSpecies = array();",
-                "^static $animalSpecies = array();",
+                "static $^animalSpecies = array();",
                 "$first = self::$animalSpecies[0];",
                 "$first = self::$animalSpec|ies[0];"
                 );
@@ -455,7 +548,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "Animal::$count;",
                 "&Animal::$cou|nt;"
                 );
@@ -465,7 +558,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $cat;",
-                "^public static $count = 0, $cat;",
+                "public static $^count = 0, $cat;",
                 "Cat::$count;",
                 "Cat::$cou|nt;"
                 );
@@ -475,7 +568,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $cat;",
-                "^public static $count = 0, $cat;",
+                "public static $^count = 0, $cat;",
                 "Cat::$count;",
                 "&Cat::$cou|nt;"
                 );
@@ -485,7 +578,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "Animal::$count--;",
                 "Animal::$co|unt--;"
                 );
@@ -495,7 +588,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "Animal::$count--;",
                 "&Animal::$co|unt--;"
                 );
@@ -505,7 +598,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $cat;",
-                "^public static $count = 0, $cat;",
+                "public static $^count = 0, $cat;",
                 "Cat::$count--;",
                 "Cat::$co|unt--;"
                 );
@@ -515,7 +608,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $cat;",
-                "^public static $count = 0, $cat;",
+                "public static $^count = 0, $cat;",
                 "Cat::$count--;",
                 "&Cat::$co|unt--;"
                 );
@@ -545,7 +638,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $count = 0, $^animal;",
                 "self::$animal = $this;",
                 "self::$ani|mal = $this;"
                 );
@@ -555,7 +648,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $count = 0, $^animal;",
                 "self::$animal = $this;",
                 "&self::$ani|mal = $this;"
                 );
@@ -585,7 +678,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "echo parent::$count;",
                 "echo parent::$cou|nt;"
                 );
@@ -595,7 +688,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "echo parent::$count;",
                 "echo &parent::$cou|nt;"
                 );
@@ -606,7 +699,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "echo parent::$count;",
                 "echo parent::$cou|nt;"
                 );
@@ -616,7 +709,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static $count = 0, $animal;",
-                "^public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
                 "echo parent::$count;",
                 "echo &parent::$cou|nt;"
                 );
@@ -687,7 +780,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "Animal::$count;",
                 "Ani|mal::$count;"
                 );
@@ -697,7 +790,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "Animal::$count;",
                 "&Ani|mal::$count;"
                 );
@@ -708,7 +801,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "Cat::$count;",
                 "Ca|t::$count;"
                 );
@@ -718,7 +811,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "Cat::$count;",
                 "&Ca|t::$count;"
                 );
@@ -729,7 +822,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "Animal::$count--;",
                 "Ani|mal::$count--;"
                 );
@@ -739,7 +832,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "Animal::$count--;",
                 "&Ani|mal::$count--;"
                 );
@@ -750,7 +843,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "Cat::$count--;",
                 "Ca|t::$count--;"
                 );
@@ -760,7 +853,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "Cat::$count--;",
                 "&Ca|t::$count--;"
                 );
@@ -771,7 +864,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "Mammal::$count--;",
                 "Mam|mal::$count--;"
                 );
@@ -781,7 +874,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "Mammal::$count--;",
                 "&Mam|mal::$count--;"
                 );
@@ -818,8 +911,8 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testClassInstantiation() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
-                "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "function __construct() {//Mammal",
+                "function ^__construct() {//Mammal",
                 "$mammal = new Mammal;",
                 "$mammal = new Mamm|al;"
                 );
@@ -829,7 +922,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "class Cat extends Mammal {",
                 "class Cat extends Mamm|al {"
                 );
@@ -855,7 +948,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public function getCount($animalLogging) {",
-                "^public function getCount($animalLogging) {",
+                "public function ^getCount($animalLogging) {",
                 "echo parent::getCount(\"calling animal's getCount 1\");",
                 "echo parent::getC|ount(\"calling animal's getCount 1\");"
                 );
@@ -885,7 +978,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest2.php",
                 "function __construct($info) {",
-                "^function __construct($info) {",
+                "function ^__construct($info) {",
                 "parent::__construct(\"\");",
                 "parent::__constr|uct(\"\");"
                 );
@@ -905,7 +998,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public function getCount($catLogging) {",
-                "^public function getCount($catLogging) {",
+                "public function ^getCount($catLogging) {",
                 "$cat->getCount(\"calling cat's getCount 1\");",
                 "$cat->getCo|unt(\"calling cat's getCount 1\");"
                 );
@@ -915,7 +1008,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public function getCount($catLogging) {",
-                "^public function getCount($catLogging) {",
+                "public function ^getCount($catLogging) {",
                 "echo $this->getCount(\"calling cat's getCount\");",
                 "echo $this->getCou|nt(\"calling cat's getCount\");"
                 );
@@ -925,7 +1018,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public function getCount($animalLogging) {",
-                "^public function getCount($animalLogging) {",
+                "public function ^getCount($animalLogging) {",
                 "self::getCount(\"calling animal's getCount 0\");",
                 "self::get|Count(\"calling animal's getCount 0\");"
                 );
@@ -1001,7 +1094,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest2.php",
                 "public function getCount($sharkLogging) {",
-                "^public function getCount($sharkLogging) {",
+                "public function ^getCount($sharkLogging) {",
                 "$shark->getCount(\"\");",
                 "$$shark->getCou|nt(\"\");"
                 );
@@ -1011,7 +1104,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=1;",
-                "^const KIND=1;",
+                "const ^KIND=1;",
                 "echo self::KIND;",
                 "echo self::KIN|D;"
                 );
@@ -1031,7 +1124,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=1;",
-                "^const KIND=1;",
+                "const ^KIND=1;",
                 "$isParentAnimal = (parent::KIND == $animalKind);",
                 "$isParentAnimal = (parent::KI|ND == $animalKind);"
                 );
@@ -1051,7 +1144,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "$mammalKind = Mammal::KIND;",
                 "$mammalKind = Mam|mal::KIND;"
                 );
@@ -1061,7 +1154,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=1;",
-                "^const KIND=1;",
+                "const ^KIND=1;",
                 "$animalKind = Animal::KIND;",
                 "$animalKind = Animal::KI|ND;"
                 );
@@ -1071,7 +1164,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "$animalKind = Animal::KIND;",
                 "$animalKind = Ani|mal::KIND;"
                 );
@@ -1081,7 +1174,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=3;",
-                "^const KIND=3;",
+                "const ^KIND=3;",
                 "$catKind = self::KIND;",
                 "$catKind = self::KIN|D;"
                 );
@@ -1091,7 +1184,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=1;",
-                "^const KIND=1;",
+                "const ^KIND=1;",
                 "echo Animal::KIND;",
                 "echo Animal::KIN|D;"
                 );
@@ -1101,7 +1194,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "echo Animal::KIND;",
                 "echo Ani|mal::KIND;"
                 );
@@ -1121,7 +1214,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "echo Mammal::KIND;",
                 "echo Mamm|al::KIND;"
                 );
@@ -1131,7 +1224,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=3;",
-                "^const KIND=3;",
+                "const ^KIND=3;",
                 "echo Cat::KIND;",
                 "echo Cat::KI|ND;"
                 );
@@ -1141,7 +1234,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "echo Cat::KIND;",
                 "echo Ca|t::KIND;"
                 );
@@ -1151,7 +1244,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=1;",
-                "^const KIND=1;",
+                "const ^KIND=1;",
                 "print Animal::KIND;",
                 "print Animal::KI|ND;"
                 );
@@ -1161,7 +1254,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "print Animal::KIND;",
                 "print Ani|mal::KIND;"
                 );
@@ -1181,7 +1274,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "print Mammal::KIND;",
                 "print Mam|mal::KIND;"
                 );
@@ -1191,7 +1284,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "const KIND=3;",
-                "^const KIND=3;",
+                "const ^KIND=3;",
                 "print Cat::KIND;",
                 "print Cat::KI|ND;"
                 );
@@ -1201,7 +1294,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "print Cat::KIND;",
                 "print Ca|t::KIND;"
                 );
@@ -1259,7 +1352,6 @@ public class DeclarationFinderImplTest extends TestBase {
                 );
         performTestSimpleFindDeclaration(-1, animalTest2, animalTest);
     }
-    /*TODO: fails, evaluate, fix
     public void testConstantAccess14() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
@@ -1272,7 +1364,7 @@ public class DeclarationFinderImplTest extends TestBase {
                 "echo Cat::KI|ND;"
                 );
         performTestSimpleFindDeclaration(-1, animalTest2, animalTest);
-    }*/
+    }
     public void testConstantAccess15() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
@@ -1360,7 +1452,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static function kindInfo() {return \"animal is ...\";}",
-                "^public static function kindInfo() {return \"animal is ...\";}",
+                "public static function ^kindInfo() {return \"animal is ...\";}",
                 "echo Animal::kindInfo();",
                 "echo Animal::kindIn|fo();"
                 );
@@ -1393,7 +1485,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "echo Mammal::kindInfo();",
                 "echo Mam|mal::kindInfo();"
                 );
@@ -1403,7 +1495,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static function kindInfo() {return \"cat is ...\";}",
-                "^public static function kindInfo() {return \"cat is ...\";}",
+                "public static function ^kindInfo() {return \"cat is ...\";}",
                 "echo Cat::kindInfo();",
                 "echo Cat::kindIn|fo();"
                 );
@@ -1413,7 +1505,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "echo Cat::kindInfo();",
                 "echo C|at::kindInfo();"
                 );
@@ -1423,7 +1515,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static function kindInfo() {return \"cat is ...\";}",
-                "^public static function kindInfo() {return \"cat is ...\";}",
+                "public static function ^kindInfo() {return \"cat is ...\";}",
                 "echo self::kindInfo();",
                 "echo self::kindIn|fo();"
                 );
@@ -1454,7 +1546,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "abstract class Animal {",
-                "^abstract class Animal {",
+                "abstract class ^Animal {",
                 "print Animal::kindInfo();",
                 "print Anim|al::kindInfo();"
                 );
@@ -1474,7 +1566,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Mammal extends Animal {",
-                "^class Mammal extends Animal {",
+                "class ^Mammal extends Animal {",
                 "print Mammal::kindInfo();",
                 "print Mam|mal::kindInfo();"
                 );
@@ -1484,7 +1576,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "public static function kindInfo() {return \"cat is ...\";}",
-                "^public static function kindInfo() {return \"cat is ...\";}",
+                "public static function ^kindInfo() {return \"cat is ...\";}",
                 "print Cat::kindInfo();",
                 "print Cat::kindIn|fo();"
                 );
@@ -1494,7 +1586,7 @@ public class DeclarationFinderImplTest extends TestBase {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
                 "class Cat extends Mammal {",
-                "^class Cat extends Mammal {",
+                "class ^Cat extends Mammal {",
                 "print Cat::kindInfo();",
                 "print Ca|t::kindInfo();"
                 );
@@ -1621,21 +1713,21 @@ public class DeclarationFinderImplTest extends TestBase {
     }
     
     public void testSimpleFindDeclaration1() throws Exception {
-        performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n echo \"$na|me\";\n?>");
+        performTestSimpleFindDeclaration("<?php\n$^name = \"test\";\n echo \"$na|me\";\n?>");
     }
 
     public void testSimpleFindDeclaration2() throws Exception {
-        performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n?>");
+        performTestSimpleFindDeclaration("<?php\n$^name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n?>");
     }
 
     public void testSimpleFindDeclaration3() throws Exception {
-        performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n$name = \"test\";\n?>");
+        performTestSimpleFindDeclaration("<?php\n$^name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n$name = \"test\";\n?>");
     }
 
     public void testSimpleFindDeclaration4() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "$name = \"test\";\n" +
-                                         "function foo(^$name) {\n" +
+                                         "function foo($^name) {\n" +
                                          "    echo \"$na|me\";\n" +
                                          "}\n" +
                                          "?>");
@@ -1643,7 +1735,7 @@ public class DeclarationFinderImplTest extends TestBase {
 
     public void testSimpleFindDeclaration5() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
-                                         "^$name = \"test\";\n" +
+                                         "$^name = \"test\";\n" +
                                          "function foo($name) {\n" +
                                          "}\n" +
                                          "echo \"$na|me\";\n" +
@@ -1653,7 +1745,7 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testSimpleFindDeclaration6() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "$name = \"test\";\n" +
-                                         "^function foo($name) {\n" +
+                                         "function ^foo($name) {\n" +
                                          "}\n" +
                                          "fo|o($name);\n" +
                                          "?>");
@@ -1661,7 +1753,7 @@ public class DeclarationFinderImplTest extends TestBase {
 
     public void testSimpleFindDeclaration7() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
-                                         "^class name {\n" +
+                                         "class ^name {\n" +
                                          "}\n" +
                                          "$r = new na|me();\n" +
                                          "?>");
@@ -1670,7 +1762,7 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testSimpleFindDeclaration8() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class name {\n" +
-                                         "    ^function test() {" +
+                                         "    function ^test() {" +
                                          "    }" +
                                          "}\n" +
                                          "$r = new name();\n" +
@@ -1680,7 +1772,7 @@ public class DeclarationFinderImplTest extends TestBase {
 
     public void testSimpleFindDeclaration9() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
-                                         "^$name = \"test\";\n" +
+                                         "$^name = \"test\";\n" +
                                          "function foo($name) {\n" +
                                          "}\n" +
                                          "foo($na|me);\n" +
@@ -1732,7 +1824,7 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testFunctionsInGlobalScope1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
-                                         "^function foo() {}\n" +
+                                         "function ^foo() {}\n" +
                                          "function bar() {\n" +
                                          "    fo|o();\n" +
                                          "}\n" +
@@ -1752,7 +1844,7 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testArrayVariable() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
-                                         "^$foo = array();\n" +
+                                         "$^foo = array();\n" +
                                          "$f|oo['test'] = array();\n" +
                                          "?>");
     }
@@ -1761,7 +1853,7 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
                                          "fo|o();\n" +
-                                         "^function foo() {}\n" +
+                                         "function ^foo() {}\n" +
                                          "?>",
                                          "<?php\n" +
                                          "function foo() {}\n" +
@@ -1797,7 +1889,7 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testDefines1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
-                                         "define(^'test', 'test');\n" +
+                                         "define('^test', 'test');\n" +
                                          "echo \"a\".te|st.\"b\";\n" +
                                          "?>");
     }
@@ -1891,7 +1983,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "    function ftest($name) {\n" +
                                          "        $this->na|me = $name;\n" +
                                          "    }\n" +
-                                         "    ^var $name;\n" +
+                                         "    var $^name;\n" +
                                          "}\n" +
                                          "?>");
     }
@@ -1902,7 +1994,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "    function ftest($name) {\n" +
                                          "        $this->na|me();\n" +
                                          "    }\n" +
-                                         "    ^function name() {}\n" +
+                                         "    function ^name() {}\n" +
                                          "}\n" +
                                          "?>");
     }
@@ -1954,6 +2046,42 @@ public class DeclarationFinderImplTest extends TestBase {
                 "class Man implements Person {",
                 "^class Man implements Person {");
         performTestSimpleFindDeclaration(-1, userClass, manClass);
+    }
+
+    public void testPHPDocType01() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class ^Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Bo|ok $hello\n" +
+                                         " * @return Magazine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
+    }
+
+    public void testPHPDocType02() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "class ^Magazine {\n" +
+                                         "    public $title;\n" +
+                                         "}\n" +
+                                         "class Book { \n" +
+                                         "    public $author;\n" +
+                                         "}\n" +
+                                         "/**\n" +
+                                         " * @param Book $hello\n" +
+                                         " * @return Mag|azine test\n" +
+                                         " */\n" +
+                                         "function test($hello) {\n" +
+                                         "}\n" +
+                                         "?>\n");
     }
 
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {

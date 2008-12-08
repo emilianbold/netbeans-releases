@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -84,32 +85,60 @@ public class POHImpl extends ProjectOpenedHook {
     }
     
     public void hackModuleServerChange() {
-        provider.hackModuleServerChange();
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            public void run() {
+                refreshAppServerAssignment();
+            }
+        });
     }
     
     protected void projectOpened() {
-        provider.hackModuleServerChange();
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-
-        String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-        String server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        String instanceFound = null;
-        if (server != null) {
-            String[] instances = Deployment.getDefault().getInstancesOfServer(server);
-            String inst = null;
-            if (instances != null && instances.length > 0) {
-                inst = instances[0];
-                for (int i = 0; i < instances.length; i++) {
-                    if (val != null && val.equals(instances[i])) {
-                        inst = instances[i];
-                        break;
+        refreshAppServerAssignment();
+        if (refreshListener == null) {
+            //#121148 when the user edits the file we need to reset the server instance
+            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+            refreshListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        hackModuleServerChange();
                     }
                 }
-                instanceFound = inst;
+            };
+            watcher.addPropertyChangeListener(refreshListener);
+        }
+    }
+
+    protected synchronized void refreshAppServerAssignment() {
+        provider.hackModuleServerChange();
+
+        String instanceFound = null;
+        String server = null;
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc.getServerInstanceId() != null) {
+            instanceFound = sc.getServerInstanceId();
+        }
+        if (instanceFound == null) {
+            AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+
+            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
+            if (server == null) {
+                //try checking for old values..
+                server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+            }
+            if (server != null) {
+                String[] instances = Deployment.getDefault().getInstancesOfServer(server);
+                String inst = null;
+                if (instances != null && instances.length > 0) {
+                    inst = instances[0];
+                    for (int i = 0; i < instances.length; i++) {
+                        if (val != null && val.equals(instances[i])) {
+                            inst = instances[i];
+                            break;
+                        }
+                    }
+                    instanceFound = inst;
+                }
             }
         }
 
@@ -141,18 +170,6 @@ public class POHImpl extends ProjectOpenedHook {
                     new AddServerAction(project));
             report.addReport(rep);
             
-        }
-        if (refreshListener == null) {
-            //#121148 when the user edits the file we need to reset the server instance
-            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-            refreshListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        projectOpened();
-                    }
-                }
-            };
-            watcher.addPropertyChangeListener(refreshListener);
         }
     }
 

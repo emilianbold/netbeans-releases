@@ -159,10 +159,10 @@ else{
 
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.weightx = 1.0;
-        //gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(treeView, gridBagConstraints);
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));

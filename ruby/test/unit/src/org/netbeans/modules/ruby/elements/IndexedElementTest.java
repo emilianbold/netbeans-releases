@@ -39,21 +39,13 @@
 
 package org.netbeans.modules.ruby.elements;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -162,6 +154,10 @@ public class IndexedElementTest extends RubyTestBase {
 
     public void testCreate23() throws Exception {
         checkCreate("testfiles/classvar.rb.indexed");
+    }
+
+    public void testCreate24() throws Exception {
+        checkCreate("testfiles/constants.rb.indexed");
     }
 
     public void checkCreate(String testFile) throws Exception {
@@ -380,186 +376,4 @@ public class IndexedElementTest extends RubyTestBase {
             }
         }
     }
-
-    private List<SearchResult> createTestMaps(FileObject testFile) {
-        List<SearchResult> maps = new ArrayList<SearchResult>();
-
-        String dump = readFile(testFile);
-        String[] lines = dump.split("\n");
-
-        for (int lineno = 0; lineno < lines.length; lineno++) {
-            // Skip empty lines
-            String line = lines[lineno].trim();
-            if (line.length() == 0) {
-                continue;
-            }
-
-            Map<String,List<String>> values = new HashMap<String, List<String>>();
-            String url = null;
-            while (lineno < lines.length) {
-                line = lines[lineno];
-                int equal = line.indexOf('=');
-                if (equal == -1) {
-                    break;
-                }
-                String key = line.substring(0, equal);
-                List<String> list = values.get(key);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    values.put(key, list);
-                }
-                String value = line.substring(equal+1);
-
-                list.add(value);
-                lineno++;
-
-                if ("filename".equals(key)) {
-                    url = value;
-                }
-            }
-
-            if (url != null) {
-                TestSearchResult result = new TestSearchResult(url, values);
-                maps.add(result);
-            }
-        }
-
-        return maps;
-    }
-
-    private List<SearchResult> createTestMapsFromIndexFile(FileObject testFile) throws MalformedURLException {
-        List<SearchResult> maps = new ArrayList<SearchResult>();
-
-        String dump = readFile(testFile);
-        if (dump == null) {
-            return Collections.emptyList();
-        }
-        String[] lines = dump.split("\n");
-
-        String name = testFile.getNameExt();
-        assertTrue(name.endsWith(".indexed"));
-        name = name.substring(0, name.length()-".indexed".length());
-        FileObject source = testFile.getParent().getFileObject(name);
-        assertNotNull(source);
-
-        for (int lineno = 0; lineno < lines.length; lineno++) {
-            // Skip empty lines
-            String line = lines[lineno].trim();
-            if (line.length() == 0 || !line.startsWith("Document ")) {
-                continue;
-            }
-            lineno++; // Skip Document
-
-            Map<String,List<String>> values = new HashMap<String, List<String>>();
-            while (lineno < lines.length) {
-                line = lines[lineno];
-                if (line.startsWith("Document ")) {
-                    lineno--;
-                    break;
-                }
-                if (line.trim().length() == 0 || line.startsWith("Searchable Keys") || line.startsWith("Not Searchable Keys")) {
-                    lineno++;
-                    continue;
-                }
-                String SEPARATOR = " : ";
-
-                int equal = line.indexOf(SEPARATOR);
-                if (equal == -1) {
-                    break;
-                }
-                String key = line.substring(0, equal).trim();
-                List<String> list = values.get(key);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    values.put(key, list);
-                }
-                String value = line.substring(equal+SEPARATOR.length()).trim();
-
-                // HACK: Pretty printer in Ruby indexed files are missing a semicolon
-                if ("method".equals(key) || "field".equals(key)) {
-                    int semi = value.indexOf(';');
-                    int pipe = value.indexOf('|');
-                    if (pipe != -1 && semi < pipe) {
-                        value = value.substring(0, pipe) + ";" + value.substring(pipe);
-                    }
-                }
-
-                list.add(value);
-                lineno++;
-            }
-
-            String url = FileUtil.toFile(source).toURI().toURL().toExternalForm();
-            TestSearchResult result = new TestSearchResult(url, values);
-            result.setValue("filename", url);
-            maps.add(result);
-        }
-
-        int documentCount = 0;
-        for (String line : lines) {
-            if (line.startsWith("Document ")) {
-                documentCount++;
-            }
-        }
-        assertEquals(documentCount, maps.size());
-
-        return maps;
-    }
-
-    private class TestSearchResult implements SearchResult {
-        private final String url;
-        private final Map<String,List<String>> values;
-
-        public TestSearchResult(String url, Map<String,List<String>> values) {
-            this.url = url;
-            this.values = values;
-        }
-
-        public void setValue(String key, String value) {
-            values.put(key, Collections.singletonList(value));
-        }
-
-        public String getPersistentUrl() {
-            return url;
-        }
-
-        public String getValue(String key) {
-            if (values.containsKey(key)) {
-                return values.get(key).get(0);
-            }
-            return null;
-        }
-
-        public String[] getValues(String key) {
-            if (values.containsKey(key)) {
-                List<String> v = values.get(key);
-                return v.toArray(new String[v.size()]);
-            }
-            return null;
-        }
-
-        public Object getIndex() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Object getDocument() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Object getIndexReader() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public File getSegment() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public int getDocumentNumber() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String toString() {
-            return "SearchMap(" + url + ", " + values + ")";
-        }
-    };
 }

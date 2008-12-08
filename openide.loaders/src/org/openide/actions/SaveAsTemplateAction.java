@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,12 @@ package org.openide.actions;
 
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -65,11 +70,12 @@ public final class SaveAsTemplateAction extends NodeAction {
     }
 
     /** @deprecated Should never be called publically. */
-    @Deprecated
+    @Deprecated @Override
     public String iconResource () {
         return super.iconResource ();
     }
 
+    @Override
     protected boolean surviveFocusChange () {
         return false;
     }
@@ -80,7 +86,7 @@ public final class SaveAsTemplateAction extends NodeAction {
         // test if all nodes support saving as template
         DataObject curCookie;
         for (int i = 0; i < activatedNodes.length; i++) {
-            curCookie = (DataObject)activatedNodes[i].getCookie(DataObject.class);
+            curCookie = activatedNodes[i].getCookie (DataObject.class);
             if ((curCookie == null) || (!curCookie.isCopyAllowed()))
                 // not supported
                 return false;
@@ -114,14 +120,15 @@ public final class SaveAsTemplateAction extends NodeAction {
         // we know DataFolder and DataObject cookies must be supported
         // so we needn't check for null values
         DataFolder targetFolder =
-            (DataFolder)selected[0].getCookie(DataFolder.class);
+            selected[0].getCookie (DataFolder.class);
         for (int i = 0; i < activatedNodes.length; i++ ) {
             createNewTemplate(
-                (DataObject)activatedNodes[i].getCookie(DataObject.class),
+                activatedNodes[i].getCookie (DataObject.class),
                 targetFolder);
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -130,15 +137,56 @@ public final class SaveAsTemplateAction extends NodeAction {
     private void createNewTemplate(DataObject source,
                                    DataFolder targetFolder) {
         try {
-            SaveCookie cookie = (SaveCookie)source.getCookie (SaveCookie.class);
+            SaveCookie cookie = source.getCookie (SaveCookie.class);
             if (cookie != null) {
                 cookie.save ();
             }
             DataObject newTemplate = source.copy(targetFolder);
+            DataObject templateSample = null;
+            for (DataObject d : targetFolder.getChildren ()) {
+                if (d.isTemplate ()) {
+                    templateSample = d;
+                    break;
+                }
+            }
             newTemplate.setTemplate(true);
+            if (templateSample == null) {
+                // a fallback if no template sample found
+                newTemplate.getPrimaryFile ().setAttribute ("javax.script.ScriptEngine", "freemarker"); // NOI18N
+            } else {
+                setTemplateAttributes (newTemplate.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    /** Sets attributes for given FileObject. */ // XXX: copied from org.netbeans.modules.favorites.templates
+    private static void setTemplateAttributes (FileObject fo, Map<String, Object> attributes) throws IOException {
+        for (Entry<String, Object> entry : attributes.entrySet()) {
+            // skip localizing bundle for custom templates
+            if ("SystemFileSystem.localizingBundle".equals (entry.getKey ())) { // NOI18N
+                continue;
+            }
+            fo.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /** Returns map of attributes for given FileObject. */ // XXX: copied from org.netbeans.modules.favorites.templates
+    private static Map<String, Object> getAttributes (FileObject fo) {
+        HashMap<String, Object> attributes = new HashMap<String, Object> ();
+        Enumeration<String> attributeNames = fo.getAttributes ();
+        while (attributeNames.hasMoreElements ()) {
+            String attrName = attributeNames.nextElement ();
+            if (attrName == null) {
+                continue;
+            }
+            Object attrValue = fo.getAttribute (attrName);
+            if (attrValue != null) {
+                attributes.put (attrName, attrValue);
+            }
+        }
+        return attributes;
     }
 
     /** Inner class functioning like node acceptor for
@@ -150,19 +198,32 @@ public final class SaveAsTemplateAction extends NodeAction {
         /** an instance */
         private static FolderNodeAcceptor instance;
 
+        private DataFolder rootFolder;
+
         /** singleton */
-        private FolderNodeAcceptor() {
+        private FolderNodeAcceptor (DataFolder root) {
+            this.rootFolder = root;
         }
 
         /** accepts a selected folder */
-        public final boolean acceptNodes(Node[] nodes) {
-            if (nodes == null || nodes.length != 1) return false;
-            return nodes[0].getCookie(DataFolder.class) != null;
+        public boolean acceptNodes (Node[] nodes) {
+            boolean res = false;
+            if (nodes == null || nodes.length != 1) {
+                res = false;
+            } else {
+                Node n = nodes [0];
+                DataFolder df = n.getCookie(DataFolder.class);
+                if (df != null) {
+                    res = ! rootFolder.equals (df);
+                }
+            }
+            return res;
         }
 
         /** getter for an instance */
         static FolderNodeAcceptor getInstance() {
-            if (instance == null) instance = new FolderNodeAcceptor();
+            DataFolder rootFolder = NewTemplateAction.getTemplateRoot ().getCookie (DataFolder.class);
+            if (instance == null) instance = new FolderNodeAcceptor(rootFolder);
             return instance;
         }
     } // end of FolderNodeAcceptor inner class

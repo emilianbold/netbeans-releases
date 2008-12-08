@@ -61,6 +61,8 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -76,12 +78,9 @@ class SQLExecutionHelper {
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
-
     private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
-
     public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
     private static Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
-
 
     SQLExecutionHelper(DataView dataView, DatabaseConnection dbConn) {
         this.dataView = dataView;
@@ -93,14 +92,15 @@ class SQLExecutionHelper {
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
             String msg = "";
-            if(conn == null) {
+            if (conn == null) {
                 Throwable ex = DBConnectionFactory.getInstance().getLastException();
-                if(ex != null) {
+                if (ex != null) {
                     msg = ex.getMessage();
                 } else {
-                    msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                    msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_connection_failure", dv.getDatabaseConnection());
                 }
-                dv.setErrorStatusText(new DBException(msg));
+                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
                 return;
             }
 
@@ -197,12 +197,13 @@ class SQLExecutionHelper {
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
+        final int[] rows = rsTable.getSelectedRows();
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                int[] rows = rsTable.getSelectedRows();
+
                 for (int j = 0; j < rows.length && !error; j++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -229,7 +230,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");//"MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -247,7 +248,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.decrementRowSize(rsTable.getSelectedRows().length);
+                dataView.decrementRowSize(rows.length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -316,7 +317,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
@@ -365,7 +366,7 @@ class SQLExecutionHelper {
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
-                    mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n");
+                    mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n"); // NOI18N
                     truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
 
                     executeSQLStatement(stmt, truncateSql);
@@ -416,6 +417,17 @@ class SQLExecutionHelper {
                     } else {
                         return;
                     }
+                } catch (SQLException sqlEx) {
+                    String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
+                    String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "\n" + msg, title,
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                        dataView.removeComponents();
+                    }
+                    throw sqlEx;
+
                 } finally {
                     DataViewUtils.closeResources(rs);
                 }
@@ -479,8 +491,7 @@ class SQLExecutionHelper {
 
                 Object[] row = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
-                    int type = tblMeta.getColumn(i).getJdbcType();
-                    row[i] = DBReadWriteHelper.readResultSet(rs, type, i + 1);
+                    row[i] = DBReadWriteHelper.readResultSet(rs, tblMeta.getColumn(i), i + 1);
                 }
                 rows.add(row);
                 rowCnt++;
@@ -489,7 +500,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.log(Level.SEVERE, "Failed to set up table model" + e);
+            mLogger.log(Level.SEVERE, "Failed to set up table model" + e); // NOI18N
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -507,7 +518,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.log(Level.SEVERE, "Could not get total row count " + ex);
+            mLogger.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
         }
     }
 
@@ -524,12 +535,12 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
-        
+
         try {
             stmt.setFetchSize(pageSize);
         } catch (SQLException e) {
             // ignore -  used only as a hint to the driver to optimize
-            LOGGER.log(Level.INFO, e.getMessage(), e);
+            LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
         }
 
         try {
@@ -539,7 +550,7 @@ class SQLExecutionHelper {
                 stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
             }
         } catch (SQLException exc) {
-            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc);
+            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
         }
         return stmt;
     }
@@ -547,12 +558,12 @@ class SQLExecutionHelper {
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize(); 
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1); 
+                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
             }
         }
 
-        mLogger.log(Level.FINE, "Executing Statement: " + sql);
+        mLogger.log(Level.FINE, "Executing Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -565,7 +576,7 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds");
+        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds"); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
 
         synchronized (dataView) {
@@ -576,30 +587,78 @@ class SQLExecutionHelper {
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt) {
-        ResultSet cntResultSet = null;
-        try {
-            if (isSelect && !isGroupByUsedInSelect(sql) && !isDistinctUsedInSelect(sql)) {
-                if (isLimitUsedInSelect(sql)) {
-                    try {
-                        String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
-                        int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
-                        dataView.getDataViewPageContext().setTotalRows(rCnt);
-                    } catch (NumberFormatException nex) {
-                        cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
-                        setTotalCount(cntResultSet);
-                    }
-                } else {
-                    cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
-                    setTotalCount(cntResultSet);
-                }
-            } else {
-                setTotalCount(null);
+
+        // Case for LIMIT n OFFSET m
+        if (isSelect && isLimitUsedInSelect(sql)) {
+            try {
+                String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
+                int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
+                dataView.getDataViewPageContext().setTotalRows(rCnt);
+                return;
+            } catch (NumberFormatException nex) {
             }
+        }
+
+        // SELECT COUNT(*) FROM (sqlquery) alias
+        ResultSet cntResultSet = null;
+        if (isSelect) {
+            try {
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
+                setTotalCount(cntResultSet);
+                return;
+            } catch (SQLException e) {
+            } finally {
+                DataViewUtils.closeResources(cntResultSet);
+            }
+        }
+
+        // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
+        if (isSelect && !isGroupByUsedInSelect(sql)) {
+            cntResultSet = null;
+            try {
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
+                setTotalCount(cntResultSet);
+                return;
+            } catch (SQLException e) {
+            } finally {
+                DataViewUtils.closeResources(cntResultSet);
+            }
+        }
+
+        // In worse case, get the count from resultset
+        cntResultSet = null;
+        int totalRows = 0;
+        try {
+            // reset fetch size
+            int fetchSize = dataView.getDataViewPageContext().getPageSize();
+            try {
+                fetchSize = stmt.getFetchSize();
+                stmt.setFetchSize(20000);
+            } catch (SQLException sqe) {
+                // ignore
+            }
+
+            cntResultSet = stmt.executeQuery(sql);
+            while (cntResultSet.next()) {
+                totalRows++;
+            }
+            dataView.getDataViewPageContext().setTotalRows(totalRows);
+
+            // set to old value
+            try {
+                stmt.setFetchSize(fetchSize);
+            } catch (SQLException sqe) {
+                // ignore
+            }
+            return;
         } catch (SQLException e) {
-            setTotalCount(null);
         } finally {
             DataViewUtils.closeResources(cntResultSet);
         }
+
+        // Unable to compute the total rows
+        setTotalCount(null);
+
     }
 
     private boolean isSelectStatement(String queryString) {
@@ -609,14 +668,10 @@ class SQLExecutionHelper {
     private boolean isLimitUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(LIMIT_CLAUSE) != -1;
     }
-    
-    private boolean isGroupByUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" GROUP BY ") != -1; // NOI18N
-    }
 
-    private boolean isDistinctUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" DISTINCT ") != -1; // NOI18N
-    }    
+    private boolean isGroupByUsedInSelect(String sql) {
+        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(" COUNT(*) ") != -1; // NOI18N
+    }
 
     static String millisecondsToSeconds(long ms) {
         NumberFormat fmt = NumberFormat.getInstance();

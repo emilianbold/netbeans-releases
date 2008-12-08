@@ -83,6 +83,7 @@ public class StringListNodeProp extends PropertySupport<List> {
         return configuration.getValue();
     }
 
+    @SuppressWarnings("unchecked")
     public void setValue(List v) {
         configuration.setValue(v);
     }

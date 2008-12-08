@@ -47,6 +47,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -65,13 +66,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -92,7 +93,8 @@ public class GoToPanel extends javax.swing.JPanel {
     
     // Time when the serach stared (for debugging purposes)
     long time = -1;
-    
+
+    private final SearchHistory searchHistory;
     
     /** Creates new form GoToPanel */
     public GoToPanel( ContentProvider contentProvider ) throws IOException {
@@ -127,7 +129,14 @@ public class GoToPanel extends javax.swing.JPanel {
         matchesList.addListSelectionListener(pl);   
         caseSensitive.setSelected(UiOptions.GoToSymbolDialog.getCaseSensitive());
         caseSensitive.addItemListener(pl);
-                
+
+        searchHistory = new SearchHistory(GoToPanel.class, nameField);
+    }
+
+    @Override
+    public void removeNotify() {
+        searchHistory.saveHistory();
+        super.removeNotify();
     }
     
     public boolean isCaseSensitive () {
@@ -340,7 +349,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         if (contentProvider.hasValidContent()) {
             contentProvider.closeDialog();
-            setSelectedSymbol();        
+            setSelectedSymbol();
         }
     }//GEN-LAST:event_nameFieldActionPerformed
     
@@ -441,7 +450,7 @@ public class GoToPanel extends javax.swing.JPanel {
             a.actionPerformed(new ActionEvent(matchesList, 0, action));
         }
     }
-    
+
     private static class PatternListener implements DocumentListener, ListSelectionListener, ItemListener {
                
         private final GoToPanel dialog;

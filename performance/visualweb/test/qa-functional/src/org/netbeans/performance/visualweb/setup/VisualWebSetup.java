@@ -60,10 +60,6 @@ public class VisualWebSetup extends JellyTestCase  {
         super(testName);
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
     public void testCloseAllDocuments() {
         CommonUtilities.closeAllDocuments();
     }

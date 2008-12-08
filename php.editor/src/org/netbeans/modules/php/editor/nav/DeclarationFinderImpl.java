@@ -36,11 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.nav;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,29 +53,32 @@ import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassMemberElement;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Union2;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
 
@@ -86,7 +88,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     public OffsetRange getReferenceSpan(Document doc, final int caretOffset) {
         List<TokenSequence<?>> ets = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, false);
-
+        boolean inDocComment = false;
         ets = new LinkedList<TokenSequence<?>>(ets);
 
         Collections.reverse(ets);
@@ -97,6 +99,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                 if (t.id() == PHPTokenId.PHP_VARIABLE || t.id() == PHPTokenId.PHP_STRING) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
+
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT) {
+                    inDocComment = true;
+                    break;
                 }
             }
         }
@@ -109,34 +116,81 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             final OffsetRange[] result = new OffsetRange[1];
 
             try {
-                model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                    public void cancel() {}
-                    public void run(CompilationInfo parameter) throws Exception {
-                        List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
+                if (!inDocComment) {
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
 
-                        if (path.size() == 0) {
-                            return ;
+                        public void cancel() {
                         }
 
-                        path = new LinkedList<ASTNode>(path);
+                        public void run(CompilationInfo parameter) throws Exception {
+                            List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
 
-                        Collections.reverse(path);
+                            if (path.size() == 0) {
+                                return;
+                            }
 
-                        Scalar where = null;
-                        for (ASTNode n : path) {
-                            if (n instanceof Include) {
-                                FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
-                                if (file != null && where != null) {
-                                    result[0] = new OffsetRange(where.getStartOffset()+1, where.getEndOffset()-1);
+                            path = new LinkedList<ASTNode>(path);
+
+                            Collections.reverse(path);
+
+                            Scalar where = null;
+                            for (ASTNode n : path) {
+                                if (n instanceof Include) {
+                                    FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
+                                    if (file != null && where != null) {
+                                        result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
+                                        break;
+                                    }
+                                } else if (n instanceof FunctionInvocation) {
+                                    FunctionInvocation functionInvocation = (FunctionInvocation) n;
+                                    String fncName = CodeUtils.extractFunctionName(functionInvocation);
+                                    if (fncName != null && fncName.equals("constant")) {
+                                        result[0] = new OffsetRange(where.getStartOffset() + 1, where.getEndOffset() - 1);
+                                    }
+                                } else if (n instanceof Scalar) {
+                                    where = (Scalar) n;
+                                }
+                            }
+                        }
+                    }, true);
+                }
+                else {
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationInfo parameter) throws Exception {
+                            Program program = Utils.getRoot(parameter);
+                            Comment comment = null;
+                            for (Comment comm : program.getComments()) {
+                                if (comm.getStartOffset() < caretOffset && caretOffset < comm.getEndOffset()) {
+                                    comment = comm;
+                                    break;
+                                }
+                                if (caretOffset < comm.getStartOffset()) {
                                     break;
                                 }
                             }
-                            else if (n instanceof Scalar) {
-                                where = (Scalar)n;
+                            if (comment != null && comment instanceof PHPDocBlock) {
+                                PHPDocBlock docComment = (PHPDocBlock)comment;
+                                ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docComment, caretOffset);
+                                PHPDocNode node = null;
+                                if (hierarchy[0] instanceof PHPDocTypeTag) {
+                                    for (PHPDocNode type : ((PHPDocTypeTag)hierarchy[0]).getTypes()) {
+                                        if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
+                                            node = type;
+                                            break;
+                                        }
+                                    }
+                                    if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getValue().toUpperCase())) {
+                                        result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                    }
+                                }
                             }
                         }
-                    }
-                }, true);
+                    }, true);
+                }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -149,207 +203,78 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return OffsetRange.NONE;
     }
 
-    static DeclarationLocation findDeclarationImpl(CompilationInfo info, final int offset) {
-        List<ASTNode> path = NavUtils.underCaret(info, offset);
-        SemiAttribute a = SemiAttribute.semiAttribute(info);//, offset);
-        AttributedElement el = NavUtils.findElement(info, path, offset, a);
-
-        if (el != null) {
-            return create(info, el);
-        }
-
-        if (path.size() == 0) {
-            return DeclarationLocation.NONE;
-        }
-
-        path = new LinkedList<ASTNode>(path);
-
-        Collections.reverse(path);
-
-        for (ASTNode n : path) {
-            if (n instanceof Include) {
-                FileObject file = NavUtils.resolveInclude(info, (Include) n);
-
-                if (file != null) {
-                    return new DeclarationLocation(file, 0);
+    public static DeclarationLocation findDeclarationImpl(CompilationInfo info, int caretOffset) {
+        DeclarationLocation retval = DeclarationLocation.NONE;
+        OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
+        Occurence underCaret = occurencesSupport.getOccurence();
+        if (underCaret != null) {
+            ModelElement declaration = underCaret.gotoDeclaratin();
+            retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset());
+            //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
+            if (info.getFileObject() == declaration.getFileObject()) {
+                return retval;
+            }
+            List<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            if (alternativeDeclarations.size() > 1) {
+                if (alternativeDeclarations.size() > 0) {
+                    retval = DeclarationLocation.NONE;
                 }
+                for (ModelElement elem : alternativeDeclarations) {
 
-                break;
+                    DeclarationLocation declLocation = new DeclarationLocation(elem.getFileObject(), elem.getOffset());
+                    AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
+                    if (retval == DeclarationLocation.NONE) {
+                        retval = al.getLocation();
+                    }
+                    retval.addAlternative(al);
+                }
+                return retval;
             }
         }
-
-        return DeclarationLocation.NONE;
+        return retval;
     }
 
-    static DeclarationLocation create(CompilationInfo info, final AttributedElement el) {
-        List<Union2<ASTNode, IndexedElement>> writes = el.getWrites();
-        Union2<ASTNode, IndexedElement> n;
+    private static class AlternativeLocationImpl implements AlternativeLocation {
 
-        switch (el.getKind()) {
-            case FUNC:
-            case CLASS:
-                n = writes.get(0);
-                break;
-            case VARIABLE:
-                int startOffest = -1;
-                n = writes.get(0);
-                for (Union2<ASTNode, IndexedElement> union2 : writes) {
-                    if (union2.hasFirst()) {
-                        ASTNode tmp = union2.first();
-                        if (tmp != null && (tmp.getStartOffset() < startOffest || startOffest == -1)) {
-                            n = union2;
-                            startOffest = tmp.getStartOffset();
-                        }
-                    }
-                }
-                
-                break;
-            default:
-                n = writes.get(writes.size() - 1);
-                break;
-        }
+        private ModelElement modelElement;
+        private DeclarationLocation declaration;
 
-        if ((n.hasFirst() && n.first() == null) || (n.hasSecond() && n.second() != null)) {
-            //cannot resolve, offer all possibilities:
-            Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
-            Collection<? extends IndexedElement> fromIndex;
-
-            switch (el.getKind()) {
-                case FUNC:
-                    if (el.isClassMember()) {
-                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllMethods(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
-                    } else {
-                        fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
-                    }
-                    break;
-                case IFACE:
-                    fromIndex = index.getInterfaces(null, el.getName(), NameKind.PREFIX);
-                    break;
-                case CLASS:
-                    fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
-                    break;
-                case VARIABLE:
-                    if (el.isClassMember()) {
-                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllFields(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
-                    } else if (n.hasSecond()) {
-                        final IndexedElement indexed = n.second();
-                        FileObject file = indexed.getFileObject();
-
-                        if (file == null){
-                            return DeclarationLocation.NONE;
-                        }
-
-                        return new DeclarationLocation(file, indexed.getOffset());
-                    } else {
-                        fromIndex = Collections.emptyList();
-                    }
-                    break;
-                case CONST:
-                    if (el.isClassMember()) {
-                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllClassConstants(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX);
-                    } else if (n.hasSecond()) {
-                        final IndexedElement indexed = n.second();
-                        FileObject file = indexed.getFileObject();
-                        assert file != null;
-                        return new DeclarationLocation(file, indexed.getOffset());
-                    } else {
-                        fromIndex = Collections.emptyList();
-                    }
-                    break;
-                default:
-                    fromIndex = Collections.emptyList();
-            }
-
-            List<AlternativeLocation> locations = new LinkedList<AlternativeLocation>();
-
-            for (IndexedElement e : fromIndex) {
-                String name = e.getName();
-                if (el.getKind().equals(SemiAttribute.AttributedElement.Kind.VARIABLE) && name.startsWith("$")) {//NOI18N
-                    name = name.substring(1);
-                }
-                if (el.getName().equals(name)) {
-                    DeclarationLocation l = new DeclarationLocation(e.getFileObject(), e.getOffset());
-                    locations.add(new AlternativeLocationImpl(e, el.getKind(), l));
-                }
-            }
-
-            if (locations.isEmpty()) {
-                //nothing found:
-                return DeclarationLocation.NONE;
-            }
-
-            if (locations.size() == 1) {
-                return locations.get(0).getLocation();
-            }
-
-            DeclarationLocation result = locations.get(0).getLocation();
-
-            for (AlternativeLocation l : locations) {
-                result.addAlternative(l);
-            }
-
-            return result;
-        }
-
-        return new DeclarationLocation(info.getFileObject(), n.first().getStartOffset());
-    }
-
-    private static final class AlternativeLocationImpl implements AlternativeLocation {
-
-        private final IndexedElement el;
-        private final Kind k;
-        private final DeclarationLocation l;
-
-        public AlternativeLocationImpl(IndexedElement el, Kind k, DeclarationLocation l) {
-            this.el = el;
-            this.k = k;
-            this.l = l;
+        AlternativeLocationImpl(ModelElement modelElement, DeclarationLocation declaration) {
+            this.modelElement = modelElement;
+            this.declaration = declaration;
         }
 
         public ElementHandle getElement() {
-            return el;
+            return modelElement.getPHPElement();
         }
 
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.reset();
-            ElementKind ek = null;
-            switch (k) {
-                case FUNC:
-                    ek = ElementKind.METHOD;
-                    break;
-                case CLASS:
-                    ek = ElementKind.CLASS;
-            }
+            ElementKind ek = modelElement.getPHPElement().getKind();
 
             if (ek != null) {
                 formatter.name(ek, true);
-                formatter.appendText(el.getName());
+                formatter.appendText(modelElement.getName());
                 formatter.name(ek, false);
             } else {
-                formatter.appendText(el.getName());
+                formatter.appendText(modelElement.getName());
             }
 
-            if (l.getFileObject() != null) {
+            if (declaration.getFileObject() != null) {
                 formatter.appendText(" in ");
-                formatter.appendText(FileUtil.getFileDisplayName(l.getFileObject()));
+                formatter.appendText(FileUtil.getFileDisplayName(declaration.getFileObject()));
             }
 
             return formatter.getText();
         }
 
         public DeclarationLocation getLocation() {
-            return l;
+            return declaration;
         }
 
         public int compareTo(AlternativeLocation o) {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
-
-            return this.el.getName().compareTo(i.el.getName());
+            return this.modelElement.getName().compareTo(i.modelElement.getName());
         }
-
     }
 }

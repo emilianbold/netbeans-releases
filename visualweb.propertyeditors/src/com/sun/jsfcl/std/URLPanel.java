@@ -92,6 +92,7 @@ import com.sun.rave.designtime.DesignProperty;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 
 //!CQ TODO: rename this to UrlPanel
 public class URLPanel extends JPanel implements PropertyChangeListener, ActionListener,
@@ -114,9 +115,8 @@ public class URLPanel extends JPanel implements PropertyChangeListener, ActionLi
     JLabel valueLabel = new JLabel();
     URLPropertyEditor ure;
 
-    JRadioButton copyButton = new JRadioButton(bundle.getMessage("copy")); //NOI18N
-    JRadioButton linkButton = new JRadioButton(bundle.getMessage("link")); //NOI18N
-    
+    JRadioButton copyButton = new JRadioButton();
+    JRadioButton linkButton = new JRadioButton();
 
     ButtonGroup group = new ButtonGroup();
 
@@ -148,11 +148,11 @@ public class URLPanel extends JPanel implements PropertyChangeListener, ActionLi
 
     public URLPanel() {
         try {
+            Mnemonics.setLocalizedText(copyButton, bundle.getMessage("copy"));
+            Mnemonics.setLocalizedText(linkButton, bundle.getMessage("link"));
             jbInit();
             copyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPanel.class, "COPY_BUTTON_ACCESS_DESC"));
             linkButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPanel.class, "LINK_BUTTON_ACCESS_DESC"));
-            copyButton.setMnemonic(org.openide.util.NbBundle.getMessage(URLPanel.class, "COPY_BUTTON_MNEMONIC").charAt(0));
-            linkButton.setMnemonic(org.openide.util.NbBundle.getMessage(URLPanel.class, "LINK_BUTTON_MNEMONIC").charAt(0));
             valueTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPanel.class, "VALUE_TEXTFIELD_ACCESS_NAME"));
             valueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPanel.class, "VALUE_TEXTFIELD_ACCESS_DESC"));
             tabs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPanel.class, "TAB_PANE_ACCESS_DESC"));

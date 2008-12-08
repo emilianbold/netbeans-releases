@@ -1,0 +1,400 @@
+Code completion result for source line:
+print whatever.r|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     r_eval(code)                               
+METHOD     r_exec(code)                               
+METHOD     r_execfile(filename)                       
+METHOD     r_import(modulename, globals,              
+METHOD     r_long()                                   
+METHOD     r_long64()                                 
+METHOD     r_open(filename, mode, bufsize             
+METHOD     r_reload(module)                           
+METHOD     r_short()                                  
+METHOD     r_unload(module)                           
+METHOD     radiogroup(name, x, y, width,              
+METHOD     radix()                                    
+METHOD     radix()                                    
+METHOD     raise_stmt(nodelist)                       
+METHOD     randint(a, b)                              
+METHOD     random()                                   
+METHOD     random()                                   
+METHOD     randrange(start, stop, step, i             
+METHOD     ratio()                                    
+METHOD     raw(sql, params, bindings, del             
+METHOD     raw_decode(s)                              
+METHOD     raw_input(prompt)                          
+METHOD     rawq_getchar()                             
+METHOD     rcpt(recip, options)                       
+METHOD     read()                                     
+METHOD     read()                                     
+METHOD     read()                                     
+METHOD     read(amt)                                  
+METHOD     read(args)                                 
+METHOD     ---read(f, n)              ---             
+METHOD     read(filenames)                            
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(n)                                    
+METHOD     read(name)                                 
+METHOD     read(nbytes)                               
+METHOD     read(num)                                  
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read(size)                                 
+METHOD     read1()                                    
+METHOD     read1(n)                                   
+METHOD     read_all()                                 
+METHOD     read_binary()                              
+METHOD     read_byte()                                
+METHOD     read_eager()                               
+METHOD     read_file(filename, mode)                  
+METHOD     read_lazy()                                
+METHOD     read_lines()                               
+METHOD     read_lines_to_eof()                        
+METHOD     read_lines_to_outerboundary()              
+METHOD     read_manifest()                            
+METHOD     read_module(modname, mode)                 
+METHOD     read_multi(environ, keep_blank             
+METHOD     read_sb_data()                             
+METHOD     read_single()                              
+METHOD     read_some()                                
+METHOD     read_template()                            
+METHOD     read_token()                               
+METHOD     read_until(match, timeout)                 
+METHOD     read_urlencoded()                          
+METHOD     read_very_eager()                          
+METHOD     read_very_lazy()                           
+METHOD     readable()                                 
+METHOD     readable()                                 
+METHOD     readable()                                 
+METHOD     readall()                                  
+METHOD     readall()                                  
+METHOD     readfp(fp, filename)                       
+METHOD     readframes(n)                              
+METHOD     readheaders()                              
+METHOD     readinto(b)                                
+METHOD     readinto(b)                                
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline()                                 
+METHOD     readline(length)                           
+METHOD     readline(limit)                            
+METHOD     readline(size)                             
+METHOD     readline(size)                             
+METHOD     readline(size)                             
+METHOD     readlines()                                
+METHOD     readlines()                                
+METHOD     readlines()                                
+METHOD     readlines(hint)                            
+METHOD     readlines(size)                            
+METHOD     readlines(sizehint)                        
+METHOD     readlines(sizehint)                        
+METHOD     readlines(sizehint)                        
+METHOD     ready()                                    
+METHOD     real_quick_ratio()                         
+METHOD     reccontrols()                              
+METHOD     recent()                                   
+METHOD     recv()                                     
+METHOD     recv(args)                                 
+METHOD     recv(buffer_size)                          
+METHOD     recv_bytes(maxlength)                      
+METHOD     recv_bytes_into(buffer, offset             
+METHOD     redirect_internal(url, fp, err             
+METHOD     redirect_request(req, fp, code             
+METHOD     redrawln(beg, num)                         
+METHOD     redrawwin()                                
+METHOD     reduce_uri(uri, default_port)              
+METHOD     refilemessages(list, tofolder,             
+METHOD     refill_buffer()                            
+METHOD     refresh(pminrow, pmincol, smin             
+METHOD     refuse_compilation(args, kwarg             
+METHOD     register(socket_object, mask)              
+METHOD     register(subclass)                         
+METHOD     register(typeid, callable, pro             
+METHOD     register_function(function, na             
+METHOD     register_instance(instance, al             
+METHOD     register_introspection_functio             
+METHOD     register_multicall_functions()             
+METHOD     reinitialize_command(command,              
+METHOD     reinitialize_command(command,              
+METHOD     release()                                  
+METHOD     release()                                  
+METHOD     release()                                  
+METHOD     release()                                  
+METHOD     reload(module)                             
+METHOD     reload(module, path)                       
+METHOD     remainder(a, b)                            
+METHOD     remainder_near(a, b)                       
+METHOD     remainder_near(other, context)             
+METHOD     remove(elem)                               
+METHOD     remove(element)                            
+METHOD     remove(elt)                                
+METHOD     remove(item)                               
+METHOD     remove(key)                                
+METHOD     remove(key)                                
+METHOD     remove(key)                                
+METHOD     remove(key)                                
+METHOD     remove(subelement)                         
+METHOD     remove(x)                                  
+METHOD     removeAttribute(name)                      
+METHOD     removeAttributeNS(namespaceURI             
+METHOD     removeAttributeNode(node)                  
+METHOD     removeAttributeNodeNS(node)                
+METHOD     removeChild(oldChild)                      
+METHOD     removeChild(oldChild)                      
+METHOD     removeChild(oldChild)                      
+METHOD     removeChild(oldChild)                      
+METHOD     removeFilter(filter)                       
+METHOD     removeHandler(hdlr)                        
+METHOD     removeHandler(hdlr)                        
+METHOD     removeNamedItem(name)                      
+METHOD     removeNamedItem(name)                      
+METHOD     removeNamedItem(name)                      
+METHOD     removeNamedItemNS(namespaceURI             
+METHOD     removeNamedItemNS(namespaceURI             
+METHOD     removeNamedItemNS(namespaceURI             
+METHOD     remove_duplicates()                        
+METHOD     remove_flag(flag)                          
+METHOD     remove_folder(folder)                      
+METHOD     remove_folder(folder)                      
+METHOD     remove_label(label)                        
+METHOD     remove_option(opt_str)                     
+METHOD     remove_option(section, option)             
+METHOD     remove_pyc()                               
+METHOD     remove_section(section)                    
+METHOD     remove_sequence(sequence)                  
+METHOD     removefromallsequences(list)               
+METHOD     removemessages(list)                       
+METHOD     rename(fromname, toname)                   
+METHOD     rename(oldmailbox, newmailbox)             
+METHOD     renameNode(n, namespaceURI, na             
+METHOD     repeat(repeat, number)                     
+METHOD     replace(hour, minute, second,              
+METHOD     replace(hour, minute, second,              
+METHOD     replace(old, new, count)                   
+METHOD     replace(old, new, maxsplit)                
+METHOD     replace(win)                               
+METHOD     replace(year, month, day)                  
+METHOD     replace(year, month, day)                  
+METHOD     replace(year, month, day, hour             
+METHOD     replaceChild(newChild, oldChil             
+METHOD     replaceChild(newChild, oldChil             
+METHOD     replaceChild(newChild, oldChil             
+METHOD     replaceData(offset, count, arg             
+METHOD     replaceWholeText(content)                  
+METHOD     replace_header(_name, _value)              
+METHOD     replace_paths_in_code(co)                  
+METHOD     report()                                   
+METHOD     report()                                   
+METHOD     report_404()                               
+METHOD     report_failure(out, test, exam             
+METHOD     report_failure(out, test, exam             
+METHOD     report_full_closure()                      
+METHOD     report_partial_closure()                   
+METHOD     report_start(out, test, exampl             
+METHOD     report_success(out, test, exam             
+METHOD     report_unbalanced(tag)                     
+METHOD     report_unexpected_exception(ou             
+METHOD     report_unexpected_exception(ou             
+METHOD     repr(object)                               
+METHOD     repr(x)                                    
+METHOD     repr1(x, level)                            
+METHOD     repr1(x, level)                            
+METHOD     repr1(x, level)                            
+METHOD     repr_array(x, level)                       
+METHOD     repr_deque(x, level)                       
+METHOD     repr_dict(x, level)                        
+METHOD     repr_frozenset(x, level)                   
+METHOD     repr_instance(x, level)                    
+METHOD     repr_instance(x, level)                    
+METHOD     repr_instance(x, level)                    
+METHOD     repr_list(x, level)                        
+METHOD     repr_long(x, level)                        
+METHOD     repr_set(x, level)                         
+METHOD     repr_str(x, level)                         
+METHOD     repr_str(x, level)                         
+METHOD     repr_str(x, level)                         
+METHOD     repr_string(x, level)                      
+METHOD     repr_string(x, level)                      
+METHOD     repr_tuple(x, level)                       
+METHOD     repr_unicode(x, level)                     
+METHOD     request(host, handler, request             
+METHOD     request(method, url, body, hea             
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset()                                    
+METHOD     reset(data)                                
+METHOD     reset_retry_count()                        
+METHOD     resetbuffer()                              
+METHOD     resize(newsize)                            
+METHOD     resolveEntity(pubId, sysId)                
+METHOD     resolveEntity(publicId, system             
+METHOD     resolveEntity(publicId, system             
+METHOD     resolveEntity(publicId, system             
+METHOD     resolveEntity(publicId, system             
+METHOD     response(code)                             
+METHOD     result_is_file()                           
+METHOD     results()                                  
+METHOD     retr(which)                                
+METHOD     retrbinary(cmd, callback, bloc             
+METHOD     retrieve(url, filename, report             
+METHOD     retrlines(cmd, callback)                   
+METHOD     retry_http_basic_auth(host, re             
+METHOD     retry_http_basic_auth(url, rea             
+METHOD     retry_http_digest_auth(req, au             
+METHOD     retry_https_basic_auth(url, re             
+METHOD     retry_proxy_http_basic_auth(ur             
+METHOD     retry_proxy_https_basic_auth(u             
+METHOD     return_ok(cookie, request)                 
+METHOD     return_ok(cookie, request)                 
+METHOD     return_ok_domain(cookie, reque             
+METHOD     return_ok_expires(cookie, requ             
+METHOD     return_ok_port(cookie, request             
+METHOD     return_ok_secure(cookie, reque             
+METHOD     return_ok_verifiability(cookie             
+METHOD     return_ok_version(cookie, requ             
+METHOD     return_stmt(nodelist)                      
+METHOD     reverse()                                  
+METHOD     reverse()                                  
+METHOD     reverse_order()                            
+METHOD     revert(filename, ignore_discar             
+METHOD     rewind()                                   
+METHOD     rewind()                                   
+METHOD     rewindbody()                               
+METHOD     rfind(string, start, end)                  
+METHOD     rfind(sub, start, end)                     
+METHOD     rfind(sub, start, end)                     
+METHOD     rindex(sub, start, end)                    
+METHOD     rindex(sub, start, end)                    
+METHOD     rjust(width, args)                         
+METHOD     rjust(width, fillchar)                     
+METHOD     rmd(dirname)                               
+METHOD     rollback()                                 
+METHOD     rollback()                                 
+METHOD     rotate(a, b)                               
+METHOD     rotate(other, context)                     
+METHOD     rowxfer(line)                              
+METHOD     rpartition(sep)                            
+METHOD     rpartition(sep)                            
+METHOD     rpop(user)                                 
+METHOD     rset()                                     
+METHOD     rset()                                     
+METHOD     rsplit(sep, maxsplit)                      
+METHOD     rsplit(sep, maxsplit)                      
+METHOD     rstrip(chars)                              
+METHOD     rstrip(chars)                              
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run()                                      
+METHOD     run(application)                           
+METHOD     run(callback, key, completer)              
+METHOD     run(cmd)                                   
+METHOD     run(cmd)                                   
+METHOD     run(cmd)                                   
+METHOD     run(cmd, globals, locals)                  
+METHOD     run(result)                                
+METHOD     run(result)                                
+METHOD     run(test)                                  
+METHOD     run(test, compileflags, out, c             
+METHOD     run(test, compileflags, out, c             
+METHOD     runTest()                                  
+METHOD     run__test__(d, name)                       
+METHOD     run_cgi()                                  
+METHOD     run_command(command)                       
+METHOD     run_command(command)                       
+METHOD     run_commands()                             
+METHOD     run_script(pathname)                       
+METHOD     runcall(func, *args, **keyword             
+METHOD     runcall(func, args, kw)                    
+METHOD     runcall(func, args, kwds)                  
+METHOD     runcode(code)                              
+METHOD     runctx(cmd, globals, locals)               
+METHOD     runctx(cmd, globals, locals)               
+METHOD     runctx(cmd, globals, locals)               
+METHOD     runctx(cmd, globals, locals)               
+METHOD     rundict(d, name, module)                   
+METHOD     rundoc(object, name, module)               
+METHOD     runeval(expr, globals, locals)             
+METHOD     runfunc(func, args, kw)                    
+METHOD     runsource(source, filename, sy             
+METHOD     runstring(s, name)                         
+METHOD     runtime_library_dir_option(dir             
+METHOD     runtime_library_dir_option(dir             
+METHOD     runtime_library_dir_option(dir             
+METHOD     runtime_library_dir_option(dir             
+VARIABLE   rbufsize                                   
+VARIABLE   rbufsize                                   
+VARIABLE   read                                       
+VARIABLE   readline                                   
+VARIABLE   reference                                  
+VARIABLE   repr                                       
+VARIABLE   request                                    
+VARIABLE   request_queue_size                         
+VARIABLE   res_extension                              
+VARIABLE   res_extension                              
+VARIABLE   res_extension                              
+VARIABLE   response_class                             
+VARIABLE   responses                                  
+VARIABLE   result                                     
+VARIABLE   rfile                                      
+VARIABLE   rpc_paths                                  
+VARIABLE   ruler                                      
+VARIABLE   rx                                         
+ATTRIBUTE  real                                       
+ATTRIBUTE  restype                                    
+ATTRIBUTE  returns_unicode                            
+ATTRIBUTE  row_factory                                
+ATTRIBUTE  rowcount                                   

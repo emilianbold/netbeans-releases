@@ -51,6 +51,9 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -78,7 +81,7 @@ public final class GroovyElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, boolean emphasise) {
+            String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels) {
 
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
@@ -112,6 +115,10 @@ public final class GroovyElementHandler {
         for (IndexedMethod indexedMethod : methods) {
             LOGGER.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
 
+            if (!accept(levels, indexedMethod)) {
+                continue;
+            }
+
             // FIXME move sig to method item
             List<String> params = indexedMethod.getParameters();
             StringBuffer sb = new StringBuffer();
@@ -123,8 +130,52 @@ public final class GroovyElementHandler {
                 sb.append(NbUtilities.stripPackage(string));
             }
 
-            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), null,
+            // FIXME retrurn type
+            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), indexedMethod.getReturnType(),
                     org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise));
+        }
+
+        return result;
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+            String prefix, int anchor, boolean emphasise) {
+
+        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+        if (index == null) {
+            return Collections.emptyMap();
+        }
+
+        String methodName = "";
+        if (prefix != null) {
+            methodName = prefix;
+        }
+
+        Set<IndexedField> fields;
+
+        if (methodName.equals("")) {
+            fields = index.getFields(".*", className,
+                    NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+        } else {
+            fields = index.getFields(methodName, className,
+                    NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+        }
+
+        if (fields.size() == 0) {
+            LOGGER.log(Level.FINEST, "Nothing found in GroovyIndex");
+            return Collections.emptyMap();
+        }
+
+        LOGGER.log(Level.FINEST, "Found this number of fields : {0} ", fields.size());
+
+        Map<FieldSignature, CompletionItem.JavaFieldItem> result = new HashMap<FieldSignature, CompletionItem.JavaFieldItem>();
+        for (IndexedField indexedField : fields) {
+            LOGGER.log(Level.FINEST, "field from index : {0} ", indexedField.getName());
+
+            //System.out.println("INDEX: " + indexedField.getName() + " " + indexedField.getType() + " " + org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE));
+            result.put(getSignature(indexedField), new CompletionItem.JavaFieldItem(
+                    className, indexedField.getName(), null, org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE), anchor, emphasise));
         }
 
         return result;
@@ -133,5 +184,19 @@ public final class GroovyElementHandler {
     private MethodSignature getSignature(IndexedMethod method) {
         String[] parameters = method.getParameters().toArray(new String[method.getParameters().size()]);
         return new MethodSignature(method.getName(), parameters);
+    }
+
+    private FieldSignature getSignature(IndexedField field) {
+        return new FieldSignature(field.getName());
+    }
+
+    private boolean accept(Set<AccessLevel> levels, IndexedElement element) {
+        for (AccessLevel level : levels) {
+            if (level.accept(element.getModifiers())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

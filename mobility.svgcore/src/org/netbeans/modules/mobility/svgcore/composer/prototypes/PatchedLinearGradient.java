@@ -78,6 +78,7 @@ public final class PatchedLinearGradient extends LinearGradient implements Patch
         return null;
     }
 
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedLinearGradient(doc);
     }    

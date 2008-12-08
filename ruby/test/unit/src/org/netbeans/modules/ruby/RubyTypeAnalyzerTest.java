@@ -222,4 +222,12 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes("right IfNode type inference", instanceAA.getTypes("var"), "Hash");
         // XXX more, see the if_else_nested_type.rb
     }
+
+    public void testConstant() throws Exception {
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/constants.rb", "Colors::RED.byte^", false);
+        assertTypes("constants type inference", instance.getTypes("RED"), "String");
+        // TODO fix and uncomment when reindexed
+//        RubyTypeAnalyzer instance1 = getAnalyzer("testfiles/constants.rb", "REXML::COPY^RIGHT", false);
+//        assertTypes("indexed constants type inference", instance1.getTypes("COPYRIGHT"), "String");
+    }
 }

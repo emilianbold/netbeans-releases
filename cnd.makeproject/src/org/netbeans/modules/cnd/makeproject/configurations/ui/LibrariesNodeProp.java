@@ -52,7 +52,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class LibrariesNodeProp extends PropertySupport {
+public class LibrariesNodeProp extends PropertySupport<List> {
 
     private LibrariesConfiguration<LibraryItem> configuration;
     Project project;
@@ -78,12 +78,13 @@ public class LibrariesNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public List getValue() {
         return configuration.getValue();
     }
 
-    public void setValue(Object v) {
-        configuration.setValue((List) v);
+    @SuppressWarnings("unchecked")
+    public void setValue(List v) {
+        configuration.setValue(v);
     }
 
     @Override
@@ -126,9 +127,11 @@ public class LibrariesNodeProp extends PropertySupport {
             this.value = value;
         }
 
+        @Override
         public void setAsText(String text) {
         }
 
+        @Override
         public String getAsText() {
             boolean addSep = false;
             StringBuilder ret = new StringBuilder();

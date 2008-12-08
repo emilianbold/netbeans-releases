@@ -1608,7 +1608,9 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                return diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                copyTo(pos, bounds[1]);
+                return bounds[1];
             } else {
                 int pos = diffVarGroup(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.GROUP_VAR_MEASURE);
                 copyTo(pos, bounds[1]);
@@ -3038,7 +3040,8 @@ public class CasualDiff {
             LOG.log(INFO, "-----\n" + origText + "-----\n");
             LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
-            printer.eatChars(from-to);
+            if (to >= 0)
+                printer.eatChars(from-to);
             return;
         } else if (to > origText.length()) {
             // #99333, #97801: Debug message for the issues.

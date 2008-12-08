@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -80,7 +79,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
@@ -104,6 +102,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
     private transient MultiViewElement m_activeElement = null;
     
     private final DataCache m_dataCache = new XmlMultiViewDataObject.DataCache() {
+        @Override
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
             if ( isSVGZ(file.getExt())) {
                 file = new FileObjectGZIPDelegator(file);
@@ -119,11 +118,13 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
             super(SVGDataObject.this);
         }
 
+        @Override
         protected void notifyClosed() {
             super.notifyClosed();
             release();
         }
         
+        @Override
         protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream)
             throws IOException, BadLocationException {
             FileObject fo = getPrimaryFile();
@@ -164,10 +165,12 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
             return "multiview_svgview"; //NOI18N
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return DEFAULT_HELP;
         }        
         
+        @Override
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
@@ -192,6 +195,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
             return "multiview_xml"; //NOI18N
         }
         
+        @Override
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
@@ -219,6 +223,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
         SceneManager.log(Level.INFO, "SVGDataObject created for " + pf.getPath()); //NOI18N
     }
         
+    @Override
     public DataCache getDataCache() {
         return m_dataCache;
     }
@@ -270,6 +275,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
         SceneManager.log(Level.INFO, "SVGDataObject released for " + getPrimaryFile().getPath()); //NOI18N
     }
     
+    @Override
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
         if(editorSupport == null) {
             editorSupport = new SVGEditorSupport();
@@ -285,6 +291,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
         };
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new SVGDataNode(this);
     }

@@ -85,6 +85,7 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.BindingTargetCallb
 import org.netbeans.modules.visualweb.propertyeditors.binding.PropertyBindingHelper;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 
 // Modified to support Add Data Provider from this panel- Winston
 // XXX Lots of duplication between BindOptionsToDataProviderPanel & BindValueToDataProviderPanel
@@ -175,7 +176,6 @@ public class BindValueToDataProviderPanel extends DataBindingPanel implements De
         valueListLabel.setLabelFor(fieldList);
         fieldList.getAccessibleContext().setAccessibleName(bundle.getMessage("FIELD_LIST_ACCESS_NAME"));
         fieldList.getAccessibleContext().setAccessibleDescription(bundle.getMessage("FIELD_LIST_ACCESS_DESC"));
-        addDataProviderButton.setMnemonic(bundle.getMessage("ADD_DP_BUTTON_MNEMONIC").charAt(0));
         designProperty = prop;
         dpCombo.addItem(bundle.getMessage("dpRetrievingMessage"));
         val_none.display = bundle.getMessage("noneBrackets"); //NOI18N
@@ -392,8 +392,7 @@ public class BindValueToDataProviderPanel extends DataBindingPanel implements De
         
         dpLabel.setText(bundle.getMessage("chooseDpToBindSimple")); //NOI18N
         dpLabel.setDisplayedMnemonic(bundle.getMessage("chooseDpToBindSimpleDisplayedMnemonic").charAt(0)); //NOI18N
-        valueListLabel.setText(bundle.getMessage("dataField")); //NOI18N
-        valueListLabel.setDisplayedMnemonic(bundle.getMessage("dataFieldDisplayedMnemonic").charAt(0)); //NOI18N
+        Mnemonics.setLocalizedText(valueListLabel, bundle.getMessage("dataField"));
         valueListScroll.setPreferredSize(new Dimension(200, 200));
         
         dpCombo.setRenderer(new DPComboRenderer());
@@ -401,7 +400,7 @@ public class BindValueToDataProviderPanel extends DataBindingPanel implements De
         this.setPreferredSize(new Dimension(400, 200));
         this.setLayout(gridbag);
         
-        addDataProviderButton.setText(bundle.getMessage("ADD_DP_BUTTON_LBL"));
+        Mnemonics.setLocalizedText(addDataProviderButton, bundle.getMessage("ADD_DP_BUTTON_LBL"));
         addDataProviderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 new AddDataProviderDialog().showDialog();

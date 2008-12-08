@@ -81,7 +81,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
     
     public void invokeExportDiffPatch() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
             TestKit.closeProject(PROJECT_NAME);

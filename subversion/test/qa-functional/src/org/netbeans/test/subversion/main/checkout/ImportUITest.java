@@ -10,6 +10,8 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
@@ -26,6 +28,7 @@ import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
 import org.netbeans.test.subversion.operators.ImportWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserImpOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -38,12 +41,13 @@ public class ImportUITest extends JellyTestCase {
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     long timeout_c;
     long timeout_d;
+    static Logger log;
 
     /** Creates a new instance of ImportUITest */
     public ImportUITest(String name) {
@@ -53,14 +57,21 @@ public class ImportUITest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(ImportUITest.class).addTest(
-                    "testInvoke",
-                    "testWarningMessage",
-                    "testRepositoryFolderLoad",
+//                    "testInvoke",
+//                    "testWarningMessage",
+//                    "testRepositoryFolderLoad",
                     "testCommitStep"
                  )
                  .enableModules(".*")
@@ -214,8 +225,13 @@ public class ImportUITest extends JellyTestCase {
 
     public void testCommitStep() throws Exception {
         try {
-            TestKit.showStatusLabels();
-            
+            MessageHandler mh = new MessageHandler("Committing");
+            log.addHandler(mh);
+//            TestKit.showStatusLabels();
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+                      
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);

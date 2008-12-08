@@ -100,7 +100,7 @@ class DataViewUI extends JPanel {
     private static final MouseListener sharedMouseListener = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
 
         @Override
-        public void mouseEntered( MouseEvent evt) {
+        public void mouseEntered(MouseEvent evt) {
             Object src = evt.getSource();
 
             if (src instanceof AbstractButton) {
@@ -113,7 +113,7 @@ class DataViewUI extends JPanel {
         }
 
         @Override
-        public void mouseExited( MouseEvent evt) {
+        public void mouseExited(MouseEvent evt) {
             Object src = evt.getSource();
             if (src instanceof AbstractButton) {
                 AbstractButton button = (AbstractButton) evt.getSource();

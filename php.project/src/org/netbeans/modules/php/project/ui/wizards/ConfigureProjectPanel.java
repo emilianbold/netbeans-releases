@@ -408,20 +408,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             if (!sources.isDirectory()) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
-            String[] files = sources.list();
-            if (files == null || files.length == 0) {
-                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesEmpty");
-            }
         }
 
-        if (configureProjectPanelVisual.isProjectFolderUsed()) {
-            // project folder used => validate relativity of sources and project folder
-            File projectFolder = getProjectFolderFile();
-            if (projectFolder != null
-                    && PropertyUtils.relativizeFile(FileUtil.normalizeFile(projectFolder), sources) == null) {
-                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAndProjectCannotBeRelativized");
-            }
-        } else {
+        if (!configureProjectPanelVisual.isProjectFolderUsed()) {
             // project folder not used => validate sources as project folder
             if (isProjectAlready(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
@@ -436,6 +425,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         switch (wizardType) {
             case NEW:
                 warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
+                break;
+            case EXISTING:
+                warnIfEmptySources(sourcesLocation);
                 break;
         }
 
@@ -477,6 +469,17 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // folder exists and is not empty - but just warning
             String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "NotEmpty");
             descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
+        }
+    }
+
+    private void warnIfEmptySources(String location) {
+        File destFolder = new File(location);
+        assert destFolder.isDirectory() : "Sources directory must exist: " + location;
+        File[] kids = destFolder.listFiles();
+        assert kids != null : "Sources directory should have children: " + location;
+        if (kids.length == 0) {
+            // folder is empty - but just warning
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesEmpty"));
         }
     }
 

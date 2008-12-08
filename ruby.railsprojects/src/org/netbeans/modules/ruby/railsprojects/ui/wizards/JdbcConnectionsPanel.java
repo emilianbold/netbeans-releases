@@ -38,10 +38,8 @@
  */
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
-import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -51,16 +49,12 @@ import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnection;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  * A panel for JDBC connections.

@@ -6,14 +6,16 @@ METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asType(Class)                              Object
+METHOD     clone()                         [PROTECTE  Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachWithIndex(Closure)                     Object
-METHOD     equals(Object)                             boolean
+METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
+METHOD     finalize()                      [PROTECTE  void
 METHOD     find(Closure)                              Object
 METHOD     findAll(Closure)                           List
 METHOD     findIndexOf(Closure)                       int
@@ -23,12 +25,12 @@ METHOD     findIndexValues(int, Closure)              List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     getAt(String)                              Object
-METHOD     getClass()                                 Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
 METHOD     grep(Object)                               Collection
-METHOD     hashCode()                                 int
+METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
@@ -36,8 +38,8 @@ METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
-METHOD     notify()                                   void
-METHOD     notifyAll()                                void
+METHOD     notify()                        [PUBLIC]   void
+METHOD     notifyAll()                     [PUBLIC]   void
 METHOD     print(Object)                              void
 METHOD     print(PrintWriter)                         void
 METHOD     printf(String, Object)                     void
@@ -50,14 +52,11 @@ METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
-METHOD     toString()                                 String
+METHOD     toString()                      [PUBLIC]   String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object[])                              Object
-METHOD     wait()                                     void
-METHOD     wait(long)                                 void
-METHOD     wait(long, int)                            void
+METHOD     wait()                          [PUBLIC]   void
+METHOD     wait(long)                      [PUBLIC]   void
+METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
-FIELD      metaClass                                  MetaClass
-FIELD      st                                         String
-FIELD      test                                       Object

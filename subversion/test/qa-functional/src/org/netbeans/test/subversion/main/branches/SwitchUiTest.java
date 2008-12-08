@@ -14,16 +14,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.subversion.operators.CommitStepOperator;
-import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
-import org.netbeans.test.subversion.operators.ImportWizardOperator;
+import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.SwitchOperator;
+import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
@@ -37,8 +40,10 @@ public class SwitchUiTest extends JellyTestCase{
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
+    Operator.DefaultStringComparator comOperator;
+    Operator.DefaultStringComparator oldOperator;
     static Logger log;
     
     /** Creates a new instance of SwitchUiTest */
@@ -71,36 +76,40 @@ public class SwitchUiTest extends JellyTestCase{
     
     public void testInvokeCloseSwitch() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
-            
-            if (TestKit.getOsName().indexOf("Mac") > -1)
-                new NewProjectWizardOperator().invoke().close();
-
             TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();
 
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
             new File(TMP_PATH).mkdirs();
+            work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
-            
-            ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
-            RepositoryStepOperator rso = new RepositoryStepOperator();
-            //rso.verify();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-            rso.next();
-            Thread.sleep(1000);
-            
-            FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-            ftiso.setImportMessage("initial import");
-            ftiso.next();
-            Thread.sleep(1000);
-            CommitStepOperator cso = new CommitStepOperator();
-            cso.finish();
 
+            rso.next();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+
+            wdso.finish();
             TestKit.waitText(mh);
+
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             Thread.sleep(2000);
@@ -108,13 +117,13 @@ public class SwitchUiTest extends JellyTestCase{
             Thread.sleep(2000);
             //only required nodes are expended - want to see all in browser
             so.setRepositoryFolder("");
-            RepositoryBrowserOperator rbo = so.browseRepositoryFolder();
+//            RepositoryBrowserOperator rbo = so.browseRepositoryFolder();
             so.verify();
-            rbo.selectFolder("tags");
-            rbo.selectFolder("trunk");
-            rbo.selectFolder("branches");
-            rbo.ok();
-            assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
+//            rbo.selectFolder("tags");
+//            rbo.selectFolder("trunk");
+//            rbo.selectFolder("branches");
+//            rbo.ok();
+//            assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
             so.cancel();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);

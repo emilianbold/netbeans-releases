@@ -234,7 +234,8 @@ public final class SearchPanel extends JPanel
         setName(NbBundle.getMessage(SearchPanel.class,
                                     "TEXT_TITLE_CUSTOMIZE"));           //NOI18N
 
-        okButton = new JButton(NbBundle.getMessage(
+        Mnemonics.setLocalizedText(okButton = new JButton(),
+                                   NbBundle.getMessage(
                                             SearchPanel.class,
                                             "TEXT_BUTTON_SEARCH"));     //NOI18N
         updateIsCustomized();

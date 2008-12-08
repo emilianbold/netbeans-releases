@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -76,7 +77,11 @@ public class LogReader {
     private List<SourceFileProperties> result;
     
     public LogReader(String fileName, String root){
-        this.root = root;
+        if (root.length()>0) {
+            this.root = FileUtil.normalizeFile(new File(root)).getAbsolutePath();
+        } else {
+            this.root = root;
+        }
         this.fileName = fileName;
        
         // XXX
@@ -182,6 +187,10 @@ public class LogReader {
             return false;
         }
 
+        if (Utilities.isWindows() && workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
+            workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
+        }
+
         if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
             if (TRACE) {System.err.print(message);}
             setWorkingDir(workDir);
@@ -192,6 +201,16 @@ public class LogReader {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
+            }
+            if (Utilities.isWindows() && workDir.length()>3 &&
+                workDir.charAt(0)=='/' &&
+                workDir.charAt(2)=='/'){
+                String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
+                if (new File(d).exists()) {
+                    if (TRACE) {System.err.print(message);}
+                    setWorkingDir(d);
+                    return true;
+                }
             }
             if (baseWorkingDir != null) {
                 dir = baseWorkingDir + File.separator + workDir;
@@ -224,6 +243,7 @@ public class LogReader {
     private static final String INVOKE_GNU_C = "gcc "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
+    private static final String INVOKE_MSVC = "cl "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
     
     /*package-local*/ static LineInfo testCompilerInvocation(String line) {
@@ -265,6 +285,13 @@ public class LogReader {
                 end = start + INVOKE_SUN_CC.length();
             }
         }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_MSVC);
+            if (start>=0) {
+                li.compilerType = CompilerType.CPP;
+                end = start + INVOKE_MSVC.length();
+            }
+        }
        
         if (li.compilerType != CompilerType.UNKNOWN) {
             li.compileLine = line.substring(start);
@@ -298,7 +325,7 @@ public class LogReader {
     
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
-        this.workingDir = workingDir;
+        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
     
     private boolean parseLine(String line){
@@ -325,7 +352,8 @@ public class LogReader {
     }
 
     private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
-    private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
+    private static final String ECHO_PATTERN = "echo "; //NOI18N
+    /*package-local*/ static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`'); //NOI18N
         if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
             return line;
@@ -354,7 +382,7 @@ public class LogReader {
                         readFlags = false;
                         continue;
                     }
-                    if (readFlags) {
+                    if (readFlags && pkgConfig != null) {
                         PackageConfiguration pc = pkgConfig.getPkgConfig(aPkg);
                         if (pc != null) {
                             for(String p : pc.getIncludePaths()){
@@ -366,6 +394,14 @@ public class LogReader {
                             out.append(" "); //NOI18N
                         }
                     }
+                }
+            } else if (pkg.startsWith(ECHO_PATTERN)){
+                pkg = pkg.substring(ECHO_PATTERN.length());
+                StringTokenizer st = new StringTokenizer(pkg);
+                if (st.hasMoreTokens()) {
+                    out.append(" "); //NOI18N
+                    out.append(st.nextToken()); //NOI18N
+                    out.append(" "); //NOI18N
                 }
             }
             out.append(line.substring(j+1));

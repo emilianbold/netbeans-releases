@@ -74,6 +74,7 @@ public final class PatchedAnimateMotion extends AnimateMotion implements Patched
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnimateMotion(doc);
     }    

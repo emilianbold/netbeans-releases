@@ -49,7 +49,6 @@ import java.net.URL;
 import java.util.*;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -89,18 +88,17 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -274,15 +272,16 @@ public class SourceUtils {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        info.getJavaSource().runModificationTask(new Task<WorkingCopy>() {
-
-                            public void run(WorkingCopy copy) throws Exception {
+                        ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                                 copy.toPhase(Phase.ELEMENTS_RESOLVED);
                                 copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));                                
                             }
                         }).commit();
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
                     }
                 }
             });

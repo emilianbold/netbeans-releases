@@ -269,26 +269,28 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 	set1.setName("General"); // NOI18N
 	set1.setDisplayName(getString("GeneralTxt"));
 	set1.setShortDescription(getString("GeneralHint"));
-        // Include Dirctories
+    // Include Dirctories
 	StringBuilder inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues.append(master.getIncludeDirectories().getOption("")); // NOI18N
-	    if (master.getInheritIncludes().getValue())
-                master = (CCCCompilerConfiguration)master.getMaster();
-            else
-                master = null;
+	    inheritedValues.append(master.getIncludeDirectories().getOption(null, "")); // NOI18N
+        if (master.getInheritIncludes().getValue()) {
+            master = (CCCCompilerConfiguration) master.getMaster();
+        } else {
+            master = null;
+        }
 	}
 	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
 	// Preprocessor Macros
 	inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues.append(master.getPreprocessorConfiguration().getOption("")); // NOI18N
-	    if (master.getInheritPreprocessor().getValue())
-                master = (CCCCompilerConfiguration)master.getMaster();
-            else
-                master = null;
+	    inheritedValues.append(master.getPreprocessorConfiguration().getOption(null, "")); // NOI18N
+	    if (master.getInheritPreprocessor().getValue()) {
+            master = (CCCCompilerConfiguration) master.getMaster();
+        } else {
+            master = null;
+        }
 	}
         set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         

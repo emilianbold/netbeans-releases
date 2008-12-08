@@ -60,7 +60,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 
 /**
  * Renders rows and columns of a given ResultSet via JTable.
@@ -173,13 +172,16 @@ class DataViewTablePanel extends JPanel {
                 int fieldWidth = col.getDisplaySize();
                 int labelWidth = col.getDisplayName().length();
                 int colWidth = Math.max(fieldWidth, labelWidth) * tableUI.getMultiplier();
+                if(colWidth == 0){
+                   colWidth = 15  * tableUI.getMultiplier();
+                }
                 if (colWidth > MAX_COLUMN_WIDTH * tableUI.getMultiplier()) {
                     colWidth = MAX_COLUMN_WIDTH * tableUI.getMultiplier();
                 }
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e);
+            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e); // NOI18N
         }
         return colWidthList;
     }
@@ -268,10 +270,10 @@ class DataViewTablePanel extends JPanel {
                 dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
+                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                java.util.logging.Logger.getLogger(DataViewTablePanel.class.getName()).log(Level.SEVERE, ""+ex);
             }
             tableUI.revalidate();
             tableUI.repaint();

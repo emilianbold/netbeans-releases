@@ -44,6 +44,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.text.EditorKit;
@@ -52,6 +53,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.JavaSource;
 
 import org.openide.awt.Mnemonics;
@@ -71,10 +73,10 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.naming.event.EventDirContext;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -101,7 +103,7 @@ public class WatchPanel {
         this.expression = expression;
     }
     
-    public static void setupContext(final JEditorPane editorPane) {
+    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
         EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         editorPane.setEditorKit(kit);
         if (EventQueue.isDispatchThread()) {
@@ -116,6 +118,7 @@ public class WatchPanel {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     setupContext(editorPane, c.url, c.line);
+                                    if (contextSetUp != null) contextSetUp.actionPerformed(null);
                                 }
                             });
                         }
@@ -130,6 +133,7 @@ public class WatchPanel {
             } else {
                 setupUI(editorPane);
             }
+            if (contextSetUp != null) contextSetUp.actionPerformed(null);
         }
     }
 
@@ -198,7 +202,7 @@ public class WatchPanel {
         try {
             int offset = NbDocument.findLineOffset(doc, line);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            JavaSource js = DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+            DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
@@ -235,9 +239,14 @@ public class WatchPanel {
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         editorPane = new JEditorPane();//expression); // NOI18N
         editorPane.setText(expression);
-        
-        setupContext(editorPane);//, EditorContextBridge.getContext().getCurrentURL (),
-                     //EditorContextBridge.getContext().getCurrentLineNumber ());
+
+        ActionListener editorPaneUpdated = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editorPane.setText (expression);
+                editorPane.selectAll ();
+            }
+        };
+        setupContext(editorPane, editorPaneUpdated);
         
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());

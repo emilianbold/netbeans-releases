@@ -240,7 +240,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                             if (needToSave) ProjectManager.getDefault().saveProject(prj);
                         }
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(WebJaxWsLookupProvider.class.getName()).log(Level.WARNING, "Problems with generating jaxws-build.xml", ex);
                     }
                 }
             }
@@ -315,6 +315,9 @@ public class WebJaxWsLookupProvider implements LookupProvider {
         TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
+        if(jaxws_build == null) {
+            throw new IOException("Cannot generate jaxws-build.xml file");
+        }
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
         boolean extensionCreated = false;
         if (extension==null) {

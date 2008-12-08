@@ -80,6 +80,7 @@ import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
+import org.openide.awt.Mnemonics;
 
 public class BindingSourcePanel extends JPanel {
 
@@ -117,9 +118,6 @@ public class BindingSourcePanel extends JPanel {
         showAdvanced.getAccessibleContext().setAccessibleDescription(bundle.getMessage("SHOW_ADVANCED_ACCESS_DESC"));
         showAll.getAccessibleContext().setAccessibleName(bundle.getMessage("SHOW_ALL_ACCESS_NAME"));
         showAll.getAccessibleContext().setAccessibleDescription(bundle.getMessage("SHOW_ALL_ACCESS_DESC"));
-        showDefault.setMnemonic(bundle.getMessage("SHOW_DEFAULT_MNEMONIC").charAt(0));
-        showAdvanced.setMnemonic(bundle.getMessage("SHOW_ADVANCED_MNEMONIC").charAt(0));
-        showAll.setMnemonic(bundle.getMessage("SHOW_ALL_MNEMONIC").charAt(0));
     }
 
     protected PropertyBindingPanel bindingPanel;
@@ -284,8 +282,7 @@ public class BindingSourcePanel extends JPanel {
                 compCombo_actionPerformed(e);
             }
         });
-        propLabel.setText(bundle.getMessage("selectBindableProp")); //NOI18N
-        propLabel.setDisplayedMnemonic(bundle.getMessage("selectBindablePropDisplayedMnemonic").charAt(0)); //NOI18N
+        Mnemonics.setLocalizedText(propLabel, bundle.getMessage("selectBindableProp"));
         
         propList.setModel(propListModel);
         propList.setCellRenderer(new PropListRenderer());
@@ -295,20 +292,20 @@ public class BindingSourcePanel extends JPanel {
                 propList_valueChanged(e);
             }
         });
-        showDefault.setText(bundle.getMessage("default")); //NOI18N
+        Mnemonics.setLocalizedText(showDefault, bundle.getMessage("default"));
         showDefault.setSelected(true);
         showDefault.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 show_itemStateChanged(e);
             }
         });
-        showAdvanced.setText(bundle.getMessage("advanced")); //NOI18N
+        Mnemonics.setLocalizedText(showAdvanced, bundle.getMessage("advanced"));
         showAdvanced.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 show_itemStateChanged(e);
             }
         });
-        showAll.setText(bundle.getMessage("all")); //NOI18N
+        Mnemonics.setLocalizedText(showAll, bundle.getMessage("all"));
         showAll.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 show_itemStateChanged(e);

@@ -147,35 +147,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Toolbars">
-        <folder name="Debug">
-            <attr name="position" intvalue="500"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.debugger.Bundle"/>
-            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
-                <attr name="position" intvalue="300"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
-                <attr name="position" intvalue="400"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
-                <attr name="position" intvalue="600"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
-                <attr name="position" intvalue="700"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
-                <attr name="position" intvalue="800"/>
-            </file>
-        </folder>
-    </folder>
-
 </filesystem>

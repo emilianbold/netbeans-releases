@@ -29,6 +29,6 @@ var |>GLOBAL:order<| = new |>CLASS:XML<|()
 
 // Split XML strings:
 var |>GLOBAL:num<| = 36;
-var |>GLOBAL:p<| = <paul><age>{|>GLOBAL:num<|}</age></paul>
+var |>GLOBAL:p<| = |>CUSTOM1:<|>CUSTOM2:paul<|><|>CUSTOM2:age<|>{|>GLOBAL:num<|}</|>CUSTOM2:age<|></|>CUSTOM2:paul<|><|
 
 

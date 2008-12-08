@@ -106,7 +106,7 @@ public final class RubyPlatformManager {
         public int compare(RubyPlatform p1, RubyPlatform p2) {
             int result = Collator.getInstance().compare(
                     p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
-            if (result != 0) {
+            if (result == 0) {
                 result = p1.getInterpreter().compareTo(p2.getInterpreter());
             }
             return result;

@@ -58,11 +58,11 @@ public class TimestampType  {
     // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
     public static final Locale LOCALE = Locale.UK;
     private final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", LOCALE),
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", LOCALE),
-        new SimpleDateFormat("yyyy-MM-dd", LOCALE),
-        new SimpleDateFormat("MM-dd-yyyy", LOCALE),
-        new SimpleDateFormat("HH:mm:ss", LOCALE),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", LOCALE), // NOI18N
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", LOCALE), // NOI18N
+        new SimpleDateFormat("yyyy-MM-dd", LOCALE), // NOI18N
+        new SimpleDateFormat("MM-dd-yyyy", LOCALE), // NOI18N
+        new SimpleDateFormat("HH:mm:ss", LOCALE), // NOI18N
         DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
     };
 

@@ -82,7 +82,6 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
      */
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForPluginComplexMeasurements("openFiles"));
