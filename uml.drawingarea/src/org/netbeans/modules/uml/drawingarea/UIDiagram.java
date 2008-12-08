@@ -56,7 +56,9 @@ import org.dom4j.Node;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.Diagram;
@@ -79,6 +81,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.image.DiagramImageWriter;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -929,7 +932,65 @@ public class UIDiagram extends Diagram {
     
     @Override
     public void setDocumentation(String newDoc) {
-        doc = newDoc;
+        String oldDoc=getDocumentation();
+          boolean proceed = true;
+          boolean fireEvents = true;
+          if(PersistenceUtil.isDiagramLoading())
+          {
+              fireEvents=false;
+          }
+          if (oldDoc != null)
+          {
+             if (fireEvents && oldDoc.equals(newDoc))
+             {
+                fireEvents = false;
+             }
+          }
+          else
+          {
+             // If the docs coming in is 0 or has not length AND
+             // we don't currently have a documentation tagged value,
+             // then there is no need to send out a documentation modified event
+             if (newDoc == null || newDoc.length() == 0)
+             {
+                fireEvents = false;
+             }
+             else
+             {
+                newDoc = newDoc.replaceAll("       "," ");
+                newDoc = newDoc.replaceAll("     "," ");
+             }
+          }
+
+          IElementChangeDispatchHelper helper = null;
+          if (fireEvents)
+          {
+             helper = new ElementChangeDispatchHelper();
+
+             proceed = false;
+             if(helper.dispatchElementPreModified(this));
+             {
+                proceed = helper.dispatchDocPreModified(this, newDoc);
+             }
+          }
+
+          if (proceed)
+          {
+             //
+             doc=newDoc;
+             if (fireEvents)
+             {
+                helper.dispatchDocModified(this);
+                helper.dispatchElementModified(this);
+             }
+          }
+          else
+          {
+             if (fireEvents)
+             {
+                //cancel events
+             }
+          }
     }
     
     @Override
