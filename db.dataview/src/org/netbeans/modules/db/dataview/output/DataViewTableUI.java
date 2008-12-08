@@ -76,7 +76,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -647,9 +646,9 @@ class DataViewTableUI extends ExtendedJTable {
 
         private void setTableCellToolTip(Component c, Object value) {
             if (c instanceof JComponent) {
-                String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>";
-                tooltip += DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;");
-                tooltip += "</td></tr></table></html>";
+                String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>"; // NOI18N
+                tooltip += DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;"); // NOI18N
+                tooltip += "</td></tr></table></html>"; // NOI18N
                 ((JComponent) c).setToolTipText(tooltip);
             }
         }

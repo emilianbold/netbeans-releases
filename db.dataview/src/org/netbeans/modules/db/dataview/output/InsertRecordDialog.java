@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -407,7 +406,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
             Integer typeInt = new Integer(col.getJdbcType());
             String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
 
-            colDataType[i].setText(typeName);
+            colDataType[i].setText(typeName.replace("(", "").replace(")", ""));
             colDataType[i].setDisplayedMnemonicIndex(-1);
 
             colNameLabel[i].setLabelFor(colValueTextField[i]);
@@ -436,6 +435,16 @@ class InsertRecordDialog extends javax.swing.JDialog {
                         Toolkit.getDefaultToolkit().beep();
                     } else if (colValueTextField[index].isEditable()) {
                         colValueTextField[index].setText("<NULL>"); // NOI18N
+                        colValueTextField[index].setEditable(false);
+                    } else if (!colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText(""); // NOI18N
+                        colValueTextField[index].setEditable(true);
+                    }
+                } else if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_1) {
+                    if (col.isGenerated() || !col.isNullable()) {
+                        Toolkit.getDefaultToolkit().beep();
+                    } else if (colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText("<DEFAULT>"); // NOI18N
                         colValueTextField[index].setEditable(false);
                     } else if (!colValueTextField[index].isEditable()) {
                         colValueTextField[index].setText(""); // NOI18N
@@ -477,14 +486,21 @@ class InsertRecordDialog extends javax.swing.JDialog {
         });
     }
 
+    // TODO: Fix DBMetadataFactory to discover whether the column has DEFAULT
+    // and only then allow to set the value to DEFAULT
     private Object[] getInsertValues() throws DBException {
         Object[] insertData = new Object[colValueTextField.length];
         for (int i = 0; i < colValueTextField.length; i++) {
             JTextField textField = colValueTextField[i];
             DBColumn col = dataView.getDataViewDBTable().getColumn(i);
             Object val;
-            if ((col.isNullable() || col.isGenerated()) && !textField.isEditable()) {
+            if(col.isGenerated()) {
                 val = null;
+            }
+            else if (col.isNullable() && textField.getText().equals("<NULL>") && !textField.isEditable()) {
+                val = null;
+            } else if(textField.getText().equals("<DEFAULT>") && !textField.isEditable()){
+                val = "<DEFAULT>";
             } else {
                 val = DBReadWriteHelper.validate(textField.getText(), col);
             }
