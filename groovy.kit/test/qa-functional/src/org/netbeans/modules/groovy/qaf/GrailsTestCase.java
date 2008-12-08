@@ -43,7 +43,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.util.Utilities;
 
@@ -105,5 +110,40 @@ public abstract class GrailsTestCase extends GroovyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 90000); //NOI18N
         op.waitClosed();
         assertTrue(new File(createdFile).isFile());
+    }
+
+    protected void runGrailsApp() {
+        //Run
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "LBL_RunAction_Name");
+        getProjectRootNode().performPopupAction(label);
+        waitFor("run-app", ":INFO:  GSP servlet initialized"); //NOI18N
+        assertNotNull(getServerNodeForApp());
+    }
+
+    protected void stopGrailsApp() {
+        //Stop
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grails.server.Bundle", "ApplicationNode.stopActionName");
+        getServerNodeForApp().performPopupAction(actionLabel);
+    }
+
+    private Node getServerNodeForApp() {
+        String bundle = "org.netbeans.modules.groovy.grails.server.Bundle"; //NOI18N
+        GrailsSettings gs = GrailsSettings.getInstance();
+        //Jetty (Grails {0})
+        String serverLabel = Bundle.getStringTrimmed(bundle, "GrailsInstance.displayName", //NOI18N
+                new Object[] {RuntimeHelper.getRuntimeVersion(new File(gs.getGrailsBase()))});
+        J2eeServerNode serverNode = J2eeServerNode.invoke(serverLabel);
+        //{app} on {port} //app node
+        String nodeLabel = Bundle.getStringTrimmed(bundle, "ApplicationNode.displayName", //NOI18N
+                new Object[] {getProjectName(), gs.getPortForProject(getProject())});
+        return new Node(serverNode, nodeLabel);
+    }
+
+    protected void waitFor(String action, String text) {
+        OutputOperator oo = OutputOperator.invoke();
+        OutputTabOperator oto = oo.getOutputTab(getProjectName() + " (" + action + ")"); //NOI18N
+        // wait at most 360 second until progress dialog dismiss
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 360000); //NOI18N
+        oto.waitText(text);
     }
 }
