@@ -90,6 +90,17 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(-1, markTest);
     }
 
+    public void testClsVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                " * @property Author $author hello this is doc",
+                " * @property Author $^author hello this is doc",
+                "$this->author;",
+                "$this->auth|or;"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
     public void testGotoConstructTest() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/gotoConstrTest.php",

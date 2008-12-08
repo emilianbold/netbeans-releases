@@ -12,6 +12,7 @@ class Book {
     function __construct() {}//Book
     function test($hello) {//method
         $tmp = $hello;
+        $this->author;
     }
 }
 

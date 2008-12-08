@@ -198,7 +198,7 @@ public class ConfigurationMakefileWriter {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
 
         bw.write("TEMPLATE = "); // NOI18N
-        bw.write(conf.getQmakeConfiguration().getTemplate().getValue());
+        bw.write(conf.getQmakeConfiguration().getTemplate().getOption());
         bw.write('\n'); // NOI18N
         bw.write("TARGET = "); // NOI18N
         bw.write(conf.expandMacros(getOutput(conf)));

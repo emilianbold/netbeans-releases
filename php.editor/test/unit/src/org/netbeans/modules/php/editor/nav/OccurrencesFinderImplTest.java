@@ -142,6 +142,17 @@ public class OccurrencesFinderImplTest extends TestBase {
         performTestOccurrences(markTest, true);
     }
 
+    public void testClsVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                " * @property Author $author hello this is doc",
+                " * @property Author $^author^ hello this is doc",
+                "$this->author;",
+                "$this->^aut|hor^;"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
     public void testIfaceTest() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/ifaceTest.php",

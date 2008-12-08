@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -190,7 +191,7 @@ public final class ModelVisitor extends DefaultVisitor {
     }
 
     @Override
-    public void visit(FieldsDeclaration node) {
+    public void visit(FieldsDeclaration node) {        
         modelBuilder.build(node, occurencesBuilder);
         /*ScopeImpl scope = modelBuilder.getCurrentScope();
         assert scope != null && scope instanceof ClassScopeImpl;
@@ -532,7 +533,14 @@ public final class ModelVisitor extends DefaultVisitor {
     }
     @Override
     public void visit(PHPDocVarTypeTag node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(node, currentScope);
+        for (PhpDocTypeTagInfo phpDocTypeTagInfo : tagInfos) {
+            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
+                new FieldElementImpl(currentScope, phpDocTypeTagInfo.getTypeName(), phpDocTypeTagInfo);
+            }
+        }
+        occurencesBuilder.prepare(node, currentScope);
         super.visit(node);
     }
 
