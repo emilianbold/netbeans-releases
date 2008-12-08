@@ -70,6 +70,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
         super(dObj);
     }    
     
+    @Override
     public Lookup getLookup() {
         try {
             PaletteController pc = SVGPaletteFactory.getPalette();
@@ -89,22 +90,25 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
         }
     }    
 
+    @Override
     public void componentHidden() {
         ((SVGDataObject) dObj).setMultiViewElement(null);
         super.componentHidden();
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
     }
 
+    @Override
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(SVGDataObject.XML_VIEW_INDEX);
         ((SVGDataObject) dObj).setMultiViewElement(this);
     }
-    
+
     public static void selectElement( final SVGDataObject svgDoj, int startOffset, final boolean requestFocus) {
         if ( startOffset != -1) {
             selectPosition(svgDoj, startOffset, requestFocus);

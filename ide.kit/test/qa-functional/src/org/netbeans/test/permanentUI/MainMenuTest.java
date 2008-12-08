@@ -48,6 +48,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -502,7 +503,8 @@ public class MainMenuTest extends JellyTestCase {
     public JMenuBarOperator pushMainMenuItem(String mainMenuItem) {
         ///open menu to let it create sucesfully
         JMenuBarOperator mainmenuOp = MainWindowOperator.getDefault().menuBar();
-        mainmenuOp.pushMenu(mainMenuItem);
+        ///use string comparator with exact matching
+        mainmenuOp.pushMenu(mainMenuItem, new DefaultStringComparator(true, false));
 
         return mainmenuOp;
     }

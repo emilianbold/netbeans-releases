@@ -111,7 +111,7 @@ public class RadioButton extends SVGFormElement{
     }
 
     private String getSnippet(String idFrame, String id1, String id2) throws IOException{
-        String text = getSnippetString();
+        String text = loadSnippetString();
         String withIdFrame = text.replace(ID_PATTERN_FRAME, idFrame);
         String withId1 = withIdFrame.replace(ID_PATTERN_1, id1);
         String withId2 = withId1.replace(ID_PATTERN_2, id2);

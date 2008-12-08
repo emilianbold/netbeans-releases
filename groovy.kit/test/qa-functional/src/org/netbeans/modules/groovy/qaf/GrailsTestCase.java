@@ -139,6 +139,12 @@ public abstract class GrailsTestCase extends GroovyTestCase {
         return new Node(serverNode, nodeLabel);
     }
 
+    /**
+     * Wait for text in an output tab
+     *
+     * @param action action name as it appears in output tab label
+     * @param text text to wait for
+     */
     protected void waitFor(String action, String text) {
         OutputOperator oo = OutputOperator.invoke();
         OutputTabOperator oto = oo.getOutputTab(getProjectName() + " (" + action + ")"); //NOI18N

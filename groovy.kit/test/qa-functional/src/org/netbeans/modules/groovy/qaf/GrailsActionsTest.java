@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -54,6 +55,7 @@ import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
 import org.openide.windows.TopComponent;
 
 /**
+ * Tests for actions available on Grails projects
  *
  * @author lukas
  */
@@ -81,6 +83,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         return "GrailsActions"; //NOI18N
     }
 
+    /**
+     * Test Generate all action on the domain class node
+     *
+     */
     public void testGenerateAll() {
         //Generate all
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
@@ -88,13 +94,22 @@ public class GrailsActionsTest extends GrailsTestCase {
         waitFor("generate-all", "Finished generation for domain class"); //NOI18N
     }
 
+    /**
+     * Test Create view action on the domain class node
+     *
+     */
     public void testCreateView() {
-        //XXX - grails create-view should be called instead of a wizard
+        //see: http://www.netbeans.org/issues/show_bug.cgi?id=154909
         //Create view
 //        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_CreateViewAction");
 //        getDomainClassNode("Author").performPopupAction(label); //NOI18N
+//        waitFor("generate-views", "Finished generation for domain class"); //NOI18N
     }
 
+    /**
+     * Test Go to Controller action
+     *
+     */
     public void testGotoController() {
         //Go to Grails Controller
         Action a = getGrailsNavigateAction("CTL_GotoControllerAction"); //NOI18N
@@ -104,12 +119,16 @@ public class GrailsActionsTest extends GrailsTestCase {
         a.performPopup(eo); //NOI18N
         assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
         //from a view
-//        oa.perform(getViewNode("book|edit")); //NOI18N
-//        eo = new EditorOperator("edit.gsp"); //NOI18N
-//        a.performPopup(eo); //NOI18N
-//        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
+        oa.perform(getViewNode("book|edit")); //NOI18N
+        eo = new EditorOperator("edit.gsp"); //NOI18N
+        a.performPopup(eo); //NOI18N
+        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
     }
 
+    /**
+     * Test Go to View action
+     *
+     */
     public void testGotoView() {
         //Go to Grails View
         Action a = getGrailsNavigateAction("CTL_GotoViewAction"); //NOI18N
@@ -125,19 +144,17 @@ public class GrailsActionsTest extends GrailsTestCase {
         assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
     }
 
+    /**
+     * Test Go to Domain class action
+     *
+     */
     public void testGotoDomainClass() throws InterruptedException, InvocationTargetException {
         //XXX - no direct UI entry to this action
+        // see: http://www.netbeans.org/issues/show_bug.cgi?id=154768
         final GotoDomainClassAction a = new GotoDomainClassAction();
         //from a view
-//        oa.perform(getViewNode("book|list"); //NOI18N
-//        EditorOperator eo = new EditorOperator("list.gsp"); //NOI18N
-//        assertTrue(a.isEnabled());
-//        a.actionPerformed(null, (JTextComponent) eo.txtEditorPane().getSource());
-//        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
-//        eo.close(false);
-        //from a controller
-        oa.perform(getControllerNode("BookController")); //NOI18N
-        final EditorOperator eo = new EditorOperator("BookController.groovy"); //NOI18N
+        oa.perform(getViewNode("book|list")); //NOI18N
+        final EditorOperator eo = new EditorOperator("list.gsp"); //NOI18N
         assertTrue(a.isEnabled());
         SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -146,13 +163,43 @@ public class GrailsActionsTest extends GrailsTestCase {
             }
         });
         assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
+        eo.close(false);
+        //from a controller
+        oa.perform(getControllerNode("BookController")); //NOI18N
+        final EditorOperator eo2 = new EditorOperator("BookController.groovy"); //NOI18N
+        assertTrue(a.isEnabled());
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                a.actionPerformed(new ActionEvent(eo2.txtEditorPane().getSource(), -1, null));
+            }
+        });
+        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
     }
 
+    /**
+     * Test grails project Run and Stop actions
+     *
+     */
     public void testStopApp() {
         //XXX - better to have ability to not open browser during run
-        //      (remove TestURLDisplayer)
+        //      (remove TestURLDisplayer, can be changed after
+        //       http://www.netbeans.org/issues/show_bug.cgi?id=154920)
         runGrailsApp();
         stopGrailsApp();
+    }
+
+    /**
+     * Test Create war project action
+     *
+     */
+    public void testCreateWar() {
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "LBL_CreateWarFile");
+        getProjectRootNode().performPopupAction(label);
+        waitFor("war", "Done creating WAR"); //NOI18N
+        FilesTabOperator fto = FilesTabOperator.invoke();
+        Node n = new Node(fto.getProjectNode(getProjectName()), getProjectName() + "-0.1.war"); //NOI18N
+        assertNotNull(n);
     }
 
     private Node getDomainClassNode(String domainClass) {
@@ -181,7 +228,7 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     private Action getGrailsNavigateAction(String key) {
-        String groupLabel = "Navigate";
+        String groupLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.Bundle", "Editors/text/x-gsp/Popup/goto");
         String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", key);
         return new Action(null, groupLabel + "|" + actionLabel); //NOI18N
     }
