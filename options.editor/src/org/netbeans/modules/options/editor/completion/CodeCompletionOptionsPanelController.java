@@ -43,9 +43,7 @@ package org.netbeans.modules.options.editor.completion;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,14 +112,12 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
 
             pf.applyChanges();
 
-            // Find mimeTypes that do not have a customizer
-            Set<String> mimeTypes = new HashSet(EditorSettings.getDefault().getAllMimeTypes());
-            mimeTypes.removeAll(selector.getMimeTypes());
-
-            // and make sure that they do NOT override basic settings from All Languages
-            for(String mimeType : mimeTypes) {
+            // Make sure that completions settings that are only accessible for
+            // 'all languages' are not overriden by particular languages (mime types)
+            for(String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
+                LOG.fine("Cleaning up '" + mimeType + "' preferences"); //NOI18N
                 Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-                prefs.remove("pair-characters-completion"); //NOI18N
+                prefs.remove(SimpleValueNames.COMPLETION_PAIR_CHARACTERS); //NOI18N
                 prefs.remove(SimpleValueNames.COMPLETION_AUTO_POPUP);
                 prefs.remove(SimpleValueNames.JAVADOC_AUTO_POPUP);
                 prefs.remove(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC);
@@ -222,20 +218,7 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
         public void applyChanges() {
             for(String mimeType : mimeTypePreferences.keySet()) {
                 ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-
                 pp.silence();
-
-                if (mimeType.length() > 0) {
-                    // remove the basic settings if a language is not overriding the 'all languages' values
-                    pp.remove("pair-characters-completion"); //NOI18N
-                    pp.remove(SimpleValueNames.COMPLETION_AUTO_POPUP);
-                    pp.remove(SimpleValueNames.JAVADOC_AUTO_POPUP);
-                    pp.remove(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC);
-                    pp.remove(SimpleValueNames.SHOW_DEPRECATED_MEMBERS);
-                    pp.remove(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION);
-                    pp.remove(SimpleValueNames.COMPLETION_CASE_SENSITIVE);
-                    pp.remove("guessMethodArguments"); //NOI18N
-                }
                 try {
                     LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
                     pp.flush();
@@ -280,7 +263,7 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
                 pp.addPreferenceChangeListener(weakPrefL);
                 pp.addNodeChangeListener(weakNodeL);
                 mimeTypePreferences.put(mimeType, pp);
-                LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
+                LOG.fine("getPreferences('" + mimeType + "')"); //NOI18N
             }
 
             return pp;

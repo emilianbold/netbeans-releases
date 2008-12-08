@@ -172,6 +172,16 @@ public final class DBTable extends DBObject<DBModel> {
         return columns;
     }
 
+    public DBColumn getColumn(String name) {
+        Collection<DBColumn> list = columns.values();
+        for (DBColumn dBColumn : list) {
+            if (dBColumn.getName().equalsIgnoreCase(name)) {
+                return dBColumn;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String getDisplayName() {
         return this.getFullyQualifiedName();
@@ -193,18 +203,20 @@ public final class DBTable extends DBObject<DBModel> {
             buf.append(quoter.quoteIfNeeded(schema.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
-        if(quoter!=null)
-        buf.append(quoter.quoteIfNeeded(name.trim()));
-        else
+        if (quoter != null) {
+            buf.append(quoter.quoteIfNeeded(name.trim()));
+        } else {
             buf.append(name);
+        }
         return buf.toString();
     }
 
     public String getQualifiedName() {
-        if(quoter!=null)
-        return quoter.quoteIfNeeded(name.trim());
-        else
+        if (quoter != null) {
+            return quoter.quoteIfNeeded(name.trim());
+        } else {
             return name.trim();
+        }
     }
 
     public String getName() {
@@ -243,16 +255,16 @@ public final class DBTable extends DBObject<DBModel> {
         return myHash;
     }
 
-    public void setName(String newName){
+    public void setName(String newName) {
         name = newName;
         setDisplayName(newName);
     }
-    
-    public void setCatalogName(String newName){
+
+    public void setCatalogName(String newName) {
         catalog = newName;
     }
-    
-    public void setSchemaName(String newName){
+
+    public void setSchemaName(String newName) {
         schema = newName;
     }
 
