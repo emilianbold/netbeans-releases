@@ -705,6 +705,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154775.cc", 32, 24, "iz154775.cc", 27, 5);
     }
 
+    public void testIZ154778() throws Exception {
+        //IZ#154778: Completion fails on gt operator
+        performTest("iz154778.cc", 9, 18, "iz154778.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
