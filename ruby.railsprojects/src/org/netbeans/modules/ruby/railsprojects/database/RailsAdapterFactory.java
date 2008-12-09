@@ -58,8 +58,8 @@ public class RailsAdapterFactory {
     public static List<RailsDatabaseConfiguration> getAdapters(RubyPlatform plaform) {
         List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
         result.addAll(getMySQLAdapters(plaform));
+        result.addAll(getPostgreSQLAdapters(plaform));
         result.add(new StandardRailsAdapter("oracle")); //NOI18N
-        result.add(new PostgreSQLAdapter());
         result.add(new SQLiteAdapter("sqlite2")); //NOI18N
         result.add(new SQLiteAdapter("sqlite3")); //NOI18N
         result.add(new JavaDBAdapter());
@@ -75,6 +75,17 @@ public class RailsAdapterFactory {
             return Collections.<RailsDatabaseConfiguration>singletonList(new MySQLAdapter());
         }
         return Collections.<RailsDatabaseConfiguration>singletonList(new JdbcMySQlAdapter());
+    }
+
+    private static List<RailsDatabaseConfiguration> getPostgreSQLAdapters(RubyPlatform platform) {
+        if (!platform.isJRuby()) {
+            return Collections.<RailsDatabaseConfiguration>singletonList(new PostgreSQLAdapter());
+        }
+        GemManager gemManager = platform.getGemManager();
+        if (gemManager == null || !gemManager.isGemInstalled(JdbcPostgreSQLAdapter.GEM_NAME)) {
+            return Collections.<RailsDatabaseConfiguration>singletonList(new PostgreSQLAdapter());
+        }
+        return Collections.<RailsDatabaseConfiguration>singletonList(new JdbcPostgreSQLAdapter());
     }
     /**
      * Gets the default adapter, i.e. the adapter to be used when no configuration

@@ -44,29 +44,25 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.util.Exceptions;
 
 /**
- * Represents the jdbcmysql database adapter, i.e. the jdbc-mysql gem.
- * Meant to be used for generating mysql configuration for JRuby apps.
+ * Represents the jdbcposgresql database adapter, i.e. the jdbc-postgresql gem.
+ * Meant to be used for generating postgresql configuration for JRuby apps.
  *
  * @author Erno Mononen
  */
-class JdbcMySQlAdapter extends RailsDatabaseConfiguration {
+class JdbcPostgreSQLAdapter extends RailsDatabaseConfiguration {
 
-    static final String GEM_NAME = "activerecord-jdbcmysql-adapter"; //NOI18N
+    static final String GEM_NAME = "activerecord-jdbcpostgresql-adapter"; //NOI18N
 
     public String railsGenerationParam() {
-        return "mysql"; //NOI18N
+        return "postgresql"; //NOI18N
     }
 
     public void editConfig(RailsProject project) {
         Document databaseYml = RailsAdapters.getDatabaseYml(project.getProjectDirectory());
         try {
-            RailsAdapters.removeProperty(databaseYml, "socket:"); //NOI18N
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        try {
-            RailsAdapters.changeAttribute(databaseYml, "adapter:", "jdbcmysql", null); //NOI18N
+            RailsAdapters.changeAttribute(databaseYml, "adapter:", "jdbcpostgresql", null); //NOI18N
             // intentionally within the same try-catch block as changing the adapter
+            RailsAdapters.addProperty(databaseYml, "host:", "localhost", "encoding:"); //NOI18N
             editComments(databaseYml);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -84,11 +80,7 @@ class JdbcMySQlAdapter extends RailsDatabaseConfiguration {
         // remove the old comment that instructs to install the mysql gem,
         // it is not appropriate here since we're using jdbc-mysql
         databaseYml.remove(0, offset);
-        String comment = "# MySQL.  Versions 4.1 and 5.0 are recommended.\n" +
-                "#\n" +
-                "#\n" +
-                "# Be sure to use new-style password hashing:\n" +
-                "#   http://dev.mysql.com/doc/refman/5.0/en/old-client.html\n";
+        String comment = "# PostgreSQL. Versions 7.4 and 8.x are supported.\n";
         databaseYml.insertString(0, comment, null);
 
     }
@@ -103,7 +95,7 @@ class JdbcMySQlAdapter extends RailsDatabaseConfiguration {
     }
 
     public String getDisplayName() {
-        return "mysql (jdbc)"; //NOI18N
+        return "postgresql (jdbc)"; //NOI18N
     }
 
     public String getDatabaseName(String projectName) {
