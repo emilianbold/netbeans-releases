@@ -710,6 +710,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154778.cc", 9, 18, "iz154778.cc", 5, 5);
     }
 
+    public void testIZ154789() throws Exception {
+        //IZ#154789: Completion fails on macros
+        performTest("iz154789.cc", 15, 22, "iz154789.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
