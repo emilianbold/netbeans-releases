@@ -78,7 +78,7 @@ public abstract class GrailsTestCase extends GroovyTestCase {
                 if (Utilities.isUnix()) {
                     assertTrue(new File(grailsHome, "bin/grails").isFile()); //NOI18N
                 } else {
-                    assertTrue(new File(grailsHome, "bin/grails.bat").isFile()); //NOI18N
+                    assertTrue(new File(grailsHome, "bin" + File.separator + "grails.bat").isFile()); //NOI18N
                 }
                 GrailsSettings gs = GrailsSettings.getInstance();
                 gs.setGrailsBase(new File(grailsHome).getCanonicalPath());
