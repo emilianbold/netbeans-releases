@@ -93,17 +93,19 @@ public final class SourceCache {
         mimeType.getClass();
     }
 
-    public synchronized void setEmbedding (
+    public void setEmbedding (
         Embedding           embedding
     ) {
-        this.embedding = embedding;
+        synchronized (this.source) {
+            this.embedding = embedding;
+        }
     }
     //@GuardedBy(this)
     private Snapshot        snapshot;
 
     public Snapshot getSnapshot () {
         boolean isEmbedding;
-        synchronized (this) {
+        synchronized (this.source) {
             if (snapshot != null) {
                 return snapshot;
             }
@@ -111,7 +113,7 @@ public final class SourceCache {
         }
 
         final Snapshot _snapshot = createSnapshot (isEmbedding);
-        synchronized (this) {
+        synchronized (this.source) {
             if (snapshot == null) {
                 snapshot = _snapshot;
             }
@@ -123,7 +125,7 @@ public final class SourceCache {
         assert idHolder != null;
         assert idHolder.length == 1;
         boolean isEmbedding;
-        synchronized (this) {
+        synchronized (this.source) {
             isEmbedding = embedding != null;
         }
         idHolder[0] = SourceAccessor.getINSTANCE ().getLastEventId (this.source);
@@ -141,7 +143,7 @@ public final class SourceCache {
     
     public Parser getParser () {
         final Snapshot _snapshot = getSnapshot ();
-        synchronized (this) {
+        synchronized (this.source) {
             if (!parserInitialized) {
                 parserInitialized = true;
                 Lookup lookup = MimeLookup.getLookup (mimeType);
@@ -164,7 +166,7 @@ public final class SourceCache {
         Parser _parser = getParser ();
         if (_parser == null) return null;
         boolean _parsed;
-        synchronized (this) {
+        synchronized (this.source) {
             _parsed = this.parsed;
             this.parsed = true; //Optimizstic update
         }
@@ -181,7 +183,7 @@ public final class SourceCache {
                 parseSuccess = true;
             } finally {
                 if (!parseSuccess) {
-                    synchronized (this) {
+                    synchronized (this.source) {
                         parsed = false;
                     }
                 }
@@ -190,19 +192,23 @@ public final class SourceCache {
         return _parser.getResult (task);
     }
     
-    public synchronized void invalidate () {
-        snapshot = null;
-        embedding = null;
-        parsed = false;
-        embeddings = null;
-        upToDateEmbeddingProviders.clear();
-        for (SourceCache sourceCache : embeddingToCache.values ())
-            sourceCache.invalidate ();
+    public void invalidate () {
+        synchronized (this.source) {
+            snapshot = null;
+            embedding = null;
+            parsed = false;
+            embeddings = null;
+            upToDateEmbeddingProviders.clear();
+            for (SourceCache sourceCache : embeddingToCache.values ())
+                sourceCache.invalidate ();
+        }
     }
 
-    public synchronized void invalidate (final Snapshot preRendered) {
-        invalidate();
-        snapshot = preRendered;
+    public void invalidate (final Snapshot preRendered) {
+        synchronized (this.source) {
+            invalidate();
+            snapshot = preRendered;
+        }
     }
                 
     //@GuardedBy(this)
@@ -212,38 +218,42 @@ public final class SourceCache {
     private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
-    public synchronized Iterable<Embedding> getAllEmbeddings () {
-        if (this.embeddings == null) {
-            this.embeddings = new ArrayList<Embedding> ();
-            for (SchedulerTask schedulerTask : createTasks ()) {
-                if (schedulerTask instanceof EmbeddingProvider) {
-                    EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
-                    if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
-                        List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                        this.embeddings.addAll (_embeddings);
-                    } else {
-                        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
-                        List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                        updateEmbeddings (_embeddings, oldEmbeddings, false, null);
-                        embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
-                        this.embeddings.addAll (_embeddings);
+    public Iterable<Embedding> getAllEmbeddings () {
+        synchronized (this.source) {
+            if (this.embeddings == null) {
+                this.embeddings = new ArrayList<Embedding> ();
+                for (SchedulerTask schedulerTask : createTasks ()) {
+                    if (schedulerTask instanceof EmbeddingProvider) {
+                        EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
+                        if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
+                            List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                            this.embeddings.addAll (_embeddings);
+                        } else {
+                            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+                            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                            updateEmbeddings (_embeddings, oldEmbeddings, false, null);
+                            embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
+                            this.embeddings.addAll (_embeddings);
+                        }
                     }
                 }
             }
+            return this.embeddings;
         }
-        return this.embeddings;
     }
 
     //@GuardedBy(this)
     private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
 
     
-    synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
-        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
-        List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-        updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
-        embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
-        upToDateEmbeddingProviders.add (embeddingProvider);
+    void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
+        synchronized (this.source) {
+            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+            updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
+            embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
+            upToDateEmbeddingProviders.add (embeddingProvider);
+        }
     }
     
     //@NotThreadSafe - has to be called in GuardedBy(this)
@@ -282,13 +292,15 @@ public final class SourceCache {
     private final Map<Embedding,SourceCache>
                             embeddingToCache = new HashMap<Embedding,SourceCache> ();
     
-    public synchronized SourceCache getCache (Embedding embedding) {
-        SourceCache sourceCache = embeddingToCache.get (embedding);
-        if (sourceCache == null) {
-            sourceCache = new SourceCache (source, embedding);
-            embeddingToCache.put (embedding, sourceCache);
+    public SourceCache getCache (Embedding embedding) {
+        synchronized (this.source) {
+            SourceCache sourceCache = embeddingToCache.get (embedding);
+            if (sourceCache == null) {
+                sourceCache = new SourceCache (source, embedding);
+                embeddingToCache.put (embedding, sourceCache);
+            }
+            return sourceCache;
         }
-        return sourceCache;
     }
 
     
@@ -324,7 +336,7 @@ public final class SourceCache {
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
-        synchronized (this) {
+        synchronized (this.source) {
             if (tasks == null)
                 createTasks ();
             for (SchedulerTask task : tasks) {
