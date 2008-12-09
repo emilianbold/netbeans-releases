@@ -40,7 +40,10 @@
 package org.netbeans.modules.ruby.railsprojects.database;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 
 /**
  * A factory for Rails database adapters.
@@ -49,30 +52,12 @@ import java.util.List;
  */
 public class RailsAdapterFactory {
     
-    private static final List<RailsDatabaseConfiguration> adapters = initAdapters();
-
     /**
-     * Gets all know adapters.
-     * 
-     * @return all know adapters.
+     * @return all known adapters for the given <code>plaform</code>.
      */
-    public static List<RailsDatabaseConfiguration> getAdapters() {
-        return adapters;
-    }
-    
-    /**
-     * Gets the default adapter, i.e. the adapter to be used when no configuration
-     * is specified. The default adapter is MySQL.
-     * 
-     * @return the default adapter.
-     */
-    public static RailsDatabaseConfiguration getDefaultAdapter() {
-        return getAdapters().get(0);
-    }
-    
-    private static List<RailsDatabaseConfiguration> initAdapters() {
+    public static List<RailsDatabaseConfiguration> getAdapters(RubyPlatform plaform) {
         List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
-        result.add(new MySQLAdapter());
+        result.addAll(getMySQLAdapters(plaform));
         result.add(new StandardRailsAdapter("oracle")); //NOI18N
         result.add(new PostgreSQLAdapter());
         result.add(new SQLiteAdapter("sqlite2")); //NOI18N
@@ -80,6 +65,25 @@ public class RailsAdapterFactory {
         result.add(new JavaDBAdapter());
         return result;
     }
-    
 
+    private static List<RailsDatabaseConfiguration> getMySQLAdapters(RubyPlatform platform) {
+        if (!platform.isJRuby()) {
+            return Collections.<RailsDatabaseConfiguration>singletonList(new MySQLAdapter());
+        }
+        GemManager gemManager = platform.getGemManager();
+        if (gemManager == null || !gemManager.isGemInstalled(JdbcMySQlAdapter.GEM_NAME)) {
+            return Collections.<RailsDatabaseConfiguration>singletonList(new MySQLAdapter());
+        }
+        return Collections.<RailsDatabaseConfiguration>singletonList(new JdbcMySQlAdapter());
+    }
+    /**
+     * Gets the default adapter, i.e. the adapter to be used when no configuration
+     * is specified. The default adapter is MySQL.
+     * 
+     * @return the default adapter.
+     */
+    public static RailsDatabaseConfiguration getDefaultAdapter(RubyPlatform platform) {
+        return getAdapters(platform).get(0);
+    }
+    
 }
