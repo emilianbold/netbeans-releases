@@ -727,7 +727,7 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else if (isQmakeConfiguration()) {
-            output = getQmakeConfiguration().getTarget().getValue();
+            output = getLinkerConfiguration().getOutputValue();
         } else {
             assert false;
         }

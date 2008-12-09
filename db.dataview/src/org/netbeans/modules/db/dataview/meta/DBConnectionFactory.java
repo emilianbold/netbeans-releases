@@ -96,14 +96,14 @@ public final class DBConnectionFactory {
             } else {
                 return showConnectionDialog(dbConn);
             }
-        } catch (Exception ex) {
-            mLogger.log(Level.WARNING, "Failed to set connection:" + ex);
-            this.ex = ex;
+        } catch (Exception e) {
+            mLogger.log(Level.WARNING, "Failed to set connection:" + e); // NOI18N
+            this.ex = e;
             return null;
         }
     }
 
-    public Throwable getLastException(){
+    public Throwable getLastException() {
         return ex;
     }
 

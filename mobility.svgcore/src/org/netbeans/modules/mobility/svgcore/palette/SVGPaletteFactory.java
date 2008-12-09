@@ -76,20 +76,6 @@ public final class SVGPaletteFactory {
             palette = PaletteFactory.createPalette( SVGXML_PALETTE_FOLDER,
                       new SVGPaletteActions(), null, null);
         }
-        /*
-        palette.addPropertyChangeListener( new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ( PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
-                    Lookup selItem = palette.getSelectedItem();
-                    if ( selItem != null) {
-                        Node selNode = selItem.lookup(Node.class);
-                        if ( selNode != null) {
-                            System.out.println("Palette item selected: " + selNode.getDisplayName());
-                        }
-                    }
-                }
-            }
-        });*/ 
         return palette;
     }
     

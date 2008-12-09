@@ -51,6 +51,7 @@ public class MakeArtifact {
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
+    public static final int TYPE_QT_APPLICATION = 4;
 
     // Project
     private String projectLocation;
@@ -95,9 +96,7 @@ public class MakeArtifact {
 		workingDirectory = projectLocation;
 		buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
 		cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
-		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE
-                || makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION
-                || makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_LIBRARY) {
+		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
 		    configurationType = MakeArtifact.TYPE_UNKNOWN;
 		    output = makeConfiguration.getMakefileConfiguration().getOutput().getValue();
 		}
@@ -113,10 +112,14 @@ public class MakeArtifact {
 		    configurationType = MakeArtifact.TYPE_STATIC_LIB;
 		    output = makeConfiguration.getArchiverConfiguration().getOutputValue();
 		}
-		else {
-		    assert false;// FIXUP: error
-		}
-                output = makeConfiguration.expandMacros(output);
+        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION) {
+            configurationType = MakeArtifact.TYPE_QT_APPLICATION;
+            output = makeConfiguration.getLinkerConfiguration().getOutputValue();
+        }
+        else {
+            assert false;// FIXUP: error
+        }
+        output = makeConfiguration.expandMacros(output);
     }
     
     public String getProjectLocation() {
