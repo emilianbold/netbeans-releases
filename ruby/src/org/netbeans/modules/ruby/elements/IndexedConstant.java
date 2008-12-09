@@ -48,16 +48,16 @@ public final class IndexedConstant extends IndexedElement {
     private String name;
     private String in;
 
-    private IndexedConstant(String name, RubyIndex index, String fileUrl, String fqn,
-            String clz, String require, int flags, FileObject context, String type) {
-        super(index, fileUrl, fqn, clz, require, null, flags, context, type);
+    private IndexedConstant(String name, RubyIndex index, String fileUrl, String classFQN,
+            String require, int flags, FileObject context, String type) {
+        super(index, fileUrl, classFQN, classFQN, require, null, flags, context, type);
         this.name = name;
     }
 
     public static IndexedConstant create(RubyIndex index, String name,
-            String fqn, String clz, String fileUrl, String require,
+            String classFQn, String fileUrl, String require,
             int flags, FileObject context, String type) {
-        return new IndexedConstant(name, index, fileUrl, fqn, clz, require, flags, context, type);
+        return new IndexedConstant(name, index, fileUrl, classFQn, require, flags, context, type);
     }
 
     public ElementKind getKind() {
@@ -66,7 +66,7 @@ public final class IndexedConstant extends IndexedElement {
 
     @Override
     public String getSignature() {
-        return fqn + "#@" + (isStatic() ? "@" : "") + name;
+        return fqn + "#" + name; // NOI18N
     }
 
     public String getName() {

@@ -77,7 +77,7 @@ final class RubyConstantCompleter extends RubyBaseCompleter {
             return false;
         }
 
-        Set<IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
+        Set<? extends IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
         for (IndexedConstant constant : constants) {
             RubyCompletionItem item = new RubyCompletionItem(constant, anchor, request);
             item.setSmart(true);

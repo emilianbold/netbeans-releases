@@ -81,7 +81,7 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     private boolean check(){
-        String path = wizardStorage.getPath().trim();
+        String path = wizardStorage.getPath();
         if (path.length() == 0) {
             return false;
         }
@@ -171,8 +171,42 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
          * @param path the path to set
          */
         public void setPath(String path) {
-            this.path = path;
+            this.path = path.trim();
             validate();
+        }
+
+        public String getConfigure(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
+        }
+
+        public String getMake(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
         }
 
         /**

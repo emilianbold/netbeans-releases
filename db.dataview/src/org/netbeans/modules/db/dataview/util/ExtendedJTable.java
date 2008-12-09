@@ -93,7 +93,7 @@ public class ExtendedJTable extends JTable {
 
         if (isMacOs()) {
             // Work around Apple 4352937 (fixed in 10.5).
-            if (System.getProperty("os.version").startsWith("10.4")) {
+            if (System.getProperty("os.version").startsWith("10.4")) { // NOI18N
                 ((JLabel) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEADING);
             }
         }
@@ -148,14 +148,14 @@ public class ExtendedJTable extends JTable {
      * Returns the appropriate background color for the given row index.
      */
     public static Color backgroundColorForRow(int row) {
-        if (UIManager.getLookAndFeel().getClass().getName().contains("GTK")) {
-            return (row % 2 == 0) ? Color.WHITE : UIManager.getColor("Table.background");
-        } else if (System.getProperty("os.name").contains("Mac")) {
+        if (UIManager.getLookAndFeel().getClass().getName().contains("GTK")) { // NOI18N
+            return (row % 2 == 0) ? Color.WHITE : UIManager.getColor("Table.background"); // NOI18N
+        } else if (System.getProperty("os.name").contains("Mac")) { // NOI18N
             return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
-        } else if (System.getProperty("os.name").contains("Win")) {
+        } else if (System.getProperty("os.name").contains("Win")) { // NOI18N
             return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
         }
-        return UIManager.getColor("Table.background");
+        return UIManager.getColor("Table.background"); // NOI18N
     }
 
     /**
@@ -201,7 +201,7 @@ public class ExtendedJTable extends JTable {
                 // There's a similar situation on Mac OS.
                 jc.setOpaque(true);
                 // Mac OS 10.5 lets us use smaller checkboxes in table cells.
-                ((JCheckBox) jc).putClientProperty("JComponent.sizeVariant", "mini");
+                ((JCheckBox) jc).putClientProperty("JComponent.sizeVariant", "mini"); // NOI18N
             }
 
             if (getCellSelectionEnabled() == false) {
@@ -306,13 +306,13 @@ public class ExtendedJTable extends JTable {
      * Tests whether we're running on Mac OS. 
      */
     private static boolean isMacOs() {
-        return System.getProperty("os.name").contains("Mac");
+        return System.getProperty("os.name").contains("Mac"); // NOI18N
     }
 
     /**
      * Tests whether we're using the GTK+ LAF (and so are probably on Linux or Solaris).
      */
     private static boolean isGtk() {
-        return UIManager.getLookAndFeel().getClass().getName().contains("GTK");
+        return UIManager.getLookAndFeel().getClass().getName().contains("GTK"); // NOI18N
     }
 }

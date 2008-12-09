@@ -75,33 +75,34 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         setName(name);
         setIcon(icon);
     }
-    
+
     public final String getName() {
         return (String) getValue(Action.NAME);
     }
-    
+
     protected void setName(String name) {
         putValue(Action.NAME, name);
     }
-    
+
     protected void setMnemonic(char m) {
-        putValue(Action.MNEMONIC_KEY, new Integer(m));
+        putValue(Action.MNEMONIC_KEY, Integer.valueOf(m));
     }
-    
+
     private static String trim(String arg) {
         arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
         return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
     protected Lookup getLookup(Node[] n) {
         InstanceContent ic = new InstanceContent();
-        for (Node node:n)
+        for (Node node : n) {
             ic.add(node);
-        if (n.length>0) {
+        }
+        if (n.length > 0) {
             EditorCookie tc = getTextComponent(n[0]);
             if (tc != null) {
                 ic.add(tc);
@@ -111,7 +112,6 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         return new AbstractLookup(ic);
     }
 
-    
     protected static EditorCookie getTextComponent(Node n) {
         DataObject dobj = n.getCookie(DataObject.class);
         if (dobj != null) {
@@ -125,11 +125,11 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         }
         return null;
     }
-    
+
     public abstract void performAction(Lookup context);
-    
+
     protected abstract boolean enable(Lookup context);
-    
+
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
     }
@@ -137,48 +137,48 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         return enable(getLookup(activatedNodes));
     }
-    
-    
+
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new ContextAction(actionContext);
     }
-    
+
     public class ContextAction implements Action, Presenter.Menu, Presenter.Popup {
 
         Lookup context;
 
         public ContextAction(Lookup context) {
-            this.context=context;
+            this.context = context;
         }
-        
+
         public Object getValue(String arg0) {
             return CsmRefactoringGlobalAction.this.getValue(arg0);
         }
-        
+
         public void putValue(String arg0, Object arg1) {
             CsmRefactoringGlobalAction.this.putValue(arg0, arg1);
         }
-        
+
         public void setEnabled(boolean arg0) {
             CsmRefactoringGlobalAction.this.setEnabled(arg0);
         }
-        
+
         public boolean isEnabled() {
             return enable(context);
         }
-        
+
         public void addPropertyChangeListener(PropertyChangeListener arg0) {
             CsmRefactoringGlobalAction.this.addPropertyChangeListener(arg0);
         }
-        
+
         public void removePropertyChangeListener(PropertyChangeListener arg0) {
             CsmRefactoringGlobalAction.this.removePropertyChangeListener(arg0);
         }
-        
+
         public void actionPerformed(ActionEvent arg0) {
             CsmRefactoringGlobalAction.this.performAction(context);
         }
+
         public JMenuItem getMenuPresenter() {
             if (isMethodOverridden(CsmRefactoringGlobalAction.this, "getMenuPresenter")) { // NOI18N
 
@@ -206,6 +206,6 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
                 ex.printStackTrace();
                 throw new IllegalStateException("Error searching for method " + name + " in " + d); // NOI18N
             }
-        }        
+        }
     }
 }

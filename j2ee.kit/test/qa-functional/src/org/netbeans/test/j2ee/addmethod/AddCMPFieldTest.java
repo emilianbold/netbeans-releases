@@ -45,7 +45,9 @@ import java.io.IOException;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.*;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.test.j2ee.EJBValidation;
 
 /**
  *
@@ -108,8 +110,12 @@ public class AddCMPFieldTest extends AddMethodBase {
         EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
         editor.select(11);
 
-        // invoke Add Business Method dialog
-        GenerateCodeOperator.openDialog(editorPopup, editor);
+        // invoke Add CMP Field dialog
+        ProjectsTabOperator prj = new ProjectsTabOperator();
+        ProjectRootNode prjnd = prj.getProjectRootNode(EJBValidation.EJB_PROJECT_NAME);
+        Node node = new Node(prjnd, "Enterprise Beans|"+beanName);
+        node.performPopupActionNoBlock("Add|Add CMP Field...");
+
         AddCMPFieldDialog dialog = new AddCMPFieldDialog();
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
         new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(methodName);
@@ -117,11 +123,11 @@ public class AddCMPFieldTest extends AddMethodBase {
             dialog.setDescription(description);
             lblOper = new JLabelOperator(dialog, "Description");
             new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(description);
-        }
+        } 
         
         lblOper = new JLabelOperator(dialog, "Type");
         new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(returnType);
-                
+
         if (localGetter != null)
             dialog.checkLocalGetter(localGetter.booleanValue());
         if (localSetter != null)
@@ -131,7 +137,7 @@ public class AddCMPFieldTest extends AddMethodBase {
         if (remoteSetter != null)
             dialog.checkRemoteSetter(remoteSetter.booleanValue());
         dialog.ok();
-        
+
         if (saveFile) 
             editor.save();
         

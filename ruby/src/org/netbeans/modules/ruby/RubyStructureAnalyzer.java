@@ -67,6 +67,7 @@ import org.jruby.nb.ast.FCallNode;
 import org.jruby.nb.ast.GlobalAsgnNode;
 import org.jruby.nb.ast.InstAsgnNode;
 import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
@@ -636,6 +637,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 if (!found) {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
+                    assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
+                    co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(node));
                     co.setIn(in);
                     structure.add(co);
                 }
