@@ -74,7 +74,7 @@ public class SVGTextFieldCD extends ComponentDescriptor{
     
     public static final String PROP_EDITABLE = "editable"; // NOI18N
     
-    public static final String PROP_CARET_VISIBLE= "caretVisible"; // NOI18N
+    //public static final String PROP_CARET_VISIBLE= "caretVisible"; // NOI18N
     
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, true);
@@ -98,11 +98,11 @@ public class SVGTextFieldCD extends ComponentDescriptor{
                 new PropertyDescriptor( PROP_EDITABLE, 
                                 MidpTypes.TYPEID_BOOLEAN, 
                                 MidpTypes.createBooleanValue(true ), false, false,
-                                MidpVersionable.MIDP_2),
-                new PropertyDescriptor( PROP_CARET_VISIBLE, 
+                                MidpVersionable.MIDP_2)
+                /*new PropertyDescriptor( PROP_CARET_VISIBLE, 
                                 MidpTypes.TYPEID_BOOLEAN, 
                                 MidpTypes.createBooleanValue(true ), false, false,
-                                MidpVersionable.MIDP_2)                
+                                MidpVersionable.MIDP_2)  */              
                 
                 
                 );
@@ -118,24 +118,24 @@ public class SVGTextFieldCD extends ComponentDescriptor{
                                 "LBL_SVGTextField_Text")), SVGLabelCD.PROP_TEXT).
                  addProperty(NbBundle.getMessage(SVGTextFieldCD.class, 
                                 "DISP_IsEditable"), 
-                         PropertyEditorBooleanUC.createInstance(), PROP_EDITABLE).
+                         PropertyEditorBooleanUC.createInstance(), PROP_EDITABLE)/*.
                  addProperty(NbBundle.getMessage(SVGTextFieldCD.class, 
                          "DISP_IsCaretVisible"), 
-                         PropertyEditorBooleanUC.createInstance(), PROP_CARET_VISIBLE); // NOI18N
+                         PropertyEditorBooleanUC.createInstance(), PROP_CARET_VISIBLE)*/; // NOI18N
                 
     }
     
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ().
                 addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT,
-                        PROP_EDITABLE , PROP_CARET_VISIBLE )).
+                        PROP_EDITABLE /*, PROP_CARET_VISIBLE */)).
                 addSetters(MidpSetter.createSetter("setText", 
                         MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
                                 PROP_TEXT)).
                  addSetters(MidpSetter.createSetter("setEditable", 
-                       MidpVersionable.MIDP_2).addParameters( PROP_EDITABLE)).
+                       MidpVersionable.MIDP_2).addParameters( PROP_EDITABLE))/*.
                  addSetters(MidpSetter.createSetter("setCaretVisible", 
-                       MidpVersionable.MIDP_2).addParameters( PROP_CARET_VISIBLE));
+                       MidpVersionable.MIDP_2).addParameters( PROP_CARET_VISIBLE))*/;
     }
     
     @Override
