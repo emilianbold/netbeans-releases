@@ -61,7 +61,6 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.navigation.Icons;
-import org.netbeans.modules.csl.source.usages.ClassIndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
@@ -71,7 +70,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -146,17 +144,17 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
         }
 
         public synchronized String getProjectName() {
-            if (projectName == null) {
-            try {
-                java.net.URL url = fileObject.getURL();
-                if (ClassIndexManager./*get(language).*/isBootRoot(url)) {
-                   projectName = "Ruby Lib";
-               }
-            }
-            catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            }
+// XXX: parsingapi: classpath, libraries and shit
+//            if (projectName == null) {
+//                try {
+//                    java.net.URL url = fileObject.getURL();
+//                    if (ClassIndexManager./*get(language).*/isBootRoot(url)) {
+//                        projectName = "Ruby Lib";
+//                    }
+//                } catch (FileStateInvalidException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
             if ( !isBinary && projectName == null) {
                 initProjectInfo();
             }
