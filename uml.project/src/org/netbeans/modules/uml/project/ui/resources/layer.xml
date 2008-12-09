@@ -46,7 +46,6 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="UML">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
-                <!--attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyProject.html"/-->
                 <!-- Add templates for the UML project -->
                 <!-- Platform Independent Model Wizard -->
                 <attr name="position" intvalue="860"/>
