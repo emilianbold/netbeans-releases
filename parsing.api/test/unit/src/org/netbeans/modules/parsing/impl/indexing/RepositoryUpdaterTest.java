@@ -792,7 +792,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
 
         @Override
-        protected void index(Result parserResult, Context context) {
+        protected void index(Indexable indexable, Result parserResult, Context context) {
             try {
                 final URL url = parserResult.getSnapshot().getSource().getFileObject().getURL();
                 if (expectedFiles.remove(url)) {
