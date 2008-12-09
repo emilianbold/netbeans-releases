@@ -74,7 +74,7 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
         enableGroovyCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
 
-        enableGroovyCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enableGroovyCheckBox, org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.text")); // NOI18N
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.jLabel1.text")); // NOI18N
         jLabel1.setFocusable(false);
@@ -96,8 +96,11 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
                 .add(enableGroovyCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1)
-                .addContainerGap(115, Short.MAX_VALUE))
+                .addContainerGap(55, Short.MAX_VALUE))
         );
+
+        enableGroovyCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.accessibleName")); // NOI18N
+        enableGroovyCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

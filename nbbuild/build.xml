@@ -1666,8 +1666,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
     <property name="build.test.results.dir" location="build/test/results"/>
+    <property name="test.type" value="test"/>
+    <delete dir="${build.test.results.dir}"/>
     <mkdir dir="${build.test.results.dir}"/>
-    <subant target="test" >
+    <subant target="${test.type}" >
         <property name="test.config" value="commit"/>
         <property name="continue.after.failing.tests" value="true"/>
         <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
@@ -1837,9 +1839,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.apisupport.dir}/**/*.jar" />
         </jars>
       </input>
-      <input name="j2ee" >
+      <input name="enterprise" >
         <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.j2ee.dir}/**/*.jar" />
+          <include name="${nb.cluster.enterprise.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="nb" >

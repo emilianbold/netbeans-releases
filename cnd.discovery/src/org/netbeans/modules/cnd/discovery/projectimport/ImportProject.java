@@ -126,7 +126,7 @@ public class ImportProject {
             } else {
                 file = new File(path + "/configure"); // NOI18N
                 configurePath = file.getAbsolutePath();
-                configureArguments = wizardStorage.getFlags();
+                configureArguments = wizardStorage.getRealFlags();
                 runConfigure = true;
                 file = new File(path + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
@@ -188,7 +188,7 @@ public class ImportProject {
                         public void executionFinished(int rc) {
                             if (userRunMake && rc == 0) {
                                 //parseConfigureLog(configureLog);
-                                makeProject();
+                                makeProject(false);
                             }
                         }
                     };
@@ -230,7 +230,7 @@ public class ImportProject {
         OpenProjects.getDefault().open(new Project[]{makeProject}, false);
         OpenProjects.getDefault().setMainProject(makeProject);
         if (runMake) {
-            makeProject();
+            makeProject(true);
             postponeModel = true;
         }
         if (postponeModel) {
@@ -270,7 +270,7 @@ public class ImportProject {
         }
     }
 
-    private void makeProject(){
+    private void makeProject(boolean doClean){
         String path = dirF.getAbsolutePath();
         File file = new File(path + "/Makefile"); // NOI18N
         if (file.exists() && file.isFile() && file.canRead()) {
@@ -287,23 +287,11 @@ public class ImportProject {
             try {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
-                final File makeLog = createTempFile("make"); // NOI18N
-                ExecutionListener listener = new ExecutionListener() {
-                    public void executionStarted() {
-                    }
-                    public void executionFinished(int rc) {
-                        discovery(rc, makeLog);
-                    }
-                };
-                Writer outputListener = null;
-                if (makeLog != null){
-                    try {
-                        outputListener = new BufferedWriter(new FileWriter(makeLog));
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                if (doClean) {
+                    postClean(node);
+                } else {
+                    postMake(node);
                 }
-                MakeAction.execute(node, "", listener, outputListener); // NOI18N
             } catch (DataObjectNotFoundException ex) {
             }
         } else {
@@ -312,6 +300,37 @@ public class ImportProject {
             switchModel(true);
             postModelDiscovery();
         }
+    }
+
+    private void postClean(final Node node){
+        ExecutionListener listener = new ExecutionListener() {
+            public void executionStarted() {
+            }
+            public void executionFinished(int rc) {
+                postMake(node);
+            }
+        };
+        MakeAction.execute(node, "clean", listener, null); // NOI18N
+    }
+
+    private void postMake(Node node){
+        final File makeLog = createTempFile("make"); // NOI18N
+        ExecutionListener listener = new ExecutionListener() {
+            public void executionStarted() {
+            }
+            public void executionFinished(int rc) {
+                discovery(rc, makeLog);
+            }
+        };
+        Writer outputListener = null;
+        if (makeLog != null){
+            try {
+                outputListener = new BufferedWriter(new FileWriter(makeLog));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        MakeAction.execute(node, "", listener, outputListener); // NOI18N
     }
 
     private DiscoveryProvider getProvider(String id){
@@ -346,7 +365,7 @@ public class ImportProject {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(dirF.getAbsolutePath()); // NOI18N
-            map.put(DiscoveryWizardDescriptor.PRIVIDER, provider); 
+            map.put(DiscoveryWizardDescriptor.PROVIDER, provider);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
             DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
             descriptor.setProject(makeProject);

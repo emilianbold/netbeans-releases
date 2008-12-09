@@ -52,15 +52,15 @@ import org.openide.util.NbBundle;
 public class ParametersTableModel implements TableModel<ParamModel>{
     
     private transient MethodModel method;
-    
+    private transient boolean nameEditable;
     
     /**
      *
      * @param method
      */
-    public ParametersTableModel(MethodModel method) {
+    public ParametersTableModel(MethodModel method, boolean nameEditable) {
         this.method = method;
-        
+        this.nameEditable = nameEditable;
     }
     
     public int getRowCount() {
@@ -85,7 +85,7 @@ public class ParametersTableModel implements TableModel<ParamModel>{
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         switch(columnIndex) {
         case 0:
-            return true;
+            return nameEditable;
         case 1:
             return false;
         default:

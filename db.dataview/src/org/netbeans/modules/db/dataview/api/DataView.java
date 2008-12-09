@@ -143,6 +143,11 @@ public class DataView {
         return delegate.getEditButtons();
     }
 
+    /**
+     * Sets editable mode to true/false for this component
+     *
+     * @param editable if set to false, all the editing functionality will be disabled
+     */
     public void setEditable(boolean editable) {
         delegate.setEditable(editable);
     }

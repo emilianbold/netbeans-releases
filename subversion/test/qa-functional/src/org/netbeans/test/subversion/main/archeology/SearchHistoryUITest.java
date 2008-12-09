@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -132,12 +133,21 @@ public class SearchHistoryUITest extends JellyTestCase{
            
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+            try {
+                EditorOperator.closeDiscardAll();
+            } catch (Throwable e) {
+                System.out.println("Exception while closing files.");
+            }
+            new EventTool().waitNoEvent(3000);
             try {
                 TestKit.closeProject(PROJECT_NAME);
             } catch (TimeoutExpiredException e) {/* OK */}
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
+        } finally {
+//            try {
+//                TestKit.closeProject(PROJECT_NAME);
+//            } catch (TimeoutExpiredException e) {/* OK */}
         }    
     }
 }

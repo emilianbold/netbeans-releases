@@ -1265,7 +1265,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         // TODO: should only include fields etc. down to caret location??? Decide. (Depends on language semantics. Can I have forward referemces?
-        if (showUpper || showSymbols) {
+        if (call.isConstantExpected()) {
             addConstants(root, constants);
             RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
         }
@@ -1638,12 +1638,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // Try to pick the best match among many documentation entries: Heuristic time.
         // Similar to heuristics used for Go To Declaration: Prefer long documentation,
         // prefer documentation related to the require-statements in this file, etc.
-        RubyDeclarationFinder finder = new RubyDeclarationFinder();
         IndexedElement candidate = null;
 
         if (!classes.isEmpty()) {
-            candidate = finder.findBestClassMatch(classes, path, path.leaf(), index);
+            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(info, null, path, index, path.leaf());
+            candidate = cdf.findBestElementMatch(classes);
         } else if (!methods.isEmpty()) {
+            RubyDeclarationFinder finder = new RubyDeclarationFinder();
             candidate = finder.findBestMethodMatch(name, methods, doc, astOffset, lexOffset, path,
                     path.leaf(), index);
         }
