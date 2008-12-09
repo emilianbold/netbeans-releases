@@ -273,7 +273,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.qnavigator</friend>
+                <package>org.netbeans.modules.cnd.refactoring.api.ui</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

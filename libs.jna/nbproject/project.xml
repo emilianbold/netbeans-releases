@@ -47,8 +47,9 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.libs.jna</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.jruby</friend>
+                <friend>org.netbeans.core.nativeaccess</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>

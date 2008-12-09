@@ -1091,8 +1091,8 @@ public class ElementJavadoc {
                     }
                 }
             } else {
-                String tName = type.simpleTypeName();
                 ClassDoc cd = type.asClassDoc();
+                String tName = cd != null ? cd.name() : type.simpleTypeName();
                 if (cd != null && cd.isAnnotationType() && annotation)
                     tName = "@" + tName; //NOI18N
                 len += createLink(sb, eu.elementFor(type.asClassDoc()), tName);
