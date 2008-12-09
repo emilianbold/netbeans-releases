@@ -106,9 +106,8 @@ final class SupportPanel extends javax.swing.JPanel {
             }
         });
 
+        docLabel.setLabelFor(groovyDocTextField);
         org.openide.awt.Mnemonics.setLocalizedText(docLabel, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.docLabel.text")); // NOI18N
-
-        groovyDocTextField.setText(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyDocTextField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseDocButton, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseDocButton.text")); // NOI18N
         chooseDocButton.addActionListener(new java.awt.event.ActionListener() {
@@ -134,7 +133,7 @@ final class SupportPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(groovyDocTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                .add(groovyDocTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooseDocButton))
             .add(layout.createSequentialGroup()
@@ -159,6 +158,11 @@ final class SupportPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(subpanelWrapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE))
         );
+
+        groovyDocTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyDocTextField.accessibleName")); // NOI18N
+        groovyDocTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyDocTextField.accessibleDescription")); // NOI18N
+        chooseDocButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseDocButton.accessibleName")); // NOI18N
+        chooseDocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseDocButton.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void linkLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMousePressed
