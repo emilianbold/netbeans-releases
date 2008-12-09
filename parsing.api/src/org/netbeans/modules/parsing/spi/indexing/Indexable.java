@@ -144,11 +144,12 @@ public final class Indexable {
         }
 
         @Override
-        public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
+        public void index(EmbeddingIndexer indexer, Indexable indexable, Result parserResult, Context ctx) {
             assert indexer != null;
+            assert indexable != null;
             assert parserResult != null;
             assert ctx != null;
-            indexer.index(parserResult, ctx);
+            indexer.index(indexable, parserResult, ctx);
         }
 
     }

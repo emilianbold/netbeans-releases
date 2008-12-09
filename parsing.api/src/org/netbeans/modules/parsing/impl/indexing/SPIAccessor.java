@@ -85,6 +85,6 @@ public abstract class SPIAccessor {
 
     public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
 
-    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
+    public abstract void index (EmbeddingIndexer indexer, Indexable indexable, Parser.Result parserResult, Context ctx);
 
 }
