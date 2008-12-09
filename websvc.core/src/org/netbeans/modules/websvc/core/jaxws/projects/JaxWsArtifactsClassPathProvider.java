@@ -76,7 +76,12 @@ import org.openide.modules.InstalledFileLocator;
 public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP, executeCP;
-    
+    private static ThreadLocal<Boolean> spiCall = new ThreadLocal<Boolean>() {
+        @Override
+         protected synchronized Boolean initialValue() {
+             return Boolean.TRUE;
+         }
+    };
     private static final Logger LOG = Logger.getLogger(JaxWsArtifactsClassPathProvider.class.getName());
     
     JaxWsArtifactsClassPathProvider(Project project) {
@@ -142,9 +147,17 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     }
     
     private ClassPath getClassPath(String classPathType) {
-        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups.length > 0) {
-            return ClassPath.getClassPath(groups[0].getRootFolder(), classPathType);
+        try {
+            if (spiCall.get()) {
+                spiCall.set(Boolean.FALSE);
+                SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(
+                        JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (groups.length > 0) {
+                    return ClassPath.getClassPath(groups[0].getRootFolder(), classPathType);
+                }
+            }
+        } finally {
+            spiCall.remove();
         }
         return null;
     }
