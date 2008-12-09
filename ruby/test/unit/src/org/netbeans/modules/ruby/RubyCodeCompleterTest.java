@@ -360,7 +360,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     }
 
     public void testConstantsForDotAreNotOffered() throws Exception {
-        checkCompletion("testfiles/core_methods.rb", "File.S^");
+        checkCompletion("testfiles/constants1.rb", "File.S^");
     }
 
     // TODO uncomment when reindexed
