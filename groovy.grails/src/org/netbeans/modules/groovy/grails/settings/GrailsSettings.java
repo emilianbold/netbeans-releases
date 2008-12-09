@@ -64,6 +64,8 @@ public final class GrailsSettings {
     // Possible values for this key are FIREFOX and INTERNET_EXPLORER
     private static final String GRAILS_DEBUG_BROWSER_KEY = "grailsPrj-DebugBrowser-"; // NOI18N
 
+    private static final String GRAILS_DISPLAY_BROWSER_KEY = "grailsPrj-DisplayBrowser-"; // NOI18N
+
     private static GrailsSettings instance;
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -188,6 +190,18 @@ public final class GrailsSettings {
         getPreferences().put(getJavaPlatformKey(prj), platformId);
     }
 
+    public boolean getDisplayBrowserForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().getBoolean(getDisplayBrowserKey(prj), true);
+    }
+
+    public void setDisplayBrowserForProject(Project prj, boolean displayBrowser) {
+        assert prj != null;
+
+        getPreferences().putBoolean(getDisplayBrowserKey(prj), displayBrowser);
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -224,6 +238,11 @@ public final class GrailsSettings {
     private String getJavaPlatformKey(Project prj) {
         assert prj != null;
         return GRAILS_JAVA_PLATFORM_KEY + getProjectName(prj);
+    }
+
+    private String getDisplayBrowserKey(Project prj) {
+        assert prj != null;
+        return GRAILS_DISPLAY_BROWSER_KEY + getProjectName(prj);
     }
 
     private Preferences getPreferences() {

@@ -40,8 +40,10 @@
 package org.netbeans.modules.groovy.grailsproject.ui.customizer;
 
 import java.io.IOException;
+import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -67,6 +69,8 @@ public class GrailsProjectProperties {
     private ComboBoxModel environmentModel;
 
     private ComboBoxModel javaPlatformModel;
+
+    private ButtonModel displayBrowserModel;
 
     private ListCellRenderer javaPlatformRenderer;
 
@@ -107,6 +111,14 @@ public class GrailsProjectProperties {
                 config.getJavaPlatform().getProperties().get("platform.ant.name")); // NOI18N
         }
         return javaPlatformModel;
+    }
+
+    public ButtonModel getDisplayBrowserModel() {
+        if (displayBrowserModel == null) {
+            displayBrowserModel = new JToggleButton.ToggleButtonModel();
+            displayBrowserModel.setSelected(config.getDisplayBrowser());
+        }
+        return displayBrowserModel;
     }
 
     public ListCellRenderer getJavaPlatformRenderer() {
@@ -172,6 +184,8 @@ public class GrailsProjectProperties {
         if (platform != null) {
             config.setJavaPlatform(PlatformUiSupport.getPlatform(platform));
         }
+
+        config.setDisplayBrowser(getDisplayBrowserModel().isSelected());
     }
 
     private static class EnvironmentItem {

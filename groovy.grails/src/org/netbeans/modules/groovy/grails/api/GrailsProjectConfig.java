@@ -69,6 +69,8 @@ public final class GrailsProjectConfig {
 
     public static final String GRAILS_DEBUG_BROWSER_PROPERTY = "grails.debug.browser"; // NOI18N
 
+    public static final String GRAILS_DISPLAY_BROWSER_PROPERTY = "grails.display.browser"; // NOI18N
+
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
     private final Project prj;
@@ -283,5 +285,30 @@ public final class GrailsProjectConfig {
             settings.setJavaPlatformForProject(prj, platform.getProperties().get("platform.ant.name"));
         }
         propertyChangeSupport.firePropertyChange(GRAILS_JAVA_PLATFORM_PROPERTY, oldValue, platform);
+    }
+
+    /**
+     * Returns the display browser flag of the project.
+     *
+     * @return the display browser flag of the project
+     */
+    public boolean getDisplayBrowser() {
+        synchronized (settings) {
+            return settings.getDisplayBrowserForProject(prj);
+        }
+    }
+
+    /**
+     * Sets the display browser flag of the project.
+     *
+     * @param displayBrowser display browser flag to set
+     */
+    public void setDisplayBrowser(boolean displayBrowser) {
+        boolean oldValue;
+        synchronized (this) {
+            oldValue = getDisplayBrowser();
+            settings.setDisplayBrowserForProject(prj, displayBrowser);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
     }
 }

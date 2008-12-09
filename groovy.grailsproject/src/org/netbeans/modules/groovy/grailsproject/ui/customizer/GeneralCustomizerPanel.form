@@ -29,6 +29,7 @@
                   <Component id="grailsEnvChooser" alignment="0" pref="400" max="32767" attributes="1"/>
               </Group>
           </Group>
+          <Component id="grailsDisplayBrowser" alignment="0" pref="576" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -48,7 +49,9 @@
                   <Component id="grailsServerPortLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="grailsServerPort" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="grailsDisplayBrowser" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -99,6 +102,19 @@
           <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/customizer/Bundle.properties" key="GeneralCustomizerPanel.grailsServerPort.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="grailsDisplayBrowser">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/customizer/Bundle.properties" key="GeneralCustomizerPanel.grailsDisplayBrowser.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="grailsDisplayBrowserActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

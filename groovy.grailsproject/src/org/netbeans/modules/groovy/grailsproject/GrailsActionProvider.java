@@ -172,6 +172,7 @@ public class GrailsActionProvider implements ActionProvider {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             URL url = serverState.getRunningUrl();
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             if (url != null) {
                 showURL(url, debug, project);
             }
@@ -259,7 +260,9 @@ public class GrailsActionProvider implements ActionProvider {
         boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
         
         if (!debug || !debuggerAvailable) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            if (GrailsProjectConfig.forProject(project).getDisplayBrowser()) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
         } else {
             FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);

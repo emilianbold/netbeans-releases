@@ -6,16 +6,10 @@
 
 package org.netbeans.modules.groovy.grailsproject.ui.customizer;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.api.project.Project;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -37,7 +31,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
 
         // populating the port field
 
-        grailsServerPort.getDocument().addDocumentListener( this );
+        grailsServerPort.getDocument().addDocumentListener(this);
         grailsServerPort.setText(uiProperties.getPort());
 
 //        // should we turn-on the Autodeploy flag?
@@ -55,6 +49,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
         // 2 : "Test"
 
         grailsEnvChooser.setModel(uiProperties.getEnvironmentModel());
+        grailsDisplayBrowser.setModel(uiProperties.getDisplayBrowserModel());
     }
 
     public HelpCtx getHelpCtx() {
@@ -77,6 +72,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
         projectFolderTextField = new javax.swing.JTextField();
         grailsServerPortLabel = new javax.swing.JLabel();
         grailsServerPort = new javax.swing.JTextField();
+        grailsDisplayBrowser = new javax.swing.JCheckBox();
 
         activeGrailsEnvironmentLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.activeGrailsEnvironmentLabel.text")); // NOI18N
 
@@ -90,6 +86,13 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
         grailsServerPortLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsServerPortLabel.text")); // NOI18N
 
         grailsServerPort.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsServerPort.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(grailsDisplayBrowser, NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsDisplayBrowser.text")); // NOI18N
+        grailsDisplayBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grailsDisplayBrowserActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -105,6 +108,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
                     .add(grailsServerPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(grailsEnvChooser, 0, 400, Short.MAX_VALUE)))
+            .add(grailsDisplayBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -120,13 +124,20 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(grailsServerPortLabel)
                     .add(grailsServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(grailsDisplayBrowser)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void grailsDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grailsDisplayBrowserActionPerformed
+
+}//GEN-LAST:event_grailsDisplayBrowserActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel activeGrailsEnvironmentLabel;
+    private javax.swing.JCheckBox grailsDisplayBrowser;
     private javax.swing.JComboBox grailsEnvChooser;
     private javax.swing.JTextField grailsServerPort;
     private javax.swing.JLabel grailsServerPortLabel;
