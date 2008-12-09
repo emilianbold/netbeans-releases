@@ -41,27 +41,13 @@
 
 package org.netbeans.test.j2ee.addmethod;
 
-import java.awt.PopupMenu;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import javax.swing.JDialog;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
-import javax.swing.tree.TreePath;
-import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.modules.j2ee.ddloaders.multiview.EjbNode;
 import org.netbeans.test.j2ee.EJBValidation;
-import org.openide.actions.PopupAction;
 
 /**
  *
