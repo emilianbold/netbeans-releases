@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,8 +51,8 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.NameKind;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -232,12 +230,6 @@ public abstract class IndexedElement extends JsElement {
         }
 
         return document;
-    }
-
-    public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
     }
 
     @Override

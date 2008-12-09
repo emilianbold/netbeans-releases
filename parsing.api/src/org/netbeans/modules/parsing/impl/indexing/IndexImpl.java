@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+
 
 /**
  *
@@ -47,7 +48,9 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
  */
 public interface IndexImpl {
 
-    public void addDocument (Indexable indexable, IndexDocumentImpl document);
+    public void addDocument (IndexDocumentImpl document);
 
-    public void removeDocument (Indexable indexable);
+    public void removeDocument (String relativePath);
+
+    public void store () throws IOException;
 }

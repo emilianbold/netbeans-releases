@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 /**
  *
@@ -51,15 +52,20 @@ public class LuceneDocument implements IndexDocumentImpl {
 
     public final Document doc;
 
-    LuceneDocument () {
+    LuceneDocument (final Indexable indexable) {
         this.doc = new Document();
+        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
     }
 
-    public void addPair(final String key, final String value, final boolean searchable) {
+    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
         final Field field = new Field (key, value,
-                Field.Store.YES,
+                stored ? Field.Store.YES : Field.Store.NO,
                 searchable ? Field.Index.NO_NORMS : Field.Index.NO);
         doc.add (field);
+    }
+
+    public String getSourceName () {
+        return doc.getField(DocumentUtil.FIELD_SOURCE_NAME).stringValue();
     }
 
 }

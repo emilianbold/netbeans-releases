@@ -56,11 +56,11 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.javascript.RefactoringModule;
 import javax.swing.JPanel;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 
