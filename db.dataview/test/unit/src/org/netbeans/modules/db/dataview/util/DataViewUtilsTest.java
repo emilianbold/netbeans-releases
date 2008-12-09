@@ -122,7 +122,7 @@ public class DataViewUtilsTest extends NbTestCase {
     /**
      * Test of getColumnToolTip method, of class DataViewUtils.
      */
-    public void testGetColumnToolTip() {
+/*    public void testGetColumnToolTip() {
         DBColumn column = new DBColumn(table, "colName", 12, "varchar", 10, 5, true, false);
         String expResult = "<html> <table border=0 cellspacing=0 cellpadding=0 ><tr> <td>&nbsp;Name</td> " +
                 "<td> &nbsp; : &nbsp; <b>colName</b> </td> </tr><tr> <td>&nbsp;Type</td> " +
@@ -137,7 +137,7 @@ public class DataViewUtilsTest extends NbTestCase {
         column = new DBColumn(table, "colNameF", 6, "float" ,10, 5, true, false);
         result = DataViewUtils.getColumnToolTip(column);
         assertEquals(expResult, result);
-    }
+    }*/
 
     /**
      * Test of getForeignKeyString method, of class DataViewUtils.

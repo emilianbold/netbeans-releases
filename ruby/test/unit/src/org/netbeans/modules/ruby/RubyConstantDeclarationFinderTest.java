@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.performance.enterprise;
-
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.enterprise.actions.*;
-
-/**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-public class MeasureEnterpriseActions6Test {
+package org.netbeans.modules.ruby;
 
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
+public class RubyConstantDeclarationFinderTest extends RubyTestBase {
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 6");
-        System.setProperty("suitename", MeasureEnterpriseActions6Test.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Enterprise Actions suite. Part 6");
-        
-        // EPMeasureActions6
-        /*suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserverTest.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));
-*/
-        return suite;
+    public RubyConstantDeclarationFinderTest(String name) {
+        super(name);
     }
-    
+
+    public void testConstantDeclaration() throws Exception {
+        checkDeclaration("testfiles/constants.rb", "return R^ED", "constants.rb", 86);
+        checkDeclaration("testfiles/constants.rb", "Colors::R^ED.byte", "constants.rb", 86);
+        checkDeclaration("testfiles/constants.rb", "Colors::Converter::VER^SION", "constants.rb", 38);
+    }
 }

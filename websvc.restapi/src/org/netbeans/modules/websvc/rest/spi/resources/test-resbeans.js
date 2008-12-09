@@ -118,10 +118,22 @@ TestSupport.prototype = {
     },
 
     concatPath : function(url, pathElem) {
-        if(url.substring(url.length-1) == '/')
-            url = url.substring(0, url.length-1);
-        if(pathElem.substring(0,1) == '/')
-            pathElem = pathElem.substring(1);
+        var ndx = url.length;
+        if(url.substring(ndx-1) == '/') {
+            for(;ndx>=0;ndx--) {
+                if(url.substring(ndx-2,ndx-1) != '/')
+                    break;
+            }
+            url = url.substring(0, ndx-1);
+        }
+        ndx = 0;
+        if(pathElem.substring(ndx,ndx+1) == '/') {
+            for(;ndx<pathElem.length;ndx++) {
+                if(pathElem.substring(ndx,ndx+1) != '/')
+                    break;
+            }
+            pathElem = pathElem.substring(ndx);
+        }
         return url + '/' + pathElem;
     },
     

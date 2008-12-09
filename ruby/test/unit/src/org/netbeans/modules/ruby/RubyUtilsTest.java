@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.Arrays;
 import junit.framework.TestCase;
 
 /**
@@ -212,5 +213,11 @@ public class RubyUtilsTest extends TestCase {
         assertEquals("raw_scaled_scorers", RubyUtils.tableize("RawScaledScorer"));
         assertEquals("egg_and_hams", RubyUtils.tableize("egg_and_ham"));
         assertEquals("fancy_categories", RubyUtils.tableize("fancyCategory"));
+    }
+
+    public void testParseConstantName() {
+        assertEquals(Arrays.asList("Kernel", "RED"), Arrays.asList(RubyUtils.parseConstantName("RED")));
+        assertEquals(Arrays.asList("Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("Colors::RED")));
+        assertEquals(Arrays.asList("HTML::Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("HTML::Colors::RED")));
     }
 }

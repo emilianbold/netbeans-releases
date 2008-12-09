@@ -299,13 +299,16 @@ public class FormEditor {
 
         // Issue 151166 - hack
         Project p = FileOwnerQuery.getOwner(formDataObject.getFormFile());
-        FileObject projectDirectory = p.getProjectDirectory();
-        FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null); // NOI18N
-        if ((nbprojectFolder == null) && (projectDirectory.getFileObject("pom", "xml") != null)) { // NOI18N
-            // Maven project
-            ClassPathUtils.resetFormClassLoader(p);
+        // FileOwnerQuery.getOwner() on form opened using Template editor returns null
+        if (p != null) {
+            FileObject projectDirectory = p.getProjectDirectory();
+            FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null); // NOI18N
+            if ((nbprojectFolder == null) && (projectDirectory.getFileObject("pom", "xml") != null)) { // NOI18N
+                // Maven project
+                ClassPathUtils.resetFormClassLoader(p);
+            }
         }
-
+ 
         resetPersistenceErrorLog(); // clear log of errors
 
         // first find PersistenceManager for loading the form

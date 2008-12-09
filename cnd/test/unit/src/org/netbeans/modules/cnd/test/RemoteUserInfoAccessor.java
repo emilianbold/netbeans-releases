@@ -1,8 +1,7 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,60 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.cnd.test;
 
-/*
- * ParamModel.java
- *
- * Created on March 23, 2007, 3:01 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-package org.netbeans.modules.websvc.design.view.actions;
-
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
-import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
+import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author mkuchtiak
+ * @author Sergey Grinev
  */
-public class ParamModel {
-        private String paramName;
-        private ReferenceableSchemaComponent paramType;
-        
-        ParamModel(String paramName) {
-            this.paramName=paramName;
-        }
-        
-        ParamModel() {
-        }
-        
-        public void setParamName(String paramName) {
-            this.paramName = paramName;
-        }        
+public abstract class RemoteUserInfoAccessor {
 
-        public String getParamName() {
-            return paramName;
-        }
-        
-        public void setParamType(ReferenceableSchemaComponent paramType) {
-            this.paramType = paramType;
-        }
-        
-        public ReferenceableSchemaComponent getParamType() {
-            return paramType;
-        }
-        
-        public String getDisplayName() {
-            return Utils.getDisplayName(paramType);
-        }
-        
+    private static final RemoteUserInfoAccessor EMPTY = new Empty();
 
-    
+    protected RemoteUserInfoAccessor() {
+    }
+
+    public abstract RemoteUserInfo get(String hkey);
+
+    /** default instance */
+    private static RemoteUserInfoAccessor defaultOne;
+
+    public static synchronized RemoteUserInfoAccessor getDefault() {
+        if (defaultOne != null) {
+            return defaultOne;
+        }
+        defaultOne = Lookup.getDefault().lookup(RemoteUserInfoAccessor.class);
+        return defaultOne == null ? EMPTY : defaultOne;
+    }
+
+    private static final class Empty extends RemoteUserInfoAccessor {
+
+        private Empty() {
+        }
+
+        @Override
+        public RemoteUserInfo get(String hkey) {
+            return null;
+        }
+
+    }
 }
