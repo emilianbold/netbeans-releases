@@ -1919,6 +1919,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 
                     case TEMPLATE:
                     case TYPENAME:
+                    case CONST:
                         // OK, just skip it
                         break;
 
@@ -2026,7 +2027,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     break;
                 }
                 default: // otherwise not recognized
-                    errorState = true;
+                    if(tokenID != CppTokenId.CONST) {
+                        errorState = true;
+                    }
                     break;
             }
         }
