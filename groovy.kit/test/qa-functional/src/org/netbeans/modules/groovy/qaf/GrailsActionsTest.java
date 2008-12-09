@@ -50,6 +50,7 @@ import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
@@ -117,7 +118,13 @@ public class GrailsActionsTest extends GrailsTestCase {
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
         assertNotNull(eo);
-        a.performPopup(eo); //NOI18N
+        try {
+            //XXX - first call to popup can fail (win, solaris)
+            a.performPopup(eo);
+        } catch (TimeoutExpiredException tee) {
+            //try it once again
+            a.performPopup(eo);
+        }
         assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
         //from a view
         oa.perform(getViewNode("book|edit")); //NOI18N
