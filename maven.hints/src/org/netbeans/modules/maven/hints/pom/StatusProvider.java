@@ -61,7 +61,6 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -108,6 +107,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             assert model != null;
             try {
                 model.sync();
@@ -156,6 +158,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project, int selectionStart, int selectionEnd) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             try {
                 model.sync();
                 model.refresh();
@@ -205,7 +210,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     EditorCookie ed = dobj.getCookie(EditorCookie.class);
                     if (ed != null) {
                         JEditorPane[] panes = ed.getOpenedPanes();
-                        if (panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
+                        if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
                             HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
                             ok = true;
                         }

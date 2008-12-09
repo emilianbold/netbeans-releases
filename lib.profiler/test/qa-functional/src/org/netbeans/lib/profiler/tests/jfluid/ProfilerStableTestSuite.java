@@ -53,6 +53,14 @@ public class ProfilerStableTestSuite {
         .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
         .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
         .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
+        .addTest(org.netbeans.lib.profiler.tests.jfluid.memory.BasicTest.class)
+	    .addTest(org.netbeans.lib.profiler.tests.jfluid.memory.MemorySnapshotTest.class)
+	    .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest.class)
+        .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest2.class)
+        .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest3.class)
+        .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.CPUSnapshotTest.class)
+	//.addTest(org.netbeans.lib.profiler.tests.jfluid.benchmarks.JbbTest.class)
+	//.addTest(org.netbeans.lib.profiler.tests.jfluid.others.MeasureDiffsTest.class)
     );
   }
 

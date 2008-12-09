@@ -225,12 +225,12 @@ public class JavacParser extends Parser {
                 final DataObject dobj = DataObject.find(source.getFileObject());
                 ec = dobj.getCookie(EditorCookie.Observable.class);
                 if (ec == null) {
-                    LOGGER.log(Level.WARNING,
+                    LOGGER.log(Level.FINE,
                         String.format("File: %s has no EditorCookie.Observable", //NOI18N
                         FileUtil.getFileDisplayName (file)));
                 }
             } catch (DataObjectNotFoundException e) {
-                Exceptions.printStackTrace(e);
+                LOGGER.log(Level.FINE,"Invalid DataObject",e);
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;

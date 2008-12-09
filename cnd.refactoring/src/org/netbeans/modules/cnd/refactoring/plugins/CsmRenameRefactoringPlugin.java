@@ -68,7 +68,6 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
-import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
@@ -88,7 +87,6 @@ import org.openide.util.Utilities;
  */
 public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     
-    //private RubyElementCtx treePathHandle = null;
     private final CsmObject startReferenceObject;
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
@@ -133,30 +131,6 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     public Problem checkParameters() {
         return fastCheckParameters();
     }
-//    protected Problem checkParameters(CompilationController info) throws IOException {
-//        
-//        Problem checkProblem = null;
-//        int steps = 0;
-//        if (overriddenByMethods != null) {
-//            steps += overriddenByMethods.size();
-//        }
-//        if (overridesMethods != null) {
-//            steps += overridesMethods.size();
-//        }
-//        
-//        fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
-//        
-//        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
-////        Element element = treePathHandle.resolveElement(info);
-//        
-//        fireProgressListenerStep();
-//        fireProgressListenerStep();
-//        String msg;
-//        
-//
-//        fireProgressListenerStop();
-//        return checkProblem;
-//    }
     
     @Override
     public Problem preCheck() {
@@ -201,118 +175,9 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         }
         fireProgressListenerStop();
         return preCheckProblem;
-//        info.toPhase(JavaSource.Phase.RESOLVED);
-//        Element el = treePathHandle.resolveElement(info);
-//        preCheckProblem = isElementAvail(treePathHandle, info);
-//        if (preCheckProblem != null) {
-//            return preCheckProblem;
-//        }
-//        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-//        if (file!=null && FileUtil.getArchiveFile(file)!= null) { //NOI18N
-//            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
-//            return preCheckProblem;
-//        }
-//        
-//        if (file==null || !RetoucheUtils.isElementInOpenProject(file)) {
-//            preCheckProblem = new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//            return preCheckProblem;
-//        }
-//        
-//        switch(el.getKind()) {
-//        case METHOD:
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
-//            fireProgressListenerStep();
-//            if (el.getModifiers().contains(Modifier.NATIVE)) {
-//                preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
-//            }
-//            if (!overriddenByMethods.isEmpty()) {
-//                String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-//                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
-//                preCheckProblem = createProblem(preCheckProblem, false, msg);
-//            }
-//            for (ExecutableElement e : overriddenByMethods) {
-//                if (e.getModifiers().contains(Modifier.NATIVE)) {
-//                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
-//                }
-//            }
-//            overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
-//            fireProgressListenerStep();
-//            if (!overridesMethods.isEmpty()) {
-//                boolean fatal = false;
-//                for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
-//                    ExecutableElement method = (ExecutableElement) iter.next();
-//                    if (method.getModifiers().contains(Modifier.NATIVE)) {
-//                        preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", method));
-//                    }
-//                    if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
-//                        fatal = true;
-//                        break;
-//                    }
-//                }
-//                String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
-//                preCheckProblem = createProblem(preCheckProblem, fatal, msg);
-//            }
-//            break;
-//        case FIELD:
-//        case ENUM_CONSTANT:
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            Element hiddenField = hides(el, el.getSimpleName().toString(), info);
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            if (hiddenField != null) {
-//                String msg = new MessageFormat(getString("ERR_Hides")).format(
-//                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
-//                );
-//                preCheckProblem = createProblem(preCheckProblem, false, msg);
-//            }
-//            break;
-//        case PACKAGE:
-//            //TODO: any prechecks?
-//            break;
-//        case LOCAL_VARIABLE:
-//            //TODO: any prechecks for formal parametr or local variable?
-//            break;
-//        case CLASS:
-//        case INTERFACE:
-//        case ANNOTATION_TYPE:
-//        case ENUM:
-//            //TODO: any prechecks for JavaClass?
-//            break;
-//        default:
-//            //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
-//            //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
-//        }
     }
     
-//    private Set<RubyElementCtx> allMethods;
-    
     public Problem prepare(RefactoringElementsBag elements) {
-//        if (treePathHandle == null) {
-//            return null;
-//        }
-//        Set<FileObject> a = getRelevantFiles();
-//        fireProgressListenerStart(ProgressEvent.START, a.size());
-//        if (!a.isEmpty()) {
-//            TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
-//            final Collection<ModificationResult> results = processFiles(a, transform);
-//            elements.registerTransaction(new RetoucheCommit(results));
-//            for (ModificationResult result:results) {
-//                for (FileObject jfo : result.getModifiedFileObjects()) {
-//                    for (Difference diff: result.getDifferences(jfo)) {
-//                        String old = diff.getOldText();
-//                        if (old!=null) {
-//                            //TODO: workaround
-//                            //generator issue?
-//                            elements.add(refactoring,DiffElement.create(diff, jfo, result));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        fireProgressListenerStop();
         if (this.referencedObjects == null || this.referencedObjects.size() == 0) {
             return null;
         }
@@ -351,10 +216,16 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
-    private Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
-        if (CsmKindUtilities.isOffsetable(csmObject)) {
-            FileObject fo = CsmUtilities.getFileObject(((CsmOffsetable)csmObject).getContainingFile());
-            if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
+    private static Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
+        CsmFile csmFile = null; 
+        if (CsmKindUtilities.isFile(csmObject)) {
+            csmFile = (CsmFile) csmObject;
+        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
+            csmFile = ((CsmOffsetable)csmObject).getContainingFile();
+        }
+        if (csmFile != null) {
+            FileObject fo = CsmUtilities.getFileObject(csmFile);
+            if (!CsmRefactoringUtils.isRefactorable(fo)) {
                 problem = createProblem(problem, true, getCannotRename(fo));
             }            
         }

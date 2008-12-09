@@ -152,7 +152,7 @@ class MavenOptionController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(MavenAdvancedOption.class);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {

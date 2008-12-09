@@ -81,12 +81,16 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     private boolean check(){
-        String path = wizardStorage.getPath().trim();
+        String path = wizardStorage.getPath();
         if (path.length() == 0) {
             return false;
         }
         File file = new File(path);
         if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+            return false;
+        }
+        file = new File(path+"/nbproject/project.xml"); // NOI18N
+        if (file.exists()) {
             return false;
         }
         file = new File(path+"/Makefile"); // NOI18N
@@ -154,7 +158,8 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
 
     public class WizardStorage {
         private String path = ""; // NOI18N
-        private String flags = "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+        private static final String PREDEFINED_FLAGS = "\"-g3 -gdwarf-2\""; // NOI18N
+        private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
         public WizardStorage(){
@@ -171,8 +176,54 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
          * @param path the path to set
          */
         public void setPath(String path) {
-            this.path = path;
+            this.path = path.trim();
             validate();
+        }
+
+        public String getConfigure(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
+        }
+
+        public boolean isNbProjectFolder(){
+            if (path.length() == 0) {
+                return false;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return false;
+            }
+            file = new File(path+"/nbproject/project.xml"); // NOI18N
+            return file.exists();
+        }
+
+        public String getMake(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
         }
 
         /**
@@ -180,6 +231,29 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
          */
         public String getFlags() {
             return flags;
+        }
+
+        /**
+         * @return the flags
+         */
+        public String getRealFlags() {
+            StringBuilder buf = new StringBuilder();
+            if (flags.indexOf("CFLAGS=") < 0) { // NOI18N
+                buf.append("CFLAGS="+PREDEFINED_FLAGS); // NOI18N
+            }
+            if (flags.indexOf("CXXFLAGS=") < 0 ){ // NOI18N
+                if (buf.length() > 0) {
+                    buf.append(' '); // NOI18N
+                }
+                buf.append("CXXFLAGS="+PREDEFINED_FLAGS); // NOI18N
+            }
+            if (flags.length() > 0) {
+                if (buf.length() > 0) {
+                    buf.append(' '); // NOI18N
+                }
+                buf.append(flags);
+            }
+            return buf.toString();
         }
 
         /**

@@ -40,10 +40,12 @@
 package org.netbeans.modules.maven.actions.scm;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -53,10 +55,12 @@ import org.openide.util.actions.Presenter;
  */
 public class SCMActions extends AbstractAction  implements Presenter.Popup{
     private Artifact artifact;
+    private List<ArtifactRepository> repos;
    
-    public SCMActions(Artifact artifact) {
+    public SCMActions(Artifact artifact, List<ArtifactRepository> repos) {
         putValue(NAME, NbBundle.getMessage(SCMActions.class, "LBL_SCM"));//NOI18N
         this.artifact = artifact;
+        this.repos = repos;
     }
     
     
@@ -66,8 +70,8 @@ public class SCMActions extends AbstractAction  implements Presenter.Popup{
 
     public JMenuItem getPopupPresenter() {
          JMenu menu = new JMenu(NbBundle.getMessage(SCMActions.class, "LBL_SCM"));
-         menu.add(new OpenScmURLAction(artifact));
-         menu.add(new CheckoutAction(artifact));
+         menu.add(new OpenScmURLAction(artifact, repos));
+         menu.add(new CheckoutAction(artifact, repos));
          return menu;
     }
 

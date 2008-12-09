@@ -41,7 +41,6 @@
 
 package org.netbeans.performance.enterprise;
 
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -64,9 +63,9 @@ public class MeasureEnterpriseActions3Test {
         // EPMeasureActions3
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaViewTest.class)
                 .addTest(NavigatorSchemaViewModeTest.class)
-                // needs to be fixed .addTest(DeployProjectTest.class)
                 .addTest(OpenComplexDiagramTest.class)
-                // needs to be fixed .addTest(OpenBPELprojectTest.class)
+                .addTest(OpenBPELprojectTest.class)
+                .addTest(OpenSchemaViewTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
         return suite;

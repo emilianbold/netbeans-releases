@@ -77,7 +77,7 @@ public class DBColumnTest extends NbTestCase {
 //---------- Test Cases ---------------
     
     public void testConstructor() {
-        DBColumn col = new DBColumn(table, "colName", 12, 10, 5, true, false);
+        DBColumn col = new DBColumn(table, "colName", 12, "varchar", 10, 5, true, false);
         assertEquals("colName", col.getName());
         assertEquals(12, col.getJdbcType());
         assertEquals(10, col.getScale());
@@ -85,9 +85,9 @@ public class DBColumnTest extends NbTestCase {
     }
     
     public void testEqualsAndHashCode() {
-        DBColumn col1 = new DBColumn(table, "colName", 12, 10, 5, true, false);
-        DBColumn col2 = new DBColumn(table, "colName", 12, 10, 5, true, false);
-        DBColumn col3 = new DBColumn(table, "colNameDiff", 12, 10, 5, true, false);
+        DBColumn col1 = new DBColumn(table, "colName", 12,"varchar", 10, 5, true, false);
+        DBColumn col2 = new DBColumn(table, "colName", 12,"varchar", 10, 5, true, false);
+        DBColumn col3 = new DBColumn(table, "colNameDiff", 12,"varchar", 10, 5, true, false);
         assertEquals(col1,col1);
         assertEquals(col1.getDisplayName(),col2.getDisplayName());
         assertEquals(col2.getName(),col1.getName());
