@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -115,9 +115,10 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class AstUtilities {
-    /** Whether or not the prefixes for defs should be highlighted, e.g. in
-     *   def HTTP.foo
-     * Should "HTTP." be highlighted, or just the foo portion?
+    
+    /**
+     * Whether or not the prefixes for defs should be highlighted, e.g. in def
+     * HTTP.foo should "HTTP." be highlighted, or just the foo portion?
      */
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
@@ -372,7 +373,7 @@ public class AstUtilities {
 
         DefaultParseListener listener = new DefaultParseListener();
         // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
+        TranslatedSource translatedSource = null; // TODO - determine this here?
         Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
         new RubyParser().parseFiles(job);
 
@@ -1034,6 +1035,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             break;
             
+        case CONSTDECLNODE:
+            if (name.equals(((INameNode) node).getName())) {
+                return node;
+            }
+        break;
         case CLASSNODE:
         case MODULENODE: {
                 Colon3Node c3n = ((IScopingNode)node).getCPath();

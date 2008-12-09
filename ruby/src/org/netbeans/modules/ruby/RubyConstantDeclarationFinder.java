@@ -38,51 +38,47 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.types.INameNode;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
-import org.netbeans.modules.ruby.lexer.Call;
 
-final class RubyConstantCompleter extends RubyBaseCompleter {
+final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<IndexedConstant> {
 
-    private final Call call;
+    private final Node constantNode;
 
-    static boolean complete(
-            final List<? super CompletionProposal> proposals,
-            final CompletionRequest request,
-            final int anchor,
-            final boolean caseSensitive,
-            final Call call) {
-        RubyConstantCompleter rsc = new RubyConstantCompleter(proposals, request, anchor, caseSensitive, call);
-        return rsc.complete();
+    RubyConstantDeclarationFinder(
+            final CompilationInfo info,
+            final Node root,
+            final AstPath path,
+            final RubyIndex index,
+            final Node constantNode) {
+        super(info, root, path, index);
+        this.constantNode = constantNode;
     }
 
-    private RubyConstantCompleter(
-            final List<? super CompletionProposal> proposals,
-            final CompletionRequest request,
-            final int anchor,
-            final boolean caseSensitive,
-            final Call call) {
-        super(proposals, request, anchor, caseSensitive);
-        this.call = call;
+    DeclarationLocation findConstantDeclaration() {
+        Set<? extends IndexedConstant> constants;
+        if (constantNode instanceof Colon2Node) {
+            String constantFqn = AstUtilities.getFqn((Colon2Node) constantNode);
+            constants = index.getConstants(constantFqn);
+        } else {
+            // inside of class or module?
+            String constantName = ((INameNode) constantNode).getName();
+            String className = AstUtilities.getFqnName(path);
+            constants = index.getConstants(className, constantName);
+        }
+
+        return getElementDeclaration(constants, constantNode);
     }
 
-    private boolean complete() {
-        if (getIndex() == null) {
-            return false;
-        }
-
-        if ((call == Call.LOCAL) || (call == Call.NONE)) {
-            return false;
-        }
-
-        Set<? extends IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
-        for (IndexedConstant constant : constants) {
-            RubyCompletionItem item = new RubyCompletionItem(constant, anchor, request);
-            item.setSmart(true);
-            propose(item);
-        }
-        return true;
+    @Override
+    IndexedConstant findBestMatchHelper(final Set<? extends IndexedConstant> constants) {
+        // trivial implementation - seems to be enough for now
+        return constants.isEmpty() ? null : constants.iterator().next();
     }
+
 }

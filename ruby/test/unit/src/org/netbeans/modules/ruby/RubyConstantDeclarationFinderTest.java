@@ -38,51 +38,15 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.ruby.elements.IndexedConstant;
-import org.netbeans.modules.ruby.lexer.Call;
+public class RubyConstantDeclarationFinderTest extends RubyTestBase {
 
-final class RubyConstantCompleter extends RubyBaseCompleter {
-
-    private final Call call;
-
-    static boolean complete(
-            final List<? super CompletionProposal> proposals,
-            final CompletionRequest request,
-            final int anchor,
-            final boolean caseSensitive,
-            final Call call) {
-        RubyConstantCompleter rsc = new RubyConstantCompleter(proposals, request, anchor, caseSensitive, call);
-        return rsc.complete();
+    public RubyConstantDeclarationFinderTest(String name) {
+        super(name);
     }
 
-    private RubyConstantCompleter(
-            final List<? super CompletionProposal> proposals,
-            final CompletionRequest request,
-            final int anchor,
-            final boolean caseSensitive,
-            final Call call) {
-        super(proposals, request, anchor, caseSensitive);
-        this.call = call;
-    }
-
-    private boolean complete() {
-        if (getIndex() == null) {
-            return false;
-        }
-
-        if ((call == Call.LOCAL) || (call == Call.NONE)) {
-            return false;
-        }
-
-        Set<? extends IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
-        for (IndexedConstant constant : constants) {
-            RubyCompletionItem item = new RubyCompletionItem(constant, anchor, request);
-            item.setSmart(true);
-            propose(item);
-        }
-        return true;
+    public void testConstantDeclaration() throws Exception {
+        checkDeclaration("testfiles/constants.rb", "return R^ED", "constants.rb", 86);
+        checkDeclaration("testfiles/constants.rb", "Colors::R^ED.byte", "constants.rb", 86);
+        checkDeclaration("testfiles/constants.rb", "Colors::Converter::VER^SION", "constants.rb", 38);
     }
 }
