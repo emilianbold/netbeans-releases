@@ -36,16 +36,16 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
@@ -71,14 +71,14 @@ public class UnicodeConvert extends JsAstRule {
     }
     
     public void run(JsRuleContext context, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         Node node = context.node;
         
         String s = node.getString();
         for (int i = 0, n = s.length(); i < n; i++) {
             char c = s.charAt(i);
             if ((int)c >= 256) {
-                OffsetRange astRange = AstUtilities.getRange(info, node);
+                OffsetRange astRange = AstUtilities.getRange(node);
                 int lexOffset = LexUtilities.getLexerOffset(info, astRange.getStart());
                 if (lexOffset == -1) {
                     return;
@@ -104,7 +104,7 @@ public class UnicodeConvert extends JsAstRule {
                 fixList.add(new ConvertFix(context, lexOffset, c));
                 fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
                 String displayName = getDisplayName();
-                Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
+                Hint desc = new Hint(this, displayName, info.getSnapshot().getSource().getFileObject(), range, fixList, 1500);
                 result.add(desc);
             }
         }

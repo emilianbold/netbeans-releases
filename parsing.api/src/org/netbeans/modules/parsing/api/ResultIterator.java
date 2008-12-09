@@ -160,6 +160,7 @@ public final class ResultIterator {
                 sourceCache.getCache (embedding), 
                 task
             );
+            embeddingToResultIterator.put(embedding, resultIterator);
             children.add (resultIterator);
         }
         return resultIterator;
