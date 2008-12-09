@@ -39,63 +39,61 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableNodeProvider extends NodeProvider {
+public class ForeignKeyColumnNode extends BaseNode {
+    private static final String ICON = "org/netbeans/modules/db/resources/columnForeign.gif";
+    private static final String FOLDER = "ForeignKeyColumn"; //NOI18N
 
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
+    /**
+     * Create an instance of ForeignKeyColumnNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ForeignKeyColumnNode instance
+     */
+    public static ForeignKeyColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ForeignKeyColumnNode node = new ForeignKeyColumnNode(dataLookup, provider);
+        node.setup();
+        return node;
     }
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public TableNodeProvider createInstance(Lookup lookup) {
-                TableNodeProvider provider = new TableNodeProvider(lookup);
-                return provider;
-            }
-        };
-    }
-
-    private final DatabaseConnection connection;
-    private MetadataElementHandle<Schema> schemaHandle;
+    private String name;
     private MetadataModel metaDataModel;
+    private MetadataElementHandle<ForeignKeyColumn> keyColumnHandle;
 
-    private TableNodeProvider(Lookup lookup) {
-        super(lookup, new TableComparator());
-        connection = getLookup().lookup(DatabaseConnection.class);
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
+    private ForeignKeyColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
-    public Schema getSchema() {
-        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+    protected void initialize() {
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        keyColumnHandle = getLookup().lookup(MetadataElementHandle.class);
+
+        ForeignKeyColumn column = getForeignKeyColumn();
+        name = column.getReferringColumn().getName() 
+                + " -> " + column.getReferredColumn().getParent().getName() + "." // NOI18N
+                + column.getReferredColumn().getName(); // NOI18N
+    }
+
+    public ForeignKeyColumn getForeignKeyColumn() {
+        DataWrapper<ForeignKeyColumn> wrapper = new DataWrapper<ForeignKeyColumn>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
-                    Schema schema = schemaHandle.resolve(metaData);
-                    wrapper.setObject(schema);
+                    ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
+                    wrapper.setObject(column);
                 }
             }
         );
@@ -103,40 +101,23 @@ public class TableNodeProvider extends NodeProvider {
         return wrapper.getObject();
     }
 
-    @Override
-    protected void initialize() {
-        
-        List<Node> newList = new ArrayList<Node>();
-
-        if (!connection.getConnector().isDisconnected()) {
-            Schema schema = getSchema();
-            if (schema != null) {
-                Collection<Table> tables = schema.getTables();
-                for (Table table : tables) {
-                    MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
-                    Collection<Node> matches = getNodes(handle);
-                    if (matches.size() > 0) {
-                        newList.addAll(matches);
-                    } else {
-                        NodeDataLookup lookup = new NodeDataLookup();
-                        lookup.add(connection);
-                        lookup.add(metaDataModel);
-                        lookup.add(handle);
-
-                        newList.add(TableNode.create(lookup, this));
-                    }
-                }
-            }
-        }
-
-        setNodes(newList);
+    public int getPosition() {
+        ForeignKeyColumn column = getForeignKeyColumn();
+        return column.getPosition();
     }
 
-    static class TableComparator implements Comparator<Node> {
+    @Override
+    public String getName() {
+        return name;
+    }
 
-        public int compare(Node node1, Node node2) {
-            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
-        }
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
 
+    @Override
+    public String getIconBase() {
+        return ICON;
     }
 }

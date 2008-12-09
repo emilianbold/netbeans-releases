@@ -80,6 +80,8 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.node.CatalogNode;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
@@ -114,8 +116,25 @@ public class AddTableColumnDialog {
         spec = spe;
         try {
             String table = nfo.getName();
+
             String schema = nfo.getSchema().getName();
-            DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification();
+            if (schema == null) {
+                schema = "";
+                SchemaNode sn = nfo.getAncestor(SchemaNode.class);
+                if (sn != null) {
+                    schema = sn.getName();
+                }
+            }
+
+            String catName = nfo.getSchema().getParent().getName();
+            if (catName == null) {
+                CatalogNode cn = nfo.getAncestor(CatalogNode.class);
+                if (cn != null) {
+                    catName = cn.getName();
+                }
+            }
+
+            DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification(catName);
             
             ddl = new AddTableColumnDDL(spec, drvSpec, schema, table);
 
@@ -393,6 +412,7 @@ public class AddTableColumnDialog {
             boolean isPK = false;
             try {
                 drvSpec.getPrimaryKeys(table);
+
                 ResultSet rs = drvSpec.getResultSet();
 
                 if( rs != null ) {

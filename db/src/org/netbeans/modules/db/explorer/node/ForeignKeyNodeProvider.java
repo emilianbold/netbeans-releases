@@ -49,7 +49,6 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
-import org.netbeans.modules.db.explorer.node.ColumnNodeProvider.ColumnComparator;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
@@ -84,7 +83,7 @@ public class ForeignKeyNodeProvider extends NodeProvider {
     private final MetadataModel metaDataModel;
 
     private ForeignKeyNodeProvider(Lookup lookup) {
-        super(lookup, new ColumnComparator());
+        super(lookup, new ForeignKeyComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
         metaDataModel = getLookup().lookup(MetadataModel.class);
@@ -108,20 +107,26 @@ public class ForeignKeyNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
-        Collection<ForeignKey> keys = getTable().getForeignKeys();
+        if (!connection.getConnector().isDisconnected()) {
+            Table table = getTable();
 
-        for (ForeignKey key : keys) {
-            MetadataElementHandle<ForeignKey> h = MetadataElementHandle.create(key);
-            Collection<Node> matches = getNodes(h);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(metaDataModel);
-                lookup.add(h);
+            if (table != null) {
+                Collection<ForeignKey> keys = table.getForeignKeys();
 
-                newList.add(ForeignKeyNode.create(lookup, this));
+                for (ForeignKey key : keys) {
+                    MetadataElementHandle<ForeignKey> h = MetadataElementHandle.create(key);
+                    Collection<Node> matches = getNodes(h);
+                    if (matches.size() > 0) {
+                        newList.addAll(matches);
+                    } else {
+                        NodeDataLookup lookup = new NodeDataLookup();
+                        lookup.add(connection);
+                        lookup.add(metaDataModel);
+                        lookup.add(h);
+
+                        newList.add(ForeignKeyNode.create(lookup, this));
+                    }
+                }
             }
         }
 

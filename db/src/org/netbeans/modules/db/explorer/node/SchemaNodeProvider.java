@@ -104,19 +104,21 @@ public class SchemaNodeProvider extends NodeProvider {
     }
 
     protected synchronized void initialize() {
-        Catalog cat = getCatalog();
-
         List<Node> newList = new ArrayList<Node>();
 
-        if (cat != null) {
-            Schema syntheticSchema = cat.getSyntheticSchema();
+        if (!connection.getConnector().isDisconnected()) {
+            Catalog cat = getCatalog();
 
-            if (syntheticSchema != null) {
-                updateNode(newList, syntheticSchema, metaDataModel);
-            } else {
-                Collection<Schema> schemas = cat.getSchemas();
-                for (Schema schema : schemas) {
-                    updateNode(newList, schema, metaDataModel);
+            if (cat != null) {
+                Schema syntheticSchema = cat.getSyntheticSchema();
+
+                if (syntheticSchema != null) {
+                    updateNode(newList, syntheticSchema, metaDataModel);
+                } else {
+                    Collection<Schema> schemas = cat.getSchemas();
+                    for (Schema schema : schemas) {
+                        updateNode(newList, schema, metaDataModel);
+                    }
                 }
             }
         }
@@ -135,7 +137,7 @@ public class SchemaNodeProvider extends NodeProvider {
             lookup.add(schemaHandle);
             lookup.add(metadataModel);
 
-            newList.add(SchemaNode.create(lookup, SchemaNodeProvider.this));
+            newList.add(SchemaNode.create(lookup, this));
         }
     }
 

@@ -46,6 +46,7 @@ import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -54,6 +55,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -111,26 +114,6 @@ public class TableNode extends BaseNode implements SchemaProvider {
     }
 
     @Override
-    public void refresh() {
-        MetadataReader.readModel(metaDataModel, null,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    metaData.refresh();
-                }
-            }
-        );
-
-        Table table = getTable();
-
-        if (table == null) {
-            remove(true);
-        } else {
-            table.refresh();
-            super.refresh();
-        }
-    }
-
-    @Override
     public void destroy() {
         DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
         Specification spec = connector.getDatabaseSpecification();
@@ -138,9 +121,10 @@ public class TableNode extends BaseNode implements SchemaProvider {
         try {
             AbstractCommand command = spec.createCommandDropTable(getName());
             command.execute();
-            remove();
         } catch (Exception e) {
         }
+
+        SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
     }
 
     @Override
@@ -162,5 +146,10 @@ public class TableNode extends BaseNode implements SchemaProvider {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Table"); //NOI18N
     }
 }

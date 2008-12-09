@@ -133,7 +133,11 @@ public class ConnectAction extends BaseAction {
         boolean failed = false;
         
         public void showDialog(final ConnectionNode model, boolean showDialog) {
-            final DatabaseConnection dbcon = model.getLookup().lookup(DatabaseConnection.class);
+            DatabaseConnection dbcon = model.getLookup().lookup(DatabaseConnection.class);
+            showDialog(dbcon, showDialog);
+        }
+
+        public void showDialog(final DatabaseConnection dbcon, boolean showDialog) {
             final DatabaseConnector connector = dbcon.getConnector();
 
             String user = dbcon.getUser();
@@ -370,7 +374,7 @@ public class ConnectAction extends BaseAction {
                         // display the full Connect dialog so the user can give it
                         // another shot after changing some values, like the username
                         // or password.
-                        showDialog(model, true);                        
+                        showDialog(dbcon, true);
                     }
                 } catch (Exception exc) {
                     String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), exc.getMessage()); // NOI18N
@@ -380,7 +384,7 @@ public class ConnectAction extends BaseAction {
                     // display the full Connect dialog so the user can give it
                     // another shot after changing some values, like the username
                     // or password.
-                    showDialog(model, true);
+                    showDialog(dbcon, true);
                 }
         }
 

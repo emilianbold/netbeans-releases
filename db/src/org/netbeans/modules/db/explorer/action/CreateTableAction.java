@@ -44,9 +44,10 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
-import org.netbeans.modules.db.explorer.node.SchemaProvider;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -79,18 +80,13 @@ public class CreateTableAction extends BaseAction {
     public void performAction (Node[] activatedNodes) {
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
         DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
-        String name = connection.getSchema();
-        //SchemaProvider provider = node.getLookup().lookup(SchemaProvider.class);
+
+        SchemaNode sn = node.getAncestor(SchemaNode.class);
+        String name = sn.getName();
 
         final CreateTableDialog dlg = new CreateTableDialog(connection.getConnector().getDatabaseSpecification(), name);
         if (dlg.run()) {
-            RequestProcessor.getDefault().post(
-                new Runnable() {
-                    public void run() {
-                        node.refresh();
-                    }
-                }
-            );
+            SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
         }
     }
 

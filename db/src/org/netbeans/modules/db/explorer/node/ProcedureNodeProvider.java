@@ -104,26 +104,27 @@ public class ProcedureNodeProvider extends NodeProvider {
     }
 
     protected synchronized void initialize() {
-        //metaData.refresh();
-        Schema schema = getSchema();
-        //schema.refresh();
-        
+
         List<Node> newList = new ArrayList<Node>();
 
-        if (schema != null) {
-            Collection<Procedure> procedures = schema.getProcedures();
-            for (Procedure procedure : procedures) {
-                MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
-                Collection<Node> matches = getNodes(handle);
-                if (matches.size() > 0) {
-                    newList.addAll(matches);
-                } else {
-                    NodeDataLookup lookup = new NodeDataLookup();
-                    lookup.add(connection);
-                    lookup.add(metaDataModel);
-                    lookup.add(handle);
+        if (!connection.getConnector().isDisconnected()) {
+            Schema schema = getSchema();
 
-                    newList.add(ProcedureNode.create(lookup, this));
+            if (schema != null) {
+                Collection<Procedure> procedures = schema.getProcedures();
+                for (Procedure procedure : procedures) {
+                    MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
+                    Collection<Node> matches = getNodes(handle);
+                    if (matches.size() > 0) {
+                        newList.addAll(matches);
+                    } else {
+                        NodeDataLookup lookup = new NodeDataLookup();
+                        lookup.add(connection);
+                        lookup.add(metaDataModel);
+                        lookup.add(handle);
+
+                        newList.add(ProcedureNode.create(lookup, this));
+                    }
                 }
             }
         }

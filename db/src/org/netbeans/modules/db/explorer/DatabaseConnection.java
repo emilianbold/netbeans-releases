@@ -72,7 +72,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
-import org.netbeans.modules.db.explorer.actions.ConnectAction;
+import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
@@ -854,7 +854,7 @@ public class DatabaseConnection implements DBConnection {
             if (cni != null && cni.getConnection() == null) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
-                        new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, false);
+                        new ConnectAction.ConnectionDialogDisplayer().showDialog(DatabaseConnection.this, false);
                     }
                 });
             }

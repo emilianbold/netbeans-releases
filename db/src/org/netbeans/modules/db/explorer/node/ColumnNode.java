@@ -39,28 +39,39 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.Collection;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.impl.RemoveColumn;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Rob Englander
  */
 public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvider {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/column.gif";
+    private static final String COLUMN = "org/netbeans/modules/db/resources/column.gif";
+    private static final String PRIMARY = "org/netbeans/modules/db/resources/columnPrimary.gif";
+    private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
     private static final String FOLDER = "Column"; //NOI18N
 
     /**
@@ -76,6 +87,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
     }
 
     private String name;
+    private String icon;
     private MetadataModel metaDataModel;
     private MetadataElementHandle<Column> columnHandle;
 
@@ -89,6 +101,39 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
 
         Column column = getColumn();
         name = column.getName();
+        icon = COLUMN;
+        
+        Tuple tuple = column.getParent();
+        if (tuple instanceof Table) {
+            Table table = (Table)tuple;
+            PrimaryKey pkey = table.getPrimaryKey();
+
+            boolean found = false;
+            if (pkey != null) {
+                Collection<Column> columns = pkey.getColumns();
+                for (Column c : columns) {
+                    if (c.getName().equals(column.getName())) {
+                        found = true;
+                        icon = PRIMARY;
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {
+                Collection<Index> indexes = table.getIndexes();
+                for (Index index : indexes) {
+                    Collection<IndexColumn> columns = index.getColumns();
+                    for (IndexColumn c : columns) {
+                        if (c.getName().equals(column.getName())) {
+                            found = true;
+                            icon = INDEX;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public Column getColumn() {
@@ -127,11 +172,24 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
 
         try {
             RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
+
+            // if we don't get a schema, it means we need to crawl up the tree looking for
+            // the schema node
+            String schema = getSchema().getName();
+            if (schema == null) {
+                SchemaNode sn = getAncestor(SchemaNode.class);
+                if (sn != null) {
+                    schema = sn.getName();
+                }
+            }
+
+            command.setObjectOwner(schema);
             command.removeColumn(getName());
             command.execute();
-            remove();
         } catch (Exception e) {
         }
+
+        SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
     }
 
     @Override
@@ -152,6 +210,12 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
 
     @Override
     public String getIconBase() {
-        return ICONBASE;
+        return icon;
+    }
+
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
+        return sheet;
     }
 }

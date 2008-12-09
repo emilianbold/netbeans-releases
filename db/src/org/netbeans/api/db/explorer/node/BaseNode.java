@@ -40,6 +40,7 @@
 package org.netbeans.api.db.explorer.node;
 
 import java.util.Collection;
+import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -49,6 +50,8 @@ import org.netbeans.modules.db.explorer.node.NodeRegistry;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * This is the base class for all database explorer nodes.  It takes care of setting
@@ -102,6 +105,10 @@ public abstract class BaseNode extends AbstractNode {
         nodeProvider = provider;
     }
     
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    }
+
     /**
      * Initialize the node.  This method is called before the creation process
      * completes so that the sub class can perform any initialization it requires.
@@ -147,7 +154,17 @@ public abstract class BaseNode extends AbstractNode {
         isRemoved = true;
         nodeProvider.removeNode(this);
         if (refreshProvider) {
-            nodeProvider.refresh();
+            RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        //nodeProvider.refresh();
+                        Node parent = getParentNode();
+                        if (parent instanceof BaseNode) {
+                            ((BaseNode)parent).refresh();
+                        }
+                    }
+                }
+            );
         }
     }
 
@@ -169,6 +186,24 @@ public abstract class BaseNode extends AbstractNode {
         if (childNodeFactory != null) {
             childNodeFactory.refresh();
         }
+    }
+
+    public <T> T getAncestor(Class<T> clazz) {
+        // go up the chain looking for a SchemaNode.  It should know how to provide a name
+        Node node = getParentNode().getLookup().lookup(Node.class);
+        T result = null;
+        boolean more = node != null;
+        while (more) {
+            if (clazz.isInstance(node)) {
+                result = (T)node;
+                more = false;
+            } else {
+                node = node.getParentNode().getLookup().lookup(Node.class);
+                more = node != null;
+            }
+        }
+
+        return result;
     }
 
     /**

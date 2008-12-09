@@ -40,6 +40,11 @@
 package org.netbeans.modules.db.explorer.action;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -64,11 +69,20 @@ public class RefreshAction extends BaseAction {
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
+    public void performAction(Node[] activatedNodes) {
         final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
                 public void run() {
+                    MetadataModel model = baseNode.getLookup().lookup(MetadataModel.class);
+                    MetadataReader.readModel(model, null,
+                        new MetadataReadListener() {
+                            public void run(Metadata metaData, DataWrapper wrapper) {
+                                metaData.refresh();
+                            }
+                        }
+                    );
+
                     baseNode.refresh();
                 }
             }

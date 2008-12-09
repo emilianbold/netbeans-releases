@@ -214,6 +214,14 @@ public class ConnectUsingDriverAction extends BaseAction {
                         fireConnectionFailed();
                     }
                     else if (event.getPropertyName().equals("connected")) { //NOI18N
+                        try {
+                            cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
+                        } catch (DatabaseException exc) {
+                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                            return;
+                        }
+
                         setConnected(true);
                         boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
                         fireConnectionFinished();

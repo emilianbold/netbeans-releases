@@ -47,6 +47,7 @@ import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -78,7 +79,7 @@ public class AddColumnAction extends BaseAction {
                     try {
                         final AddTableColumnDialog dlg = new AddTableColumnDialog(connection.getConnector().getDatabaseSpecification(), node);
                         if (dlg.run()) {
-                            node.refresh();
+                            SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
                         }
                     } catch(Exception exc) {
                         Logger.getLogger("global").log(Level.INFO, null, exc);

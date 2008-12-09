@@ -62,7 +62,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.util.CommandBuffer;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
 import org.openide.awt.Mnemonics;
@@ -73,7 +72,6 @@ public class CreateTableDialog {
     Dialog dialog = null;
     JTextField dbnamefield, dbownerfield;
     JTable table;
-    JComboBox ownercombo;
     JButton addbtn, delbtn;
     Specification spec;
     private Vector ttab;
@@ -103,7 +101,7 @@ public class CreateTableDialog {
         return dlgtab;
     }
 
-    public CreateTableDialog(final Specification spe, String schema) {
+    public CreateTableDialog(final Specification spe, final String schema) {
         spec = spe;
         try {
             JLabel label;
@@ -141,42 +139,6 @@ public class CreateTableDialog {
             label.setLabelFor(dbnamefield);
             layout.setConstraints(dbnamefield, constr);
             pane.add(dbnamefield);
-
-            // Table owner combo
-
-            label = new JLabel();
-            Mnemonics.setLocalizedText(label, bundle.getString("CreateTableOwner")); // NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableOwnerA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.weighty = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 10, 2, 2);
-            constr.gridx = 2;
-            constr.gridy = 0;
-            layout.setConstraints(label, constr);
-            pane.add(label);
-
-            Vector users = new Vector();
-            if (schema != null && schema.length() > 0)
-                users.add(schema);
-            else
-                users.add(" "); //NOI18N
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 0.0;
-            constr.weighty = 0.0;
-            constr.gridx = 3;
-            constr.gridy = 0;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            ownercombo = new JComboBox(users);
-            ownercombo.setSelectedIndex(0);
-            ownercombo.setRenderer(new ListCellRendererImpl());
-            ownercombo.setToolTipText(bundle.getString("ACS_CreateTableOwnerComboBoxA11yDesc"));
-            ownercombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableOwnerComboBoxA11yName"));
-            label.setLabelFor(ownercombo);
-            layout.setConstraints(ownercombo, constr);
-            pane.add(ownercombo);
 
             // Table columns in scrollpane
 
@@ -288,12 +250,11 @@ public class CreateTableDialog {
                             final String tablename = getTableName();
                             final DataModel dataModel = (DataModel)table.getModel();
                             final Vector data = dataModel.getData();
-                            final String owner = ((String)ownercombo.getSelectedItem()).trim();
 
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                                 public Boolean call() throws Exception {
                                     CreateTableDDL ddl = new CreateTableDDL(
-                                            spec, owner, tablename);
+                                            spec, schema, tablename);
 
                                     return ddl.execute(data, dataModel.getTablePrimaryKeys());
                                 }

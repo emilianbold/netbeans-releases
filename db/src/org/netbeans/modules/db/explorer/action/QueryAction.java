@@ -42,10 +42,12 @@ package org.netbeans.modules.db.explorer.action;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.node.ColumnNode;
 import org.netbeans.modules.db.explorer.node.ColumnProvider;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.netbeans.modules.db.explorer.node.SchemaProvider;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.explorer.node.ViewNode;
@@ -105,6 +107,13 @@ public abstract class QueryAction extends BaseAction {
         String schema = activatedNodes[0].getLookup().lookup(SchemaProvider.class).getSchema().getName();
         if (schema == null) {
             schema = "";
+            BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
+            if (node != null) {
+                SchemaNode sn = node.getAncestor(SchemaNode.class);
+                if (sn != null) {
+                    schema = sn.getName();
+                }
+            }
         } else {
             schema = schema.trim();
         }

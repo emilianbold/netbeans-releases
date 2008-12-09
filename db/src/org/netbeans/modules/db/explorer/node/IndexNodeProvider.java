@@ -106,23 +106,25 @@ public class IndexNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
-        Table table = getTable();
+        if (!connection.getConnector().isDisconnected()) {
+            Table table = getTable();
 
-        if (table != null) {
-            Collection<Index> indexes = table.getIndexes();
+            if (table != null) {
+                Collection<Index> indexes = table.getIndexes();
 
-            for (Index index : indexes) {
-                MetadataElementHandle<Index> h = MetadataElementHandle.create(index);
-                Collection<Node> matches = getNodes(h);
-                if (matches.size() > 0) {
-                    newList.addAll(matches);
-                } else {
-                    NodeDataLookup lookup = new NodeDataLookup();
-                    lookup.add(connection);
-                    lookup.add(metaDataModel);
-                    lookup.add(h);
+                for (Index index : indexes) {
+                    MetadataElementHandle<Index> h = MetadataElementHandle.create(index);
+                    Collection<Node> matches = getNodes(h);
+                    if (matches.size() > 0) {
+                        newList.addAll(matches);
+                    } else {
+                        NodeDataLookup lookup = new NodeDataLookup();
+                        lookup.add(connection);
+                        lookup.add(metaDataModel);
+                        lookup.add(h);
 
-                    newList.add(IndexNode.create(lookup, this));
+                        newList.add(IndexNode.create(lookup, this));
+                    }
                 }
             }
         }

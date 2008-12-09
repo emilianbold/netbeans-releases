@@ -40,6 +40,8 @@
 package org.netbeans.modules.db.explorer;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
@@ -62,7 +64,14 @@ public class DatabaseConnector {
     private SpecificationFactory factory;
     private boolean readOnly = false;
     private Specification spec;
-    private DriverSpecification drvSpec;
+
+    // we maintain a lazy cache of driver specs mapped to the catalog name
+    private ConcurrentHashMap<String, DriverSpecification> driverSpecCache = new ConcurrentHashMap<String, DriverSpecification>();
+
+    private ConcurrentHashMap<String, Object> properties = new ConcurrentHashMap<String, Object>();
+
+    //private DriverSpecification drvSpec;
+
     private boolean connected = false;
 
 
@@ -92,32 +101,27 @@ public class DatabaseConnector {
         return spec;
     }
 
-    public DriverSpecification getDriverSpecification() {
-        return drvSpec;
-    }
-    
-    public void connect() throws DatabaseException {
-        try {
-            Connection theConnection = databaseConnection.getConnection();
-            databaseConnection.connectAsync();
+    public DriverSpecification getDriverSpecification(String catName) throws DatabaseException {
+        DriverSpecification dspec = driverSpecCache.get(catName);
+        if (dspec == null) {
+            try {
+                dspec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+                if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
+                    //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
+                    dspec.setMetaData(connection.getMetaData());
+                else
+                    dspec.setMetaData(spec.getMetaData());
 
-            readOnly = false;
+                dspec.setCatalog(catName);
+                dspec.setSchema(databaseConnection.getSchema());
+                driverSpecCache.put(catName, dspec);
+            } catch (SQLException e) {
+                throw new DatabaseException(e.getMessage(), e);
+            }
 
-            spec = (Specification) factory.createSpecification(databaseConnection, theConnection);
-            //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
-
-            drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
-            if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
-                //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
-                drvSpec.setMetaData(theConnection.getMetaData());
-            else
-                drvSpec.setMetaData(spec.getMetaData());
-            drvSpec.setCatalog(theConnection.getCatalog());
-            drvSpec.setSchema(databaseConnection.getSchema());
-            setConnection(theConnection); // fires change
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage(), e);
         }
+
+        return dspec;
     }
     
     public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
@@ -131,18 +135,14 @@ public class DatabaseConnector {
             }
             //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
-            drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
-            if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
-                //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
-                drvSpec.setMetaData(connection.getMetaData());
-            else
-                drvSpec.setMetaData(spec.getMetaData());
-            drvSpec.setCatalog(connection.getCatalog());
-            drvSpec.setSchema(con.getSchema());
             setConnection(connection); // fires change
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
+    }
+
+    public boolean isDisconnected() {
+        return connection == null;
     }
 
     public void disconnect() throws DatabaseException {
