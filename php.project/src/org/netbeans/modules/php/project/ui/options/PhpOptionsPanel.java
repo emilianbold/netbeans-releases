@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultListModel;
@@ -84,6 +82,7 @@ public class PhpOptionsPanel extends JPanel {
         DocumentListener documentListener = new DefaultDocumentListener();
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
+        debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -138,6 +137,14 @@ public class PhpOptionsPanel extends JPanel {
             // ignored
         }
         return port;
+    }
+
+    public String getDebuggerSessionId() {
+        return debuggerSessionIdTextField.getText();
+    }
+
+    public void setDebuggerSessionId(String sessionId) {
+        debuggerSessionIdTextField.setText(sessionId);
     }
 
     public void setDebuggerPort(int debuggerPort) {
@@ -195,7 +202,6 @@ public class PhpOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         commandLineLabel = new JLabel();
         commandLineSeparator = new JSeparator();
         phpInterpreterLabel = new JLabel();
@@ -221,101 +227,11 @@ public class PhpOptionsPanel extends JPanel {
         moveDownButton = new JButton();
         useTheFollowingPathByDefaultLabel = new JLabel();
         errorLabel = new JLabel();
+        debuggerSessionIdLabel = new JLabel();
+        debuggerSessionIdTextField = new JTextField();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+        setFocusTraversalPolicy(null);
 
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return phpInterpreterTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return phpInterpreterTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return moveDownButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  phpInterpreterTextField){
-                    return browseButton;
-                }
-                if(aComponent ==  browseButton){
-                    return searchButton;
-                }
-                if(aComponent ==  searchButton){
-                    return outputWindowCheckBox;
-                }
-                if(aComponent ==  outputWindowCheckBox){
-                    return webBrowserCheckBox;
-                }
-                if(aComponent ==  webBrowserCheckBox){
-                    return editorCheckBox;
-                }
-                if(aComponent ==  editorCheckBox){
-                    return debuggerPortTextField;
-                }
-                if(aComponent ==  stopAtTheFirstLineCheckBox){
-                    return includePathList;
-                }
-                if(aComponent ==  debuggerPortTextField){
-                    return stopAtTheFirstLineCheckBox;
-                }
-                if(aComponent ==  includePathList){
-                    return addFolderButton;
-                }
-                if(aComponent ==  addFolderButton){
-                    return removeButton;
-                }
-                if(aComponent ==  removeButton){
-                    return moveUpButton;
-                }
-                if(aComponent ==  moveUpButton){
-                    return moveDownButton;
-                }
-                return phpInterpreterTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  browseButton){
-                    return phpInterpreterTextField;
-                }
-                if(aComponent ==  searchButton){
-                    return browseButton;
-                }
-                if(aComponent ==  outputWindowCheckBox){
-                    return searchButton;
-                }
-                if(aComponent ==  webBrowserCheckBox){
-                    return outputWindowCheckBox;
-                }
-                if(aComponent ==  editorCheckBox){
-                    return webBrowserCheckBox;
-                }
-                if(aComponent ==  debuggerPortTextField){
-                    return editorCheckBox;
-                }
-                if(aComponent ==  includePathList){
-                    return stopAtTheFirstLineCheckBox;
-                }
-                if(aComponent ==  stopAtTheFirstLineCheckBox){
-                    return debuggerPortTextField;
-                }
-                if(aComponent ==  addFolderButton){
-                    return includePathList;
-                }
-                if(aComponent ==  removeButton){
-                    return addFolderButton;
-                }
-                if(aComponent ==  moveUpButton){
-                    return removeButton;
-                }
-                if(aComponent ==  moveDownButton){
-                    return moveUpButton;
-                }
-                return moveDownButton;//end getComponentBefore
-
-            }}
-        
-        );
 
         Mnemonics.setLocalizedText(commandLineLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_CommandLine")); // NOI18N
         phpInterpreterLabel.setLabelFor(phpInterpreterTextField);
@@ -365,9 +281,12 @@ public class PhpOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_MoveDown"));
         useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
 
-        Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault"));
+        Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel,NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault"));
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
 
+        debuggerSessionIdLabel.setLabelFor(debuggerSessionIdTextField);
+
+        Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
@@ -384,7 +303,7 @@ public class PhpOptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                                .add(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(browseButton)
                                 .addPreferredGap(LayoutStyle.RELATED)
@@ -398,11 +317,11 @@ public class PhpOptionsPanel extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(commandLineLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))
+                        .add(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(debuggingLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE))
+                        .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
@@ -410,16 +329,21 @@ public class PhpOptionsPanel extends JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(debuggerPortLabel)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE))))
+                                .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(debuggerSessionIdLabel)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(LayoutStyle.RELATED))
                     .add(layout.createSequentialGroup()
                         .add(globalIncludePathLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                        .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                                .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
                                     .add(addFolderButton)
@@ -429,7 +353,6 @@ public class PhpOptionsPanel extends JPanel {
                             .add(useTheFollowingPathByDefaultLabel)))
                     .add(errorLabel))
                 .addContainerGap())
-        
         );
 
         layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
@@ -462,7 +385,9 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(debuggerPortLabel)
-                    .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(debuggerSessionIdLabel)
+                    .add(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(stopAtTheFirstLineCheckBox)
                 .add(18, 18, 18)
@@ -485,7 +410,6 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(errorLabel)
                 .addContainerGap())
-        
         );
 
         commandLineLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.commandLineLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -561,6 +485,8 @@ public class PhpOptionsPanel extends JPanel {
     private JSeparator commandLineSeparator;
     private JLabel debuggerPortLabel;
     private JTextField debuggerPortTextField;
+    private JLabel debuggerSessionIdLabel;
+    private JTextField debuggerSessionIdTextField;
     private JLabel debuggingLabel;
     private JSeparator debuggingSeparator;
     private JCheckBox editorCheckBox;
