@@ -124,24 +124,23 @@ public class LiveRangesAction {
                 }
             }             
         }
-        
-        for (Register reg: lastWrite.keySet()) {
+
+        for (Map.Entry<Register, Integer> entry : lastWrite.entrySet()) {
+            Register reg = entry.getKey();
             Integer lr = lastRead.get(reg);
-            Integer lw = lastWrite.get(reg);
-                        
+            Integer lw = entry.getValue();
             if (lw != null && (lr == null || lr < lw)) {
                 res.addRange(reg, lw, end - 1);
             }
         }
-        
-        for (Register reg: lastRead.keySet()) {
-            Integer lr = lastRead.get(reg);
+
+        for (Map.Entry<Register, Integer> entry : lastRead.entrySet()) {
+            Register reg = entry.getKey();
+            Integer lr = entry.getValue();
             Integer lw = lastWrite.get(reg);
-                        
             if (lw == null && lr != null) {
                 res.addRange(reg, start, lr);
-            }            
-            else if (lw != null && lr != null && lr > lw) {
+            } else if (lw != null && lr != null && lr > lw) {
                 res.addRange(reg, lw, lr);
             }
         }

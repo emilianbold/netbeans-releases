@@ -46,6 +46,8 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Style;
@@ -80,6 +82,9 @@ public class GuardedDocument extends BaseDocument
 
     private static final boolean debugAtomic = Boolean.getBoolean("netbeans.debug.editor.atomic"); // NOI18N
     private static final boolean debugAtomicStack = Boolean.getBoolean("netbeans.debug.editor.atomic.stack"); // NOI18N
+
+    // -J-Dorg.netbeans.editor.GuardedDocument.level=FINEST
+    private static final Logger LOG = Logger.getLogger(GuardedDocument.class.getName());
 
     // Add the attributes to sets
     static {
@@ -218,15 +223,26 @@ public class GuardedDocument extends BaseDocument
                      && rel == MarkBlock.INSIDE_BEGIN)
            ) {
             if (!breakGuarded || atomicAsUser) {
-                throw new GuardedException(
-                    MessageFormat.format(
-                        NbBundle.getBundle(BaseKit.class).getString(FMT_GUARDED_INSERT_LOCALE),
-                        new Object [] {
-                            new Integer(offset)
-                        }
-                    ),
-                    offset
-                );
+                CharSequence docText = (CharSequence) getProperty(CharSequence.class);
+                // Allow mod when inserting "inside" line and right at the begining of the guarded block
+                boolean atLineBegin = (offset == 0 || docText.charAt(offset - 1) == '\n');
+                boolean allowMod = (rel == MarkBlock.INSIDE_BEGIN && !atLineBegin);
+                if (!allowMod) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("GuardedDocument.preInsertCheck(): offset:" + Utilities.debugPosition(this, offset) +
+                                ", relation: " + rel + "; guardedBlockChain:\n" + guardedBlockChain + "\n");
+                    }
+
+                    throw new GuardedException(
+                        MessageFormat.format(
+                            NbBundle.getBundle(BaseKit.class).getString(FMT_GUARDED_INSERT_LOCALE),
+                            new Object [] {
+                                new Integer(offset)
+                            }
+                        ),
+                        offset
+                    );
+                }
             }
         }
     }
@@ -253,6 +269,11 @@ public class GuardedDocument extends BaseDocument
                     && !(offset == 0 || getChars(offset - 1, 1)[0] == '\n'))
            ) {
             if (!breakGuarded || atomicAsUser) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("GuardedDocument.preRemoveCheck(): offset:" + Utilities.debugPosition(this, offset) +
+                            ", relation: " + rel + "; guardedBlockChain:\n" + guardedBlockChain + "\n");
+                }
+
                 // test whether the previous char before removed text is '\n'
                 throw new GuardedException(
                     MessageFormat.format(

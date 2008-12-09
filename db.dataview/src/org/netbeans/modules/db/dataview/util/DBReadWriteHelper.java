@@ -110,7 +110,7 @@ public class DBReadWriteHelper {
                         return tsdata;
                     }
                 } catch (SQLException sqe) {
-                    if (sqe.getSQLState().equals("S1009")) {
+                    if (sqe.getSQLState().equals("S1009")) { // NOI18N
                         return null;
                     } else {
                         throw sqe;
@@ -376,9 +376,9 @@ public class DBReadWriteHelper {
                         return valueObj;
                     } else {
                         String str = valueObj.toString();
-                        if ((str.equalsIgnoreCase("true")) || (str.equalsIgnoreCase("1"))) {
+                        if ((str.equalsIgnoreCase("true")) || (str.equalsIgnoreCase("1"))) { // NOI18N
                             return Boolean.TRUE;
-                        } else if ((str.equalsIgnoreCase("false")) || (str.equalsIgnoreCase("0"))) {
+                        } else if ((str.equalsIgnoreCase("false")) || (str.equalsIgnoreCase("0"))) { // NOI18N
                             return Boolean.FALSE;
                         } else {
                             String errMsg = "Values must be true/false or numeric 0 or 1";
@@ -463,7 +463,7 @@ public class DBReadWriteHelper {
                     return valueObj;
             }
         } catch (Exception e) {
-            String type = DataViewUtils.getStdSqlType(colType);
+            String type = col.getTypeName();
             String colName = col.getQualifiedName();
             int precision = col.getPrecision();
             String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
@@ -480,10 +480,10 @@ public class DBReadWriteHelper {
 
         int bit = 0, index = 0;
         for (int i = 0; i < s.length(); i++) {
-            if ('1' == s.charAt(i)) {
+            if ('1' == s.charAt(i)) { // NOI18N
                 int b = 1 << (7 - bit);
                 buf[index] |= b;
-            } else if ('0' != s.charAt(i)) {
+            } else if ('0' != s.charAt(i)) { // NOI18N
                 throw new DBException(s.charAt(i) + "found at character " + i + "; 0 or 1 expected. ");
             }
             bit++;

@@ -167,6 +167,11 @@ public final class Source {
             Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
             Source source = sourceRef == null ? null : sourceRef.get();
 
+            //#154813: the file may have been moved:
+            if (source != null && source.getFileObject() != null && !source.getFileObject().isValid()) {
+                source = null;
+            }
+            
             if (source == null) {
                 FileObject fileObject = NbEditorUtilities.getFileObject(document);
                 if (fileObject != null) {

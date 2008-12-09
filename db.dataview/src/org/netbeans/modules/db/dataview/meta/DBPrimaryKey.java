@@ -106,7 +106,7 @@ public final class DBPrimaryKey extends DBObject<DBTable> {
 
     public String getName() {
         if (name == null && parent != null) {
-            name = "PK_" + parent.getName();
+            name = "PK_" + parent.getName(); // NOI18N
         }
         return name;
     }
