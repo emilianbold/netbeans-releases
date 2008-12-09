@@ -359,6 +359,10 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/constants1.rb", "Fcntl::F^");
     }
 
+    public void testConstantsForDotAreNotOffered() throws Exception {
+        checkCompletion("testfiles/core_methods.rb", "File.S^");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");

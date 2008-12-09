@@ -498,7 +498,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Should never get here...
                     assert false;
                     return;
-                } else if (conf.isCompileConfiguration()) {
+                } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
                     RunProfile runProfile = null;
                     if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
@@ -622,8 +622,6 @@ public class MakeActionProvider implements ActionProvider {
                             false);
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
-                } else if (conf.isQmakeConfiguration()) {
-                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
                 } else {
                     assert false;
                 }

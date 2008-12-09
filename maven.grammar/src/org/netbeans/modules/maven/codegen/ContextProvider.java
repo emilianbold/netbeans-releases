@@ -65,11 +65,13 @@ public class ContextProvider implements CodeGeneratorContextProvider {
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
                 ModelSource ms = Utilities.createModelSource(fo, true);
-                POMModel model = POMModelFactory.getDefault().getModel(ms);
-                if (model != null) {
-                    Lookup newContext = new ProxyLookup(context, Lookups.fixed(model));
-                    task.run(newContext);
-                    return;
+                if (ms.isEditable()) {
+                    POMModel model = POMModelFactory.getDefault().getModel(ms);
+                    if (model != null) {
+                        Lookup newContext = new ProxyLookup(context, Lookups.fixed(model));
+                        task.run(newContext);
+                        return;
+                    }
                 }
             }
         }

@@ -120,7 +120,11 @@ public class AnnotationsTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
-            EditorOperator.closeDiscardAll();
+            try {
+                EditorOperator.closeDiscardAll();
+            } catch (Throwable e) {
+                System.out.println("Exception while closing files.");
+            }
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Subversion|Show Annotations");
             TestKit.waitText(mh);
@@ -128,6 +132,14 @@ public class AnnotationsTest extends JellyTestCase {
             eo.clickMouse(40, 50, 1, InputEvent.BUTTON3_MASK);
             JPopupMenuOperator pmo = new JPopupMenuOperator();
             pmo.pushMenu("Hide Annotations");
+
+            new EventTool().waitNoEvent(2000);
+            try {
+                EditorOperator.closeDiscardAll();
+            } catch (Throwable e) {
+                System.out.println("Exception while closing files.");
+            }
+            new EventTool().waitNoEvent(2000);
 
             stream.flush();
             stream.close();

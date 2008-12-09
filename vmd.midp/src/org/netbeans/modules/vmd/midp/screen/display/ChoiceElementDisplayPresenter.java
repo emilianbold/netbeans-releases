@@ -58,7 +58,6 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanProper
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
