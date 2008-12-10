@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -101,18 +102,19 @@ public class NbModuleSuite {
     public static final class Configuration extends Object {
         final List<Item> tests;
         final Class<? extends TestCase> latestTestCaseClass;
-        final String clusterRegExp;
-        final String moduleRegExp;
+        final List<String> clusterRegExp;
+        /** each odd is cluster reg exp, each even is module reg exp */
+        final List<String> moduleRegExp;
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
 
         private Configuration(
-            String clusterRegExp, 
-            String moduleRegExp,
-            ClassLoader parent, 
+            List<String> clusterRegExp,
+            List<String> moduleRegExp,
+            ClassLoader parent,
             List<Item> testItems,
-            Class<? extends TestCase> latestTestCase, 
+            Class<? extends TestCase> latestTestCase,
             boolean reuseUserDir,
             boolean gui
         ) {
@@ -134,23 +136,61 @@ public class NbModuleSuite {
          * ide and java clusters, it is handy to pass in <code>"ide.*|java.*</code>.
          * There is no need to requrest presence of <code>platform.*</code> cluster,
          * as that is available all the time by default.
+         * <p>
+         * Since version 1.55 this method can be called multiple times.
          * 
          * @param regExp regular expression to match cluster names
          * @return clone of this configuration with cluster set to regExp value
          */
         public Configuration clusters(String regExp) {
-            return new Configuration(regExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            ArrayList<String> list = new ArrayList<String>();
+            if (clusterRegExp != null) {
+                list.addAll(clusterRegExp);
+            }
+            if (regExp != null) {
+                list.add(regExp);
+            }
+            if (list.isEmpty()) {
+                list = null;
+            }
+            return new Configuration(list, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         /** By default only modules on classpath of the test are enabled, 
          * the rest are just autoloads. If you need to enable more, you can
          * specify that with this method. To enable all available modules
-         * in all clusters pass in <code>".*"</code>.
+         * in all clusters pass in <code>".*"</code>. Since 1.55 this method
+         * is cummulative.
+         * 
          * @param regExp regular expression to match code name base of modules
          * @return clone of this configuration with enable modules set to regExp value
          */
         public Configuration enableModules(String regExp) {
-            return new Configuration(clusterRegExp, regExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            if (regExp == null) {
+                return this;
+            }
+            return enableModules(".*", regExp);
+        }
+
+        /** By default only modules on classpath of the test are enabled,
+         * the rest are just autoloads. If you need to enable more, you can
+         * specify that with this method. To enable all available modules in
+         * one cluster, use this method and pass <code>".*"</code> as list of
+         * modules. This method is cumulative.
+         *
+         * @param clusterRegExp regular expression to match clusters
+         * @param moduleRegExp regular expression to match code name base of modules
+         * @return clone of this configuration with enable modules set to regExp value
+         * @since 1.55
+         */
+        public Configuration enableModules(String clusterRegExp, String moduleRegExp) {
+            List<String> arr = new ArrayList<String>();
+            if (this.moduleRegExp != null) {
+                arr.addAll(this.moduleRegExp);
+            }
+            arr.add(clusterRegExp);
+            arr.add(moduleRegExp);
+            return new Configuration(this.clusterRegExp, arr, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         Configuration classLoader(ClassLoader parent) {
@@ -415,7 +455,7 @@ public class NbModuleSuite {
             File[] boot = new File(platform, "lib").listFiles();
             List<URL> bootCP = new ArrayList<URL>();
             for (int i = 0; i < boot.length; i++) {
-                URL u = boot[i].toURL();
+                URL u = boot[i].toURI().toURL();
                 if (u.toExternalForm().endsWith(".jar")) {
                     bootCP.add(u);
                 }
@@ -572,16 +612,18 @@ public class NbModuleSuite {
             if (config.clusterRegExp != null) {
                 File plat = findPlatform();
 
-                for (File f : plat.getParentFile().listFiles()) {
-                    if (f.equals(plat)) {
-                        continue;
-                    }
-                    if (!f.getName().matches(config.clusterRegExp)) {
-                        continue;
-                    }
-                    File m = new File(new File(f, "config"), "Modules");
-                    if (m.exists()) {
-                        clusters.add(f);
+                for (String c : config.clusterRegExp) {
+                    for (File f : plat.getParentFile().listFiles()) {
+                        if (f.equals(plat)) {
+                            continue;
+                        }
+                        if (!f.getName().matches(c)) {
+                            continue;
+                        }
+                        File m = new File(new File(f, "config"), "Modules");
+                        if (m.exists()) {
+                            clusters.add(f);
+                        }
                     }
                 }
             }
@@ -633,6 +675,9 @@ public class NbModuleSuite {
                         throw new IllegalStateException("Cannot find version:\n" + manifest);
                     }
                     File jar = jarFromURL(url);
+                    if (jar == null) {
+                        continue;
+                    }
                     if (jar.getParentFile().getName().equals("lib")) {
                         // Otherwise will get DuplicateException.
                         continue;
@@ -668,7 +713,11 @@ public class NbModuleSuite {
             if (m.matches()) {
                 return new File(URI.create(m.group(1)));
             } else {
-                throw new IllegalStateException(u.toExternalForm());
+                if (!u.getProtocol().equals("file")) {
+                    throw new IllegalStateException(u.toExternalForm());
+                } else {
+                    return null;
+                }
             }
         }
 
@@ -765,34 +814,49 @@ public class NbModuleSuite {
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
         private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
         
-        private static void turnModules(File ud, TreeSet<String> modules, String regExp, File... clusterDirs) throws IOException {
+        private static void turnModules(File ud, TreeSet<String> modules, List<String> regExp, File... clusterDirs) throws IOException {
+            if (regExp == null) {
+                return;
+            }
             File config = new File(new File(ud, "config"), "Modules");
             config.mkdirs();
 
-            Pattern modPattern = regExp == null ? null : Pattern.compile(regExp);
-            for (File c : clusterDirs) {
-                File modulesDir = new File(new File(c, "config"), "Modules");
-                File[] allModules = modulesDir.listFiles();
-                if (allModules == null) {
-                    continue;
+            Iterator<String> it = regExp.iterator();
+            for (;;) {
+                if (!it.hasNext()) {
+                    break;
                 }
-                for (File m : allModules) {
-                    String n = m.getName();
-                    if (n.endsWith(".xml")) {
-                        n = n.substring(0, n.length() - 4);
-                    }
-                    n = n.replace('-', '.');
-
-                    String xml = asString(new FileInputStream(m), true);
-                    
-                    boolean contains = modules.contains(n);
-                    if (!contains && modPattern != null) {
-                        contains = modPattern.matcher(n).matches();
-                    }
-                    if (!contains) {
+                String clusterReg = it.next();
+                String moduleReg = it.next();
+                Pattern modPattern = Pattern.compile(moduleReg);
+                for (File c : clusterDirs) {
+                    if (!c.getName().matches(clusterReg)) {
                         continue;
                     }
-                    enableModule(xml, contains, new File(config, m.getName()));
+
+                    File modulesDir = new File(new File(c, "config"), "Modules");
+                    File[] allModules = modulesDir.listFiles();
+                    if (allModules == null) {
+                        continue;
+                    }
+                    for (File m : allModules) {
+                        String n = m.getName();
+                        if (n.endsWith(".xml")) {
+                            n = n.substring(0, n.length() - 4);
+                        }
+                        n = n.replace('-', '.');
+
+                        String xml = asString(new FileInputStream(m), true);
+
+                        boolean contains = modules.contains(n);
+                        if (!contains && modPattern != null) {
+                            contains = modPattern.matcher(n).matches();
+                        }
+                        if (!contains) {
+                            continue;
+                        }
+                        enableModule(xml, contains, new File(config, m.getName()));
+                    }
                 }
             }
         }
