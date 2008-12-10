@@ -48,19 +48,15 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.editor.model.CssRule;
-import org.netbeans.modules.css.gsf.CSSParserResult;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.editor.model.CssModel;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
 /**
@@ -218,16 +214,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
         return OffsetRange.NONE;
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
         //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
 
-        CSSParserResult result = (CSSParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
-        SimpleNode root = result.root();
+//        CSSGSFParserResult result = (CSSGSFParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
+        SimpleNode root = ((CSSGSFParserResult)info).root();
+        Snapshot snapshot = info.getSnapshot();
 
         if(root != null) {
             //find leaf at the position
-            SimpleNode node = SimpleNodeUtil.findDescendant(root, astOffset(result.getTranslatedSource(), caretOffset));
+            SimpleNode node = SimpleNodeUtil.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
@@ -246,15 +243,13 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //the bottom most element represents the whole parse tree, replace it by the document
         //range since they doesn't need to be the same
         if(!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getDocument().getLength()));
+            ranges.set(ranges.size() - 1, new OffsetRange(0, 
+                    info.getSnapshot().getSource().getDocument().getLength()));
         }
 
         return ranges;
     }
 
-    private int astOffset(TranslatedSource source, int offset) {
-        return source == null ? offset : source.getAstOffset(offset);
-    }
 
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
