@@ -57,7 +57,6 @@ class UpdatedRowContext {
     public UpdatedRowContext() {
     }
 
-    // TODO: We can defer creating these statements till user request to execute
     public void addUpdates(int row, int col, Object value, TableModel tblModel)  {
         Map<Integer, Object> rowMap = changedData.get(row);
         if(rowMap == null){

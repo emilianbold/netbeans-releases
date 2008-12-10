@@ -207,7 +207,7 @@ class DataViewTableUI extends ExtendedJTable {
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                handler.cancelEditPerformed();
+                handler.cancelEditPerformed(true);
             }
         });
         tablePopupMenu.add(miCancelEdits);

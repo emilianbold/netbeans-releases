@@ -326,7 +326,7 @@ class DataViewUI extends JPanel {
                 } else if (src.equals(commit)) {
                     actionHandler.commitActionPerformed(false);
                 } else if (src.equals(cancel)) {
-                    actionHandler.cancelEditPerformed();
+                    actionHandler.cancelEditPerformed(false);
                 } else if (src.equals(deleteRow)) {
                     actionHandler.deleteRecordActionPerformed();
                 } else if (src.equals(insert)) {

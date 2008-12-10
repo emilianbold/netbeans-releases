@@ -76,12 +76,29 @@ class DataViewActionHandler {
         return doCalculation;
     }
 
-    void cancelEditPerformed() {
+    void cancelEditPerformed(boolean selectedOnly) {
+
         synchronized (dataView) {
-            dataView.getUpdatedRowContext().resetUpdateState();
-            dataView.setRowsInTableModel();
-            dataViewUI.setCancelEnabled(false);
-            dataViewUI.setCommitEnabled(false);
+//            if(selectedOnly) {
+//                DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
+//                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+//                int[] rows = rsTable.getSelectedRows();
+//                for (int row = 0; row < rows.length; row++) {
+//                    updatedRowCtx.resetUpdateState(row);
+//                }
+//
+//                // need to reset for this column
+//                // dataView.setRowsInTableModel();
+//                if(updatedRowCtx.getUpdateKeys().isEmpty()){
+//                    dataViewUI.setCancelEnabled(false);
+//                    dataViewUI.setCommitEnabled(false);
+//                }
+//            } else {
+                dataView.getUpdatedRowContext().resetUpdateState();
+                dataView.setRowsInTableModel();
+                dataViewUI.setCancelEnabled(false);
+                dataViewUI.setCommitEnabled(false);
+//            }
         }
     }
 
