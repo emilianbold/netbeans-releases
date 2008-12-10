@@ -331,7 +331,7 @@ public class PHPIndexer implements Indexer {
 
         public void analyze() throws IOException {
 
-            IndexDocument defaultDocument = factory.createDocument(40); // TODO - measure!
+            final IndexDocument defaultDocument = factory.createDocument(40); // TODO - measure!
             documents.add(defaultDocument);
 
             root = result.getProgram();
@@ -348,22 +348,29 @@ public class PHPIndexer implements Indexer {
                 Exceptions.printStackTrace(ex);
             }
 
-            assert processedFileURL.startsWith("file:");
-            String processedFileAbsPath = processedFileURL.substring("file:".length());
-            StringBuilder includes = new StringBuilder();
-
+            final String processedFileAbsPath = processedFileURL.substring("file:".length());
+            final StringBuilder includes = new StringBuilder();
             for (Statement statement : root.getStatements()){
-                if (statement instanceof ExpressionStatement){
-                    ExpressionStatement expressionStatement = (ExpressionStatement) statement;
-
-                    if (expressionStatement.getExpression() instanceof Assignment) {
-                        Assignment assignment = (Assignment) expressionStatement.getExpression();
-                        indexVarsInAssignment(assignment, defaultDocument);
+                new DefaultTreePathVisitor() {
+                    @Override
+                    public void visit(Assignment node) {
+                        List<ASTNode> path = getPath();
+                        boolean indexVariableEnabled = true;
+                        for (ASTNode aSTNode : path) {
+                            if (aSTNode instanceof FunctionDeclaration) {
+                                indexVariableEnabled = false;
+                                break;
+                            }
+                        }
+                        if (indexVariableEnabled) {
+                            indexVarsInAssignment(node, defaultDocument);
+                        }
+                        super.visit(node);
                     }
 
-                    if (expressionStatement.getExpression() instanceof Include) {
-                        Include include = (Include) expressionStatement.getExpression();
-
+                    @Override
+                    public void visit(Include node) {
+                        Include include = (Include) node;
                         Expression argExpression = include.getExpression();
 
                         if (argExpression instanceof ParenthesisExpression) {
@@ -381,10 +388,11 @@ public class PHPIndexer implements Indexer {
                                 includes.append(incl + ";"); //NOI18N
                             }
                         }
-                    }
-                }
-            }
 
+                        super.visit(node);
+                    }
+                }.scan(statement);
+            }
             defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
         }
 

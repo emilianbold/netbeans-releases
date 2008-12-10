@@ -47,7 +47,7 @@ import org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener.ListenersN
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet.ServletsNode;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 

@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
                 </condition>
                 <property name="javac.debug" value="true"/>
                 <available file="${{meta.inf}}/MANIFEST.MF" property="has.custom.manifest"/>
-                <condition property="cflasses.dir" value="${{build.ear.classes.dir}}">
+                <condition property="classes.dir" value="${{build.ear.classes.dir}}">
                     <isset property="dist.ear.dir"/>
                 </condition>
                 <property name="classes.dir" value="${{build.classes.dir}}"/>

@@ -45,6 +45,8 @@ import org.netbeans.api.project.Project;
 import java.util.List;
 import org.netbeans.modules.profiler.categories.Categorization;
 import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.modules.profiler.j2ee.selector.EJBSelectionTreeBuilder;
+import org.netbeans.modules.profiler.j2ee.selector.PlainWebSelectionTreeBuilder;
 import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
 
 /**
@@ -59,6 +61,7 @@ public class LookupProvider {
             return new ArrayList() {
             {
                 add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-web-project"))); // NOI18N
+                add(new PlainWebSelectionTreeBuilder(project, true));
             }
         };
         }
@@ -75,6 +78,8 @@ public class LookupProvider {
                 builders.add(new CategoryBuilder(project, "org-netbeans-modules-j2ee-ejbjarproject")); // NOI18N
                 builders.add(new CategoryBuilder(project, "org-netbeans-modules-web-project")); // NOI18N
                 add(new Categorization(project, builders)); // NOI18N
+                add(new PlainWebSelectionTreeBuilder(project, true));
+                add(new EJBSelectionTreeBuilder(project, true));
             }
         };
         }
@@ -88,6 +93,7 @@ public class LookupProvider {
             return new ArrayList() {
             {
                 add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-j2ee-ejbjarproject"))); // NOI18N
+                add(new EJBSelectionTreeBuilder(project, true));
             }
         };
         }

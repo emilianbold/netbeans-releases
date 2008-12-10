@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
             <buildpath location="python.project"/>
             <buildpath location="python.help"/>
             <buildpath location="python.options"/>
+            <buildpath location="python.tests"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>
@@ -104,6 +105,7 @@ made subject to such option by the copyright holder.
             <buildpath location="python.project"/>
             <buildpath location="python.help"/>
             <buildpath location="python.options"/>
+            <buildpath location="python.tests"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>

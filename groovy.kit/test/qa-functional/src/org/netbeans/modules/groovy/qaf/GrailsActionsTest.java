@@ -47,10 +47,15 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
@@ -64,6 +69,7 @@ import org.openide.windows.TopComponent;
 public class GrailsActionsTest extends GrailsTestCase {
 
     private static final String APP_PORT = "9998"; //NOI18N
+    private static final String PLUGIN_NAME = "testing"; //NOI18N
     private static boolean isPortSet = false;
     private OpenAction oa = new OpenAction();
 
@@ -94,6 +100,39 @@ public class GrailsActionsTest extends GrailsTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
         getDomainClassNode("Book").performPopupAction(label); //NOI18N
         waitFor("generate-all", "Finished generation for domain class"); //NOI18N
+    }
+
+    /**
+     * Test for Grails Plugins action
+     *  -install plugin
+     */
+    public void testManagePlugins() {
+        //open plugin manager and install a plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        //New Plugins
+        String tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.newPlugins");
+        jtpo.selectPage(tabTitle);
+        JListOperator jlo = new JListOperator(jtpo);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 500000); //NOI18N
+        jlo.waitItem("activemq", 1);
+        jlo.selectItem(PLUGIN_NAME);
+        //Install
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //Installed
+        tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installed");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 240000); //NOI18N
+        jtpo.selectPage(tabTitle);
+        jlo = new JListOperator(jtpo);
+        jlo.waitItem(PLUGIN_NAME, 0);
+        assertEquals(1, jlo.getModel().getSize());
+        ndo.closeByButton();
     }
 
     /**
@@ -199,6 +238,35 @@ public class GrailsActionsTest extends GrailsTestCase {
         //       http://www.netbeans.org/issues/show_bug.cgi?id=154920)
         runGrailsApp();
         stopGrailsApp();
+    }
+
+    /**
+     * Test for Grails Plugins action
+     *  -uninstall plugin
+     */
+    public void testUninstallPlugin() {
+        //open the dialog again and uninstall previously installed plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        JListOperator jlo = new JListOperator(jtpo);
+        jlo.selectItem(PLUGIN_NAME);
+        //Uninstall
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.uninstallButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //XXX - need in case project is versioned by hg (bug?)
+        long end = System.currentTimeMillis() + 240000;
+        while (jlo.getModel().getSize() > 0 && System.currentTimeMillis() < end) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {}
+        }
+        assertEquals(0, jlo.getModel().getSize());
+        ndo.closeByButton();
     }
 
     /**

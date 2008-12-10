@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,17 +41,7 @@
 
 package org.netbeans.api.java.source;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
 
 /**Binding between virtual Java source and the real source.
  * Please note that this class is needed only for clients that need to work
@@ -63,10 +53,6 @@ import org.openide.filesystems.FileObject;
  */
 public final class PositionConverter {
     
-    private int offset;
-    private int length;
-    private JTextComponent component;
-    
     private final Snapshot snapshot;
     
     PositionConverter (final Snapshot snapshot) {
@@ -74,13 +60,6 @@ public final class PositionConverter {
         this.snapshot = snapshot;        
     }
     
-    PositionConverter (final FileObject fo, int offset, int length, final JTextComponent component) {
-//        this.fo = fo;
-        this.offset = offset;
-        this.length = length;
-        this.component = component;
-        this.snapshot = null;
-    }
     // API of the class --------------------------------------------------------
 
     /**Compute position in the document for given position in the virtual
@@ -104,109 +83,5 @@ public final class PositionConverter {
     public int getJavaSourcePosition(int originalPosition) {
         return snapshot.getEmbeddedOffset(originalPosition);
     }        
-    // Nested classes ----------------------------------------------------------
 
-    private class Filter implements JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation, DocumentListener {
-        
-        CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
-        
-        public Filter() {
-            component.getDocument().addDocumentListener(this);
-        }
-
-        public Reader filterReader(final Reader r) {
-            return new Reader() {
-                
-                private int next = 0;
-                private String text = convert(component.getText());
-
-                public int read(char[] cbuf, int off, int len) throws IOException {
-                    synchronized (lock) {
-                        if (off < 0 || off > cbuf.length || len < 0 || (off + len) > cbuf.length) {
-                            throw new IndexOutOfBoundsException();
-                        } else if (len == 0) {
-                            return 0;
-                        }
-                        if (text.length() == 0 && length == 0)
-                            return r.read(cbuf, off, len);
-                        if (next < offset) {
-                            int n = r.read(cbuf, off, Math.min(offset - next, len));
-                            next += n;
-                            return n;
-                        }
-                        if (next == offset)
-                            r.skip(length);
-                        if (next < offset + text.length()) {
-                            int n = Math.min(offset + text.length() - next, len);
-                            text.getChars(next - offset, next - offset + n, cbuf, off);
-                            next += n;
-                            return n;
-                        }
-                        return r.read(cbuf, off, len);
-                    }
-                }
-
-                public void close() throws IOException {
-                    r.close();
-                }
-            };
-        }
-
-        public CharSequence filterCharSequence(CharSequence charSequence) {
-            return charSequence.subSequence(0, offset) + 
-                    convert(component.getText()) + 
-                    charSequence.subSequence(offset + length, charSequence.length());
-        }
-
-        public Writer filterWriter(Writer w) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            listeners.addIfAbsent(listener);
-        }
-        
-        public void removeChangeListener(ChangeListener listener) {
-            listeners.remove(listener);
-        }
-    
-        public int getOriginalPosition(int javaSourcePosition) {
-            if (javaSourcePosition < offset)
-                return -1;
-            int diff = javaSourcePosition - offset;
-            return diff <= convert(component.getText()).length() ? diff : -1;
-        }
-
-        public int getJavaSourcePosition(int originalPosition) {
-            return offset + originalPosition;
-        }
-    
-        public void insertUpdate(DocumentEvent event) {
-            this.changedUpdate(event);
-        }
-
-        public void removeUpdate(DocumentEvent event) {
-            this.changedUpdate(event);
-        }
-
-        public void changedUpdate(DocumentEvent event) {
-            for (ChangeListener changeListener : listeners)
-                changeListener.stateChanged(null);
-        }
-        
-        private String convert(String string) {
-            StringBuilder sb = new StringBuilder(string.length());
-            for (int i = 0; i < string.length(); i++) {
-                char c = string.charAt(i);
-                if (c == '\r') { //NOI18N
-                    if (i + 1 >= string.length() || string.charAt(i + 1) != '\n') { //NOI18N
-                        sb.append('\n'); //NOI18N
-                    }
-                } else {
-                    sb.append(c);
-                }
-            }
-            return sb.toString();
-        }
-    }
 }

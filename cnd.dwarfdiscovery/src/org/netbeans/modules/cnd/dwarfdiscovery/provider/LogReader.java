@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class LogReader {
-    private static boolean TRACE = false;
+    private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
     
     private String workingDir;
     private String baseWorkingDir;

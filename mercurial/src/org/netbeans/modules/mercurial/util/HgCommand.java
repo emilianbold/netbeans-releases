@@ -932,28 +932,12 @@ public class HgCommand {
                                 bShowMerges, true, -1, logger);
     }
 
-    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
-         return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
-    }
-
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
          return getLogMessages(rootUrl, files, null, null, true, false, -1, logger);
-    }
-
-    public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
-         return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);
-    }
-
-    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
-         return getLogMessages(rootUrl, files, null, null, true, true, limit, logger);
-    }
-
-    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files,  OutputLogger logger) {
-         return getLogMessages(rootUrl, files, null, null, true, true, -1, logger);
     }
 
      public static HgLogMessage[] getLogMessages(final String rootUrl,
@@ -970,7 +954,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             List<File> filesList = files != null ? new ArrayList<File>(files) : null;
-            list = HgCommand.doLogForHistory(root,
+            list = HgCommand.doLog(root,
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(rootUrl, filesList, list, messages);
@@ -1084,70 +1068,7 @@ public class HgCommand {
         }
         return null;
     }
-
-    /**
-     * Retrives the log information with just first line of commit message for the specified file.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File of file which revision history is to be retrieved.
-     * @return List<String> list of the log entries for the specified file.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-     public static List<String> doLogShort(File repository, File file, OutputLogger logger) throws HgException {
-        return doLog(repository, file, HG_LOG_TEMPLATE_SHORT_CMD, false, logger);
-     }
-
-     /**
-     * Retrives the log information with the full commit message for the specified file.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File of file which revision history is to be retrieved.
-     * @return List<String> list of the log entries for the specified file.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-     public static List<String> doLogLong(File repository, File file, OutputLogger logger) throws HgException {
-        return doLog(repository, file, HG_LOG_TEMPLATE_LONG_CMD, false, logger);
-     }
-
-     /**
-     * Retrives the log information for the specified file, as defined by the LOG_TEMPLATE.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File of file which revision history is to be retrieved.
-     * @param String Template specifying how output should be returned
-     * @param boolean flag indicating if debug param should be used - required to get all file mod, add, del info
-     * @return List<String> list of the log entries for the specified file.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doLog(File repository, File file, String LOG_TEMPLATE, boolean bDebug, OutputLogger logger) throws HgException {
-        if (repository == null ) return null;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_LOG_CMD);
-        if (!file.isDirectory()) {
-            command.add(HG_OPT_FOLLOW);
-        }
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        if(bDebug){
-            command.add(HG_LOG_DEBUG_CMD);
-        }
-        command.add(LOG_TEMPLATE);
-        command.add(file.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-             } else if (isErrorAbort(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
-             }
-        }
-        return list;
-    }
-
+    
     /**
      * Retrives the log information for the specified files.
      *
@@ -1158,63 +1079,7 @@ public class HgCommand {
      * @return List<String> list of the log entries for the specified file.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doLog(File repository, List<File> files, String LOG_TEMPLATE, boolean bDebug, OutputLogger logger) throws HgException {
-        if (repository == null ) return null;
-        if (files != null && files.isEmpty()) return null;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
-        command.add(HG_LOG_CMD);
-        boolean doFollow = true;
-        if( files != null){
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    doFollow = false;
-                    break;
-                }
-            }
-        }
-        if (doFollow) {
-            command.add(HG_OPT_FOLLOW);
-        }
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        if(bDebug){
-            command.add(HG_LOG_DEBUG_CMD);
-        }
-        if(LOG_TEMPLATE != null){
-            command.add(LOG_TEMPLATE);
-        }
-        if( files != null){
-            for (File f : files) {
-                command.add(f.getAbsolutePath());
-            }
-        }
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-             } else if (isErrorAbort(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
-             }
-        }
-        return list;
-    }
-
-    /**
-     * Retrives the log information for the specified files.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param List<File> of files which revision history is to be retrieved.
-     * @param String Template specifying how output should be returned
-     * @param boolean flag indicating if debug param should be used - required to get all file mod, add, del info
-     * @return List<String> list of the log entries for the specified file.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doLogForHistory(File repository, List<File> files,
+    private static List<String> doLog(File repository, List<File> files,
             String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
