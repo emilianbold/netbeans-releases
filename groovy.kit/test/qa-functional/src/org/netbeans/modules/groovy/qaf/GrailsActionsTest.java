@@ -142,7 +142,7 @@ public class GrailsActionsTest extends GrailsTestCase {
      * Test Create view action on the domain class node
      *
      */
-    public void testCreateView() {
+    public void testGenerateViews() {
         //Generate Views
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateViewsAction");
         getDomainClassNode("Author").performPopupAction(label); //NOI18N
