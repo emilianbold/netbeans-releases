@@ -73,6 +73,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
+import org.openide.util.Parameters;
 
 /**
  * Class that collects changes built during a modification task run.
@@ -412,9 +413,16 @@ public final class ModificationResult {
      * @param   there can be more resulting source, user has to specify
      *          which wants to preview.
      * @return  if changes are applied source looks like return string
+     * @throws  IllegalArgumentException if the provided {@link FileObject} is not
+     *                                   modified in this {@link ModificationResult}
      */
-    public String getResultingSource(FileObject fileObject) throws IOException {
-        assert fileObject != null : "Provided fileObject is null";
+    public String getResultingSource(FileObject fileObject) throws IOException, IllegalArgumentException {
+        Parameters.notNull("fileObject", fileObject);
+
+        if (!getModifiedFileObjects().contains(fileObject)) {
+            throw new IllegalArgumentException("File: " + FileUtil.getFileDisplayName(fileObject) + " is not modified in this ModificationResult");
+        }
+        
         StringWriter writer = new StringWriter();
         commit(fileObject, diffs.get(fileObject), writer);
         
