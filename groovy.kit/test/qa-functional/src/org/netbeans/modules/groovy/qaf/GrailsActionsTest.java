@@ -41,7 +41,6 @@ package org.netbeans.modules.groovy.qaf;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
@@ -93,6 +92,17 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     /**
+     * Test Generate all action on the domain class node
+     *
+     */
+    public void testGenerateAll() {
+        //Generate All
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
+        getDomainClassNode("Book").performPopupAction(label); //NOI18N
+        waitFor("generate-all", "Finished generation for domain class"); //NOI18N
+    }
+
+    /**
      * Test for Grails Plugins action
      *  -install plugin
      */
@@ -123,17 +133,6 @@ public class GrailsActionsTest extends GrailsTestCase {
         jlo.waitItem(PLUGIN_NAME, 0);
         assertEquals(1, jlo.getModel().getSize());
         ndo.closeByButton();
-    }
-
-    /**
-     * Test Generate all action on the domain class node
-     *
-     */
-    public void testGenerateAll() {
-        //Generate All
-        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
-        getDomainClassNode("Book").performPopupAction(label); //NOI18N
-        waitFor("generate-all", "Finished generation for domain class"); //NOI18N
     }
 
     /**
