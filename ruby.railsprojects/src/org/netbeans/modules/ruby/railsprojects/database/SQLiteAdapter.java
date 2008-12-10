@@ -46,7 +46,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  *
  * @author Erno Mononen
  */
-class SQLiteAdapter implements RailsDatabaseConfiguration {
+class SQLiteAdapter extends RailsDatabaseConfiguration {
 
     private final String version;
 

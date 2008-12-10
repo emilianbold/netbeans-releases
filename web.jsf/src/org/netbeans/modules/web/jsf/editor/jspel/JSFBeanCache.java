@@ -68,7 +68,7 @@ public class JSFBeanCache {
         
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], false);
+                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], true);
                     if (model != null) {
                         FacesConfig facesConfig = model.getRootComponent();
                         if (facesConfig != null) {

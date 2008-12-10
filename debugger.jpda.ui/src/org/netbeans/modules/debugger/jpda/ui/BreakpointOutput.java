@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -51,6 +52,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -86,6 +88,7 @@ PropertyChangeListener {
         ("\\{exceptionMessage\\}");
     private static final Pattern expressionPattern = Pattern.compile
         ("\\{=(.*?)\\}");
+    private static final String threadStartedCondition = "{? threadStarted}";
 
     private IOManager               ioManager;
     private JPDADebugger            debugger;
@@ -320,6 +323,16 @@ PropertyChangeListener {
                     (exceptionMessage);
             }
         }
+        if (event.getSource() instanceof ThreadBreakpoint) {
+            Variable startedThread = event.getVariable();
+            if (startedThread instanceof ObjectVariable) {
+                // started
+                printText = selectCondition(printText, threadStartedCondition, true);
+            } else {
+                // died
+                printText = selectCondition(printText, threadStartedCondition, false);
+            }
+        }
              
         // 5) resolve all expressions {=expression}
         for (;;) {
@@ -335,7 +348,22 @@ PropertyChangeListener {
                     }
                     theDebugger = debugger;
                 }
-                value = theDebugger.evaluate (expression).getValue ();
+                CallStackFrame csf = null;
+                try {
+                    CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
+                    if (topFramePtr.length > 0) csf = topFramePtr[0];
+                } catch (AbsentInformationException aiex) {}
+                try {
+                value = ((Variable) theDebugger.getClass().getMethod("evaluate", String.class, CallStackFrame.class).
+                        invoke(theDebugger, expression, csf)).getValue();
+                } catch (InvocationTargetException itex) {
+                    if (itex.getTargetException() instanceof InvalidExpressionException) {
+                        throw (InvalidExpressionException) itex.getTargetException();
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                //value = theDebugger.evaluate (expression, csf).getValue ();
                 value = backslashEscapePattern.matcher (value).
                     replaceAll ("\\\\\\\\");
                 value = dollarEscapePattern.matcher (value).
@@ -360,6 +388,46 @@ PropertyChangeListener {
             printText = printText + "\n***\n"+ thr.getLocalizedMessage()+"\n***\n";
         }
         return printText;
+    }
+
+    private static String selectCondition(String printText, String condition, boolean isTrue) {
+        int index = printText.indexOf(condition);
+        if (index >= 0) {
+            index += condition.length();
+            int l = printText.length();
+            while (index < l && printText.charAt(index) != '{') index++;
+            if (index < l) {
+                int index2 = findPair(printText, index+1, '{', '}');
+                if (index2 > 0) {
+                    if (isTrue) {
+                        return printText.substring(index + 1, index2).trim();
+                    }
+                    index = index2 + 1;
+                    while (index < l && printText.charAt(index) != '{') index++;
+                    if (index < l) {
+                        index2 = findPair(printText, index+1, '{', '}');
+                        if (index2 > 0) {
+                            return printText.substring(index + 1, index2).trim();
+                        }
+                    }
+                }
+            }
+        }
+        return printText;
+    }
+
+    private static int findPair(String printText, int index, char co, char cc) {
+        int l = printText.length();
+        int ci = 1; // Expecting that opening character was already
+        while (index < l) {
+            char c = printText.charAt(index);
+            if (c == co) ci++;
+            if (c == cc) ci--;
+            if (ci != 0) index++;
+            else break;
+        }
+        if (index < l) return index;
+        else return -1;
     }
 
     private void lookupIOManager () {

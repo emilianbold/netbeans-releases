@@ -207,7 +207,7 @@ public class DataViewDBTableTest extends NbTestCase {
     /**
      * Test of getColumnToolTips method, of class DataViewDBTable.
      */
-    public void testGetColumnToolTips() {
+/*    public void testGetColumnToolTips() {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
@@ -218,6 +218,6 @@ public class DataViewDBTableTest extends NbTestCase {
                 " </tr><tr> <td>&nbsp;PK</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr></table> </html>";
         String[] result = instance.getColumnToolTips();
         assertEquals(expResult, result[0]);
-    }
+    }*/
 
 }

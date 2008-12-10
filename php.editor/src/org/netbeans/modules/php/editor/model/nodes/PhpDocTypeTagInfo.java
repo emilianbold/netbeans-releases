@@ -41,6 +41,9 @@ package org.netbeans.modules.php.editor.model.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
@@ -53,22 +56,37 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
 
     private PHPDocTypeTag typeTag;
     private Kind kind;
+    private String typeName;
 
-    private PhpDocTypeTagInfo(PHPDocTypeTag typeTag, PHPDocNode node, Kind kind) {
+    private PhpDocTypeTagInfo(PHPDocTypeTag typeTag, PHPDocNode node, String typeName, Kind kind) {
         super(node);
         this.typeTag = typeTag;
         this.kind = kind;
+        this.typeName = typeName;
     }
-
-    public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag) {
+    public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Scope scope) {
         List<PhpDocTypeTagInfo> retval = new ArrayList<PhpDocTypeTagInfo>();
         List<PHPDocNode> types = typeTag.getTypes();
-        for (PHPDocNode docNode : types) {
-            retval.add(new PhpDocTypeTagInfo(typeTag, docNode, Kind.CLASS));
+        Kind kind = Kind.CLASS;
+        if (!types.isEmpty()) {
+            for (PHPDocNode docNode : types) {
+                retval.add(new PhpDocTypeTagInfo(typeTag, docNode, docNode.getValue(), kind));
+            }
         }
         if (typeTag instanceof PHPDocVarTypeTag) {
-            PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) typeTag;
-            retval.add(new PhpDocTypeTagInfo(typeTag, varTypeTag.getVariable(),Kind.VARIABLE));
+            if (scope instanceof ClassScope) {
+                kind = Kind.FIELD;
+            } else {
+                kind = Kind.VARIABLE;
+            }
+            PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) typeTag;            
+            if (types.isEmpty()) {                
+                retval.add(new PhpDocTypeTagInfo(typeTag, varTypeTag.getVariable(), varTypeTag.getVariable().getValue(), kind));
+            } else {
+                for (PHPDocNode docNode : types) {
+                    retval.add(new PhpDocTypeTagInfo(typeTag, varTypeTag.getVariable(), docNode.getValue(), kind));
+                }
+            }
         }
         return retval;
     }
@@ -76,6 +94,10 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     @Override
     public Kind getKind() {
         return kind;
+    }
+
+    public String getTypeName() {
+        return typeName != null ? typeName : null;
     }
 
     @Override
@@ -93,9 +115,13 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     @Override
     public OffsetRange getRange() {
         PHPDocNode node = getOriginalNode();
-        if (Kind.VARIABLE.equals(getKind())) {
+        if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
             return new OffsetRange(node.getStartOffset()+1, node.getStartOffset()+getName().length());
         }
         return new OffsetRange(node.getStartOffset(), node.getStartOffset()+getName().length());
+    }
+
+    public PhpModifiers getAccessModifiers() {
+        return new PhpModifiers(PhpModifiers.PUBLIC);
     }
 }

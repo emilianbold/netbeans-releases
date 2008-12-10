@@ -67,6 +67,16 @@
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-php-editor-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-php-editor-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-php-editor-PHPCodeTemplateFilter$Factory.instance"/>
                 </folder>

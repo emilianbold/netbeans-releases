@@ -3,9 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
 <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <polyline transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" points="0,0 0,20 20,20 20,40 40,40 40,60" fill="blue" stroke="black" stroke-width="1"/>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.Polyline" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polyline_16.png" />
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polyline_32.png" />
      

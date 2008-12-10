@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Wraps a <code>RailsDatabaseConfiguration</code> and modifies database.yml
@@ -59,7 +58,7 @@ import org.openide.util.Parameters;
  *
  * @author Erno Mononen
  */
-public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
+public class ConfigurableRailsAdapter extends RailsDatabaseConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigurableRailsAdapter.class.getName());
     private final RailsDatabaseConfiguration delegate;
@@ -109,49 +108,6 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         return delegate.getDisplayName();
     }
 
-
-    /**
-     * Replaces the value of the given attribute with the given value. If the specified
-     * attribute was not found and <code>addAfter</code> is specified, adds the attribute.
-     * @param doc the doc representing a yaml file
-     * @param attributeName the name of the attribute to replace
-     * @param attributeValue the value for the attribute
-     * @param addAfter the name of the attribute after which the specified <code>attributeName</code>
-     * should be created. May be <code>null</code> in which case the attribute is not created
-     * if it does not exist already. A non-null <code>addAfter</code> has no effect if
-     * the attribute already exists.
-     * @throws javax.swing.text.BadLocationException
-     */
-    private void changeAttribute(Document doc, String attributeName, String attributeValue, String addAfter) throws BadLocationException {
-        Parameters.notWhitespace("attributeName", attributeName); //NOI18N
-        if (attributeValue == null || "".equals(attributeValue.trim())) {
-            // assume the default generated values are preferred
-            return;
-        }
-        String text = doc.getText(0, doc.getLength());
-        int attributeNameIndex = text.indexOf(attributeName);
-        if (attributeNameIndex == -1) {
-            if (addAfter != null) {
-                RailsAdapters.addProperty(doc, attributeName, attributeValue, addAfter);
-            } else {
-                // can't do much
-                return;
-            }
-        }
-        int attributeNameEndIndex = attributeNameIndex + attributeName.length();
-        int attributeValuelength = 0;
-        for (int i = attributeNameEndIndex; i < text.length(); i++) {
-            if ((text.charAt(i)) == '\n') { //NOI18N
-                break;
-            } else {
-                attributeValuelength++;
-            }
-        }
-        doc.remove(attributeNameEndIndex, attributeValuelength);
-        doc.insertString(attributeNameEndIndex, attributeValue != null ? " " + attributeValue : "", null);
-
-    }
-
     private void edit(FileObject dir) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
@@ -163,8 +119,8 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                     setDatabase(doc);
                     // see #132383 - need to force the creation of these attributes
                     // for the javadb adapter
-                    changeAttribute(doc, "username:", userName, "url:"); //NOI18N
-                    changeAttribute(doc, "password:", password, "username:"); //NOI18N
+                    RailsAdapters.changeAttribute(doc, "username:", userName, "url:"); //NOI18N
+                    RailsAdapters.changeAttribute(doc, "password:", password, "username:"); //NOI18N
                     // see #138294
                     handleTestAndProduction(doc);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
@@ -241,9 +197,9 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     private void changeDatabase(Document doc, String databaseName) throws BadLocationException {
         JdbcInfo jdbcInfo = getJdbcInfo();
         if (!jdbc || jdbcInfo == null) {
-            changeAttribute(doc, "database:", databaseName, null); //NOI18N
+            RailsAdapters.changeAttribute(doc, "database:", databaseName, null); //NOI18N
         } else {
-            changeAttribute(doc, "url:", jdbcInfo.getURL("localhost", databaseName), "adapter:"); //NOI18N
+            RailsAdapters.changeAttribute(doc, "url:", jdbcInfo.getURL("localhost", databaseName), "adapter:"); //NOI18N
         }
     }
 
@@ -256,14 +212,14 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         JdbcInfo jdbcInfo = getJdbcInfo();
         if (!jdbc || jdbcInfo == null) {
             // not using jdbc, so just set the database
-            changeAttribute(databaseYml, "database:", database, null); //NOI18N
+            RailsAdapters.changeAttribute(databaseYml, "database:", database, null); //NOI18N
             return;
         }
         // use the default database name if none was specified
         String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
 
         // change the adapter
-        changeAttribute(databaseYml, "adapter:", "jdbc", null); //NOI18N
+        RailsAdapters.changeAttribute(databaseYml, "adapter:", "jdbc", null); //NOI18N
         // add url and driver
         RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:"); //NOI18N
         RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:"); //NOI18N

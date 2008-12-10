@@ -46,6 +46,7 @@ import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
+ * Tests for Grails specific new file wizards
  *
  * @author lukas
  */
@@ -60,6 +61,9 @@ public class GrailsWizardsTest extends GrailsTestCase {
         return "GrailsWizards"; //NOI18N
     }
 
+    /**
+     * Test create new GSP file
+     */
     public void testGSPFile() {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.gsp.resources.Bundle", "Templates/Groovy/_view.gsp");
         createNewGroovyFile(getProject(), label);
@@ -68,42 +72,63 @@ public class GrailsWizardsTest extends GrailsTestCase {
         op.finish();
     }
 
+    /**
+     * Test create new Domain class
+     */
     public void testDomainClass() {
         createNewGrailsFile(getProject(), "Templates/Groovy/DomainClass.groovy", "MyDomainClass"); //NOI18N
         EditorOperator eo = new EditorOperator("MyDomainClass.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Controller
+     */
     public void testController() {
         createNewGrailsFile(getProject(), "Templates/Groovy/Controller.groovy", "MyController"); //NOI18N
         EditorOperator eo = new EditorOperator("MyControllerController.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Gant script
+     */
     public void testGantScript() {
         createNewGrailsFile(getProject(), "Templates/Groovy/GantScript.groovy", "MyGantScript"); //NOI18N
         EditorOperator eo = new EditorOperator("MyGantScript.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Service
+     */
     public void testService() {
         createNewGrailsFile(getProject(), "Templates/Groovy/Service.groovy", "MyService"); //NOI18N
         EditorOperator eo = new EditorOperator("MyServiceService.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Tag Library
+     */
     public void testTagLib() {
         createNewGrailsFile(getProject(), "Templates/Groovy/TagLib.groovy", "MyTagLib"); //NOI18N
         EditorOperator eo = new EditorOperator("MyTagLibTagLib.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Unit test
+     */
     public void testUnitTest() {
         createNewGrailsFile(getProject(), "Templates/Groovy/UnitTest.groovy", "MyUnitTest"); //NOI18N
         EditorOperator eo = new EditorOperator("MyUnitTestTests.groovy"); //NOI18N
         assertNotNull(eo);
     }
 
+    /**
+     * Test create new Integration test
+     */
     public void testIntegrationTest() {
         createNewGrailsFile(getProject(), "Templates/Groovy/IntegrationTest.groovy", "MyIntegrationTest"); //NOI18N
         EditorOperator eo = new EditorOperator("MyIntegrationTestTests.groovy"); //NOI18N

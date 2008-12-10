@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -47,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -77,13 +78,14 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     private CustomEditorConstraints customEditor;
     private JRadioButton radioButton;
     private TypeID parentTypeID;
+    private ItemLayouts layouts;
+    private int bitMask;
+    private HashMap<Integer, BitmaskItem> bits;
 
     private PropertyEditorLayout(TypeID parentTypeID) {
         super(NbBundle.getMessage(PropertyEditorLayout.class, "LBL_LAYOUT_STR_UCLABEL")); // NOI18N
         this.parentTypeID = parentTypeID;
-        initComponents();
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        initMap();
     }
 
     public static final PropertyEditorLayout createInstance() {
@@ -114,11 +116,45 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(PropertyEditorLayout.class, "ACSD_LAYOUT_STR")); // NOI18N
 
-        customEditor = new CustomEditorConstraints(0);
+        customEditor = new CustomEditorConstraints();
     }
 
     public JComponent getCustomEditorComponent() {
         return customEditor;
+    }
+
+    private void combineMaskWithGuiName(Integer value, BitmaskItem bitmaskItem) {
+        //guiItem.setSelected(layouts.isSet(bitmaskItem));
+        bits.put(value, bitmaskItem);
+    }
+
+    void initMap() {
+        bits = new HashMap<Integer, BitmaskItem>();
+        layouts = new ItemLayouts(0);
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_DEFAULT, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_DEFAULT));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_2, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_2));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_LEFT, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_LEFT));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_RIGHT, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_RIGHT));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_CENTER, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_CENTER));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_TOP, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_TOP));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_BOTTOM, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_BOTTOM));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_VCENTER, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VCENTER));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_NEWLINE_BEFORE, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_NEWLINE_BEFORE));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_NEWLINE_AFTER, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_NEWLINE_AFTER));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_SHRINK, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_SHRINK));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_VSHRINK, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VSHRINK));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_EXPAND, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_EXPAND));
+        combineMaskWithGuiName(ItemCD.VALUE_LAYOUT_VEXPAND, layouts.getBitmaskItem(ItemCD.VALUE_LAYOUT_VEXPAND));
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        assert EventQueue.isDispatchThread();
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
     }
 
     public JRadioButton getRadioButton() {
@@ -139,11 +175,9 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         if (superText != null) {
             return superText;
         }
-        if (customEditor == null) {
-            return null;
-        }
-        customEditor.setConstant(MidpTypes.getInteger((PropertyValue) super.getValue()));
-        return customEditor.getBitmaskAsText();
+       
+        setConstant(MidpTypes.getInteger((PropertyValue) super.getValue()));
+        return getBitmaskAsText();
     }
 
     public void setTextForPropertyValue(String text) {
@@ -219,10 +253,51 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return true;
     }
 
+    private void setConstant(int bitmask) {
+        layouts.setBitmask(bitmask);
+        this.bitMask = bitmask;
+    }
+
+    public String getBitmaskAsText() {
+        if (layouts.getBitmask() == ItemCD.VALUE_LAYOUT_DEFAULT) {
+            return layouts.getBitmaskItem(layouts.getBitmask()).getName();
+        } else if (layouts.getBitmask() == ItemCD.VALUE_LAYOUT_2) {
+            return layouts.getBitmaskItem(layouts.getBitmask()).getName();
+        }
+
+        int bitmaskRadioButton1 = 0;
+        int bitmaskRadioButton2 = 0;
+        StringBuffer bitmaskAsTextCheckBoxes = new StringBuffer();
+        StringBuffer bitmaskAsTextRadioButton1 = new StringBuffer();
+        StringBuffer bitmaskAsTextRadioButton2 = new StringBuffer();
+        StringBuffer separator = new StringBuffer(" | "); // NOI18N
+
+        for (Integer intValue : bits.keySet()) {
+            if (layouts.isSet(bits.get(intValue)) && bits.get(intValue).getAffectedBits() < 16 && bitmaskRadioButton1 < bits.get(intValue).getAffectedBits()) {
+                bitmaskRadioButton1 = bits.get(intValue).getAffectedBits();
+                bitmaskAsTextRadioButton1 = new StringBuffer(bits.get(intValue).getName());
+                bitmaskAsTextRadioButton1.append(separator);
+            } else if (layouts.isSet(bits.get(intValue)) && bits.get(intValue).getAffectedBits() >= 16 && bitmaskRadioButton2 < bits.get(intValue).getAffectedBits()) {
+                bitmaskRadioButton2 = bits.get(intValue).getAffectedBits();
+                bitmaskAsTextRadioButton2 = new StringBuffer(bits.get(intValue).getName());
+                bitmaskAsTextRadioButton2.append(separator);
+
+            } else if (layouts.isSet(bits.get(intValue)) &&
+                       bits.get(intValue).getAffectedBits() != ItemCD.VALUE_LAYOUT_DEFAULT &&
+                       bits.get(intValue).getAffectedBits() >= 0x30) {
+                bitmaskAsTextCheckBoxes.append(bits.get(intValue).getName());
+                bitmaskAsTextCheckBoxes.append(separator);
+            }
+        }
+
+        bitmaskAsTextRadioButton1.append(bitmaskAsTextRadioButton2.append(bitmaskAsTextCheckBoxes));
+        bitmaskAsTextRadioButton1.deleteCharAt(bitmaskAsTextRadioButton1.lastIndexOf(separator.toString().trim()));
+
+        return bitmaskAsTextRadioButton1.toString();
+    }
+
     private final class CustomEditorConstraints extends JPanel implements ItemListener {
 
-        private ItemLayouts layouts;
-        private Map<JToggleButton, BitmaskItem> bits;
         private JPanel generalPanel;
         private JPanel horizontalAlignmentPanel;
         private JPanel verticalAlignmentPanel;
@@ -232,14 +307,10 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         private JCheckBox defaultCheckBox;
         private JRadioButton horizontalAlignmentNoneCheckBox;
         private JRadioButton verticalAlignmentNoneCheckBox;
-        private int bitMask;
+        private List<JToggleButton> guiItems;
 
-        CustomEditorConstraints(int bitmask) {
-
-            this.bitMask = bitmask;
-            layouts = new ItemLayouts(bitmask);
-            bits = new HashMap<JToggleButton, BitmaskItem>();
-
+        CustomEditorConstraints() {
+            
             initComponents();
             setLayoutDefault(defaultCheckBox.isSelected());
         }
@@ -268,7 +339,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             JRadioButton centerButton;
             ButtonGroup buttonGroup;
 
-            List<JToggleButton> guiItems = new ArrayList<JToggleButton>();
+            guiItems = new ArrayList<JToggleButton>();
 
             setLayout(new GridLayout(6, 1));
             generalPanel = new JPanel();
@@ -505,15 +576,24 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             }
         }
 
-        public void setConstant(int bitmask) {
-            layouts.setBitmask(bitmask);
-            this.bitMask = bitmask;
+        private void integrateGuiItem(JToggleButton guiItem, BitmaskItem bitmaskItem) {
+            guiItem.setSelected(layouts.isSet(bitmaskItem));
+            guiItem.setName(Integer.toString(bitmaskItem.getAffectedBits()));
         }
 
         public void itemStateChanged(ItemEvent e) {
-            Object source = e.getItemSelectable();
+            Object component = e.getItemSelectable();
+            JToggleButton tButton;
 
-            if (source == defaultCheckBox) {
+            if (!(component instanceof JToggleButton)) {
+                return;
+            } else {
+                tButton = (JToggleButton) component;
+            }
+
+            String value =  tButton.getName();
+
+            if (value.equals(defaultCheckBox.getName())) {
                 boolean selected = (e.getStateChange() == ItemEvent.SELECTED);
                 setLayoutDefault(selected);
                 int newBitmask = 0;
@@ -522,24 +602,23 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
                 }
                 bitMask = newBitmask;
             } else {
-                BitmaskItem bitmaskItem = bits.get(source);
+                BitmaskItem bitmaskItem = bits.get(new Integer(String.valueOf(value)));
                 assert (bitmaskItem != null);
                 boolean state = (e.getStateChange() == ItemEvent.SELECTED);
                 bitMask = layouts.addToBitmask(bitmaskItem, state);
             }
         }
 
-        private void integrateGuiItem(JToggleButton guiItem, BitmaskItem bitmaskItem) {
-            guiItem.setSelected(layouts.isSet(bitmaskItem));
-            bits.put(guiItem, bitmaskItem);
-        }
-
         private void setLayoutDefault(boolean layoutDefault) {
             // need to disable all groups except default button
             boolean nonDefault = !layoutDefault;
 
-            for (JToggleButton button : bits.keySet()) {
-                button.setEnabled(nonDefault);
+            for (Integer value : bits.keySet()) {
+                for (JToggleButton tButton : guiItems) {
+                    if (tButton.getName().equals(Integer.toString(value))) {
+                        tButton.setEnabled(nonDefault);
+                    }
+                }
             }
             defaultCheckBox.setEnabled(true);
             // don't forget at horizontal/vertical none settings
@@ -549,9 +628,9 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
 
         private ItemLayouts getComponentsBitmask() {
             ItemLayouts _layouts = new ItemLayouts(0);
-            for (JToggleButton button : bits.keySet()) {
+            for (JToggleButton button : guiItems) {
                 if (button.isSelected()) {
-                    _layouts.addToBitmask(bits.get(button), true);
+                    _layouts.addToBitmask(bits.get(Integer.valueOf(button.getName())), true);
                 }
             }
 
@@ -569,42 +648,6 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
 
         public int getBitMask() {
             return bitMask;
-        }
-
-        public String getBitmaskAsText() {
-            if (layouts.getBitmask() == ItemCD.VALUE_LAYOUT_DEFAULT) {
-                return layouts.getBitmaskItem(layouts.getBitmask()).getName();
-            } else if (layouts.getBitmask() == ItemCD.VALUE_LAYOUT_2) {
-                return layouts.getBitmaskItem(layouts.getBitmask()).getName();
-            }
-
-            int bitmaskRadioButton1 = 0;
-            int bitmaskRadioButton2 = 0;
-            StringBuffer bitmaskAsTextCheckBoxes = new StringBuffer();
-            StringBuffer bitmaskAsTextRadioButton1 = new StringBuffer();
-            StringBuffer bitmaskAsTextRadioButton2 = new StringBuffer();
-            StringBuffer separator = new StringBuffer(" | "); // NOI18N
-
-            for (JToggleButton button : bits.keySet()) {
-                if (layouts.isSet(bits.get(button)) && button instanceof JRadioButton && bits.get(button).getAffectedBits() < 16 && bitmaskRadioButton1 < bits.get(button).getAffectedBits()) {
-                    bitmaskRadioButton1 = bits.get(button).getAffectedBits();
-                    bitmaskAsTextRadioButton1 = new StringBuffer(bits.get(button).getName());
-                    bitmaskAsTextRadioButton1.append(separator);
-                } else if (layouts.isSet(bits.get(button)) && button instanceof JRadioButton && bits.get(button).getAffectedBits() >= 16 && bitmaskRadioButton2 < bits.get(button).getAffectedBits()) {
-                    bitmaskRadioButton2 = bits.get(button).getAffectedBits();
-                    bitmaskAsTextRadioButton2 = new StringBuffer(bits.get(button).getName());
-                    bitmaskAsTextRadioButton2.append(separator);
-
-                } else if (layouts.isSet(bits.get(button)) && button instanceof JCheckBox && bits.get(button).getAffectedBits() != ItemCD.VALUE_LAYOUT_DEFAULT) {
-                    bitmaskAsTextCheckBoxes.append(bits.get(button).getName());
-                    bitmaskAsTextCheckBoxes.append(separator);
-                }
-            }
-
-            bitmaskAsTextRadioButton1.append(bitmaskAsTextRadioButton2.append(bitmaskAsTextCheckBoxes));
-            bitmaskAsTextRadioButton1.deleteCharAt(bitmaskAsTextRadioButton1.lastIndexOf(separator.toString().trim()));
-
-            return bitmaskAsTextRadioButton1.toString();
         }
     }
 }
