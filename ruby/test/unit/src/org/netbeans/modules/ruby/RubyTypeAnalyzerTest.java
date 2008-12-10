@@ -230,4 +230,9 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 //        RubyTypeAnalyzer instance1 = getAnalyzer("testfiles/constants.rb", "REXML::COPY^RIGHT", false);
 //        assertTypes("indexed constants type inference", instance1.getTypes("COPYRIGHT"), "String");
     }
+
+    public void testCoreMethodType() throws Exception {
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/core_methods.rb", "ance^stors.delete(String)", false);
+        assertTypes("constants type inference", instance.getTypes("ancestors"), "Array");
+    }
 }

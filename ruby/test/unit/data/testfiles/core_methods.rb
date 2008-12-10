@@ -1,1 +1,4 @@
-File.S # should not offer constants (SEPARATOR)
+ancestors = String.ancestors
+ancestors.delete(String)
+puts "Ancestors of String class:\n  * #{ancestors.join("\n  * ")}"
+

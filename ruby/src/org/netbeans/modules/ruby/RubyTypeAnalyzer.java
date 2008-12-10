@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,7 +50,6 @@ import java.util.Map;
 import java.util.Set;
 import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.DVarNode;
 import org.jruby.nb.ast.GlobalVarNode;
 import org.jruby.nb.ast.IfNode;
@@ -60,12 +58,9 @@ import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * Perform type analysis on a given AST tree, attempting to provide a type
@@ -91,7 +86,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class RubyTypeAnalyzer {
+public final class RubyTypeAnalyzer {
     
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
@@ -250,55 +245,9 @@ public class RubyTypeAnalyzer {
         Node child = list.get(0);
 
         switch (child.nodeId) {
-        case CALLNODE: {
-            // Look for known calls whose return types we can guess
-            CallNode call = (CallNode)child;
-            String name = call.getName();
-            // If you call Foo.new I'm going to assume the type of the expression if "Foo"
-            if ("new".equals(name)) { // NOI18N
-
-                Node receiver = call.getReceiverNode();
-
-                if (receiver instanceof Colon2Node) {
-                    return AstUtilities.getFqn((Colon2Node)receiver);
-                } else if (receiver instanceof INameNode) {
-                    // TODO - compute fqn (packages etc.)
-                    return ((INameNode)receiver).getName();
-                }
-            } else if (name.startsWith("find")) {
-                // -Possibly- ActiveRecord finders, very important
-                Node receiver = call.getReceiverNode();
-
-                String receiverName = null;
-                if (receiver instanceof Colon2Node) {
-                    receiverName = AstUtilities.getFqn((Colon2Node)receiver);
-                } else if (receiver instanceof INameNode) {
-                    // TODO - compute fqn (packages etc.)
-                    receiverName = ((INameNode)receiver).getName();
-                }
-                
-                if (receiverName != null && index != null) {
-                    IndexedClass superClass = index.getSuperclass(receiverName);
-                    if (superClass != null && "ActiveRecord::Base".equals(superClass.getFqn())) { // NOI18N
-                        // Looks like a find method on active record
-                        // The big question is whether this is going to return
-                        // the type itself (receivedName) or an array of it;
-                        // that depends on the args (for find(:all) it's asn array,
-                        // find(:first) it's an item, and for find(1,2,3) it's an
-                        // array etc. 
-                        // There are other find signatures which define other semantics
-                        return pickFinderType(call, name, receiverName);
-                    }
-                }
-            }
-            
-            // TODO - build up a return type database for lots of methods
-            // whose returntypes we can guess, and look up dynamically
-            // (probably backed by a cache since I'm frequently checkin the
-            // same methods over and over
-            
-            break;
-        }
+        case CALLNODE:
+            Set<? extends String> types = RubyMethodTypeInferencer.inferTypeFor((CallNode)child, index);
+            return getLast(types);
         case LOCALVARNODE:
             return getTypeForSymbol(typesForSymbol, ((LocalVarNode)child).getName());
         case DVARNODE:
@@ -529,40 +478,6 @@ public class RubyTypeAnalyzer {
                     //}
                 }
             }
-        }
-    }
-
-    /** Look up the right return type for the given finder call */
-    private static String pickFinderType(CallNode call, String method, String model) {
-        // Dynamic finders
-        boolean multiple;
-        if (method.startsWith("find_all")) { // NOI18N
-            multiple = true;
-        } else if (method.startsWith("find_by_") || method.equals("find_first")) { // NOI18N
-            multiple = false;
-        } else if (method.equals("find")) { // NOI18N
-            // Finder method that does both - gotta inspect it
-            List<Node> nodes = new ArrayList<Node>();
-            AstUtilities.addNodesByType(call, new NodeType[] {NodeType.SYMBOLNODE}, nodes);
-            boolean foundAll = false;
-            for (Node n : nodes) {
-                SymbolNode symbol = (SymbolNode)n;
-                if ("all".equals(symbol.getName())) { // NOI18N
-                    foundAll = true;
-                    break;
-                }
-            }
-            multiple = foundAll;
-        } else {
-            // Not sure - probably some other locally defined finder method;
-            // just default to the model name
-            multiple = false;
-        }
-        
-        if (multiple) {
-            return "Array<" + model + ">";
-        } else {
-            return model;
         }
     }
 
