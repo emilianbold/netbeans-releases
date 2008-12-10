@@ -53,113 +53,115 @@ public interface CSSParserConstants {
   /** RegularExpression Id. */
   int URI = 26;
   /** RegularExpression Id. */
-  int CDO = 27;
+  int GENERATED = 27;
   /** RegularExpression Id. */
-  int CDC = 28;
+  int CDO = 28;
   /** RegularExpression Id. */
-  int INCLUDES = 29;
+  int CDC = 29;
   /** RegularExpression Id. */
-  int DASHMATCH = 30;
+  int INCLUDES = 30;
   /** RegularExpression Id. */
-  int IMPORT_SYM = 31;
+  int DASHMATCH = 31;
   /** RegularExpression Id. */
-  int PAGE_SYM = 32;
+  int IMPORT_SYM = 32;
   /** RegularExpression Id. */
-  int MEDIA_SYM = 33;
+  int PAGE_SYM = 33;
   /** RegularExpression Id. */
-  int FONT_FACE_SYM = 34;
+  int MEDIA_SYM = 34;
   /** RegularExpression Id. */
-  int CHARSET_SYM = 35;
+  int FONT_FACE_SYM = 35;
   /** RegularExpression Id. */
-  int ATKEYWORD = 36;
+  int CHARSET_SYM = 36;
   /** RegularExpression Id. */
-  int IMPORTANT_SYM = 37;
+  int ATKEYWORD = 37;
   /** RegularExpression Id. */
-  int INHERIT = 38;
+  int IMPORTANT_SYM = 38;
   /** RegularExpression Id. */
-  int EMS = 39;
+  int INHERIT = 39;
   /** RegularExpression Id. */
-  int EXS = 40;
+  int EMS = 40;
   /** RegularExpression Id. */
-  int LENGTH_PX = 41;
+  int EXS = 41;
   /** RegularExpression Id. */
-  int LENGTH_CM = 42;
+  int LENGTH_PX = 42;
   /** RegularExpression Id. */
-  int LENGTH_MM = 43;
+  int LENGTH_CM = 43;
   /** RegularExpression Id. */
-  int LENGTH_IN = 44;
+  int LENGTH_MM = 44;
   /** RegularExpression Id. */
-  int LENGTH_PT = 45;
+  int LENGTH_IN = 45;
   /** RegularExpression Id. */
-  int LENGTH_PC = 46;
+  int LENGTH_PT = 46;
   /** RegularExpression Id. */
-  int ANGLE_DEG = 47;
+  int LENGTH_PC = 47;
   /** RegularExpression Id. */
-  int ANGLE_RAD = 48;
+  int ANGLE_DEG = 48;
   /** RegularExpression Id. */
-  int ANGLE_GRAD = 49;
+  int ANGLE_RAD = 49;
   /** RegularExpression Id. */
-  int TIME_MS = 50;
+  int ANGLE_GRAD = 50;
   /** RegularExpression Id. */
-  int TIME_S = 51;
+  int TIME_MS = 51;
   /** RegularExpression Id. */
-  int FREQ_HZ = 52;
+  int TIME_S = 52;
   /** RegularExpression Id. */
-  int FREQ_KHZ = 53;
+  int FREQ_HZ = 53;
   /** RegularExpression Id. */
-  int DIMEN = 54;
+  int FREQ_KHZ = 54;
   /** RegularExpression Id. */
-  int PERCENTAGE = 55;
+  int DIMEN = 55;
   /** RegularExpression Id. */
-  int NUMBER = 56;
+  int PERCENTAGE = 56;
   /** RegularExpression Id. */
-  int RGB = 57;
+  int NUMBER = 57;
   /** RegularExpression Id. */
-  int FUNCTION = 58;
+  int RGB = 58;
   /** RegularExpression Id. */
-  int IDENT = 59;
+  int FUNCTION = 59;
   /** RegularExpression Id. */
-  int NAME = 60;
+  int IDENT = 60;
   /** RegularExpression Id. */
-  int NUM = 61;
+  int NAME = 61;
   /** RegularExpression Id. */
-  int UNICODERANGE = 62;
+  int NUM = 62;
   /** RegularExpression Id. */
-  int RANGE = 63;
+  int UNICODERANGE = 63;
   /** RegularExpression Id. */
-  int Q16 = 64;
+  int RANGE = 64;
   /** RegularExpression Id. */
-  int Q15 = 65;
+  int Q16 = 65;
   /** RegularExpression Id. */
-  int Q14 = 66;
+  int Q15 = 66;
   /** RegularExpression Id. */
-  int Q13 = 67;
+  int Q14 = 67;
   /** RegularExpression Id. */
-  int Q12 = 68;
+  int Q13 = 68;
   /** RegularExpression Id. */
-  int Q11 = 69;
+  int Q12 = 69;
   /** RegularExpression Id. */
-  int NMSTART = 70;
+  int Q11 = 70;
   /** RegularExpression Id. */
-  int NMCHAR = 71;
+  int NMSTART = 71;
   /** RegularExpression Id. */
-  int STRING1 = 72;
+  int NMCHAR = 72;
   /** RegularExpression Id. */
-  int STRING2 = 73;
+  int STRING1 = 73;
   /** RegularExpression Id. */
-  int NONASCII = 74;
+  int STRING2 = 74;
   /** RegularExpression Id. */
-  int ESCAPE = 75;
+  int NONASCII = 75;
   /** RegularExpression Id. */
-  int NL = 76;
+  int ESCAPE = 76;
   /** RegularExpression Id. */
-  int UNICODE = 77;
+  int NL = 77;
   /** RegularExpression Id. */
-  int HNUM = 78;
+  int UNICODE = 78;
   /** RegularExpression Id. */
-  int H = 79;
+  int HNUM = 79;
   /** RegularExpression Id. */
-  int UNKNOWN = 80;
+  int H = 80;
+  /** RegularExpression Id. */
+  int UNKNOWN = 81;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -197,6 +199,7 @@ public interface CSSParserConstants {
     "\")\"",
     "<URL>",
     "<URI>",
+    "\"@@@\"",
     "\"<!--\"",
     "\"-->\"",
     "\"~=\"",

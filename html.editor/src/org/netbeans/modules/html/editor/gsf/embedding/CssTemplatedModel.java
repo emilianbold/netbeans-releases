@@ -55,7 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
-import org.netbeans.modules.css.parser.CssParserAccess;
+//import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
