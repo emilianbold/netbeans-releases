@@ -58,7 +58,7 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -228,7 +228,7 @@ public abstract class Command {
             arguments.append(args);
             arguments.append("&"); // NOI18N
         }
-        arguments.append("XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); // NOI18N
+        arguments.append("XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
         return arguments.toString();
     }
 

@@ -41,19 +41,18 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.WizardOperator;
+import java.io.IOException;
+import org.openide.util.Exceptions;
 
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -102,6 +101,7 @@ public class OpenBPELprojectTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
+        CommonUtilities.actionOnProject(projectName, "Close");
     }
     
     public void prepare(){
@@ -109,7 +109,7 @@ public class OpenBPELprojectTest extends PerformanceTestCase {
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
         openButton = new JButtonOperator(opd,"Open Project"); //NOI18N
-        String paths = CommonUtilities.getProjectsDir() + projectName + java.io.File.separator + projectName;
+        String paths = getDataDir() + java.io.File.separator + projectName;
         path.setText(paths);
     }
     
@@ -120,7 +120,14 @@ public class OpenBPELprojectTest extends PerformanceTestCase {
     
     @Override
     public void close(){
-//        ProjectSupport.closeProject(projectName);
+        CommonUtilities.actionOnProject(projectName, "Close");
     }
- 
+
+    public void shutdown() {
+        try {
+            this.openDataProjects("BPELTestProject");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
