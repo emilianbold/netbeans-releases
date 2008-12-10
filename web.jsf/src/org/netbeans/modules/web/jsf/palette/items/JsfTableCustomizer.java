@@ -260,16 +260,14 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         }
 
         descriptor.setValid(hasModuleJsf && validClassName);
-
         statusLine.clearMessages();
-        if (!validClassName) {
+        if (!hasModuleJsf) {
+            statusLine.setErrorMessage(bundle.getString("MSG_NoJSF"));  //NOI18N
+        } else if (!validClassName) {
             if (classTextField.getText().length() < 1)
                 statusLine.setInformationMessage(bundle.getString("MSG_EmptyClassName"));  //NOI18N
             else
                 statusLine.setErrorMessage(bundle.getString("MSG_InvalidClassName"));  //NOI18N
-        }
-        if (!hasModuleJsf) {
-            statusLine.setErrorMessage(bundle.getString("MSG_NoJSF"));  //NOI18N
         }
     }
 
