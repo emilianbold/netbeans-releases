@@ -516,7 +516,7 @@ public class ConfigurationMakefileWriter {
                         } else {
                             command += compiler.getDescriptor().getOutputObjectFileFlags() + target + " "; // NOI18N
                         }
-                        command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
+                        command += IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath(true)));
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == Tool.CustomTool) {
