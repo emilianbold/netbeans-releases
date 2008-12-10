@@ -94,7 +94,10 @@ public class RailsAdapterFactory {
      * @return the default adapter.
      */
     public static RailsDatabaseConfiguration getDefaultAdapter(RubyPlatform platform) {
-        return getAdapters(platform).get(0);
+        RailsDatabaseConfiguration defaultAdapter  = getAdapters(platform).get(0);
+        return defaultAdapter.forceJdbc()
+                ? new ConfigurableRailsAdapter(defaultAdapter, null, null, null, true)
+                : defaultAdapter;
     }
     
 }
