@@ -211,9 +211,11 @@ final class ToolbarContainer extends JPanel {
                 break;
             }
         }
-        if( null != oldDragger )
-            toolbar.remove(oldDragger);
-        toolbar.add( dragger, 0 );
+        if( null != oldDragger ) {
+            dragger = (JComponent) oldDragger;
+        } else {
+            toolbar.add( dragger, 0 );
+        }
     }
 
     /**
@@ -510,7 +512,9 @@ final class ToolbarContainer extends JPanel {
         /** @return preferred size */
         @Override
         public Dimension getPreferredSize () {
-            return new Dimension(GRIP_WIDTH,toolbar.getHeight() - BOTGAP - TOPGAP);
+            //#154970 for some reason the toolbar's preferred size keeps growing on GTK
+            //return new Dimension(GRIP_WIDTH,toolbar.getHeight() - BOTGAP - TOPGAP);
+            return new Dimension(GRIP_WIDTH,ToolbarPool.getDefault().getPreferredIconSize());
         }
 
         @Override
