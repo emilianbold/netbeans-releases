@@ -41,24 +41,14 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import org.netbeans.performance.enterprise.EPUtilities;
-
-import java.awt.AWTEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.EditorOperator;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.Log;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.performance.enterprise.EPUtilities;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -104,17 +94,12 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
     public void initialize(){
         // The following disables EventTool to hold a reference to DesignView in 
         // its listeners
-        EventTool.addListeners(EventTool.getCurrentEventMask() & ~AWTEvent.FOCUS_EVENT_MASK);        
-
-        Log.enableInstances(Logger.getLogger("TIMER.bpel"), "BPEL DesignView", Level.FINEST);
+        //EventTool.addListeners(EventTool.getCurrentEventMask() & ~AWTEvent.FOCUS_EVENT_MASK);
+        //Log.enableInstances(Logger.getLogger("TIMER.bpel"), "BPEL DesignView", Level.FINEST);
     }
     
     public void prepare() {
-        
-        new EventTool().waitNoEvent(1000);
-
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
-        
         // Workaround for issue 143497
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
@@ -122,8 +107,6 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
         wizard.selectCategory("SOA"); //NOI18N
         wizard.selectFileType("BPEL Process"); //NOI18N
         wizard.next();
-        
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("BPELProcess_"+System.currentTimeMillis());
     }
@@ -140,15 +123,5 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
     @Override
     public void close(){
     }
-
-
-    /**
-     * Check of memory leaks. measureTime testcase should be executed before 
-     * this testcase
-     
-    public void testGC() {
-        Log.assertInstances("Can't GC BPEL DesignView");        
-    }
-     */
 
 }

@@ -208,7 +208,12 @@ public class Utilities {
             ic.add(dobj);
         }
         ic.add(thisFileObj);
-        ic.add(FileUtil.toFile(thisFileObj));
+        File fl = FileUtil.toFile(thisFileObj);
+        if (fl != null) {
+            ic.add(fl);
+        } else {
+            editable = false;
+        }
 
         ModelSource ms = new ModelSource(lookup, editable);
         final CatalogModel catalogModel;

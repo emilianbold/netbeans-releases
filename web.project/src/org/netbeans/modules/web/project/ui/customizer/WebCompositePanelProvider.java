@@ -162,7 +162,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         } else if (JAVADOC.equals(nm)) {
             return new CustomizerJavadoc(uiProps);
         } else if (RUN.equals(nm)) {
-            return new CustomizerRun(uiProps);
+            return new CustomizerRun(category, uiProps);
         } else if (WEBSERVICES.equals(nm) || WEBSERVICECLIENTS.equals(nm)) {
             ProjectWebModule wm = (ProjectWebModule) uiProps.getProject().getLookup().lookup(ProjectWebModule.class);
             FileObject docBase = wm.getDocumentBase();

@@ -203,6 +203,70 @@ final class RailsAdapters {
 
     }
 
+    /**
+     * Replaces the value of the given attribute with the given value. If the specified
+     * attribute was not found and <code>addAfter</code> is specified, adds the attribute.
+     * @param doc the doc representing a yaml file
+     * @param attributeName the name of the attribute to replace
+     * @param attributeValue the value for the attribute
+     * @param addAfter the name of the attribute after which the specified <code>attributeName</code>
+     * should be created. May be <code>null</code> in which case the attribute is not created
+     * if it does not exist already. A non-null <code>addAfter</code> has no effect if
+     * the attribute already exists.
+     * @throws javax.swing.text.BadLocationException
+     */
+    static void changeAttribute(Document doc, String attributeName, String attributeValue, String addAfter) throws BadLocationException {
+        Parameters.notWhitespace("attributeName", attributeName); //NOI18N
+        if (attributeValue == null || "".equals(attributeValue.trim())) {
+            // assume the default generated values are preferred
+            return;
+        }
+        String text = doc.getText(0, doc.getLength());
+        int attributeNameIndex = text.indexOf(attributeName);
+        if (attributeNameIndex == -1) {
+            if (addAfter != null) {
+                addProperty(doc, attributeName, attributeValue, addAfter);
+            } else {
+                // can't do much
+                return;
+            }
+        }
+        int attributeNameEndIndex = attributeNameIndex + attributeName.length();
+        int attributeValuelength = 0;
+        for (int i = attributeNameEndIndex; i < text.length(); i++) {
+            if ((text.charAt(i)) == '\n') { //NOI18N
+                break;
+            } else {
+                attributeValuelength++;
+            }
+        }
+        doc.remove(attributeNameEndIndex, attributeValuelength);
+        doc.insertString(attributeNameEndIndex, attributeValue != null ? " " + attributeValue : "", null);
+
+    }
+
+    static Document getDatabaseYml(FileObject projectDir) {
+        FileObject fo = projectDir.getFileObject("config/database.yml"); // NOI18N
+        if (fo == null) {
+            return null;
+        }
+        try {
+            DataObject dobj = DataObject.find(fo);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec != null) {
+                try {
+                    return ec.openDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            Exceptions.printStackTrace(donfe);
+        }
+        return null;
+
+    }
+
     private static int determineIndent(String text, int offset) {
         // Determine indent
         int indent = 0;

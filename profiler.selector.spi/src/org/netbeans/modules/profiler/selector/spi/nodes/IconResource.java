@@ -41,17 +41,14 @@
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import javax.swing.ImageIcon;
 
 
 /**
- *
+ * A centralized place to access widely used {@linkplain SelectorNode} icons
  * @author Jaroslav Bachorik
  */
 public class IconResource {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
     // package
     public static ImageIcon PACKAGE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/selector/spi/nodes/resources/package.png")); // NOI18N
 

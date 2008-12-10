@@ -1,0 +1,8 @@
+Code completion result for source line:
+File.S| # should not offer constants (SEPARATOR)
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    SCRIPT_LINES__                             null
+KEYWORD    STDERR                                     null
+KEYWORD    STDIN                                      null
+KEYWORD    STDOUT                                     null

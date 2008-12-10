@@ -90,7 +90,7 @@ public class Installer extends ModuleInstall {
             }
         });
     }
-    private UpdateUnitProvider clusterUpdateProvider = null;
+
     private Runnable doCheck = new Runnable () {
         public void run () {
             // check user wants to import previous userdir
@@ -131,6 +131,7 @@ public class Installer extends ModuleInstall {
                 LOG.log (Level.INFO, ex.getLocalizedMessage (), ex);
                 return ;
             }
+            UpdateUnitProvider clusterUpdateProvider = null;
             for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false)) {
                 if (CODE_NAME.contains (p.getName ())) {
                     clusterUpdateProvider = p;

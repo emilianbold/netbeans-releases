@@ -164,7 +164,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
         RailsDatabaseConfiguration databaseConf = (RailsDatabaseConfiguration) wiz.getProperty(RAILS_DEVELOPMENT_DB);
         if (databaseConf == null) {
-            databaseConf = RailsAdapterFactory.getDefaultAdapter();
+            databaseConf = RailsAdapterFactory.getDefaultAdapter(platform);
         }
         
         String railsVersion = (String) wiz.getProperty(RAILS_VERSION);

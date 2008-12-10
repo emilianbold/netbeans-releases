@@ -119,7 +119,7 @@ public class ReadAccessTest extends JellyTestCase {
                 System.out.println("Initialization mode, counting is disabled");
             }
         } catch (Error e) {
-            e.printStackTrace(getLog("report.txt"));
+            e.printStackTrace(getLog("file-reads-report.txt"));
             throw e;
         }
     }

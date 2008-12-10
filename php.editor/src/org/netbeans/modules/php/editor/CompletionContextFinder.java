@@ -40,9 +40,12 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -174,10 +177,20 @@ class CompletionContextFinder {
 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
+
+    static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
+            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
+            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
+            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT, PHPTokenId.PHP_CASE,
+            PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
+            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE,
+            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
+            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
+            PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG);
     
         @NonNull
     static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
@@ -246,7 +259,10 @@ class CompletionContextFinder {
                 return CompletionContext.NONE;
             default:
         }
-        
+        if (isEachOfTokens(getLeftPreceedingTokens(tokenSequence),
+                new PHPTokenId[] {PHPTokenId.PHP_GLOBAL, PHPTokenId.WHITESPACE})) {
+            return CompletionContext.GLOBAL;
+        }
         return CompletionContext.EXPRESSION;
     }
 
@@ -260,6 +276,31 @@ class CompletionContextFinder {
         }
 
         return false;
+    }
+
+    private static boolean isOneOfTokens(Token[] tokens, PHPTokenId[] tokenIds) {
+        for (Token token : tokens) {
+            TokenId searchedId = token.id();
+            for (TokenId tokenId : tokenIds) {
+                if (tokenId.equals(searchedId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEachOfTokens(Token[] tokens, PHPTokenId[] tokenIds) {
+        Set<PHPTokenId> set = new HashSet<PHPTokenId>();
+        for (Token token : tokens) {
+            TokenId searchedId = token.id();
+            for (PHPTokenId tokenId : tokenIds) {
+                if (tokenId.equals(searchedId)) {
+                    set.add(tokenId);
+                }
+            }
+        }
+        return set.size() == tokenIds.length;
     }
 
     private static boolean acceptTokenChainTexts(TokenSequence tokenSequence, List<String> tokenTexts) {
@@ -325,6 +366,45 @@ class CompletionContextFinder {
 
                 if (i == maxNumberOfTokens - 1 || !tokenSequence.movePrevious()) {
                     break;
+                }
+            }
+        }
+
+        tokenSequence.move(orgOffset);
+        tokenSequence.moveNext();
+        return tokens.toArray(new Token[tokens.size()]);
+    }
+
+    private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence){
+        Token[] preceedingTokens = getPreceedingTokens(tokenSequence);
+        if (preceedingTokens.length == 0) {
+            return preceedingTokens;
+        }
+        Token[] leftPreceedingTokens = new Token[preceedingTokens.length-1];
+        System.arraycopy(preceedingTokens, 1, leftPreceedingTokens, 0, leftPreceedingTokens.length);
+        return leftPreceedingTokens;
+    }
+    private static Token[] getPreceedingTokens(TokenSequence tokenSequence){
+        int orgOffset = tokenSequence.offset();
+        LinkedList<Token> tokens = new LinkedList<Token>();
+
+        boolean success = true;
+
+        // in case we are at the last token
+        // include it in the result, see #154055
+        if (tokenSequence.moveNext()){
+            success = tokenSequence.movePrevious()
+                && tokenSequence.movePrevious();
+        }
+
+        if (success) {
+            Token<PHPTokenId> token = tokenSequence.token();
+            while (token != null && !CTX_DELIMITERS.contains(token.id())) {
+                tokens.addFirst(token);
+                if (!tokenSequence.movePrevious()) {
+                    break;
+                } else {
+                    token = tokenSequence.token();
                 }
             }
         }

@@ -612,10 +612,14 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                 }
             } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 //No border
-                toolbarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+                toolbarPanel.setBorder(BorderFactory.createEmptyBorder());
             }
         } else {
-            toolbarPanel.setBorder(lowerBorder);
+            if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
+                toolbarPanel.setBorder(BorderFactory.createEmptyBorder());
+            } else {
+                toolbarPanel.setBorder(lowerBorder);
+            }
         }
     }
 

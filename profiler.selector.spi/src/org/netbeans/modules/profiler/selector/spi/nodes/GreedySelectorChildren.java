@@ -40,9 +40,9 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-
 /**
- *
+ * A special subclass of {@linkplain SelectorChildren}
+ * The child nodes are calculated immediately upon {@linkplain SelectorChildren#getNodeCount()} method call
  * @author Jaroslav Bachorik
  */
 public abstract class GreedySelectorChildren<T extends SelectorNode> extends SelectorChildren<T> {

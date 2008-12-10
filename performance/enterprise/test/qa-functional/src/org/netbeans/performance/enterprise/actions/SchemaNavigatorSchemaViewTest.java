@@ -41,17 +41,14 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -63,18 +60,20 @@ public class SchemaNavigatorSchemaViewTest  extends PerformanceTestCase {
     
     private Node processNode, schemaNode, anotherSchemaNode;
     
-    public final long EXPECTED_TIME = 10000; // After fix of issue 128585 "Please wait" text is shown
+    //public final long EXPECTED_TIME = 10000; // After fix of issue 128585 "Please wait" text is shown
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaViewTest(String testName) {
         super(testName);
-        expectedTime = EXPECTED_TIME;
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = EXPECTED_TIME;
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public void testSchemaNavigatorSchemaView() {
@@ -91,22 +90,16 @@ public class SchemaNavigatorSchemaViewTest  extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
-        log(":: initialize");
-        System.gc();
-        new EventTool().waitNoEvent(3000);
         processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         processNode.select();
-        
         schemaNode = new Node(processNode, "OTA_TravelItinerary.xsd");
         anotherSchemaNode = new Node(processNode, "OTA_TravelItinerary_1.xsd");
     }
     
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log(":: open");
         schemaNode.select();
         TopComponentOperator topComponentOperator = new TopComponentOperator("Navigator");
         JComboBoxOperator combo = new JComboBoxOperator(topComponentOperator); // NOI18N
@@ -119,9 +112,6 @@ public class SchemaNavigatorSchemaViewTest  extends PerformanceTestCase {
         anotherSchemaNode.select();
         JComboBoxOperator combo = new JComboBoxOperator(new TopComponentOperator("Navigator")); // NOI18N
         combo.selectItem("Design View"); // NOI18N
-        System.gc();
-        new EventTool().waitNoEvent(1000);
     }
-    
 
 }

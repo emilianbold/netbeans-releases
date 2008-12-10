@@ -70,29 +70,35 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         projectFolder.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                checkFolder();
+                controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                checkFolder();
+                controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                checkFolder();
+                controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
         });
         configureFlags.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
 
             public void changedUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
         });
         setMainProjectCheckBox.addActionListener(new ActionListener() {
@@ -109,10 +115,14 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         });
     }
 
-    private void checkFolder(){
-        controller.getWizardStorage().setPath(projectFolder.getText());
-        String configure = controller.getWizardStorage().getConfigure();
-        String make = controller.getWizardStorage().getMake();
+    private void checkFolderAndFlags(){
+        boolean isProject = controller.getWizardStorage().isNbProjectFolder();
+        String configure = null;
+        String make = null;
+        if (!isProject)  {
+            configure = controller.getWizardStorage().getConfigure();
+            make = controller.getWizardStorage().getMake();
+        }
         if (configure != null && make == null){
             jLabel2.setVisible(true);
             configureFlags.setVisible(true);
@@ -120,28 +130,53 @@ public final class ImportProjectVisualPanel1 extends JPanel {
             jLabel2.setVisible(false);
             configureFlags.setVisible(false);
         }
+
+        StringBuilder buf = new StringBuilder();
         if (configure == null) {
             if (make == null) {
                 // no action
-                todoPane.setText(NbBundle.getMessage(ImportProjectVisualPanel1.class, "Prompt_NoConfigure_NoMake")); // NOI18N
+                if (isProject) {
+                    buf.append(getString("Prompt_AlreadyProject")); // NOI18N
+                } else {
+                    buf.append(getString("Prompt_NoConfigure_NoMake")); // NOI18N
+                }
             } else {
                 // rebuild project
-                todoPane.setText(NbBundle.getMessage(ImportProjectVisualPanel1.class, "Prompt_NoConfigure_Make")); // NOI18N
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
             }
         } else {
             if (make == null) {
                 // configure and build project
-                todoPane.setText(NbBundle.getMessage(ImportProjectVisualPanel1.class, "Prompt_Configure_NoMake")); // NOI18N
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_ConfigureProject", "configure "+controller.getWizardStorage().getRealFlags())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_BuildProject", "make")); // NOI18N
             } else {
                 // rebuild project
-                todoPane.setText(NbBundle.getMessage(ImportProjectVisualPanel1.class, "Prompt_Configure_Make")); // NOI18N
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
             }
         }
+        todoPane.setText(buf.toString());
+    }
+
+    private String getString(String key, String ... params){
+        return NbBundle.getMessage(ImportProjectVisualPanel1.class, key, params);
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ImportProjectVisualPanel1.class, "Step1"); // NOI18N
+        return getString("Step1"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -268,8 +303,8 @@ public final class ImportProjectVisualPanel1 extends JPanel {
             seed = System.getProperty("user.home"); // NOI18N
         }
         JFileChooser fileChooser = new FileChooser(
-                NbBundle.getMessage(ImportProjectVisualPanel1.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                NbBundle.getMessage(ImportProjectVisualPanel1.class, "PROJECT_DIR_BUTTON_TXT"), // NOI18N
+                getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
+                getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY, false,
                 null,
                 seed,

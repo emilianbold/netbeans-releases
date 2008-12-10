@@ -705,6 +705,22 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154775.cc", 32, 24, "iz154775.cc", 27, 5);
     }
 
+    public void testIZ154778() throws Exception {
+        //IZ#154778: Completion fails on gt operator
+        performTest("iz154778.cc", 9, 18, "iz154778.cc", 5, 5);
+    }
+
+    public void testIZ154789() throws Exception {
+        //IZ#154789: Completion fails on macros
+        performTest("iz154789.cc", 15, 22, "iz154789.cc", 5, 5);
+    }
+
+    public void testIZ154781() throws Exception {
+        //IZ#154781: Completion fails on const
+        performTest("iz154781.cc", 14, 20, "iz154781.cc", 5, 5);
+        performTest("iz154781.cc", 15, 20, "iz154781.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

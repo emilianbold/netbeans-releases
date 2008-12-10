@@ -478,7 +478,35 @@ public class RubyUtils {
 
         return true;
     }
-    
+
+    /**
+     * Parse out module/class name and constant name out of possibly fully
+     * qualified constant name. When non-FQN is given, returns
+     * <code>Kernel</code> as the receiver name. E.g:
+     *
+     * <pre>
+     *   "Color::HTML::RED" =&gt; {"Color::HTML", "RED"}
+     *   "Color::RED"       =&gt; {"Color"      , "RED"}
+     *   "RED"              =&gt; {"Kernel"     , "RED"}
+     * </pre>
+     *
+     * @param mayBeFqn constant name, might or might not be FQN
+     * @return two-member array, containing module/class name and constant name
+     */
+    static String[] parseConstantName(final String mayBeFqn) {
+        int lastColon2 = mayBeFqn.lastIndexOf("::"); // NOI18N
+        String module;
+        String constant;
+        if (lastColon2 != -1) {
+            constant = mayBeFqn.substring(lastColon2 + 2);
+            module = mayBeFqn.substring(0, lastColon2);
+        } else {
+            constant = mayBeFqn;
+            module = "Kernel";
+        }
+        return new String[]{module, constant};
+    }
+
     public static boolean isValidRubyLocalVarName(String name) {
         if (isRubyKeyword(name)) {
             return false;

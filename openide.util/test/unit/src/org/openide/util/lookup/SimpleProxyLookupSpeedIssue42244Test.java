@@ -41,29 +41,23 @@
 
 package org.openide.util.lookup;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 
-
 /**
- *
  * @author  Petr Nejedly, adapted to test by Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1847
 public class SimpleProxyLookupSpeedIssue42244Test extends NbTestCase {
 
     public SimpleProxyLookupSpeedIssue42244Test (String name) {
         super (name);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite (SimpleProxyLookupSpeedIssue42244Test.class));
-    }
-    
     public void testCompareTheSpeed () {
         String content1 = "String1";
         String content2 = "String2";
@@ -71,25 +65,22 @@ public class SimpleProxyLookupSpeedIssue42244Test extends NbTestCase {
         Lookup fixed1 = Lookups.singleton(content1);
         Lookup fixed2 = Lookups.singleton(content2);
         
-        
-        Lookup.Template template = new Lookup.Template(String.class);
-        
         MyProvider provider = new MyProvider();
         provider.setLookup(fixed1);
         
         Lookup top = Lookups.proxy(provider);
 
-        Lookup.Result r0 = top.lookup(template);
+        Lookup.Result<String> r0 = top.lookupResult(String.class);
         r0.allInstances();
 
         long time = System.currentTimeMillis();
-        top.lookup(template).allInstances();
+        top.lookupAll(String.class);
         long withOneResult = System.currentTimeMillis() - time;
 
      
-        java.util.HashSet results = new java.util.HashSet ();
+        Set<Object> results = new HashSet<Object>();
         for (int i=0; i<10000; i++) {
-            Lookup.Result res = top.lookup (template);
+            Lookup.Result<String> res = top.lookupResult(String.class);
             results.add (res);
             res.allInstances();
         }
@@ -97,7 +88,7 @@ public class SimpleProxyLookupSpeedIssue42244Test extends NbTestCase {
         provider.setLookup(fixed2);
 
         time = System.currentTimeMillis();
-        top.lookup(template).allInstances();
+        top.lookupAll(String.class);
         long withManyResults = System.currentTimeMillis() - time;
         
         // if the measurement takes less then 10ms, pretend 10ms
