@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -89,7 +90,9 @@ public class CatalogNodeProvider extends NodeProvider {
 
         final MetadataModel metaDataModel = getLookup().lookup(MetadataModel.class);
 
-        if (metaDataModel != null) {
+        boolean isConnected = !connection.getConnector().isDisconnected();
+
+        if (isConnected && metaDataModel != null) {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
@@ -99,7 +102,8 @@ public class CatalogNodeProvider extends NodeProvider {
                             String defaultCatalog = metaData.getDefaultCatalog().getName();
 
                             for (Catalog catalog : catalogs) {
-                                if (catalog.getName() != null || catalogs.size() == 1) {
+                                boolean oneCatalog = catalogs.size() == 1;
+                                if (catalog.getName() != null || oneCatalog) {
 
                                     boolean use = true;
                                     if (defaultCatalog != null) {
@@ -116,21 +120,24 @@ public class CatalogNodeProvider extends NodeProvider {
                                             lookup.add(connection);
                                             lookup.add(catalogHandle);
                                             lookup.add(metaDataModel);
-
                                             newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
                                         }
                                     }
                                 }
                             }
 
-                            CatalogNodeProvider.this.setNodes(newList);
+                            if (newList.size() == 1) {
+                                setProxyNodes(newList);
+                            } else {
+                                setNodes(newList);
+                            }
                         }
                     }
                 );
             } catch (MetadataModelException e) {
 
             }
-        } else {
+        } else if (!isConnected) {
            setNodes(newList);
         }
 

@@ -64,6 +64,7 @@ public abstract class NodeProvider implements Lookup.Provider {
     private final ChangeSupport changeSupport;
     private final Lookup lookup;
     protected boolean initialized = false;
+    private boolean isProxied = false;
 
     /**
      * Constructor
@@ -103,7 +104,24 @@ public abstract class NodeProvider implements Lookup.Provider {
             initialized = true;
         }
 
-        return Collections.unmodifiableCollection(nodeSet);
+        if (isProxied) {
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (Node child : nodeSet) {
+                if (child instanceof BaseNode) {
+                    BaseNode node = (BaseNode)child;
+                    Collection<? extends Node> list = node.getNodeRegistry().getNodes();
+                    for (Node n : list) {
+                        nodes.add(n);
+                    }
+                }
+            }
+
+            return Collections.unmodifiableCollection(nodes);
+
+        } else {
+            return Collections.unmodifiableCollection(nodeSet);
+        }
     }
 
     public synchronized void refresh() {
@@ -130,7 +148,7 @@ public abstract class NodeProvider implements Lookup.Provider {
     protected Collection<Node> getNodes(Object dataObject) {
         
         List<Node> results = new ArrayList<Node>();
-        
+
         synchronized (nodeSet) {
             for (Node child : nodeSet) {
                 Object obj = child.getLookup().lookup(dataObject.getClass());
@@ -143,6 +161,16 @@ public abstract class NodeProvider implements Lookup.Provider {
         return Collections.unmodifiableCollection(results);
     }
 
+    public void setProxyNodes(Collection<Node> newList) {
+        synchronized (nodeSet) {
+            isProxied = true;
+            nodeSet.clear();
+            nodeSet.addAll(newList);
+        }
+
+        changeSupport.fireChange();
+    }
+
     /**
      * Sets the list of nodes.
      * 
@@ -150,6 +178,7 @@ public abstract class NodeProvider implements Lookup.Provider {
      */
     public void setNodes(Collection<Node> newList) {
         synchronized (nodeSet) {
+            isProxied = false;
             nodeSet.clear();
             nodeSet.addAll(newList);
         }

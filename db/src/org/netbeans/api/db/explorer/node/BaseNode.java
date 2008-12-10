@@ -115,6 +115,10 @@ public abstract class BaseNode extends AbstractNode {
      */
     protected abstract void initialize();
 
+    public NodeRegistry getNodeRegistry() {
+        return nodeRegistry;
+    }
+
     public synchronized void refresh() {
         nodeRegistry.refresh();
         update();

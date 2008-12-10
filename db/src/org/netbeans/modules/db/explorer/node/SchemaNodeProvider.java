@@ -106,7 +106,9 @@ public class SchemaNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+
+        if (connected) {
             Catalog cat = getCatalog();
 
             if (cat != null) {
@@ -120,10 +122,16 @@ public class SchemaNodeProvider extends NodeProvider {
                         updateNode(newList, schema, metaDataModel);
                     }
                 }
+                
+                if (syntheticSchema != null) {
+                    setProxyNodes(newList);
+                } else {
+                    setNodes(newList);
+                }
             }
+        } else {
+            setNodes(newList);
         }
-
-        setNodes(newList);
     }
 
     private void updateNode(List<Node> newList, Schema schema, MetadataModel metadataModel) {
