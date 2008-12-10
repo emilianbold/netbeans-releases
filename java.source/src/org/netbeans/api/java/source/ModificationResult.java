@@ -88,7 +88,7 @@ public final class ModificationResult {
     
     /** Creates a new instance of ModificationResult */
     ModificationResult(final JavaSource js) {
-        this.sources = JavaSourceAccessor.getINSTANCE().getSources(js);
+        this.sources = js != null ? JavaSourceAccessor.getINSTANCE().getSources(js) : null;
     }
 
     private ModificationResult(Collection<Source> sources) {
