@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -59,10 +60,13 @@ public final class Context {
     private final String indexerName;
     private final int indexerVersion;
     private FileObject root;
-    
+
+    //unit test
+    final IndexFactoryImpl factory;
 
     Context (final FileObject indexBaseFolder,
-             final URL rootURL, String indexerName, int indexerVersion) throws IOException {
+             final URL rootURL, final String indexerName, final int indexerVersion,
+             final IndexFactoryImpl factory) throws IOException {
         assert indexBaseFolder != null;
         assert rootURL != null;
         assert indexerName != null;
@@ -70,6 +74,7 @@ public final class Context {
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
+        this.factory = factory;
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
     }

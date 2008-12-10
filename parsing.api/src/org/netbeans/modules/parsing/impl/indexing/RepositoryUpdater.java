@@ -422,7 +422,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         if (factory != null) {
                             try {
                                 final CustomIndexer indexer = factory.createIndexer();
-                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion());
+                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
                                 SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
                             } finally {
                                 it.remove();

@@ -70,7 +70,12 @@ public final class IndexingSupport {
     private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
 
     private IndexingSupport (final Context ctx) throws IOException {
-        this.spiFactory = new LuceneIndexFactory();
+        IndexFactoryImpl factory = SPIAccessor.getInstance().getIndexFactory(ctx);
+        if (factory == null) {
+            factory = new LuceneIndexFactory();
+        }
+        assert factory != null;
+        this.spiFactory = factory;
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
 

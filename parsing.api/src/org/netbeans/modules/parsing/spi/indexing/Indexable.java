@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -127,8 +128,8 @@ public final class Indexable {
         }
 
         @Override
-        public Context createContext(FileObject indexFolder, URL rootURL, String indexerName, int indexerVersion) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion);
+        public Context createContext(FileObject indexFolder, URL rootURL, String indexerName, int indexerVersion, IndexFactoryImpl factory) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory);
         }
 
         @Override
@@ -156,6 +157,12 @@ public final class Indexable {
         public String getIndexerPath(final String indexerName, final int indexerVersion) {
             assert indexerName != null;
             return Context.getIndexerPath(indexerName, indexerVersion);
+        }
+
+        @Override
+        public IndexFactoryImpl getIndexFactory(Context ctx) {
+            assert ctx != null;
+            return ctx.factory;
         }
 
     }

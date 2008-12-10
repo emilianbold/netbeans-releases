@@ -77,13 +77,15 @@ public abstract class SPIAccessor {
     public abstract Indexable create (final IndexableImpl delegate);
 
     public abstract  Context createContext (final FileObject indexFolder,
-             final URL rootURL, String indexerName, int indexerVersion) throws IOException;
+             final URL rootURL, String indexerName, int indexerVersion, IndexFactoryImpl factory) throws IOException;
 
     public abstract String getIndexerName (Context ctx);
 
     public abstract int getIndexerVersion (Context ctx);
 
     public abstract String getIndexerPath (String indexerName, int indexerVersion);
+
+    public abstract IndexFactoryImpl getIndexFactory (Context ctx);
 
     public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
 
