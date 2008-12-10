@@ -49,27 +49,24 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
  * @author Thomas Wuerthinger
  */
-public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
+public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPresentationElement> {
 
-    public static final boolean TRACE = false;
-    public static final boolean CHECK = false;    // Iterations
     public static final int SWEEP_ITERATIONS = 3;
     public static final int CROSSING_ITERATIONS = 3;    // Options default settings 
     public static final int DUMMY_WIDTH = 1;
@@ -77,25 +74,24 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     public static final int LAYER_OFFSET = 30;    // Options
     private int dummyWidth;
     private int xOffset;
-    private int layerOffset;
+    private int yOffset;
     private int layerCount;    // Variables
-    private UniversalGraph<N, E> graph;
+    private UniversalGraph<IPresentationElement, IPresentationElement> graph;
     private List<LayoutNode> nodes;
-    private Collection<N> nodesSubset = null;
-    private HashMap<N, LayoutNode> vertexToLayoutNode;
-    private Set<E> reversedLinks;
+    private Collection<IPresentationElement> nodesSubset = null;
+    private HashMap<IPresentationElement, LayoutNode> vertexToLayoutNode;
+    private Set<IPresentationElement> reversedLinks;
     private List<LayoutNode>[] layers;
     private boolean animate = false;
     private boolean invert = true;
+    private DesignerScene scene;
 
-    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate,
-            boolean inverted, int xOffset, int layerOffset) {
+    public HierarchicalLayout(boolean inverted, int xOffset, int yOffset) {
 
         dummyWidth = DUMMY_WIDTH;
 
         // scene is not used yet. It will be used when the container agnostic feature
         // is put into the NBVL
-        this.animate = animate;
 
         if (xOffset > 0) {
             this.xOffset = xOffset;
@@ -103,28 +99,32 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             this.xOffset = X_OFFSET;
         }
 
-        if (layerOffset > 0) {
-            this.layerOffset = layerOffset;
+        if (yOffset > 0) {
+            this.yOffset = yOffset;
         } else {
-            this.layerOffset = LAYER_OFFSET;
+            this.yOffset = LAYER_OFFSET;
         }
         
         this.invert = inverted;
     }
 
-    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate, boolean inverted) {
-        this(scene, animate, inverted, X_OFFSET, LAYER_OFFSET);
-    }
-
-    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate) {
-        this(scene, animate, false);
+    public HierarchicalLayout(boolean inverted) {
+        this(inverted, X_OFFSET, LAYER_OFFSET);
     }
 
     public HierarchicalLayout() {
-        this(null, false);
+        this(false);
     }
 
+
     private class LayoutNode {
+
+        public Integer x0local;
+        public Integer y0local;
+        public Integer x0RootContainer;
+        public Integer y0RootContainer;
+        public Integer x0Scene;
+        public Integer y0Scene;
 
         public int x;
         public int y;
@@ -134,12 +134,13 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
         public int xOffset;
         public int yOffset;
         public int bottomYOffset;
-        public N vertex; // Only used for non-dummy nodes, otherwise null
+        public IPresentationElement vertex; // Only used for non-dummy nodes, otherwise null
         public List<LayoutEdge> preds = new ArrayList<LayoutEdge>();
         public List<LayoutEdge> succs = new ArrayList<LayoutEdge>();
         public int pos = -1; // Position within layer
         public float crossingNumber;
 
+        @Override
         public String toString() {
             return "Node " + vertex;
         }
@@ -151,54 +152,25 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
         public LayoutNode to;
         public int relativeFrom;
         public int relativeTo;
-        public E link;
+        public IPresentationElement link;
     }
 
     private abstract class AlgorithmPart {
 
         public void start() {
-            if (CHECK) {
-                preCheck();
-            }
-
-            long start = 0;
-            if (TRACE) {
-                System.out.println("##################################################");
-                System.out.println("Starting part " + this.getClass().getName());
-                start = System.currentTimeMillis();
-            }
-            
             run();
-            
-            if (TRACE) {
-                System.out.println("Timing for " + this.getClass().getName() + " is " + (System.currentTimeMillis() - start));
-                printStatistics();
-            }
-
-            if (CHECK) {
-                postCheck();
-            }
         }
 
         protected abstract void run();
-
-        protected void printStatistics() {
-        }
-
-        protected void postCheck() {
-        }
-
-        protected void preCheck() {
-        }
     }
 
     @Override
-    protected void performGraphLayout(UniversalGraph<N, E> graph) {
+    protected void performGraphLayout(UniversalGraph<IPresentationElement, IPresentationElement> graph) {
 
         this.graph = graph;
 
-        vertexToLayoutNode = new HashMap<N, LayoutNode>();
-        reversedLinks = new HashSet<E>();
+        vertexToLayoutNode = new HashMap<IPresentationElement, LayoutNode>();
+        reversedLinks = new HashSet<IPresentationElement>();
         nodes = new ArrayList<LayoutNode>();
 
         // #############################################################
@@ -236,7 +208,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     }
 
     @Override
-    protected void performNodesLayout(UniversalGraph<N, E> arg0, Collection<N> arg1) {
+    protected void performNodesLayout(UniversalGraph<IPresentationElement, IPresentationElement> arg0, Collection<IPresentationElement> arg1) {
 
         this.nodesSubset = arg1;
         this.performGraphLayout(arg0);
@@ -247,13 +219,13 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         protected void run() {
             // Set up nodes
-            Collection<N> vertices;
+            Collection<IPresentationElement> vertices;
             if (nodesSubset == null) {
                 vertices = graph.getNodes();
             } else {
                 vertices = nodesSubset;
             }
-            for (N v : vertices) {
+            for (IPresentationElement v : vertices) {
                 LayoutNode node = new LayoutNode();
                 Widget w = graph.getScene().findWidget(v);
                 assert w != null;
@@ -270,8 +242,8 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             }
 
             // Set up edges
-            Collection<E> links = graph.getEdges();
-            for (E l : links) {
+            Collection<IPresentationElement> links = graph.getEdges();
+            for (IPresentationElement l : links) {
                 LayoutEdge edge = new LayoutEdge();
                 assert vertexToLayoutNode.containsKey(graph.getEdgeSource(l));
                 assert vertexToLayoutNode.containsKey(graph.getEdgeTarget(l));
@@ -307,26 +279,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 edge.from.succs.add(edge);
                 edge.to.preds.add(edge);
 
-            }
-        }
-
-        public void postCheck() {
-
-            assert vertexToLayoutNode.keySet().size() == nodes.size();
-            assert nodes.size() == graph.getNodes().size();
-
-            for (N v : graph.getNodes()) {
-
-                LayoutNode node = vertexToLayoutNode.get(v);
-                assert node != null;
-
-                for (LayoutEdge e : node.succs) {
-                    assert e.from == node;
-                }
-
-                for (LayoutEdge e : node.preds) {
-                    assert e.to == node;
-                }
             }
         }
     }
@@ -392,23 +344,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             }
         }
 
-        private void reverseAllInputs(LayoutNode node) {
-            for (LayoutEdge e : node.preds) {
-                assert !reversedLinks.contains(e.link);
-                reversedLinks.add(e.link);
-                node.succs.add(e);
-                e.from.preds.add(e);
-                e.from.succs.remove(e);
-                int oldRelativeFrom = e.relativeFrom;
-                int oldRelativeTo = e.relativeTo;
-                e.to = e.from;
-                e.from = node;
-                e.relativeFrom = oldRelativeTo;
-                e.relativeTo = oldRelativeFrom;
-            }
-            node.preds.clear();
-        }
-
         private void reverseEdge(LayoutEdge e) {
             assert !reversedLinks.contains(e.link);
             reversedLinks.add(e.link);
@@ -428,41 +363,9 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             oldTo.preds.remove(e);
             oldTo.succs.add(e);
         }
-
-        public void postCheck() {
-
-            for (LayoutNode n : nodes) {
-
-                Queue<LayoutNode> queue = new LinkedList<LayoutNode>();
-                for (LayoutEdge e : n.succs) {
-                    LayoutNode s = e.to;
-                    queue.add(s);
-                    visited.add(s);
-                }
-
-                HashSet<LayoutNode> visited = new HashSet<LayoutNode>();
-                while (!queue.isEmpty()) {
-                    LayoutNode curNode = queue.remove();
-
-                    for (LayoutEdge e : curNode.succs) {
-                        assert e.to != n;
-                        if (!visited.contains(e.to)) {
-                            queue.add(e.to);
-                            visited.add(e.to);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private class AssignLayers extends AlgorithmPart {
-
-        public void preCheck() {
-            for (LayoutNode n : nodes) {
-                assert n.layer == -1;
-            }
-        }
 
         protected void run() {
             HashSet<LayoutNode> set = new HashSet<LayoutNode>();
@@ -535,45 +438,11 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             }
 
         }
-
-        public void printStatistics() {
-            //for(LayoutNode n : nodes) {
-            //	System.out.println(n + " on layer " + n.layer);
-            //}
-        }
-
-        public void postCheck() {
-            for (LayoutNode n : nodes) {
-                assert n.layer >= 0;
-                assert n.layer < layerCount;
-                for (LayoutEdge e : n.succs) {
-                    assert e.from.layer < e.to.layer;
-                }
-            }
-        }
     }
 
     private class CreateDummyNodes extends AlgorithmPart {
 
-        private int oldNodeCount;
-
-        protected void preCheck() {
-            for (LayoutNode n : nodes) {
-                for (LayoutEdge e : n.succs) {
-                    assert e.from != null;
-                    assert e.from == n;
-                    assert e.from.layer < e.to.layer;
-                }
-
-                for (LayoutEdge e : n.preds) {
-                    assert e.to != null;
-                    assert e.to == n;
-                }
-            }
-        }
-
         protected void run() {
-            oldNodeCount = nodes.size();
             ArrayList<LayoutNode> currentNodes = new ArrayList<LayoutNode>(nodes);
             for (LayoutNode n : currentNodes) {
                 for (LayoutEdge e : n.succs) {
@@ -611,26 +480,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             e.to = n;
             return result;
         }
-
-        public void printStatistics() {
-            System.out.println("Dummy nodes created: " + (nodes.size() - oldNodeCount));
-        }
-
-        public void postCheck() {
-            ArrayList<LayoutNode> currentNodes = new ArrayList<LayoutNode>(nodes);
-            for (LayoutNode n : currentNodes) {
-                for (LayoutEdge e : n.succs) {
-                    assert e.from.layer == e.to.layer - 1;
-                }
-            }
-
-            for (int i = 0; i < layers.length; i++) {
-                assert layers[i].size() > 0;
-                for (LayoutNode n : layers[i]) {
-                    assert n.layer == i;
-                }
-            }
-        }
     }
     private Comparator<LayoutNode> crossingNodeComparator = new Comparator<LayoutNode>() {
 
@@ -647,12 +496,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     };
 
     private class CrossingReduction extends AlgorithmPart {
-
-        public void preCheck() {
-            for (LayoutNode n : nodes) {
-                assert n.layer < layerCount;
-            }
-        }
 
         protected void run() {
 
@@ -773,24 +616,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                     z++;
                 }
             }
-        }
-
-        private int evaluate() {
-            // TODO: Implement efficient evaluate / crossing min
-            return 0;
-        }
-
-        public void postCheck() {
-
-            HashSet<LayoutNode> visited = new HashSet<LayoutNode>();
-            for (int i = 0; i < layers.length; i++) {
-                for (LayoutNode n : layers[i]) {
-                    assert !visited.contains(n);
-                    assert n.layer == i;
-                    visited.add(n);
-                }
-            }
-
         }
     }
     private final Comparator<LayoutNode> nodePositionComparator = new Comparator<LayoutNode>() {
@@ -980,7 +805,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         protected void run() {
             int curY = 0;
-            //maxLayerHeight = new int[layers.length];
             for (int i = 0; i < layers.length; i++) {
                 int maxHeight = 0;
                 int baseLine = 0;
@@ -1002,7 +826,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 }
 
                 curY += maxHeight + baseLine + bottomBaseLine;
-                curY += layerOffset;
+                curY += yOffset;
             }
         }
     }
@@ -1013,9 +837,9 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         protected void run() {
 
-            HashMap<N, Point> vertexPositions = new HashMap<N, Point>();
-            HashMap<E, List<Point>> linkPositions = new HashMap<E, List<Point>>();
-            for (N v : graph.getNodes()) {
+            HashMap<IPresentationElement, Point> vertexPositions = new HashMap<IPresentationElement, Point>();
+            HashMap<IPresentationElement, List<Point>> linkPositions = new HashMap<IPresentationElement, List<Point>>();
+            for (IPresentationElement v : graph.getNodes()) {
                 LayoutNode n = vertexToLayoutNode.get(v);
                 assert !vertexPositions.containsKey(v);
                 vertexPositions.put(v, new Point(n.x + n.xOffset, n.y + n.yOffset));
@@ -1025,24 +849,18 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
                 for (LayoutEdge e : n.succs) {
                     if (e.link != null) {
-                        E link = e.link;
+                        IPresentationElement link = e.link;
                         ArrayList<Point> points = new ArrayList<Point>();
 
                         Point p = new Point(e.from.x + e.relativeFrom, e.from.y + e.from.height - e.from.bottomYOffset);
                         points.add(p);
 
                         LayoutNode cur = e.to;
-                        LayoutNode other = e.from;
                         LayoutEdge curEdge = e;
                         while (cur.vertex == null && cur.succs.size() != 0) {
-                            //if(points.size() > 1 && points.get(points.size() -1).x == cur.x + cur.width/2 && points.get(points.size() - 2).x == cur.x + cur.width/2) {
-                            //	points.remove(points.size() - 1);
-                            //}
 
                             points.add(new Point(cur.x + cur.width / 2, cur.y));
-                            //if(points.size() > 1 && points.get(points.size() -1).x == cur.x + cur.width/2 && points.get(points.size() - 2).x == cur.x + cur.width/2) {
-                            //	points.remove(points.size() - 1);
-                            //	}
+
                             points.add(new Point(cur.x + cur.width / 2, cur.y + cur.height));
                             if (cur.succs.size() == 0) {
                                 break;
@@ -1069,13 +887,13 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             int minX = Integer.MAX_VALUE;
             int minY = Integer.MAX_VALUE;
-            for (N v : vertexPositions.keySet()) {
+            for (IPresentationElement v : vertexPositions.keySet()) {
                 Point p = vertexPositions.get(v);
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
             }
 
-            for (E l : linkPositions.keySet()) {
+            for (IPresentationElement l : linkPositions.keySet()) {
                 List<Point> points = linkPositions.get(l);
                 for (Point p : points) {
                     if (p != null) {
@@ -1086,7 +904,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             }
 
-            for (N v : vertexPositions.keySet()) {
+            for (IPresentationElement v : vertexPositions.keySet()) {
                 Point p = vertexPositions.get(v);
                 p.x -= minX;
                 p.y -= minY;
@@ -1098,7 +916,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 }
             }
 
-            for (E l : linkPositions.keySet()) {
+            for (IPresentationElement l : linkPositions.keySet()) {
                 List<Point> points = linkPositions.get(l);
 
                 for (Point p : points) {
@@ -1137,16 +955,6 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             graph.getScene().validate();
             graph.getScene().repaint();
             graph.getScene().revalidate();
-        }
-
-        protected void printStatistics() {
-            System.out.println("Number of nodes: " + nodes.size());
-            int edgeCount = 0;
-            for (LayoutNode n : nodes) {
-                edgeCount += n.succs.size();
-            }
-            System.out.println("Number of edges: " + edgeCount);
-            System.out.println("Number of points: " + pointCount);
         }
     }
 }

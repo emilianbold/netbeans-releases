@@ -46,7 +46,6 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
@@ -72,8 +71,6 @@ import org.openide.util.NbPreferences;
 public class HierarchicalLayoutAction extends AbstractAction implements GraphLayoutListener {
 
     private DesignerScene scene;
-    private final int MAX_NODES_TO_ANIMATE = 50;
-    private boolean animated = false;
 
     public HierarchicalLayoutAction(DesignerScene scene) {
         this.scene = scene;
@@ -96,11 +93,10 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
             return;
         }
 
-        GraphLayout gLayout = new HierarchicalLayout(scene, false, false, 25, 25);
+        HierarchicalLayout gLayout = new HierarchicalLayout(false,  25, 25);
 
         new ContainerAgnosticLayout(scene, gLayout);
         gLayout.layoutGraph(scene);
-
     }
 
     private void movePalette () {
@@ -114,10 +110,6 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
     }
 
     public void graphLayoutFinished(UniversalGraph graph) {
-
-        if (animated) {
-            return;
-        }
         movePalette();
     }
 
