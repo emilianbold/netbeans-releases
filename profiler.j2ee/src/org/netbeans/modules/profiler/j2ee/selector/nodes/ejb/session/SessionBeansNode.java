@@ -80,7 +80,7 @@ public class SessionBeansNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(final SessionBeansNode parent) {
             final List<SelectorNode> sessionBeans = new ArrayList<SelectorNode>();
 
-            Project project = parent.getProject();
+            Project project = parent.getLookup().lookup(Project.class);
 
             final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
@@ -103,7 +103,7 @@ public class SessionBeansNode extends ContainerNode {
                                                      throws Exception {
                                                 TypeElement type = controller.getElements()
                                                                              .getTypeElement(sessionBean.getEjbClass());
-                                                beanList.add(new SessionBeanNode(cpInfo, Utils.CLASS_ICON, type, parent));
+                                                beanList.add(new SessionBeanNode(cpInfo, sessionBean.getDefaultDisplayName(), Utils.CLASS_ICON, type, parent));
                                             }
                                         }, true);
                                 }

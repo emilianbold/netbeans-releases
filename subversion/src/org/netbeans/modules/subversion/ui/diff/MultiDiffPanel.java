@@ -138,6 +138,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * Creates diff panel and immediatelly starts loading...
      */
     public MultiDiffPanel(Context context, int initialType, String contextName) {
+        assert EventQueue.isDispatchThread();
         this.context = context;
         this.contextName = contextName;
         currentType = initialType;
@@ -153,6 +154,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * It hides All, Local, Remote toggles and file chooser combo.
      */
     public MultiDiffPanel(File file, String rev1, String rev2) {
+        assert EventQueue.isDispatchThread();
         context = null;
         contextName = file.getName();
         initComponents();
@@ -248,6 +250,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void refreshComponents() {
+        assert EventQueue.isDispatchThread();
         DiffController view = setups != null && currentModelIndex != -1 ? setups[currentModelIndex].getView() : null;
         int currentDifferenceIndex = view != null ? view.getDifferenceIndex() : -1;
         if (view != null) {
@@ -320,6 +323,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void setDiffIndex(int idx, int location) {
+        assert EventQueue.isDispatchThread();
         currentIndex = idx;
         DiffController view = null;
         
@@ -440,6 +444,18 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
     /** Next that is driven by visibility. It continues to next not yet visible difference. */
     private void onNextButton() {
+        assert setups != null : "setups is null";                       //NOI18N
+        assert setups[currentModelIndex] != null
+                        : "setups[" + currentModelIndex + "] is null";  //NOI18N
+        if ((setups == null) || (setups[currentModelIndex] == null)) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    nextButton.setEnabled(false);
+                }
+            });
+            return;
+        }
+
         if (showingFileTable()) {
             currentIndex = fileTable.getSelectedIndex();
             currentModelIndex = fileTable.getSelectedModelIndex();
@@ -505,6 +521,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
 
     private void refreshSetups() {
+        assert EventQueue.isDispatchThread();
         if (dpt != null) {
             prepareTask.cancel();
         }
@@ -634,6 +651,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     private void onDiffTypeChanged() {
+        assert EventQueue.isDispatchThread();
         if (localToggle.isSelected()) {
             if (currentType == Setup.DIFFTYPE_LOCAL) return;
             currentType = Setup.DIFFTYPE_LOCAL;

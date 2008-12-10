@@ -378,7 +378,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
         }
-        
+
         private UserTask getTask() {
             return new Task();
         }
@@ -688,6 +688,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     break;
                 case EXPRESSION_STATEMENT:
                     insideExpressionStatement(env);
+                    break;
+                case BREAK:
+                    insideBreak(env);
                     break;
             }
         }
@@ -2228,6 +2231,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
             }
         }
+
+        private void insideBreak(Env env) throws IOException {
+            TreePath path = env.getPath();
+            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, path.getLeaf(), env.getOffset());
+            if (ts != null && ts.token().id() == JavaTokenId.BREAK) {
+                while (path != null) {
+                    if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
+                        results.add(JavaCompletionItem.createVariableItem(((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false));
+                    path = path.getParentPath();
+                }
+            }
+        }
         
         private void localResult(Env env) throws IOException {
             addLocalMembersAndVars(env);
@@ -3095,7 +3110,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (!breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                     case DO_WHILE_LOOP:
@@ -3104,11 +3119,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         if (! breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         if (!continueAdded && Utilities.startsWith(CONTINUE_KEYWORD, prefix)) {
                             continueAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, anchorOffset, false));                            
+                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                 }
@@ -4188,6 +4203,16 @@ public class JavaCompletionProvider implements CompletionProvider {
             for (Element encl = env.getScope().getEnclosingClass(); encl != null; encl = encl.getEnclosingElement()) {
                 if (e == encl)
                     return true;
+            }
+            return false;
+        }
+
+        private boolean withinLabeledStatement(Env env) {
+            TreePath path = env.getPath();
+            while (path != null) {
+                if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
+                    return true;
+                path = path.getParentPath();
             }
             return false;
         }

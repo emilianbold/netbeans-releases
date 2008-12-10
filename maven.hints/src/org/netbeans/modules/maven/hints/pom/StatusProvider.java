@@ -107,6 +107,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             assert model != null;
             try {
                 model.sync();
@@ -155,6 +158,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project, int selectionStart, int selectionEnd) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             try {
                 model.sync();
                 model.refresh();
