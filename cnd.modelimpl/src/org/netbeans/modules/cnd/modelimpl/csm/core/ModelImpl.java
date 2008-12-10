@@ -171,7 +171,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     public ProjectBase addProject(NativeProject id, String name, boolean enableModel) {
         ProjectBase prj = null;
         assert (id != null) : "The platform project is null"; // NOI18N
-        if (enableModel) {
+        if (enableModel && !disabledProjects.contains(id)) {
             boolean fireOpened = false;
             synchronized (lock) {
                 if (state != CsmModelState.ON) {
