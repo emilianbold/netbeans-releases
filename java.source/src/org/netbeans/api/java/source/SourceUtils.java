@@ -288,9 +288,10 @@ public class SourceUtils {
         }
         TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {
-            ((JCCompilationUnit) info.getCompilationUnit()).namedImportScope.enterIfAbsent((Symbol) te);
-        }
-        
+            JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
+            unit.namedImportScope = unit.namedImportScope.dupUnshared();
+            unit.namedImportScope.enterIfAbsent((Symbol) te);
+        }        
         return sName;
     }
     

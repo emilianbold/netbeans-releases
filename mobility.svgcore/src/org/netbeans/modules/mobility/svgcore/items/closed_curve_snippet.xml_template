@@ -1,0 +1,1 @@
+<path transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" d="M100,200 C0,150 0,0 100,50 C200,0 200,150 100, 200" stroke="black" stroke-width="2" fill="red"/>

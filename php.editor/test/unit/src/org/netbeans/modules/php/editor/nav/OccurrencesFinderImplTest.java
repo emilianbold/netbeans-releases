@@ -105,8 +105,8 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testParamVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",
-                "function test($hello) {",
-                "function test($^hello^) {",
+                "function test($hello) {//function",
+                "function test($^hello^) {//function",
                 "* @param Book $hello",
                 "* @param Book $^he|llo^"
                 );
@@ -138,6 +138,17 @@ public class OccurrencesFinderImplTest extends TestBase {
                 " * @property ^Author^ $author hello this is doc",
                 "* @return Author",
                 "* @return ^Aut|hor^"
+                );
+        performTestOccurrences(markTest, true);
+    }
+
+    public void testClsVarPropInPhpDocTest2() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/markphpdocTest.php",
+                " * @property Author $author hello this is doc",
+                " * @property Author $^author^ hello this is doc",
+                "$this->author;",
+                "$this->^aut|hor^;"
                 );
         performTestOccurrences(markTest, true);
     }

@@ -111,6 +111,8 @@ class DataViewTableUI extends ExtendedJTable {
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
     private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
     private DataView dView;
+    int selectedRow = -1;
+    int selectedColumn = -1;
 
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
@@ -127,13 +129,13 @@ class DataViewTableUI extends ExtendedJTable {
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
         setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
-        
+
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 3;
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
         setRowHeight(getFontMetrics(getFont()).getHeight() + 5);
 
         dView = dataView;
@@ -224,7 +226,7 @@ class DataViewTableUI extends ExtendedJTable {
 
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Object o = getValueAt(getSelectedRow(), getSelectedColumn());
+                    Object o = getValueAt(selectedRow, selectedColumn);
                     String output = (o != null) ? o.toString() : ""; //NOI18N
 
                     ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
@@ -373,12 +375,12 @@ class DataViewTableUI extends ExtendedJTable {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    int row = rowAtPoint(e.getPoint());
-                    int column = columnAtPoint(e.getPoint());
+                    selectedRow = rowAtPoint(e.getPoint());
+                    selectedColumn = columnAtPoint(e.getPoint());
                     boolean inSelection = false;
                     int[] rows = getSelectedRows();
                     for (int a = 0; a < rows.length; a++) {
-                        if (rows[a] == row) {
+                        if (rows[a] == selectedRow) {
                             inSelection = true;
                             break;
                         }
@@ -387,14 +389,14 @@ class DataViewTableUI extends ExtendedJTable {
                         inSelection = false;
                         int[] columns = getSelectedColumns();
                         for (int a = 0; a < columns.length; a++) {
-                            if (columns[a] == column) {
+                            if (columns[a] == selectedColumn) {
                                 inSelection = true;
                                 break;
                             }
                         }
                     }
                     if (!inSelection) {
-                        changeSelection(row, column, false, false);
+                        changeSelection(selectedRow, selectedColumn, false, false);
                     }
                     if (!tablePanel.isEditable()) {
                         miInsertAction.setEnabled(false);
@@ -513,7 +515,7 @@ class DataViewTableUI extends ExtendedJTable {
 
         public StringRenderer() {
             super();
-            super.putClientProperty("html.disable", Boolean.TRUE);
+            super.putClientProperty("html.disable", Boolean.TRUE); // NOI18N
         }
     }
 
@@ -668,10 +670,10 @@ class DataViewTableUI extends ExtendedJTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
-            if(value == null){
+            if (value == null) {
                 return c;
             }
-            
+
             if (isSelected) {
                 if (value.equals(obj)) {
                     c.setForeground(gray);
@@ -870,7 +872,7 @@ class DataViewTableUI extends ExtendedJTable {
         private JPanel panel = new JPanel(new BorderLayout());
         private JTable table;
         private int row, column;
-        
+
         public StringTableCellEditor(final JTextField textField) {
             super(textField);
             customEditorButton.addActionListener(this);
@@ -939,6 +941,5 @@ class DataViewTableUI extends ExtendedJTable {
             setEditable(column, c);
             return c;
         }
-
     }
 }
