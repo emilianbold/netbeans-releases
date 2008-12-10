@@ -170,7 +170,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             // CloneableEditorSupport.Pane implementation.
             views[0] = new SourceMultiViewDesc(getDataObject());
             views[1] = new DesignMultiViewDesc(getDataObject());
-            views[2] = new PreviewMultiViewDesc(getDataObject(), getService());
+            views[2] = new PreviewMultiViewDesc(getDataObject(), service);
         }
         
         // Make the column view the default element.
