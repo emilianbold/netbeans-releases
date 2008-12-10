@@ -113,7 +113,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             assert mimePath == MimePath.EMPTY;
             PreviewProvider pp;
             try {
-                pp = new TextPreview(prefs, "text/xml", getClass().getClassLoader(), "/org/netbeans/modules/options/indentation/indentationExample"); //NOI18N
+                pp = new TextPreview(prefs, "text/xml", getClass().getClassLoader(), "org/netbeans/modules/options/indentation/indentationExample"); //NOI18N
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
                 pp = new NoPreview();

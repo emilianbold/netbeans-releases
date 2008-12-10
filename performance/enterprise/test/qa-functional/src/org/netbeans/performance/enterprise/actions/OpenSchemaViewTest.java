@@ -41,28 +41,19 @@
 
 package org.netbeans.performance.enterprise.actions;
 
+import java.awt.Container;
+import javax.swing.JComponent;
 
-import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import junit.framework.Test;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.enterprise.EPUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
+
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -75,25 +66,19 @@ import org.netbeans.junit.NbModuleSuite;
 public class OpenSchemaViewTest extends PerformanceTestCase {
     
     private static String projectName, schemaName;
-    private boolean testGC = false;
-    private List<WeakReference> refObj = new ArrayList<WeakReference>();
-    private List<WeakReference> refDoc = new ArrayList<WeakReference>();
-    private String filename; //= CommonUtilities.getProjectsDir()
-//            + "SOATestProject" + File.separator + "src";
+    private Node schemaNode;
     
     /** Creates a new instance of OpenSchemaView */
     public OpenSchemaViewTest(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public OpenSchemaViewTest(String testName, String  performanceDataName) {
         super(testName,performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -107,82 +92,47 @@ public class OpenSchemaViewTest extends PerformanceTestCase {
     public void testOpenSchemaView(){
         projectName = "TravelReservationService";
         schemaName = "OTA_TravelItinerary";
-        filename = "OTA_TravelItinerary.xsd";
         doMeasurement();
     }
-    
-/*
-    public void testGCwithOpenComplexSchemaView(){
-        testGC = true;
-        testOpenComplexSchemaView();
-        for (WeakReference ref : refObj) {
-            log("Trying to assertGC for " + ref);
-            NbTestCase.assertGC("Schema data object can disappear", ref);            
-        }
-        log("All Schema data objects are GCed");
-        for (WeakReference ref : refDoc) {
-            log("Trying to assertGC for " + ref);
-            NbTestCase.assertGC("Schema document can disappear", ref);            
-        }
-        log("All Schema documents are GCed");
+
+    public void initialize() {
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+            public boolean accept(JComponent c) {
+                Container cont = c;
+                do {
+                    if ("o.n.core.multiview.MultiViewCloneableTopComponent".equals(cont.getClass().getName())) {
+                        return true;
+                    }
+                    cont = cont.getParent();
+                } while (cont != null);
+                return false;
+            }
+
+            public String getFilterName() {
+                return "Filter for MultiViewCloneableTopComponent";
+            }
+        });
     }
- */
+
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log("::open");
-        Node schemaNode = new Node(new EPUtilities().getProcessFilesNode(projectName),schemaName+".xsd");
+                schemaNode = new Node(new EPUtilities().getProcessFilesNode(projectName),schemaName+".xsd");
+
         schemaNode.callPopup().pushMenuNoBlock("Open");
-        //new OpenAction().performPopup(schemaNode);
+        //return null;
         return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(schemaName+".xsd");
     }
 
     @Override
-    protected void initialize() {
-        super.initialize();
-        System.gc();
-        new EventTool().waitNoEvent(3000);
-    }
-
-    @Override
     protected void shutdown() {
-        super.shutdown();
+        EditorOperator.closeDiscardAll();
+        repaintManager().resetRegionFilters();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void close(){
-        if (testGC) {
-            try {
-                log("filename = " + filename);
-                FileObject fo = FileUtil.toFileObject(new File(filename));
-                if (fo == null) {
-                    log("fo == null");
-                }
-                DataObject obj = DataObject.find(fo);
-                if (obj == null) {
-                    log("obj == null");
-                }
-                log("obj = " + obj);
-                EditorCookie ed = obj.getLookup().lookup(EditorCookie.class);
-                if (ed == null) {
-                }
-                log("ed = " + ed);
-    //            JEditorPane[] arr = ed.getOpenedPanes();
-//                StyledDocument document = ed.getDocument();
-
-                refObj.add(new WeakReference(obj));
-//                refDoc.add(new WeakReference(document));
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to initiate WeakReferences", e);
-            }
-        }
-        System.gc();
-        new EventTool().waitNoEvent(3000);
     }
-
-
-    
+ 
 }

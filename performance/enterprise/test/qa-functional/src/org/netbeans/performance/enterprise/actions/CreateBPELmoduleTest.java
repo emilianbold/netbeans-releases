@@ -41,24 +41,15 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.jemmy.util.Dumper;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.enterprise.MeasureEnterpriseSetupTest;
-import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -70,10 +61,8 @@ import org.netbeans.junit.NbModuleSuite;
 public class CreateBPELmoduleTest extends PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
-    
+    private NewProjectWizardOperator wizard;
     private String category, project, project_name, project_type;
-    
-    private int index;
     
     /**
      * Creates a new instance of CreateBPELmodule
@@ -113,54 +102,21 @@ public class CreateBPELmoduleTest extends PerformanceTestCase {
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle", "LBL_BPEL_Wizard_Title"); // "BPEL Module"
         project_type="BPELModule";
-        index=1;
-        
-        runGC(2);
-        
         MainWindowOperator.getDefault().maximize();
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard;
-        for(int attempt = 1; ; attempt++) {
-            log("Attempt " + attempt + " to open New Project Wizard");
-            new EventTool().waitNoEvent(3000);
-            Timeouts old_timeouts = JemmyProperties.getCurrentTimeouts().cloneThis();
-            try {                
-                JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 150000);
-                JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 150000);
-                wizard = NewProjectWizardOperator.invoke();
-                break;
-            } catch (RuntimeException exc) {
-                if (attempt < 5) {
-                    log("Attempt failed with exception: " + exc);
-                    exc.printStackTrace(getLog());
-                    continue;
-                }
-                Dumper.dumpAll(getLog("dump.xml"));
-                throw exc;
-            } finally {
-                JemmyProperties.setCurrentTimeouts(old_timeouts);
-            }
-        }   
+        wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.move(0, 0);    
-        new EventTool().waitNoEvent(1000);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-        log("================= Destination directory={"+directory+"}");
-      //  wizard_location.txtProjectLocation().setText("");
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(directory);
-        
-        project_name = project_type + "_" + (index++);
-        log("================= Project name="+project_name+"}");
+        project_name = project_type + "_" + System.currentTimeMillis();
         wizard_location.txtProjectName().clearText();
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
     
@@ -171,9 +127,7 @@ public class CreateBPELmoduleTest extends PerformanceTestCase {
     
     @Override
     public void close(){
-        closeAllModal(); // This is necessary in case open failed
-//        ProjectSupport.closeProject(project_name);
-        runGC(1);
+        closeAllModal(); 
     }
 
 }

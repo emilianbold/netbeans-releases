@@ -607,18 +607,9 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         return new RubyTypeAnalyzer(request.index, root, request.node, request.astOffset, request.lexOffset, request.doc, request.fileObject);
     }
 
-    private Set<? extends String> getTypesForConstant(final String fqn) {
-        int lastColon2 = fqn.lastIndexOf("::"); // NOI18N
-        String module;
-        String constant;
-        if (lastColon2 != -1) {
-            constant = fqn.substring(lastColon2 + 2);
-            module = fqn.substring(0, lastColon2);
-        } else {
-            constant = fqn;
-            module = "Kernel";
-        }
-        Set<IndexedConstant> constants = getIndex().getConstants(module, constant);
+    private Set<? extends String> getTypesForConstant(final String constantFqn) {
+        String module = RubyUtils.parseConstantName(constantFqn)[0];
+        Set<? extends IndexedConstant> constants = getIndex().getConstants(constantFqn);
         for (IndexedConstant indexedConstant : constants) {
             if (module.equals(indexedConstant.getFqn())) {
                 String type = indexedConstant.getType();

@@ -8,6 +8,7 @@ Searchable Keys:
   constant : GREEN;String
   constant : RED;String
   fqn : Colors
+  method : red
 
 Not Searchable Keys:
   attrs : |MODULE|
@@ -18,6 +19,7 @@ Document 1
 Searchable Keys:
   class : Converter
   class-ig : converter
+  constant : VERSION;Fixnum
   fqn : Colors::Converter
 
 Not Searchable Keys:

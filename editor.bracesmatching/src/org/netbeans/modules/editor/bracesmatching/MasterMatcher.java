@@ -102,12 +102,16 @@ public final class MasterMatcher {
         int caretOffset, 
         OffsetsBag highlights, 
         AttributeSet matchedColoring, 
-        AttributeSet mismatchedColoring
+        AttributeSet mismatchedColoring,
+        AttributeSet matchedMulticharColoring,
+        AttributeSet mismatchedMulticharColoring
     ) {
         assert document != null : "The document parameter must not be null"; //NOI18N
         assert highlights != null : "The highlights parameter must not be null"; //NOI18N
         assert matchedColoring != null : "The matchedColoring parameter must not be null"; //NOI18N
         assert mismatchedColoring != null : "The mismatchedColoring parameter must not be null"; //NOI18N
+        assert matchedMulticharColoring != null : "The matchedMulticharColoring parameter must not be null"; //NOI18N
+        assert mismatchedMulticharColoring != null : "The mismatchedMulticharColoring parameter must not be null"; //NOI18N
         assert caretOffset >= 0 : "The caretOffset parameter must be >= 0"; //NOI18N
         
         synchronized (LOCK) {
@@ -124,7 +128,11 @@ public final class MasterMatcher {
                     lastResult.getMaxBwdLookahead() == maxBwdLookahead &&
                     lastResult.getMaxFwdLookahead() == maxBwdLookahead
                 ) {
-                    lastResult.addHighlightingJob(highlights, matchedColoring, mismatchedColoring);
+                    lastResult.addHighlightingJob(
+                            highlights,
+                            matchedColoring, mismatchedColoring,
+                            matchedMulticharColoring, mismatchedMulticharColoring
+                    );
                 } else {
                     // Different request, cancel the current task
                     lastResult.cancel();
@@ -135,7 +143,11 @@ public final class MasterMatcher {
             if (task == null) {
                 // Remember the last request
                 lastResult = new Result(document, caretOffset, allowedSearchDirection, caretBias, maxBwdLookahead, maxFwdLookahead);
-                lastResult.addHighlightingJob(highlights, matchedColoring, mismatchedColoring);
+                lastResult.addHighlightingJob(
+                        highlights,
+                        matchedColoring, mismatchedColoring,
+                        matchedMulticharColoring, mismatchedMulticharColoring
+                );
 
                 // Fire up a new task
                 task = PR.post(lastResult);
@@ -289,7 +301,28 @@ public final class MasterMatcher {
             highlights.addHighlight(offsets[i * 2], offsets[i * 2 + 1], coloring);
         }
     }
-    
+
+    private static boolean isMultiChar(int [] offsets, boolean skipFirst) {
+        if (offsets != null) {
+            int startIdx;
+
+            if (skipFirst && offsets.length > 2) {
+                startIdx = 1;
+            } else {
+                startIdx = 0;
+            }
+
+            // Highlight all the matches
+            for(int i = startIdx; i < offsets.length / 2; i++) {
+                if (offsets[i * 2 + 1] - offsets[i * 2] > 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // when navigating: set the dot after or before the matching area, depending on the caret bias
     // when selecting: see #123091 for details
     private static void navigateAreas(
@@ -435,12 +468,16 @@ public final class MasterMatcher {
         public void addHighlightingJob(
             OffsetsBag highlights,
             AttributeSet matchedColoring,
-            AttributeSet mismatchedColoring
+            AttributeSet mismatchedColoring,
+            AttributeSet matchedMulticharColoring,
+            AttributeSet mismatchedMulticharColoring
         ) {
             highlightingJobs.add(new Object[] {
                 highlights,
                 matchedColoring,
-                mismatchedColoring
+                mismatchedColoring,
+                matchedMulticharColoring,
+                mismatchedMulticharColoring
             });
         }
 
@@ -580,7 +617,18 @@ public final class MasterMatcher {
                 public void run() {
                     try {
                         for (Object[] job : highlightingJobs) {
-                            highlightAreas(_origin, _matches, (OffsetsBag) job[0], (AttributeSet) job[1], (AttributeSet) job[2]);
+                            AttributeSet matchedColoring;
+                            AttributeSet mismatchedColoring;
+
+                            if (isMultiChar(_origin, true) || isMultiChar(_matches, false)) {
+                                matchedColoring = (AttributeSet) job[3];
+                                mismatchedColoring = (AttributeSet) job[4];
+                            } else {
+                                matchedColoring = (AttributeSet) job[1];
+                                mismatchedColoring = (AttributeSet) job[2];
+                            }
+
+                            highlightAreas(_origin, _matches, (OffsetsBag) job[0], matchedColoring, mismatchedColoring);
                             if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
                                 showSearchParameters((OffsetsBag) job[0]);
                             }
@@ -590,7 +638,7 @@ public final class MasterMatcher {
                             navigateAreas(_origin, _matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);
                         }
                     } catch (Exception e) {
-                        // the results were not computed under document lock and may be out fo sync
+                        // the results were not computed under document lock and may be out of sync
                         // with the document, just ignore the exception and remove any highlights
                         LOG.log(Level.FINE, null, e);
 

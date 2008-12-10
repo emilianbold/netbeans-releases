@@ -92,7 +92,8 @@ public class SVGTextField extends AbstractTextRenderingComponent {
         showCaret( false);
         readMeta();
         
-        myTextElement.setTrait(TRAIT_TEXT , getTextTrait()) ;
+        //myTextElement.setTrait(TRAIT_TEXT , getTextTrait()) ;
+        setText( getTextTrait() );
             
     }
 

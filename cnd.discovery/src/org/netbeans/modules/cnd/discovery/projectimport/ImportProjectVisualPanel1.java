@@ -54,6 +54,10 @@ public final class ImportProjectVisualPanel1 extends JPanel {
     /** Creates new form ImportProjectVisualPanel1 */
     public ImportProjectVisualPanel1(ImportProjectWizardPanel1 controller) {
         initComponents();
+        jLabel2.setVisible(false);
+        configureFlags.setVisible(false);
+        buildProjectCheckBox.setVisible(false);
+        todoPane.setBackground(jPanel1.getBackground());
         this.controller = controller;
         projectFolder.setText(controller.getWizardStorage().getPath());
         configureFlags.setText(controller.getWizardStorage().getFlags());
@@ -67,28 +71,34 @@ public final class ImportProjectVisualPanel1 extends JPanel {
 
             public void insertUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
 
             public void changedUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
+                checkFolderAndFlags();
             }
         });
         configureFlags.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
 
             public void changedUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setFlags(configureFlags.getText());
+                checkFolderAndFlags();
             }
         });
         setMainProjectCheckBox.addActionListener(new ActionListener() {
@@ -105,9 +115,68 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         });
     }
 
+    private void checkFolderAndFlags(){
+        boolean isProject = controller.getWizardStorage().isNbProjectFolder();
+        String configure = null;
+        String make = null;
+        if (!isProject)  {
+            configure = controller.getWizardStorage().getConfigure();
+            make = controller.getWizardStorage().getMake();
+        }
+        if (configure != null && make == null){
+            jLabel2.setVisible(true);
+            configureFlags.setVisible(true);
+        } else {
+            jLabel2.setVisible(false);
+            configureFlags.setVisible(false);
+        }
+
+        StringBuilder buf = new StringBuilder();
+        if (configure == null) {
+            if (make == null) {
+                // no action
+                if (isProject) {
+                    buf.append(getString("Prompt_AlreadyProject")); // NOI18N
+                } else {
+                    buf.append(getString("Prompt_NoConfigure_NoMake")); // NOI18N
+                }
+            } else {
+                // rebuild project
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
+            }
+        } else {
+            if (make == null) {
+                // configure and build project
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_ConfigureProject", "configure "+controller.getWizardStorage().getRealFlags())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_BuildProject", "make")); // NOI18N
+            } else {
+                // rebuild project
+                buf.append(getString("Prompt_Intention")); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
+                buf.append("\n- "); // NOI18N
+                buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
+            }
+        }
+        todoPane.setText(buf.toString());
+    }
+
+    private String getString(String key, String ... params){
+        return NbBundle.getMessage(ImportProjectVisualPanel1.class, key, params);
+    }
+
     @Override
     public String getName() {
-        return NbBundle.getMessage(ImportProjectVisualPanel1.class, "Step1"); // NOI18N
+        return getString("Step1"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -126,11 +195,14 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         configureFlags = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        todoPane = new javax.swing.JTextPane();
         setMainProjectCheckBox = new javax.swing.JCheckBox();
         buildProjectCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setLabelFor(projectFolder);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -144,6 +216,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
         add(projectFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.browseButton.text")); // NOI18N
@@ -157,6 +230,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         gridBagConstraints.gridy = 0;
         add(browseButton, gridBagConstraints);
 
+        jLabel2.setLabelFor(configureFlags);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -168,7 +242,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(configureFlags, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -180,17 +254,16 @@ public final class ImportProjectVisualPanel1 extends JPanel {
 
         jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
+        jPanel1.setLayout(new java.awt.BorderLayout());
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 192, Short.MAX_VALUE)
-        );
+        jScrollPane1.setBorder(null);
+
+        todoPane.setBorder(null);
+        todoPane.setEditable(false);
+        todoPane.setFocusable(false);
+        jScrollPane1.setViewportView(todoPane);
+
+        jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -198,6 +271,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jPanel1, gridBagConstraints);
 
         setMainProjectCheckBox.setSelected(true);
@@ -229,8 +303,8 @@ public final class ImportProjectVisualPanel1 extends JPanel {
             seed = System.getProperty("user.home"); // NOI18N
         }
         JFileChooser fileChooser = new FileChooser(
-                NbBundle.getMessage(ImportProjectVisualPanel1.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                NbBundle.getMessage(ImportProjectVisualPanel1.class, "PROJECT_DIR_BUTTON_TXT"), // NOI18N
+                getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
+                getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY, false,
                 null,
                 seed,
@@ -250,9 +324,11 @@ public final class ImportProjectVisualPanel1 extends JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField projectFolder;
     private javax.swing.JCheckBox setMainProjectCheckBox;
+    private javax.swing.JTextPane todoPane;
     // End of variables declaration//GEN-END:variables
 }
 

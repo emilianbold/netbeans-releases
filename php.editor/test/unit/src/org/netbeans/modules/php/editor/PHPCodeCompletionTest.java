@@ -375,10 +375,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     // #132294 [cc] cc for variables in strings not working if there are non-ws chars preceding the variablle
     public void test132294() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $ts^", false);
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $tst13229^", false);
     }
     public void test132294_1() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$tst13229^", false);
     }
     // #142234 $t->| shouldn't propose __construct()
     public void test142234() throws Exception {

@@ -80,7 +80,7 @@ public class MessageBeansNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(final MessageBeansNode parent) {
             final List<SelectorNode> sessionBeans = new ArrayList<SelectorNode>();
 
-            Project project = parent.getProject();
+            Project project = parent.getLookup().lookup(Project.class);
 
             final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
@@ -102,7 +102,7 @@ public class MessageBeansNode extends ContainerNode {
                                             public void run(CompilationController controller)
                                                      throws Exception {
                                                 TypeElement type = controller.getElements().getTypeElement(mdbBean.getEjbClass());
-                                                beanList.add(new MessageBeanNode(cpInfo, Utils.CLASS_ICON, type, parent));
+                                                beanList.add(new MessageBeanNode(cpInfo, mdbBean.getDefaultDisplayName(), Utils.CLASS_ICON, type, parent));
                                             }
                                         }, true);
                                 }
