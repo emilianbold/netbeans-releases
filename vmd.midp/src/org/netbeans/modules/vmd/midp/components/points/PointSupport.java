@@ -47,7 +47,6 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 import java.awt.*;

@@ -283,7 +283,7 @@ public class GSFPHPParser implements Parser {
                 if (end < source.length()) {
                     c = source.charAt(end);
                     while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
-                        c = source.charAt(++end);
+                        c = source.charAt(end++);
                     }
                 }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);

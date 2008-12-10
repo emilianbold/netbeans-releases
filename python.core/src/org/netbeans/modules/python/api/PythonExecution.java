@@ -218,7 +218,7 @@ public class PythonExecution {
             }
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return null;
+                return outProcessor;
             }
         });
     }

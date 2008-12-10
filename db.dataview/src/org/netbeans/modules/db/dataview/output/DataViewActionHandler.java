@@ -69,7 +69,7 @@ class DataViewActionHandler {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_commit_changes");
-            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation"))).equals(NotifyDescriptor.NO_OPTION)){
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation"))).equals(NotifyDescriptor.NO_OPTION)) {
                 doCalculation = false;
             }
         }
@@ -137,7 +137,7 @@ class DataViewActionHandler {
 
     void truncateActionPerformed() {
         String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
-        if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)){
+        if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
             execHelper.executeTruncate();
         }
     }
@@ -149,9 +149,9 @@ class DataViewActionHandler {
             dataView.setInfoStatusText(msg);
         } else {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
-            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)){
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)) {
                 execHelper.executeDeleteRow(rsTable);
-             }
+            }
         }
     }
 
@@ -161,7 +161,7 @@ class DataViewActionHandler {
     }
 
     private static Object showYesAllDialog(Object msg, String title) {
-        NotifyDescriptor nd = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,null,NotifyDescriptor.NO_OPTION);
+        NotifyDescriptor nd = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.NO_OPTION);
         DialogDisplayer.getDefault().notify(nd);
         return nd.getValue();
     }

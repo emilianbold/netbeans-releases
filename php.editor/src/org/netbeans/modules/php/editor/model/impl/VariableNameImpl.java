@@ -129,8 +129,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     @Override
     public String getNormalizedName() {
         ScopeImpl inScope = getInScope();
-        if (inScope instanceof MethodScope && representsThis()) {
+        if (inScope instanceof MethodScope ) {
+            String methodName = representsThis() ? "" : inScope.getName();//NOI18N
             inScope = inScope.getInScope();
+            return (inScope != null && !isGloballyVisible()) ? inScope.getName()+methodName+getName() : methodName+getName();
         }
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }

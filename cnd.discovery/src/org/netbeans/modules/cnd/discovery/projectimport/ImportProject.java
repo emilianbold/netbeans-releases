@@ -38,8 +38,11 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,6 +101,7 @@ public class ImportProject {
     private String configurePath;
     private String configureArguments;
     private boolean runConfigure;
+    private boolean setAsMain;
     private String workingDir;
     private String buildCommand = "${MAKE} all";  // NOI18N
     private String cleanCommand = "${MAKE} clean";  // NOI18N
@@ -123,13 +127,14 @@ public class ImportProject {
             } else {
                 file = new File(path + "/configure"); // NOI18N
                 configurePath = file.getAbsolutePath();
-                configureArguments = wizardStorage.getFlags();
+                configureArguments = wizardStorage.getRealFlags();
                 runConfigure = true;
                 file = new File(path + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         }
         runMake = wizardStorage.isBuildProject();
+        setAsMain = wizardStorage.isSetMain();
     }
 
     public Set<FileObject> create() throws IOException {
@@ -178,12 +183,14 @@ public class ImportProject {
                     //    makefileFile.createNewFile();
                     //}
                     final boolean userRunMake = runMake;
+                    //final File configureLog = createTempFile("configure");
                     ExecutionListener listener = new ExecutionListener() {
                         public void executionStarted() {
                         }
                         public void executionFinished(int rc) {
                             if (userRunMake && rc == 0) {
-                                makeProject();
+                                //parseConfigureLog(configureLog);
+                                makeProject(false);
                             }
                         }
                     };
@@ -191,7 +198,7 @@ public class ImportProject {
                         runMake = false;
                         postponeModel = true;
                     }
-                    ShellRunAction.performAction(node, listener);
+                    ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
                 }
             } catch (DataObjectNotFoundException e) {
             }
@@ -223,9 +230,11 @@ public class ImportProject {
         FileObject dir = FileUtil.toFileObject(dirF);
         resultSet.add(dir);
         OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-        OpenProjects.getDefault().setMainProject(makeProject);
+        if (setAsMain) {
+            OpenProjects.getDefault().setMainProject(makeProject);
+        }
         if (runMake) {
-            makeProject();
+            makeProject(true);
             postponeModel = true;
         }
         if (postponeModel) {
@@ -237,7 +246,35 @@ public class ImportProject {
         return resultSet;
     }
 
-    private void makeProject(){
+//    private void parseConfigureLog(File configureLog){
+//        try {
+//            BufferedReader reader = new BufferedReader(new FileReader(configureLog));
+//            while (true) {
+//                String line;
+//                line = reader.readLine();
+//                if (line == null) {
+//                    break;
+//                }
+//            }
+//            reader.close();
+//        } catch (FileNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//    }
+
+    private File createTempFile(String prefix) {
+        try {
+            File file = File.createTempFile(prefix, ".log"); // NOI18N
+            file.deleteOnExit();
+            return file;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    private void makeProject(boolean doClean){
         String path = dirF.getAbsolutePath();
         File file = new File(path + "/Makefile"); // NOI18N
         if (file.exists() && file.isFile() && file.canRead()) {
@@ -254,14 +291,11 @@ public class ImportProject {
             try {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
-                ExecutionListener listener = new ExecutionListener() {
-                    public void executionStarted() {
-                    }
-                    public void executionFinished(int rc) {
-                        discovery(rc);
-                    }
-                };
-                MakeAction.execute(node, "", listener); // NOI18N
+                if (doClean) {
+                    postClean(node);
+                } else {
+                    postMake(node);
+                }
             } catch (DataObjectNotFoundException ex) {
             }
         } else {
@@ -270,6 +304,37 @@ public class ImportProject {
             switchModel(true);
             postModelDiscovery();
         }
+    }
+
+    private void postClean(final Node node){
+        ExecutionListener listener = new ExecutionListener() {
+            public void executionStarted() {
+            }
+            public void executionFinished(int rc) {
+                postMake(node);
+            }
+        };
+        MakeAction.execute(node, "clean", listener, null); // NOI18N
+    }
+
+    private void postMake(Node node){
+        final File makeLog = createTempFile("make"); // NOI18N
+        ExecutionListener listener = new ExecutionListener() {
+            public void executionStarted() {
+            }
+            public void executionFinished(int rc) {
+                discovery(rc, makeLog);
+            }
+        };
+        Writer outputListener = null;
+        if (makeLog != null){
+            try {
+                outputListener = new BufferedWriter(new FileWriter(makeLog));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        MakeAction.execute(node, "", listener, outputListener); // NOI18N
     }
 
     private DiscoveryProvider getProvider(String id){
@@ -304,7 +369,7 @@ public class ImportProject {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(dirF.getAbsolutePath()); // NOI18N
-            map.put(DiscoveryWizardDescriptor.PRIVIDER, provider); 
+            map.put(DiscoveryWizardDescriptor.PROVIDER, provider);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
             DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
             descriptor.setProject(makeProject);
@@ -318,13 +383,30 @@ public class ImportProject {
         }
     }
 
-    private void discovery(int rc) {
+    private void discovery(int rc, File makeLog) {
         boolean done = false;
+        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (rc == 0) {
-            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    try {
+                        done = true;
+                        extension.apply(map, makeProject);
+                        switchModel(true);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+        if (!done && makeLog != null){
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
                 if (extension.canApply(map, makeProject)) {
                     try {

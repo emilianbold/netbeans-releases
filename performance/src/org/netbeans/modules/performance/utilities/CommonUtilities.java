@@ -439,7 +439,7 @@ public class CommonUtilities {
         
         NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
+        wizard_location.txtProjectLocation().typeText(getTempDir());
         String pname = wizard_location.txtProjectName().getText() + System.currentTimeMillis();
         wizard_location.txtProjectName().clearText();
         wizard_location.txtProjectName().typeText(pname);

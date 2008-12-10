@@ -45,7 +45,7 @@ import java.util.List;
 
 /**
  *
- * @author Martin Brehovsky, Karol Harezlak
+ * @author Karol Harezlak
  */
 public abstract class Bitmask {
 

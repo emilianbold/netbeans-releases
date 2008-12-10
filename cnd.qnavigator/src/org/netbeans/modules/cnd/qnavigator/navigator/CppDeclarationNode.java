@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -216,7 +217,12 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             List<Action> list = new ArrayList<Action>();
             list.add(action);
             list.add(RefactoringActionsFactory.whereUsedAction());
-//            list.add(RefactoringActionsFactory.popupSubmenuAction());
+            CsmObject obj = this.getCsmObject();
+            if (CsmKindUtilities.isField(obj)) {
+                list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+            } else if (CsmKindUtilities.isFunction(obj)) {
+                list.add(CsmRefactoringActionsFactory.changeParametersAction());
+            }
             list.add(null);
             for (Action a : model.getActions()){
                 list.add(a);

@@ -41,26 +41,19 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-
-import java.awt.AWTEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.tree.TreePath;
-import junit.framework.Test;
-import org.netbeans.junit.Log;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import javax.swing.tree.TreePath;
+
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
@@ -73,13 +66,12 @@ public class OpenComplexDiagramTest extends PerformanceTestCase {
     
     public OpenComplexDiagramTest(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value
         expectedTime = 10000;
         WAIT_AFTER_OPEN=4000;
     }
+
     public OpenComplexDiagramTest(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 10000;
         WAIT_AFTER_OPEN=4000;
     }
@@ -98,52 +90,25 @@ public class OpenComplexDiagramTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-        log(":: initialize");
-        
-        // The following disables EventTool to hold a reference to DesignView in 
-        // its listeners
-        EventTool.addListeners(EventTool.getCurrentEventMask() & ~AWTEvent.FOCUS_EVENT_MASK);        
-        
-        Log.enableInstances(Logger.getLogger("TIMER.bpel"), "BPEL DesignView", Level.FINEST);
     }
     
     public void prepare() {
-        log(":: prepare");
     }
-
-    /**
-     * Check of memory leaks. measureTime testcase should be executed before 
-     * this testcase
-     
-    public void testGC() {
-        Log.assertInstances("Can't GC BPEL DesignView");        
-    }
-     */
 
     public ComponentOperator open() {
-        log("::open");
         Node processFilesNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         Node doc = new Node(processFilesNode,"TravelReservationService.bpel");
 
         // Use double click instead of Open because Open opens Source view
         // while double click opens Schema view
         TreePath treePath = doc.getTreePath();
-        new EventTool().waitNoEvent(1000);
         doc.tree().clickOnPath(treePath, 2);
         return new TopComponentOperator("TravelReservationService.bpel");
     }
-    
-    @Override
-    protected void shutdown() {
-        log("::shutdown");
-    }
-    
+
     @Override
     public void close(){
-        log("::close");
         new CloseAllDocumentsAction().performAPI();        
     }
 
-
-    
 }
