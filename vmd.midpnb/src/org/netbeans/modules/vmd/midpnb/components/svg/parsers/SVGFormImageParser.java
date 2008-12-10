@@ -500,12 +500,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     }
 
     private static Float getPositionForRadioButton(Attributes atts, Float framePosition) {
-        String transform = atts.getValue("transform"); //NOI18N
-        Float position = null;
-        if (transform != null) {
-            int begining = transform.indexOf(","); //NOI18N
-            int end = transform.indexOf(")"); //NOI18N
-            position = new Float(transform.substring(begining + 1, end));
+        Float position = getPosition(atts);
+        if (position != null){
             position = position + framePosition;
         }
         return position;

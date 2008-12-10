@@ -41,12 +41,10 @@
 
 package org.netbeans.performance.enterprise;
 
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.actions.*;
-import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
