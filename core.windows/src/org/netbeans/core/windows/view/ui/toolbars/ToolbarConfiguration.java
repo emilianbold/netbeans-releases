@@ -133,9 +133,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
     
     public void rebuildMenu() {
-        if (toolbarMenu != null) {
-            toolbarMenu.removeAll();
-            fillToolbarsMenu(toolbarMenu, false);
+        synchronized( ToolbarConfiguration.class ) {
+            if (toolbarMenu != null) {
+                toolbarMenu.removeAll();
+                fillToolbarsMenu(toolbarMenu, false);
+            }
         }
     }
 
