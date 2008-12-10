@@ -53,8 +53,14 @@ public class LuceneDocument implements IndexDocumentImpl {
     public final Document doc;
 
     LuceneDocument (final Indexable indexable) {
+        assert indexable!=null;
         this.doc = new Document();
         this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    }
+
+    public LuceneDocument(final Document doc) {
+        assert doc != null;
+        this.doc = doc;
     }
 
     public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
@@ -66,6 +72,19 @@ public class LuceneDocument implements IndexDocumentImpl {
 
     public String getSourceName () {
         return doc.getField(DocumentUtil.FIELD_SOURCE_NAME).stringValue();
+    }
+
+    public String getValue(String key) {
+        return doc.getField(key).stringValue();
+    }
+
+    public String[] getValues(String key) {
+        final Field[] fields = doc.getFields(key);
+        final String[] result = new String[fields.length];
+        for (int i=0; i<fields.length; i++) {
+            result[i] = fields[i].stringValue();
+        }
+        return  result;
     }
 
 }

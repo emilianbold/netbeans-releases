@@ -152,6 +152,12 @@ public final class Indexable {
             indexer.index(indexable, parserResult, ctx);
         }
 
+        @Override
+        public String getIndexerPath(final String indexerName, final int indexerVersion) {
+            assert indexerName != null;
+            return Context.getIndexerPath(indexerName, indexerVersion);
+        }
+
     }
 
 }

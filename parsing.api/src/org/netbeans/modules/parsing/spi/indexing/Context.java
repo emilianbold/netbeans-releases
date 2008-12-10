@@ -70,7 +70,7 @@ public final class Context {
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
-        final String path = indexerName+"/"+indexerVersion; //NOI18N
+        final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
     }
 
@@ -111,5 +111,9 @@ public final class Context {
 
     int getIndexerVersion () {
         return this.indexerVersion;
-    }   
+    }
+
+    static String getIndexerPath (final String indexerName, final int indexerVersion) {
+        return indexerName+"/"+indexerVersion;
+    }
 }

@@ -61,17 +61,17 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
     }
 
     public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
+        final URL luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
         return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, true);
     }
 
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
+    public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
+        final URL luceneIndexFolder = getIndexFolder(indexFolder);
         return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, false);
     }
 
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
+    private URL getIndexFolder (final FileObject indexFolder) throws IOException {
+        assert indexFolder != null;
         final String indexVersion = Integer.toString(LuceneIndex.VERSION);
         final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
         return luceneIndexFolder.getURL();

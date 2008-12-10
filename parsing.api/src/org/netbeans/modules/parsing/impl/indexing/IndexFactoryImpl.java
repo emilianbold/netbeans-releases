@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -53,5 +54,5 @@ public interface IndexFactoryImpl {
 
     public IndexImpl createIndex (final Context ctx) throws IOException;
 
-    public IndexImpl getIndex (final Context ctx) throws IOException;
+    public IndexImpl getIndex (final FileObject indexFolder) throws IOException;
 }

@@ -45,4 +45,6 @@ package org.netbeans.modules.parsing.impl.indexing;
  */
 public interface IndexDocumentImpl {
     public void addPair (String key, String value, boolean searchable, boolean stored);
+    public String getValue (String key);
+    public String[] getValues (String key);
 }

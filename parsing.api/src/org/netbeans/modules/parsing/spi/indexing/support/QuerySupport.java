@@ -39,11 +39,22 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Parameters;
 
 /**
@@ -52,39 +63,107 @@ import org.openide.util.Parameters;
  */
 public final class QuerySupport {
 
-    private final IndexFactoryImpl spiFactory;
-
-    private QuerySupport (final URL... roots) {
-        this.spiFactory = new LuceneIndexFactory();
-        for (URL root : roots) {
-            
-        }
+    /**
+     * Encodes a type of the name kind used by
+     * {@link Index#search}, {@link CodeCompletionContext#getNameKind()} etc.
+     *
+     */
+    public enum Kind {
+        /**
+         * The name parameter
+         * is an exact simple name of the package or declared type.
+         */
+        EXACT_NAME,
+        /**
+         * The name parameter
+         * is an case sensitive prefix of the package or declared type name.
+         */
+        PREFIX,
+        /**
+         * The name parameter is
+         * an case insensitive prefix of the declared type name.
+         */
+        CASE_INSENSITIVE_PREFIX,
+        /**
+         * The name parameter is
+         * an camel case of the declared type name.
+         */
+        CAMEL_CASE,
+        /**
+         * The name parameter is
+         * an regular expression of the declared type name.
+         */
+        REGEXP,
+        /**
+         * The name parameter is
+         * an case insensitive regular expression of the declared type name.
+         */
+        CASE_INSENSITIVE_REGEXP;
     }
 
-    private QuerySupport (final FileObject... roots) {
+
+
+    private final IndexFactoryImpl spiFactory;
+    private final Collection<IndexImpl> indexes;
+
+    private QuerySupport (final String mimeType, final URL... roots) throws IOException {
         this.spiFactory = new LuceneIndexFactory();
-        for (FileObject root : roots) {
-            try {
-                final URL rootUrl = root.getURL();
-            } catch (FileStateInvalidException e) {
-                //Ignore deleted root
+        this.indexes = new LinkedList<IndexImpl>();
+        final String indexerFolder = findIndexerFolder(mimeType);
+        if (indexerFolder != null) {
+            for (URL root : roots) {
+                final FileObject cacheFolder = CacheFolder.getDataFolder(root);
+                assert cacheFolder != null;
+                final FileObject indexFolder = cacheFolder.getFileObject(indexerFolder);
+                if (indexFolder != null) {
+                    final IndexImpl index = this.spiFactory.getIndex(indexFolder);
+                    if (index != null) {
+                        this.indexes.add(index);
+                    }
+                }
             }
         }
+    }    
+
+    
+    public Collection<? extends IndexDocument> query (final String fieldName, final String fieldValue,
+            final Kind kind, final String... fieldsToLoad) {
+        final List<IndexDocument> result = new LinkedList<IndexDocument>();
+        for (IndexImpl index : indexes) {
+            final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
+            for (IndexDocumentImpl di : pr) {
+                result.add(new IndexDocument(di));
+            }
+        }
+        return result;
     }
 
-
-    public void query () {
-
-    }
-
-    public static QuerySupport forRoots (final URL... roots) {
+    public static QuerySupport forRoots (final String mimeType, final URL... roots) throws IOException {
+        Parameters.notNull("mimeType", mimeType);
         Parameters.notNull("roots", roots);
-        return new QuerySupport(roots);
+        return new QuerySupport(mimeType, roots);
     }
 
-    public static QuerySupport forRoots (final FileObject... roots) {
+    public static QuerySupport forRoots (final String mimeType, final FileObject... roots) throws IOException {
+        Parameters.notNull("mimeType", mimeType);
         Parameters.notNull("roots", roots);
-        return new QuerySupport(roots);
+        final List<URL> rootsURL = new ArrayList<URL>(roots.length);
+        for (FileObject root : roots) {
+            rootsURL.add(root.getURL());
+        }
+        return new QuerySupport(mimeType, rootsURL.toArray(new URL[rootsURL.size()]));
+    }
+
+    private static String findIndexerFolder (final String mimeType) {
+        final EmbeddingIndexerFactory embeddingFactory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
+        if (embeddingFactory != null) {
+            return SPIAccessor.getInstance().getIndexerPath(embeddingFactory.getIndexerName(), embeddingFactory.getIndexVersion());
+        }
+        final CustomIndexerFactory customFactory = MimeLookup.getLookup(mimeType).lookup(CustomIndexerFactory.class);
+        if (customFactory != null) {
+            return SPIAccessor.getInstance().getIndexerPath(customFactory.getIndexerName(), embeddingFactory.getIndexVersion());
+        }
+        return null;
     }
 
 }

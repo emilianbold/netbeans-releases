@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 
 /**
@@ -53,4 +55,6 @@ public interface IndexImpl {
     public void removeDocument (String relativePath);
 
     public void store () throws IOException;
+
+    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad);
 }

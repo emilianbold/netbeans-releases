@@ -45,11 +45,10 @@ import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -66,6 +65,7 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -328,6 +328,11 @@ public class LuceneIndex implements IndexImpl {
             message = b.toString();
         }
         return Exceptions.attachMessage(ioe, message);
+    }
+
+    public Collection<? extends IndexDocumentImpl> query(final String fieldName, final String value,
+            final QuerySupport.Kind kind, final String... fieldsToLoad) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
