@@ -150,7 +150,7 @@ public class DBTableTest extends NbTestCase {
     public void testGetFullyQualifiedName() {
         DBTable instance = table;
         String expResult = "SIMPLETABLE";
-        String result = instance.getQualifiedName();
+        String result = instance.getQualifiedName(false);
         assertEquals(expResult, result);
     }
 
@@ -160,7 +160,7 @@ public class DBTableTest extends NbTestCase {
     public void testGetQualifiedName() {
         DBTable instance = table;
         String expResult = "SIMPLETABLE";
-        String result = instance.getQualifiedName();
+        String result = instance.getQualifiedName(false);
         assertEquals(expResult, result);
     }
 
