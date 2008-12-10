@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -134,7 +135,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
-        return new PropertyEditorResourceLazyInit( ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) {
+        return new PropertyEditorResourceLazyInit(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) {
 
             @Override
             protected PropertyEditorResourceElement createElement() {
@@ -154,6 +155,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
      * @param userCodeLabel - text labe for custom code window
      * @param databinding - Boolena.TRUE FALSE is databinding is used
      */
+    @Deprecated
     public PropertyEditorResourceLazyInit(PropertyEditorResourceElement perElement,
             TypeID type,
             String newComponentAsText,
@@ -205,7 +207,15 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         this.noneComponentAsText = noneComponentAsText;
 
         createdComponents = new HashMap<String, DesignComponent>();
-        
+
+        //TODO This hack! must be remove it for M2! PropertyEditorResources must be rewriten!
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                getCustomEditor();
+            }
+        });
+
     }
 
     protected abstract PropertyEditorResourceElement createElement();
@@ -222,10 +232,10 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             rePanel = null;
         }
         radioButton = null;
-        if (perElement instanceof CleanUp) {
+        if (perElement != null && perElement instanceof CleanUp) {
             ((CleanUp) perElement).clean(component);
+            perElement = null;
         }
-        perElement = null;
         if (databindingElement != null) {
             databindingElement.clean(component);
         }
@@ -240,12 +250,12 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     @Override
     public final Component getCustomEditor() {
         if (perElement == null) {
-            final DesignComponent component_ = component != null ? component.get() :null;
+            final DesignComponent component_ = component != null ? component.get() : null;
             perElement = createElement();
             perElement.setDesignComponent(component_);
             perElement.setPropertyEditorMessageAwareness(this);
         }
-        
+
         if (radioButton == null) {
             radioButton = new JRadioButton();
             rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
@@ -271,7 +281,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             updateState((PropertyValue) getValue());
         }
         perElement.getCustomEdiotrNotification();
-        
+
         return superCustomEditor;
     }
 
@@ -369,19 +379,22 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         }
     }
 
-    private void setValue(PropertyValue value) {
+    private void setValue(final PropertyValue value) {
         super.setValue(value);
         final DesignComponent component_ = component.get();
+        //TODO THIS HACK FOR M1 it has to be change M1 this milston!!
+
         if (!NULL_VALUE.equals(value) && perElement != null && perElement.isPostSetValueSupported(component_)) {
             perElement.postSetValue(component_, value.getComponent());
         } else if (NULL_VALUE.equals(value)) {
             perElement.nullValueSet(component_);
-        } 
+        }
+
     }
 
     // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
-        String nameToBeCreated = ClassCode.getSuggestedMainName (componentTypeID);
+        String nameToBeCreated = ClassCode.getSuggestedMainName(componentTypeID);
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);
         component.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
     }
@@ -544,7 +557,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
 
             }
             perElement.postSaveValue(component.get());
-
         }
     }
 
@@ -569,7 +581,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);
         }
-        if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
+        if (getPropertyDisplayName() != null && MidpDatabindingSupport.getDatabaindingAsText(c, getPropertyNames().get(0)) != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
         } else if (rePanel.needsUpdate()) {
             radioButton.setSelected(!isCurrentValueAUserCodeType());
