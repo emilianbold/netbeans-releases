@@ -1158,10 +1158,8 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
             }
-            boolean isEmpty = true;
             for (StatementTree stat  : node.getStatements()) {
                 if (!isSynthetic(getCurrentPath().getCompilationUnit(), stat)) {
-                    isEmpty = false;
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
                         indent = 0;
@@ -1182,8 +1180,7 @@ public class Reformatter implements ReformatTask {
                     scan(stat, p);
                 }
             }
-            if (isEmpty || templateEdit)
-                newline();
+            blankLines();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
                 int i = tokens.index();
@@ -1587,11 +1584,11 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeForParen() ? 1 : 0);
             accept(LPAREN);
             spaces(cs.spaceWithinForParens() ? 1 : 0);
+            int alignIndent = cs.alignMultilineFor() ? col : -1;
             scan(node.getVariable(), p);
             spaces(cs.spaceBeforeColon() ? 1 : 0);
             accept(COLON);
-            spaces(cs.spaceAfterColon() ? 1 : 0);
-            scan(node.getExpression(), p);
+            wrapTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;
