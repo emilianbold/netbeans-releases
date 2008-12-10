@@ -68,7 +68,7 @@ public final class RunLastBuildAction extends AbstractAction implements ChangeLi
     
     public RunLastBuildAction() {
         super(NbBundle.getMessage(RunLastBuildAction.class, "LBL_RunLastBuildAction_general"));
-        BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImplementation.class));
+        BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImpl.getInstance()));
     }
     
     @Override

@@ -92,9 +92,6 @@ import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.IndexDocument;
-import org.netbeans.modules.csl.api.IndexDocumentFactory;
-import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
@@ -164,7 +161,12 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -198,7 +200,7 @@ public abstract class CslTestBase extends NbTestCase {
                     defaultLanguage, getCodeCompleter(),
                     getRenameHandler(), defaultLanguage.getDeclarationFinder(),
                     defaultLanguage.getFormatter(), getKeystrokeHandler(), 
-                    getIndexer(), getStructureScanner(), null, 
+                    getIndexerFactory(), getStructureScanner(), null,
                     defaultLanguage.isUsingCustomEditorKit());
             List<org.netbeans.modules.csl.core.Language> languages = new ArrayList<org.netbeans.modules.csl.core.Language>();
             languages.add(dl);
@@ -1322,9 +1324,9 @@ public abstract class CslTestBase extends NbTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // Indexing Tests
     ////////////////////////////////////////////////////////////////////////////
-    public Indexer getIndexer() {
-        Indexer handler = getPreferredLanguage().getIndexer();
-        assertNotNull("You must override getIndexer, either from your GsfLanguage or your test class", handler);
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        EmbeddingIndexerFactory handler = getPreferredLanguage().getIndexerFactory();
+        assertNotNull("You must override getIndexerFactory, either from your GsfLanguage or your test class", handler);
         return handler;
     }
     
@@ -1337,10 +1339,18 @@ public abstract class CslTestBase extends NbTestCase {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
 
-                Indexer indexer = getIndexer();
-                assertNotNull("getIndexer must be implemented", indexer);
-                IndexDocumentFactory factory = new IndexDocumentFactoryImpl(/*info.getIndex(info.getPreferredMimeType())*/);
-                ret[0] = indexer.index((ParserResult) r, factory);
+                EmbeddingIndexerFactory factory = getIndexerFactory();
+                assertNotNull("getIndexer must be implemented", factory);
+                EmbeddingIndexer indexer = factory.createIndexer();
+                assertNotNull("getIndexer must be implemented", factory);
+                Context context = SPIAccessor.getInstance().createContext(
+                        FileUtil.toFileObject(new File(new File(getWorkDir(), factory.getIndexerName()), Integer.toString(factory.getIndexVersion()))),
+                        r.getSnapshot().getSource().getFileObject().getParent().getURL(),
+                        factory.getIndexerName(),
+                        factory.getIndexVersion());
+                SPIAccessor.getInstance().index(indexer, r, context);
+
+                // XXX: parsingapi; retrieve the IndexDocument somehow
             }
         });
 
@@ -1357,23 +1367,15 @@ public abstract class CslTestBase extends NbTestCase {
         if (index != -1) {
             localUrl = localUrl.substring(0, index);
         }
-        
-        List<IndexDocument> result = indexFile(relFilePath);
-        String annotatedSource = prettyPrint(result, localUrl);
 
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
+// XXX: parsingapi
+//        List<IndexDocument> result = indexFile(relFilePath);
+//        String annotatedSource = prettyPrint(result, localUrl);
+//
+//        assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
+        fail("Indexers testing does not work at the moment");
     }
     
-    
-    protected void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
-        Indexer indexer = getIndexer();
-        assertNotNull("getIndexer must be implemented", indexer);
-        FileObject fo = getTestFile(relFilePath);
-        assertNotNull(fo);
-        File file = FileUtil.toFile(fo);
-        
-        assertEquals(isIndexable, indexer.isIndexable(file));
-    }
     
     private String sortCommaList(String s) {
         String[] items = s.split(",");
@@ -1393,129 +1395,116 @@ public abstract class CslTestBase extends NbTestCase {
         return value;
     }
     
-    private String prettyPrint(List<IndexDocument> documents, String localUrl) throws IOException {
-        List<String> nonEmptyDocuments = new ArrayList<String>();
-        List<String> emptyDocuments = new ArrayList<String>();
-
-        StringBuilder sb = new StringBuilder();
-
-        for (IndexDocument d : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)d;
-        
-            sb = new StringBuilder();
-            
-            if (doc.overrideUrl != null) {
-                sb.append("Override URL: ");
-                sb.append(doc.overrideUrl);
-                sb.append("\n");
-            }
-                            
-            sb.append("Searchable Keys:");
-            sb.append("\n");
-            List<String> strings = new ArrayList<String>();
-
-            List<String> keys = doc.indexedKeys;
-            List<String> values = doc.indexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = values.get(i);
-                strings.add(key + " : " + prettyPrintValue(key, value));
-            }
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
-                sb.append("\n");
-            }
-
-            sb.append("\n");
-            sb.append("Not Searchable Keys:");
-            sb.append("\n");
-            strings = new ArrayList<String>();
-            keys = doc.unindexedKeys;
-            values = doc.unindexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = prettyPrintValue(key, values.get(i));
-                if (value.indexOf(',') != -1) {
-                    value = sortCommaList(value);
-                }
-                strings.add(key + " : " + value);
-            }
-
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
-                sb.append("\n");
-            }
-
-            String s = sb.toString();
-            if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
-                emptyDocuments.add(s);
-            } else {
-                nonEmptyDocuments.add(s);
-            }
-        }
-
-        Collections.sort(emptyDocuments);
-        Collections.sort(nonEmptyDocuments);
-        sb = new StringBuilder();
-        int documentNumber = 0;
-        for (String s : emptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-        for (String s : nonEmptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-
-        return sb.toString().replace(localUrl, "<TESTURL>");
-    }
-        
-        
-    public class IndexDocumentImpl implements IndexDocument {
-        public List<String> indexedKeys = new ArrayList<String>();
-        public List<String> indexedValues = new ArrayList<String>();
-        public List<String> unindexedKeys = new ArrayList<String>();
-        public List<String> unindexedValues = new ArrayList<String>();
-
-        public String overrideUrl;
-
-        private IndexDocumentImpl(String overrideUrl) {
-            this.overrideUrl = overrideUrl;
-        }
-
-        public void addPair(String key, String value, boolean indexed) {
-            if (indexed) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-    }
-
-    private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-        private IndexDocumentFactoryImpl() {
-        }
-
-        public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(null);
-        }
-
-        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
-            return new IndexDocumentImpl(overrideUrl);
-        }
-    }
+// XXX: parsingapi
+//    private String prettyPrint(List<IndexDocument> documents, String localUrl) throws IOException {
+//        List<String> nonEmptyDocuments = new ArrayList<String>();
+//        List<String> emptyDocuments = new ArrayList<String>();
+//
+//        StringBuilder sb = new StringBuilder();
+//
+//        for (IndexDocument d : documents) {
+//            IndexDocumentImpl doc = (IndexDocumentImpl)d;
+//
+//            sb = new StringBuilder();
+//
+//            if (doc.overrideUrl != null) {
+//                sb.append("Override URL: ");
+//                sb.append(doc.overrideUrl);
+//                sb.append("\n");
+//            }
+//
+//            sb.append("Searchable Keys:");
+//            sb.append("\n");
+//            List<String> strings = new ArrayList<String>();
+//
+//            List<String> keys = doc.indexedKeys;
+//            List<String> values = doc.indexedValues;
+//            for (int i = 0, n = keys.size(); i < n; i++) {
+//                String key = keys.get(i);
+//                String value = values.get(i);
+//                strings.add(key + " : " + prettyPrintValue(key, value));
+//            }
+//            Collections.sort(strings);
+//            for (String string : strings) {
+//                sb.append("  ");
+//                sb.append(string);
+//                sb.append("\n");
+//            }
+//
+//            sb.append("\n");
+//            sb.append("Not Searchable Keys:");
+//            sb.append("\n");
+//            strings = new ArrayList<String>();
+//            keys = doc.unindexedKeys;
+//            values = doc.unindexedValues;
+//            for (int i = 0, n = keys.size(); i < n; i++) {
+//                String key = keys.get(i);
+//                String value = prettyPrintValue(key, values.get(i));
+//                if (value.indexOf(',') != -1) {
+//                    value = sortCommaList(value);
+//                }
+//                strings.add(key + " : " + value);
+//            }
+//
+//            Collections.sort(strings);
+//            for (String string : strings) {
+//                sb.append("  ");
+//                sb.append(string);
+//                sb.append("\n");
+//            }
+//
+//            String s = sb.toString();
+//            if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
+//                emptyDocuments.add(s);
+//            } else {
+//                nonEmptyDocuments.add(s);
+//            }
+//        }
+//
+//        Collections.sort(emptyDocuments);
+//        Collections.sort(nonEmptyDocuments);
+//        sb = new StringBuilder();
+//        int documentNumber = 0;
+//        for (String s : emptyDocuments) {
+//            sb.append("\n\nDocument ");
+//            sb.append(Integer.toString(documentNumber++));
+//            sb.append("\n");
+//            sb.append(s);
+//        }
+//
+//        for (String s : nonEmptyDocuments) {
+//            sb.append("\n\nDocument ");
+//            sb.append(Integer.toString(documentNumber++));
+//            sb.append("\n");
+//            sb.append(s);
+//        }
+//
+//
+//        return sb.toString().replace(localUrl, "<TESTURL>");
+//    }
+//
+//    public class IndexDocumentImpl extends IndexDocument {
+//        public List<String> indexedKeys = new ArrayList<String>();
+//        public List<String> indexedValues = new ArrayList<String>();
+//        public List<String> unindexedKeys = new ArrayList<String>();
+//        public List<String> unindexedValues = new ArrayList<String>();
+//
+//        public String overrideUrl;
+//
+//        private IndexDocumentImpl(String overrideUrl) {
+//            this.overrideUrl = overrideUrl;
+//        }
+//
+//        public void addPair(String key, String value, boolean indexed) {
+//            if (indexed) {
+//                indexedKeys.add(key);
+//                indexedValues.add(value);
+//            } else {
+//                unindexedKeys.add(key);
+//                unindexedValues.add(value);
+//            }
+//        }
+//    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Structure Analyzer Tests
