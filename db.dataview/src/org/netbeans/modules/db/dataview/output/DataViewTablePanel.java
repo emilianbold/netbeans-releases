@@ -69,10 +69,9 @@ import org.openide.NotifyDescriptor;
 class DataViewTablePanel extends JPanel {
 
     private final DataViewDBTable tblMeta;
-    private final UpdatedRowContext tblContext;
+    private final UpdatedRowContext updatedRowCtx;
     private final DataViewUI dataViewUI;
     private final DataViewTableUI tableUI;
-    private final SQLStatementGenerator stmtGenerator;
     private boolean isEditable = true;
     private boolean isDirty = false;
     private int MAX_COLUMN_WIDTH = 25;
@@ -90,8 +89,7 @@ class DataViewTablePanel extends JPanel {
         JScrollPane sp = new JScrollPane(tableUI);
         this.add(sp, BorderLayout.CENTER);
 
-        stmtGenerator = dataView.getSQLStatementGenerator();
-        tblContext = new UpdatedRowContext(stmtGenerator);
+        updatedRowCtx = new UpdatedRowContext();
         columnWidthList = getColumnWidthList();
     }
 
@@ -113,7 +111,7 @@ class DataViewTablePanel extends JPanel {
     public void setDirty(boolean dirty) {
         isDirty = dirty;
         if (!isDirty) {
-            tblContext.resetUpdateState();
+            updatedRowCtx.resetUpdateState();
         }
     }
 
@@ -122,7 +120,7 @@ class DataViewTablePanel extends JPanel {
     }
 
     UpdatedRowContext getUpdatedRowContext() {
-        return tblContext;
+        return updatedRowCtx;
     }
 
     DataViewDBTable getDataViewDBTable() {
@@ -263,7 +261,7 @@ class DataViewTablePanel extends JPanel {
 
             try {
                 Object newVal = DBReadWriteHelper.validate(value, tblMeta.getColumn(col));
-                tblContext.createUpdateStatement(row, col, newVal, model);
+                updatedRowCtx.addUpdates(row, col, newVal, model);
                 isDirty = true;
                 super.setValueAt(newVal, row, col);
                 dataViewUI.setCommitEnabled(true);
