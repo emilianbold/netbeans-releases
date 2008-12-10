@@ -38,10 +38,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.selector.spi.nodes;
+package org.netbeans.modules.profiler.selector.java.project.nodes;
 
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import org.netbeans.api.java.source.ClassIndex;
-import static org.netbeans.api.java.source.ClassIndex.*;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
@@ -51,13 +53,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.selector.java.nodes.JavaPackageNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.PackageNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ProjectPackages extends SelectorChildren<ContainerNode> {
+class ProjectPackages extends SelectorChildren<ContainerNode> {
     //~ Enumerations -------------------------------------------------------------------------------------------------------------
 
     public static enum PackageType {//~ Enumeration constant initializers ------------------------------------------------------------------------------------
@@ -95,13 +99,14 @@ public class ProjectPackages extends SelectorChildren<ContainerNode> {
     protected List<SelectorNode> prepareChildren(ContainerNode parent) {
         List<SelectorNode> pkgs = new ArrayList<SelectorNode>();
 
-        Project project = parent.getProject();
+        Project project = parent.getLookup().lookup(Project.class);
+
         ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project, subprojects, scope.contains(SearchScope.SOURCE),
                                                                  scope.contains(SearchScope.DEPENDENCIES));
         ClassIndex index = cpInfo.getClassIndex();
 
         for (String pkgName : index.getPackageNames("", true, scope)) { // NOI18N
-            pkgs.add(new PackageNode(cpInfo, pkgName, parent, scope));
+            pkgs.add(new JavaPackageNode(cpInfo, pkgName, parent, scope));
         }
 
         Collections.sort(pkgs, PackageNode.COMPARATOR);
