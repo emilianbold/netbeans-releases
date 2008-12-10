@@ -52,7 +52,7 @@ public class RailsProjectTestBase extends RubyTestBase {
     
     protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RailsDatabaseConfiguration dbConf = RailsAdapterFactory.getDefaultAdapter();
+        RailsDatabaseConfiguration dbConf = RailsAdapterFactory.getDefaultAdapter(RubyPlatformManager.getDefaultPlatform());
         RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, dbConf, false, "WEBRICK", null);
         touch(prjDirF, "Rakefile");
         RailsProjectGenerator.createProject(data);
