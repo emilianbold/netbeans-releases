@@ -2901,30 +2901,35 @@ public class Reformatter implements ReformatTask {
         private int getIndentLevel(TokenSequence<JavaTokenId> tokens, TreePath path) {
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
                 return 0;
-            int indent = 0;
             Tree lastTree = null;
+            int indent = -1;
             while (path != null) {
                 int offset = (int)sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
                 if (offset < 0)
-                    return -1;
+                    return indent;
                 tokens.move(offset);
-                if (tokens.movePrevious()) {
+                String text = null;
+                while (tokens.movePrevious()) {
                     Token<JavaTokenId> token = tokens.token();
                     if (token.id() == WHITESPACE) {
-                        String text = token.text().toString();
+                        text = token.text().toString();
                         int idx = text.lastIndexOf('\n');
                         if (idx >= 0) {
                             text = text.substring(idx + 1);
                             indent = getCol(text);
                             break;
-                        } else if (tokens.movePrevious()) {
-                            if (tokens.token().id() == LINE_COMMENT) {
-                                indent = getCol(text);
-                                break;
-                            }                        
                         }
+                    } else if (token.id() == LINE_COMMENT) {
+                        indent = text != null ? getCol(text) : 0;
+                        break;
+                    } else if (token.id() == BLOCK_COMMENT || token.id() == JAVADOC_COMMENT) {
+                        text = null;
+                    } else {
+                        break;
                     }
                 }
+                if (indent >= 0)
+                    break;
                 lastTree = path.getLeaf();
                 path = path.getParentPath();
             }
