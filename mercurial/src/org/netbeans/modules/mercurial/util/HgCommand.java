@@ -954,7 +954,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             List<File> filesList = files != null ? new ArrayList<File>(files) : null;
-            list = HgCommand.doLogForHistory(root,
+            list = HgCommand.doLog(root,
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(rootUrl, filesList, list, messages);
@@ -1079,7 +1079,7 @@ public class HgCommand {
      * @return List<String> list of the log entries for the specified file.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doLogForHistory(File repository, List<File> files,
+    private static List<String> doLog(File repository, List<File> files,
             String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
