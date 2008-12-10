@@ -101,6 +101,7 @@ public class ImportProject {
     private String configurePath;
     private String configureArguments;
     private boolean runConfigure;
+    private boolean setAsMain;
     private String workingDir;
     private String buildCommand = "${MAKE} all";  // NOI18N
     private String cleanCommand = "${MAKE} clean";  // NOI18N
@@ -133,6 +134,7 @@ public class ImportProject {
             }
         }
         runMake = wizardStorage.isBuildProject();
+        setAsMain = wizardStorage.isSetMain();
     }
 
     public Set<FileObject> create() throws IOException {
@@ -228,7 +230,9 @@ public class ImportProject {
         FileObject dir = FileUtil.toFileObject(dirF);
         resultSet.add(dir);
         OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-        OpenProjects.getDefault().setMainProject(makeProject);
+        if (setAsMain) {
+            OpenProjects.getDefault().setMainProject(makeProject);
+        }
         if (runMake) {
             makeProject(true);
             postponeModel = true;
