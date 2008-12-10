@@ -73,7 +73,7 @@ public final class ClassPathSupportFactory {
      * @return classpath implementation
      */
     public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        return createSourcePathImplementation(sourceRoots, projectHelper, evaluator, false);
+        return createSourcePathImplementation(sourceRoots, projectHelper, evaluator, true);
     }
 
     /**
