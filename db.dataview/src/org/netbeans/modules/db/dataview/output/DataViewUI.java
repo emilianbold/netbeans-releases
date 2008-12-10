@@ -204,8 +204,7 @@ class DataViewUI extends JPanel {
         List<Object[]> newrows = dataPanel.getPageDataFromTable();
         List<Object[]> oldRows = dataView.getDataViewPageContext().getCurrentRows();
 
-        for (String key : dataView.getUpdatedRowContext().getUpdateKeys()) {
-            int row = Integer.parseInt(key.substring(0, key.indexOf(";"))) - 1;
+        for (Integer row : dataView.getUpdatedRowContext().getUpdateKeys()) {
             newrows.set(row, oldRows.get(row));
         }
         dataView.getDataViewPageContext().setCurrentRows(newrows);
