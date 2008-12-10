@@ -54,7 +54,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorButtonGroup;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorSpinnerModel;
 import org.openide.util.NbBundle;
 

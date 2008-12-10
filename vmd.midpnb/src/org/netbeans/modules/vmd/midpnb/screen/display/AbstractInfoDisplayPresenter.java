@@ -49,7 +49,6 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;

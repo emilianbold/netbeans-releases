@@ -66,9 +66,14 @@ public class Call {
     private final String lhs;
     private final boolean isStatic;
     private final boolean methodExpected;
+    private final boolean constantExpected;
     private boolean isLHSConstant;
 
-    public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
+    private Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
+        this(type, lhs, isStatic, methodExpected, false);
+    }
+    
+    private Call(String type, String lhs, boolean isStatic, boolean methodExpected, boolean constantExpected) {
         super();
         this.type = type;
         this.lhs = lhs;
@@ -77,6 +82,7 @@ public class Call {
             lhs = type;
         }
         this.isStatic = isStatic;
+        this.constantExpected = constantExpected;
     }
 
     private void setLHSConstant(boolean isLHSConstant) {
@@ -117,6 +123,15 @@ public class Call {
         return true;
     }
 
+    public boolean isConstantExpected() {
+        return constantExpected;
+    }
+
+    /** foo.| or foo.b|  -> we're expecting a method call. For Foo:: we don't know. */
+    public boolean isMethodExpected() {
+        return methodExpected;
+    }
+
     @Override
     public String toString() {
         if (this == LOCAL) {
@@ -126,15 +141,11 @@ public class Call {
         } else if (this == UNKNOWN) {
             return "UNKNOWN";
         } else {
-            return "Call(" + type + "," + lhs + "," + isStatic + "," + isLHSConstant + ')';
+            return "Call(type: " + type + ", lhs: " + lhs + ", isStatic: " +
+                    isStatic + ", isLHSConstant: " + isLHSConstant + ')';
         }
     }
 
-    /** foo.| or foo.b|  -> we're expecting a method call. For Foo:: we don't know. */
-    public boolean isMethodExpected() {
-        return this.methodExpected;
-    }
-    
     /**
      * Determine whether the given offset corresponds to a method call on
      * another object. This would happen in these cases:
@@ -170,6 +181,7 @@ public class Call {
         ts.move(offset);
 
         boolean methodExpected = false;
+        boolean constantExpected = false;
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return Call.NONE;
@@ -247,7 +259,9 @@ public class Call {
 
                 if (t.equals(".")) {
                     methodExpected = true;
-                } else if (!t.equals("::")) {
+                } else if (t.equals("::")) {
+                    constantExpected = true;
+                } else {
                     return Call.LOCAL;
                 }
             } else {
@@ -363,7 +377,7 @@ public class Call {
                             type = lhs;
                         }
 
-                        Call call = new Call(type, lhs, isStatic, methodExpected);
+                        Call call = new Call(type, lhs, isStatic, methodExpected, constantExpected);
                         call.setLHSConstant(isLHSConstant);
 
                         return call;
@@ -371,7 +385,7 @@ public class Call {
                         // try __FILE__ or __LINE__
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
 
-                        return new Call(type, lhs, false, methodExpected);
+                        return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);

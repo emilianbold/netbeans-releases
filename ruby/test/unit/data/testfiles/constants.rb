@@ -1,6 +1,7 @@
 module Colors
 
   module Converter
+    VERSION = 1234
     # module definition
   end
 
@@ -8,10 +9,14 @@ module Colors
   GREEN = "#00FF00"
   BLUE  = "#0000FF"
 
+  def red
+    return RED
+  end
+
 end
 
 Colors::RED.byte
-Colors::InnerColors
+Colors::Converter::VERSION
 
 require 'rexml/rexml'
 REXML::COPYRIGHT.ls

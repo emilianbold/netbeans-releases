@@ -106,6 +106,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         phpOptionsPanel.setOpenResultInEditor(getPhpOptions().isOpenResultInEditor());
 
         phpOptionsPanel.setDebuggerPort(getPhpOptions().getDebuggerPort());
+        phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
 
         changed = false;
@@ -123,6 +124,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         getPhpOptions().setOpenResultInEditor(phpOptionsPanel.isOpenResultInEditor());
 
         getPhpOptions().setDebuggerPort(phpOptionsPanel.getDebuggerPort());
+        getPhpOptions().setDebuggerSessionId(phpOptionsPanel.getDebuggerSessionId());
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
@@ -172,6 +174,10 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
         Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
         if (debuggerPort != null && getPhpOptions().getDebuggerPort() != debuggerPort) {
+            return true;
+        }
+        String debuggerSessionId = phpOptionsPanel.getDebuggerSessionId();
+        if (debuggerSessionId != null && !getPhpOptions().getDebuggerSessionId().equals(debuggerSessionId)) {
             return true;
         }
         if (getPhpOptions().isDebuggerStoppedAtTheFirstLine() != phpOptionsPanel.isDebuggerStoppedAtTheFirstLine()) {
@@ -227,6 +233,13 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
         if (debuggerPort == null || debuggerPort < 1) {
             phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidPort"));
+            return false;
+        }
+        String debuggerSessionId = phpOptionsPanel.getDebuggerSessionId();
+        if (debuggerSessionId == null
+                || debuggerSessionId.trim().length() == 0
+                || debuggerSessionId.contains(" ")) { // NOI18N
+            phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidSessionId"));
             return false;
         }
 

@@ -68,6 +68,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JToolBar.Separator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreeCellRenderer;
@@ -143,6 +144,7 @@ class ResultViewPanel extends JPanel{
     private JButton btnPrev;
     private JButton btnNext;
     private JToggleButton btnDisplayContext = new JToggleButton();
+    private Separator sepDisplayContext;
 
     /** is the context view visible? */
     private boolean contextViewVisible = false;
@@ -185,12 +187,16 @@ class ResultViewPanel extends JPanel{
         btnPrev = new JButton();
         btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/prev.png", true)));    //NOI18N
+        btnPrev.setToolTipText(
+                NbBundle.getMessage(getClass(), "TEXT_BUTTON_PREV_MATCH"));//NOI18N);
         btnNext = new JButton();
         btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/next.png", true)));    //NOI18N
+        btnNext.setToolTipText(
+                NbBundle.getMessage(getClass(), "TEXT_BUTTON_NEXT_MATCH"));//NOI18N);
 
         toolBar.add(btnDisplayContext);
-        toolBar.add(new JToolBar.Separator());
+        toolBar.add(sepDisplayContext = new JToolBar.Separator());
         toolBar.add(btnPrev);
         toolBar.add(btnNext);
         toolBar.setRollover(true);
@@ -641,7 +647,8 @@ class ResultViewPanel extends JPanel{
      */
     private void updateDisplayContextButton() {
         boolean searchAndReplace = isSearchAndReplace();
-        btnDisplayContext.setEnabled(searchAndReplace);
+        btnDisplayContext.setVisible(searchAndReplace);
+        sepDisplayContext.setVisible(searchAndReplace);
 
         ignoreContextButtonToggle = true;
         try {

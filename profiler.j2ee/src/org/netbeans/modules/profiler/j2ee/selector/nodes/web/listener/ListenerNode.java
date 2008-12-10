@@ -43,7 +43,7 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
 
@@ -51,16 +51,13 @@ import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
  *
  * @author Jaroslav Bachorik
  */
-public class ListenerNode extends ClassNode {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
+public class ListenerNode extends JavaClassNode {
     /** Creates a new instance of ServletNode */
     public ListenerNode(ClasspathInfo cpInfo, TypeElement classElement, ContainerNode parent) {
         super(cpInfo, Utils.LISTENER_ICON, classElement, parent);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
+    @Override
     public boolean equals(Object otherListener) {
         if (otherListener == null) {
             return false;
@@ -72,14 +69,6 @@ public class ListenerNode extends ClassNode {
 
         ListenerNode aListener = (ListenerNode) otherListener;
 
-        return getClassHandle().equals(aListener.getClassHandle());
-    }
-
-    public int hashCode() {
-        return getClassHandle().hashCode();
-    }
-
-    public String toString() {
-        return getClassHandle().getQualifiedName();
+        return super.equals(aListener);
     }
 }

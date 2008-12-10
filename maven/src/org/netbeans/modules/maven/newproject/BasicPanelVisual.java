@@ -537,14 +537,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             hndl.start();
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
-            
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-            if (info != null) {
-                RepositoryIndexer.updateIndexWithArtifacts(info, Collections.singletonList(art));
-            }
         } finally {
             hndl.finish();
             ProgressTransferListener.clearAggregateHandle();
+        }
+        //#154913
+        RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+        if (info != null) {
+            RepositoryIndexer.updateIndexWithArtifacts(info, Collections.singletonList(art));
         }
         return art;
     }
