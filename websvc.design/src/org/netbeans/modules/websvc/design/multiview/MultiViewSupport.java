@@ -118,7 +118,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
     public MultiViewSupport(Service service, DataObject dataObject) {
         this.dataObject = dataObject;
         this.service = service;
-        initWsdlDO(service);
+        initWsdlDO();
     }
 
     public void open() {
@@ -155,7 +155,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      */
     public CloneableTopComponent createMultiView() {
         MultiViewDescription views[];
-        if (getService().getLocalWsdlFile() != null) {
+        if (service != null && service.getLocalWsdlFile() != null) {
             views = new MultiViewDescription[3];
 
             // Put the source element first so that client code can find its
@@ -170,7 +170,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             // CloneableEditorSupport.Pane implementation.
             views[0] = new SourceMultiViewDesc(getDataObject());
             views[1] = new DesignMultiViewDesc(getDataObject());
-            views[2] = new PreviewMultiViewDesc(getDataObject(),getService());
+            views[2] = new PreviewMultiViewDesc(getDataObject(), getService());
         }
         
         // Make the column view the default element.
@@ -265,7 +265,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      *  Method, preparing DataObject for processing by WSDL Preview element
      * @param service - web service object, initialized by class constructor
      */
-    private void initWsdlDO(Service service) {
+    private void initWsdlDO() {
 
         if (service == null) {
             return;
@@ -282,7 +282,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             // Process of obtaining proper path to wsdl through JAXWSSupport and its methods,
             // which leads to desired FileObject
             JAXWSSupport jAXWSSupport = JAXWSSupport.getJAXWSSupport(primaryFile);
-            FileObject foj = jAXWSSupport.getLocalWsdlFolderForService(getService().getName(), false);
+            FileObject foj = jAXWSSupport.getLocalWsdlFolderForService(service.getName(), false);
             wsdlFile = foj.getFileObject(localWSDLFilePath);
             // If obtaining of WSDL file fails, empty page with error label is displayed
             if (wsdlFile != null) {
