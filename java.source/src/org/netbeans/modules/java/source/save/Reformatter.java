@@ -1584,11 +1584,11 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeForParen() ? 1 : 0);
             accept(LPAREN);
             spaces(cs.spaceWithinForParens() ? 1 : 0);
+            int alignIndent = cs.alignMultilineFor() ? col : -1;
             scan(node.getVariable(), p);
             spaces(cs.spaceBeforeColon() ? 1 : 0);
             accept(COLON);
-            spaces(cs.spaceAfterColon() ? 1 : 0);
-            scan(node.getExpression(), p);
+            wrapTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;
