@@ -87,7 +87,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */
-    private static JMenu toolbarMenu;
+    private JMenu toolbarMenu;
     
     /** Name of configuration. */
     private final String configName;
