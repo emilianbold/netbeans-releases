@@ -169,16 +169,15 @@ final class ToolbarContainer extends JPanel {
     @Override
     public Dimension getMinimumSize() {
         Dimension d = new Dimension(0,0);
-        if( null != dragger ) {
-            d.height = dragger.getMinimumSize().height;
-            d.width = dragger.getMinimumSize().width;
-        }
 
-        d.height = Math.max(d.height, toolbar.getMinimumSize().height);
-        if( toolbar.getComponentCount() == 0 )
+        d.height = toolbar.getMinimumSize().height;
+        if( toolbar.getComponentCount() <= 1 ) {
             d.width += ToolbarPool.getDefault().getPreferredIconSize();
-        else
+        } else {
             d.width += toolbar.getComponent(0).getMinimumSize().width;
+            if( toolbar.getComponentCount() > 1 )
+                d.width += toolbar.getComponent(1).getMinimumSize().width;
+        }
         return d;
     }
 
@@ -212,9 +211,11 @@ final class ToolbarContainer extends JPanel {
                 break;
             }
         }
-        if( null != oldDragger )
-            toolbar.remove(oldDragger);
-        toolbar.add( dragger, 0 );
+        if( null != oldDragger ) {
+            dragger = (JComponent) oldDragger;
+        } else {
+            toolbar.add( dragger, 0 );
+        }
     }
 
     /**
@@ -511,7 +512,9 @@ final class ToolbarContainer extends JPanel {
         /** @return preferred size */
         @Override
         public Dimension getPreferredSize () {
-            return new Dimension(GRIP_WIDTH,toolbar.getHeight() - BOTGAP - TOPGAP);
+            //#154970 for some reason the toolbar's preferred size keeps growing on GTK
+            //return new Dimension(GRIP_WIDTH,toolbar.getHeight() - BOTGAP - TOPGAP);
+            return new Dimension(GRIP_WIDTH,ToolbarPool.getDefault().getPreferredIconSize());
         }
 
         @Override
@@ -687,7 +690,8 @@ final class ToolbarContainer extends JPanel {
         /** @return preferred size */
         @Override
         public Dimension getPreferredSize () {
-            return this.getMinimumSize ();
+            return new Dimension(GRIP_WIDTH,toolbar.getHeight() - 4);
+//            return this.getMinimumSize ();
         }
 
         @Override
