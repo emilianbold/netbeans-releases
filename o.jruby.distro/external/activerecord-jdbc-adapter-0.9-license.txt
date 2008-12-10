@@ -1,9 +1,9 @@
 Name: activerecord-jdbc-adapter
-Version: 0.8.2
+Version: 0.9
 Description: The JDBC bridge for ActiveRecord
 License: MIT
 OSR: 6063
-Files: activerecord-jdbc-adapter-0.8.2.zip
+Files: activerecord-jdbc-adapter-0.9.gem
 Origin: http://rubyforge.org/projects/jruby-extras
 Comment: ActiveRecord-JDBC bridge
 
