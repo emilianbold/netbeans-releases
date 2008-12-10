@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -729,10 +729,6 @@ public final class JavaSource {
             return JavaSource.create(cpInfo, files);
         }
 
-        public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
-            return new PositionConverter(fo, offset, length, component);
-        }
-        
         public CompilationController createCompilationController (final Source s) throws IOException, ParseException {
             Parameters.notNull("s", s);
             JavacParserFactory factory = JavacParserFactory.getDefault();
