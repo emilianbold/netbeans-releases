@@ -52,7 +52,6 @@ import java.net.URL;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -70,10 +69,8 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 
 public class ConfigurationMakefileWriter {
@@ -253,6 +250,14 @@ public class ConfigurationMakefileWriter {
         }
         bw.write('\n'); // NOI18N
 
+        bw.write("QMAKE_CC = "); // NOI18N
+        bw.write(getCompilerName(conf, Tool.CCompiler));
+        bw.write('\n'); // NOI18N
+
+        bw.write("QMAKE_CXX = "); // NOI18N
+        bw.write(getCompilerName(conf, Tool.CCCompiler));
+        bw.write('\n'); // NOI18N
+
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
 
         bw.write("DEFINES += "); // NOI18N
@@ -274,11 +279,35 @@ public class ConfigurationMakefileWriter {
         bw.close();
     }
 
+    private String getCompilerName(MakeConfiguration conf, int tool) {
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
+        if (compiler != null) {
+            BasicCompilerConfiguration compilerConf = null;
+            switch (tool) {
+                case Tool.CCompiler:
+                    compilerConf = conf.getCCompilerConfiguration();
+                    break;
+                case Tool.CCCompiler:
+                    compilerConf = conf.getCCCompilerConfiguration();
+                    break;
+                case Tool.FortranCompiler:
+                    compilerConf = conf.getFortranCompilerConfiguration();
+                    break;
+                case Tool.Assembler:
+                    compilerConf = conf.getAssemblerConfiguration();
+                    break;
+            }
+            if (compilerConf != null && compilerConf.getTool().getModified()) {
+                return compilerConf.getTool().getValue();
+            } else {
+                return compiler.getName();
+            }
+        }
+        return ""; // NOI18N
+    }
+
     protected void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
-        CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
-        FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        AssemblerConfiguration assemblerConfiguration = conf.getAssemblerConfiguration();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
             return;
@@ -287,38 +316,6 @@ public class ConfigurationMakefileWriter {
         BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler) compilerSet.getTool(Tool.FortranCompiler);
         BasicCompiler assemblerCompiler = (BasicCompiler) compilerSet.getTool(Tool.Assembler);
-        String cCompilerName = ""; // NOI18N
-        String ccCompilerName = ""; // NOI18N
-        String fortranCompilerName = ""; // NOI18N
-        String assemblerName = ""; // NOI18N
-        if (cCompiler != null) {
-            if (cCompilerConfiguration.getTool().getModified()) {
-                cCompilerName = cCompilerConfiguration.getTool().getValue();
-            } else {
-                cCompilerName = cCompiler.getName();
-            }
-        }
-        if (ccCompiler != null) {
-            if (ccCompilerConfiguration.getTool().getModified()) {
-                ccCompilerName = ccCompilerConfiguration.getTool().getValue();
-            } else {
-                ccCompilerName = ccCompiler.getName();
-            }
-        }
-        if (fortranCompiler != null) {
-            if (fortranCompilerConfiguration.getTool().getModified()) {
-                fortranCompilerName = fortranCompilerConfiguration.getTool().getValue();
-            } else {
-                fortranCompilerName = fortranCompiler.getName();
-            }
-        }
-        if (assemblerCompiler != null) {
-            if (assemblerConfiguration.getTool().getModified()) {
-                assemblerName = assemblerConfiguration.getTool().getValue();
-            } else {
-                assemblerName = assemblerCompiler.getName();
-            }
-        }
 
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
@@ -334,11 +331,11 @@ public class ConfigurationMakefileWriter {
         bw.write("CP=cp\n"); // NOI18N
         bw.write("CCADMIN=CCadmin\n"); // NOI18N
         bw.write("RANLIB=ranlib\n"); // NOI18N
-        bw.write("CC=" + cCompilerName + "\n"); // NOI18N
-        bw.write("CCC=" + ccCompilerName + "\n"); // NOI18N
-        bw.write("CXX=" + ccCompilerName + "\n"); // NOI18N
-        bw.write("FC=" + fortranCompilerName + "\n"); // NOI18N
-        bw.write("AS=" + assemblerName + "\n"); // NOI18N
+        bw.write("CC=" + getCompilerName(conf, Tool.CCompiler) + "\n"); // NOI18N
+        bw.write("CCC=" + getCompilerName(conf, Tool.CCCompiler) + "\n"); // NOI18N
+        bw.write("CXX=" + getCompilerName(conf, Tool.CCCompiler) + "\n"); // NOI18N
+        bw.write("FC=" + getCompilerName(conf, Tool.FortranCompiler) + "\n"); // NOI18N
+        bw.write("AS=" + getCompilerName(conf, Tool.Assembler) + "\n"); // NOI18N
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
