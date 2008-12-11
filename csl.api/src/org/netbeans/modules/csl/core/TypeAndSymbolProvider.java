@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -182,9 +183,9 @@ public class TypeAndSymbolProvider {
             Set<? extends IndexSearcher.Descriptor> languageResults;
             Set<FileObject> searchRoots = getRoots(project, language);
             if (typeProvider) {
-                languageResults = searcher.getTypes(searchRoots, text, searchType, HELPER);
+                languageResults = searcher.getTypes(searchRoots, text, t2t(searchType), HELPER);
             } else {
-                languageResults = searcher.getSymbols(searchRoots, text, searchType, HELPER);
+                languageResults = searcher.getSymbols(searchRoots, text, t2t(searchType), HELPER);
             }
 
             if (languageResults != null) {
@@ -314,6 +315,25 @@ public class TypeAndSymbolProvider {
         }
 
         return roots;
+    }
+
+    private static QuerySupport.Kind t2t(SearchType searchType) {
+        switch(searchType) {
+            case EXACT_NAME:
+                return QuerySupport.Kind.EXACT_NAME;
+            case PREFIX:
+                return QuerySupport.Kind.PREFIX;
+            case CASE_INSENSITIVE_PREFIX:
+                return QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
+            case REGEXP:
+                return QuerySupport.Kind.REGEXP;
+            case CASE_INSENSITIVE_REGEXP:
+                return QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+            case CAMEL_CASE:
+                return QuerySupport.Kind.CAMEL_CASE;
+            default:
+                throw new IllegalStateException("Can't translate " + searchType + " to QuerySupport.Kind"); //NOI18N
+        }
     }
 
     private static final class TypeWrapper extends TypeDescriptor {

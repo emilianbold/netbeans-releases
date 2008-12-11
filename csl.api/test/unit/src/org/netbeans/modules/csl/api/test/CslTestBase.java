@@ -93,7 +93,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureItem;
@@ -2071,7 +2070,7 @@ public abstract class CslTestBase extends NbTestCase {
         return s.substring(prevLineBegin, offset)+"|"+s.substring(offset, nextLineEnd);
     }
 
-    private String describeCompletion(String caretLine, String text, int caretOffset, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
+    private String describeCompletion(String caretLine, String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type, List<CompletionProposal> proposals,
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
         StringBuilder sb = new StringBuilder();
@@ -2081,7 +2080,7 @@ public abstract class CslTestBase extends NbTestCase {
             sourceLine = getSourceWindow(text, caretOffset);
         }
         sb.append(sourceLine);
-        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n(QueryType=" + type + ", prefixSearch=" + prefixSearch + ", caseSensitive=" + caseSensitive + ")");
         sb.append("\n");
 
         // Sort to make test more stable
@@ -2231,7 +2230,6 @@ public abstract class CslTestBase extends NbTestCase {
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
-        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
         Source testSource = getTestSource(getTestFile(file));
 
@@ -2297,8 +2295,8 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     @Override
-                    public NameKind getNameKind() {
-                        return kind;
+                    public boolean isPrefixMatch() {
+                        return true;
                     }
 
                     @Override
@@ -2365,7 +2363,7 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 };
 
-                String described = describeCompletion(caretLine, pr.getSnapshot().getText().toString(), caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder, formatter);
+                String described = describeCompletion(caretLine, pr.getSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".completion");
             }
         });
@@ -2377,7 +2375,6 @@ public abstract class CslTestBase extends NbTestCase {
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
-        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
         Source testSource = getTestSource(getTestFile(file));
 
@@ -2443,8 +2440,8 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     @Override
-                    public NameKind getNameKind() {
-                        return kind;
+                    public boolean isPrefixMatch() {
+                        return false;
                     }
 
                     @Override
@@ -2524,13 +2521,13 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 };
                 
-                String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, kind, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
+                String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, false, caseSensitive, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".html");
             }
         });
     }
     
-    private String describeCompletionDoc(String text, int caretOffset, NameKind kind, QueryType type, 
+    private String describeCompletionDoc(String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type,
              CompletionProposal proposal, String documentation,
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
@@ -2544,7 +2541,7 @@ public abstract class CslTestBase extends NbTestCase {
             sourceLine = getSourceWindow(text, caretOffset);
         }
         sb.append(sourceLine);
-        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n(QueryType=" + type + ", prefixSearch=" + prefixSearch + ", caseSensitive=" + caseSensitive + ")");
         sb.append("\n");
 
         boolean isSmart = true;

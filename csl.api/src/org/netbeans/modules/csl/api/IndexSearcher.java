@@ -46,7 +46,7 @@ import java.util.Set;
 import javax.swing.Icon;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.spi.jumpto.type.SearchType;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,10 +57,10 @@ import org.openide.filesystems.FileObject;
 public interface IndexSearcher {
 
     @NonNull Set<? extends Descriptor> getTypes(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
-        @NonNull SearchType searchType, @NonNull Helper helper);
+        @NonNull QuerySupport.Kind searchType, @NonNull Helper helper);
 
     @NonNull Set<? extends Descriptor> getSymbols(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
-        @NonNull SearchType searchType, @NonNull Helper helper);
+        @NonNull QuerySupport.Kind searchType, @NonNull Helper helper);
 
     public abstract class Descriptor {
         @NonNull
