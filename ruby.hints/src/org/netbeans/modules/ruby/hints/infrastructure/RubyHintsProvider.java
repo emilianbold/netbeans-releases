@@ -90,7 +90,7 @@ public class RubyHintsProvider implements HintsProvider {
         
         for (Error error : errors) {
             if (error instanceof RubyError) {
-                if (!applyRules((RubyError)error, context, hints, result)) {
+                if (!applyRules(manager, (RubyError)error, context, hints, result)) {
                     unhandled.add(error);
                 }
             }
@@ -242,7 +242,7 @@ public class RubyHintsProvider implements HintsProvider {
     }
 
     /** Apply error rules and return true iff somebody added an error description for it */
-    private boolean applyRules(RubyError error, RuleContext context, Map<ID,List<RubyErrorRule>> hints,
+    private boolean applyRules(HintsManager manager, RubyError error, RuleContext context, Map<ID,List<RubyErrorRule>> hints,
             List<Hint> result) {
         ID code = error.getId();
         if (code != null) {
@@ -253,6 +253,9 @@ public class RubyHintsProvider implements HintsProvider {
                 RubyRuleContext rubyContext = (RubyRuleContext)context;
                 
                 for (RubyErrorRule rule : rules) {
+                    if (!manager.isEnabled(rule)) {
+                        continue;
+                    }
                     if (!rule.appliesTo(context)) {
                         continue;
                     }
@@ -275,9 +278,9 @@ public class RubyHintsProvider implements HintsProvider {
                 continue;
             }
             
-            //if (!manager.isEnabled(rule)) {
-            //    continue;
-            //}
+            if (!manager.isEnabled(rule)) {
+                continue;
+            }
 
             rule.run(rubyContext, result);
         }

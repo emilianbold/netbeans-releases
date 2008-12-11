@@ -56,8 +56,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
@@ -98,7 +100,7 @@ import org.openide.util.WeakListeners;
  */
 
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
-CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChangeListener {
+CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChangeListener, ChangeListener {
     
     // -J-Dorg.netbeans.modules.editor.completion.CompletionImpl.level=FINE
     private static final Logger LOG = Logger.getLogger(CompletionImpl.class.getName());
@@ -384,6 +386,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         hideAll();
     }
     
+    public void stateChanged(ChangeEvent e) {
+        hideAll();
+    }
+
     public void hideAll() {
         hideToolTip();
         hideCompletion(true);
@@ -418,6 +424,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 activeJtc.removeKeyListener(this);
                 activeJtc.removeFocusListener(this);
                 activeJtc.removeMouseListener(this);
+                Container parent = activeJtc.getParent();
+                if (parent instanceof JViewport) {
+                    JViewport viewport = (JViewport) parent;
+                    viewport.removeChangeListener(this);
+                }
             }
             if (component != null) {
                 if (activeProviders != null) {
@@ -425,6 +436,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     component.addKeyListener(this);
                     component.addFocusListener(this);
                     component.addMouseListener(this);
+                    Container parent = component.getParent();
+                    if (parent instanceof JViewport) {
+                        JViewport viewport = (JViewport) parent;
+                        viewport.addChangeListener(this);
+                    }
                 }
             }
             activeComponent = (component != null)
@@ -1425,7 +1441,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     void testSetActiveComponent(JTextComponent component) {
         activeComponent = new WeakReference<JTextComponent>(component);
     }
-    
+
     // ..........................................................................
     
     private final class CompletionShowAction extends AbstractAction {
