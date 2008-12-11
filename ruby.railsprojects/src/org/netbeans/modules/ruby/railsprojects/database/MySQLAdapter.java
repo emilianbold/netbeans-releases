@@ -47,7 +47,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  *
  * @author Erno Mononen
  */
-class MySQLAdapter implements RailsDatabaseConfiguration {
+class MySQLAdapter extends RailsDatabaseConfiguration {
 
     public String railsGenerationParam() {
         return "mysql"; //NOI18N

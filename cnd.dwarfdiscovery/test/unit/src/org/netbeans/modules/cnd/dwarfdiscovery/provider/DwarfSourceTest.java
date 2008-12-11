@@ -123,7 +123,7 @@ public class DwarfSourceTest extends TestCase {
                 "/export/opensolaris/testws77/usr/src/common\n" +
                 "../../intel" +
                 "\n../../common";
-        String result = processLine(line, true);
+        String result = processLine(line, false);
         assertDocumentText(line, expResult, result);
     }
 
@@ -253,15 +253,15 @@ public class DwarfSourceTest extends TestCase {
                 "Macros:\n" +
                 "ALL_INTERIOR_POINTERS=1\n" +
                 "ATOMIC_UNCOLLECTABLE=1\n" +
-                "BOOT_CLASS_PATH=\"\\\"/usr/local/share/java/libgcj-3.4.3.jar\\\"\"\n" +
+                "BOOT_CLASS_PATH=\"/usr/local/share/java/libgcj-3.4.3.jar\"\n" +
                 "GC_GCJ_SUPPORT=1\n" +
                 "GC_SOLARIS_PTHREADS=1\n" +
                 "GC_SOLARIS_THREADS=1\n" +
                 "HAVE_CONFIG_H\n" +
                 "JAVA_FINALIZATION=1\n" +
-                "LIBDIR=\"\\\"/usr/local/lib\\\"\"\n" +
+                "LIBDIR=\"/usr/local/lib\"\n" +
                 "NO_SIGNALS=1\n" +
-                "PREFIX=\"\\\"/usr/local\\\"\"\n" +
+                "PREFIX=\"/usr/local\"\n" +
                 "SILENT=1\n" +
                 "SOLARIS25_PROC_VDB_BUG_FIXED=1\n" +
                 "_GNU_SOURCE\n" +
@@ -283,7 +283,30 @@ public class DwarfSourceTest extends TestCase {
                 "../../../libjava/../libffi/include\n" +
                 "../libffi/include\n" +
                 "/usr/openwin/include";
-        String result = processLine(line, true);
+        String result = processLine(line, false);
+        assertDocumentText(line, expResult, result);
+    }
+
+    //gcc -DDEFAULT_BASEDIR=\"/usr/local\" -DDATADIR="\"/usr/local/var\"" -DDEFAULT_CHARSET_HOME="\"/usr/local\"" -DSHAREDIR="\"/usr/local/share/mysql\"" -DDEFAULT_HOME_ENV=MYSQL_HOME -DDEFAULT_GROUP_SUFFIX_ENV=MYSQL_GROUP_SUFFIX -DDEFAULT_SYSCONFDIR="\"/usr/local/etc\"" -DHAVE_CONFIG_H -I. -I../include -I../include -I../include -I.    -O3    -DHAVE_RWLOCK_T -DUNIV_SOLARIS -MT my_init.o -MD -MP -MF .deps/my_init.Tpo -c -o my_init.o my_init.c
+    public void testGccLine2() {
+        String line = "gcc -DDEFAULT_BASEDIR=\\\"/usr/local\\\" -DDATADIR=\"\\\"/usr/local/var\\\"\" -DDEFAULT_CHARSET_HOME=\"\\\"/usr/local\\\"\" -DSHAREDIR=\"\\\"/usr/local/share/mysql\\\"\" -DDEFAULT_HOME_ENV=MYSQL_HOME -DDEFAULT_GROUP_SUFFIX_ENV=MYSQL_GROUP_SUFFIX -DDEFAULT_SYSCONFDIR=\"\\\"/usr/local/etc\\\"\" -DHAVE_CONFIG_H -I. -I../include   -O3    -DHAVE_RWLOCK_T -DUNIV_SOLARIS -MT my_init.o -MD -MP -MF .deps/my_init.Tpo -c -o my_init.o my_init.c";
+        String expResult =
+                "Source:my_init.c\n" +
+                "Macros:\n" +
+                "DATADIR=\"/usr/local/var\"\n" +
+                "DEFAULT_BASEDIR=\"/usr/local\"\n" +
+                "DEFAULT_CHARSET_HOME=\"/usr/local\"\n" +
+                "DEFAULT_GROUP_SUFFIX_ENV=MYSQL_GROUP_SUFFIX\n" +
+                "DEFAULT_HOME_ENV=MYSQL_HOME\n" +
+                "DEFAULT_SYSCONFDIR=\"/usr/local/etc\"\n" +
+                "HAVE_CONFIG_H\n" +
+                "HAVE_RWLOCK_T\n" +
+                "SHAREDIR=\"/usr/local/share/mysql\"\n" +
+                "UNIV_SOLARIS\n" +
+                "Paths:\n" +
+                ".\n" +
+                "../include";
+        String result = processLine(line, false);
         assertDocumentText(line, expResult, result);
     }
 

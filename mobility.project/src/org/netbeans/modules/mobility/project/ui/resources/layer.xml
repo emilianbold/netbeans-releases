@@ -78,82 +78,102 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="800"/>
                     </file>
+                    <file name="BuildAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createBuildAllAction"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="RebuildAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createRebuildAllAction"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="CleanAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createCleanAllAction"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="DeployAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createDeployAllAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep3a.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                     <file name="Run.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createRunAction"/>
-                        <attr name="position" intvalue="900"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="RunWith.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createRunWithAction"/>
-                        <attr name="position" intvalue="1000"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="Debug.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createDebugAction"/>
-                        <attr name="position" intvalue="1100"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="sep3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
                     <file name="Main.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.setAsMainProjectAction"/>
-                        <attr name="position" intvalue="1300"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
                     <file name="Subprojects.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.openSubprojectsAction"/>
-                        <attr name="position" intvalue="1400"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="Close.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.closeProjectAction"/>
-                        <attr name="position" intvalue="1500"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                     <file name="sep4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1600"/>
+                        <attr name="position" intvalue="2100"/>
                     </file>
                     <file name="Rename.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.renameProjectAction"/>
-                        <attr name="position" intvalue="1700"/>
+                        <attr name="position" intvalue="2200"/>
                     </file>
                     <file name="Move.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.moveProjectAction"/>
-                        <attr name="position" intvalue="1800"/>
+                        <attr name="position" intvalue="2300"/>
                     </file>
                     <file name="Copy.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.copyProjectAction"/>
-                        <attr name="position" intvalue="1900"/>
+                        <attr name="position" intvalue="2400"/>
                     </file>
                     <file name="Delete.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.deleteProjectAction"/>
-                        <attr name="position" intvalue="2000"/>
+                        <attr name="position" intvalue="2500"/>
                     </file>
                     <file name="sep5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="2100"/>
+                        <attr name="position" intvalue="2600"/>
                     </file>
                     <file name="Find.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createFindAction"/>
-                        <attr name="position" intvalue="2200"/>
+                        <attr name="position" intvalue="2700"/>
                     </file>
                     <file name="sep6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="2300"/>
+                        <attr name="position" intvalue="2800"/>
                     </file>
                     <file name="Refresh.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createRefreshPackagesAction"/>
-                        <attr name="position" intvalue="2400"/>
+                        <attr name="position" intvalue="2900"/>
                     </file>
                     <file name="sep7.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="2500"/>
+                        <attr name="position" intvalue="3000"/>
                     </file>
                     <!-- Utilities.actionsForPath("Projects/Actions") inserted here -->
                     <file name="sep8.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="2600"/>
+                        <attr name="position" intvalue="3100"/>
                     </file>
                     <file name="Customize.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.spi.project.ui.support.CommonProjectActions.customizeProjectAction"/>
-                        <attr name="position" intvalue="2700"/>
+                        <attr name="position" intvalue="3200"/>
                     </file>
                 </folder>
             </folder>

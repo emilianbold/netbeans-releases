@@ -41,15 +41,9 @@
 
 package org.netbeans.modules.xml.text.completion;
 
-import java.util.Enumeration;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.*;
-import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
@@ -57,8 +51,6 @@ import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.openide.util.WeakListeners;
-import org.openide.ErrorManager;
 
 /**
  * Helper class used in XMLCompletionQuery and other classes that use grammar

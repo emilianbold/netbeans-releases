@@ -884,15 +884,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
 
     public void testEmptyFileTypingVarTypeInStaticBlockBody() throws Exception {
-        performTest("InitializersStart", 220, "static {\ni", "intKeyword.pass");
+        performTest("InitializersStart", 220, "static {\nin", "intKeyword.pass");
     }
     
     public void testTypingVarTypeInStaticBlockBody() throws Exception {
-        performTest("Field", 220, "static {\ni", "intKeyword.pass");
+        performTest("Field", 220, "static {\nin", "intKeyword.pass");
     }
     
     public void testOnVarTypeInStaticBlockBody() throws Exception {
-        performTest("Initializers", 247, null, "intKeyword.pass");
+        performTest("Initializers", 248, null, "intKeyword.pass");
     }
 
     public void testEmptyFileBeforeTypingVarInitInStaticBlockBody() throws Exception {

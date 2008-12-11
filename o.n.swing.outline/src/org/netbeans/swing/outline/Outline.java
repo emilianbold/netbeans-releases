@@ -577,15 +577,16 @@ public class Outline extends ETable {
         //Users of themes can set an explicit row height, so check for it
         Integer i = (Integer) UIManager.get("netbeans.outline.rowHeight"); //NOI18N
         
-        int rHeight;
+        int rHeight = 20;
         if (i != null) {
             rHeight = i.intValue();
         } else {
             //Derive a row height to accomodate the font and expando icon
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
-            rHeight = Math.max(fm.getHeight()+3,
-                DefaultOutlineCellRenderer.getExpansionHandleHeight());
+            int h = Math.max (fm.getHeight () + fm.getMaxDescent (),
+                DefaultOutlineCellRenderer.getExpansionHandleHeight ());
+            rHeight = Math.max (rHeight, h) + 2; // XXX: two pixels for cell's insets
         }
         //Set row height.  If displayable, this will generate a new call
         //to paint()

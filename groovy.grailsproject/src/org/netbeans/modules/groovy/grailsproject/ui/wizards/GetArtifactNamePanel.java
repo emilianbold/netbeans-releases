@@ -79,66 +79,67 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         String className = "";
         FileObject preselectedFolder = parentStep.project.getProjectDirectory().getFileObject(cat.getRelativePath());
 
+        // FIXME should the project element be part of the L10N bundles?
         switch (cat) {
             case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewDomain"));
-                subDirName = "domain";
-                dirPrefix = "grails-app" + File.separatorChar;
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "domain"; // NOI18N
+                dirPrefix = "grails-app" + File.separatorChar; // NOI18N
+                className = uniqueName("NewDomain", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewController"));
-                subDirName = "controllers";
-                dirPrefix = "grails-app" + File.separatorChar;
-                suffix = "Controller";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "controllers"; // NOI18N
+                dirPrefix = "grails-app" + File.separatorChar; // NOI18N
+                suffix = "Controller"; // NOI18N
+                className = uniqueName("NewController", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewService"));
-                subDirName = "services";
-                dirPrefix = "grails-app" + File.separatorChar;
-                suffix = "Service";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "services"; // NOI18N
+                dirPrefix = "grails-app" + File.separatorChar; // NOI18N
+                suffix = "Service"; // NOI18N
+                className = uniqueName("NewService", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewView"));
-                subDirName = "views";
-                dirPrefix = "grails-app" + File.separatorChar;
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "views"; // NOI18N
+                dirPrefix = "grails-app" + File.separatorChar; // NOI18N
+                className = uniqueName("NewView", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewTaglib"));
-                subDirName = "taglib";
-                dirPrefix = "grails-app" + File.separatorChar;
-                suffix = "TagLib";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "taglib"; // NOI18N
+                dirPrefix = "grails-app" + File.separatorChar; // NOI18N
+                suffix = "TagLib"; // NOI18N
+                className = uniqueName("NewTagLib", suffix, preselectedFolder);
                 break;
             case TEST_INTEGRATION:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_INTEGRATION")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewIntegrationTest"));
-                subDirName = "integration";
-                dirPrefix = "test" + File.separatorChar;
-                suffix = "Tests";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "integration"; // NOI18N
+                dirPrefix = "test" + File.separatorChar; // NOI18N
+                suffix = "Tests"; // NOI18N
+                className = uniqueName("NewTest", suffix, preselectedFolder);
                 break;
             case TEST_UNIT:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_UNIT")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewUnitTest"));
-                subDirName = "unit";
-                dirPrefix = "test" + File.separatorChar;
-                suffix = "Tests";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "unit"; // NOI18N
+                dirPrefix = "test" + File.separatorChar; // NOI18N
+                suffix = "Tests"; // NOI18N
+                className = uniqueName("NewTest", suffix, preselectedFolder);
                 break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewScript"));
-                subDirName = "scripts";
-                className = uniqueName("NewElement", suffix, preselectedFolder);
+                subDirName = "scripts"; // NOI18N
+                className = uniqueName("NewScript", suffix, preselectedFolder);
                 break;
             }
 

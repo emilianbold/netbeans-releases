@@ -71,8 +71,13 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
     private static ThreadBreakpoint creteBreakpoint () {
         ThreadBreakpoint mb = ThreadBreakpoint.create ();
         mb.setPrintText (
+            "{? threadStarted} {"+
             NbBundle.getBundle (ThreadBreakpointPanel.class).getString 
-                ("CTL_Thread_Breakpoint_Print_Text")
+                ("CTL_Thread_Breakpoint_started_Print_Text")+
+            "}{"+
+            NbBundle.getBundle (ThreadBreakpointPanel.class).getString
+                ("CTL_Thread_Breakpoint_died_Print_Text")+
+            "}"
         );
         return mb;
     }

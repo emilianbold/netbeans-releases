@@ -155,7 +155,13 @@ public class DefaultPropertyParsers {
     private static class IntegerParser implements PropertyParser {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            return Integer.decode(raw);
+            try {
+                //#155005 - Integer.decode("00001") will throw an NFE.  Leaving
+                //it here because maybe something out there actually needs this?
+                return Integer.decode(raw);
+            } catch (NumberFormatException e) {
+                return Integer.parseInt(raw.trim());
+            }
         }
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {

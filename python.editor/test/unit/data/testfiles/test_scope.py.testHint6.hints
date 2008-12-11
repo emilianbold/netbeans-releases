@@ -1,8 +1,3 @@
-from test_support import verify, TestFailed, check_syntax
-
-HINT:Name "test_scope" is not a valid module name according to your code style (lowercase)
-FIX:Ignore name violations for "test_scope"
-FIX:Change preferred module name style to lowercase_with_underscores
 def errorInOuter():
     ------------
 HINT:Name "errorInOuter" is not a valid function name according to your code style (lowercase_with_underscores)

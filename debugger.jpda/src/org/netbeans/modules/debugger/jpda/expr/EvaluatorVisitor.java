@@ -1396,6 +1396,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
         }
+        ScriptVariable var = evaluationContext.getScriptVariableByName(name);
+        if (var != null) {
+            evaluationContext.putScriptVariable(arg0, var);
+            return var.getValue();
+        }
+        try {
+            LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
+            if (lv != null) {
+                evaluationContext.putLocalVariable(arg0, lv);
+                return evaluationContext.getFrame().getValue(lv);
+            }
+        } catch (AbsentInformationException aiex) {}
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
@@ -1408,29 +1420,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 return thisObject.getValue(field);
             }
         }
-        ScriptVariable var = evaluationContext.getScriptVariableByName(name);
-        if (var != null) { // [TODO] local variables should be checked before checking fields
-            evaluationContext.putScriptVariable(arg0, var);
-            return var.getValue();
-        }
-        try {
-            LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
-            if (lv == null) {
-                ObjectReference thiz = evaluationContext.getFrame().thisObject();
-                if (thiz != null) {
-                    Field outer = thiz.referenceType().fieldByName("val$"+name);
-                    if (outer != null) {
-                        Value val = thiz.getValue(outer);
-                        evaluationContext.putField(arg0, outer, thiz);
-                        return val;
-                    }
-                }
-                Assert2.error(arg0, "unknownVariable", name);
+        ObjectReference thiz = evaluationContext.getFrame().thisObject();
+        if (thiz != null) {
+            Field outer = thiz.referenceType().fieldByName("val$"+name);
+            if (outer != null) {
+                Value val = thiz.getValue(outer);
+                evaluationContext.putField(arg0, outer, thiz);
+                return val;
             }
-            evaluationContext.putLocalVariable(arg0, lv);
-            return evaluationContext.getFrame().getValue(lv);
-        } catch (AbsentInformationException aiex) {}
-        Assert2.error(arg0, "unknownType", name);
+        }
+        Assert2.error(arg0, "unknownVariable", name);
         return null;
     }
 
