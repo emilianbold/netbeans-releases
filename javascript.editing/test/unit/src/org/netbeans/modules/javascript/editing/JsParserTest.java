@@ -201,6 +201,10 @@ public class JsParserTest extends JsTestBase {
         checkParseTree("testfiles/issue149019.js", "__UNK^NOWN__", Token.STRING);
     }
 
+    public void testNPE() throws Exception {
+        checkParseTree("testfiles/broken16.js", ";pa^rent", Token.BLOCK);
+    }
+
     public void testGeneratedIdentifiers() throws Exception {
         checkParseTree("testfiles/generated_identifiers.js", "__UNK^NOWN__", Token.SETNAME);
     }

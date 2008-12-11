@@ -4,3 +4,11 @@
 
 # Thread that executes the test itself:
 main
+
+# Jaroslav Tulach's own thread, added to whitelist 081201
+Flushing caches
+
+# Added to whitelist 081201
+Signal Dispatcher
+CLI Requests Server
+Active Reference Queue Daemon
