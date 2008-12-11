@@ -127,7 +127,21 @@ public final class QuerySupport {
                 }
             }
         }
-    }    
+    }
+
+    /**
+     * Unit test constructor
+     */
+    private QuerySupport (final FileObject srcRoot, final String indexerName, final int indexerVersion) throws IOException {
+        this.spiFactory = new LuceneIndexFactory();
+        this.indexes = new HashMap<URL, IndexImpl>();
+        final FileObject cacheFolder = CacheFolder.getDataFolder(srcRoot.getURL());
+        FileObject fo = cacheFolder.getFileObject(SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion));
+        fo.getClass();
+        this.indexes.put (srcRoot.getURL(),this.spiFactory.getIndex(fo));
+    }
+
+
 
     
     public Collection<? extends IndexResult> query (final String fieldName, final String fieldValue,

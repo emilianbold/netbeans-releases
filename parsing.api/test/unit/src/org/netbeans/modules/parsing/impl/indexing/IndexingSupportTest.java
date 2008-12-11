@@ -40,12 +40,15 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -100,7 +103,7 @@ public class IndexingSupportTest extends NbTestCase {
         assertTrue(dirty.isEmpty());
     }
 
-    public void testIndexingSupport () throws Exception {
+    public void testIndexingQuerySupport () throws Exception {
         final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null);
         assertNotNull(ctx);
         SupportAccessor.getInstance().beginTrans();
@@ -121,6 +124,35 @@ public class IndexingSupportTest extends NbTestCase {
         Collection<? extends IndexingSupport> dirty = SupportAccessor.getInstance().getDirtySupports();
         assertEquals(1, dirty.size());
         SupportAccessor.getInstance().endTrans();
+        Constructor<QuerySupport> c = QuerySupport.class.getDeclaredConstructor(FileObject.class, String.class, Integer.TYPE);
+        c.setAccessible(true);
+        QuerySupport qs = c.newInstance(root,"fooIndexer",1);
+        Collection<? extends IndexResult> result = qs.query("class", "String", QuerySupport.Kind.EXACT, "class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.query("class", "Str", QuerySupport.Kind.PREFIX, "class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.query("class", "S.*g", QuerySupport.Kind.REGEXP, "class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.query("class", "S", QuerySupport.Kind.CAMEL_CASE, "class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.query("class", "", QuerySupport.Kind.PREFIX, "class", "package");
+        assertEquals(2, result.size());
+        IndexResult[] ir = new IndexResult[2];
+        ir = result.toArray(ir);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertEquals("Object", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));
+        result = qs.query("class", "F", QuerySupport.Kind.PREFIX, "class", "package");
+        assertEquals(0, result.size());
     }
 
 }
