@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -63,6 +64,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
@@ -361,7 +363,7 @@ public class LuceneIndex implements IndexImpl {
             case PREFIX:
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
-                    emptyPrefixSearch(in, result);
+                    emptyPrefixSearch(in, fieldsToLoad, result);
                     return result;
                 }
                 else {
@@ -372,7 +374,7 @@ public class LuceneIndex implements IndexImpl {
             case CASE_INSENSITIVE_PREFIX:
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
-                    emptyPrefixSearch(in, result);
+                    emptyPrefixSearch(in, fieldsToLoad, result);
                     return result;
                 }
                 else {
@@ -435,7 +437,7 @@ public class LuceneIndex implements IndexImpl {
             case CAMEL_CASE_INSENSITIVE:
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
-                    emptyPrefixSearch(in, result);
+                    emptyPrefixSearch(in, fieldsToLoad, result);
                     return result;
                 }
                 else {
@@ -488,16 +490,74 @@ public class LuceneIndex implements IndexImpl {
         return result;
     }
 
-    private void emptyPrefixSearch (final IndexReader in, final List<? super IndexDocumentImpl> result) {
-
+    private void emptyPrefixSearch (final IndexReader in, final String[] fieldsToLoad, final List<? super IndexDocumentImpl> result) throws IOException {
+        final int bound = in.maxDoc();
+        for (int i=0; i<bound; i++) {
+            if (!in.isDeleted(i)) {
+                final Document doc = in.document(i, DocumentUtil.selector(fieldsToLoad));
+                if (doc != null) {
+                    result.add (new LuceneDocument(doc));
+                }
+            }
+        }
     }
 
-    private void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) {
-
+    private void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
+        final String prefixField = valueTerm.field();
+        final String name = valueTerm.text();
+        final TermEnum en = in.terms(valueTerm);
+        try {
+            do {
+                Term term = en.term();
+                if (term != null && prefixField == term.field() && term.text().startsWith(name)) {
+                    toSearch.add (term);
+                }
+                else {
+                    break;
+                }
+            } while (en.next());
+        } finally {
+            en.close();
+        }
     }
 
-    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set< ? super Term> toSearch) {
-
+    private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set< ? super Term> toSearch) throws IOException {
+        final String startText = startTerm.text();
+        String startPrefix;
+        if (startText.length() > 0) {
+            final StringBuilder startBuilder = new StringBuilder ();
+            startBuilder.append(startText.charAt(0));
+            for (int i=1; i<startText.length(); i++) {
+                char c = startText.charAt(i);
+                if (!Character.isJavaIdentifierPart(c)) {
+                    break;
+                }
+                startBuilder.append(c);
+            }
+            startPrefix = startBuilder.toString();
+            startTerm = new Term (startTerm.field(),startPrefix);
+        }
+        else {
+            startPrefix=startText;
+        }
+        final String camelField = startTerm.field();
+        final TermEnum en = in.terms(startTerm);
+        try {
+            do {
+                Term term = en.term();
+                if (term != null && camelField == term.field() && term.text().startsWith(startPrefix)) {
+                    final Matcher m = pattern.matcher(term.text());
+                    if (m.matches()) {
+                        toSearch.add (term);
+                    }
+                }
+                else {
+                    break;
+                }
+            } while (en.next());
+        } finally {
+            en.close();
+        }
     }
 
     private static int findNextUpper(String text, int offset ) {
