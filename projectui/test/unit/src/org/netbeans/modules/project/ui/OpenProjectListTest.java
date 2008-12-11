@@ -176,7 +176,8 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals(1, list.oldCount);
         assertEquals(0, list.newCount);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1855
     public void testClose () throws Exception {
         testOpen ();
         
