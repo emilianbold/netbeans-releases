@@ -46,15 +46,23 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
@@ -331,8 +339,175 @@ public class LuceneIndex implements IndexImpl {
     }
 
     public Collection<? extends IndexDocumentImpl> query(final String fieldName, final String value,
-            final QuerySupport.Kind kind, final String... fieldsToLoad) {
-        throw new UnsupportedOperationException("Not supported yet.");
+            final QuerySupport.Kind kind, final String... fieldsToLoad) throws IOException {
+        checkPreconditions();
+        if (!isValid(false)) {
+            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+            return Collections.emptySet();
+        }
+        assert fieldName != null;
+        assert value != null;
+        assert kind != null;
+        assert fieldsToLoad != null;
+        final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
+        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
+        final IndexReader in = getReader();
+        switch (kind) {
+            case EXACT:
+                {
+                    toSearch.add(new Term (fieldName,value));
+                    break;
+                }
+            case PREFIX:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term (fieldName, value);
+                    prefixSearch(nameTerm, in, toSearch);
+                    break;
+                }
+            case CASE_INSENSITIVE_PREFIX:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                    prefixSearch(nameTerm, in, toSearch);
+                    break;
+                }
+            case CAMEL_CASE:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                {
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern, new Term (fieldName,prefix),in,toSearch);
+                }
+                break;
+            case CASE_INSENSITIVE_REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                else {
+                    final Pattern pattern = Pattern.compile(value,Pattern.CASE_INSENSITIVE);
+                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                        regExpSearch(pattern, new Term (fieldName, value.toLowerCase()), in, toSearch);      //XXX: Locale
+                    }
+                    else {
+                        regExpSearch(pattern, new Term (fieldName,""), in, toSearch);      //NOI18N
+                    }
+                    break;
+                }
+            case REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    final Pattern pattern = Pattern.compile(value);
+                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                        regExpSearch(pattern, new Term (fieldName, value), in, toSearch);
+                    }
+                    else {
+                        regExpSearch(pattern, new Term(fieldName,""), in, toSearch);             //NOI18N
+                    }
+                    break;
+                }
+            case CAMEL_CASE_INSENSITIVE:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                    prefixSearch(nameTerm, in, toSearch);
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern,new Term (fieldName, prefix),in,toSearch);
+                    break;
+                }
+            default:
+                throw new UnsupportedOperationException (kind.toString());
+        }
+        TermDocs tds = in.termDocs();
+        final Iterator<Term> it = toSearch.iterator();
+        Set<Integer> docNums = new TreeSet<Integer>();
+        int[] docs = new int[25];
+        int[] freq = new int [25];
+        int len;
+        while (it.hasNext()) {
+            tds.seek(it.next());
+            while ((len = tds.read(docs, freq))>0) {
+                for (int i = 0; i < len; i++) {
+                    docNums.add (docs[i]);
+                }
+                if (len < docs.length) {
+                    break;
+                }
+            }
+        }
+        final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
+        for (Integer docNum : docNums) {
+            final Document doc = in.document(docNum, selector);
+            result.add (new LuceneDocument(doc));
+        }
+        return result;
+    }
+
+    private void emptyPrefixSearch (final IndexReader in, final List<? super IndexDocumentImpl> result) {
+
+    }
+
+    private void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) {
+
+    }
+
+    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set< ? super Term> toSearch) {
+
+    }
+
+    private static int findNextUpper(String text, int offset ) {
+
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

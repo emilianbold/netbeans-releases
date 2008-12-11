@@ -71,20 +71,15 @@ public class LuceneDocument implements IndexDocumentImpl {
     }
 
     public String getSourceName () {
-        return doc.getField(DocumentUtil.FIELD_SOURCE_NAME).stringValue();
+        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
     }
 
     public String getValue(String key) {
-        return doc.getField(key).stringValue();
+        return doc.get(key);
     }
 
     public String[] getValues(String key) {
-        final Field[] fields = doc.getFields(key);
-        final String[] result = new String[fields.length];
-        for (int i=0; i<fields.length; i++) {
-            result[i] = fields[i].stringValue();
-        }
-        return  result;
+        return doc.getValues(key);
     }
 
 }

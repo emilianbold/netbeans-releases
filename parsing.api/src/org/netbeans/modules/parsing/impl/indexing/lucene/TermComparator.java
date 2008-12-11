@@ -39,42 +39,20 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.document.SetBasedFieldSelector;
+import java.util.Comparator;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class DocumentUtil {
+class TermComparator implements Comparator<Term> {
 
-    static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
-
-    static Fieldable sourceNameField(String relativePath) {
-        return new Field(DocumentUtil.FIELD_SOURCE_NAME, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
-    }
-    static Query sourceNameQuery(String relativePath) {
-        return new TermQuery(sourceNameTerm(relativePath));
-    }
-
-    static Term sourceNameTerm (final String relativePath) {
-        assert relativePath != null;
-        return new Term (FIELD_SOURCE_NAME, relativePath);
-    }
-
-    static FieldSelector selector (String... fieldNames) {
-        assert fieldNames != null;
-        final FieldSelector selector = new SetBasedFieldSelector(new HashSet<String>(Arrays.asList(fieldNames)),
-                Collections.<String>emptySet());
-        return selector;
-    }
-
+    public int compare (Term t1, Term t2) {
+            int ret = t1.field().compareTo(t2.field());
+            if (ret == 0) {
+                ret = t1.text().compareTo(t2.text());
+            }
+            return ret;
+        }
 }

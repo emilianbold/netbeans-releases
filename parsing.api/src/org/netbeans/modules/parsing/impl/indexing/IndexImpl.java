@@ -56,5 +56,5 @@ public interface IndexImpl {
 
     public void store () throws IOException;
 
-    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad);
+    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
 }
