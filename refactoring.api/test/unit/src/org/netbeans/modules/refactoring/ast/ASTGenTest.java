@@ -33,10 +33,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -100,6 +102,8 @@ public class ASTGenTest extends NbTestCase {
         log = new PrintWriter(new File(resultDir, getName()+".log"));                
         ref.println("#### " + getName() + " ####");
         log.println("#### " + getName() + " ####");
+        log.println("Source dir:"+sourceDir.getAbsolutePath());
+        log.println("Result dir:"+resultDir.getAbsolutePath());
     }
         
     
@@ -115,6 +119,7 @@ public class ASTGenTest extends NbTestCase {
         for (int i = 0; i < projects.length; i++) {
             File project = projects[i];
             if(project.isFile()) continue; //only directories
+            log.println("Opening project "+project.getAbsolutePath());
             FileObject srcRoot = FileUtil.toFileObject(new File(project,"src"));
             RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcRoot, srcRoot).await();
             openedProject = openProject(project);
@@ -128,13 +133,20 @@ public class ASTGenTest extends NbTestCase {
             } else {
                 newName = "NewName";
             }
+            log.println("Renaming "+testClass+" to "+newName);
             FileObject test = openedProject.getFileObject("src/"+testClass.replace('.', '/')+".java");
-            final RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(test));
-            performASTGenRerfactoring(renameRefactoring, new ParameterSetter() {
-                public void setParameters() {
-                    renameRefactoring.setNewName(newName);
-                }
-            }, project);
+            if(test!=null) {
+                final RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(test));
+                performASTGenRerfactoring(renameRefactoring, new ParameterSetter() {
+                    public void setParameters() {
+                        renameRefactoring.setNewName(newName);
+                    }
+                }, project);
+                log.println("Renamed");
+            } else {
+                log.println(test.getName()+" is not found");
+            }
+
         }
     }
        
@@ -225,6 +237,11 @@ public class ASTGenTest extends NbTestCase {
                 fail("Error while storing results");
             }
         }
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ASTGenTest.class).addTest("testRename"));
     }
         
 }

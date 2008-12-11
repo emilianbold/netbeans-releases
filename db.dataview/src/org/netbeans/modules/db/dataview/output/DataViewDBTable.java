@@ -87,8 +87,8 @@ class DataViewDBTable {
         return dbTables != null && dbTables.length == 1 && !dbTables[0].getName().equals("");
     }
 
-    public String getFullyQualifiedName(int index) {
-        return dbTables[index].getFullyQualifiedName();
+    public String getFullyQualifiedName(int index, boolean quoteAlways) {
+        return dbTables[index].getFullyQualifiedName(quoteAlways);
     }
 
     public DBColumn getColumn(int index) {
@@ -103,8 +103,8 @@ class DataViewDBTable {
         return columns.get(index).getName();
     }
 
-    public String getQualifiedName(int index) {
-        return columns.get(index).getQualifiedName();
+    public String getQualifiedName(int index, boolean quoteAlways) {
+        return columns.get(index).getQualifiedName(quoteAlways);
     }
 
     public int getColumnCount() {

@@ -92,7 +92,7 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
         wizardDescriptor.putProperty("NewFileWizard_Title", title);
-        
+
         if (!componentInitialized) {
             componentInitialized = true;
             project = Templates.getProject(wizardDescriptor);
@@ -111,13 +111,19 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
                 if (!value) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                     return false;
-                }               
+                }
+                value = env.canDirectlyConnectToDB(hco.getHibernateConfiguration());
+                if (!value) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_No_DB_Connection", //NOI18N
+                            getComponent().getConfigurationFile().getNameExt())); 
+                    return false;
+                }
             } catch (Exception e) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                 return false;
             }
-        }        
-       
+        }
+
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }

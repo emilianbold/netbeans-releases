@@ -166,9 +166,9 @@ public class PythonHintsProvider implements HintsProvider {
                 continue;
             }
 
-            //if (!manager.isEnabled(rule)) {
-            //    continue;
-            //}
+            if (!manager.isEnabled(rule)) {
+                continue;
+            }
 
             rule.run(pythonContext, result);
         }
