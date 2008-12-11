@@ -41,7 +41,7 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Phase;
+//import org.netbeans.modules.csl.api.Phase; 
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.model.CssModel;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -57,29 +57,29 @@ public class CSSGSFParserResult extends ParserResult {
     private SimpleNode root;
     private Snapshot snapshot;
     private List<Error> errors;
-    private Phase currentPhase;
+//    private Phase currentPhase;
     private CssModel model;
     
     CSSGSFParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
         super(snapshot);
         this.snapshot = snapshot;
         this.root = root;
-        this.currentPhase = Phase.PARSED;
+//        this.currentPhase = Phase.PARSED;
     }
     
     public SimpleNode root() {
         return root;
     }
     
-    @Override
-    public Phase toPhase(Phase phase) {
-        if(phase == Phase.ELEMENTS_RESOLVED) {
-            //create css model
-
-
-        }
-        return phase; //no phases support
-    }
+//    @Override
+//    public Phase toPhase(Phase phase) {
+//        if(phase == Phase.ELEMENTS_RESOLVED) {
+//            //create css model
+//
+//
+//        }
+//        return phase; //no phases support
+//    }
 
     @Override
     public List<? extends Error> getDiagnostics() {
