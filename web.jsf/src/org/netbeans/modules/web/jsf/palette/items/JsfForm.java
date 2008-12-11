@@ -237,13 +237,13 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop {
                 (entityClass.length() == 0 || controllerClass.length() == 0) ) {
             //this method was called from outside the jsfcrud generator feature
             String template = "<h:outputText value=\"{0}:\"/>\n" +
-                    "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n";
+                    "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n";
             Object[] args = new Object [] {name, variable, propName};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE) {
             String template = "<h:outputText value=\"{0}:\"/>\n" +
                 "<h:panelGroup>\n" + 
-                "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n" +
+                "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
                 "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
                 "<h:outputText value=\" (\"/>\n" +
                 "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
