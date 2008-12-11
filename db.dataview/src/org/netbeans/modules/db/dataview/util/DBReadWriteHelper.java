@@ -426,7 +426,7 @@ public class DBReadWriteHelper {
                 case -8:  //ROWID
                 case -15: //NCHAR
                     if (valueObj.toString().length() > col.getPrecision()) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
                     }
@@ -434,12 +434,12 @@ public class DBReadWriteHelper {
 
                 case Types.BIT:
                     if (valueObj.toString().length() > col.getPrecision()) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
                     }
                     if (valueObj.toString().trim().length() == 0) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Invalid data for column " + colName;
                         throw new DBException(errMsg);
                     }
@@ -464,7 +464,7 @@ public class DBReadWriteHelper {
             }
         } catch (Exception e) {
             String type = col.getTypeName();
-            String colName = col.getQualifiedName();
+            String colName = col.getQualifiedName(false);
             int precision = col.getPrecision();
             String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
             errMsg += "\nCause: " + e.getMessage();

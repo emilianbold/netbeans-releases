@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteSupport;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -84,9 +85,12 @@ public final class SVGFormSupport {
             if (registry.isInHierarchy(SVGComponentCD.TYPEID, svgComponent.getType())) {
                 deleteEventSource(svgComponent);
                 ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
-                svgForm.getDocument().deleteComponent(svgComponent);
+                //svgForm.getDocument().deleteComponent(svgComponent);
             }
         }
+        
+        DeleteSupport.invokeDirectUserDeletion( svgForm.getDocument(), 
+                components, false);
     }
 
     public static final Collection<DesignComponent> getSVGFormComponents(final DesignComponent svgForm) {

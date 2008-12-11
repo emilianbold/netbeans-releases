@@ -316,6 +316,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.python.project</friend>
+                <friend>org.netbeans.modules.python.tests</friend>
                 <package>org.netbeans.modules.python.editor</package>
                 <package>org.netbeans.modules.python.editor.lexer</package>
             </friend-packages>
