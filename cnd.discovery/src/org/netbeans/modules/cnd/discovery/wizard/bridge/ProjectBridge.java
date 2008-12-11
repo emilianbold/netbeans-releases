@@ -326,7 +326,7 @@ public class ProjectBridge {
         }
     }
     
-    public void setExclude(Item item, boolean exclude){
+    public static void setExclude(Item item, boolean exclude){
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
@@ -384,6 +384,39 @@ public class ProjectBridge {
             cccCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
+        }
+    }
+
+    public static void fixFileMacros(Map<String,String> macros, Item item) {
+        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
+            return;
+        }
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
+            List<String> list = new ArrayList<String>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            for(Map.Entry<String,String> entry : macros.entrySet()) {
+                String s;
+                if (entry.getValue()!=null) {
+                    s = entry.getKey()+"="+entry.getValue(); // NOI18N
+                } else {
+                    s = entry.getKey();
+                }
+                boolean find = false;
+                for(String m : list){
+                    if (m.equals(entry.getKey()) ||
+                        m.startsWith(entry.getKey()+"=")){
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find) {
+                    list.add(s);
+                }
+            }
+            cccCompilerConfiguration.getPreprocessorConfiguration().setValue(list);
         }
     }
     
