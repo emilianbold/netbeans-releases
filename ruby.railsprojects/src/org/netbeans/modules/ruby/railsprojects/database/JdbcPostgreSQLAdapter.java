@@ -36,52 +36,77 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.railsprojects.database;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.openide.util.Exceptions;
 
 /**
- * Represents the adapter for SQLite2 and SQLite2.
+ * Represents the jdbcposgresql database adapter, i.e. the jdbc-postgresql gem.
+ * Meant to be used for generating postgresql configuration for JRuby apps.
  *
  * @author Erno Mononen
  */
-class SQLiteAdapter extends RailsDatabaseConfiguration {
+class JdbcPostgreSQLAdapter extends RailsDatabaseConfiguration {
 
-    private final String version;
-
-    /**
-     * @param version the SQLite version, e.g sqlite2 or sqlite3.
-     */
-    public SQLiteAdapter(String version) {
-        this.version = version;
-    }
+    static final String GEM_NAME = "activerecord-jdbcpostgresql-adapter"; //NOI18N
 
     public String railsGenerationParam() {
-        return version;
+        return "postgresql"; //NOI18N
     }
 
     public void editConfig(RailsProject project) {
+        Document databaseYml = RailsAdapters.getDatabaseYml(project.getProjectDirectory());
+        try {
+            RailsAdapters.changeAttribute(databaseYml, "adapter:", "jdbcpostgresql", null); //NOI18N
+            // intentionally within the same try-catch block as changing the adapter
+            RailsAdapters.addProperty(databaseYml, "host:", "localhost", "encoding:"); //NOI18N
+            editComments(databaseYml);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void editComments(Document databaseYml) throws BadLocationException {
+        String text = databaseYml.getText(0, databaseYml.getLength());
+        int offset = text.indexOf("development:"); // NOI18N
+        if (offset == -1) {
+            // best to do nothing
+            return;
+        }
+
+        // remove the old comment that instructs to install the mysql gem,
+        // it is not appropriate here since we're using jdbc-mysql
+        databaseYml.remove(0, offset);
+        String comment = "# PostgreSQL. Versions 7.4 and 8.x are supported.\n";
+        databaseYml.insertString(0, comment, null);
+
     }
 
     public JdbcInfo getJdbcInfo() {
         return null;
     }
 
+    @Override
+    public boolean forceJdbc() {
+        return true;
+    }
+
     public String getDisplayName() {
-        return railsGenerationParam();
+        return "postgresql (jdbc)"; //NOI18N
     }
 
     public String getDatabaseName(String projectName) {
-        return "db/development." + version; //NOI18N
+        return projectName + RailsAdapters.DEVELOPMENT_DB_SUFFIX;
     }
 
     public String getTestDatabaseName(String developmentDbName) {
-        return "db/test." + version;
+        return RailsAdapters.getTestDatabaseName(developmentDbName);
     }
 
     public String getProductionDatabaseName(String developmentDbName) {
-        return "db/production." + version;
+        return RailsAdapters.getProductionDatabaseName(developmentDbName);
     }
-
 }
