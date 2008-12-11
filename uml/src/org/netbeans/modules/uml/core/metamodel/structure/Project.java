@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Level;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -107,10 +106,8 @@ import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
-import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
-import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -124,8 +121,6 @@ import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.typemanagement.TypeManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class Project extends Model implements IProject, IElementModifiedEventsSink, IDocumentationModifiedEventsSink, IElementLifeTimeEventsSink, ICoreProductInitEventsSink
 {
@@ -173,6 +168,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 	/**
 	 * Retrieves the document that holds the data of the project.
 	*/
+    @Override
 	public Document getDocument()
 	{
 		return m_Doc;
@@ -287,16 +283,6 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                 if( proceed )
                 {
                    internalCommit();
-//                   if (m_IsDirty == false && ( m_ChildrenDirty == false ))
-//                   {
-//                            int retryMax = 5;
-//                                while( ( ( m_IsDirty || m_ChildrenDirty ) && retryMax >0) )
-//                                {
-//                                   internalCommit();
-//                                   retryMax--;
-//                                }
-//                                internalCommit();
-//                   }
                    if( disp != null )
                    {
                           IEventPayload payload = disp.createPayload("ProjectSaved");
