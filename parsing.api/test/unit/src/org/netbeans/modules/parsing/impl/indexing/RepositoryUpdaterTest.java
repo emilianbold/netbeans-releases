@@ -803,6 +803,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         }
 
+        @Override
+        protected boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            return true;
+        }
+
     }
 
     private static class EmbParserFactory extends ParserFactory {
