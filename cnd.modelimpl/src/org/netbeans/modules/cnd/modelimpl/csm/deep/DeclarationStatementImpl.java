@@ -182,7 +182,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                        declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
+                        declarators.add(new NamespaceAliasImpl(token, getContainingFile(), null));
                         break;
                     case CPPTokenTypes.CSM_USING_DIRECTIVE:
                         declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
