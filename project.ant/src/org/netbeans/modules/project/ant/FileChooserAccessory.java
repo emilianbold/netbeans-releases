@@ -214,7 +214,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         }
         File f = FileUtil.normalizeFile(new File(copyTo.getText()));
         FileUtil.createFolder(f);
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+        FileObject fo = FileUtil.toFileObject(f);
         List<File> selectedFiles = Arrays.asList(getSelectedFiles());
         copyFiles(selectedFiles, fo);
     }
