@@ -42,6 +42,13 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
@@ -52,6 +59,9 @@ public class IndexListNode extends BaseNode {
     private static final String DISPLAYNAME = "Indexes"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "IndexList"; //NOI18N
+
+    private MetadataModel metaDataModel;
+    private MetadataElementHandle<Table> tableHandle;
 
     /**
      * Create an instance of IndexListNode.
@@ -70,6 +80,22 @@ public class IndexListNode extends BaseNode {
     }
 
     protected void initialize() {
+        metaDataModel = getLookup().lookup(MetadataModel.class);
+        tableHandle = getLookup().lookup(MetadataElementHandle.class);
+    }
+
+    public Table getTable() {
+        DataWrapper<Table> wrapper = new DataWrapper<Table>();
+        MetadataReader.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Table table = tableHandle.resolve(metaData);
+                    wrapper.setObject(table);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     @Override

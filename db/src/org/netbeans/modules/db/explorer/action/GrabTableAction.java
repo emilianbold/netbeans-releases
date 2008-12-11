@@ -55,6 +55,7 @@ import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.action.GrabTableHelper;
 import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.metadata.model.api.Column;
@@ -90,12 +91,21 @@ public class GrabTableAction extends BaseAction {
         return enabled;
     }
 
-    public void performAction (Node[] activatedNodes)
-    {
-        TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
+    public void performActionXXX (Node[] activatedNodes) {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    //perform(node);
+                }
+            }
+        );
+    }
+
+    public void performAction(Node[] activatedNodes) {
+        final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
 
         try {
-            Specification spec = node.getLookup().lookup(DatabaseConnection.class).getConnector().getDatabaseSpecification();
+            final Specification spec = node.getLookup().lookup(DatabaseConnection.class).getConnector().getDatabaseSpecification();
             String tablename = node.getName();
 
             // Get command
@@ -103,7 +113,7 @@ public class GrabTableAction extends BaseAction {
             CreateTable cmd = (CreateTable)spec.createCommandCreateTable(tablename);
 
             GrabTableWorker run = new GrabTableWorker(node);
-            Enumeration enu = run.execute();
+            final Enumeration enu = run.execute();
 
             // Get filename
 
@@ -150,8 +160,19 @@ public class GrabTableAction extends BaseAction {
                 } else return;
             }
 
-            // TODO a new helper needs to be created
-            //new GrabTableHelper().execute(spec, tablename, enu, file);
+            final File theFile = file;
+            RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        try {
+                            new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
+                                spec, node.getTable(), enu, theFile);
+                        } catch (Exception exc) {
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
+                        }
+                    }
+                }
+            );
 
         } catch(Exception exc) {
             DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N

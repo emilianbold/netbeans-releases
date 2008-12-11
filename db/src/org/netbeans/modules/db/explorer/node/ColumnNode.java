@@ -95,40 +95,51 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         super(lookup, FOLDER, provider);
     }
 
+    @Override
+    public synchronized void refresh() {
+        setupNames();
+        super.refresh();
+    }
+
     protected void initialize() {
         metaDataModel = getLookup().lookup(MetadataModel.class);
         columnHandle = getLookup().lookup(MetadataElementHandle.class);
+        setupNames();
+    }
 
+    private void setupNames() {
         Column column = getColumn();
-        name = column.getName();
-        icon = COLUMN;
-        
-        Tuple tuple = column.getParent();
-        if (tuple instanceof Table) {
-            Table table = (Table)tuple;
-            PrimaryKey pkey = table.getPrimaryKey();
+        if (column != null) {
+            name = column.getName();
+            icon = COLUMN;
 
-            boolean found = false;
-            if (pkey != null) {
-                Collection<Column> columns = pkey.getColumns();
-                for (Column c : columns) {
-                    if (c.getName().equals(column.getName())) {
-                        found = true;
-                        icon = PRIMARY;
-                        break;
-                    }
-                }
-            }
+            Tuple tuple = column.getParent();
+            if (tuple instanceof Table) {
+                Table table = (Table)tuple;
+                PrimaryKey pkey = table.getPrimaryKey();
 
-            if (!found) {
-                Collection<Index> indexes = table.getIndexes();
-                for (Index index : indexes) {
-                    Collection<IndexColumn> columns = index.getColumns();
-                    for (IndexColumn c : columns) {
+                boolean found = false;
+                if (pkey != null) {
+                    Collection<Column> columns = pkey.getColumns();
+                    for (Column c : columns) {
                         if (c.getName().equals(column.getName())) {
                             found = true;
-                            icon = INDEX;
+                            icon = PRIMARY;
                             break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    Collection<Index> indexes = table.getIndexes();
+                    for (Index index : indexes) {
+                        Collection<IndexColumn> columns = index.getColumns();
+                        for (IndexColumn c : columns) {
+                            if (c.getName().equals(column.getName())) {
+                                found = true;
+                                icon = INDEX;
+                                break;
+                            }
                         }
                     }
                 }
@@ -173,15 +184,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         try {
             RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
 
-            // if we don't get a schema, it means we need to crawl up the tree looking for
-            // the schema node
-            String schema = getSchema().getName();
-            if (schema == null) {
-                SchemaNode sn = getAncestor(SchemaNode.class);
-                if (sn != null) {
-                    schema = sn.getName();
-                }
-            }
+            String schema = MetadataReader.getSchemaWorkingName(getSchema());
 
             command.setObjectOwner(schema);
             command.removeColumn(getName());
@@ -213,6 +216,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         return icon;
     }
 
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);

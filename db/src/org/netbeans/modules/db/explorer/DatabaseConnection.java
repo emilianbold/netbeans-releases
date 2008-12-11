@@ -864,15 +864,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection() {
-        try {
-            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            if (cni != null && cni.getConnection() != null) {
-                return cni.getConnection();
-            }
-        } catch (DatabaseException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
+        return connector.getConnection();
     }
 
     public DatabaseConnector getConnector() {

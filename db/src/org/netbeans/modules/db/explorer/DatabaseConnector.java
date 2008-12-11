@@ -40,14 +40,24 @@
 package org.netbeans.modules.db.explorer;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
+import org.netbeans.lib.ddl.impl.TableColumn;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -134,6 +144,10 @@ public class DatabaseConnector {
                 spec = (Specification) factory.createSpecification(con, connection);
             }
             //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
+            String adaname = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; // NOI18N
+            if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
+                spec.setMetaDataAdaptorClassName(adaname);
+            }
 
             setConnection(connection); // fires change
         } catch (Exception e) {
@@ -170,6 +184,10 @@ public class DatabaseConnector {
         }
     }
 
+    public Connection getConnection() {
+        return connection;
+    }
+
     public void setConnection(Connection con) throws DatabaseException
     {
         Connection oldval = connection;
@@ -184,6 +202,52 @@ public class DatabaseConnector {
 
         //databaseConnection.getConnectionPCS().firePropertyChange(CONNECTION, oldval, databaseConnection);
         notifyChange();
+    }
+
+    public TableColumn getColumnSpecification(Table table, Column column) throws DatabaseException {
+        TableColumn col = null;
+
+        try {
+            CreateTable cmd = (CreateTable) spec.createCommandCreateTable("DUMMY"); //NOI18N
+
+            if (table.getPrimaryKey().getColumns().contains(column)) {
+                col = cmd.createPrimaryKeyColumn(column.getName());
+            } else if (table.getIndexes().contains(column)) {
+                col = cmd.createUniqueColumn(column.getName());
+            } else {
+                col = (TableColumn)cmd.createColumn(column.getName());
+            }
+
+            Schema schema = table.getParent();
+            Catalog catalog = schema.getParent();
+
+            DriverSpecification drvSpec = getDriverSpecification(MetadataReader.getCatalogWorkingName(schema, catalog));
+            drvSpec.getColumns(table.getName(), column.getName());
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                rs.next();
+                HashMap rset = drvSpec.getRow();
+
+                try {
+                    //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
+                    col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
+                    col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
+                } catch (NumberFormatException exc) {
+                    col.setColumnType(0);
+                    col.setColumnSize(0);
+                }
+
+                col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                col.setDefaultValue((String) rset.get(new Integer(13)));
+                rset.clear();
+
+                rs.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return col;
     }
 
     public boolean supportsCommand(String cmd) {

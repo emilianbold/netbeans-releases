@@ -40,14 +40,17 @@
 package org.netbeans.modules.db.explorer.metadata;
 
 import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class MetadataReader {
 
@@ -77,6 +80,59 @@ public class MetadataReader {
 
     private MetadataReader() {
 
+    }
+
+    public static String getSchemaWorkingName(Schema schema) {
+        String schemaName = schema.getName();
+        if (schemaName == null) {
+            schemaName = schema.getParent().getName();
+        }
+
+        return schemaName;
+    }
+
+    public static String getCatalogWorkingName(Schema schema, Catalog catalog) {
+        String catName = catalog.getName();
+
+        if (catName == null) {
+            catName = schema.getName();
+        }
+
+        return catName;
+    }
+
+    public static Schema findSchema(Lookup lookup) {
+        MetadataModel model = lookup.lookup(MetadataModel.class);
+        final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
+
+        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+        readModel(model, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Schema schema = (Schema)handle.resolve(metaData);
+                    wrapper.setObject(schema);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    public static Catalog findCatalog(Lookup lookup) {
+        MetadataModel model = lookup.lookup(MetadataModel.class);
+        final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
+
+        DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
+        readModel(model, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Catalog catalog = (Catalog)handle.resolve(metaData);
+                    wrapper.setObject(catalog);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     public static void readModel(MetadataModel model, DataWrapper wrapper, MetadataReadListener listener) {

@@ -49,12 +49,12 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -129,15 +129,8 @@ public class ConnectionNode extends BaseNode {
                         NodeDataLookup lookup = (NodeDataLookup)getLookup();
                         lookup.add(model);
 
-                        MetadataReader.readModel(model, null,
-                            new MetadataReader.MetadataReadListener() {
-                                public void run(Metadata metaData, DataWrapper wrapper) {
-                                    NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                                    lookup.add(model);
-                                    refresh();
-                                }
-                            }
-                        );
+                        SystemAction.get(RefreshAction.class).performAction(new Node[] { ConnectionNode.this } );
+                        
                     } else if (!connected) {
                         model = null;
                         NodeDataLookup lookup = (NodeDataLookup)getLookup();
@@ -146,7 +139,7 @@ public class ConnectionNode extends BaseNode {
                             lookup.remove(md);
                         }
                         
-                        refresh();
+                        SystemAction.get(RefreshAction.class).performAction(new Node[] { ConnectionNode.this } );
                     }
                 }
             }

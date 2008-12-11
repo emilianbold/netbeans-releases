@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.action;
 
-import java.sql.*;
-import java.util.*;
-
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.openide.nodes.*;
-
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.dlg.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.dlg.AddIndexDialog;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.node.IndexListNode;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
-public class AddIndexAction extends DatabaseAction {
+/**
+ *
+ * @author rob
+ */
+public class AddIndexAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class .getName());
 
-    public void performAction (Node[] activatedNodes) {
-        /*
-        Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
-            node = activatedNodes[0];
-        else
-            return;
+    public String getName() {
+        return bundle().getString("AddIndex"); // NOI18N
+    }
 
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        boolean enabled = false;
+
+        if (activatedNodes.length == 1) {
+            IndexListNode node = activatedNodes[0].getLookup().lookup(IndexListNode.class);
+            enabled = node != null;
+        }
+
+        return enabled;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        final IndexListNode node = activatedNodes[0].getLookup().lookup(IndexListNode.class);
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    perform(node);
+                }
+            }
+        );
+    }
+
+    private void perform(final IndexListNode node) {
         try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            final IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
+            DatabaseConnection dbConn = node.getLookup().lookup(DatabaseConnection.class);
+            DatabaseConnector connector = dbConn.getConnector();
 
-            String tablename = (String)nfo.get(DatabaseNode.TABLE);
-            String columnname = (String)nfo.get(DatabaseNode.COLUMN);
+            Table table = node.getTable();
+            final String tablename = table.getName();
 
-            Specification spec = (Specification)nfo.getSpecification();
-            String index = (String)nfo.get(DatabaseNode.INDEX);
-            DriverSpecification drvSpec = info.getDriverSpecification();
+            Schema schema = table.getParent();
+            Catalog catalog = schema.getParent();
+
+            String schemaName = MetadataReader.getSchemaWorkingName(schema);
+            String catalogName = MetadataReader.getCatalogWorkingName(schema, catalog);
+
+            Specification spec = connector.getDatabaseSpecification();
+
+            final DriverSpecification drvSpec = connector.getDriverSpecification(catalogName);
 
             // List columns not present in current index
             Vector cols = new Vector(5);
@@ -95,19 +130,17 @@ public class AddIndexAction extends DatabaseAction {
                 throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
-            final AddIndexDialog dlg = new AddIndexDialog(cols, spec, info);
+            final AddIndexDialog dlg = new AddIndexDialog(cols, spec, tablename, schemaName);
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        try {
-                            nfo.addIndex(dlg.getIndexName());
-                            nfo.refreshChildren();
-                        } catch (DatabaseException dbe) {
-                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), dbe.getMessage()); // NOI18N
+                        Node refreshNode = node.getParentNode();
+                        if (refreshNode == null) {
+                            refreshNode = node;
                         }
 
+                        SystemAction.get(RefreshAction.class).performAction(new Node[] { refreshNode } );
                     }
                 });
             }
@@ -115,6 +148,5 @@ public class AddIndexAction extends DatabaseAction {
             LOGGER.log(Level.INFO, exc.getMessage(), exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
-        */
     }
 }

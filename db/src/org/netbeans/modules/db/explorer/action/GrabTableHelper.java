@@ -39,56 +39,36 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.Collection;
+import java.util.Enumeration;
+import org.netbeans.lib.ddl.impl.CreateTable;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
-/**
- *
- * @author Rob
- */
-public class RefreshAction extends BaseAction {
-    @Override
-    public String getName() {
-        return bundle().getString("Refresh"); // NOI18N
-    }
+public class GrabTableHelper {
 
-    protected boolean enable(Node[] activatedNodes) {
-        boolean enabled = false;
+    public void execute(DatabaseConnector connector,
+            Specification spec,
+            Table table,
+            Enumeration nodeChildren,
+            File file) throws Exception {
+        CreateTable cmd = spec.createCommandCreateTable(table.getName());
 
-        if (activatedNodes.length == 1) {
-            enabled = null != activatedNodes[0].getLookup().lookup(BaseNode.class);
+        Collection<Column> columns = table.getColumns();
+        for (Column column : columns) {
+            cmd.getColumns().add(connector.getColumnSpecification(table, column));
         }
 
-        return enabled;
+        FileOutputStream fstream = new FileOutputStream(file);
+        ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+        cmd.setSpecification(null);
+        ostream.writeObject(cmd);
+        ostream.flush();
+        ostream.close();
     }
-
-    @Override
-    public void performAction(Node[] activatedNodes) {
-        final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    MetadataModel model = baseNode.getLookup().lookup(MetadataModel.class);
-                    if (model != null) {
-                        MetadataReader.readModel(model, null,
-                            new MetadataReadListener() {
-                                public void run(Metadata metaData, DataWrapper wrapper) {
-                                    metaData.refresh();
-                                }
-                            }
-                        );
-                    }
-
-                    baseNode.refresh();
-                }
-            }
-        );
-    }
-
 }

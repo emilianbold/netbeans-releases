@@ -56,13 +56,17 @@ import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dataview.DataViewWindow2;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.node.SchemaProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
 /**
@@ -135,8 +139,12 @@ public class RecreateTableAction extends BaseAction {
                     } else
                         return;
 
-                    //cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
-                    cmd.setObjectOwner(connection.getSchema());
+                    SchemaProvider schemaProvider = node.getLookup().lookup(SchemaProvider.class);
+                    Schema schema = schemaProvider.getSchema();
+                    String schemaName = MetadataReader.getSchemaWorkingName(schema);
+
+                    cmd.setObjectOwner(schemaName);
+
                     String newtab = cmd.getObjectName();
                     String msg = cmd.getCommand();
                     LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(msg); //NOI18N
@@ -168,11 +176,11 @@ public class RecreateTableAction extends BaseAction {
                     }
                 }
 
-                if (refreshNode != null) {
-                    ((BaseNode)refreshNode).refresh();
-                } else {
-                    node.refresh();
+                if (refreshNode == null) {
+                    refreshNode = node;
                 }
+
+                SystemAction.get(RefreshAction.class).performAction(new Node[] { refreshNode });
             }
         }, 0);
     }

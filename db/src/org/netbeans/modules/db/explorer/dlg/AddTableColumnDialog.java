@@ -83,6 +83,9 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.node.CatalogNode;
 import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
 import org.openide.DialogDescriptor;
@@ -115,28 +118,24 @@ public class AddTableColumnDialog {
     public AddTableColumnDialog(final Specification spe, final TableNode nfo) throws DatabaseException {
         spec = spe;
         try {
-            String table = nfo.getName();
+            Table table = nfo.getTable();
+            String tableName = table.getName();
 
-            String schema = nfo.getSchema().getName();
-            if (schema == null) {
-                schema = "";
-                SchemaNode sn = nfo.getAncestor(SchemaNode.class);
-                if (sn != null) {
-                    schema = sn.getName();
-                }
-            }
+            Schema schema = table.getParent();
+            Catalog catalog = schema.getParent();
 
-            String catName = nfo.getSchema().getParent().getName();
-            if (catName == null) {
-                CatalogNode cn = nfo.getAncestor(CatalogNode.class);
-                if (cn != null) {
-                    catName = cn.getName();
-                }
+            String schemaName = schema.getName();
+            String catName = catalog.getName();
+
+            if (schemaName == null) {
+                schemaName = catalog.getName();
+            } else if (catName == null) {
+                catName = schemaName;
             }
 
             DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification(catName);
             
-            ddl = new AddTableColumnDDL(spec, drvSpec, schema, table);
+            ddl = new AddTableColumnDDL(spec, drvSpec, schemaName, tableName);
 
             JLabel label;
             JPanel pane = new JPanel();
@@ -411,7 +410,7 @@ public class AddTableColumnDialog {
             // are there primary keys?
             boolean isPK = false;
             try {
-                drvSpec.getPrimaryKeys(table);
+                drvSpec.getPrimaryKeys(tableName);
 
                 ResultSet rs = drvSpec.getResultSet();
 

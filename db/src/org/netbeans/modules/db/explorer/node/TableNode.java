@@ -120,6 +120,7 @@ public class TableNode extends BaseNode implements SchemaProvider {
 
         try {
             AbstractCommand command = spec.createCommandDropTable(getName());
+            command.setObjectOwner(MetadataReader.getSchemaWorkingName(getSchema()));
             command.execute();
         } catch (Exception e) {
         }

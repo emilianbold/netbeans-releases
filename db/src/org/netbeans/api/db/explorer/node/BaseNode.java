@@ -192,24 +192,6 @@ public abstract class BaseNode extends AbstractNode {
         }
     }
 
-    public <T> T getAncestor(Class<T> clazz) {
-        // go up the chain looking for a SchemaNode.  It should know how to provide a name
-        Node node = getParentNode().getLookup().lookup(Node.class);
-        T result = null;
-        boolean more = node != null;
-        while (more) {
-            if (clazz.isInstance(node)) {
-                result = (T)node;
-                more = false;
-            } else {
-                node = node.getParentNode().getLookup().lookup(Node.class);
-                more = node != null;
-            }
-        }
-
-        return result;
-    }
-
     /**
      * Updates the basic node properties.
      */

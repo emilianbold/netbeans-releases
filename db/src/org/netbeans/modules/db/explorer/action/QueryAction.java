@@ -42,16 +42,16 @@ package org.netbeans.modules.db.explorer.action;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.node.ColumnNode;
 import org.netbeans.modules.db.explorer.node.ColumnProvider;
-import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.netbeans.modules.db.explorer.node.SchemaProvider;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.explorer.node.ViewNode;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -104,27 +104,17 @@ public abstract class QueryAction extends BaseAction {
 
         StringBuffer cols = new StringBuffer();
 
-        String schema = activatedNodes[0].getLookup().lookup(SchemaProvider.class).getSchema().getName();
-        if (schema == null) {
-            schema = "";
-            BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
-            if (node != null) {
-                SchemaNode sn = node.getAncestor(SchemaNode.class);
-                if (sn != null) {
-                    schema = sn.getName();
-                }
-            }
-        } else {
-            schema = schema.trim();
-        }
+        Schema schema = activatedNodes[0].getLookup().lookup(SchemaProvider.class).getSchema();
+
+        String schemaName = MetadataReader.getSchemaWorkingName(schema);
 
         boolean isColumn = activatedNodes[0].getLookup().lookup(ColumnNode.class) != null;
 
         java.lang.String onome;
         if (!isColumn) {
             onome = quoter.quoteIfNeeded(activatedNodes[0].getName());
-            if (!schema.equals("")) {
-                onome = quoter.quoteIfNeeded(schema) + "." + onome;
+            if (!schemaName.equals("")) {
+                onome = quoter.quoteIfNeeded(schemaName) + "." + onome;
             }
 
             return "select * from " + onome;
@@ -132,8 +122,8 @@ public abstract class QueryAction extends BaseAction {
             Column column = activatedNodes[0].getLookup().lookup(ColumnProvider.class).getColumn();
             onome = quoter.quoteIfNeeded(column.getParent().getName());
 
-            if (!schema.equals("")) {
-                onome = quoter.quoteIfNeeded(schema) + "." + onome;
+            if (!schemaName.equals("")) {
+                onome = quoter.quoteIfNeeded(schemaName) + "." + onome;
             }
 
             for (Node node : activatedNodes) {
