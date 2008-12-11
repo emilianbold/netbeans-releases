@@ -16,16 +16,14 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="messageLabel" alignment="0" pref="493" max="32767" attributes="0"/>
-                  <Component id="derbyInstallInfo" alignment="1" pref="493" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="derbyInstallInfo" alignment="1" pref="498" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="derbySystemHomeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="derbySystemHomeTextField" pref="266" max="32767" attributes="0"/>
+                      <Component id="derbySystemHomeTextField" pref="267" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseButton" min="-2" max="-2" attributes="1"/>
                   </Group>
@@ -36,6 +34,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButton1" min="-2" max="-2" attributes="1"/>
                   </Group>
+                  <Component id="errorInfoPanel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -58,9 +57,9 @@
                   <Component id="derbySystemHomeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="messageLabel" pref="61" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="41" max="32767" attributes="0"/>
+              <Component id="errorInfoPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -145,20 +144,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextPane" name="messageLabel">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="nbErrorForeground" type="code"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value=" "/>
-        <Property name="focusable" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="ACSN_DerbySystemHomePanel_messageLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
+    <Component class="org.netbeans.modules.derby.ErrorInfoPanel" name="errorInfoPanel">
     </Component>
   </SubComponents>
 </Form>
