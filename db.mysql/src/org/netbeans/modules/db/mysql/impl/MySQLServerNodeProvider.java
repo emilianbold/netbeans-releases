@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.actions;
+package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.DatabaseServerManager;
-import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
-import org.netbeans.modules.db.mysql.util.Utils;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.Lookup;
 
 /**
- * The ation to register the MySQL Server Provider.  
- * 
- * @author David Van Couvering
+ *
+ * @author Rob
  */
-public class RegisterServerAction extends NodeAction {
-    
-    @Override
-    public String getName() {
-        return Utils.getBundle().getString("LBL_RegisterServerAction");
+public class MySQLServerNodeProvider extends NodeProvider {
+
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
+    }
+
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public MySQLServerNodeProvider createInstance(Lookup lookup) {
+                MySQLServerNodeProvider provider = new MySQLServerNodeProvider(lookup);
+                return provider;
+            }
+        };
+    }
+
+    private MySQLServerNodeProvider(Lookup lookup) {
+        super(lookup);
     }
 
     @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = DatabaseServerManager.getDatabaseServer();
-        PropertiesDialog dlg = new PropertiesDialog(server);
-        dlg.displayDialog();
+    protected void initialize() {
+        ServerNodeProvider.getDefault().addChangeListener(
+            new ChangeListener() {
+                public void stateChanged(ChangeEvent evt) {
+                    update();
+                }
+            }
+        );
+
+        update();
+
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return !ServerNodeProvider.getDefault().isRegistered();
-    }
+    private void update() {
+        List<Node> newList = new ArrayList<Node>();
+        if (ServerNodeProvider.getDefault().isRegistered()) {
+            newList.addAll(ServerNodeProvider.getDefault().getNodes());
+        }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(RegisterServerAction.class);
+        setNodes(newList);
     }
 }
