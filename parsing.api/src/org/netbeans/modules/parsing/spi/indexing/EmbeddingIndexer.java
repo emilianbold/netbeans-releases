@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
@@ -55,6 +54,4 @@ public abstract class EmbeddingIndexer {
      * @param context of indexer, contains information about index storage, indexed root
      */
     protected abstract void index (Indexable indexable, Parser.Result parserResult, Context context);
-
-    protected abstract boolean isIndexable (Indexable indexable, Snapshot snapshot);
 }

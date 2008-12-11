@@ -97,8 +97,10 @@ public class SourceIndexer {
                                 final String indexerName = currentIndexerFactory.getIndexerName();
                                 final int indexerVersion = currentIndexerFactory.getIndexVersion();
                                 final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null);
-                                final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer();
-                                SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
+                                final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
+                                if (indexer != null) {
+                                    SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
+                                }
                             }
                             Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
                             for (Embedding embedding : embeddings) {

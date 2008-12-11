@@ -759,7 +759,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private EmbIndexer indexer = new EmbIndexer ();
 
         @Override
-        public EmbeddingIndexer createIndexer() {
+        public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
             return indexer;
         }
 
@@ -801,11 +801,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-
-        @Override
-        protected boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-            return true;
         }
 
     }

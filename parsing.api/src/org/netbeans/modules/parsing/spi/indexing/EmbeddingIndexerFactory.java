@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import org.netbeans.modules.parsing.api.Snapshot;
+
 /**
  *
  * @author Tomas Zezula
@@ -47,9 +49,11 @@ public abstract class EmbeddingIndexerFactory {
 
     /**
      * Creates  new {@link Indexer}.
+     * @param indexing for which the indexer should be created
+     * @param snapshot for which the indexer should be created
      * @return an indexer
      */
-    public abstract EmbeddingIndexer createIndexer ();
+    public abstract EmbeddingIndexer createIndexer (final Indexable indexable, final Snapshot snapshot);
     
 
     /**
