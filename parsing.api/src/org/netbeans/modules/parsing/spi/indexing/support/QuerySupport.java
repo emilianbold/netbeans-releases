@@ -73,7 +73,7 @@ public final class QuerySupport {
          * The name parameter
          * is an exact simple name of the package or declared type.
          */
-        EXACT_NAME,
+        EXACT,
         /**
          * The name parameter
          * is an case sensitive prefix of the package or declared type name.
@@ -98,7 +98,9 @@ public final class QuerySupport {
          * The name parameter is
          * an case insensitive regular expression of the declared type name.
          */
-        CASE_INSENSITIVE_REGEXP;
+        CASE_INSENSITIVE_REGEXP,
+
+        CAMEL_CASE_INSENSITIVE;
     }
 
 
@@ -127,7 +129,7 @@ public final class QuerySupport {
 
     
     public Collection<? extends IndexDocument> query (final String fieldName, final String fieldValue,
-            final Kind kind, final String... fieldsToLoad) {
+            final Kind kind, final String... fieldsToLoad) throws IOException {
         final List<IndexDocument> result = new LinkedList<IndexDocument>();
         for (IndexImpl index : indexes) {
             final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
