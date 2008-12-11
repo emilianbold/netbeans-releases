@@ -30,6 +30,8 @@ package org.netbeans.modules.ruby.hints;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.nb.common.IRubyWarnings.ID;
 import org.jruby.nb.lexer.yacc.SyntaxException.PID;
@@ -104,7 +106,23 @@ public class CommonSyntaxErrors extends RubyErrorRule {
     }
 
     public String getDisplayName() {
-        return "X";
+        return "Common Syntax Errors";
+    }
+
+    public String getId() {
+        return "CommonSyntaxErrors"; // NOI18N
+    }
+
+    public String getDescription() {
+        return "";
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     private class FixDocIndent implements PreviewableFix {

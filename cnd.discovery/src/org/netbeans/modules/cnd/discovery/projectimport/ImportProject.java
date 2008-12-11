@@ -51,18 +51,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
@@ -73,13 +77,20 @@ import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
+import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -94,6 +105,7 @@ import org.openide.util.Lookup;
  */
 public class ImportProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
 
     private File dirF;
     private String name;
@@ -113,6 +125,7 @@ public class ImportProject {
 
 
     public ImportProject(WizardStorage wizardStorage) {
+        if (TRACE) {logger.setLevel(Level.ALL);}
         String path = wizardStorage.getPath().trim();
         dirF = new File(path);
         name = dirF.getName();
@@ -199,7 +212,7 @@ public class ImportProject {
                         runMake = false;
                         postponeModel = true;
                     }
-                    if (TRACE) {System.out.println("#configure "+configureArguments);} // NOI18N
+                    if (TRACE) {logger.log(Level.INFO, "#configure "+configureArguments);} // NOI18N
                     ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
                 }
             } catch (DataObjectNotFoundException e) {
@@ -242,7 +255,7 @@ public class ImportProject {
         }
         if (!postponeModel) {
             switchModel(true);
-            postModelDiscovery();
+            postModelDiscovery(true);
         }
 
         return resultSet;
@@ -304,7 +317,7 @@ public class ImportProject {
             runMake = false;
             postponeModel = false;
             switchModel(true);
-            postModelDiscovery();
+            postModelDiscovery(true);
         }
     }
 
@@ -316,7 +329,7 @@ public class ImportProject {
                 postMake(node);
             }
         };
-        if (TRACE) {System.out.println("#make clean");} // NOI18N
+        if (TRACE) {logger.log(Level.INFO, "#make clean");} // NOI18N
         MakeAction.execute(node, "clean", listener, null); // NOI18N
     }
 
@@ -337,7 +350,7 @@ public class ImportProject {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (TRACE) {System.out.println("#make > "+makeLog.getAbsolutePath());} // NOI18N
+        if (TRACE) {logger.log(Level.INFO, "#make > "+makeLog.getAbsolutePath());} // NOI18N
         MakeAction.execute(node, "", listener, outputListener); // NOI18N
     }
 
@@ -352,6 +365,148 @@ public class ImportProject {
         return null;
     }
 
+    private void discovery(int rc, File makeLog) {
+        boolean done = false;
+        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+        if (rc == 0) {
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
+                    try {
+                        done = true;
+                        extension.apply(map, makeProject);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
+                }
+            }
+        }
+        if (!done && makeLog != null){
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
+                    try {
+                        done = true;
+                        extension.apply(map, makeProject);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    if (TRACE) {logger.log(Level.INFO, "#discovery cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
+                }
+            }
+        } else if (done && makeLog != null){
+            if (extension != null) {
+                final Map<String, Object> map = new HashMap<String, Object>();
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {logger.log(Level.INFO, "#start fix macros by log file "+makeLog.getAbsolutePath());} // NOI18N
+                    @SuppressWarnings("unchecked")
+                    List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
+                    fixMacros(confs);
+                } else {
+                    if (TRACE) {logger.log(Level.INFO, "#fix macros cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
+                }
+            }
+        }
+        postponeModel = false;
+        switchModel(true);
+        if (!done){
+            postModelDiscovery(true);
+        } else {
+            postModelDiscovery(false);
+        }
+    }
+
+    private void fixMacros(List<ProjectConfiguration> confs) {
+        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+        for (ProjectConfiguration conf : confs) {
+            List<FileConfiguration> files = conf.getFiles();
+            for (FileConfiguration fileConf : files) {
+                if (fileConf.getUserMacros().size() > 0) {
+                    NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
+                    if (item instanceof Item) {
+                        if (TRACE) {logger.log(Level.FINE, "#fix macros for file "+fileConf.getFilePath());} // NOI18N
+                        ProjectBridge.fixFileMacros(fileConf.getUserMacros(), (Item) item);
+                    }
+                }
+            }
+        }
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        makeConfigurationDescriptor.save();
+    }
+
+    private void postModelDiscovery(final boolean isFull) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final CsmProject p = model.getProject(np);
+            if (p == null) {
+                if (TRACE) {logger.log(Level.INFO, "#discovery cannot be done by model");} // NOI18N
+            }
+            CsmProgressListener listener = new CsmProgressAdapter() {
+
+                @Override
+                public void projectParsingFinished(CsmProject project) {
+                    if (project.equals(p)) {
+                        ImportProject.listeners.remove(p);
+                        CsmListeners.getDefault().removeProgressListener(this);
+                        if (TRACE) {logger.log(Level.INFO, "#start discovery by model");} // NOI18N
+                        if (isFull) {
+                            modelDiscovery();
+                        } else {
+                            fixExcludedHeaderFiles();
+                        }
+                    }
+                }
+            };
+            CsmListeners.getDefault().addProgressListener(listener);
+            ImportProject.listeners.put(p, listener);
+        }
+    }
+
+    // remove wrong "exclude from project" flags
+    private void fixExcludedHeaderFiles(){
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final CsmProject p = model.getProject(np);
+            if (p != null && np != null) {
+                if (TRACE) {logger.log(Level.INFO, "#start fixing excluded header files by model");} // NOI18N
+                for(CsmFile file : p.getAllFiles()){
+                    if (file instanceof FileImpl){
+                        FileImpl impl = (FileImpl)file;
+                        NativeFileItem item = impl.getNativeFileItem();
+                        if (item == null) {
+                            item = np.findFileItem(impl.getFile());
+                        }
+                        if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
+                            if (item instanceof Item){
+                                if (TRACE) {logger.log(Level.FINE, "#fix excluded header for file "+impl.getAbsolutePath());} // NOI18N
+                                ProjectBridge.setExclude((Item)item, false);
+                            }
+                        }
+                    }
+                }
+                ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+                makeConfigurationDescriptor.save();
+            }
+        }
+    }
+
     private void modelDiscovery() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
@@ -361,7 +516,7 @@ public class ImportProject {
         IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             if (extension.canApply(map, makeProject)) {
-                if (TRACE) {System.out.println("#start discovery by object files");} // NOI18N
+                if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
                 try {
                     extension.apply(map, makeProject);
                     does = true;
@@ -369,11 +524,11 @@ public class ImportProject {
                     ex.printStackTrace();
                 }
             } else {
-                if (TRACE) {System.out.println("#no dwarf information found in object files");} // NOI18N
+                if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
             }
         }
         if (!does) {
-            if (TRACE) {System.out.println("#start discovery by model");} // NOI18N
+            if (TRACE) {logger.log(Level.INFO, "#start discovery by model");} // NOI18N
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(dirF.getAbsolutePath()); // NOI18N
@@ -391,85 +546,15 @@ public class ImportProject {
         }
     }
 
-    private void discovery(int rc, File makeLog) {
-        boolean done = false;
-        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-        if (rc == 0) {
-            if (extension != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
-                if (extension.canApply(map, makeProject)) {
-                    if (TRACE) {System.out.println("#start discovery by object files");} // NOI18N
-                    try {
-                        done = true;
-                        extension.apply(map, makeProject);
-                        switchModel(true);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                } else {
-                    if (TRACE) {System.out.println("#no dwarf information found in object files");} // NOI18N
-                }
-            }
-        }
-        if (!done && makeLog != null){
-            if (extension != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
-                if (extension.canApply(map, makeProject)) {
-                    if (TRACE) {System.out.println("#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
-                    try {
-                        done = true;
-                        extension.apply(map, makeProject);
-                        switchModel(true);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                } else {
-                    if (TRACE) {System.out.println("#discovery cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
-                }
-            }
-        }
-        if (!done){
-            postponeModel = false;
-            switchModel(true);
-            postModelDiscovery();
-        }
-    }
-
-    private void postModelDiscovery() {
-        CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            CsmProgressListener listener = new CsmProgressAdapter() {
-
-                @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (project.equals(p)) {
-                        ImportProject.listeners.remove(p);
-                        CsmListeners.getDefault().removeProgressListener(this);
-                        modelDiscovery();
-                    }
-                }
-            };
-            CsmListeners.getDefault().addProgressListener(listener);
-            ImportProject.listeners.put(p, listener);
-        }
-    }
-
     private void switchModel(boolean state) {
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
-                if (TRACE) {System.out.println("#enable model for "+np.getProjectDisplayName());} // NOI18N
+                if (TRACE) {logger.log(Level.INFO, "#enable model for "+np.getProjectDisplayName());} // NOI18N
                 ((ModelImpl) model).enableProject(np);
             } else {
-                if (TRACE) {System.out.println("#disable model for "+np.getProjectDisplayName());} // NOI18N
+                if (TRACE) {logger.log(Level.INFO, "#disable model for "+np.getProjectDisplayName());} // NOI18N
                 ((ModelImpl) model).disableProject(np);
             }
         }

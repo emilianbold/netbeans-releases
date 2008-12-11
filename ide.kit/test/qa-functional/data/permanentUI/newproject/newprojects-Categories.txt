@@ -2,6 +2,7 @@ Java
 Java Web
 Java EE
 Java ME
+Maven
 PHP
 Ruby
 Groovy

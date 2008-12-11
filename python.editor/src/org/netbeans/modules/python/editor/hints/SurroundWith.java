@@ -29,6 +29,8 @@ package org.netbeans.modules.python.editor.hints;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
@@ -105,6 +107,22 @@ public class SurroundWith extends PythonSelectionRule {
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
+    }
+
+    public String getId() {
+        return "SurroundWith"; // NOI18N
+    }
+
+    public String getDescription() {
+        return "";
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     private static class SurroundWithFix implements PreviewableFix {
