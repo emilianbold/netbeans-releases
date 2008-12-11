@@ -46,7 +46,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  *
  * @author Erno Mononen
  */
-public interface RailsDatabaseConfiguration {
+public abstract class RailsDatabaseConfiguration {
 
     /**
      * Gets the database parameter passed to the rails command, i.e. the name 
@@ -56,7 +56,7 @@ public interface RailsDatabaseConfiguration {
      * the Rails generator should not be used for generating database configuration
      * for this.
      */
-    String railsGenerationParam();
+    public abstract String railsGenerationParam();
     
     /**
      * Edits the database config file (database.yml) of the given <code>project</code>
@@ -67,7 +67,7 @@ public interface RailsDatabaseConfiguration {
      * @param projectDir the project whose <code>database.yml</code> is 
      * to be edited.
      */
-    void editConfig(RailsProject project);
+    public abstract void editConfig(RailsProject project);
     
     /**
      * Gets the JDBC adapter configuration info for presenting 
@@ -75,7 +75,7 @@ public interface RailsDatabaseConfiguration {
      * 
      * @return the info or <code>null</code>.
      */
-    JdbcInfo getJdbcInfo();
+    abstract JdbcInfo getJdbcInfo();
     
     /**
      * Gets the display name for this configuration, typically 
@@ -83,7 +83,7 @@ public interface RailsDatabaseConfiguration {
      * 
      * @return the display name or null.
      */
-    String getDisplayName();
+    public abstract String getDisplayName();
 
     /**
      * Gets the preferred <strong>development</strong> database name
@@ -93,7 +93,7 @@ public interface RailsDatabaseConfiguration {
      * @param projectName the name of the project.
      * @return the default development database name.
      */
-    String getDatabaseName(String projectName);
+    public abstract String getDatabaseName(String projectName);
 
     /**
      * Guesses a name for the test database, possibly based on the given 
@@ -103,7 +103,7 @@ public interface RailsDatabaseConfiguration {
      * @param developmentDbName the name of the development database.
      * @return a name for the test database
      */
-    String getTestDatabaseName(String developmentDbName);
+    abstract String getTestDatabaseName(String developmentDbName);
 
     /**
      * Guesses a name for the production database, possibly based on the given
@@ -113,5 +113,14 @@ public interface RailsDatabaseConfiguration {
      * @param developmentDbName the name of the development database.
      * @return a name for the production database
      */
-    String getProductionDatabaseName(String developmentDbName);
+    abstract String getProductionDatabaseName(String developmentDbName);
+
+    /**
+     * Checks whether the configuration can only work with JDBC.
+     *
+     * @return true if the adapter can be used only with JDBC.
+     */
+    public boolean forceJdbc() {
+        return false;
+    }
 }
