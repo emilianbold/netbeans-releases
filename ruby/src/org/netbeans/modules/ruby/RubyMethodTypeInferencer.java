@@ -102,7 +102,7 @@ final class RubyMethodTypeInferencer {
                 }
             }
         }
-        return null;
+        return RubyTypeAnalyzer.UNKNOWN_TYPE_SET;
     }
 
     /**

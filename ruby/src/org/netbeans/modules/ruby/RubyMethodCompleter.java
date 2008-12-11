@@ -240,7 +240,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         // Try just the method call (e.g. across all classes). This is ignoring the
         // left hand side because we can't resolve it.
-        if ((methods.isEmpty()) || types.contains(null)) {
+        if ((methods.isEmpty()) || types.contains(RubyTypeAnalyzer.UNKNOWN_TYPE)) {
             methods = getIndex().getMethods(prefix, null, kind);
         }
 

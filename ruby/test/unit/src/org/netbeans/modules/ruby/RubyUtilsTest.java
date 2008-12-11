@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Arrays;
+import java.util.Collections;
 import junit.framework.TestCase;
 
 /**
@@ -219,5 +220,10 @@ public class RubyUtilsTest extends TestCase {
         assertEquals(Arrays.asList("Kernel", "RED"), Arrays.asList(RubyUtils.parseConstantName("RED")));
         assertEquals(Arrays.asList("Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("Colors::RED")));
         assertEquals(Arrays.asList("HTML::Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("HTML::Colors::RED")));
+    }
+
+    public void testJoin() {
+        assertEquals("one, two, three", RubyUtils.join(new String[]{"one", "two", "three"}, ", "));
+        assertEquals("", RubyUtils.join(Collections.<String>emptySet(), ", "));
     }
 }

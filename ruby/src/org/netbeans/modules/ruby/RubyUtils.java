@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
@@ -870,5 +871,24 @@ public class RubyUtils {
         }
 
         return controllerFile;
+    }
+
+    static String join(final String[] arr, final String separator) {
+        return join(Arrays.asList(arr), separator);
+    }
+
+    static String join(final Iterable<? extends String> iterable, final String separator) {
+        Iterator<? extends String> it = iterable.iterator();
+        if (!it.hasNext()) {
+            return "";
+        }
+        StringBuffer buf = new StringBuffer(60);
+        buf.append(it.next());
+        while (it.hasNext()) {
+            buf.append(separator);
+            buf.append(it.next());
+        }
+
+        return buf.toString();
     }
 }

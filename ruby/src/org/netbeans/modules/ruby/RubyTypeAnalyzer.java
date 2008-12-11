@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,6 +86,9 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public final class RubyTypeAnalyzer {
+
+    static final String UNKNOWN_TYPE = "__nb_any__"; // NOI18N
+    static final Set<String> UNKNOWN_TYPE_SET = Collections.singleton(UNKNOWN_TYPE);
     
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
@@ -151,12 +153,12 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                String type = expressionTypeOfRHS(node, typesForSymbol, index);
+                Set<? extends String> types = expressionTypeOfRHS(node, typesForSymbol, index);
 
                 // null element in types set means that we are not able to infer
                 // the expression
                 String symbol = ((INameNode) node).getName();
-                maybePutTypeForSymbol(typesForSymbol, symbol, type, override);
+                maybePutTypesForSymbol(typesForSymbol, symbol, types, override);
                 break;
             }
 //        case ITERNODE: {
@@ -216,17 +218,17 @@ public final class RubyTypeAnalyzer {
         }
     }
 
-    public static String expressionTypeOfRHS(final Node node) {
+    public static Set<? extends String> expressionTypeOfRHS(final Node node) {
         return expressionTypeOfRHS(node, null);
     }
     
-    public static String expressionTypeOfRHS(final Node node, final RubyIndex index) {
+    public static Set<? extends String> expressionTypeOfRHS(final Node node, final RubyIndex index) {
         Map<String, Set<String>> typesForSymbol = new HashMap<String, Set<String>>();
         return expressionTypeOfRHS(node, typesForSymbol, index);
     }
 
     /** Called on AsgnNodes to compute RHS. */
-    public static String expressionTypeOfRHS(
+    public static Set<? extends String> expressionTypeOfRHS(
             final Node node,
             final Map<String, Set<String>> typesForSymbol,
             final RubyIndex index) {
@@ -239,15 +241,14 @@ public final class RubyTypeAnalyzer {
         List<Node> list = node.childNodes();
 
         if (list.size() != 1) {
-            return null;
+            return Collections.singleton(UNKNOWN_TYPE);
         }
 
         Node child = list.get(0);
 
         switch (child.nodeId) {
         case CALLNODE:
-            Set<? extends String> types = RubyMethodTypeInferencer.inferTypeFor((CallNode)child, index);
-            return getLast(types);
+            return RubyMethodTypeInferencer.inferTypeFor((CallNode)child, index);
         case LOCALVARNODE:
             return getTypeForSymbol(typesForSymbol, ((LocalVarNode)child).getName());
         case DVARNODE:
@@ -260,41 +261,41 @@ public final class RubyTypeAnalyzer {
             return getTypeForSymbol(typesForSymbol, ((ClassVarNode)child).getName());
         case ARRAYNODE:
         case ZARRAYNODE:
-            return "Array"; // NOI18N
+            return Collections.singleton("Array"); // NOI18N
         case STRNODE:
         case DSTRNODE:
         case XSTRNODE:
         case DXSTRNODE:
-            return "String"; // NOI18N
+            return Collections.singleton("String"); // NOI18N
         case FIXNUMNODE:
-            return "Fixnum"; // NOI18N
+            return Collections.singleton("Fixnum"); // NOI18N
         case BIGNUMNODE:
-            return "Bignum"; // NOI18N
+            return Collections.singleton("Bignum"); // NOI18N
         case HASHNODE:
-            return "Hash"; // NOI18N
+            return Collections.singleton("Hash"); // NOI18N
         case REGEXPNODE:
         case DREGEXPNODE:
-            return "Regexp"; // NOI18N
+            return Collections.singleton("Regexp"); // NOI18N
         case SYMBOLNODE:
         case DSYMBOLNODE:
-            return "Symbol"; // NOI18N
+            return Collections.singleton("Symbol"); // NOI18N
         case FLOATNODE:
-            return "Float"; // NOI18N
+            return Collections.singleton("Float"); // NOI18N
         case NILNODE:
             // NilImplicitNode - don't use it, the type is really unknown!
             if (!child.isInvisible()) {
-                return "NilClass"; // NOI18N
+                return Collections.singleton("NilClass"); // NOI18N
             }
             break;
         case TRUENODE:
-            return "TrueClass"; // NOI18N
+            return Collections.singleton("TrueClass"); // NOI18N
         case FALSENODE:
-            return "FalseClass"; // NOI18N
+            return Collections.singleton("FalseClass"); // NOI18N
             //} else if (child instanceof RangeNode) {
             //    return "Range"; // NOI18N
         }
 
-        return null;
+        return Collections.singleton(UNKNOWN_TYPE);
     }
 
     /**
@@ -319,7 +320,10 @@ public final class RubyTypeAnalyzer {
         }
 
         Set<String> types = cachedTypesForSymbol.get(symbol);
-        boolean emptyTypes = types == null || types.isEmpty() || types.equals(Collections.singleton(null));
+        if (types == null) {
+            types = Collections.emptySet();
+        }
+        boolean emptyTypes = types.isEmpty() || types.equals(UNKNOWN_TYPE_SET);
 
         // Special cases
         if (emptyTypes) {
@@ -341,13 +345,13 @@ public final class RubyTypeAnalyzer {
         // type.
         if (!emptyTypes) {
             for (String type : types) {
-                if (type != null && type.startsWith("Array<")) { // NOI18N
+                if (type.startsWith("Array<")) { // NOI18N
                     return Collections.singleton("Array"); // NOI18N
                 }
             }
         }
 
-        return types == null ? Collections.<String>emptySet() : types;
+        return types;
     }
 
     private static final String[] RAILS_CONTROLLER_VARS = new String[]{
@@ -481,17 +485,13 @@ public final class RubyTypeAnalyzer {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T getLast(final Collection<? extends T> types) {
-        if (types == null || types.isEmpty()) {
-            return null;
-        } else {
-            return (T) types.toArray()[types.size() - 1];
+    private static Set<? extends String> getTypeForSymbol(
+            final Map<String, Set<String>> typesForSymbol, final String name) {
+        Set<String> type = typesForSymbol.get(name);
+        if (type == null) {
+            type = RubyTypeAnalyzer.UNKNOWN_TYPE_SET;
         }
-    }
-
-    private static String getTypeForSymbol(final Map<String, Set<String>> typesForSymbol, final String name) {
-        return getLast(typesForSymbol.get(name));
+        return type;
     }
 
     private void maybePutTypeForSymbol(

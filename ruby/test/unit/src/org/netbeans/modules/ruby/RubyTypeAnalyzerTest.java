@@ -50,6 +50,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;
 
+import static org.netbeans.modules.ruby.RubyTypeAnalyzer.UNKNOWN_TYPE;
+
 /**
  * @todo Test compound assignment:  x = File::Stat.new
  *
@@ -202,7 +204,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testIfWithFailingInferenceInBranchType() throws Exception {
-        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", "NilClass", null);
+        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", "NilClass", UNKNOWN_TYPE);
     }
 
     // TODO inference is still not able to do the below
@@ -225,5 +227,6 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testCoreMethodType() throws Exception {
         assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
+        assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
     }
 }
