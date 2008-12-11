@@ -90,26 +90,25 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
     }
 
     public boolean isFeatureSupported(Feature feature) {
+        boolean isFeatureSupported = false;
         if (feature == JaxRs.Feature.JAXRS) {
-        WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
-        if (wsTool != null) {
-            URL[] libs = wsTool.getLibraries();
-            try {
-                for (URL lib : libs) {
-                    if (!new File(lib.toURI()).exists()) {
-                        return false;
+            WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
+            if (wsTool != null) {
+                URL[] libs = wsTool.getLibraries();
+                try {
+                    if(libs != null && libs.length == JAXRS_LIBRARIES.length)
+                        isFeatureSupported = true;
+                    for (URL lib : libs) {
+                        if (!new File(lib.toURI()).exists()) {
+                            isFeatureSupported = false;
+                            break;
+                        }
                     }
+                } catch (URISyntaxException e) {
                 }
-            } catch (URISyntaxException e) {
-                return false;
             }
-        } else {
-            return false;
         }
-        } else {
-            return false;
-        }
-        return true;
+        return isFeatureSupported;
     }
 
     private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
