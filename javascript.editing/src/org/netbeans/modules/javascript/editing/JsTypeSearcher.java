@@ -42,8 +42,9 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -52,17 +53,17 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.Index;
-import org.netbeans.modules.csl.api.Index.SearchScope;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -97,16 +98,16 @@ public class JsTypeSearcher implements IndexSearcher {
          return camelCasePattern.matcher(text).matches();
     }
     
-    private NameKind cachedKind;
+    private QuerySupport.Kind cachedKind;
     private String cachedString = "/";
     
-    private NameKind adjustKind(NameKind kind, String text) {
+    private QuerySupport.Kind adjustKind(QuerySupport.Kind kind, String text) {
         if (text.equals(cachedString)) {
             return cachedKind;
         }
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
             if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
-                kind = NameKind.CAMEL_CASE;            
+                kind = QuerySupport.Kind.CAMEL_CASE;
             }
         }
 
@@ -115,10 +116,8 @@ public class JsTypeSearcher implements IndexSearcher {
         return kind;
     }
     
-    public Set<? extends Descriptor> getTypes(Index gsfIndex,
-                                                        String textForQuery,
-                                                        NameKind kind,
-                                                        EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getTypes(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
+        @NonNull QuerySupport.Kind kind, @NonNull Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -132,27 +131,29 @@ public class JsTypeSearcher implements IndexSearcher {
 //        } else if (textForQuery.endsWith(":")) {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
-        
-        JsIndex index = JsIndex.get(gsfIndex);
-        if (index == null) {
-            return Collections.emptySet();
+
+        QuerySupport querySupport;
+        try {
+            querySupport = QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()]));
+        } catch (IOException ioe) {
+            return Collections.<Descriptor>emptySet();
         }
+        JsIndex index = JsIndex.get(querySupport);
 
         kind = adjustKind(kind, textForQuery);
-        
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase();
         }
 
         Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
         Set<IndexedElement> elements;
         int dot = textForQuery.lastIndexOf('.');
-        if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
+        if (dot != -1 && (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX)) {
             String prefix = textForQuery.substring(dot+1);
             String in = textForQuery.substring(0, dot);
-            elements = index.getElements(prefix, in, kind, scope, null);
+            elements = index.getElements(prefix, in, kind, null);
         } else {
-            elements = index.getAllNames(textForQuery, kind, scope, null);
+            elements = index.getAllNames(textForQuery, kind, null);
         }
         for (IndexedElement element : elements) {
             result.add(new JsSymbolDescriptor(element, helper));
@@ -230,10 +231,8 @@ public class JsTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    public Set<? extends Descriptor> getSymbols(Index gsfIndex,
-                                                        String textForQuery,
-                                                        NameKind kind,
-                                                        EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getSymbols(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
+        @NonNull QuerySupport.Kind kind, @NonNull Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -248,26 +247,28 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        JsIndex index = JsIndex.get(gsfIndex);
-        if (index == null) {
-            return Collections.emptySet();
+        QuerySupport querySupport;
+        try {
+            querySupport = QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()]));
+        } catch (IOException ioe) {
+            return Collections.<Descriptor>emptySet();
         }
+        JsIndex index = JsIndex.get(querySupport);
 
         kind = adjustKind(kind, textForQuery);
-
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase();
         }
 
         Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
         Set<IndexedElement> elements;
         int dot = textForQuery.lastIndexOf('.');
-        if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
+        if (dot != -1 && (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX)) {
             String prefix = textForQuery.substring(dot+1);
             String in = textForQuery.substring(0, dot);
-            elements = index.getElements(prefix, in, kind, scope, null);
+            elements = index.getElements(prefix, in, kind, null);
         } else {
-            elements = index.getAllNames(textForQuery, kind, scope, null);
+            elements = index.getAllNames(textForQuery, kind, null);
         }
         for (IndexedElement element : elements) {
             result.add(new JsSymbolDescriptor(element, helper));

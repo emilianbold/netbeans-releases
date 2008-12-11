@@ -37,61 +37,85 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.csl.core;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.IndexSearcher;
-import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
 /**
- * Configuration for JSON
  *
- * @author Tor Norbye
+ * @author vita
  */
-public class JsonLanguage extends JsLanguage {
+public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
 
+    // EmbeddingIndexerFactory implementation
+    
     @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
+    public EmbeddingIndexer createIndexer() {
+        return getFactory().createIndexer();
     }
 
     @Override
-    public String getDisplayName() {
-        return "JSON";
+    public String getIndexerName() {
+        return getFactory().getIndexerName();
     }
 
     @Override
-    public String getPreferredExtension() {
-        return "json"; // NOI18N
+    public int getIndexVersion() {
+        return getFactory().getIndexVersion();
     }
 
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
+    // public implementation
+
+    public static EmbeddingIndexerFactory create(FileObject fileObject) {
+        String mimeType = fileObject.getPath().substring("Editors/".length()); //NOI18N
+        return new EmbeddingIndexerFactoryImpl(mimeType);
     }
 
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        // No JSON indexing
-        return null;
+    // private implementation
+
+    private static final EmbeddingIndexerFactory VOID_INDEXER_FACTORY = new EmbeddingIndexerFactory() {
+        private final EmbeddingIndexer voidIndexer = new EmbeddingIndexer() {
+            @Override
+            protected void index(Indexable indexable, Result parserResult, Context context) {
+                // no-op
+            }
+        };
+
+        @Override
+        public EmbeddingIndexer createIndexer() {
+            return voidIndexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "void-indexer"; //NOI18N
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 0;
+        }
+    };
+
+    private final String mimeType;
+
+    private EmbeddingIndexerFactoryImpl(String mimeType) {
+        this.mimeType = mimeType;
     }
 
-    @Override
-    public IndexSearcher getIndexSearcher() {
-        return null;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new JsonAnalyzer();
-    }
-
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
+    private EmbeddingIndexerFactory getFactory() {
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        if (language != null) {
+            EmbeddingIndexerFactory factory = language.getIndexerFactory();
+            if (factory != null) {
+                return factory;
+            }
+        }
+        return VOID_INDEXER_FACTORY;
     }
 }

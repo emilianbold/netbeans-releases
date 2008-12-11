@@ -131,7 +131,7 @@ implements CloneableEditorSupport.Env {
         }
 
         Document doc = support.openDocument();
-        assertNotNull("Document is opened", support.getDocument());
+        assertNotNull("Document is opened", doc);
 
         Object o = new Object();
         R r = new R(o);
@@ -146,10 +146,10 @@ implements CloneableEditorSupport.Env {
         System.gc();
 
         doc = support.getDocument();
-        assertNull("No document is opened", support.getDocument());
+        assertNull("No document is opened", doc);
         
         doc = support.openDocument();
-        assertNotNull("Document is opened", support.getDocument());
+        assertNotNull("Document is opened", doc);
 
         //Unblock active reference queue thread
         synchronized(LOCK) {

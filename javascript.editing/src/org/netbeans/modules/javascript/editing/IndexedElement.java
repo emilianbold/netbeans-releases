@@ -42,7 +42,6 @@ package org.netbeans.modules.javascript.editing;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -51,9 +50,9 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -222,11 +221,9 @@ public abstract class IndexedElement extends JsElement {
         if (document == null) {
             FileObject fo = getFileObject();
 
-            if (fo == null) {
-                return null;
+            if (fo != null) {
+                document = GsfUtilities.getDocument(fo, true);
             }
-
-            document = GsfUtilities.getDocument(fileObject, true);
         }
 
         return document;
@@ -390,7 +387,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT_NAME, null);
             for (IndexedElement e : elements) {
                 if (e.isDocumented()) {
                     return e;
@@ -409,7 +406,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT_NAME, null);
             for (IndexedElement e : elements) {
                 if (!e.isDocOnly()) {
                     return e;

@@ -72,12 +72,6 @@ public abstract class CodeCompletionContext {
     @NonNull
     public abstract String getPrefix();
 
-    /** 
-     * XXX document me
-     */
-    @NonNull
-    public abstract NameKind getNameKind();
-
     /**
      * The type of query to perform -- normal code completion for a popup list, or documentation
      * completion for a single item, or tooltip computation, etc.
@@ -86,6 +80,14 @@ public abstract class CodeCompletionContext {
     @NonNull
     public abstract QueryType getQueryType();
 
+    /**
+     * Whether the search should match prefixes or whole identifiers.
+     * @return If <code>true</code> the search should match <code>getPrefix</code> against
+     *   the beginnig of identifiers. If <code>false</code> the search should match
+     *   <code>getPrefix</code> against the whole identifier.
+     */
+    public abstract boolean isPrefixMatch();
+    
     /** Whether the search should be case sensitive.
      * @return Whether the search should be case sensitive
      * @todo This should be merged with the NameKind which already passes this information
