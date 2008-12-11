@@ -41,6 +41,7 @@
 
 package org.netbeans;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -260,6 +261,17 @@ final class MainImpl extends Object {
                 System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Build-Version found"); // NOI18N
             } else {
                 System.setProperty ("netbeans.buildnumber", value); // NOI18N
+            }
+        }
+
+        @Override // #154417: work around JAXP #6723276, at least within tests for now
+        public InputStream getResourceAsStream(String name) {
+            if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
+                return super.getResourceAsStream(name);
+            } else if (Boolean.getBoolean("org.netbeans.MainImpl.154417") && name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+                return new ByteArrayInputStream(new byte[0]);
+            } else {
+                return super.getResourceAsStream(name);
             }
         }
 
