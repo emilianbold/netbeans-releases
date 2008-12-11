@@ -43,6 +43,17 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Databases">
+        <folder name="Explorer">
+            <folder name="Root">
+                <folder name="NodeProviders">
+                    <file name="DerbyNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.DerbyNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="90"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
