@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
@@ -61,84 +60,36 @@ public class JsUtils {
     }
 
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
-    public static boolean isRhtmlDocument(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType");
-
-        return RHTML_MIME_TYPE.equals(mimeType);
-    }
-    
-    /** Is this name a valid operator name? */
-    public static boolean isOperator(String name) {
-        // TODO - this must be rewritten for Ruby; see ECMA-262 section 7.7
-        if (name.length() == 0) {
-            return false;
-        }
-        // Pieced together from various sources (JsYaccLexer, DefaultJsParser, ...)
-        switch (name.charAt(0)) {
-        case '+':
-            return name.equals("+") || name.equals("+@");
-        case '-':
-            return name.equals("-") || name.equals("-@");
-        case '*':
-            return name.equals("*") || name.equals("**");
-        case '<':
-            return name.equals("<") || name.equals("<<") || name.equals("<=") || name.equals("<=>");
-        case '>':
-            return name.equals(">") || name.equals(">>") || name.equals(">=");
-        case '=':
-            return name.equals("=") || name.equals("==") || name.equals("===") || name.equals("=~");
-        case '!':
-            return name.equals("!=") || name.equals("!~");
-        case '&':
-            return name.equals("&") || name.equals("&&");
-        case '|':
-            return name.equals("|") || name.equals("||");
-        case '[':
-            return name.equals("[]") || name.equals("[]=");
-        case '%':
-            return name.equals("%");
-        case '/':
-            return name.equals("/");
-        case '~':
-            return name.equals("~");
-        case '^':
-            return name.equals("^");
-        case '`':
-            return name.equals("`");
-        default:
-            return false;
-        }
-    }
-
-    // There are lots of valid method names...   %, *, +, -, <=>, ...
-    /**
-     * Js identifiers should consist of [a-zA-Z0-9_]
-     * http://www.headius.com/rubyspec/index.php/Variables
-     * <p>
-     * This method also accepts the field/global chars
-     * since it's unlikely 
-     */
     public static boolean isSafeIdentifierName(String name, int fromIndex) {
         int i = fromIndex;
-        for (; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (!(c == '$' || c == '@' || c == ':')) {
-                break;
+
+        if (i >= name.length()) {
+            if (i == 0) {
+                return false;
+            }
+            return true;
+        }
+
+        if (i == 0) {
+            if (isJsKeyword(name)) {
+                return false;
+            }
+
+            // Digits not allwed in the first position
+            if (Character.isDigit(name.charAt(0))) {
+                return false;
             }
         }
+
         for (; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (!((c >= 'a' && c <= 'z') || (c == '_') ||
-                    (c >= 'A' && c <= 'Z') ||
-                    (c >= '0' && c <= '9') ||
-                    (c == '?') || (c == '=') || (c == '!'))) { // Method suffixes; only allowed on the last line
-
-                if (isOperator(name)) {
-                    return true;
+            if (c == '\\') {
+                // Unicode escape sequences are okay
+                if (i == name.length()-1 || name.charAt(i+1) != 'u') {
+                    return false;
                 }
-
+            } else if (!(c == '$' || c == '_' || Character.isLetterOrDigit(c))) {
                 return false;
             }
         }
@@ -156,22 +107,6 @@ public class JsUtils {
         } else {
             return NbBundle.getMessage(JsUtils.class, "UnsafeIdentifierName");
         }
-    }
-
-    /** Similar to isValidJsClassName, but allows a number of ::'s to join class names */
-    public static boolean isValidJsModuleName(String name) {
-        if (name.trim().length() == 0) {
-            return false;
-        }
-
-        String[] mods = name.split("::"); // NOI18N
-        for (String mod : mods) {
-            if (!isValidJsClassName(mod)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public static boolean isValidJsClassName(String name) {
@@ -192,102 +127,17 @@ public class JsUtils {
             if (!isStrictIdentifierChar(c)) {
                 return false;
             }
-
-//            if (c == '!' || c == '=' || c == '?') {
-//                // Not allowed in constant names
-//                return false;
-//            }
-
-        }
-
-        return true;
-    }
-
-    public static boolean isValidJsLocalVarName(String name) {
-        if (isJsKeyword(name)) {
-            return false;
-        }
-
-        if (name.trim().length() == 0) {
-            return false;
-        }
-
-        if (Character.isUpperCase(name.charAt(0)) || Character.isWhitespace(name.charAt(0))) {
-            return false;
-        }
-
-        if (!Character.isJavaIdentifierStart(name.charAt(0))) {
-            return false;
-        }
-
-        for (int i = 1; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (!Character.isJavaIdentifierPart(c)) {
-                return false;
-            }
-            // Identifier char isn't really accurate - I can have a function named "[]" etc.
-            // so just look for -obvious- mistakes
-            if (Character.isWhitespace(name.charAt(i))) {
-                return false;
-            }
-
         }
 
         return true;
     }
 
     public static boolean isValidJsMethodName(String name) {
-        if (isJsKeyword(name)) {
-            return false;
-        }
-
-        if (name.trim().length() == 0) {
-            return false;
-        }
-
-        if (isOperator(name)) {
-            return true;
-        }
-
-        if (Character.isUpperCase(name.charAt(0)) || Character.isWhitespace(name.charAt(0))) {
-            return false;
-        }
-
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (!(Character.isLetterOrDigit(c) || c == '_')) {
-                // !, = and ? can only be in the last position
-                if (i == name.length() - 1 && ((c == '!') || (c == '=') || (c == '?'))) {
-                    return true;
-                }
-                return false;
-            }
-
-        }
-
-        return true;
+        return isSafeIdentifierName(name, 0);
     }
 
     public static boolean isValidJsIdentifier(String name) {
-        if (isJsKeyword(name)) {
-            return false;
-        }
-
-        if (name.trim().length() == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < name.length(); i++) {
-            // Identifier char isn't really accurate - I can have a function named "[]" etc.
-            // so just look for -obvios- mistakes
-            if (Character.isWhitespace(name.charAt(i))) {
-                return false;
-            }
-
-        // TODO - make this more accurate, like the method validifier
-        }
-
-        return true;
+        return isSafeIdentifierName(name, 0);
     }
 
     public static boolean isJsKeyword(String name) {
@@ -307,13 +157,13 @@ public class JsUtils {
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (// Globals, fields and parameter prefixes (for blocks and symbols)
-                c == '$');
+                c == '$' || c == '\\'); // \\u is valid
     }
 
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isStrictIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) ||
-                (c == '$');
+                (c == '$' || c == '\\');
     }
 
     /** The following keywords apply inside a call expression */

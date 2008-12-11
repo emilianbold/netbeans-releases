@@ -136,7 +136,7 @@ public class DataViewDBTableTest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlStr, index);
         DataViewDBTable instance = dv.getDataViewDBTable();
         String expResult = "SIMPLETABLE";
-        String result = instance.getFullyQualifiedName(0);
+        String result = instance.getFullyQualifiedName(0, false);
         assertEquals(expResult, result);
     }
 
@@ -175,7 +175,7 @@ public class DataViewDBTableTest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlStr, index);
         DataViewDBTable instance = dv.getDataViewDBTable();
         String expResult = "TINYINTC";
-        String result = instance.getQualifiedName(0);
+        String result = instance.getQualifiedName(0, false);
         assertEquals(expResult, result);
     }
 
