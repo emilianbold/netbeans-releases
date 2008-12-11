@@ -102,7 +102,7 @@ public final class QuerySupport {
          */
         CASE_INSENSITIVE_REGEXP,
 
-        CAMEL_CASE_INSENSITIVE;
+        CASE_INSENSITIVE_CAMEL_CASE;
     }
 
 

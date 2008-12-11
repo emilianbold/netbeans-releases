@@ -434,7 +434,7 @@ public class LuceneIndex implements IndexImpl {
                     }
                     break;
                 }
-            case CAMEL_CASE_INSENSITIVE:
+            case CASE_INSENSITIVE_CAMEL_CASE:
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
                     emptyPrefixSearch(in, fieldsToLoad, result);
