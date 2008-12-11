@@ -76,7 +76,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
     
     private DialogDescriptor descriptor;
     private Color nbErrorForeground;
-    
+   
     private DocumentListener docListener = new DocumentListener() {
         
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
@@ -99,6 +99,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         String title = NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_SetDerbySystemHome");
 
         DialogDescriptor desc = new DialogDescriptor(panel, title);
+        desc.createNotificationLineSupport();
         panel.setDialogDescriptor(desc);
 
         for (;;) {                    
@@ -108,7 +109,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             dialog.setVisible(true);
             dialog.dispose();
 
-            if (!desc.OK_OPTION.equals(desc.getValue())) {
+            if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
                 return false; // NOI18N
             }
 
@@ -143,7 +144,6 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         derbySystemHomeTextField.setText(DerbyOptions.getDefault().getSystemHome());
         derbyInstall.getDocument().addDocumentListener(docListener);
         derbyInstall.setText(DerbyOptions.getDefault().getLocation());
-        errorInfoPanel.setup();
     }
     
     private void setDialogDescriptor(DialogDescriptor descriptor) {
@@ -167,9 +167,6 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         derbySystemHomeTextField.setText(derbySystemHome);
     }
 
-    private void clearError() {
-        errorInfoPanel.clear();
-    }
 
     
     private void validatePanel() {
@@ -178,7 +175,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         }
         
         String error = null;
-        String info = null;
+        String warning = null;
         
         String location = getInstallLocation();
         if (location !=  null && location.length() > 0) {
@@ -194,7 +191,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         if (error == null) {
             File derbySystemHome = new File(getDerbySystemHome());
             if (derbySystemHome.getPath().length() <= 0) {
-                info = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotEntered");
+                warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotEntered");
             }
 
             if (derbySystemHome.exists() && !derbySystemHome.isDirectory()) {
@@ -205,13 +202,13 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         }
         
         if (error != null) {
-            errorInfoPanel.set(error, true);
             descriptor.setValid(false);
-        } else if (info != null) {
-            errorInfoPanel.set(info, false);
-            descriptor.setValid(true);
+            descriptor.getNotificationLineSupport().setErrorMessage(error);
+        } else if (warning != null) {
+            descriptor.setValue(true);
+            descriptor.getNotificationLineSupport().setWarningMessage(warning);
         } else {
-            clearError();
+            descriptor.getNotificationLineSupport().clearMessages();
         }
     }
     
@@ -230,7 +227,6 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         derbyInstall = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         derbyInstallInfo = new javax.swing.JTextPane();
-        errorInfoPanel = new org.netbeans.modules.derby.ErrorInfoPanel();
 
         derbySystemHomeLabel.setLabelFor(derbySystemHomeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(derbySystemHomeLabel, org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_DerbySystemHome")); // NOI18N
@@ -281,8 +277,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(derbyInstall, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1))
-                    .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jButton1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -300,9 +295,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                     .add(derbySystemHomeLabel)
                     .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
-                .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(20, 20, 20))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
 
         derbySystemHomeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_CreateDatabasePanel_databaseLocationTextField")); // NOI18N
@@ -356,7 +349,6 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     public javax.swing.JTextPane derbyInstallInfo;
     public javax.swing.JLabel derbySystemHomeLabel;
     public javax.swing.JTextField derbySystemHomeTextField;
-    public org.netbeans.modules.derby.ErrorInfoPanel errorInfoPanel;
     public javax.swing.JLabel installLabel;
     public javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
