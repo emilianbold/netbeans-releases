@@ -44,7 +44,6 @@ package org.netbeans.modules.web.project.ui.customizer;
 
 import java.io.IOException;
 import javax.swing.*;
-
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.api.project.libraries.Library;
@@ -59,22 +58,23 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Exceptions;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
-    
+
+    private final ProjectCustomizer.Category category;
     private final WebProjectProperties uiProperties;
-    
     private final String oldServerInstanceId;
     
     /** Creates new form CustomizerRun */
-    public CustomizerRun(WebProjectProperties uiProperties) {
+    public CustomizerRun(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
         initComponents();
-        
+
+        this.category = category;
         this.uiProperties = uiProperties;
         
         this.oldServerInstanceId = uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null
@@ -415,32 +415,23 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private void setMessages() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>"); // NOI18N
-
-        boolean display = false;
-        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            if (isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
-                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties)) {
-                sb.append(NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY"));
-                display = true;
-            }
-        }
+        MessageUtils.clear(errorLabel);
+        category.setValid(true);
 
         String message = contextPathValidation();
         if (message != null) {
-            if (display) {
-                sb.append("<p>"); // NOI18N
-            }
-            sb.append(message);
-            display = true;
+            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.ERROR,
+                    "<html>"+message+"</html>"); // NOI18N
+            category.setValid(false);
+            return;
         }
 
-        if (display) {
-            sb.append("</html>"); // NOI18N
-            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING, sb.toString());
-        } else {
-            MessageUtils.clear(errorLabel);
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null &&
+            isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties))
+        {
+            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING,
+                "<html>"+NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY")+"</html>"); // NOI18N
         }
     }
 

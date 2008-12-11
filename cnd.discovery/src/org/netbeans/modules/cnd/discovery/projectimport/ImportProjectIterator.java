@@ -37,51 +37,86 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.railsprojects.database;
+package org.netbeans.modules.cnd.discovery.projectimport;
 
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import java.io.IOException;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardPanel1.WizardStorage;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
- * Represents the adapter for SQLite2 and SQLite2.
  *
- * @author Erno Mononen
+ * @author Alexander Simon
  */
-class SQLiteAdapter extends RailsDatabaseConfiguration {
+public class ImportProjectIterator implements WizardDescriptor.InstantiatingIterator {
+    private WizardDescriptor wizard;
+    private WizardStorage storage;
+    private WizardDescriptor.Panel[] panels ;
+    private int index = 0;
 
-    private final String version;
-
-    /**
-     * @param version the SQLite version, e.g sqlite2 or sqlite3.
-     */
-    public SQLiteAdapter(String version) {
-        this.version = version;
+    public ImportProjectIterator(WizardDescriptor.Panel[] panels, WizardStorage storage){
+        this.panels = panels;
+        this.storage = storage;
     }
 
-    public String railsGenerationParam() {
-        return version;
-    }
-
-    public void editConfig(RailsProject project) {
-    }
-
-    public JdbcInfo getJdbcInfo() {
+    public Set instantiate() throws IOException {
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                try {
+                    new ImportProject(storage).create();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         return null;
     }
 
-    public String getDisplayName() {
-        return railsGenerationParam();
+    public void initialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
     }
 
-    public String getDatabaseName(String projectName) {
-        return "db/development." + version; //NOI18N
+    public void uninitialize(WizardDescriptor wizard) {
     }
 
-    public String getTestDatabaseName(String developmentDbName) {
-        return "db/test." + version;
+    public Panel current() {
+        return panels[index];
     }
 
-    public String getProductionDatabaseName(String developmentDbName) {
-        return "db/production." + version;
+    public String name() {
+        return null;
     }
 
+    public boolean hasNext() {
+        return index < (panels.length - 1);
+    }
+
+    public boolean hasPrevious() {
+        return index > 0;
+    }
+
+    public void nextPanel() {
+       if ((index + 1) == panels.length) {
+            throw new NoSuchElementException();
+        }
+        index++;
+    }
+
+    public void previousPanel() {
+        if (index == 0) {
+            throw new NoSuchElementException();
+        }
+        index--;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+    }
 }
