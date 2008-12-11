@@ -143,7 +143,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String CLASS_KEYWORD = "class"; //NOI18N
         private static final String CONTINUE_KEYWORD = "continue"; //NOI18N
         private static final String DEFAULT_KEYWORD = "default"; //NOI18N
+        private static final String DO_KEYWORD = "do"; //NOI18N
         private static final String DOUBLE_KEYWORD = "double"; //NOI18N
+        private static final String ELSE_KEYWORD = "else"; //NOI18N
         private static final String ENUM_KEYWORD = "enum"; //NOI18N
         private static final String EXTENDS_KEYWORD = "extends"; //NOI18N
         private static final String FALSE_KEYWORD = "false"; //NOI18N
@@ -191,7 +193,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         };
         
         private static final String[] STATEMENT_KEYWORDS = new String[] {
-            FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
+            DO_KEYWORD, IF_KEYWORD, FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
             VOID_KEYWORD, WHILE_KEYWORD
         };
         
@@ -1210,6 +1212,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (((TryTree)last).getCatches().size() == 0)
                         return;
                 }
+            } else if (last.getKind() == Tree.Kind.IF) {
+                if (((IfTree)last).getElseStatement() == null)
+                    addKeyword(env, ELSE_KEYWORD, null, false);
             }
             localResult(env);
             addKeywordsForBlock(env);
