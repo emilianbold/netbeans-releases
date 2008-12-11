@@ -55,10 +55,23 @@ import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
  */
 public final class Kenai {
 
-    private static final Kenai instance = new Kenai();
+    private static final Map<Object, Kenai> instances = new HashMap<Object, Kenai>(1);
 
-    public static final Kenai getInstance() {
-        return instance;
+    public static synchronized Kenai getDefault() {
+        try {
+            return getInstance(new URL("http://kenai.com"));
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static synchronized Kenai getInstance(URL location) {
+        Kenai kenai = instances.get(location);
+        if (kenai == null) {
+            KenaiImpl impl = new KenaiREST(location);
+            kenai = new Kenai(impl);
+        }
+        return kenai;
     }
 
     private final KenaiImpl impl;
@@ -73,12 +86,8 @@ public final class Kenai {
      */
     private char[] password;
 
-    private Kenai() {
-        try {
-            impl = new KenaiREST(new URL("http://kenai.com"));
-        } catch (MalformedURLException malformedURLException) {
-            throw new RuntimeException(malformedURLException);
-        }
+    private Kenai(KenaiImpl impl) {
+        this.impl = impl;
     }
 
     private final Map<String, KenaiProject> projects = new HashMap<String, KenaiProject>();

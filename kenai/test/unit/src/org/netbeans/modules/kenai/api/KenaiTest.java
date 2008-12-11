@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.Iterator;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -51,6 +59,8 @@ import org.junit.Test;
  * @author Maros Sandor
  */
 public class KenaiTest {
+
+    private Kenai instance;
 
     public KenaiTest() {
     }
@@ -65,6 +75,12 @@ public class KenaiTest {
 
     @Before
     public void setUp() {
+        try {
+            instance = Kenai.getInstance(new URL("http://testkenai.com"));
+            Authenticator.setDefault(new TestKenaiAuthenticator());
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @After
@@ -76,7 +92,6 @@ public class KenaiTest {
      */
     @Test
     public void testSearchProjects() throws Exception {
-        Kenai instance = Kenai.getInstance();
         String pattern = "ja";
         Iterator<KenaiProject> result = instance.searchProjects(pattern);
 
@@ -88,7 +103,6 @@ public class KenaiTest {
 
     @Test
     public void testGetProject() throws Exception {
-        Kenai instance = Kenai.getInstance();
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
 
@@ -97,7 +111,6 @@ public class KenaiTest {
 
     @Test
     public void testIsAuthorized() throws Exception {
-        Kenai instance = Kenai.getInstance();
         String name = "java-inline";
 
         KenaiProject prj = instance.getProject(name);
@@ -107,5 +120,22 @@ public class KenaiTest {
 
         authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
         System.out.println("Admin? " + authorized);
+    }
+
+    private static class TestKenaiAuthenticator extends Authenticator {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            String username = "";
+            String password = "";
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+                username = br.readLine();
+                password = br.readLine();
+                br.close();
+            } catch (IOException e) {
+                // ignore
+            }
+            return new PasswordAuthentication(username, password.toCharArray());
+        }
     }
 }
