@@ -495,9 +495,9 @@ public class PatternsTest extends RestTestBase {
     private File getFileFromProject(String fileName) {
         FileObject fo = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
         String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
-        fo = fo.getFileObject(location);
-        assertNotNull(fileName + " not found at " + location, fo); //NOI18N
-        return FileUtil.toFile(fo);
+        FileObject file = fo.getFileObject(location);
+        assertNotNull(fileName + " not found at " + FileUtil.toFile(fo).getAbsolutePath() + File.separator + location, file); //NOI18N
+        return FileUtil.toFile(file);
     }
 
     private void closeCreatedFiles(Set<File> files) {
