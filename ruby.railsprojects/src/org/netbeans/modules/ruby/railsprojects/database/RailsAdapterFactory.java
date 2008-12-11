@@ -99,5 +99,10 @@ public class RailsAdapterFactory {
                 ? new ConfigurableRailsAdapter(defaultAdapter, null, null, null, true)
                 : defaultAdapter;
     }
+
+    // just for tests, returns the mysql adapter
+    public static RailsDatabaseConfiguration getDefaultAdapter() {
+        return new MySQLAdapter();
+    }
     
 }
