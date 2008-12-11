@@ -40,10 +40,7 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
@@ -57,7 +54,7 @@ public final class IndexResult {
     private final IndexDocumentImpl spi;
     private final URL root;
 
-    private volatile Indexable cachedIndexable;
+    private volatile FileObject cachedFile;
 
     public IndexResult (final IndexDocumentImpl spi, final URL root) {
         assert spi != null;
@@ -76,23 +73,20 @@ public final class IndexResult {
         return this.spi.getValues (key);
     }
 
-    public Indexable getIndeaxable () {
-        if (cachedIndexable == null) {
+    public FileObject getFile () {
+        if (cachedFile == null) {
             final String path = spi.getSourceName();
             final FileObject rootFo = URLMapper.findFileObject(root);
-            Indexable indexable = null;
+            FileObject resource = null;
             if (rootFo != null) {
-                final FileObject resource = rootFo.getFileObject(path);
-                if (resource != null) {
-                    indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(rootFo, resource));
-                }
+                resource = rootFo.getFileObject(path);                
             }
             synchronized (this) {
-                if (cachedIndexable == null) {
-                    cachedIndexable = indexable;
+                if (cachedFile == null) {
+                    cachedFile = resource;
                 }
             }
         }
-        return cachedIndexable;
+        return cachedFile;
     }
 }

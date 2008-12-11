@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.Fieldable;
@@ -72,7 +73,9 @@ public class DocumentUtil {
 
     static FieldSelector selector (String... fieldNames) {
         assert fieldNames != null;
-        final FieldSelector selector = new SetBasedFieldSelector(new HashSet<String>(Arrays.asList(fieldNames)),
+        final Set<String> fields = new HashSet<String>(Arrays.asList(fieldNames));
+        fields.add(FIELD_SOURCE_NAME);
+        final FieldSelector selector = new SetBasedFieldSelector(fields,
                 Collections.<String>emptySet());
         return selector;
     }
