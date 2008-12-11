@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
-import org.netbeans.modules.csl.api.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 
 /**
  * @author Tor Norbye
