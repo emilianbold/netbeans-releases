@@ -263,6 +263,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         // UI stuff
         setAllEnabled(true);
         setText(_pathText[0]);
+        updateSVGComponentsList();
     }
 
     @Override

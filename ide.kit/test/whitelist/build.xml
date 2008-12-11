@@ -105,6 +105,7 @@ made subject to such option by the copyright holder.
 
     <target name="unzip-project" depends="init-unzip-project,download-project" if="do-unzip-project">
         <unzip dest="${temp_dir}" src="${lime6_zip}"/>
+        <delete file="${lime6_dir}"/>
     </target>
 
     <target name="init-prepare" depends="" if="lime6_dest_dir">

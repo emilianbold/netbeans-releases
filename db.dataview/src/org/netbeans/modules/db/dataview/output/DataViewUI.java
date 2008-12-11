@@ -204,8 +204,7 @@ class DataViewUI extends JPanel {
         List<Object[]> newrows = dataPanel.getPageDataFromTable();
         List<Object[]> oldRows = dataView.getDataViewPageContext().getCurrentRows();
 
-        for (String key : dataView.getUpdatedRowContext().getUpdateKeys()) {
-            int row = Integer.parseInt(key.substring(0, key.indexOf(";"))) - 1;
+        for (Integer row : dataView.getUpdatedRowContext().getUpdateKeys()) {
             newrows.set(row, oldRows.get(row));
         }
         dataView.getDataViewPageContext().setCurrentRows(newrows);
@@ -327,7 +326,7 @@ class DataViewUI extends JPanel {
                 } else if (src.equals(commit)) {
                     actionHandler.commitActionPerformed(false);
                 } else if (src.equals(cancel)) {
-                    actionHandler.cancelEditPerformed();
+                    actionHandler.cancelEditPerformed(false);
                 } else if (src.equals(deleteRow)) {
                     actionHandler.deleteRecordActionPerformed();
                 } else if (src.equals(insert)) {

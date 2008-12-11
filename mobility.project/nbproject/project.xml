@@ -435,6 +435,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
                 <package>org.netbeans.modules.mobility.project</package>
+                <package>org.netbeans.modules.mobility.project.security</package>
                 <package>org.netbeans.modules.mobility.project.ui</package>
                 <package>org.netbeans.modules.mobility.project.ui.security</package>
                 <package>org.netbeans.modules.mobility.project.ui.wizard</package>

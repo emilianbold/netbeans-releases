@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -59,6 +60,7 @@ import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteSupport;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
@@ -206,8 +208,11 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
                                     if (toDelete.contains(id)) {
                                         ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
                                         removeSVGComponentEventSource(component, svgForm);
-                                        svgForm.getDocument().deleteComponent(component);
                                         refreshButtonGroup( component , svgForm );
+                                        //svgForm.getDocument().deleteComponent(component);
+                                        DeleteSupport.invokeDirectUserDeletion( 
+                                                svgForm.getDocument(), 
+                                                Collections.singleton(component), false);
                                     }
                                 }
                             }

@@ -246,6 +246,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
 
             switch(context){
+                case GLOBAL:
+                    autoCompleteGlobals(proposals, request);
+                break;
                 case EXPRESSION:
                     autoCompleteExpression(proposals, request);
                     break;
@@ -1032,6 +1035,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (startsWith(keyword, request.prefix)) {
                     proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
                 }
+            }
+        }
+    }
+    private void autoCompleteGlobals(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+        PHPIndex index = request.index;
+        Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
+        for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
+            if (element instanceof IndexedVariable) {
+                IndexedConstant topLevelVar = (IndexedConstant) element;
+                allVars.put(topLevelVar.getName(), topLevelVar);
+            }
+        }
+        Collection<IndexedConstant> values = allVars.values();
+        for (IndexedConstant idxConstant : values) {
+            String tName = idxConstant.getTypeName();
+            //TODO: just impl. as hotfix - should be reviewed
+            if (idxConstant.isResolved() && (tName == null || !tName.startsWith("@"))) {//NOI18N
+                proposals.add(new PHPCompletionItem.VariableItem(idxConstant, request));
+            } else {
+                proposals.add(new PHPCompletionItem.UnUniqueVaraibaleItems(idxConstant, request));
             }
         }
     }

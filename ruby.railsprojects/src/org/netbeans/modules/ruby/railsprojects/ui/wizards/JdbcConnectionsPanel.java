@@ -45,6 +45,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
 import org.netbeans.modules.db.mysql.util.Utils;
@@ -269,7 +270,8 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
         boolean useDefault = !jdbc && devel == null && production == null && test == null;
 
         if (useDefault) {
-            databaseConfiguration = RailsAdapterFactory.getDefaultAdapter();
+            RubyPlatform platform = (RubyPlatform) settings.getProperty("platform"); //NOI8N
+            databaseConfiguration = RailsAdapterFactory.getDefaultAdapter(platform);
         } else if (useJdbc) {
             databaseConfiguration = new RailsJdbcConnection(devel, test, production);
         } else {

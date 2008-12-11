@@ -265,7 +265,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
     }
 
     private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        String[] insertSQL = null;
+        String insertSQL = null;
         try {
             Object[] insertedRow = getInsertValues();
 
@@ -317,7 +317,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         try {
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-                String sql = stmtBldr.generateInsertStatement(getInsertValues())[1];
+                String sql = stmtBldr.generateRawInsertStatement(getInsertValues());
                 jEditorPane1.setContentType("text/x-sql"); // NOI18N
                 jEditorPane1.setText(sql);
             }

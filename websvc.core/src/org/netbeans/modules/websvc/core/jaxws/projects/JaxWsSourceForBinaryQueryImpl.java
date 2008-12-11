@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -44,8 +44,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,7 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
-/** SourceForBinaryQueryImplementation for JAX-WS Clients
+/** SourceForBinaryQueryImplementation for JAX-WS Clients and JAX-WS Services (generated from WSDL).
  *
  * @author mkuchtiak
  */
@@ -75,14 +77,21 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
     private Project project;
     private boolean jarArtifactsSetCreated;
+    private boolean hasServiceArtifacts;
     private Set<URI> jarArtifacts = new HashSet<URI>();
-    
-    JaxWsSourceForBinaryQueryImpl(Project project) {
+
+    /** Constructor.
+     *
+     * @param project Project instance
+     * @param hasServiceArtifacts true if project can contain services generated from WSDL
+     */
+    JaxWsSourceForBinaryQueryImpl(Project project, boolean hasServiceArtifacts) {
         this.project = project;
+        this.hasServiceArtifacts = hasServiceArtifacts;
     }
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         File archiveFile = FileUtil.archiveOrDirForURL(binaryRoot);
-        if (archiveFile != null ) {
+        if (archiveFile != null) {
             boolean projectJar = false;
             try {
                 if (!jarArtifactsSetCreated) {
@@ -93,16 +102,19 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     projectJar = true;
                 }
             } catch (URISyntaxException ex) {
-                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO, "Cannot resolve JAR Artifact file",ex); //NOI18N
+                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO,
+                        "Cannot resolve JAR Artifact file", ex); //NOI18N
             } catch (IOException ex) {
-                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO, "Cannot resolve JAR Artifact file",ex); //NOI18N
+                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO,
+                        "Cannot resolve JAR Artifact file", ex); //NOI18N
             }
             if (projectJar) {
                 SourceForBinaryQuery.Result result = cache.get(binaryRoot);
                 if (result == null) {
                     Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
                     if (prj != null) {
-                        JAXWSClientSupport jaxWSCS = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
+                        JAXWSClientSupport jaxWSCS =
+                                JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
                         if (jaxWSCS != null) {
                             result = new Result(prj);
                             cache.put(binaryRoot, result);
@@ -114,7 +126,7 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
         return null;
     }
-    
+
     private class Result implements SourceForBinaryQuery.Result {
 
         private Project prj;
@@ -124,9 +136,20 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
 
         public FileObject[] getRoots() {
-            FileObject fo = 
+            List<FileObject> rootList = new ArrayList<FileObject>(2);
+            FileObject fo =
                 prj.getProjectDirectory().getFileObject("build/generated/wsimport/client"); // NOI18N
-            return fo == null ? new FileObject[]{} : new FileObject[]{fo};
+            if (fo != null) {
+                rootList.add(fo);
+            }
+            if (hasServiceArtifacts) {
+                fo = prj.getProjectDirectory().getFileObject("build/generated/wsimport/service"); // NOI18N
+                if (fo != null) {
+                    rootList.add(fo);
+                }
+            }
+            FileObject[] roots = new FileObject[rootList.size()];
+            return rootList.toArray(roots);
         }
 
         public void addChangeListener (ChangeListener l) {
@@ -142,10 +165,10 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         AntArtifactProvider provider = project.getLookup().lookup(AntArtifactProvider.class);
         if (provider != null) {
             AntArtifact[] arts = provider.getBuildArtifacts();
-            for(AntArtifact art:arts) {
+            for (AntArtifact art : arts) {
                 if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(art.getType())) {
                     File scriptLocation = art.getScriptLocation();
-                    for (URI artifactLocation:art.getArtifactLocations()) {
+                    for (URI artifactLocation : art.getArtifactLocations()) {
                         URI artifactUri = scriptLocation.toURI().resolve(artifactLocation).normalize();
                         jarArtifacts.add(artifactUri);
                     }
@@ -153,12 +176,13 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
             }
         }
         // Adding project's binary roots
-        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] srcGroups =
+                ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups != null && srcGroups.length > 0) {
-            org.netbeans.api.java.queries.BinaryForSourceQuery.Result result = 
+            org.netbeans.api.java.queries.BinaryForSourceQuery.Result result =
                     BinaryForSourceQuery.findBinaryRoots(srcGroups[0].getRootFolder().getURL());
             if (result != null) {
-                for (URL url:result.getRoots()) {
+                for (URL url : result.getRoots()) {
                     jarArtifacts.add(url.toURI());
                 }
             }

@@ -131,7 +131,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             event,
             thread,
             null,
-            thread
+            (event instanceof ThreadDeathEvent) ? null : thread
         );
     }
 

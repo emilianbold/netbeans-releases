@@ -68,6 +68,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
@@ -729,11 +731,22 @@ public final class J2MEProject implements Project, AntProjectListener {
 
             // unregister project's classpaths to GlobalPathRegistry
             final J2MEClassPathProvider cpProvider = lookup.lookup(J2MEClassPathProvider.class);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {cpProvider.getBootClassPath()});
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {cpProvider.getSourcepath()});
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {cpProvider.getCompileTimeClasspath()});
+
+            unregisterPath(ClassPath.BOOT, new ClassPath[] {cpProvider.getBootClassPath()});
+            unregisterPath(ClassPath.SOURCE, new ClassPath[] {cpProvider.getSourcepath()});
+            unregisterPath(ClassPath.COMPILE, new ClassPath[] {cpProvider.getCompileTimeClasspath()});
             
             JavaPlatformManager.getDefault().removePropertyChangeListener(platformListener);
+        }
+
+        private void unregisterPath (String type, ClassPath[] paths) {
+            try {
+                GlobalPathRegistry.getDefault().unregister(type, paths);
+            } catch (IllegalArgumentException iae) {
+                Logger.getLogger(J2MEProject.class.getName()).log(Level.INFO,
+                        "Issue http://www.netbeans.org/nonav/issues/show_bug.cgi?id=150469 - " +
+                        "unregistering non-existent path", iae);
+            }
         }
 
         
