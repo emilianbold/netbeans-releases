@@ -80,17 +80,5 @@ public final class IndexDocument {
         Parameters.notEmpty("key", key);    //NOI18N
         Parameters.notNull("value", value); //NOI18N
         this.spi.addPair(key, value, searchable, stored);
-    }
-
-    public String getValue (final String key) {
-        Parameters.notEmpty("key", key);
-        return this.spi.getValue (key);
-    }
-
-    public String[] getValues (final String key) {
-        Parameters.notEmpty("key", key);
-        return this.spi.getValues (key);
-    }
-
-
+    }    
 }

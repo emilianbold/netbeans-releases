@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+
 /**
  *
  * @author Tomas Zezula
@@ -47,4 +49,5 @@ public interface IndexDocumentImpl {
     public void addPair (String key, String value, boolean searchable, boolean stored);
     public String getValue (String key);
     public String[] getValues (String key);
+    public String getSourceName ();
 }

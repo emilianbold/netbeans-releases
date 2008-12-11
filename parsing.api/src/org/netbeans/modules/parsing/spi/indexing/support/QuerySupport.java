@@ -43,8 +43,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
@@ -106,11 +108,11 @@ public final class QuerySupport {
 
 
     private final IndexFactoryImpl spiFactory;
-    private final Collection<IndexImpl> indexes;
+    private final Map<URL,IndexImpl> indexes;
 
     private QuerySupport (final String mimeType, final URL... roots) throws IOException {
         this.spiFactory = new LuceneIndexFactory();
-        this.indexes = new LinkedList<IndexImpl>();
+        this.indexes = new HashMap<URL, IndexImpl>();
         final String indexerFolder = findIndexerFolder(mimeType);
         if (indexerFolder != null) {
             for (URL root : roots) {
@@ -120,7 +122,7 @@ public final class QuerySupport {
                 if (indexFolder != null) {
                     final IndexImpl index = this.spiFactory.getIndex(indexFolder);
                     if (index != null) {
-                        this.indexes.add(index);
+                        this.indexes.put(root,index);
                     }
                 }
             }
@@ -128,13 +130,15 @@ public final class QuerySupport {
     }    
 
     
-    public Collection<? extends IndexDocument> query (final String fieldName, final String fieldValue,
+    public Collection<? extends IndexResult> query (final String fieldName, final String fieldValue,
             final Kind kind, final String... fieldsToLoad) throws IOException {
-        final List<IndexDocument> result = new LinkedList<IndexDocument>();
-        for (IndexImpl index : indexes) {
+        final List<IndexResult> result = new LinkedList<IndexResult>();
+        for (Map.Entry<URL,IndexImpl> ie : indexes.entrySet()) {
+            final IndexImpl index = ie.getValue();
+            final URL root = ie.getKey();
             final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
-            for (IndexDocumentImpl di : pr) {
-                result.add(new IndexDocument(di));
+            for (IndexDocumentImpl di : pr) {                
+                result.add(new IndexResult(di,root));
             }
         }
         return result;

@@ -37,49 +37,62 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.spi.indexing.support;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
-
-    public final Document doc;    
-
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
-    }
-
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
-    }
-
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
-    }
-
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
-
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
-    }
+public final class IndexResult {
     
+    private final IndexDocumentImpl spi;
+    private final URL root;
+
+    private volatile Indexable cachedIndexable;
+
+    public IndexResult (final IndexDocumentImpl spi, final URL root) {
+        assert spi != null;
+        assert root != null;
+        this.spi = spi;
+        this.root = root;
+    }
+
+    public String getValue (final String key) {
+        Parameters.notEmpty("key", key);
+        return this.spi.getValue (key);
+    }
+
+    public String[] getValues (final String key) {
+        Parameters.notEmpty("key", key);
+        return this.spi.getValues (key);
+    }
+
+    public Indexable getIndeaxable () {
+        if (cachedIndexable == null) {
+            final String path = spi.getSourceName();
+            final FileObject rootFo = URLMapper.findFileObject(root);
+            Indexable indexable = null;
+            if (rootFo != null) {
+                final FileObject resource = rootFo.getFileObject(path);
+                if (resource != null) {
+                    indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(rootFo, resource));
+                }
+            }
+            synchronized (this) {
+                if (cachedIndexable == null) {
+                    cachedIndexable = indexable;
+                }
+            }
+        }
+        return cachedIndexable;
+    }
 }
