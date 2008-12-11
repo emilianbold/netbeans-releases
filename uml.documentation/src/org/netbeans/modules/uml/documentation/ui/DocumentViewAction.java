@@ -46,14 +46,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
 
 /**
  *  Displays the Describe documentation editor.
@@ -68,7 +64,6 @@ public class DocumentViewAction extends AbstractAction
    {
       putValue(Action.NAME, NbBundle.getMessage(DocumentViewAction.class, "Action.Doc.Title"));
       putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/uml/documentation/ui/resources/DocPane.gif"))); // NOI18N
-//		putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift D")); //#NOI18N
    }
 
    public static synchronized DocumentViewAction getInstance() {

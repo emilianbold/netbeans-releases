@@ -111,7 +111,7 @@ class DataViewTablePanel extends JPanel {
     public void setDirty(boolean dirty) {
         isDirty = dirty;
         if (!isDirty) {
-            updatedRowCtx.resetUpdateState();
+            updatedRowCtx.removeAllUpdates();
         }
     }
 
@@ -147,6 +147,10 @@ class DataViewTablePanel extends JPanel {
             }
         };
         SwingUtilities.invokeLater(run);
+    }
+
+    public void setValueAt(Object value, int row, int col){
+        model.setValueAt(value, row, col);
     }
 
     private void setHeader(JTable table, List<Integer> columnWidthList) {

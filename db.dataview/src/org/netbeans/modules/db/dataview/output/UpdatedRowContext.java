@@ -61,25 +61,18 @@ class UpdatedRowContext {
         Map<Integer, Object> rowMap = changedData.get(row);
         if(rowMap == null){
             rowMap = new LinkedHashMap<Integer, Object>();
-            changedData.put(row, rowMap);
+            changedData.put(new Integer(row), rowMap);
         }
-        rowMap.put(col, value);
+        rowMap.put(new Integer(col), value);
     }
 
-    public void resetUpdateState() {
+    public void removeAllUpdates() {
         changedData = new LinkedHashMap<Integer, Map<Integer, Object>>();
     }
 
-    public void resetUpdateState(int row) {
-        if(changedData.containsKey(row)){
-            changedData.remove(row);
-        }
-    }
-
-    public void resetUpdateState(int row, int col) {
-        Map<Integer, Object> rowMap = changedData.get(row);
-        if(rowMap != null && rowMap.containsKey(col)){
-           rowMap.remove(col);
+    public void removeUpdateForSelectedRow(int row) {
+        if(changedData.containsKey(new Integer(row))){
+            changedData.remove(new Integer(row));
         }
     }
 
@@ -88,12 +81,12 @@ class UpdatedRowContext {
     }
 
     public Map<Integer, Object> getChangedData(int row) {
-        return changedData.get(row);
+        return changedData.get(new Integer(row));
     }
 
     boolean hasUpdates(int row, int col) {
-        Map<Integer, Object> rowMap = changedData.get(row);
-        if(rowMap != null && rowMap.containsKey(col)){
+        Map<Integer, Object> rowMap = changedData.get(new Integer(row));
+        if(rowMap != null && rowMap.containsKey(new Integer(col))){
            return true;
         }
         return false;

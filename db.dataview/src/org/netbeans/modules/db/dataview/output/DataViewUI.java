@@ -200,6 +200,11 @@ class DataViewUI extends JPanel {
         dataPanel.createTableModel(rows);
     }
 
+    void resetValueAt(int row, int col) {
+        Object val = dataView.getDataViewPageContext().getColumnData(row, col);
+        dataPanel.setValueAt(val, row, col);
+    }
+
     void syncPageWithTableModel() {
         List<Object[]> newrows = dataPanel.getPageDataFromTable();
         List<Object[]> oldRows = dataView.getDataViewPageContext().getCurrentRows();
