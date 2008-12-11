@@ -1615,12 +1615,22 @@ import org.xml.sax.helpers.DefaultHandler;
         private String getValue(org.xml.sax.Attributes attributes, String key){
             String res = attributes.getValue(key);
             if (res != null) {
-                String c = cache.get(key);
+                String c = cache.get(res);
                 if (c == null){
                     cache.put(res, res);
                 } else {
                     res = c;
                 }
+            }
+            return res;
+        }
+
+        private String getValue(String res){
+            String c = cache.get(res);
+            if (c == null){
+                cache.put(res, res);
+            } else {
+                res = c;
             }
             return res;
         }
@@ -1737,7 +1747,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 } else if (path.endsWith(".alternative_path")) { // NOI18N
                     m.alternativePath = new ArrayList<AlternativePath>();
                 } else if (path.endsWith(".dependency_support")) { // NOI18N
-                    m.dependencySupportCode = getValue(attributes, "code").replace("\\n", "\n"); // NOI18N
+                    m.dependencySupportCode = getValue(getValue(attributes, "code").replace("\\n", "\n")); // NOI18N
                 } else if (checkAlternativePath(attributes, m.alternativePath)) {
                 }
                 return;

@@ -57,6 +57,7 @@ public class XMIConstants {
     public static final String KEY = "key";
     public static final String VALUE = "value";
     public static final String XMI_IDREF = "xmi.idref";
+    public static final String DOCUMENTATION = "documentation";
 
     // Tag constants
     public static final String XMI_ROOT_TAG = "XMI";

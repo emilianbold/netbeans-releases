@@ -47,6 +47,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,6 +84,7 @@ import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManage
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.util.XMIConstants;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -89,6 +92,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -518,6 +522,14 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         nodeWriter.setLocation(this.getLocation());
         nodeWriter.setSize(this.getBounds().getSize());
         nodeWriter.setHasPositionSize(true);
+        try {
+            if(getDiagram().getDocumentation()!=null)
+            {
+                nodeWriter.setDocumentation(URLEncoder.encode(getDiagram().getDocumentation(), "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         //populate properties key/val
         HashMap<String, String> properties = new HashMap();
         if (getEngine() instanceof SQDDiagramEngineExtension) {

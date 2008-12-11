@@ -3,9 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <text x="%%COORDINATE_X%%" y="%%COORDINATE_Y%%" fill="red" stroke="black" stroke-width="1" font-size="15">Sample Text</text>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.Text" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/text_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/text_32.png"/>
      

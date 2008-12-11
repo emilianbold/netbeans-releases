@@ -824,10 +824,16 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     private void changeDelegate(Preferences nueDelegate) {
         if (delegate != null) {
-            assert weakPrefListener != null;
-            assert weakNodeListener != null;
-            delegate.removePreferenceChangeListener(weakPrefListener);
-            delegate.removeNodeChangeListener(weakNodeListener);
+            try {
+                if (delegate.nodeExists("")) { //NOI18N
+                    assert weakPrefListener != null;
+                    assert weakNodeListener != null;
+                    delegate.removePreferenceChangeListener(weakPrefListener);
+                    delegate.removeNodeChangeListener(weakNodeListener);
+                }
+            } catch (BackingStoreException bse) {
+                LOG.log(Level.WARNING, null, bse);
+            }
         }
 
         delegate = nueDelegate;

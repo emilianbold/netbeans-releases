@@ -43,7 +43,7 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.filter;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
 
@@ -51,7 +51,7 @@ import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
  *
  * @author Jaroslav Bachorik
  */
-public class FilterNode extends ClassNode {
+public class FilterNode extends JavaClassNode {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private String externalName;
@@ -77,6 +77,7 @@ public class FilterNode extends ClassNode {
         return mapping;
     }
 
+    @Override
     public boolean equals(Object otherFilter) {
         if (otherFilter == null) {
             return false;
@@ -89,13 +90,15 @@ public class FilterNode extends ClassNode {
         FilterNode aFilter = (FilterNode) otherFilter;
 
         return externalName.equals(aFilter.externalName) && mapping.equals(aFilter.mapping)
-               && getClassHandle().equals(aFilter.getClassHandle());
+               && super.equals(aFilter);
     }
 
+    @Override
     public int hashCode() {
-        return externalName.hashCode() + mapping.hashCode() + getClassHandle().hashCode();
+        return externalName.hashCode() + mapping.hashCode() + super.hashCode();
     }
 
+    @Override
     public String toString() {
         return externalName + " (" + mapping + ")"; // NOI18N
     }

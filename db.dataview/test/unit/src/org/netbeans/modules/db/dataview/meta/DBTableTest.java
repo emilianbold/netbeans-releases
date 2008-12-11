@@ -106,7 +106,7 @@ public class DBTableTest extends NbTestCase {
      * Test of addColumn method, of class DBTable.
      */
     public void testAddColumn() throws Exception {
-        DBColumn theColumn = new DBColumn(table, "colName", 12, 10, 5, true, false);
+        DBColumn theColumn = new DBColumn(table, "colName",12, "varchar", 10, 5, true, false);
         DBTable instance = table;
         boolean expResult = true;
         boolean result = instance.addColumn(theColumn);
@@ -150,7 +150,7 @@ public class DBTableTest extends NbTestCase {
     public void testGetFullyQualifiedName() {
         DBTable instance = table;
         String expResult = "SIMPLETABLE";
-        String result = instance.getQualifiedName();
+        String result = instance.getQualifiedName(false);
         assertEquals(expResult, result);
     }
 
@@ -160,7 +160,7 @@ public class DBTableTest extends NbTestCase {
     public void testGetQualifiedName() {
         DBTable instance = table;
         String expResult = "SIMPLETABLE";
-        String result = instance.getQualifiedName();
+        String result = instance.getQualifiedName(false);
         assertEquals(expResult, result);
     }
 

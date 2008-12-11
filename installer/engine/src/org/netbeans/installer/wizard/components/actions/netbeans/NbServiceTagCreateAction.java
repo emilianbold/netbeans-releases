@@ -204,7 +204,7 @@ public class NbServiceTagCreateAction extends WizardAction {
                 NbServiceTagSupport.createJavaFXServiceTag(source, javaVersion);
                 NbServiceTagSupport.createJavaFXSdkServiceTag(source, javaVersion);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LogManager.log(e);
         }
     }
@@ -329,7 +329,7 @@ public class NbServiceTagCreateAction extends WizardAction {
                         "Sun Microsystems Inc.");
                 FileUtils.modifyFile(gfReg, map);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LogManager.log(e);
         }
     }
@@ -366,7 +366,7 @@ public class NbServiceTagCreateAction extends WizardAction {
         LogManager.log("... source = " + args[1]);
         try {
             NbServiceTagSupport.createJdkServiceTag(args[1]);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LogManager.log(e);
         }
         if (System.getProperty("java.version").startsWith("1.5")) {

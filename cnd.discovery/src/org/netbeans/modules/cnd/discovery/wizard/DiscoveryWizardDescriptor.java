@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
 @SuppressWarnings("unchecked") // NOI18N
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
     public static final String PROJECT = "DW:project"; // NOI18N
-    public static final String PRIVIDER = "DW:provider"; // NOI18N
+    public static final String PROVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
@@ -131,10 +131,10 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
     
     public DiscoveryProvider getProvider(){
-        return (DiscoveryProvider) getProperty(PRIVIDER);
+        return (DiscoveryProvider) getProperty(PROVIDER);
     }
     public String getProviderID(){
-        DiscoveryProvider provider =(DiscoveryProvider) getProperty(PRIVIDER);
+        DiscoveryProvider provider =(DiscoveryProvider) getProperty(PROVIDER);
         if (provider != null){
             return provider.getID();
         }
@@ -142,7 +142,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
     public void setProvider(DiscoveryProvider provider){
         stateChanged = true;
-        putProperty(PRIVIDER, provider);
+        putProperty(PROVIDER, provider);
     }
     
     public String getLevel(){
@@ -262,10 +262,10 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         public DiscoveryProvider getProvider(){
-            return (DiscoveryProvider) wizard.getProperty(PRIVIDER);
+            return (DiscoveryProvider) wizard.getProperty(PROVIDER);
         }
         public String getProviderID(){
-            DiscoveryProvider provider =(DiscoveryProvider) wizard.getProperty(PRIVIDER);
+            DiscoveryProvider provider =(DiscoveryProvider) wizard.getProperty(PROVIDER);
             if (provider != null){
                 return provider.getID();
             }
@@ -273,7 +273,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         public void setProvider(DiscoveryProvider provider){
             wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
-            wizard.putProperty(PRIVIDER, provider);
+            wizard.putProperty(PROVIDER, provider);
         }
         
         public String getLevel(){
@@ -402,10 +402,10 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         public DiscoveryProvider getProvider(){
-            return (DiscoveryProvider) map.get(PRIVIDER);
+            return (DiscoveryProvider) map.get(PROVIDER);
         }
         public String getProviderID(){
-            DiscoveryProvider provider =(DiscoveryProvider) map.get(PRIVIDER);
+            DiscoveryProvider provider =(DiscoveryProvider) map.get(PROVIDER);
             if (provider != null){
                 return provider.getID();
             }
@@ -413,7 +413,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         public void setProvider(DiscoveryProvider provider){
             map.put(INVOKE_PROVIDER, Boolean.TRUE);
-            map.put(PRIVIDER, provider);
+            map.put(PROVIDER, provider);
         }
         
         public String getLevel(){

@@ -1377,8 +1377,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            LOG.warning("Normalization failed on file " + file + ": " + ioe);
-            LOG.log(Level.FINE, file.toString(), ioe);
+            LOG.log(Level.INFO, "Normalization failed on file " + file, ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();

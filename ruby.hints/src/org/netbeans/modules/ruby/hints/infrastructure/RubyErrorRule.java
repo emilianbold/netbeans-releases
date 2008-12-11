@@ -46,6 +46,7 @@ import java.util.Set;
 import org.jruby.nb.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.Rule.ErrorRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.ruby.RubyParser.RubyError;
 
 /** 
@@ -57,7 +58,7 @@ import org.netbeans.modules.ruby.RubyParser.RubyError;
  *
  * @author Petr Hrebejk, Jan Lahoda
  */
-public abstract class RubyErrorRule implements ErrorRule {
+public abstract class RubyErrorRule implements ErrorRule, UserConfigurableRule {
 
     /** Get the diagnostic codes this rule should run on
      */

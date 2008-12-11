@@ -40,26 +40,38 @@
 package org.netbeans.modules.groovy.qaf;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
 import org.openide.windows.TopComponent;
 
 /**
+ * Tests for actions available on Grails projects
  *
  * @author lukas
  */
 public class GrailsActionsTest extends GrailsTestCase {
 
     private static final String APP_PORT = "9998"; //NOI18N
+    private static final String DEFAULT_PORT = "8080"; //NOI18N
+    private static final String PLUGIN_NAME = "testing"; //NOI18N
     private static boolean isPortSet = false;
     private OpenAction oa = new OpenAction();
 
@@ -71,7 +83,8 @@ public class GrailsActionsTest extends GrailsTestCase {
     public void setUp() throws Exception {
         super.setUp();
         if (!isPortSet) {
-            GrailsSettings.getInstance().setPortForProject(getProject(), APP_PORT);
+            setApplicationPort(APP_PORT);
+            assertEquals(APP_PORT, GrailsSettings.getInstance().getPortForProject(getProject()));
             isPortSet = true;
         }
     }
@@ -81,63 +94,121 @@ public class GrailsActionsTest extends GrailsTestCase {
         return "GrailsActions"; //NOI18N
     }
 
+    /**
+     * Test Generate all action on the domain class node
+     *
+     */
     public void testGenerateAll() {
-        //Generate all
+        //Generate All
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
         getDomainClassNode("Book").performPopupAction(label); //NOI18N
         waitFor("generate-all", "Finished generation for domain class"); //NOI18N
     }
 
-    public void testCreateView() {
-        //XXX - grails create-view should be called instead of a wizard
-        //Create view
-//        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_CreateViewAction");
-//        getDomainClassNode("Author").performPopupAction(label); //NOI18N
+    /**
+     * Test for Grails Plugins action
+     *  -install plugin
+     */
+    public void testManagePlugins() {
+        //open plugin manager and install a plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        //New Plugins
+        String tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.newPlugins");
+        jtpo.selectPage(tabTitle);
+        JListOperator jlo = new JListOperator(jtpo);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 500000); //NOI18N
+        jlo.waitItem("activemq", 1);
+        jlo.selectItem(PLUGIN_NAME);
+        //Install
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //Installed
+        tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installed");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 240000); //NOI18N
+        jtpo.selectPage(tabTitle);
+        jlo = new JListOperator(jtpo);
+        jlo.waitItem(PLUGIN_NAME, 0);
+        assertEquals(1, jlo.getModel().getSize());
+        ndo.closeByButton();
     }
 
+    /**
+     * Test Create view action on the domain class node
+     *
+     */
+    public void testGenerateViews() {
+        //Generate Views
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateViewsAction");
+        getDomainClassNode("Author").performPopupAction(label); //NOI18N
+        waitFor("generate-views", "Finished generation for domain class"); //NOI18N
+    }
+
+    /**
+     * Test Go to Controller action
+     *
+     */
     public void testGotoController() {
         //Go to Grails Controller
         Action a = getGrailsNavigateAction("CTL_GotoControllerAction"); //NOI18N
         //from a domain class
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
-        a.performPopup(eo); //NOI18N
-        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
+        assertNotNull(eo);
+        try {
+            //XXX - first call to popup can fail (win, solaris)
+            a.performPopup(eo);
+        } catch (TimeoutExpiredException tee) {
+            //try it once again
+            a.performPopup(eo);
+        }
+        assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
         //from a view
-//        oa.perform(getViewNode("book|edit")); //NOI18N
-//        eo = new EditorOperator("edit.gsp"); //NOI18N
-//        a.performPopup(eo); //NOI18N
-//        assertTrue(getActiveTC().endsWith("controllers/BookController.groovy")); //NOI18N
+        oa.perform(getViewNode("book|edit")); //NOI18N
+        eo = new EditorOperator("edit.gsp"); //NOI18N
+        assertNotNull(eo);
+        a.performPopup(eo); //NOI18N
+        assertTrue(getActiveTC().endsWith("controllers" + File.separator + "BookController.groovy")); //NOI18N
     }
 
+    /**
+     * Test Go to View action
+     *
+     */
     public void testGotoView() {
         //Go to Grails View
         Action a = getGrailsNavigateAction("CTL_GotoViewAction"); //NOI18N
         //from a domain class
         oa.perform(getDomainClassNode("Book")); //NOI18N
         EditorOperator eo = new EditorOperator("Book.groovy"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo);
-        assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
+        assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
         //from a controller
         oa.perform(getControllerNode("BookController")); //NOI18N
         eo = new EditorOperator("BookController.groovy"); //NOI18N
+        assertNotNull(eo);
         a.performPopup(eo);
-        assertTrue(getActiveTC().endsWith("views/book/show.gsp")); //NOI18N
+        assertTrue(getActiveTC().endsWith("views" + File.separator + "book" + File.separator + "show.gsp")); //NOI18N
     }
 
+    /**
+     * Test Go to Domain class action
+     *
+     */
     public void testGotoDomainClass() throws InterruptedException, InvocationTargetException {
         //XXX - no direct UI entry to this action
+        // see: http://www.netbeans.org/issues/show_bug.cgi?id=154768
         final GotoDomainClassAction a = new GotoDomainClassAction();
         //from a view
-//        oa.perform(getViewNode("book|list"); //NOI18N
-//        EditorOperator eo = new EditorOperator("list.gsp"); //NOI18N
-//        assertTrue(a.isEnabled());
-//        a.actionPerformed(null, (JTextComponent) eo.txtEditorPane().getSource());
-//        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
-//        eo.close(false);
-        //from a controller
-        oa.perform(getControllerNode("BookController")); //NOI18N
-        final EditorOperator eo = new EditorOperator("BookController.groovy"); //NOI18N
+        oa.perform(getViewNode("book|list")); //NOI18N
+        final EditorOperator eo = new EditorOperator("list.gsp"); //NOI18N
+        assertNotNull(eo);
         assertTrue(a.isEnabled());
         SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -145,14 +216,82 @@ public class GrailsActionsTest extends GrailsTestCase {
                 a.actionPerformed(new ActionEvent(eo.txtEditorPane().getSource(), -1, null));
             }
         });
-        assertTrue(getActiveTC().endsWith("domain/Book.groovy")); //NOI18N
+        assertTrue(getActiveTC().endsWith("domain" + File.separator + "Book.groovy")); //NOI18N
+        //from a controller
+        oa.perform(getControllerNode("BookController")); //NOI18N
+        final EditorOperator eo2 = new EditorOperator("BookController.groovy"); //NOI18N
+        assertNotNull(eo2);
+        assertTrue(a.isEnabled());
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                a.actionPerformed(new ActionEvent(eo2.txtEditorPane().getSource(), -1, null));
+            }
+        });
+        assertTrue(getActiveTC().endsWith("domain" + File.separator + "Book.groovy")); //NOI18N
     }
 
+    /**
+     * Test grails project Run and Stop actions
+     *
+     */
     public void testStopApp() {
         //XXX - better to have ability to not open browser during run
-        //      (remove TestURLDisplayer)
+        //      (remove TestURLDisplayer, can be changed after
+        //       http://www.netbeans.org/issues/show_bug.cgi?id=154920)
         runGrailsApp();
         stopGrailsApp();
+    }
+
+    /**
+     * Test for Grails Plugins action
+     *  -uninstall plugin
+     */
+    public void testUninstallPlugin() {
+        //open the dialog again and uninstall previously installed plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        JListOperator jlo = new JListOperator(jtpo);
+        jlo.selectItem(PLUGIN_NAME);
+        //Uninstall
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.uninstallButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //XXX - need in case project is versioned by hg (bug?)
+        long end = System.currentTimeMillis() + 240000;
+        while (jlo.getModel().getSize() > 0 && System.currentTimeMillis() < end) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {}
+        }
+        assertEquals(0, jlo.getModel().getSize());
+        ndo.closeByButton();
+    }
+
+    /**
+     * Test Create war project action
+     *
+     */
+    public void testCreateWar() {
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "LBL_CreateWarFile");
+        getProjectRootNode().performPopupAction(label);
+        waitFor("war", "Done creating WAR"); //NOI18N
+        FilesTabOperator fto = FilesTabOperator.invoke();
+        Node n = new Node(fto.getProjectNode(getProjectName()), getProjectName() + "-0.1.war"); //NOI18N
+        assertNotNull(n);
+    }
+
+    private void setApplicationPort(String port) {
+        getProjectRootNode().properties();
+        NbDialogOperator ndo = new NbDialogOperator(getProjectName());
+        JTextFieldOperator jtfo = new JTextFieldOperator(ndo, DEFAULT_PORT);
+        jtfo.clearText();
+        jtfo.typeText(port);
+        ndo.ok();
     }
 
     private Node getDomainClassNode(String domainClass) {
@@ -181,7 +320,7 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     private Action getGrailsNavigateAction(String key) {
-        String groupLabel = "Navigate";
+        String groupLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.Bundle", "Editors/text/x-gsp/Popup/goto");
         String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", key);
         return new Action(null, groupLabel + "|" + actionLabel); //NOI18N
     }

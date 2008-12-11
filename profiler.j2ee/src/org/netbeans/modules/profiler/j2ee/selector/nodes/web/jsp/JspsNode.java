@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
@@ -71,7 +70,7 @@ public class JspsNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(JspsNode parent) {
             List<SelectorNode> components = new ArrayList<SelectorNode>();
 
-            Project project = ((ProjectNode) parent.getParent()).getProject();
+            Project project = parent.getLookup().lookup(Project.class);
             Collection<FileObject> fos = WebProjectUtils.getDocumentBaseFileObjects(project, true);
 
             for (FileObject fo : fos) {

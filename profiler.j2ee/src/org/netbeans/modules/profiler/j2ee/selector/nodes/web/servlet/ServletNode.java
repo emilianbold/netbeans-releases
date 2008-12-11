@@ -43,7 +43,7 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
 
@@ -51,7 +51,7 @@ import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
  *
  * @author Jaroslav Bachorik
  */
-public class ServletNode extends ClassNode {
+public class ServletNode extends JavaClassNode {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private String externalName;
@@ -77,6 +77,7 @@ public class ServletNode extends ClassNode {
         return mapping;
     }
 
+    @Override
     public boolean equals(Object otherServlet) {
         if (otherServlet == null) {
             return false;
@@ -89,13 +90,15 @@ public class ServletNode extends ClassNode {
         ServletNode aServlet = (ServletNode) otherServlet;
 
         return externalName.equals(aServlet.externalName) && mapping.equals(aServlet.mapping)
-               && getClassHandle().equals(aServlet.getClassHandle());
+               && super.equals(aServlet);
     }
 
+    @Override
     public int hashCode() {
-        return externalName.hashCode() + mapping.hashCode() + getClassHandle().hashCode();
+        return externalName.hashCode() + mapping.hashCode() + super.hashCode();
     }
 
+    @Override
     public String toString() {
         return externalName + " (" + mapping + ")"; // NOI18N
     }

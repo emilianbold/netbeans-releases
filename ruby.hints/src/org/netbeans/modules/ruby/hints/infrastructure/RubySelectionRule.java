@@ -42,12 +42,13 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.Rule.SelectionRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 
 /**
  * Represents a rule to be run on text selection
  *
  * @author Tor Norbye
  */
-public abstract class RubySelectionRule implements SelectionRule {
+public abstract class RubySelectionRule implements SelectionRule, UserConfigurableRule {
     public abstract void run(RubyRuleContext context, List<Hint> result);
 }

@@ -73,11 +73,11 @@ import javax.swing.text.Document;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -1151,13 +1151,16 @@ abstract public class CsmCompletionQuery {
                                         boolean inner = false;
                                         int ad = lastType.getArrayDepth();
                                         if (staticOnly && ad == 0) { // can be inner class
-                                            CsmClassifier cls = finder.getExactClassifier(lastType.getClassifier().getQualifiedName() + CsmCompletion.SCOPE + var);
-                                            if (cls != null) {
-                                                lastType = CsmCompletion.getType(cls, 0);
-                                                inner = true;
+                                            CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier(), contextFile);
+                                            if (CsmKindUtilities.isClass(classifier)) {
+                                                CsmClass clazz = (CsmClass) classifier;
+                                                List<CsmClassifier> classes = finder.findNestedClassifiers(contextElement, clazz, var, true, true, this.sort);
+                                                if (classes != null && !classes.isEmpty()) {
+                                                    lastType = CsmCompletion.createType(classes.get(0), 0);
+                                                    inner = true;
+                                                }
                                             }
                                         }
-
                                         if (!inner) { // not inner class name
                                             if (ad == 0 || (kind == ExprKind.ARROW)) { // zero array depth or deref array as pointer
                                                 CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier(), contextFile);
@@ -1289,10 +1292,10 @@ abstract public class CsmCompletionQuery {
                     if (typ != null) {
                         lastType = typ;
                         CsmClassifier cls = lastType.getClassifier();
-                        if (cls != null && CsmKindUtilities.isClass(cls)) {
-                            cls = createClassInstantiation((CsmClass) cls, item);
-                            if (cls != null) {
-                                lastType = CsmCompletion.getType(cls, 0);
+                        if (cls != null && CsmKindUtilities.isTemplate(cls)) {
+                            CsmObject obj = createInstantiation((CsmTemplate)cls, item);
+                            if (obj != null && CsmKindUtilities.isClass(obj)) {
+                                lastType = CsmCompletion.createType((CsmClass)obj, 0);
                             }
                         }
                     }
@@ -1689,23 +1692,20 @@ abstract public class CsmCompletionQuery {
             return cont;
         }
 
-        private CsmClass createClassInstantiation(CsmClass cls, CsmCompletionExpression exp) {
-            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE && CsmKindUtilities.isTemplate(cls)) {
-                List<CsmTemplateParameter> params = ((CsmTemplate) cls).getTemplateParameters();
-                if (params != null) {
-                    Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
-                    for (int i = 0; i + 1 < exp.getParameterCount() && i < params.size(); ++i) {
-                        CsmTemplateParameter param = params.get(i);
-                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
-                        if (paramInst != null) {
-                            mapping.put(param, resolveType(paramInst));
-                        } else {
-                            break;
-                        }
+        private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp) {
+            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                List<CsmType> params = new ArrayList<CsmType>();
+                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                for (int i = 0; i < paramsNumber; i++) {
+                    CsmCompletionExpression paramInst = exp.getParameter(i + 1);
+                    if (paramInst != null) {
+                        params.add(resolveType(paramInst));
+                    } else {
+                        break;
                     }
-                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    return ip.instantiateClass(cls, mapping);
                 }
+                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                return ip.instantiate(template, params);
             }
             return null;
         }

@@ -107,6 +107,7 @@ public class SearchRevisionsTest extends JellyTestCase {
 
             stream.flush();
             stream.close();
+            new EventTool().waitNoEvent(3000);
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {

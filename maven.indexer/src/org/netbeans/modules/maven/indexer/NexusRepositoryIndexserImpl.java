@@ -139,6 +139,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
+    private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
     private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
@@ -166,38 +167,6 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         //to prevent MaxClauseCount exception (will investigate better way)
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
-        try {
-            PlexusContainer embedder;
-            ContainerConfiguration config = new DefaultContainerConfiguration();
-            //#154755 - start
-            ClassWorld world = new ClassWorld();
-            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
-            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
-            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
-            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
-            // and the Dependency Injection won't work.
-            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
-            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/maven"); //NOI18N
-            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/plexus"); //NOI18N
-            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/maven"); //NOI18N
-            config.setClassWorld(world);
-            //#154755 - end
-            embedder = new DefaultPlexusContainer(config);
-
-            repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-            indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
-            searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
-            remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
-            contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
-        } catch (NoSuchRealmException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (DuplicateRealmException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (PlexusContainerException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         lookup = Lookups.singleton(this);
     }
 
@@ -209,9 +178,48 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         return lookup;
     }
 
+    private void initIndexer () {
+        if (!inited) {
+            try {
+                PlexusContainer embedder;
+                ContainerConfiguration config = new DefaultContainerConfiguration();
+	            //#154755 - start
+	            ClassWorld world = new ClassWorld();
+	            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
+	            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
+	            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
+	            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
+	            // and the Dependency Injection won't work.
+	            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
+	            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/maven"); //NOI18N
+	            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/plexus"); //NOI18N
+	            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/maven"); //NOI18N
+	            config.setClassWorld(world);
+	            //#154755 - end
+                embedder = new DefaultPlexusContainer(config);
+
+                repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+                indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
+                searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
+                remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
+                contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+                inited = true;
+            } catch (DuplicateRealmException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchRealmException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ComponentLookupException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (PlexusContainerException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     //always call from mutex.writeAccess
     private void loadIndexingContext(final RepositoryInfo... repoids) throws IOException {
         assert MUTEX.isWriteAccess();
+        initIndexer();
 
         for (RepositoryInfo info : repoids) {
             IndexingContext context = indexer.getIndexingContexts().get(info.getId());
@@ -271,7 +279,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 }
             }
         }
-        
+
         //figure if a repository was removed from list, remove from context.
         Set<String> currents = new HashSet<String>();
         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
@@ -385,9 +393,11 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         try {
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run() throws Exception {
-                    for (IndexingContext ic : indexer.getIndexingContexts().values()) {
-                        LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
-                        indexer.removeIndexingContext(ic, false);
+                    if (inited) {
+                        for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                            LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
+                            indexer.removeIndexingContext(ic, false);
+                        }
                     }
                     return null;
                 }
@@ -513,7 +523,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         }
         fireChangeIndex(repo);
     }
-    
+
     private void fireChangeIndex(final RepositoryInfo repo) {
         if (MUTEX.isWriteAccess()) {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -526,7 +536,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         assert !MUTEX.isWriteAccess() && !MUTEX.isReadAccess();
         repo.fireChangeIndex();
     }
-    
+
 
     private File getDefaultIndexLocation() {
         String userdir = System.getProperty("netbeans.user"); //NOI18N

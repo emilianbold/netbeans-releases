@@ -196,7 +196,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                         continue;
                     }
 
-                    errors.add ("File: " + fo + " attribute name: " + name);
+                    errors.add("File: " + fo.getPath() + " attribute name: " + name);
                 }
 
                 if (attr instanceof URL) {
@@ -205,10 +205,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     try {
                         read = u.openStream().read(new byte[4096]);
                     } catch (IOException ex) {
-                        errors.add(ex.getMessage());
+                        errors.add(fo.getPath() + ": " + ex.getMessage());
                     }
                     if (read <= 0) {
-                        errors.add("URL Resource shall exist: " + fo + " attr: " + name + " value: " + attr);
+                        errors.add("URL resource does not exist: " + fo.getPath() + " attr: " + name + " value: " + attr);
                     }
                 }
 

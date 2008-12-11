@@ -142,19 +142,29 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
 
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
-        pf.applyChanges();
-
-        // Find mimeTypes that do not have a customizer
-        Set<String> mimeTypes = new HashSet(EditorSettings.getDefault().getAllMimeTypes());
-        mimeTypes.removeAll(selector.getMimeTypes());
-
-        // and make sure that they do NOT override basic settings from All Languages
-        Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
-        for(String mimeType : mimeTypes) {
+        if (DEFAULT_PROFILE.equals(pf.getPreferences("").parent().get(USED_PROFILE, DEFAULT_PROFILE))) { //NOI18N
+            // no per-project formatting settings
+            Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
             try {
-                p.node(mimeType).removeNode();
+                removeAllKidsAndKeys(p);
             } catch (BackingStoreException bse) {
                 LOG.log(Level.WARNING, null, bse);
+            }
+        } else {
+            pf.applyChanges();
+
+            // Find mimeTypes that do not have a customizer
+            Set<String> mimeTypes = new HashSet<String>(EditorSettings.getDefault().getAllMimeTypes());
+            mimeTypes.removeAll(selector.getMimeTypes());
+
+            // and make sure that they do NOT override basic settings from All Languages
+            Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
+            for(String mimeType : mimeTypes) {
+                try {
+                    p.node(mimeType).removeNode();
+                } catch (BackingStoreException bse) {
+                    LOG.log(Level.WARNING, null, bse);
+                }
             }
         }
     }
@@ -245,9 +255,18 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
 
 private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalButtonActionPerformed
 
-    pf.getPreferences("").parent().put(USED_PROFILE, DEFAULT_PROFILE); //NOI18N
-    loadButton.setEnabled(false);
-    setEnabled(panel, false);
+    NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+            NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_use_global_settings_confirmation"), //NOI18N
+            NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_use_global_settings_confirmation_title"), //NOI18N
+            NotifyDescriptor.OK_CANCEL_OPTION
+    );
+
+    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+        pf.getPreferences("").parent().put(USED_PROFILE, DEFAULT_PROFILE); //NOI18N
+        loadButton.setEnabled(false);
+        setEnabled(panel, false);
+    }
+
 }//GEN-LAST:event_globalButtonActionPerformed
 
 private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
@@ -428,9 +447,15 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         this.copyOnFork = prefs.get(USED_PROFILE, null) == null;
         String profile = prefs.get(USED_PROFILE, DEFAULT_PROFILE);
         if (DEFAULT_PROFILE.equals(profile)) {
-            globalButton.doClick();
+            globalButton.setSelected(true);
+            loadButton.setEnabled(false);
+            setEnabled(panel, false);
+//            globalButton.doClick();
         } else {
-            projectButton.doClick();
+//            projectButton.doClick();
+            projectButton.setSelected(true);
+            loadButton.setEnabled(true);
+            setEnabled(panel, true);
         }
     }
     
