@@ -2378,12 +2378,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             final TypeElement enclClass = scope.getEnclosingClass();
-            final boolean isStatic = enclClass == null ? false :
-                (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
+            final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
+            final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
             final ExecutableElement method = scope.getEnclosingMethod();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
+                    boolean isStatic = ctxStatic || (t != null && t.getKind() == TypeKind.DECLARED && ((DeclaredType)t).asElement() != enclClass && enclStatic);
                     switch (e.getKind()) {
                         case CONSTRUCTOR:
                             return false;
