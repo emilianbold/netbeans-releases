@@ -109,7 +109,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder rootFolder = null;
     private HashMap<String,Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
-    private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
+    private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
@@ -250,11 +250,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public Set<ChangeListener> getProjectItemsChangeListeners() {
-        return projectItemsChangeListeners;
+        synchronized (projectItemsChangeListeners) {
+            return new HashSet<ChangeListener>(projectItemsChangeListeners);
+        }
     }
 
-    public void setProjectItemsChangeListeners(Set<ChangeListener> projectItemsChangeListeners) {
-        this.projectItemsChangeListeners = projectItemsChangeListeners;
+    public void setProjectItemsChangeListeners(Set<ChangeListener> newChangeListeners) {
+        synchronized (this.projectItemsChangeListeners) {
+            this.projectItemsChangeListeners.clear();
+            this.projectItemsChangeListeners.addAll(newChangeListeners);
+        }
     }
 
     public String getBaseDir() {
