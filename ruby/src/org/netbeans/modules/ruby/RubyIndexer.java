@@ -214,7 +214,7 @@ public class RubyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "6.105"; // NOI18N
+        return "6.106"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -1385,14 +1385,18 @@ public class RubyIndexer implements Indexer {
         }
 
         private void indexConstant(AstElement child, IndexDocument document, boolean nodoc) {
-            int flags = 0; // TODO
-            if (nodoc) {
-                flags |= IndexedElement.NODOC;
+//            int flags = 0; // TODO
+//            if (nodoc) {
+//                flags |= IndexedElement.NODOC;
+//            }
+
+            Set<? extends String> types = child.getTypes();
+            StringBuilder signature = new StringBuilder(child.getName() + ';');
+            if (!types.equals(RubyTypeAnalyzer.UNKNOWN_TYPE_SET)) {
+                signature.append(RubyUtils.join(types, "|"));
             }
 
-            String type = child.getType();
-            String base = child.getName() + ';' + (type == null ? "" : type);
-            document.addPair(FIELD_CONSTANT_NAME, base, true);
+            document.addPair(FIELD_CONSTANT_NAME, signature.toString(), true);
         }
 
         private void indexField(AstElement child, IndexDocument document, boolean nodoc) {

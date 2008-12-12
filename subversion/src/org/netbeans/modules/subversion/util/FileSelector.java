@@ -155,6 +155,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSelector.class, "LBL_FileSelector_Title"));                     // NOI18N
 
         dialog.setVisible(true);
+        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.subversion.FileSelector"));
         boolean ret = dialogDescriptor.getValue() == okButton;
         if(ret) {
             saveSelectedFile(files);

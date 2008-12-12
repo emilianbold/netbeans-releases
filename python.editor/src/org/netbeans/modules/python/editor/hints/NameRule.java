@@ -267,7 +267,7 @@ public class NameRule extends PythonAstRule {
     }
 
     static NameStyle getModuleNameStyle(Preferences pref) {
-        return getNameStyle(MODULE_STYLE_NAME, NameStyle.LOWERCASE, pref);
+        return getNameStyle(MODULE_STYLE_NAME, NameStyle.NO_PREFERENCE, pref);
     }
 
     static NameStyle getClassNameStyle(Preferences pref) {

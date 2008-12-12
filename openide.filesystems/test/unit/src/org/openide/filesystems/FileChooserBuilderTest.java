@@ -42,6 +42,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -142,10 +143,10 @@ public class FileChooserBuilderTest extends NbTestCase {
      * Test of setDefaultWorkingDirectory method, of class FileChooserBuilder.
      */
     @Test
-    public void testSetDefaultWorkingDirectory() {
+    public void testSetDefaultWorkingDirectory() throws IOException {
         System.out.println("setDefaultWorkingDirectory");
         FileChooserBuilder instance = new FileChooserBuilder("d");
-        File dir = new File(System.getProperty("java.io.tmpdir"));
+        File dir = getWorkDir();
         assertTrue("tmpdir is not sane", dir.exists() && dir.isDirectory());
         instance.setDefaultWorkingDirectory(dir);
         assertEquals(dir, instance.createFileChooser().getCurrentDirectory());
@@ -214,11 +215,11 @@ public class FileChooserBuilderTest extends NbTestCase {
     }
 
     @Test
-    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException {
+    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException {
         System.out.println("forceUseOfDefaultWorkingDirectory");
         FileChooserBuilder instance = new FileChooserBuilder("i");
         instance.setDirectoriesOnly(true);
-        final File toDir = new File(System.getProperty("java.io.tmpdir"));
+        final File toDir = getWorkDir();
         final File selDir = new File(toDir, "sel" + System.currentTimeMillis());
         if (!selDir.exists()) {
             assertTrue(selDir.mkdirs());
@@ -277,7 +278,7 @@ public class FileChooserBuilderTest extends NbTestCase {
             public void run() {
                 assertEquals(JFileChooser.APPROVE_OPTION, ch.showOpenDialog(null));
             }
-        }).waitFinished();
+        }).waitFinished(5000);
         synchronized (x) {
             x.wait(5000);
         }

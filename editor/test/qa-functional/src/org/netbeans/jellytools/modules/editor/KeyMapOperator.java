@@ -38,167 +38,329 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.modules.editor;
 
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.util.Vector;
 import javax.swing.ComboBoxModel;
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.HelpOperator;
+import javax.swing.JButton;
+import javax.swing.table.TableModel;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class KeyMapOperator extends JDialogOperator{
-    
-    
-    private static final String DUPLICATE_BUTTON  = "Duplicate";
-    private static final String RESTORE_BUTTON  = "Restore";
-    private static final String DELETE_BUTTON  = "Delete";
-    private static final String ADD_BUTTON  = "Add ...";
-    private static final String REMOVE_BUTTON  = "Remove";
-    
+public class KeyMapOperator extends JDialogOperator {
+
+    private static final String DUPLICATE_BUTTON = "Duplicate";
+    private static final String RESTORE_BUTTON = "Restore";
+    private static final String DELETE_BUTTON = "Delete";
     private JComboBoxOperator profile;
-    private JButtonOperator duplicate;
-    private JButtonOperator restore;
-    private JButtonOperator delete;
-    private JTreeOperator actions;
-    private JListOperator shortcuts;
-    private JButtonOperator add;
-    private JButtonOperator remove;
-    
+    private JTableOperator actionsTable;
+    private JButtonOperator manageProfilesButton;
+    private JTextFieldOperator actionSearchByName;
+    private JTextFieldOperator actionSearchByShortcut;
     private static OptionsOperator options;
-    
+
     /** Creates a new instance of KeyMapOperator */
     public KeyMapOperator() {
         super("Options");
+        System.out.println("[TEST_DEBUG] KeyMapOperator ");
+        System.out.println("[TEST_DEBUG] ===============");
     }
-    
+
     public static KeyMapOperator invoke() {
         options = OptionsOperator.invoke();
-        options.selectKeymap();        
-        new EventTool().waitNoEvent(500);                        
+        options.selectKeymap();
+        new EventTool().waitNoEvent(500);
         return new KeyMapOperator();
     }
-    
+
     public JComboBoxOperator profile() {
-        if(profile==null) {
+        if (profile == null) {
             profile = new JComboBoxOperator(this);
         }
         return profile;
     }
-    
-    public JButtonOperator duplicate() {
-        if(duplicate==null) {
-            duplicate = new JButtonOperator(this, DUPLICATE_BUTTON);
+
+    public JTableOperator actionsTable() {
+        if (actionsTable == null) {
+            actionsTable = new JTableOperator(this);
         }
-        return duplicate;
+        return actionsTable;
     }
-    
-    public JButtonOperator delete() {
-        if(delete==null) {
-            delete = new JButtonOperator(this, DELETE_BUTTON);
+
+    public JButtonOperator manageProfilesButton() {
+        if (manageProfilesButton == null) {
+            manageProfilesButton = new JButtonOperator(this, "Manage Profiles...");
         }
-        return delete;
+        return manageProfilesButton;
     }
-    
-    public JButtonOperator restore() {
-        if(restore==null) {
-            restore = new JButtonOperator(this, RESTORE_BUTTON);
+
+    public JTextFieldOperator actionSearchByName() {
+        if (actionSearchByName == null) {
+            actionSearchByName = new JTextFieldOperator(this, 0);
         }
-        return restore;
+        return actionSearchByName;
     }
-    
-    public JTreeOperator actions() {
-        if(actions==null) {
-            actions = new JTreeOperator(this);
+
+    public JTextFieldOperator actionSearchByShortcut() {
+        if (actionSearchByShortcut == null) {
+            actionSearchByShortcut = new JTextFieldOperator(this, 1);
         }
-        return actions;
+        return actionSearchByShortcut;
     }
-    
-    public JListOperator shortcuts() {
-        if(shortcuts==null) {
-            shortcuts = new JListOperator(this);
+
+    public void searchActionName(String actionName) {
+        actionSearchByName().setText(actionName);
+        sleep(3000);
+    }
+
+    public TableModel getActionsTableModel() {
+        JTableOperator tab = actionsTable();
+        return tab.getModel();
+    }
+
+    private int buildKeyModifierMask(boolean ctrl, boolean alt, boolean shift) {
+        int _mask = 0;
+        if (ctrl) {
+            _mask = _mask | KeyEvent.CTRL_DOWN_MASK;
         }
-        return shortcuts;
-    }
-    
-    public JButtonOperator add() {
-        if(add==null) {
-            add = new JButtonOperator(this, ADD_BUTTON);
+        if (alt) {
+            _mask = _mask | KeyEvent.ALT_DOWN_MASK;
         }
-        return add;
-    }
-    
-    public JButtonOperator remove() {
-        if(remove==null) {
-            remove = new JButtonOperator(this, REMOVE_BUTTON);
+        if (shift) {
+            _mask = _mask | KeyEvent.SHIFT_DOWN_MASK;
         }
-        return remove;
+        return _mask;
     }
-    
+
+    private JListOperator clickShortcutEllipsisButton(JTableOperator tab, int row) {
+        TableModel tm = tab.getModel();
+        org.netbeans.modules.options.keymap.ShortcutCell sc = (org.netbeans.modules.options.keymap.ShortcutCell) tm.getValueAt(row, 1);
+        final JButton button = sc.getButton();
+        int x = button.getX() + button.getWidth() / 2;
+        int y = button.getY() + button.getHeight() / 2;
+        Rectangle r = tab.getCellRect(row, 1, false);
+        tab.clickMouse(r.x + x, r.y + y, 1);
+        System.out.println("[TEST_DEBUG]  Pressed [...] button on row " + (row + 1));
+        return new JListOperator(new JPopupMenuOperator());
+    }
+
+    private void injectKeyBinding(JTableOperator tab, int Key, int mask) {
+        tab.pushKey(Key, mask);
+        tab.pushKey(KeyEvent.VK_ENTER);
+        System.out.println("[TEST_DEBUG]  -> pressing shortcut: [key,mask] = [" + Key + "," + mask + "]");
+    }
+
+    public Vector<String> getAllShortcutsForAction(String actionName) {
+        System.out.println("[TEST_DEBUG]");
+        System.out.println("[TEST_DEBUG] ### Examining all shortcuts for action: " + actionName);
+        Vector<String> lstr = new Vector<String>();
+        String tmpStr = actionSearchByName().getText();
+        searchActionName(actionName);
+        TableModel tm = getActionsTableModel();
+        String _str;
+        String _scStr;
+        for (int i = 0; i < tm.getRowCount(); i++) {
+            _str = tm.getValueAt(i, 0).toString();
+            if (_str.toLowerCase().equals(actionName.toLowerCase()) || _str.toLowerCase().equals(actionName.toLowerCase() + " (alternative shortcut)")) {
+                _scStr = tm.getValueAt(i, 1).toString().toLowerCase();
+                lstr.add(_scStr);
+                System.out.println("[TEST_DEBUG]  -> found action \"" + _str + "\" with shortcut " + _scStr);
+            }
+        }
+        searchActionName(tmpStr);
+        System.out.println("[TEST_DEBUG] ### Examining all shortcuts done");
+        return lstr;
+    }
+
+    public boolean assignShortcutToAction(String actionName, boolean ctrl, boolean shift, boolean alt, int Key) {
+        return assignShortcutToAction(actionName, ctrl, shift, alt, Key, false, false);
+    }
+
+    public boolean assignShortcutToAction(String actionName, boolean ctrl, boolean shift, boolean alt, int Key, boolean expectedAlreadyAssigned, boolean reassign) {
+        System.out.println("[TEST_DEBUG]");
+        System.out.println("[TEST_DEBUG] ### Reassigning shortcut for " + actionName + " - Started");
+        int mask = buildKeyModifierMask(ctrl, alt, shift);
+        String tmpStr = actionSearchByName().getText();
+        searchActionName(actionName);
+        JTableOperator tab = actionsTable();
+        TableModel tm = tab.getModel();
+        String _str;
+        System.out.println("[TEST_DEBUG]  Found " + tab.getRowCount() + " actions matching action pattern: " + actionName);
+        for (int i = 0; i < tab.getRowCount(); i++) {
+            _str = tm.getValueAt(i, 0).toString();
+            System.out.println("[TEST_DEBUG]  Examining action \"" + _str + "\", which is no. " + (i + 1) + " in the table...");
+            if (_str.toLowerCase().equals(actionName.toLowerCase())) {
+                System.out.println("[TEST_DEBUG]  -> action \"" + _str + "\" (" + actionName + ") was found");
+                sleep(1000);
+                tab.clickForEdit(i, 1);
+                sleep(1000);
+                injectKeyBinding(tab, Key, mask);
+                if (expectedAlreadyAssigned) {
+                    if (reassign) {
+                        new NbDialogOperator("Conflicting Shortcut Dialog").yes();
+                    } else {
+                        new NbDialogOperator("Conflicting Shortcut Dialog").cancel();
+                    }
+                }
+                sleep(1000);
+                break;
+            }
+        }
+        searchActionName(tmpStr);
+        System.out.println("[TEST_DEBUG] ### Reassigning shortcut for " + actionName + " - OK");
+        return true;
+    }
+
+    public boolean assignAlternativeShortcutToAction(String actionName, boolean ctrl, boolean shift, boolean alt, int Key) {
+        return assignAlternativeShortcutToAction(actionName, ctrl, shift, alt, Key, false, false);
+    }
+
+    public boolean assignAlternativeShortcutToAction(String actionName, boolean ctrl, boolean shift, boolean alt, int Key, boolean expectedAlreadyAssigned, boolean reassign) {
+        boolean retval = false;
+        System.out.println("[TEST_DEBUG]");
+        System.out.println("[TEST_DEBUG] ### Assigning alternative shortcut for " + actionName + " - Started");
+        int mask = buildKeyModifierMask(ctrl, alt, shift);
+        String tmpStr = actionSearchByName().getText();
+        searchActionName(actionName);
+        JTableOperator tab = actionsTable();
+        TableModel tm = tab.getModel();
+        String _str;
+        System.out.println("[TEST_DEBUG]  Found " + tab.getRowCount() + " actions matching action pattern: " + actionName);
+        for (int i = 0; i < tab.getRowCount(); i++) {
+            _str = tm.getValueAt(i, 0).toString();
+            System.out.println("[TEST_DEBUG]  Examining action " + _str + ", which is no. " + (i + 1) + "in the table...");
+            if (_str.toLowerCase().equals(actionName.toLowerCase())) {
+                System.out.println("[TEST_DEBUG]  Action " + actionName + "was found");
+                JListOperator jli = clickShortcutEllipsisButton(tab, i);
+                retval = true;
+                try {
+                    jli.clickOnItem("Add Alternative");
+                } catch (Exception e) {
+                    retval = false;
+                }
+                sleep(1000);
+                injectKeyBinding(tab, Key, mask);
+                if (expectedAlreadyAssigned) {
+                    if (reassign) {
+                        new NbDialogOperator("Conflicting Shortcut Dialog").yes();
+                    } else {
+                        new NbDialogOperator("Conflicting Shortcut Dialog").cancel();
+                    }
+                }
+                sleep(1000);
+                System.out.println("[TEST_DEBUG] ### Assigning alternative shortcut for " + actionName + " - OK");
+                break;
+            }
+        }
+        searchActionName(tmpStr);
+        return retval;
+    }
+
+    public boolean unassignAlternativeShortcutToAction(String actionName, String shortcutStr) {
+        System.out.println("[TEST_DEBUG]");
+        System.out.println("[TEST_DEBUG] ### Unassigning alternative shortcut for " + actionName + " - Started");
+        String tmpStr = actionSearchByName().getText();
+        searchActionName(actionName);
+        JTableOperator tab = actionsTable();
+        TableModel tm = tab.getModel();
+        String _str;
+        System.out.println("[TEST_DEBUG]  Found " + tab.getRowCount() + " actions matching action pattern: " + actionName);
+        for (int i = 0; i < tab.getRowCount(); i++) {
+            _str = tm.getValueAt(i, 0).toString();
+            System.out.println("[TEST_DEBUG]  Examining action " + _str + ", which is no. " + (i + 1) + "in the table...");
+            if (_str.toLowerCase().startsWith(actionName.toLowerCase()) && tm.getValueAt(i, 1).toString().toLowerCase().equals(shortcutStr.toLowerCase())) {
+                System.out.println("[TEST_DEBUG]  Action " + actionName + "was found");
+                JListOperator jli = clickShortcutEllipsisButton(tab, i);
+                jli.clickOnItem("Clear");
+                sleep(1000);
+                System.out.println("[TEST_DEBUG] ### Unassigning alternative shortcut for " + actionName + " - OK");
+                break;
+            }
+        }
+        searchActionName(tmpStr);
+        return true;
+    }
+
+    public void restoreProfile(String profileName) {
+        manageProfilesButton().push();
+        ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
+        mpdo.Restore(profileName);
+        mpdo.ok();
+    }
+
+    public void duplicateProfile(String profileNameOrig, String profileNameNew) {
+        manageProfilesButton().push();
+        ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
+        mpdo.Duplicate(profileNameOrig, profileNameNew);
+        mpdo.ok();
+    }
+
+    public void checkProfilesPresent(String... profileNames) {
+        manageProfilesButton().push();
+        ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
+        mpdo.checkProfileListContent(profileNames);
+        mpdo.ok();
+    }
+
     public JButtonOperator ok() {
         return options.btOK();
     }
-    
+
     public JButtonOperator cancel() {
         return options.btCancel();
     }
-    
+
     public JButtonOperator help() {
         return options.btHelp();
     }
-    
-    public void selectAction(String path) {
-        Node n = new Node(actions(), path);
-        n.select();
-    }
-    
+
     public void selectProfile(String profile) {
         JComboBoxOperator combo = profile();
-        if(combo.getSelectedItem().toString().equals(profile)) return; //no need to switch profile
-        ComboBoxModel model = combo.getModel();        
+        if (combo.getSelectedItem().toString().equals(profile)) {
+            return; //no need to switch profile
+        }
+        ComboBoxModel model = combo.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             Object item = model.getElementAt(i);
-            if(item.toString().equals(profile)) {
+            if (item.toString().equals(profile)) {
                 combo.setSelectedIndex(i);
                 return;
             }
         }
-        throw new IllegalArgumentException("Profile "+profile+" not found");
+        throw new IllegalArgumentException("Profile " + profile + " not found");
     }
-    
-    
+
     public void verify() {
         profile();
-        duplicate();
-        restore();
-        actions();   
-        shortcuts();
-        add();
-        remove();
+        actionsTable();
+        actionSearchByName();
+        actionSearchByShortcut();
+        manageProfilesButton();
         ok();
         cancel();
         help();
     }
-    
-    
-    
-    
-    public static void main(String[] args) throws InterruptedException {
-        //KeyMapOperator.invoke().verify();
-        KeyMapOperator.invoke().selectAction("Other|select-line");
-        
-        
-    }
 
-    
+    private void sleep(int miliseconds) {
+        try {
+            Thread.sleep(miliseconds);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }

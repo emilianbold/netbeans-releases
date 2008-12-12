@@ -47,15 +47,16 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.libs.jna</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.jruby</friend>
+                <friend>org.netbeans.core.nativeaccess</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jna-3.0.2.jar</runtime-relative-path>
-                <binary-origin>external/jna-3.0.2.jar</binary-origin>
+                <runtime-relative-path>ext/jna-3.0.9.jar</runtime-relative-path>
+                <binary-origin>external/jna-3.0.9.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

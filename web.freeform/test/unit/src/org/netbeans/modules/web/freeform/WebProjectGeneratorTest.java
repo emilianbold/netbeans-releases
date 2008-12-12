@@ -50,6 +50,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -264,7 +265,21 @@ public class WebProjectGeneratorTest extends NbTestCase {
         validate(p);
     }
     
-    
+    //Tests issue: #147128:J2SESources does not register new external roots immediately
+    public void testProjectFromExtSourcesOwnsTheSources() throws Exception
+    {
+        AntProjectHelper helper = createEmptyProject("proj-testFileOwner", "proj-testFileOwner");
+
+        File root = FileUtil.toFile(helper.getProjectDirectory());
+        File srcRoot = new File (root, "src");
+        File testRoot = new File (root, "test");
+
+        final Project expected = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        assertNotNull(expected);
+        assertEquals(expected, FileOwnerQuery.getOwner(srcRoot.toURI()));
+        assertEquals(expected, FileOwnerQuery.getOwner(testRoot.toURI()));
+    }
+
     // create real Jar otherwise FileUtil.isArchiveFile returns false for it
     public void createRealJarFile(File f) throws Exception {
         OutputStream os = new FileOutputStream(f);

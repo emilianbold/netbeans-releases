@@ -265,7 +265,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
     }
 
     private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        String[] insertSQL = null;
+        String insertSQL = null;
         try {
             Object[] insertedRow = getInsertValues();
 
@@ -317,7 +317,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         try {
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-                String sql = stmtBldr.generateInsertStatement(getInsertValues())[1];
+                String sql = stmtBldr.generateRawInsertStatement(getInsertValues());
                 jEditorPane1.setContentType("text/x-sql"); // NOI18N
                 jEditorPane1.setText(sql);
             }
@@ -414,23 +414,23 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_0) {
                     if (col.isGenerated() || !col.isNullable()) {
                         Toolkit.getDefaultToolkit().beep();
-                    } else if (colValueTextField[index].isEditable()) {
-                        colValueTextField[index].setText("<NULL>"); // NOI18N
-                        colValueTextField[index].setEditable(false);
-                    } else if (!colValueTextField[index].isEditable()) {
+                    } else if (!colValueTextField[index].isEditable() && colValueTextField[index].getText().equals("<NULL>")) {
                         colValueTextField[index].setText(""); // NOI18N
                         colValueTextField[index].setEditable(true);
+                    } else {
+                        colValueTextField[index].setText("<NULL>"); // NOI18N
+                        colValueTextField[index].setEditable(false);
                     }
                 } else if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_1) {
                     if (col.isGenerated() || !col.isNullable()) {
                         Toolkit.getDefaultToolkit().beep();
-                    } else if (colValueTextField[index].isEditable()) {
-                        colValueTextField[index].setText("<DEFAULT>"); // NOI18N
-                        colValueTextField[index].setEditable(false);
-                    } else if (!colValueTextField[index].isEditable()) {
+                    }else if (!colValueTextField[index].isEditable() && colValueTextField[index].getText().equals("<DEFAULT>")) {
                         colValueTextField[index].setText(""); // NOI18N
                         colValueTextField[index].setEditable(true);
-                    }
+                    } else {
+                        colValueTextField[index].setText("<DEFAULT>"); // NOI18N
+                        colValueTextField[index].setEditable(false);
+                    } 
                 }
             }
 
@@ -472,17 +472,13 @@ class InsertRecordDialog extends javax.swing.JDialog {
         for (int i = 0; i < colValueTextField.length; i++) {
             JTextField textField = colValueTextField[i];
             DBColumn col = dataView.getDataViewDBTable().getColumn(i);
-            Object val;
-            if (col.isGenerated()) {
-                val = null;
-            } else if (col.isNullable() && textField.getText().equals("<NULL>") && !textField.isEditable()) { // NOI18N
-                val = null;
-            } else if (textField.getText().equals("<DEFAULT>") && !textField.isEditable()) { // NOI18N
-                val = "<DEFAULT>"; // NOI18N
-            } else {
-                val = DBReadWriteHelper.validate(textField.getText(), col);
+            String value = textField.getText();
+            // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+            if(value.startsWith("<") && value.endsWith(">")) {
+                insertData[i] = value;
+            } else { // ELSE literals
+                insertData[i] = DBReadWriteHelper.validate(value, col);
             }
-            insertData[i] = val;
         }
         return insertData;
     }

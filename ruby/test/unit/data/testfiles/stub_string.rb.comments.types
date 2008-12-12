@@ -1,0 +1,960 @@
+#     str % arg   => new_str
+  ==> [String]
+
+#     str * integer   => new_str
+  ==> [String]
+
+#     str + other_str   => new_str
+  ==> [String]
+
+#     str << fixnum        => str
+  ==> [String]
+
+#     str.concat(fixnum)   => str
+  ==> [String]
+
+#     str << obj           => str
+  ==> [String]
+
+#     str.concat(obj)      => str
+  ==> [String]
+
+#     str << fixnum        => str
+  ==> [String]
+
+#     str.concat(fixnum)   => str
+  ==> [String]
+
+#     str << obj           => str
+  ==> [String]
+
+#     str.concat(obj)      => str
+  ==> [String]
+
+#     str <=> other_str   => -1, 0, +1
+  ==> []
+
+#     str == obj   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str =~ obj   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.bytes   => anEnumerator
+  ==> [Enumeration]
+
+#     str.bytes {|fixnum| block }    => str
+  ==> [String]
+
+#     str.length   => integer
+  ==> [Integer]
+
+#     str.capitalize!   => str or nil
+  ==> [String, NilClass]
+
+#     str.capitalize   => new_str
+  ==> [String]
+
+#     str.casecmp(other_str)   => -1, 0, +1
+  ==> []
+
+#     str.center(integer, padstr)   => new_str
+  ==> [String]
+
+#     str.chars                   => anEnumerator
+  ==> [Enumeration]
+
+#     str.chars {|substr| block } => str
+  ==> [String]
+
+#     str.chomp!(separator=$/)   => str or nil
+  ==> [String, NilClass]
+
+#     str.chomp(separator=$/)   => new_str
+  ==> [String]
+
+#     str.chop!   => str or nil
+  ==> [String, NilClass]
+
+#     str.chop   => new_str
+  ==> [String]
+
+#     str << fixnum        => str
+  ==> [String]
+
+#     str.concat(fixnum)   => str
+  ==> [String]
+
+#     str << obj           => str
+  ==> [String]
+
+#     str.concat(obj)      => str
+  ==> [String]
+
+#     str << fixnum        => str
+  ==> [String]
+
+#     str.concat(fixnum)   => str
+  ==> [String]
+
+#     str << obj           => str
+  ==> [String]
+
+#     str.concat(obj)      => str
+  ==> [String]
+
+#     str.count([other_str]+)   => fixnum
+  ==> [Fixnum]
+
+#     str.crypt(other_str)   => new_str
+  ==> [String]
+
+#     str.delete!([other_str]+>)   => str or nil
+  ==> [String, NilClass]
+
+#     str.delete([other_str]+)   => new_str
+  ==> [String]
+
+#     str.downcase!   => str or nil
+  ==> [String, NilClass]
+
+#     str.downcase   => new_str
+  ==> [String]
+
+#     str.dump   => new_str
+  ==> [String]
+
+#     str.each(separator=$/) {|substr| block }        => str
+  ==> [String]
+
+#     str.each_line(separator=$/) {|substr| block }   => str
+  ==> [String]
+
+#     str.each(separator=$/) {|substr| block }        => str
+  ==> [String]
+
+#     str.each_line(separator=$/) {|substr| block }   => str
+  ==> [String]
+
+#     str.each_byte {|fixnum| block }    => str
+  ==> [String]
+
+#     str.each_char {|cstr| block }    => str
+  ==> [String]
+
+#     str.each(separator=$/) {|substr| block }        => str
+  ==> [String]
+
+#     str.each_line(separator=$/) {|substr| block }   => str
+  ==> [String]
+
+#     str.each(separator=$/) {|substr| block }        => str
+  ==> [String]
+
+#     str.each_line(separator=$/) {|substr| block }   => str
+  ==> [String]
+
+#     str.empty?   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.end_with?([suffix]+)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.eql?(other)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.gsub!(pattern, replacement)        => str or nil
+  ==> [String, NilClass]
+
+#     str.gsub!(pattern) {|match| block }    => str or nil
+  ==> [String, NilClass]
+
+#     str.gsub!(pattern, replacement)        => str or nil
+  ==> [String, NilClass]
+
+#     str.gsub!(pattern) {|match| block }    => str or nil
+  ==> [String, NilClass]
+
+#     str.gsub(pattern, replacement)       => new_str
+  ==> [String]
+
+#     str.gsub(pattern) {|match| block }   => new_str
+  ==> [String]
+
+#     str.gsub(pattern, replacement)       => new_str
+  ==> [String]
+
+#     str.gsub(pattern) {|match| block }   => new_str
+  ==> [String]
+
+#     str.hash   => fixnum
+  ==> [Fixnum]
+
+#     str.hex   => integer
+  ==> [Integer]
+
+#     str.include? other_str   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.include? fixnum      => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.index(substring [, offset])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(fixnum [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(regexp [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(substring [, offset])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(fixnum [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(regexp [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(substring [, offset])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(fixnum [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.index(regexp [, offset])      => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.replace(other_str)   => str
+  ==> [String]
+
+#     str.insert(index, other_str)   => str
+  ==> [String]
+
+#     str.inspect   => string
+  ==> [String]
+
+#     str.intern   => symbol
+  ==> [Symbol]
+
+#     str.to_sym   => symbol
+  ==> [Symbol]
+
+#     str.length   => integer
+  ==> [Integer]
+
+#     str.lines(separator=$/)   => anEnumerator
+  ==> [Enumeration]
+
+#     str.lines(separator=$/) {|substr| block }        => str
+  ==> [String]
+
+#     str.ljust(integer, padstr=' ')   => new_str
+  ==> [String]
+
+#     str.lstrip!   => self or nil
+  ==> [NilClass]
+
+#     str.lstrip   => new_str
+  ==> [String]
+
+#     str.match(pattern)   => matchdata or nil
+  ==> [NilClass]
+
+#     String.new(str="")   => new_str
+  ==> [String]
+
+#     str.succ!   => str
+  ==> [String]
+
+#     str.next!   => str
+  ==> [String]
+
+#     str.succ   => new_str
+  ==> [String]
+
+#     str.next   => new_str
+  ==> [String]
+
+#     str.oct   => integer
+  ==> [Integer]
+
+#     str.partition(sep)              => [head, sep, tail]
+  ==> []
+
+#     str.replace(other_str)   => str
+  ==> [String]
+
+#     str.reverse!   => str
+  ==> [String]
+
+#     str.reverse   => new_str
+  ==> [String]
+
+#     str.rindex(substring [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(fixnum [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(regexp [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(substring [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(fixnum [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(regexp [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(substring [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(fixnum [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rindex(regexp [, fixnum])   => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.rjust(integer, padstr=' ')   => new_str
+  ==> [String]
+
+#     str.rpartition(sep)            => [head, sep, tail]
+  ==> []
+
+#     str.rstrip!   => self or nil
+  ==> [NilClass]
+
+#     str.rstrip   => new_str
+  ==> [String]
+
+#     str.scan(pattern)                         => array
+  ==> [Array]
+
+#     str.scan(pattern) {|match, ...| block }   => str
+  ==> [String]
+
+#     str.length   => integer
+  ==> [Integer]
+
+#     str.slice!(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice!(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice!(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice!(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice!(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice!(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice!(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str[fixnum]                 => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str[fixnum, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[range]                  => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp]                 => new_str or nil
+  ==> [String, NilClass]
+
+#     str[regexp, fixnum]         => new_str or nil
+  ==> [String, NilClass]
+
+#     str[other_str]              => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(fixnum)           => fixnum or nil
+  ==> [Fixnum, NilClass]
+
+#     str.slice(fixnum, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(range)            => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp)           => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(regexp, fixnum)   => new_str or nil
+  ==> [String, NilClass]
+
+#     str.slice(other_str)        => new_str or nil
+  ==> [String, NilClass]
+
+#     str.split(pattern=$;, [limit])   => anArray
+  ==> [Array]
+
+#     str.squeeze!([other_str]*)   => str or nil
+  ==> [String, NilClass]
+
+#     str.squeeze([other_str]*)    => new_str
+  ==> [String]
+
+#     str.start_with?([prefix]+)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     str.strip!   => str or nil
+  ==> [String, NilClass]
+
+#     str.strip   => new_str
+  ==> [String]
+
+#     str.sub!(pattern, replacement)          => str or nil
+  ==> [String, NilClass]
+
+#     str.sub!(pattern) {|match| block }      => str or nil
+  ==> [String, NilClass]
+
+#     str.sub!(pattern, replacement)          => str or nil
+  ==> [String, NilClass]
+
+#     str.sub!(pattern) {|match| block }      => str or nil
+  ==> [String, NilClass]
+
+#     str.sub(pattern, replacement)         => new_str
+  ==> [String]
+
+#     str.sub(pattern) {|match| block }     => new_str
+  ==> [String]
+
+#     str.sub(pattern, replacement)         => new_str
+  ==> [String]
+
+#     str.sub(pattern) {|match| block }     => new_str
+  ==> [String]
+
+#     str.succ!   => str
+  ==> [String]
+
+#     str.next!   => str
+  ==> [String]
+
+#     str.succ   => new_str
+  ==> [String]
+
+#     str.next   => new_str
+  ==> [String]
+
+#     str.sum(n=16)   => integer
+  ==> [Integer]
+
+#     str.swapcase!   => str or nil
+  ==> [String, NilClass]
+
+#     str.swapcase   => new_str
+  ==> [String]
+
+#     str.to_f   => float
+  ==> [Float]
+
+#     str.to_i(base=10)   => integer
+  ==> [Integer]
+
+#     str.to_s     => str
+  ==> [String]
+
+#     str.to_str   => str
+  ==> [String]
+
+#     str.to_s     => str
+  ==> [String]
+
+#     str.to_str   => str
+  ==> [String]
+
+#     str.intern   => symbol
+  ==> [Symbol]
+
+#     str.to_sym   => symbol
+  ==> [Symbol]
+
+#     str.tr!(from_str, to_str)   => str or nil
+  ==> [String, NilClass]
+
+#     str.tr(from_str, to_str)   => new_str
+  ==> [String]
+
+#     str.tr_s!(from_str, to_str)   => str or nil
+  ==> [String, NilClass]
+
+#     str.tr_s(from_str, to_str)   => new_str
+  ==> [String]
+
+#     str.unpack(format)   => anArray
+  ==> [Array]
+
+#     str.upcase!   => str or nil
+  ==> [String, NilClass]
+
+#     str.upcase   => new_str
+  ==> [String]
+
+#     str.upto(other_str, exclusive=false) {|s| block }   => str
+  ==> [String]
+
