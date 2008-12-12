@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ViewNodeProvider extends NodeProvider {
 

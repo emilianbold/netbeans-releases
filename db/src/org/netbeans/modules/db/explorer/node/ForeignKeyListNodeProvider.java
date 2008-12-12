@@ -45,7 +45,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ForeignKeyListNodeProvider extends ConnectedNodeProvider {
 

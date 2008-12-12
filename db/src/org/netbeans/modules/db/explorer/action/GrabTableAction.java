@@ -55,7 +55,6 @@ import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.action.GrabTableHelper;
 import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.metadata.model.api.Column;
@@ -73,7 +72,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class GrabTableAction extends BaseAction {
 

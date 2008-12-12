@@ -52,7 +52,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class CreateTableAction extends BaseAction {
 

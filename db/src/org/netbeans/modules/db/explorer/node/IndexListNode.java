@@ -53,7 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class IndexListNode extends BaseNode {
     private static final String NAME = "Indexes"; // NOI18N

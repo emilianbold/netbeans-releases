@@ -57,7 +57,7 @@ import org.netbeans.modules.db.metadata.model.api.View;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ViewNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";

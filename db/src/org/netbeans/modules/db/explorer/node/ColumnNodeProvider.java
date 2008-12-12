@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ColumnNodeProvider extends NodeProvider {
 

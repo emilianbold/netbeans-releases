@@ -53,10 +53,10 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/schema.png"; // NOI18N
     private static final String FOLDER = "Schema"; //NOI18N
 
     /**
@@ -72,7 +72,7 @@ public class SchemaNode extends BaseNode {
     }
 
     private String name = ""; // NOI18N
-    private String htmlName = null; // NOI18N
+    private String htmlName = null;
 
     private MetadataElementHandle<Schema> schemaHandle;
     private final DatabaseConnection connection;
@@ -130,7 +130,7 @@ public class SchemaNode extends BaseNode {
 
         if (schema != null) {
             if (schema.isDefault()) {
-                htmlName = "<b>" + name + "</b>";
+                htmlName = "<b>" + name + "</b>"; // NOI18N
             }
         }
     }
