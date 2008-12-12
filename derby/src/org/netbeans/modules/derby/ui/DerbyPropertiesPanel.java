@@ -176,6 +176,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         
         String error = null;
         String warning = null;
+        String info = null;
         
         String location = getInstallLocation();
         if (location !=  null && location.length() > 0) {
@@ -186,6 +187,8 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             if (!Util.isDerbyInstallLocation(locationFile)) {
                 error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
             }
+        } else if (location.length() == 0) {
+            info = NbBundle.getMessage(DerbyOptions.class, "INFO_EnterDerbyLocation"); // NOI18N
         }
 
         if (error == null) {
@@ -196,7 +199,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
 
             if (derbySystemHome.exists() && !derbySystemHome.isDirectory()) {
                 error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotDirectory");
-            } else if (!derbySystemHome.getPath().equals("") && !derbySystemHome.isAbsolute()) {
+            } else if ((derbySystemHome.getPath().length() > 0) && !derbySystemHome.isAbsolute()) {
                 error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotAbsolute");
             }
         }
@@ -207,6 +210,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         } else if (warning != null) {
             descriptor.setValid(false);
             descriptor.getNotificationLineSupport().setWarningMessage(warning);
+        } else if (info != null) {
+            descriptor.setValid(false);
+            descriptor.getNotificationLineSupport().setInformationMessage(info);
         } else {
             descriptor.setValid(true);
             descriptor.getNotificationLineSupport().clearMessages();
