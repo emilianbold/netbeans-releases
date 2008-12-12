@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,10 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     /** Overridden to combine the expansion border (whose insets determine how
      * much a child tree node is shifted to the right relative to the ancestor
      * root node) with whatever border is set, as a CompoundBorder.  The expansion
-     * border is also responsible for drawing the expansion icon.  */
+     * border is also responsible for drawing the expansion icon.
+     * @param b the border to be rendered for this component
+     */
+    @Override
     public final void setBorder (Border b) {
         if (b == expansionBorder) {
             super.setBorder(b);
@@ -168,12 +171,12 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         if (tbl.isTreeColumnIndex(column)) {
             AbstractLayoutCache layout = tbl.getLayoutCache();
             row = tbl.convertRowIndexToModel(row);
-            boolean leaf = tbl.getOutlineModel().isLeaf(value);
-            setLeaf(leaf);
+            boolean isleaf = tbl.getOutlineModel().isLeaf(value);
+            setLeaf(isleaf);
             setShowHandle(true);
             TreePath path = layout.getPathForRow(row);
-            boolean expanded = layout.isExpanded(path);
-            setExpanded (expanded);
+            boolean isExpanded = layout.isExpanded(path);
+            setExpanded (isExpanded);
             int nd = path.getPathCount() - (tbl.isRootVisible() ? 1 : 2);
             if (nd < 0) {
                 nd = 0;
@@ -204,8 +207,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 icon = rendata.getIcon(value);
             } 
             if (icon == null) {
-                if (!leaf) {
-                    if (expanded) {
+                if (!isleaf) {
+                    if (isExpanded) {
                         setIcon (getDefaultOpenIcon());
                     } else { // ! expanded
                         setIcon (getDefaultClosedIcon());
