@@ -557,7 +557,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
 
-            co.setTypes(RubyTypeAnalyzer.expressionTypeOfRHS(constNode));
+            co.setTypes(RubyTypeAnalyzer.inferTypesOfRHS(constNode));
             co.setIn(in);
 
             if (parent != null) {
@@ -638,7 +638,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
                     assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
-                    co.setTypes(RubyTypeAnalyzer.expressionTypeOfRHS(node));
+                    co.setTypes(RubyTypeAnalyzer.inferTypesOfRHS(node));
                     co.setIn(in);
                     structure.add(co);
                 }

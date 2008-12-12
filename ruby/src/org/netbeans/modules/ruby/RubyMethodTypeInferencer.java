@@ -70,7 +70,7 @@ final class RubyMethodTypeInferencer {
     private Set<? extends String> inferType() {
         String name = callNode.getName();
         Node receiver = callNode.getReceiverNode();
-        String receiverName = getReceiverName(receiver);
+        String receiverName = getReceiverType(receiver);
         // If you call Foo.new I'm going to assume the type of the expression if "Foo"
         if ("new".equals(name)) { // NOI18N
             return Collections.singleton(receiverName);
@@ -141,13 +141,14 @@ final class RubyMethodTypeInferencer {
         }
     }
 
-    private String getReceiverName(final Node receiver) {
+    private String getReceiverType(final Node receiver) {
         if (receiver instanceof Colon2Node) {
             return AstUtilities.getFqn((Colon2Node) receiver);
         } else if (receiver instanceof INameNode) {
             // TODO - compute fqn (packages etc.)
             return ((INameNode) receiver).getName();
+        } else {
+            return RubyTypeAnalyzer.getTypeForLiteral(receiver);
         }
-        return null;
     }
 }

@@ -49,6 +49,7 @@ final class RDocAnalyzer {
     private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
 
     static {
+        COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("anArray", "Array"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerat", "Enumeration"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N

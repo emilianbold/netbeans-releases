@@ -110,49 +110,49 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     private void assertTypes(String relFilePath, String matchingLine,
             String exprToInfer, String... expectedTypes) throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer(relFilePath, matchingLine, false);
-        assertTypes("Types correctly inferred", instance.getTypes(exprToInfer), expectedTypes);
+        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), expectedTypes);
     }
 
     public void testGetType() throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer("types.rb", " l^oc = {", false);
 
-        assertTypes(instance.getTypes("x"), "Integer");
+        assertTypes(instance.inferTypes("x"), "Integer");
         // y is reassigned later in the file - make sure that at this
         // point in scope we have the right type
-        assertTypes(instance.getTypes("y"), "File");
-        assertTypes(instance.getTypes("$baz"), "Hash");
-        assertTypes(instance.getTypes("@bar"), "Fixnum");
-        assertTypes(instance.getTypes("@foo"), "Array");
+        assertTypes(instance.inferTypes("y"), "File");
+        assertTypes(instance.inferTypes("$baz"), "Hash");
+        assertTypes(instance.inferTypes("@bar"), "Fixnum");
+        assertTypes(instance.inferTypes("@foo"), "Array");
     }
 
     public void testGetType2() throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer("types.rb", " # d^one", false);
 
         // Y is assigned different types - make sure that at this position, it's a number
-        assertTypes(instance.getTypes("y"), "Fixnum");
+        assertTypes(instance.inferTypes("y"), "Fixnum");
         // Lots of reassignments - track types through vars, statics, fields, classvars
-        assertTypes(instance.getTypes("loc"), "Hash");
-        assertTypes(instance.getTypes("$glob"), "Hash");
-        assertTypes(instance.getTypes("@field"), "Hash");
-        assertTypes(instance.getTypes("@@clsvar"), "Hash");
-        assertTypes(instance.getTypes("loc2"), "Hash");
+        assertTypes(instance.inferTypes("loc"), "Hash");
+        assertTypes(instance.inferTypes("$glob"), "Hash");
+        assertTypes(instance.inferTypes("@field"), "Hash");
+        assertTypes(instance.inferTypes("@@clsvar"), "Hash");
+        assertTypes(instance.inferTypes("loc2"), "Hash");
     }
 
     public void testTypeAssertions() throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer("types.rb", " l^oc = {", true);
-        assertTypes(instance.getTypes("param1"), "String");
-        assertTypes(instance.getTypes("param2"), "Hash");
+        assertTypes(instance.inferTypes("param1"), "String");
+        assertTypes(instance.inferTypes("param2"), "Hash");
     }
 
     public void testBegin() throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer("types2.rb", " @f^iles = ARGV.dup", true);
-        assertTypes(instance.getTypes("go"), "GetoptLong");
+        assertTypes(instance.inferTypes("go"), "GetoptLong");
     }
 
     public void testRailsController() throws Exception {
         assertTypes("type_controller.rb", "^end", "request", "ActionController::CgiRequest");
         RubyTypeAnalyzer instance = getAnalyzer("type_controller.rb", "^end", false);
-        assertTypes(instance.getTypes("request"), "ActionController::CgiRequest");
+        assertTypes(instance.inferTypes("request"), "ActionController::CgiRequest");
     }
 
 // This test doesn't work; the behavior works in the IDE but the
@@ -176,7 +176,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     //  Product.find(params[:id]).destroy
     public void testMigrationType() throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer("migrate/20080726182725_create_posts.rb", " t.^time", true);
-        assertTypes(instance.getTypes("t"), "ActiveRecord::ConnectionAdapters::TableDefinition");
+        assertTypes(instance.inferTypes("t"), "ActiveRecord::ConnectionAdapters::TableDefinition");
     }
 
     public void testIfType() throws Exception {
@@ -228,5 +228,6 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     public void testCoreMethodType() throws Exception {
         assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
         assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
+        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum");
     }
 }

@@ -168,7 +168,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 // up and do it a bit more cleverly
                 types = getTypesForConstant(lhs);
                 if (types.isEmpty()) {
-                    types = createTypeAnalyzer(request, method).getTypes(_lhs);
+                    types = createTypeAnalyzer(request, method).inferTypes(_lhs);
                 }
                 if (!types.isEmpty() && call.isLHSConstant()) {
                     // lhs is not a class or module, is a constant for which we have
