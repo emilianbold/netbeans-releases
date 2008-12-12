@@ -97,6 +97,7 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
 
         new ContainerAgnosticLayout(scene, gLayout);
         gLayout.layoutGraph(scene);
+        scene.getDiagram().setDirty(true);
     }
 
     private void movePalette () {

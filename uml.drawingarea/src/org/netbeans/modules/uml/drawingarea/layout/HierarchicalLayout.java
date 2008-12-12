@@ -56,19 +56,18 @@ import java.util.Stack;
 import java.util.TreeSet;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
- *
- * @author Thomas Wuerthinger
+ * Provide basic layout functionality on specific to uml modele nodes.
  */
 public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPresentationElement> {
 
     public static final int SWEEP_ITERATIONS = 3;
-    public static final int CROSSING_ITERATIONS = 3;    // Options default settings 
+    public static final int CROSSING_ITERATIONS = 3;    // Options default settings
     public static final int DUMMY_WIDTH = 1;
     public static final int X_OFFSET = 20;
     public static final int LAYER_OFFSET = 30;    // Options
@@ -82,9 +81,8 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
     private HashMap<IPresentationElement, LayoutNode> vertexToLayoutNode;
     private Set<IPresentationElement> reversedLinks;
     private List<LayoutNode>[] layers;
-    private boolean animate = false;
     private boolean invert = true;
-    private DesignerScene scene;
+    private ObjectScene scene;
 
     public HierarchicalLayout(boolean inverted, int xOffset, int yOffset) {
 
@@ -104,7 +102,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         } else {
             this.yOffset = LAYER_OFFSET;
         }
-        
+
         this.invert = inverted;
     }
 
@@ -115,7 +113,6 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
     public HierarchicalLayout() {
         this(false);
     }
-
 
     private class LayoutNode {
 
@@ -130,6 +127,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         public int y;
         public int width;
         public int height;
+        public Rectangle bounds;
         public int layer = -1;
         public int xOffset;
         public int yOffset;
@@ -139,11 +137,6 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         public List<LayoutEdge> succs = new ArrayList<LayoutEdge>();
         public int pos = -1; // Position within layer
         public float crossingNumber;
-
-        @Override
-        public String toString() {
-            return "Node " + vertex;
-        }
     }
 
     private class LayoutEdge {
@@ -168,7 +161,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
     protected void performGraphLayout(UniversalGraph<IPresentationElement, IPresentationElement> graph) {
 
         this.graph = graph;
-
+        this.scene = (ObjectScene) graph.getScene();
         vertexToLayoutNode = new HashMap<IPresentationElement, LayoutNode>();
         reversedLinks = new HashSet<IPresentationElement>();
         nodes = new ArrayList<LayoutNode>();
@@ -227,58 +220,61 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
             }
             for (IPresentationElement v : vertices) {
                 LayoutNode node = new LayoutNode();
-                Widget w = graph.getScene().findWidget(v);
-                assert w != null;
-                Rectangle r = w.getBounds();
-                if (r == null) {
-                    r = w.getPreferredBounds();
+                Widget w = scene.findWidget(v);
+                if(w!=null && w.isVisible() && w.getParentWidget()!=null && (w.getParentWidget() instanceof ObjectScene || w.getParentWidget().getParentWidget() instanceof ObjectScene))
+                {
+                    Rectangle r = w.getBounds();
+                    if (r == null) {
+                        r = w.getPreferredBounds();
+                    }
+                    Dimension size = r.getSize();
+                    //node.bounds=r;
+                    node.width = (int) size.getWidth();
+                    node.height = (int) size.getHeight();
+                    node.vertex = v;
+                    nodes.add(node);
+                    vertexToLayoutNode.put(v, node);
                 }
-                Dimension size = r.getSize();
-                node.width = (int) size.getWidth();
-                node.height = (int) size.getHeight();
-                node.vertex = v;
-                nodes.add(node);
-                vertexToLayoutNode.put(v, node);
             }
 
             // Set up edges
             Collection<IPresentationElement> links = graph.getEdges();
             for (IPresentationElement l : links) {
                 LayoutEdge edge = new LayoutEdge();
-                assert vertexToLayoutNode.containsKey(graph.getEdgeSource(l));
-                assert vertexToLayoutNode.containsKey(graph.getEdgeTarget(l));
+                boolean valid=vertexToLayoutNode.containsKey(graph.getEdgeSource(l)) && vertexToLayoutNode.containsKey(graph.getEdgeTarget(l));
+                if(valid)
+                {
+                    if (invert) {
+                        edge.to = vertexToLayoutNode.get(graph.getEdgeSource(l));
+                        edge.from = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                    } else {
+                        edge.from = vertexToLayoutNode.get(graph.getEdgeSource(l));
+                        edge.to = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                    }
 
-                if (invert) {
-                    edge.to = vertexToLayoutNode.get(graph.getEdgeSource(l));
-                    edge.from = vertexToLayoutNode.get(graph.getEdgeTarget(l));
-                } else {
-                    edge.from = vertexToLayoutNode.get(graph.getEdgeSource(l));
-                    edge.to = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                    Widget w = graph.getScene().findWidget(graph.getEdgeSource(l));
+
+                    assert w != null;
+                    Rectangle r = w.getBounds();
+                    if (r == null) {
+                        r = w.getPreferredBounds();
+                    }
+                    Dimension size = r.getSize();
+                    edge.relativeFrom = size.width / 2;
+
+                    w = graph.getScene().findWidget(graph.getEdgeTarget(l));
+                    assert w != null;
+                    r = w.getBounds();
+                    if (r == null) {
+                        r = w.getPreferredBounds();
+                    }
+                    size = r.getSize();
+                    edge.relativeTo = size.width / 2;
+                    edge.link = l;
+
+                    edge.from.succs.add(edge);
+                    edge.to.preds.add(edge);
                 }
-
-                Widget w = graph.getScene().findWidget(graph.getEdgeSource(l));
-
-                assert w != null;
-                Rectangle r = w.getBounds();
-                if (r == null) {
-                    r = w.getPreferredBounds();
-                }
-                Dimension size = r.getSize();
-                edge.relativeFrom = size.width / 2;
-
-                w = graph.getScene().findWidget(graph.getEdgeTarget(l));
-                assert w != null;
-                r = w.getBounds();
-                if (r == null) {
-                    r = w.getPreferredBounds();
-                }
-                size = r.getSize();
-                edge.relativeTo = size.width / 2;
-                edge.link = l;
-
-                edge.from.succs.add(edge);
-                edge.to.preds.add(edge);
-
             }
         }
     }
@@ -465,16 +461,17 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
             LayoutNode n = new LayoutNode();
             n.width = dummyWidth;
             n.height = 0;
+            //n.bounds = new Rectangle(0,0,dummyWidth,0);
             n.layer = layer;
             n.preds.add(e);
             nodes.add(n);
             LayoutEdge result = new LayoutEdge();
             n.succs.add(result);
             result.from = n;
-            result.relativeFrom = n.width / 2;
+            result.relativeFrom = dummyWidth / 2;
             result.to = e.to;
             result.relativeTo = e.relativeTo;
-            e.relativeTo = n.width / 2;
+            e.relativeTo = dummyWidth / 2;
             e.to.preds.remove(e);
             e.to.preds.add(result);
             e.to = n;
@@ -819,6 +816,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
                     if (n.vertex == null) {
                         // Dummy node => set height to line height
                         n.y = curY;
+                        //if(n.bounds==null)n.bounds=new Rectangle();
                         n.height = maxHeight + baseLine + bottomBaseLine;
                     } else {
                         n.y = curY + baseLine + (maxHeight - (n.height - n.yOffset - n.bottomYOffset)) / 2 - n.yOffset;
@@ -833,15 +831,12 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
 
     private class WriteResult extends AlgorithmPart {
 
-        private int pointCount;
-
         protected void run() {
 
             HashMap<IPresentationElement, Point> vertexPositions = new HashMap<IPresentationElement, Point>();
             HashMap<IPresentationElement, List<Point>> linkPositions = new HashMap<IPresentationElement, List<Point>>();
-            for (IPresentationElement v : graph.getNodes()) {
-                LayoutNode n = vertexToLayoutNode.get(v);
-                assert !vertexPositions.containsKey(v);
+            for (LayoutNode n : nodes) {
+                IPresentationElement v=n.vertex;
                 vertexPositions.put(v, new Point(n.x + n.xOffset, n.y + n.yOffset));
             }
 
@@ -908,12 +903,8 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
                 Point p = vertexPositions.get(v);
                 p.x -= minX;
                 p.y -= minY;
-                Widget w = graph.getScene().findWidget(v);
-                if (animate) {
-                    graph.getScene().getSceneAnimator().animatePreferredLocation(w, p);
-                } else {
-                    w.setPreferredLocation(p);
-                }
+                Widget w = scene.findWidget(v);
+                if(w!=null)w.setPreferredLocation(p);
             }
 
             for (IPresentationElement l : linkPositions.keySet()) {
@@ -951,7 +942,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
                 }
 
             }
-            
+
             graph.getScene().validate();
             graph.getScene().repaint();
             graph.getScene().revalidate();
