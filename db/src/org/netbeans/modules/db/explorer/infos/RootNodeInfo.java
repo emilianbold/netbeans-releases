@@ -202,13 +202,16 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private List<RegisteredNodeInfo> getRegisteredNodeInfos() {
+        ArrayList<RegisteredNodeInfo> infos = new ArrayList<RegisteredNodeInfo>();
+        return infos;
+
+        /*
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
             registerListener = true;
         }
         
-        ArrayList<RegisteredNodeInfo> infos = new ArrayList<RegisteredNodeInfo>();
                 
         for ( DbNodeLoader loader : nodeLoaders ) {
             if ( registerListener ) {
@@ -221,6 +224,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }    
         
         return infos;
+        */
     }
 
     private RegisteredNodeInfo getRegisteredNodeInfo(Node node)

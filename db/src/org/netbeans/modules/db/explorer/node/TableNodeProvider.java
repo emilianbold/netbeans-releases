@@ -80,16 +80,15 @@ public class TableNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private MetadataElementHandle<Schema> schemaHandle;
-    private MetadataModel metaDataModel;
 
     private TableNodeProvider(Lookup lookup) {
         super(lookup, new TableComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -108,7 +107,9 @@ public class TableNodeProvider extends NodeProvider {
         
         List<Node> newList = new ArrayList<Node>();
 
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Schema schema = getSchema();
             if (schema != null) {
                 Collection<Table> tables = schema.getTables();
@@ -120,7 +121,6 @@ public class TableNodeProvider extends NodeProvider {
                     } else {
                         NodeDataLookup lookup = new NodeDataLookup();
                         lookup.add(connection);
-                        lookup.add(metaDataModel);
                         lookup.add(handle);
 
                         newList.add(TableNode.create(lookup, this));

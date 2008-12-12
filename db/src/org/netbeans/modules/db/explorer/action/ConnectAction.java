@@ -76,7 +76,6 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -101,9 +100,7 @@ public class ConnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                if (dbconn != null) {
-                    enabled = (null == dbconn.getConnection());
-                }
+                enabled = dbconn.getConnector().isDisconnected();
             }
         }
 
@@ -247,6 +244,8 @@ public class ConnectAction extends BaseAction {
                                 dlg.close();
     //                        removeListeners(cinfo);
                             }
+
+                            dbcon.fireConnectionComplete();
                         } else
                             okPressed = false;
                     }
@@ -289,6 +288,8 @@ public class ConnectAction extends BaseAction {
                                     
                                     if (dlg != null)
                                         dlg.close();
+
+                                    dbcon.fireConnectionComplete();
                                 }
                             } catch (SQLException exc) {
                                 //isClosed() method failed, try to connect
@@ -375,6 +376,8 @@ public class ConnectAction extends BaseAction {
                         // another shot after changing some values, like the username
                         // or password.
                         showDialog(dbcon, true);
+                    } else {
+                        dbcon.fireConnectionComplete();
                     }
                 } catch (Exception exc) {
                     String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), exc.getMessage()); // NOI18N

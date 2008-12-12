@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -60,8 +61,8 @@ public class TableListNode extends BaseNode implements SchemaProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "TableList"; //NOI18N
 
-    private MetadataModel metaDataModel;
     private MetadataElementHandle<Schema> schemaHandle;
+    private final DatabaseConnection connection;
 
     /**
      * Create an instance of TableListNode.
@@ -77,10 +78,10 @@ public class TableListNode extends BaseNode implements SchemaProvider {
 
     private TableListNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
     
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
     
@@ -100,6 +101,7 @@ public class TableListNode extends BaseNode implements SchemaProvider {
     }
 
     public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {

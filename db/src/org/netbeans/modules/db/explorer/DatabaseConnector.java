@@ -53,7 +53,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -79,11 +78,6 @@ public class DatabaseConnector {
     private ConcurrentHashMap<String, DriverSpecification> driverSpecCache = new ConcurrentHashMap<String, DriverSpecification>();
 
     private ConcurrentHashMap<String, Object> properties = new ConcurrentHashMap<String, Object>();
-
-    //private DriverSpecification drvSpec;
-
-    private boolean connected = false;
-
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
@@ -149,7 +143,7 @@ public class DatabaseConnector {
                 spec.setMetaDataAdaptorClassName(adaname);
             }
 
-            setConnection(connection); // fires change
+            setConnection(connection);
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -159,7 +153,14 @@ public class DatabaseConnector {
         return connection == null;
     }
 
-    public void disconnect() throws DatabaseException {
+    /**
+     * The method performs a disconnect on the associated DatabaseConnection.  This
+     * method gets called by the DatabaseConnection itself, and should not be called
+     * directly by any other object.
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     */
+    public void performDisconnect() throws DatabaseException {
         if (connection != null) {
             String message = null;
             try {
@@ -179,8 +180,6 @@ public class DatabaseConnector {
             if (message != null) {
                 throw new DatabaseException(message);
             }
-
-            databaseConnection.disconnect();
         }
     }
 
@@ -194,10 +193,8 @@ public class DatabaseConnector {
         if (con != null) {
             if (oldval != null && oldval.equals(con)) return;
             connection = con;
-            connected = true;
         } else {
             connection = null;
-            connected = false;
         }
 
         //databaseConnection.getConnectionPCS().firePropertyChange(CONNECTION, oldval, databaseConnection);

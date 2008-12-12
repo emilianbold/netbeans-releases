@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -70,23 +71,28 @@ public class ForeignKeyNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
     private MetadataElementHandle<ForeignKey> fkHandle;
+    private final DatabaseConnection connection;
 
     private ForeignKeyNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         fkHandle = getLookup().lookup(MetadataElementHandle.class);
 
-        ForeignKey fk = getForeignKey();
-        name = fk.getName();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            ForeignKey fk = getForeignKey();
+            name = fk.getName();
+        }
     }
 
     public ForeignKey getForeignKey() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<ForeignKey> wrapper = new DataWrapper<ForeignKey>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {

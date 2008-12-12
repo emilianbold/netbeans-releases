@@ -80,16 +80,15 @@ public class SchemaNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Catalog> catalogHandle;
-    private MetadataModel metaDataModel;
 
     private SchemaNodeProvider(Lookup lookup) {
         super(lookup, new SchemaComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Catalog getCatalog() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -107,19 +106,19 @@ public class SchemaNodeProvider extends NodeProvider {
         List<Node> newList = new ArrayList<Node>();
 
         boolean connected = !connection.getConnector().isDisconnected();
-
-        if (connected) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Catalog cat = getCatalog();
 
             if (cat != null) {
                 Schema syntheticSchema = cat.getSyntheticSchema();
 
                 if (syntheticSchema != null) {
-                    updateNode(newList, syntheticSchema, metaDataModel);
+                    updateNode(newList, syntheticSchema);
                 } else {
                     Collection<Schema> schemas = cat.getSchemas();
                     for (Schema schema : schemas) {
-                        updateNode(newList, schema, metaDataModel);
+                        updateNode(newList, schema);
                     }
                 }
                 
@@ -134,7 +133,7 @@ public class SchemaNodeProvider extends NodeProvider {
         }
     }
 
-    private void updateNode(List<Node> newList, Schema schema, MetadataModel metadataModel) {
+    private void updateNode(List<Node> newList, Schema schema) {
         MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
         Collection<Node> matches = getNodes(schemaHandle);
         if (matches.size() > 0) {
@@ -143,7 +142,6 @@ public class SchemaNodeProvider extends NodeProvider {
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
             lookup.add(schemaHandle);
-            lookup.add(metadataModel);
 
             newList.add(SchemaNode.create(lookup, this));
         }

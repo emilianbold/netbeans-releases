@@ -78,23 +78,28 @@ public class TableNode extends BaseNode implements SchemaProvider {
         return node;
     }
 
-    private String name;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
     private MetadataElementHandle<Table> tableHandle;
+    private final DatabaseConnection connection;
 
     private TableNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
 
-        Table table = getTable();
-        name = table.getName();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Table table = getTable();
+            name = table.getName();
+        }
     }
 
     public Table getTable() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Table> wrapper = new DataWrapper<Table>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -115,7 +120,7 @@ public class TableNode extends BaseNode implements SchemaProvider {
 
     @Override
     public void destroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         Specification spec = connector.getDatabaseSpecification();
 
         try {
@@ -130,7 +135,7 @@ public class TableNode extends BaseNode implements SchemaProvider {
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         return connector.supportsCommand(Specification.DROP_TABLE);
     }
 

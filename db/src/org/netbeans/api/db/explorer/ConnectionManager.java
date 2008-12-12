@@ -142,7 +142,8 @@ public final class ConnectionManager {
         if (dbconn == null) {
             throw new NullPointerException();
         }
-        ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(dbconn.getDelegate());
+
+        ConnectionList.getDefault().add(dbconn.getDelegate());
     }
 
     /**

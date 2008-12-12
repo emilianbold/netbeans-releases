@@ -86,13 +86,15 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         return node;
     }
 
-    private String name;
+    private String name = ""; // NOI18N
     private String icon;
-    private MetadataModel metaDataModel;
-    private MetadataElementHandle<Column> columnHandle;
+    private final MetadataElementHandle<Column> columnHandle;
+    private final DatabaseConnection connection;
 
     private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
+        columnHandle = getLookup().lookup(MetadataElementHandle.class);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     @Override
@@ -102,43 +104,45 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
-        columnHandle = getLookup().lookup(MetadataElementHandle.class);
         setupNames();
     }
 
     private void setupNames() {
-        Column column = getColumn();
-        if (column != null) {
-            name = column.getName();
-            icon = COLUMN;
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Column column = getColumn();
+            if (column != null) {
+                name = column.getName();
+                icon = COLUMN;
 
-            Tuple tuple = column.getParent();
-            if (tuple instanceof Table) {
-                Table table = (Table)tuple;
-                PrimaryKey pkey = table.getPrimaryKey();
+                Tuple tuple = column.getParent();
+                if (tuple instanceof Table) {
+                    Table table = (Table)tuple;
+                    PrimaryKey pkey = table.getPrimaryKey();
 
-                boolean found = false;
-                if (pkey != null) {
-                    Collection<Column> columns = pkey.getColumns();
-                    for (Column c : columns) {
-                        if (c.getName().equals(column.getName())) {
-                            found = true;
-                            icon = PRIMARY;
-                            break;
-                        }
-                    }
-                }
-
-                if (!found) {
-                    Collection<Index> indexes = table.getIndexes();
-                    for (Index index : indexes) {
-                        Collection<IndexColumn> columns = index.getColumns();
-                        for (IndexColumn c : columns) {
+                    boolean found = false;
+                    if (pkey != null) {
+                        Collection<Column> columns = pkey.getColumns();
+                        for (Column c : columns) {
                             if (c.getName().equals(column.getName())) {
                                 found = true;
-                                icon = INDEX;
+                                icon = PRIMARY;
                                 break;
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        Collection<Index> indexes = table.getIndexes();
+                        for (Index index : indexes) {
+                            Collection<IndexColumn> columns = index.getColumns();
+                            for (IndexColumn c : columns) {
+                                if (c.getName().equals(column.getName())) {
+                                    found = true;
+                                    icon = INDEX;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -148,6 +152,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
     }
 
     public Column getColumn() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Column> wrapper = new DataWrapper<Column>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -178,7 +183,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
 
     @Override
     public void destroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         Specification spec = connector.getDatabaseSpecification();
 
         try {
@@ -197,7 +202,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         return connector.supportsCommand(Specification.REMOVE_COLUMN);
     }
 

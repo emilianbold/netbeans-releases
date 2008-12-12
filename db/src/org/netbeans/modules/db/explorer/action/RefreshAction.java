@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.action;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -74,7 +75,7 @@ public class RefreshAction extends BaseAction {
         RequestProcessor.getDefault().post(
             new Runnable() {
                 public void run() {
-                    MetadataModel model = baseNode.getLookup().lookup(MetadataModel.class);
+                    MetadataModel model = baseNode.getLookup().lookup(DatabaseConnection.class).getMetadataModel();
                     if (model != null) {
                         MetadataReader.readModel(model, null,
                             new MetadataReadListener() {

@@ -81,16 +81,15 @@ public class ColumnNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle handle;
-    private final MetadataModel metaDataModel;
 
     private ColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Table getTable() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Table> wrapper = new DataWrapper<Table>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -105,6 +104,7 @@ public class ColumnNodeProvider extends NodeProvider {
     }
 
     public View getView() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<View> wrapper = new DataWrapper<View>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -121,7 +121,9 @@ public class ColumnNodeProvider extends NodeProvider {
     @Override
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Collection<Column> columns;
             try {
                 Table table = getTable();
@@ -145,7 +147,6 @@ public class ColumnNodeProvider extends NodeProvider {
                 } else {
                     NodeDataLookup lookup = new NodeDataLookup();
                     lookup.add(connection);
-                    lookup.add(metaDataModel);
                     lookup.add(h);
 
                     newList.add(ColumnNode.create(lookup, this));

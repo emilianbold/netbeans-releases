@@ -86,23 +86,28 @@ public class IndexNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
     private MetadataElementHandle<Index> indexHandle;
+    private final DatabaseConnection connection;
 
     private IndexNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         indexHandle = getLookup().lookup(MetadataElementHandle.class);
 
-        Index index = getIndex();
-        name = index.getName();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Index index = getIndex();
+            name = index.getName();
+        }
     }
 
     public Index getIndex() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Index> wrapper = new DataWrapper<Index>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -128,7 +133,7 @@ public class IndexNode extends BaseNode {
 
     @Override
     public void destroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         Table table = getTable();
         final String tablename = table.getName();
 
@@ -170,7 +175,7 @@ public class IndexNode extends BaseNode {
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         return connector.supportsCommand(Specification.DROP_INDEX);
     }
 

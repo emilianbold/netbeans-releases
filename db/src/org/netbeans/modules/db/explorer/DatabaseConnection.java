@@ -76,6 +76,7 @@ import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
@@ -135,7 +136,13 @@ public class DatabaseConnection implements DBConnection {
     /** Error code */
     private int errorCode = -1;
 
+    /** this is the connector used for performing connect and disconnect processing */
     private DatabaseConnector connector = new DatabaseConnector(this);
+
+    /** the DatabaseConnection is essentially used as a container for a metadata model
+     * created elsewhere.
+     */
+    private MetadataModel metadataModel = null;
 
     /**
      * The API DatabaseConnection (delegates to this instance)
@@ -225,7 +232,7 @@ public class DatabaseConnection implements DBConnection {
         if (test) {
             if (! test(conn, getName())) {
                 try {
-                    this.disconnect();
+                    disconnect();
                 } catch (DatabaseException e) {
                     LOGGER.log(Level.FINE, null, e);
                 }
@@ -237,6 +244,14 @@ public class DatabaseConnection implements DBConnection {
         return conn;
     }
 
+    public void setMetadataModel(MetadataModel model) {
+        metadataModel = model;
+    }
+
+    public MetadataModel getMetadataModel() {
+        return metadataModel;
+    }
+    
     public static boolean test(Connection conn, String connectionName) {
         try {
             if (conn == null || conn.isClosed()) {
@@ -875,13 +890,12 @@ public class DatabaseConnection implements DBConnection {
         propertySupport.firePropertyChange("changed", null, null);
     }
 
-    public void disconnect() throws DatabaseException {
-        setConnection(null);
-        ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-        if (cni != null && cni.getConnection() != null) {
-            cni.disconnect();
-        }
+    public void fireConnectionComplete() {
+        propertySupport.firePropertyChange("connectionComplete", null, null);
+    }
 
+    public void disconnect() throws DatabaseException {
+        connector.performDisconnect();
         propertySupport.firePropertyChange("disconnected", null, null);
     }
 

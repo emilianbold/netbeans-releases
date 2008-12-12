@@ -80,16 +80,15 @@ public class ForeignKeyNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Table> tableHandle;
-    private final MetadataModel metaDataModel;
 
     private ForeignKeyNodeProvider(Lookup lookup) {
         super(lookup, new ForeignKeyComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Table getTable() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Table> wrapper = new DataWrapper<Table>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -107,7 +106,9 @@ public class ForeignKeyNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Table table = getTable();
 
             if (table != null) {
@@ -121,7 +122,6 @@ public class ForeignKeyNodeProvider extends NodeProvider {
                     } else {
                         NodeDataLookup lookup = new NodeDataLookup();
                         lookup.add(connection);
-                        lookup.add(metaDataModel);
                         lookup.add(h);
 
                         newList.add(ForeignKeyNode.create(lookup, this));

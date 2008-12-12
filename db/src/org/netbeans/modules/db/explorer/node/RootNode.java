@@ -73,7 +73,11 @@ public class RootNode extends BaseNode {
         
         return instance;
     }
-    
+
+    public static boolean isCreated() {
+        return instance != null;
+    }
+
     /**
      * Constructor.  This is private to prevent multiple instances from
      * being created.

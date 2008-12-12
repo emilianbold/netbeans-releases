@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -71,29 +72,34 @@ public class IndexColumnNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private String icon;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
+    private String icon = ""; // NOI18N
     private MetadataElementHandle<IndexColumn> indexColumnHandle;
+    private final DatabaseConnection connection;
 
     private IndexColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         indexColumnHandle = getLookup().lookup(MetadataElementHandle.class);
 
-        IndexColumn column = getIndexColumn();
-        name = column.getName();
-        if (column.getOrdering() == Ordering.DESCENDING) {
-            icon = ICONUP;
-        } else {
-            icon = ICONDOWN;
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            IndexColumn column = getIndexColumn();
+            name = column.getName();
+            if (column.getOrdering() == Ordering.DESCENDING) {
+                icon = ICONUP;
+            } else {
+                icon = ICONDOWN;
+            }
         }
     }
 
     public IndexColumn getIndexColumn() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<IndexColumn> wrapper = new DataWrapper<IndexColumn>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {

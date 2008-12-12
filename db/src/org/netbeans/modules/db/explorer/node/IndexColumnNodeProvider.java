@@ -80,16 +80,15 @@ public class IndexColumnNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Index> handle;
-    private final MetadataModel metaDataModel;
 
     private IndexColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Index getIndex() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Index> wrapper = new DataWrapper<Index>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -107,7 +106,9 @@ public class IndexColumnNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
 
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Index index = getIndex();
 
             if (index != null) {
@@ -120,7 +121,6 @@ public class IndexColumnNodeProvider extends NodeProvider {
                     } else {
                         NodeDataLookup lookup = new NodeDataLookup();
                         lookup.add(connection);
-                        lookup.add(metaDataModel);
                         lookup.add(h);
 
                         newList.add(IndexColumnNode.create(lookup, this));

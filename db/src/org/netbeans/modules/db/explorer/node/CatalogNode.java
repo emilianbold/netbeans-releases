@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
@@ -69,27 +70,29 @@ public class CatalogNode extends BaseNode {
         return node;
     }
 
-    private String name;
-
-    private MetadataElementHandle<Catalog> catalogHandle;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
+    private final DatabaseConnection connection;
 
     private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
+        final MetadataElementHandle<Catalog> catalogHandle = getLookup().lookup(MetadataElementHandle.class);
+        MetadataModel metaDataModel = connection.getMetadataModel();
 
-        MetadataReader.readModel(metaDataModel, null,
-            new MetadataReader.MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Catalog catalog = catalogHandle.resolve(metaData);
-                    renderNames(catalog);
+        boolean connected = !connection.getConnector().isDisconnected();
+        if (connected && metaDataModel != null) {
+            MetadataReader.readModel(metaDataModel, null,
+                new MetadataReader.MetadataReadListener() {
+                    public void run(Metadata metaData, DataWrapper wrapper) {
+                        Catalog catalog = catalogHandle.resolve(metaData);
+                        renderNames(catalog);
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     @Override

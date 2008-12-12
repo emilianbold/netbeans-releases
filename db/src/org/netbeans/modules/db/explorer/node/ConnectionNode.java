@@ -49,12 +49,9 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -79,8 +76,7 @@ public class ConnectionNode extends BaseNode {
     }
     
     // the connection
-    private DatabaseConnection connection;
-    private MetadataModel model = null;
+    private final DatabaseConnection connection;
 
     /**
      * Constructor
@@ -89,58 +85,41 @@ public class ConnectionNode extends BaseNode {
      */
     private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-
         // listen for change events
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    buildModel();
+                    if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
+                            evt.getPropertyName().equals("disconnected")) { // NOI18N
+                        updateModel();
+                    }
                 }
             }
         );
 
-        buildModel();
+        updateModel();
     }
 
-    private synchronized void buildModel() {
+    private synchronized void updateModel() {
         RequestProcessor.getDefault().post(
             new Runnable() {
                 public void run() {
-                    Connection conn = connection.getConnection();
-                    boolean connected = false;
+                    boolean connected = !connection.getConnector().isDisconnected();
 
-                    if (conn != null) {
-                        try {
-                            connected = !conn.isClosed();
-                        } catch (SQLException e) {
+                    if (connected) {
+                        MetadataModel model = MetadataModels.createModel(connection.getConnection(), connection.getSchema());
+                        connection.setMetadataModel(model);
+                        refresh();
 
-                        }
+                    } else {
+                        connection.setMetadataModel(null);
+                        refresh();
                     }
 
-                    if (connected && model == null) {
-                        model = MetadataModels.createModel(conn, connection.getSchema());
-                        //model = MetadataModelManager.get(connection.getDatabaseConnection());
-
-                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                        lookup.add(model);
-
-                        SystemAction.get(RefreshAction.class).performAction(new Node[] { ConnectionNode.this } );
-                        
-                    } else if (!connected) {
-                        model = null;
-                        NodeDataLookup lookup = (NodeDataLookup)getLookup();
-                        MetadataModel md = lookup.lookup(MetadataModel.class);
-                        if (md != null) {
-                            lookup.remove(md);
-                        }
-                        
-                        SystemAction.get(RefreshAction.class).performAction(new Node[] { ConnectionNode.this } );
-                    }
                 }
             }
         );

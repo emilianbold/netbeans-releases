@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -69,25 +70,30 @@ public class ForeignKeyColumnNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
     private MetadataElementHandle<ForeignKeyColumn> keyColumnHandle;
+    private final DatabaseConnection connection;
 
     private ForeignKeyColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         keyColumnHandle = getLookup().lookup(MetadataElementHandle.class);
 
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
         ForeignKeyColumn column = getForeignKeyColumn();
-        name = column.getReferringColumn().getName() 
+        name = column.getReferringColumn().getName()
                 + " -> " + column.getReferredColumn().getParent().getName() + "." // NOI18N
                 + column.getReferredColumn().getName(); // NOI18N
+        }
     }
 
     public ForeignKeyColumn getForeignKeyColumn() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<ForeignKeyColumn> wrapper = new DataWrapper<ForeignKeyColumn>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {

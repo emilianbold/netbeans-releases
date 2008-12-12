@@ -43,7 +43,7 @@ import org.netbeans.modules.db.metadata.model.api.Column;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public interface ColumnProvider {
     public Column getColumn();

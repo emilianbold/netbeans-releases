@@ -74,23 +74,28 @@ public class ProcedureNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private MetadataModel metaDataModel;
+    private String name = ""; // NOI18N
     private MetadataElementHandle<Procedure> procedureHandle;
+    private final DatabaseConnection connection;
 
     private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        metaDataModel = getLookup().lookup(MetadataModel.class);
         procedureHandle = getLookup().lookup(MetadataElementHandle.class);
 
-        Procedure proc = getProcedure();
-        name = proc.getName();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Procedure proc = getProcedure();
+            name = proc.getName();
+        }
     }
 
     public Procedure getProcedure() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Procedure> wrapper = new DataWrapper<Procedure>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -106,7 +111,7 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public void destroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         Specification spec = connector.getDatabaseSpecification();
 
         try {
@@ -119,7 +124,7 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = getLookup().lookup(DatabaseConnection.class).getConnector();
+        DatabaseConnector connector = connection.getConnector();
         return connector.supportsCommand(Specification.DROP_PROCEDURE);
     }
 

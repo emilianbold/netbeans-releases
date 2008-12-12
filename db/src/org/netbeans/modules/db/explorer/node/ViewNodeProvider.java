@@ -80,16 +80,15 @@ public class ViewNodeProvider extends NodeProvider {
 
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Schema> schemaHandle;
-    private final MetadataModel metaDataModel;
 
     private ViewNodeProvider(Lookup lookup) {
         super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
     }
 
     public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
@@ -107,7 +106,9 @@ public class ViewNodeProvider extends NodeProvider {
         
         List<Node> newList = new ArrayList<Node>();
 
-        if (!connection.getConnector().isDisconnected()) {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
             Schema schema = getSchema();
 
             if (schema != null) {
@@ -120,7 +121,6 @@ public class ViewNodeProvider extends NodeProvider {
                     } else {
                         NodeDataLookup lookup = new NodeDataLookup();
                         lookup.add(connection);
-                        lookup.add(metaDataModel);
                         lookup.add(handle);
 
                         newList.add(ViewNode.create(lookup, this));

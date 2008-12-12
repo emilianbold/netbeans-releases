@@ -78,7 +78,6 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
@@ -236,7 +235,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                             {
                                 try
                                 {
-                                    ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
+                                    ConnectionList.getDefault().add(cinfo);
                                 }
                                 catch (DatabaseException dbe)
                                 {
@@ -303,7 +302,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                                 activeTask = cinfo.connectAsync();
                             else {
                                 cinfo.setSchema(schemaPanel.getSchema());
-                                ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
+                                ConnectionList.getDefault().add(cinfo);
                                 if (dlg != null)
                                 {
                                     cancelActiveTask();
@@ -345,6 +344,7 @@ public class ConnectUsingDriverAction extends BaseAction {
 
             cinfo.removeExceptionListener(excListener);
             cinfo.removePropertyChangeListener(connectionListener);
+            cinfo.fireConnectionComplete();
             
             return ConnectionList.getDefault().getConnection(cinfo);
         }

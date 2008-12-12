@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
 import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
@@ -70,24 +71,30 @@ public class SchemaNode extends BaseNode {
         return node;
     }
 
-    private String name;
-    private String htmlName;
+    private String name = ""; // NOI18N
+    private String htmlName = null; // NOI18N
 
     private MetadataElementHandle<Schema> schemaHandle;
-    private MetadataModel metaDataModel;
+    private final DatabaseConnection connection;
 
     private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-        metaDataModel = getLookup().lookup(MetadataModel.class);
-        Schema schema = getSchema();
-        renderNames(schema);
+
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Schema schema = getSchema();
+            renderNames(schema);
+        }
     }
 
     public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
         MetadataReader.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {

@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -88,8 +87,7 @@ public class CatalogNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         final List<Node> newList = new ArrayList<Node>();
 
-        final MetadataModel metaDataModel = getLookup().lookup(MetadataModel.class);
-
+        MetadataModel metaDataModel = connection.getMetadataModel();
         boolean isConnected = !connection.getConnector().isDisconnected();
 
         if (isConnected && metaDataModel != null) {
@@ -119,7 +117,6 @@ public class CatalogNodeProvider extends NodeProvider {
                                             NodeDataLookup lookup = new NodeDataLookup();
                                             lookup.add(connection);
                                             lookup.add(catalogHandle);
-                                            lookup.add(metaDataModel);
                                             newList.add(CatalogNode.create(lookup, CatalogNodeProvider.this));
                                         }
                                     }
@@ -135,7 +132,6 @@ public class CatalogNodeProvider extends NodeProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-
             }
         } else if (!isConnected) {
            setNodes(newList);
