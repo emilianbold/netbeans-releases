@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.refactoring.actions;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -66,23 +68,12 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         if(nodes.size() != 1) {
             return false;
         }
-//        Node node = nodes.iterator().next();
-//        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
-//        if (tph != null) {
-//            return RetoucheUtils.isRefactorable(tph.getFileObject());
-//        }
-//        DataObject dObj = node.getCookie(DataObject.class);
-//        if(null == dObj)
-//            return false;
-//        FileObject fileObj = dObj.getPrimaryFile();
-//        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
-//            return false;
-//
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        if (RefactoringActionsProvider.isFromEditor(ec)) {
-//            return true;
-//        }
-        return false;
+        CsmObject ref = CsmRefactoringUtils.findContextObject(lookup);
+        if (RefactoringActionsProvider.isFromEditor(lookup)) {
+            return CsmRefactoringUtils.isSupportedReference(ref);
+        } else {
+            return CsmKindUtilities.isFunction(ref);
+        }
     }
 
     @Override
@@ -112,20 +103,12 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         if (nodes.size() != 1) {
             return false;
         }
-//        Node n = nodes.iterator().next();
-//        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
-//        if (tph != null) {
-//            return RetoucheUtils.isRefactorable(tph.getFileObject());
-//        }
-//        DataObject dob = n.getCookie(DataObject.class);
-//        if (dob==null) {
-//            return false;
-//        }
-//        FileObject fo = dob.getPrimaryFile();
-//        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//            return true;
-//        }
-        return false;
+        CsmObject ref = CsmRefactoringUtils.findContextObject(lookup);
+        if (RefactoringActionsProvider.isFromEditor(lookup)) {
+            return CsmRefactoringUtils.isSupportedReference(ref);
+        } else {
+            return CsmKindUtilities.isField(ref);
+        }
     }
 
     @Override

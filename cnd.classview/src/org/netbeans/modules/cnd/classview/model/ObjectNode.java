@@ -53,6 +53,7 @@ import org.openide.nodes.*;
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
+import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
 /**
@@ -100,9 +101,10 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     public Action[] getActions(boolean context) {
         List<Action> res = new ArrayList<Action>();
         Action action = createOpenAction();
+        CsmOffsetableDeclaration decl = null;
         if (action != null){
             res.add(action);
-            CsmOffsetableDeclaration decl = getObject();
+            decl = getObject();
             CharSequence name = decl.getUniqueName();
             CsmProject project = decl.getContainingFile().getProject();
             if (project != null){
@@ -127,6 +129,11 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
             }
         }
         res.add(RefactoringActionsFactory.whereUsedAction());
+        if (CsmKindUtilities.isField(decl)) {
+            res.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+        } else if (CsmKindUtilities.isFunction(decl)) {
+            res.add(CsmRefactoringActionsFactory.changeParametersAction());
+        }
         return res.toArray(new Action[res.size()]);
     }
 }

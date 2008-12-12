@@ -67,6 +67,8 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -473,6 +475,7 @@ public final class UIUtil {
         private final FileObject item;
         private final FileObject root;
         private final boolean contentType;
+        private static Logger LOGGER = Logger.getLogger(LayerItemPresenter.class.getName());
         
         public LayerItemPresenter(final FileObject item,
                 final FileObject root,
@@ -497,6 +500,7 @@ public final class UIUtil {
         public String getDisplayName() {
             if (displayName == null) {
                 displayName = computeDisplayName();
+                LOGGER.log(Level.FINE, "Computed display name '" + displayName + "'");
             }
             return displayName;
         }
@@ -519,6 +523,7 @@ public final class UIUtil {
             try {
                 name = fo.getFileSystem().getStatus().annotateName(
                         fo.getNameExt(), Collections.singleton(fo));
+                LOGGER.log(Level.FINER, "getFileObjectName for '" + fo.getPath() + "': " + name);
             } catch (FileStateInvalidException ex) {
                 name = fo.getName();
             }

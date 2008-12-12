@@ -50,7 +50,6 @@ import org.netbeans.modules.j2ee.sun.util.NodeTypes;
 import com.sun.appserv.management.base.Util;
 import org.netbeans.modules.j2ee.sun.ide.controllers.ControllerUtil;
 import org.netbeans.modules.j2ee.sun.ide.controllers.WebModuleController;
-import org.netbeans.modules.j2ee.sun.ide.runtime.actions.EnableDisableAction;
 import org.netbeans.modules.j2ee.sun.ide.runtime.actions.UndeployAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
@@ -108,7 +107,6 @@ public class WebModuleNode extends AppserverMgmtApplicationsNode {
         if(!isEmbedded) {
             return new SystemAction[] {
                 SystemAction.get(UndeployAction.class),
-                SystemAction.get(EnableDisableAction.class),
                 SystemAction.get(PropertiesAction.class)
             };
         } else {

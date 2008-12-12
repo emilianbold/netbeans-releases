@@ -49,6 +49,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.database.ConfigurableRailsAdapter;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
@@ -69,36 +70,32 @@ public class RailsAdaptersPanel extends SettingsPanel {
     private String projectName;
     private boolean manuallyEdited;
     private DocumentListener databaseNameListener;
+    private final DatabaseConfigPanelVisual parent;
+
+    // for storing the original state of the jdbc check box (this panel 
+    // may change it's state)
+    private boolean useJdbcOriginallySelected;
+    private boolean useJdbcOriginallyEnabled;
+
     /** Creates new form RailsAdaptersPanel */
-    public RailsAdaptersPanel() {
+    public RailsAdaptersPanel(DatabaseConfigPanelVisual parent) {
         initComponents();
-        List<RailsDatabaseConfiguration> adapters = RailsAdapterFactory.getAdapters();
-        developmentComboBox.setModel(new AdapterListModel(adapters));
-        developmentComboBox.setRenderer(new AdapterListCellRendered());
-        developmentComboBox.addItemListener(new ItemListener() {
+        this.parent = parent;
+    }
 
-            public void itemStateChanged(ItemEvent e) {
-                initDatabaseNameField();
-            }
-        });
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (!enabled) {
+            resetUseJdbc();
+        } else {
+            initJdbcCheckBox();
+        }
+    }
 
-        databaseNameListener = new DocumentListener() {
-
-            public void insertUpdate(DocumentEvent e) {
-                manuallyEdited = true;
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                manuallyEdited = true;
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                manuallyEdited = true;
-            }
-        };
-
-        //TODO: enable once the logic for editing database.yml
-        // to change production and test databases is implemented
+    private void resetUseJdbc() {
+        parent.getUseJdbc().setSelected(useJdbcOriginallySelected);
+        parent.getUseJdbc().setEnabled(useJdbcOriginallyEnabled);
     }
 
     private void initDatabaseNameField() {
@@ -233,13 +230,57 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 //        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, StandardRailsAdapter.get(devel));
     }
 
+    void initJdbcCheckBox() {
+        RailsDatabaseConfiguration selected = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
+        if (selected != null && selected.requiresJdbc()) {
+            parent.getUseJdbc().setSelected(true);
+            parent.getUseJdbc().setEnabled(false);
+        } else {
+            resetUseJdbc();
+        }
+    }
+
     @Override
     void read( WizardDescriptor settings) {
+        RubyPlatform platform = (RubyPlatform) settings.getProperty("platform"); //NOI8N
+        List<RailsDatabaseConfiguration> adapters = RailsAdapterFactory.getAdapters(platform);
+        // get the original state of the jdbc check box -- this panel might change it's state,
+        // depending on the selected adapter, 
+        // and we need to be able to reset it back to defaults
+        this.useJdbcOriginallyEnabled = parent.getUseJdbc().isEnabled();
+        this.useJdbcOriginallySelected = parent.getUseJdbc().isSelected();
+
+        developmentComboBox.setModel(new AdapterListModel(adapters));
+        developmentComboBox.setRenderer(new AdapterListCellRendered());
+        developmentComboBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                initDatabaseNameField();
+                initJdbcCheckBox();
+            }
+        });
+
+        databaseNameListener = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+        };
+
         String name = (String) settings.getProperty("name"); //NOI18N
         if (!name.equals(projectName)) {
             projectName = name;
             initDatabaseNameField();
         }
+        initJdbcCheckBox();
 
     }
 

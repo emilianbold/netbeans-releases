@@ -53,7 +53,7 @@ public class RenderUtil {
 
     public static void drawRect (Graphics2D gr, Rectangle rect) {
         if (java6)
-            gr.drawRect (rect.x, rect.y, rect.width - 1, rect.height - 1);
+            gr.drawRect (rect.x, rect.y, rect.width, rect.height);
         else
             gr.draw (new Rectangle2D.Double (rect.x + 0.5, rect.y + 0.5, rect.width - 1.0, rect.height - 1.0));
     }

@@ -46,10 +46,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 
-import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 
 import org.netbeans.modules.uml.integration.ide.ChangeUtils;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
@@ -63,7 +60,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.integration.ide.UMLSupport;
 
 /**
  * The MethodInfo communicates with the EventManager to update Describe.
@@ -181,6 +177,7 @@ public class MethodInfo extends ConstructorInfo
     
     /* (non-Javadoc)
      */
+    @Override
     public IProject getOwningProject() {
         return  operation != null? 
                     (IProject) operation.getProject() : 
@@ -245,19 +242,6 @@ public class MethodInfo extends ConstructorInfo
         
         IParameter ret = op.getReturnType();
 
-// conover - replacing String type with MethodParameterInfo type
-//        if (op.getIsConstructor() || ret == null )
-//        {
-//            setReturnType(null);
-//        }
-//        
-//        else
-//        {
-//            setReturnType(MethodParameterInfo.getType(ret, accessor));
-//        }
-// conover - using MethodParameterInfo instead of String allows for more robust
-// code generation, like for Collection Override
-
         if (!op.getIsConstructor() && ret != null)
             setReturnParameter(new MethodParameterInfo(this, ret, false));
         
@@ -291,6 +275,7 @@ public class MethodInfo extends ConstructorInfo
      *             <code>java.lang.ref.Modifier</code>. If <code>null</code>,
      *             the modifiers will not be updated to the model.
      */
+    @Override
     public void setModifiers(Integer mods) {
         ClassInfo owner = getContainingClass();
         if (owner != null && owner.isInterface() && mods != null &&
@@ -307,11 +292,13 @@ public class MethodInfo extends ConstructorInfo
         return attribute != null && attribute.isUseCollectionOverride();
     }
 
+    @Override
     public String getFilename() {
         return (getContainingClass() != null?
                        getContainingClass().getFilename() : null);
     }
 
+    @Override
     public IProject getProject() {
         return operation != null? (IProject) operation.getProject()
                                    : null;
@@ -464,6 +451,7 @@ public class MethodInfo extends ConstructorInfo
      * {@link #update(GDSymbolTransaction trans) update}
      * is called.
      */
+    @Override
     public void update()
     {
         super.update();
@@ -474,6 +462,7 @@ public class MethodInfo extends ConstructorInfo
      * @param trans The transaction that is to be used to update the correct symbol.
      * @return The method transaction that was created to update the data member.
      */
+    @Override
     public MethodTransaction update(SymbolTransaction symTrans)
     {
         MethodTransaction retVal = super.update(symTrans);
@@ -484,32 +473,6 @@ public class MethodInfo extends ConstructorInfo
             if (oper != null
                     && (cons = oper.getName().equals(symTrans.getSymbol().getName())) != oper.getIsConstructor())
                 oper.setIsConstructor(cons);
-
-            /*
-            if(getReturnType() != null)
-            {
-                EventManager manager = EventManager.getEventManager();
-                try
-                {
-                    IOperation oper    = retVal.getOperation();
-                    if((oper != null) && !oper.getName().equals(symTrans.getSymbol().getName())) {
-                        oper.setReturnType2(getReturnType());
-                    } else {
-                        if(oper != null) {
-                           oper.setIsConstructor(true);
-                        }
-                    }
-                }
-                catch(Exception E)
-                {
-                    String msg = "Error occured while updating a Describe "
-                                + "method attribute.<br>";
-                    msg += " to the value: " +  getReturnType();
-                    ExceptionDialog.showExceptionError(msg, E);
-                }
-            }
-
-            */
         }
         return retVal;
     }
@@ -520,10 +483,12 @@ public class MethodInfo extends ConstructorInfo
      *
      * @return <code>true</code> if the model needs to be updated.
      */
+    @Override
     protected boolean needParameterUpdate() {
         return true;
     }
 
+    @Override
     protected ETList<IParameter> getParameterCollection(IOperation op) {
         ETList<IParameter> pars = super.getParameterCollection(op);
 
@@ -542,6 +507,7 @@ public class MethodInfo extends ConstructorInfo
         return pars;
     }
 
+    @Override
     protected void updateParameters(MethodTransaction trans)
     {
         if (getNewParameters() == null)
@@ -593,10 +559,12 @@ public class MethodInfo extends ConstructorInfo
             super.updateParameters(trans);
     }
 
+    @Override
     public String getCode() {
         return "M";
     }
 
+    @Override
     protected String getDisplayString(String fnName, MethodParameterInfo[] mpi) 
     {
         String s = super.getDisplayString(fnName, mpi);
@@ -634,6 +602,7 @@ public class MethodInfo extends ConstructorInfo
     //
 
 
+    @Override
     public Integer getModifiers() {
 	Integer mods = super.getModifiers();
 	if (getOperation() != null && getOperation().getIsConstructor()
@@ -696,23 +665,6 @@ public class MethodInfo extends ConstructorInfo
 		}
 	    }
 	}
-
-	/* isn't needed as the exceptions contains fully-qualified names
-	String[] exceptions = getExceptions();
-	if (exceptions != null) {
-	    for(int i = 0; i < exceptions.length; i++)  {
-		if (exceptions[i] != null) {
-		    // TBD - exception string may be with generic
-		    String[] pn = new String[]{JavaClassUtils.getPackageName(exceptions[i]), 
-					       JavaClassUtils.getShortClassName(exceptions[i])};
-		    ArrayList<String[]> refs = new ArrayList<String[]>();
-		    refs.add(pn);
-		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
-		}
-	    }
-	}
-	*/
-
 	return res;	
     }
 
@@ -742,6 +694,4 @@ public class MethodInfo extends ConstructorInfo
 	}
 	return res;
     }
-    
-
 }

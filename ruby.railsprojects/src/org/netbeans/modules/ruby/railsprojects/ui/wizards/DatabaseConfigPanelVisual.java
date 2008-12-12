@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.WizardDescriptor;
@@ -61,7 +62,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         configureOptionsButtonGroup.add(useIDEConnections);
         configureOptionsButtonGroup.add(useRailsAdapter);
         jdbcPanel = new JdbcConnectionsPanel();
-        adaptersPanel = new RailsAdaptersPanel();
+        adaptersPanel = new RailsAdaptersPanel(this);
         ideConnectionsPanel.add(jdbcPanel, BorderLayout.CENTER);
         adapterConfigurationPanel.add(adaptersPanel, BorderLayout.CENTER);
         setName(NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LAB_ConfigureDatabase"));
@@ -98,6 +99,11 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         jdbcPanel.read(descriptor);
         adaptersPanel.read(descriptor);
         initInnerPanels();
+    }
+
+    // need access from RailsAdaptersPanel
+    JCheckBox getUseJdbc() {
+        return useJdbc;
     }
 
     void store(WizardDescriptor descriptor) {

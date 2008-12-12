@@ -20,7 +20,9 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- Jython+Rails stuff -->
             <include name="jython-${jython_src_version}/**"/>
+            <!--
             <exclude name="jython-${jython_src_version}/**/netbeans-index-*.zip"/>
+            -->
         </patternset>
     </target>    
 
@@ -33,6 +35,8 @@
                 <include name="jython-${jython_src_version}.zip"/>
             </fileset>
         </unzip>
+        <!-- Apply patched build.xml which handles non-clean builds; shouldn't be necessary after next Jython snapshot update -->
+        <copy tofile="${jython_build}/jython/build.xml" file="jython-build.xml" />
         <!-- Run target in Jython's own build.xml file to build distro -->
         <ant dir="${jython_build}/jython" target="developer-build" inheritall="false" inheritrefs="false">
             <property name="dist.dir" value="${cluster}/jython-${jython_src_version}"/>

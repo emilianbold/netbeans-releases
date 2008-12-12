@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -96,6 +97,8 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     List<String> databaseTables;
     private TableClosure tableClosure;
     private SchemaElement sourceSchemaElement;
+
+    private static Logger logger = Logger.getLogger(HibernateRevengDatabaseTablesPanel.class.getName());
 
     public HibernateRevengDatabaseTablesPanel(Project project) {
         initComponents();
@@ -161,6 +164,10 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         try {
             if (cmbDatabaseConn.getSelectedIndex() != -1) {
                 hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
+                if(!env.canDirectlyConnectToDB(hibConf)) {
+                    logger.info("Not able to connect to the database, aborting table fetching..");
+                    return;
+                }
                 dbconn = HibernateUtil.getDBConnection(hibConf);
                 if (dbconn != null) {
                     sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
@@ -480,6 +487,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     private void cmbDatabaseConnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDatabaseConnActionPerformed
         fillDatabaseTables();
+        changeSupport.fireChange();
 }//GEN-LAST:event_cmbDatabaseConnActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;

@@ -43,6 +43,8 @@ import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,6 +82,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.ConnectorInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.readers.GraphNodeReaderFactory;
+import org.netbeans.modules.uml.drawingarea.persistence.util.XMIConstants;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -318,6 +321,20 @@ class DiagramLoader
         return d;
     }
 
+    private String getDecodedAttribute(XMLStreamReader reader,String attributeName)
+    {
+        String attr=reader.getAttributeValue(null, attributeName);
+        if(attr!=null)
+        {
+            try {
+                attr = URLDecoder.decode(attr, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return attr;
+    }
+
     private void handleDiagram()
     {
         try
@@ -327,6 +344,7 @@ class DiagramLoader
                 diagInfo.setDiagramXMIID(reader.getAttributeValue(null, "xmi.id"));
                 diagInfo.setDiagramName(reader.getAttributeValue(null, "name"));
                 diagInfo.setZoom(reader.getAttributeValue(null, "zoom"));
+                diagInfo.setDocumentation(getDecodedAttribute(reader,XMIConstants.DOCUMENTATION));
             }
             while (reader.hasNext())
             {
@@ -445,6 +463,8 @@ class DiagramLoader
         project = getProject(projectID);
         IElement element = getElement(project, namespace);
 
+
+
         if (diaType.length() > 0)
         {
             UIDiagram diagram = (UIDiagram) FactoryRetriever.instance().createType("Diagram", null);
@@ -459,6 +479,7 @@ class DiagramLoader
                 diagram.setNamespace((INamespace) element);
             } //should get the namespace instance
             diagram.setDiagramKind(diagInfo.getDiagramType());
+            diagram.setDocumentation(diagInfo.getDocumentation());
             scene = new DesignerScene(diagram, this.topComp);
             scene.setEdgesGrouped(groupEdges);
 

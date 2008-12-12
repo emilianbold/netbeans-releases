@@ -47,10 +47,16 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
@@ -64,6 +70,8 @@ import org.openide.windows.TopComponent;
 public class GrailsActionsTest extends GrailsTestCase {
 
     private static final String APP_PORT = "9998"; //NOI18N
+    private static final String DEFAULT_PORT = "8080"; //NOI18N
+    private static final String PLUGIN_NAME = "testing"; //NOI18N
     private static boolean isPortSet = false;
     private OpenAction oa = new OpenAction();
 
@@ -75,7 +83,8 @@ public class GrailsActionsTest extends GrailsTestCase {
     public void setUp() throws Exception {
         super.setUp();
         if (!isPortSet) {
-            GrailsSettings.getInstance().setPortForProject(getProject(), APP_PORT);
+            setApplicationPort(APP_PORT);
+            assertEquals(APP_PORT, GrailsSettings.getInstance().getPortForProject(getProject()));
             isPortSet = true;
         }
     }
@@ -97,10 +106,43 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     /**
+     * Test for Grails Plugins action
+     *  -install plugin
+     */
+    public void testManagePlugins() {
+        //open plugin manager and install a plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        //New Plugins
+        String tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.newPlugins");
+        jtpo.selectPage(tabTitle);
+        JListOperator jlo = new JListOperator(jtpo);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 500000); //NOI18N
+        jlo.waitItem("activemq", 1);
+        jlo.selectItem(PLUGIN_NAME);
+        //Install
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //Installed
+        tabTitle = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.installed");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 240000); //NOI18N
+        jtpo.selectPage(tabTitle);
+        jlo = new JListOperator(jtpo);
+        jlo.waitItem(PLUGIN_NAME, 0);
+        assertEquals(1, jlo.getModel().getSize());
+        ndo.closeByButton();
+    }
+
+    /**
      * Test Create view action on the domain class node
      *
      */
-    public void testCreateView() {
+    public void testGenerateViews() {
         //Generate Views
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateViewsAction");
         getDomainClassNode("Author").performPopupAction(label); //NOI18N
@@ -202,6 +244,35 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     /**
+     * Test for Grails Plugins action
+     *  -uninstall plugin
+     */
+    public void testUninstallPlugin() {
+        //open the dialog again and uninstall previously installed plugin
+        //Grails Plugins...
+        String actionLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_ManagePluginsAction");
+        getProjectRootNode().performPopupActionNoBlock(actionLabel);
+        //Grails Plugins
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_PluginTitle");
+        NbDialogOperator ndo = new NbDialogOperator(title);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo);
+        JListOperator jlo = new JListOperator(jtpo);
+        jlo.selectItem(PLUGIN_NAME);
+        //Uninstall
+        String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.Bundle", "GrailsPluginPanel.uninstallButton.text");
+        new JButtonOperator(jtpo, btnLabel).push();
+        //XXX - need in case project is versioned by hg (bug?)
+        long end = System.currentTimeMillis() + 240000;
+        while (jlo.getModel().getSize() > 0 && System.currentTimeMillis() < end) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {}
+        }
+        assertEquals(0, jlo.getModel().getSize());
+        ndo.closeByButton();
+    }
+
+    /**
      * Test Create war project action
      *
      */
@@ -212,6 +283,15 @@ public class GrailsActionsTest extends GrailsTestCase {
         FilesTabOperator fto = FilesTabOperator.invoke();
         Node n = new Node(fto.getProjectNode(getProjectName()), getProjectName() + "-0.1.war"); //NOI18N
         assertNotNull(n);
+    }
+
+    private void setApplicationPort(String port) {
+        getProjectRootNode().properties();
+        NbDialogOperator ndo = new NbDialogOperator(getProjectName());
+        JTextFieldOperator jtfo = new JTextFieldOperator(ndo, DEFAULT_PORT);
+        jtfo.clearText();
+        jtfo.typeText(port);
+        ndo.ok();
     }
 
     private Node getDomainClassNode(String domainClass) {

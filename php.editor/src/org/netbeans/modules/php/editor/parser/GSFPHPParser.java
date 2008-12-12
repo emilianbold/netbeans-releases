@@ -282,7 +282,6 @@ public class GSFPHPParser implements Parser {
                 start++;
                 if (end < source.length()) {
                     c = source.charAt(end);
-                    end++;
                     while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
                         c = source.charAt(end++);
                     }
