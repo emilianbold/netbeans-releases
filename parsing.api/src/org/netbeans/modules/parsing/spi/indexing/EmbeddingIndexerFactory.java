@@ -58,7 +58,7 @@ public abstract class EmbeddingIndexerFactory {
     public abstract String getMimeType ();
 
     /**
-     * Return the name of this indexer. This name should be unique because GSF
+     * Return the name of this indexer. This name should be unique because the infrastructure 
      * will use this name to produce a separate data directory for each indexer
      * where it has its own storage.
      *
