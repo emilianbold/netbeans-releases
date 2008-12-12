@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
@@ -64,12 +62,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.NotificationLineSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * Panel for adding data source reference.
  * @author Tomas Mysik
+ * @author Petr Slechta
  */
 public class DataSourceReferencePanel extends JPanel {
     public static final String IS_VALID = DataSourceReferencePanel.class.getName() + ".IS_VALID"; // NOI18N
@@ -78,6 +78,7 @@ public class DataSourceReferencePanel extends JPanel {
     private final Set<Datasource> moduleDatasources;
     private final Set<Datasource> serverDatasources;
     private final boolean isDsApiSupportedByServerPlugin;
+    private NotificationLineSupport statusLine;
     
     /** Creates new form DataSourceReferencePanel */
     public DataSourceReferencePanel(J2eeModuleProvider provider, Set<String> refNames, Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources) {
@@ -90,17 +91,18 @@ public class DataSourceReferencePanel extends JPanel {
         
         registerListeners();
         
-        setupErrorLabel();
-        setupWarningLabel();
         setupAddButton();
         setupComboBoxes();
         handleComboBoxes();
         
         populate();
-        
+    }
+
+    public void setNotificationLine(NotificationLineSupport statusLine) {
+        this.statusLine = statusLine;
         verify();
     }
-    
+
     /**
      * Get the name of the data source reference.
      * @return the reference name.
@@ -204,36 +206,6 @@ public class DataSourceReferencePanel extends JPanel {
         }
     }
     
-    private void setupErrorLabel() {
-        setError(null);
-        errorLabel.setForeground(getErrorColor());
-    }
-    
-    private Color getErrorColor() {
-        Color errorColor = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (errorColor != null) {
-            return errorColor;
-        }
-        return new Color(255, 0, 0);
-    }
-    
-    private void setupWarningLabel() {
-        if (!isDsApiSupportedByServerPlugin) {
-            // DS API is not supported by the server plugin
-            warningLabel.setForeground(getWarningColor());
-            return;
-        }
-        warningLabel.setText("");
-    }
-    
-    private Color getWarningColor() {
-        Color warningColor = UIManager.getColor("nb.warningForeground"); //NOI18N
-        if (warningColor != null) {
-            return warningColor;
-        }
-        return Color.DARK_GRAY;
-    }
-    
     private void setupAddButton() {
         if (!isDsApiSupportedByServerPlugin) {
             addButton.setEnabled(false);
@@ -249,7 +221,7 @@ public class DataSourceReferencePanel extends JPanel {
         // reference name
         String refName = dsReferenceText.getText();
         if (refName == null || refName.trim().length() == 0) {
-            setError("ERR_NO_REFNAME"); // NOI18N
+            setInfo("ERR_NO_REFNAME"); // NOI18N
             return false;
         } else {
             refName = refName.trim();
@@ -261,35 +233,45 @@ public class DataSourceReferencePanel extends JPanel {
         
         // data sources (radio + combo)
         if (dsGroup.getSelection() == null) {
-            setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
+            setInfo("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
             return false;
         } else if (projectDsRadio.isSelected()) {
             if (projectDsCombo.getItemCount() == 0
                     || projectDsCombo.getSelectedIndex() == -1) {
-                setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
+                setInfo("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
                 return false;
             }
         } else if (serverDsRadio.isSelected()) {
             if (serverDsCombo.getItemCount() == 0
                     || serverDsCombo.getSelectedIndex() == -1) {
-                setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
+                setInfo("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
                 return false;
             }
         }
+
+        if (!isDsApiSupportedByServerPlugin) {
+            // DS API is not supported by the server plugin
+            statusLine.setWarningMessage(NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DSC_Warning"));
+            return true;
+        }
         
         // no errors
-        setError(null);
+        statusLine.clearMessages();
         return true;
     }
     
     private void setError(String key) {
-        if (key == null) {
-            errorLabel.setText("");
-            return;
+        if (statusLine != null) {
+            statusLine.setErrorMessage(NbBundle.getMessage(DataSourceReferencePanel.class, key));
         }
-        errorLabel.setText(NbBundle.getMessage(DataSourceReferencePanel.class, key));
     }
     
+    private void setInfo(String key) {
+        if (statusLine != null) {
+            statusLine.setInformationMessage(NbBundle.getMessage(DataSourceReferencePanel.class, key));
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -307,7 +289,6 @@ public class DataSourceReferencePanel extends JPanel {
         serverDsCombo = new javax.swing.JComboBox();
         dsCopyToProjectCheck = new javax.swing.JCheckBox();
         addButton = new javax.swing.JButton();
-        errorLabel = new javax.swing.JLabel();
         warningLabel = new javax.swing.JLabel();
 
         dsReferenceLabel.setLabelFor(dsReferenceText);
@@ -335,9 +316,6 @@ public class DataSourceReferencePanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "ERR_NO_REFNAME")); // NOI18N
-        errorLabel.setFocusable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DSC_Warning")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -351,16 +329,13 @@ public class DataSourceReferencePanel extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
-                                .add(dsCopyToProjectCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
+                                .add(dsCopyToProjectCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE))
                             .add(serverDsRadio)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(29, 29, 29)
-                                .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
+                                .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -395,8 +370,6 @@ public class DataSourceReferencePanel extends JPanel {
                     .add(serverDsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(dsCopyToProjectCheck)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -419,7 +392,6 @@ public class DataSourceReferencePanel extends JPanel {
 }//GEN-LAST:event_addButtonActionPerformed
     
     private Datasource handleDataSourceCustomizer() {
-        
         Datasource datasource = null;
         Set<Datasource> datasources = new HashSet<Datasource>(moduleDatasources);
         datasources.addAll(serverDatasources);
@@ -468,6 +440,7 @@ public class DataSourceReferencePanel extends JPanel {
                 }
             }
             
+            @Override
             public boolean isEnabled() {
                 return password != null;
             }
@@ -495,7 +468,6 @@ public class DataSourceReferencePanel extends JPanel {
     private javax.swing.ButtonGroup dsGroup;
     private javax.swing.JLabel dsReferenceLabel;
     private javax.swing.JTextField dsReferenceText;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JComboBox projectDsCombo;
     private javax.swing.JRadioButton projectDsRadio;
     private javax.swing.JComboBox serverDsCombo;
