@@ -45,7 +45,9 @@ import java.awt.Component;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -58,6 +60,8 @@ import javax.swing.tree.TreePath;
  * @author  Tim Boudreau
  */
 public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
+    private static int expansionHandleWidth = 0;
+    private static int expansionHandleHeight = 0;
     private boolean expanded = false;
     private boolean leaf = true;
     private boolean showHandle = true;
@@ -106,13 +110,19 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     static int getNestingWidth() {
         return getExpansionHandleWidth();
     }
-    
+
     static int getExpansionHandleWidth() {
-        return getExpandedIcon().getIconWidth();
+        if (expansionHandleWidth == 0) {
+            expansionHandleWidth = getExpandedIcon ().getIconWidth ();
+        }
+        return expansionHandleWidth;
     }
-    
+
     static int getExpansionHandleHeight() {
-        return getExpandedIcon().getIconHeight();
+        if (expansionHandleHeight == 0) {
+            expansionHandleHeight = getExpandedIcon ().getIconHeight ();
+        }
+        return expansionHandleHeight;
     }
     
     private void setNestingDepth (int i) {
@@ -228,7 +238,20 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     }
     
     private static class ExpansionHandleBorder implements Border {
+
+        private static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
+
         private Insets insets = new Insets(0,0,0,0);
+        private static JLabel lExpandedIcon = null;
+        private static JLabel lCollapsedIcon = null;
+
+        {
+            if (isGtk) {
+                lExpandedIcon = new JLabel (getExpandedIcon (), SwingUtilities.TRAILING);
+                lCollapsedIcon = new JLabel (getCollapsedIcon (), SwingUtilities.TRAILING);
+            }
+        }
+
         public Insets getBorderInsets(Component c) {
             DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer) c;
             if (ren.isShowHandle()) {
@@ -263,7 +286,14 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     iconY = 0;
                 }
-                icon.paintIcon(c, g, iconX, iconY);
+                if (isGtk) {
+                    JLabel lbl = ren.isExpanded () ? lExpandedIcon : lCollapsedIcon;
+                    lbl.setSize (Math.max (getExpansionHandleWidth (), iconX + getExpansionHandleWidth ()), height);
+                    lbl.paint (g);
+                } else {
+                    icon.paintIcon(c, g, iconX, iconY);
+                }
+                
             }
         }
     }
