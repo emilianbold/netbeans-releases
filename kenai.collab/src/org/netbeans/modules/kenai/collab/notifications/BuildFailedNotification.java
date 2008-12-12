@@ -71,7 +71,7 @@ public class BuildFailedNotification extends Notification {
     }
 
     public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/kenai/collab/resources/online.gif"));
+        return new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/kenai/collab/resources/chat.gif"));
     }
 
 

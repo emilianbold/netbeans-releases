@@ -40,9 +40,12 @@
 package org.netbeans.modules.notifications.spi;
 
 import javax.swing.Icon;
+import org.netbeans.modules.kenai.collab.notifications.APIAccessor;
+import org.netbeans.modules.notifications.api.Notifications;
 
 /**
- *
+ * Base class for implementing notifications
+ * TODO: should be moved to org.openide.awt
  * @author Jan Becicka
  */
 public abstract class Notification implements Comparable<Notification> {
@@ -94,6 +97,10 @@ public abstract class Notification implements Comparable<Notification> {
     @Override
     public final int compareTo(Notification o) {
         return getPriority().compareTo(o.getPriority());
+    }
+
+    public final boolean remove() {
+        return APIAccessor.DEFAULT.remove(Notifications.getDefault(), this);
     }
 }
 
