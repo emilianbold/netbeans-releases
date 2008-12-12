@@ -46,8 +46,11 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -55,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeWizard implements WizardDescriptor.Panel, ChangeListener {
+public class SelectModeWizard implements WizardDescriptor.AsynchronousValidatingPanel, ChangeListener {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectModePanel component;
@@ -83,11 +86,11 @@ public class SelectModeWizard implements WizardDescriptor.Panel, ChangeListener 
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectModePanel)getComponent()).valid(wizardDescriptor);
-	if (valid) {
-	    wizardDescriptor.setMessage(""); // NOI18N
+        boolean valid = ((SelectModePanel)getComponent()).valid(wizardDescriptor);
+        if (valid) {
+            wizardDescriptor.setMessage(null);
         }
-	return valid;
+        return valid;
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
@@ -127,10 +130,36 @@ public class SelectModeWizard implements WizardDescriptor.Panel, ChangeListener 
             component.read(wizardDescriptor);
             inited = true;
         }
+        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);
     }
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
+    }
+
+    public void prepareValidation() {
+        if (wizardDescriptor.isSimpleMode()) {
+            component.enableControls(false);
+        }
+    }
+
+    public void validate() throws WizardValidationException {
+        if (wizardDescriptor.isSimpleMode()) {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress"));
+            handle.setInitialDelay(100);
+            handle.start();
+            boolean res;
+            try {
+                res = component.isApplicable(wizardDescriptor);
+            } finally {
+                handle.finish();
+            }
+            component.updateControls();
+            if (!res) {
+                fireChangeEvent();
+                ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.TRUE);
+            }
+        }
     }
 }
 

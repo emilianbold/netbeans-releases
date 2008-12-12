@@ -83,11 +83,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectProviderPanel)getComponent()).valid(wizardDescriptor);
-	if (valid) {
-	    wizardDescriptor.setMessage(""); // NOI18N
-        }
-	return valid;
+        return ((SelectProviderPanel)getComponent()).valid(wizardDescriptor);
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
@@ -116,6 +112,9 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
       	fireChangeEvent();
     }
     
+    DiscoveryDescriptor getWizardDescriptor(){
+        return wizardDescriptor;
+    }
     
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -127,10 +126,12 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
             component.read(wizardDescriptor);
             inited = true;
         }
+        component.showAlert(wizardDescriptor);
     }
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
+        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);
     }
 }
 
