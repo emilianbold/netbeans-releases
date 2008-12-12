@@ -59,24 +59,63 @@ final class RDocAnalyzer {
     private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
 
     static {
+        COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("aDir", "Dir"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("a_hash", "Hash"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("aHash", "Hash"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("a_klass", "Class"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("an_array", "Array"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("anArray", "Array"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerat", "Enumeration"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerator", "Enumeration"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("anIO", "IO"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("a_proc", "Proc"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("a_str", "String"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("binding", "Binding"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("class", "Class"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("dir", "Dir"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("exception", "Exception"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("file", "File"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("fixnum", "Fixnum"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("float", "Float"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("flt", "Float"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put(":foo", "Symbol"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("hash", "Hash"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("hsh", "Hash"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("integer", "Integer"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("int", "Integer"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("io", "IO"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("ios", "IO"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("matchdata", "MatchData"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("method", "Method"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("mod", "Module"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("new_method", "UnboundMethod"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("new_regexp", "Regexp"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("new_str", "String"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("new_time", "Time"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("nil", "NilClass"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("number", "Numeric"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("numeric", "Numeric"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("numeric_result", "Numeric"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("num", "Numeric"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("obj", "Object"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("prc", "Proc"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("proc", "Proc"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("range", "Range"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("regexp", "Regexp"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("rng", "Range"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("string", "String"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("str", "String"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("struct", "Struct"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("symbol", "Symbol"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("sym", "Sumbol"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("thgrp", "ThreadGroup"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("thread", "Thread"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("thr", "Thread"); // NOI18N
+        COMMENT_TYPE_TO_REAL_TYPE.put("time", "Time"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("true", "TrueClass"); // NOI18N
         COMMENT_TYPE_TO_REAL_TYPE.put("unbound_method", "UnboundMethod"); // NOI18N
     }
@@ -111,7 +150,7 @@ final class RDocAnalyzer {
         if (rawCommentTypes.length() == 0) {
             return;
         }
-        String[] rawCommentTypes2 = rawCommentTypes.split("or"); // NOI18N
+        String[] rawCommentTypes2 = rawCommentTypes.split(" or "); // NOI18N
         for (String rawCommentType : rawCommentTypes2) {
             String[] commentTypes = rawCommentType.split(","); // NOI18N
             for (String commentType : commentTypes) {
