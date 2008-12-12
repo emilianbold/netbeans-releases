@@ -1,0 +1,19 @@
+Code completion result for source line:
+puts has_one.t|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     to_s                                       FalseClass
+METHOD     to_s                                       TrueClass
+CALL       puts(obj)                                  Kernel
+------------------------------------
+METHOD     taint                                      Object
+METHOD     tainted?                                   Object
+METHOD     tap { }                                    Object
+METHOD     test(int_cmd, file1, file2)                Kernel
+METHOD     throw(symbol, obj)                         Kernel
+METHOD     to_a                                       Object
+METHOD     to_enum(method, *args)                     Object
+METHOD     trace_var(symbol)                          Kernel
+METHOD     trace_var(symbol, cmd)                     Kernel
+METHOD     trap(signal)                               Kernel
+METHOD     trap(signal, proc)                         Kernel
+METHOD     type                                       Object

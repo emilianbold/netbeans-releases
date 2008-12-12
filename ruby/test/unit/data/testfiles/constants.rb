@@ -17,6 +17,3 @@ end
 
 Colors::RED.byte
 Colors::Converter::VERSION
-
-require 'rexml/rexml'
-REXML::COPYRIGHT.ls

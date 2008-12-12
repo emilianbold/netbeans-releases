@@ -46,7 +46,6 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.sun.ide.controllers.DeployedItemsController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.SIPController;
-import org.netbeans.modules.j2ee.sun.ide.runtime.actions.EnableDisableAction;
 import org.netbeans.modules.j2ee.sun.ide.runtime.actions.UndeployAction;
 import org.netbeans.modules.j2ee.sun.util.NodeTypes;
 import org.openide.actions.PropertiesAction;
@@ -83,7 +82,6 @@ public class SIPModuleNode extends AppserverMgmtApplicationsNode {
     public Action[] getActions(boolean flag) {
         return new SystemAction[]{
             SystemAction.get(UndeployAction.class),
-            SystemAction.get(EnableDisableAction.class),
             SystemAction.get(PropertiesAction.class)
         };
     }    

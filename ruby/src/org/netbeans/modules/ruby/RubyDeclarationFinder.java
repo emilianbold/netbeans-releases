@@ -404,7 +404,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
-                        types = analyzer.getTypes(lhs);
+                        types = analyzer.inferTypes(lhs);
                     }
                 }
 
@@ -1181,7 +1181,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     // up and do it a bit more cleverly
                     RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
                             (BaseDocument)doc, info.getFileObject());
-                    types = analyzer.getTypes(lhs);
+                    types = analyzer.inferTypes(lhs);
                 }
             }
 

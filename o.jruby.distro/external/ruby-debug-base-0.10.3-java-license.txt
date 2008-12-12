@@ -4,6 +4,7 @@ Description: Provides fast debugging capabilities for JRuby
 License: MIT
 OSR: 8206
 Origin: http://debug-commons.rubyforge.org/
+Files: ruby-debug-base-0.10.3-java.gem
 
 The MIT License
 

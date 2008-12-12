@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -832,6 +833,21 @@ public final class CsmProjectContentResolver {
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, memberKinds, strPrefix, match, false);
         res = filterFunctionDefinitions(res);
+        if (sort && res != null) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+
+    public List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        return getNamespaceAliases(ns, strPrefix, match, isSortNeeded(), searchNested);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.NAMESPACE_ALIAS, strPrefix, match, searchNested, false);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS}, strPrefix, match, false);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
