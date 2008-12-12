@@ -45,6 +45,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPRETER;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
+import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_SESSION_ID;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_STOP_AT_FIRST_LINE;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_INCLUDE_PATH;
 
@@ -59,6 +60,7 @@ import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_
 public final class PhpOptions {
     public static final String PROP_PHP_INTERPRETER = "propPhpInterpreter"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_PORT = "proPhpDebuggerPort"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SESSION_ID = "proPhpDebuggerSessionId"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 
@@ -76,6 +78,8 @@ public final class PhpOptions {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_INTERPRETER, null, newValue);
                 } else if (PHP_DEBUGGER_PORT.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_PORT, null, Integer.valueOf(newValue));
+                } else if (PHP_DEBUGGER_SESSION_ID.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SESSION_ID, null, newValue);
                 } else if (PHP_DEBUGGER_STOP_AT_FIRST_LINE.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE, null, Boolean.valueOf(newValue));
                 } else if (PHP_GLOBAL_INCLUDE_PATH.equals(key)) {
@@ -108,6 +112,15 @@ public final class PhpOptions {
      */
     public int getDebuggerPort() {
         return getPhpOptions().getDebuggerPort();
+    }
+
+    /**
+     * Get the session ID for PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_SESSION_ID}</code>.
+     * @return the session ID for PHP debugger.
+     */
+    public String getDebuggerSessionId() {
+        return getPhpOptions().getDebuggerSessionId();
     }
 
     /**

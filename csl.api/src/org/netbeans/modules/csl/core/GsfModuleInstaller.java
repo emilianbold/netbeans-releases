@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.csl.core;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -49,12 +48,10 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import org.netbeans.modules.csl.source.usages.ClassIndexManager;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 
 
 public class GsfModuleInstaller extends ModuleInstall {
@@ -72,25 +69,10 @@ public class GsfModuleInstaller extends ModuleInstall {
     }
     
     public @Override boolean closing () {
-        final boolean ret = super.closing();
-        try {
-            for (final Language language : LanguageRegistry.getInstance()) {
-                if (language.getIndexer() != null) {
-                    ClassIndexManager.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
-                         public Void run() throws IOException {
-                             ClassIndexManager.get(language).close();
-                             return null;
-                         }
-                    });
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         if (ENABLE_MBEANS) {
             unregisterMBeans();
         }
-        return ret;
+        return super.closing();
     }
     
     private static void registerMBeans() {

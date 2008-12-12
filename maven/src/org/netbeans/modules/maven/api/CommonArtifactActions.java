@@ -38,13 +38,17 @@
  */
 package org.netbeans.modules.maven.api;
 
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.actions.ViewBugTrackerAction;
 import org.netbeans.modules.maven.actions.ViewJavadocAction;
 import org.netbeans.modules.maven.actions.ViewProjectHomeAction;
 import org.netbeans.modules.maven.actions.scm.SCMActions;
 import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 
 /**
  *
@@ -52,8 +56,19 @@ import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
  */
 public class CommonArtifactActions {
     
-    public static Action createViewProjectHomeAction(Artifact artifact) {
-       return new ViewProjectHomeAction(artifact);
+    public static Action createViewProjectHomeAction(Artifact artifact, List<ArtifactRepository> repos) {
+        return new ViewProjectHomeAction(artifact, repos);
+    }
+    /**
+     * @deprecated use th method with list of remote repos.
+     * @param artifact
+     * @return
+     */
+    public @Deprecated static Action createViewProjectHomeAction(Artifact artifact) {
+       return createViewProjectHomeAction(artifact,
+               Collections.singletonList(
+               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
+               "http://repo1.maven.org/maven2", "central"))); //NOI18N
     }
     
     public static Action createViewJavadocAction(Artifact artifact) {
@@ -61,16 +76,39 @@ public class CommonArtifactActions {
 
     }
     
-    public static Action createViewBugTrackerAction(Artifact artifact) {
-        return new ViewBugTrackerAction(artifact);
-        
-       
+    public static Action createViewBugTrackerAction(Artifact artifact, List<ArtifactRepository> repos) {
+        return new ViewBugTrackerAction(artifact, repos);
+    }
+
+    /**
+     * @deprecated
+     * @param artifact
+     * @return
+     */
+    public @Deprecated static Action createViewBugTrackerAction(Artifact artifact) {
+       return createViewBugTrackerAction(artifact,
+               Collections.singletonList(
+               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
+               "http://repo1.maven.org/maven2", "central"))); //NOI18N
     }
     
-    public static Action createSCMActions(Artifact artifact) {
-        
-        return new SCMActions(artifact);
+    public static Action createSCMActions(Artifact artifact, List<ArtifactRepository> repos) {
+        return new SCMActions(artifact, repos);
     }
+
+    /**
+     * @deprecated
+     * @param artifact
+     * @return
+     */
+    public @Deprecated static Action createSCMActions(Artifact artifact) {
+       return createSCMActions(artifact,
+               Collections.singletonList(
+               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
+               "http://repo1.maven.org/maven2", "central"))); //NOI18N
+    }
+
+
     public static Action createFindUsages(Artifact artifact) {
         
         return new FindArtifactUsages(artifact);

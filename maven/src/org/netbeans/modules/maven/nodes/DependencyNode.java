@@ -285,6 +285,7 @@ public class DependencyNode extends AbstractNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
         if (isAddedToCP()) {
@@ -313,9 +314,9 @@ public class DependencyNode extends AbstractNode {
         acts.add(CommonArtifactActions.createFindUsages(art));
         acts.add(null);
         acts.add(CommonArtifactActions.createViewJavadocAction(art));
-        acts.add(CommonArtifactActions.createViewProjectHomeAction(art));
-        acts.add(CommonArtifactActions.createViewBugTrackerAction(art));
-        acts.add(CommonArtifactActions.createSCMActions(art));
+        acts.add(CommonArtifactActions.createViewProjectHomeAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
+        acts.add(CommonArtifactActions.createViewBugTrackerAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
+        acts.add(CommonArtifactActions.createSCMActions(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(null);
         acts.add(PropertiesAction.get(PropertiesAction.class));
         return acts.toArray(new Action[acts.size()]);

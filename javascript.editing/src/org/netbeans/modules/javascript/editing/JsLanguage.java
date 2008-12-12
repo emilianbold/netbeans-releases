@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.IndexSearcher;
-import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
@@ -66,6 +65,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
  * @author Tor Norbye
  */
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -187,8 +187,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Indexer getIndexer() {
-        return new JsIndexer();
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new JsIndexer.Factory();
     }
 
     @Override

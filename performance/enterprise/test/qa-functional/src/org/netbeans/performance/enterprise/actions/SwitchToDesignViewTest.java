@@ -41,21 +41,18 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
-import junit.framework.Test;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
+
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author rashid@netbeans.org, mmirilovic@netbeans.org
@@ -63,7 +60,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class SwitchToDesignViewTest  extends PerformanceTestCase {
     
     XMLSchemaComponentOperator schemaComponentOperator;
-            
     private static String testSchemaFileName = "OTA_TravelItinerary.xsd";
     
     /** Creates a new instance of SwitchSchemaView */
@@ -92,32 +88,24 @@ public class SwitchToDesignViewTest  extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
-        log(":: initialize");
-        System.gc();
-        new EventTool().waitNoEvent(5000);
         Node doc = new Node(new EPUtilities().getProcessFilesNode("TravelReservationService"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getSchemaButton().push();        
-
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;        
     }
         
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log(":: open");
         schemaComponentOperator.getDesignButton().pushNoBlock();
-        
         return schemaComponentOperator;
     }
     
     @Override
     public void close() {
-        log("::close");
         if (schemaComponentOperator != null) {
             schemaComponentOperator.getSchemaButton().push();
         }

@@ -59,7 +59,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -81,6 +80,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -297,17 +297,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         ParserResult info = context.getParserResult();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        NameKind kind = context.getNameKind();
+        QuerySupport.Kind kind = context.isPrefixMatch() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
         
-        // Temporary: case insensitive matches don't work very well for JavaScript
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-            kind = NameKind.PREFIX;
-        }
-        
         if (prefix == null) {
-            prefix = "";
+            prefix = ""; //NOI18N
         }
 
         final Document document = info.getSnapshot().getSource().getDocument();
@@ -482,7 +477,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     private void addLocals(List<CompletionProposal> proposals, CompletionRequest request) {
         Node node = request.node;
         String prefix = request.prefix;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         JsParseResult result = request.result;
         
         // TODO - find the scope!!!
@@ -490,8 +485,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         Map<String,List<Node>> localVars = v.getLocalVars(node);
         for (String name : localVars.keySet()) {
-            if (((kind == NameKind.EXACT_NAME) && prefix.equals(name)) ||
-                    ((kind != NameKind.EXACT_NAME) && startsWith(name, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(name)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(name, prefix))) {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
                     AstElement element = AstElement.getElement(request.info, nodeList.get(0));
@@ -1171,7 +1166,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         JsIndex index = request.index;
         String prefix = request.prefix;
         TokenHierarchy<Document> th = request.th;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         String fqn = request.fqn;
         JsParseResult result = request.result;
         
@@ -1179,9 +1174,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         
         Set<IndexedElement> matches;
         if (fqn != null) {
-            matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+            matches = index.getElements(prefix, fqn, kind, result);
         } else {
-            Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+            Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, result);
             matches = names.getA();
             boolean isTruncated = names.getB();
             if (isTruncated) {
@@ -1191,7 +1186,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         // Also add in non-fqn-prefixed elements
         if (includeNonFqn) {
-            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, result);
             if (top.size() > 0) {
                 matches.addAll(top);
             }
@@ -1231,7 +1226,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         Node root = request.root;
         TokenHierarchy<Document> th = request.th;
         AstPath path = request.path;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         Node node = request.node;
         JsParseResult result = request.result;
         JsParseResult info = request.info;
@@ -1370,7 +1365,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
                     while (elements.size() == 0 && fqn != null && !fqn.equals(type)) {
-                        elements = index.getElements(prefix, fqn + "." + type, kind, JsIndex.ALL_SCOPE, result);
+                        elements = index.getElements(prefix, fqn + "." + type, kind, result);
 
                         int f = fqn.lastIndexOf("::");
 
@@ -1382,7 +1377,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     
                     // Add methods in the class (without an FQN)
-                    Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
+                    Set<IndexedElement> m = index.getElements(prefix, type, kind, result);
 
                     if (m.size() > 0) {
                         elements = m;
@@ -1390,7 +1385,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
             } else if (lhs != null && lhs.length() > 0) {
                 // No type but an LHS - perhaps it's a type?
-                Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, result);
+                Set<IndexedElement> m = index.getElements(prefix, lhs, kind, result);
 
                 if (m.size() > 0) {
                     elements = m;
@@ -1405,7 +1400,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 //                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
 //                    return true;
 //                } else {
-                    Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+                    Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, result);
                     elements = names.getA();
                     boolean isTruncated = names.getB();
                     if (isTruncated) {
@@ -1463,11 +1458,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         Set<String> names = new HashSet<String>();
         addXmlItems(xmlItem, names);
 
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         String prefix = request.prefix;
         for (String tag : names) {
-            if (((kind == NameKind.EXACT_NAME) && prefix.equals(tag)) ||
-                    ((kind != NameKind.EXACT_NAME) && startsWith(tag, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(tag)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(tag, prefix))) {
                 KeywordItem item = new KeywordItem(tag, null, request);
                 item.setKind(ElementKind.TAG);
                 proposals.add(item);
@@ -1490,7 +1485,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
         TokenHierarchy<Document> th = request.th;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         
         TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, lexOffset);
 
@@ -1542,14 +1537,14 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (token.id() == JsTokenId.NEW) {
-                    Pair<Set<IndexedElement>, Boolean> constructors = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Pair<Set<IndexedElement>, Boolean> constructors = index.getConstructors(prefix, kind);
                     Set<IndexedElement> elements = constructors.getA();
                     if (constructors.getB()) {
                         request.completionResult.setTruncated(true);
                     }
                     String lhs = request.call.getLhs();
                     if (lhs != null && lhs.length() > 0) {
-                        Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, null);
+                        Set<IndexedElement> m = index.getElements(prefix, lhs, kind, null);
                         if (m.size() > 0) {
                             if (elements.size() == 0) {
                                 elements = new HashSet<IndexedElement>();
@@ -1561,7 +1556,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     } else if (prefix.length() > 0) {
-                        Set<IndexedElement> m = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, null);
+                        Set<IndexedElement> m = index.getElements(prefix, null, kind, null);
                         if (m.size() > 0) {
                             if (elements.size() == 0) {
                                 elements = new HashSet<IndexedElement>();
@@ -1824,9 +1819,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
 
                 String prefix = request.prefix;
-                NameKind kind = request.kind;
+                QuerySupport.Kind kind = request.kind;
                 JsParseResult result = request.result;
-                Set<IndexedElement> matches = request.index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+                Set<IndexedElement> matches = request.index.getElements(prefix, fqn, kind, result);
                 boolean found = false;
 
                 for (IndexedElement element : matches) {
@@ -2420,7 +2415,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         private BaseDocument doc;
         private String prefix;
         private JsIndex index;
-        private NameKind kind;
+        private QuerySupport.Kind kind;
         private JsParseResult result;
         private QueryType queryType;
         private FileObject fileObject;

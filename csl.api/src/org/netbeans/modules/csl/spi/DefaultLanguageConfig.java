@@ -48,7 +48,6 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
@@ -57,6 +56,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -195,7 +195,7 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      * @return the indexer
      */
     @CheckForNull
-    public Indexer getIndexer() {
+    public EmbeddingIndexerFactory getIndexerFactory() {
         return null;
     }
     
