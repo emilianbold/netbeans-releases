@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -151,9 +152,10 @@ public class Utils {
         return value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
     }
     
-    public static boolean checkForJsr311Bootstrap(TypeElement element, Project project) {
+    public static boolean checkForJsr311Bootstrap(TypeElement element, Project project, AnnotationModelHelper helper) {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null && ! restSupport.isRestSupportOn() && hasJsr311ApiError(element, restSupport)) {
+        if (restSupport != null && ! restSupport.isRestSupportOn() && 
+                (hasJsr311ApiError(element, restSupport) || Utils.isRest(element, helper))) {
             try {
                 restSupport.ensureRestDevelopmentReady();
                 return true;
@@ -225,6 +227,24 @@ public class Utils {
             Exceptions.printStackTrace(ex);
         }        
         return result;
+    }
+    
+    public static boolean isRest(TypeElement type, AnnotationModelHelper helper) {
+        boolean isRest = false;
+        if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH)) { // NOI18N
+                isRest = true;
+            } else {
+                for (Element element : type.getEnclosedElements()) {
+                    if (Utils.hasHttpMethod(element)) {
+                        isRest = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return isRest;
     }
 
 }

@@ -115,7 +115,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
-                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH });
+                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                true);
     }
 
     private FileObject getDir(final String propname) {
