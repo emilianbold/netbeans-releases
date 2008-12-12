@@ -347,7 +347,7 @@ class SQLExecutionHelper {
             protected void executeOnSucess() {
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (Integer key : keysToRemove) {
-                    tblContext.resetUpdateState(key);
+                    tblContext.removeUpdateForSelectedRow(key);
                 }
                 dataView.syncPageWithTableModel();
                 reinstateToolbar();
@@ -456,7 +456,7 @@ class SQLExecutionHelper {
                     if (error) {
                         dataView.setErrorStatusText(ex);
                     }
-                    dataView.getUpdatedRowContext().resetUpdateState();
+                    dataView.getUpdatedRowContext().removeAllUpdates();
                     dataView.resetToolbar(error);
                     dataView.setRowsInTableModel();
                 }

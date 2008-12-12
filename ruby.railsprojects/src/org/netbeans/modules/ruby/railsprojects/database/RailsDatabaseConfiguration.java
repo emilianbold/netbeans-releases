@@ -120,7 +120,7 @@ public abstract class RailsDatabaseConfiguration {
      *
      * @return true if the adapter can be used only with JDBC.
      */
-    public boolean forceJdbc() {
+    public boolean requiresJdbc() {
         return false;
     }
 }

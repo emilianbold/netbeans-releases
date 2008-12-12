@@ -235,7 +235,10 @@ public class ParserServletContext implements ServletContext {
      */
     protected FileObject getResourceAsObject(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsObject({0})", path);
-        FileObject fileObject = wmRoot.getFileObject(path);
+        FileObject fileObject = null;
+        if (wmRoot != null) {
+            fileObject = wmRoot.getFileObject(path);
+        }
         WebModule webModule = webModuleProvider.getWebModule();
         if (fileObject == null && path != null && webModule != null && webModule.getWebInf() != null) {
             int index = path.toLowerCase().indexOf("web-inf");

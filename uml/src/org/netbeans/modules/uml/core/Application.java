@@ -468,17 +468,6 @@ public class Application implements IApplication,
                     project.save(fileName, true);
             }
         }
-        // TODO: meteora save diagrams
-        // shouldn't we save all the modified diagrams as well?
-//        IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
-//        ETList<IProxyDiagram> list = manager.getOpenDiagrams();
-//        for (IProxyDiagram diagram: list)
-//        {
-//            IDiagram dia = diagram.getDiagram();
-//            if (dia != null && dia.getProject().equals(project))
-//                if (dia.getIsDirty())
-//                    dia.save();
-//        }
     }
     
     /**
