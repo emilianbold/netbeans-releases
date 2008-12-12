@@ -97,7 +97,7 @@ public class MakeSources implements Sources, AntProjectListener {
     private Sources initSources() {
         final SourcesHelper h = new SourcesHelper(helper, project.evaluator());
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        ConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
+        ConfigurationDescriptor pd = pdp.getConfigurationDescriptor(!MakeProjectConfigurationProvider.ASYNC_LOAD);
         if (pd != null) {
             MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor) pd;
             Set<String> set = new LinkedHashSet<String>();
