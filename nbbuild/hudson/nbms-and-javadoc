@@ -33,7 +33,7 @@ ant clean-untracked-files
 for r in . contrib
 do
     output="`hg -R $r st`"
-    if [ -n "output" ]
+    if [ -n "$output" ]
     then
         echo "Local modifications found in $r:"
         echo "$output"
