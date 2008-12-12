@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v2;
+package org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v3;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -56,21 +56,19 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 
 /**
  *
- * @author rico
+ * @author ayubkhan
  */
-public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
+public class GlassFishV3JaxRsStack implements WSStackImplementation<JaxRs> {
 
     private static final String[] JAXRS_LIBRARIES =
         new String[] {"asm", "jersey-bundle", "jettison", "jsr311-api"}; //NOI18N
-    private static final String GFV3_LIB_DIR_NAME = "lib"; // NOI18N
+    private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
 
     private String gfRootStr;
-    private File root;
     private JaxRs jaxRs;
 
-    public GlassFishV2JaxRsStack(File root) {
-        this.root = root;
-        this.gfRootStr = root.getAbsolutePath();
+    public GlassFishV3JaxRsStack(String gfRootStr) {
+        this.gfRootStr = gfRootStr;
         jaxRs = new JaxRs();
     }
 
@@ -79,7 +77,7 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
     }
 
     public WSStackVersion getVersion() {
-        return WSStackVersion.valueOf(2, 1, 3, 0);
+        return WSStackVersion.valueOf(2, 1, 4, 0);
     }
 
     public WSTool getWSTool(Tool toolId) {
@@ -112,7 +110,7 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
     }
 
     private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
-        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_LIB_DIR_NAME);
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
         int subindex = jarNamePrefix.lastIndexOf("/");
         if(subindex != -1) {
             String subdir = jarNamePrefix.substring(0, subindex);

@@ -87,8 +87,8 @@ public class QmakeProjectWriter {
      * Qmake variable operations.
      */
     private static enum Operation {
-        ASSIGN("="),
-        APPEND("+=");
+        ASSIGN("="), // NOI18N
+        APPEND("+="); // NOI18N
 
         private final String op;
 

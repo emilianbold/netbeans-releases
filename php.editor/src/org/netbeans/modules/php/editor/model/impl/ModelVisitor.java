@@ -193,6 +193,7 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(FieldsDeclaration node) {        
         modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
         /*ScopeImpl scope = modelBuilder.getCurrentScope();
         assert scope != null && scope instanceof ClassScopeImpl;
         ClassScopeImpl classScope = (ClassScopeImpl) scope;
