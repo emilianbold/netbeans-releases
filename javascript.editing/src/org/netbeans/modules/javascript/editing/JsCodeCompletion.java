@@ -297,7 +297,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         ParserResult info = context.getParserResult();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        QuerySupport.Kind kind = context.isPrefixMatch() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT_NAME;
+        QuerySupport.Kind kind = context.isPrefixMatch() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
         
@@ -485,8 +485,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         Map<String,List<Node>> localVars = v.getLocalVars(node);
         for (String name : localVars.keySet()) {
-            if (((kind == QuerySupport.Kind.EXACT_NAME) && prefix.equals(name)) ||
-                    ((kind != QuerySupport.Kind.EXACT_NAME) && startsWith(name, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(name)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(name, prefix))) {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
                     AstElement element = AstElement.getElement(request.info, nodeList.get(0));
@@ -1461,8 +1461,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         QuerySupport.Kind kind = request.kind;
         String prefix = request.prefix;
         for (String tag : names) {
-            if (((kind == QuerySupport.Kind.EXACT_NAME) && prefix.equals(tag)) ||
-                    ((kind != QuerySupport.Kind.EXACT_NAME) && startsWith(tag, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(tag)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(tag, prefix))) {
                 KeywordItem item = new KeywordItem(tag, null, request);
                 item.setKind(ElementKind.TAG);
                 proposals.add(item);

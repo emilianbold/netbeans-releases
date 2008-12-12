@@ -122,7 +122,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
         String fqn = JsTypeAnalyzer.getCallFqn(jspr, call, true);
         if (fqn != null) {
-            functions = index.getElementsByFqn(fqn, QuerySupport.Kind.EXACT_NAME, jspr);
+            functions = index.getElementsByFqn(fqn, QuerySupport.Kind.EXACT, jspr);
             // Prefer methods/constructors
             if (functions.size() > 0) {
                 Set<IndexedElement> filtered = new DuplicateElementSet(functions.size());
@@ -141,7 +141,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         if (functions == null || functions.size() == 0) {
             String prefix = AstUtilities.getCallName(call, false);
             if (prefix.length() > 0) {
-                functions = index.getAllNames(prefix, QuerySupport.Kind.EXACT_NAME, jspr);
+                functions = index.getAllNames(prefix, QuerySupport.Kind.EXACT, jspr);
             }
         }
 
@@ -267,7 +267,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
             if (prefix != null) {
                 // XXX: parsingapi
                 JsIndex index = null;//JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-                Set<IndexedElement> elements = index.getAllNames(prefix, QuerySupport.Kind.EXACT_NAME, parseResult);
+                Set<IndexedElement> elements = index.getAllNames(prefix, QuerySupport.Kind.EXACT, parseResult);
 
                 String name = null; // unused!
                 return getMethodDeclaration(parseResult, name, elements, node, index/*, astOffset, lexOffset*/);
@@ -292,7 +292,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         // XXX: parsingapi
         JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
-        Set<IndexedElement> elements = index.getAllNames(url, QuerySupport.Kind.EXACT_NAME, parseResult);
+        Set<IndexedElement> elements = index.getAllNames(url, QuerySupport.Kind.EXACT, parseResult);
         IndexedElement function = findBestElementMatch(info, elements, null, null);
         if (function != null) {
             return new DeclarationLocation(function.getFileObject(), 0, function);

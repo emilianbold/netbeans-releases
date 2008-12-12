@@ -134,94 +134,6 @@ public class JsIndexer extends EmbeddingIndexer {
     // XXX: use this when getting FileObject for IndexedElement that was created for sdoc
     static final String FIELD_SDOC_URL = "sdocurl"; //NOI18N
     
-    private FileObject cachedFo;
-    private boolean cachedIndexable;
-    
-    public boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-        String name = indexable.getName();
-
-        if (name.endsWith(".js"))  {
-            // we are indexing a javascript file (not embedded javascript)
-
-            // Yahoo file that is always minimized and not uaually needed - it's an alias for 
-            // other stuff
-            if (name.equals("utilities.js")) {
-                String relative = indexable.getRelativePath();
-                if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
-                    return false;
-                }
-            }
-
-            FileObject fo = snapshot.getSource().getFileObject();
-            if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
-                // See if we have a corresponding "un-min'ed" version in the same directory;
-                // if so, skip it
-                // Subtrack out the -min part
-                name = name.substring(0, name.length()-7); // NOI18N
-                if (fo.getParent().getFileObject(name, "js") != null) { // NOI18N
-                    // The file has been deleted
-                    // I still need to return yes here such that the file is deleted from the index.
-                    return false;
-                }
-            } else {
-                // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
-                
-                // See if we have -uncompressed or -debug - prefer these over the compressed or non-debug versions
-                // TODO - just check for hardcoded "dojo.uncompressed" since that's the common thing? Also crosscheck
-                // this list with the common JavaScript frameworks and make sure we hit all the major patterns
-                // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
-                // too, not just the same directory since there's a good likelihood (with the library manager) you
-                // have these in different dirs.
-                FileObject parent = fo.getParent();
-                if (parent == null) {
-                    // Unlikely but let's play it safe
-                    return true;
-                }
-                if (!name.endsWith(".uncompressed.js")) { // NOI18N
-                    String base = name.substring(0, name.length()-3);
-                    if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
-                        return false;
-                    }
-                }
-                if (!name.endsWith("-debug.js")) { // NOI18N
-                    String base = name.substring(0, name.length()-3);
-                    if (parent.getFileObject(base + "-debug", "js") != null) { // NOI18N
-                        return false;
-                    }
-                }
-                
-                // From here on, no per-file information is checked; these apply to all files in the
-                // same directory (e.g. all files in javascript are skipped if there is a corresponding
-                // sibling javascript_uncompressed, and similarly, if there is an everything.sdoc file,
-                // all the files are skipped in the directory.
-                if (parent == cachedFo) {
-                    return cachedIndexable;
-                }
-                cachedFo = parent;
-                if (parent.getFileObject("everything", "sdoc") != null) {
-                    cachedIndexable = false;
-                    return false;
-                }
-                for (int i = 0; i <= 3 && parent != null; i++, parent = parent.getParent()) {
-                    if (parent.getName().equals("javascript")) { // NOI18N
-                        // Webui has a convention where they place the uncompressed files in a parallel directory
-                        FileObject grandParent = parent.getParent();
-                        if (grandParent != null) {
-                            if (grandParent.getFileObject("javascript_uncompressed") != null) { // NOI18N
-                                cachedIndexable = false;
-                                return false;
-                            }
-                        }
-                        break;
-                    }
-                }
-                cachedIndexable = true;
-                return true;
-            }
-        }
-        
-        return true;
-    }
 
 // XXX: parsingapi
 //    public boolean acceptQueryPath(String url) {
@@ -997,8 +909,12 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         @Override
-        public EmbeddingIndexer createIndexer() {
-            return new JsIndexer();
+        public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
+            if (isIndexable(indexable, snapshot)) {
+                return new JsIndexer();
+            } else {
+                return null;
+            }
         }
 
         @Override
@@ -1011,5 +927,93 @@ public class JsIndexer extends EmbeddingIndexer {
             return 7;
         }
 
+        private FileObject cachedFo;
+        private boolean cachedIndexable;
+
+        private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            String name = indexable.getName();
+
+            if (name.endsWith(".js"))  {
+                // we are indexing a javascript file (not embedded javascript)
+
+                // Yahoo file that is always minimized and not uaually needed - it's an alias for
+                // other stuff
+                if (name.equals("utilities.js")) {
+                    String relative = indexable.getRelativePath();
+                    if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
+                        return false;
+                    }
+                }
+
+                FileObject fo = snapshot.getSource().getFileObject();
+                if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
+                    // See if we have a corresponding "un-min'ed" version in the same directory;
+                    // if so, skip it
+                    // Subtrack out the -min part
+                    name = name.substring(0, name.length()-7); // NOI18N
+                    if (fo.getParent().getFileObject(name, "js") != null) { // NOI18N
+                        // The file has been deleted
+                        // I still need to return yes here such that the file is deleted from the index.
+                        return false;
+                    }
+                } else {
+                    // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
+
+                    // See if we have -uncompressed or -debug - prefer these over the compressed or non-debug versions
+                    // TODO - just check for hardcoded "dojo.uncompressed" since that's the common thing? Also crosscheck
+                    // this list with the common JavaScript frameworks and make sure we hit all the major patterns
+                    // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
+                    // too, not just the same directory since there's a good likelihood (with the library manager) you
+                    // have these in different dirs.
+                    FileObject parent = fo.getParent();
+                    if (parent == null) {
+                        // Unlikely but let's play it safe
+                        return true;
+                    }
+                    if (!name.endsWith(".uncompressed.js")) { // NOI18N
+                        String base = name.substring(0, name.length()-3);
+                        if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
+                            return false;
+                        }
+                    }
+                    if (!name.endsWith("-debug.js")) { // NOI18N
+                        String base = name.substring(0, name.length()-3);
+                        if (parent.getFileObject(base + "-debug", "js") != null) { // NOI18N
+                            return false;
+                        }
+                    }
+
+                    // From here on, no per-file information is checked; these apply to all files in the
+                    // same directory (e.g. all files in javascript are skipped if there is a corresponding
+                    // sibling javascript_uncompressed, and similarly, if there is an everything.sdoc file,
+                    // all the files are skipped in the directory.
+                    if (parent == cachedFo) {
+                        return cachedIndexable;
+                    }
+                    cachedFo = parent;
+                    if (parent.getFileObject("everything", "sdoc") != null) {
+                        cachedIndexable = false;
+                        return false;
+                    }
+                    for (int i = 0; i <= 3 && parent != null; i++, parent = parent.getParent()) {
+                        if (parent.getName().equals("javascript")) { // NOI18N
+                            // Webui has a convention where they place the uncompressed files in a parallel directory
+                            FileObject grandParent = parent.getParent();
+                            if (grandParent != null) {
+                                if (grandParent.getFileObject("javascript_uncompressed") != null) { // NOI18N
+                                    cachedIndexable = false;
+                                    return false;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    cachedIndexable = true;
+                    return true;
+                }
+            }
+
+            return true;
+        }
     } // End of Factory class
 }

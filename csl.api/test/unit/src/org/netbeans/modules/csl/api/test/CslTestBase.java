@@ -1334,7 +1334,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getIndexerFactory, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
+
     private List<TestIndexDocumentImpl> indexFile(String relFilePath) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
@@ -1345,9 +1345,10 @@ public abstract class CslTestBase extends NbTestCase {
                 assertTrue(r instanceof ParserResult);
 
                 FileObject sourceFile = r.getSnapshot().getSource().getFileObject();
+                Indexable indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(sourceFile.getParent(), sourceFile));
                 EmbeddingIndexerFactory factory = getIndexerFactory();
                 assertNotNull("getIndexer must be implemented", factory);
-                EmbeddingIndexer indexer = factory.createIndexer();
+                EmbeddingIndexer indexer = factory.createIndexer(indexable, r.getSnapshot());
                 assertNotNull("getIndexer must be implemented", factory);
                 Context context = SPIAccessor.getInstance().createContext(
                         FileUtil.toFileObject(new File(new File(getWorkDir(), factory.getIndexerName()), Integer.toString(factory.getIndexVersion()))),
@@ -1356,7 +1357,6 @@ public abstract class CslTestBase extends NbTestCase {
                         factory.getIndexVersion(),
                         tifi
                 );
-                Indexable indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(sourceFile.getParent(), sourceFile));
                 SPIAccessor.getInstance().index(indexer, indexable, r, context);
             }
         });
@@ -1380,7 +1380,28 @@ public abstract class CslTestBase extends NbTestCase {
         fail("Indexers testing does not work at the moment");
     }
     
-    
+    protected void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
+        final EmbeddingIndexerFactory factory = getIndexerFactory();
+        assertNotNull("getIndexerFactory must be implemented", factory);
+        final FileObject fo = getTestFile(relFilePath);
+        assertNotNull(fo);
+
+        final Boolean result [] = new Boolean [] { null };
+        Source testSource = getTestSource(fo);
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = resultIterator.getParserResult();
+                EmbeddingIndexer indexer = factory.createIndexer(
+                    SPIAccessor.getInstance().create(new FileObjectIndexable(fo.getParent(), fo)),
+                    r.getSnapshot());
+                result[0] = Boolean.valueOf(indexer != null);
+            }
+        });
+
+        assertNotNull(result[0]);
+        assertEquals(isIndexable, result[0].booleanValue());
+    }
+
     private String sortCommaList(String s) {
         String[] items = s.split(",");
         Arrays.sort(items);

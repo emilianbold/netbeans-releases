@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.directory.SearchResult;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
@@ -56,7 +60,10 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsIndex {
+public final class JsIndex {
+
+    private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
+    
     // Non-final for test suite
     static int MAX_SEARCH_ITEMS = 160;
     
@@ -85,18 +92,17 @@ public class JsIndex {
         return new JsIndex(querySupport);
     }
 
-//    private boolean search(String key, String name, QuerySupport.Kind kind, Set<SearchResult> result,
-//        Set<SearchScope> scope, Set<String> terms) {
-//        try {
-//            querySupport.query(key, name, kind, scope, result, terms);
-//
-//            return true;
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//
-//            return false;
-//        }
-//    }
+    private Collection<? extends IndexDocument> query(
+            final String fieldName, final String fieldValue,
+            final QuerySupport.Kind kind, final String... fieldsToLoad
+    ) {
+        try {
+            return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return Collections.<IndexDocument>emptySet();
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public Pair<Set<IndexedElement>,Boolean> getConstructors(final String name, QuerySupport.Kind kind) {
@@ -117,7 +123,7 @@ public class JsIndex {
     }
     
     public Map<String,String> getAllExtends() {
-        Collection<? extends IndexDocument> results = querySupport.query(
+        Collection<? extends IndexDocument> results = query(
                 JsIndexer.FIELD_EXTEND, "", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND); //NOI18N
 
         Map<String,String> classes = new HashMap<String,String>();
@@ -140,7 +146,7 @@ public class JsIndex {
     }
     
     public String getExtends(String className) {
-        Collection<? extends IndexDocument> results = querySupport.query(
+        Collection<? extends IndexDocument> results = query(
                 JsIndexer.FIELD_EXTEND, className.toLowerCase(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND);
 
         String target = className.toLowerCase() + ";"; //NOI18N
@@ -203,7 +209,7 @@ public class JsIndex {
         String [] terms = TERMS_BASE;
         
         QuerySupport.Kind originalKind = kind;
-        if (kind == QuerySupport.Kind.EXACT_NAME) {
+        if (kind == QuerySupport.Kind.EXACT) {
             // I can't do exact searches on methods because the method
             // entries include signatures etc. So turn this into a prefix
             // search and then compare chopped off signatures with the name
@@ -211,7 +217,7 @@ public class JsIndex {
         }
         
         String lcname = name.toLowerCase();
-        Collection<? extends IndexDocument> results = querySupport.query(field, lcname, kind, terms);
+        Collection<? extends IndexDocument> results = query(field, lcname, kind, terms);
 
         final Set<IndexedElement> elements = new HashSet<IndexedElement>();
         String searchUrl = null;
@@ -255,7 +261,7 @@ public class JsIndex {
                         } catch (Exception e) {
                             // Silently ignore regexp failures in the search expression
                         }
-                    } else if (originalKind == QuerySupport.Kind.EXACT_NAME) {
+                    } else if (originalKind == QuerySupport.Kind.EXACT) {
                         // Make sure the name matches exactly
                         // We know that the prefix is correct from the first part of
                         // this if clause, by the signature may have more
@@ -289,7 +295,7 @@ public class JsIndex {
                         elementName = signature.substring(startCs, inEndIdx);
                         if (kind == QuerySupport.Kind.PREFIX && !elementName.startsWith(name)) {
                             continue;
-                        } else if (kind == QuerySupport.Kind.EXACT_NAME && !elementName.equals(name)) {
+                        } else if (kind == QuerySupport.Kind.EXACT && !elementName.equals(name)) {
                             continue;
                         }
                     }
@@ -341,7 +347,7 @@ public class JsIndex {
         String field = JsIndexer.FIELD_FQN;
         String [] terms = TERMS_FQN;
         QuerySupport.Kind originalKind = kind;
-        if (kind == QuerySupport.Kind.EXACT_NAME) {
+        if (kind == QuerySupport.Kind.EXACT) {
             // I can't do exact searches on methods because the method
             // entries include signatures etc. So turn this into a prefix
             // search and then compare chopped off signatures with the name
@@ -379,7 +385,7 @@ public class JsIndex {
             }
 
             String lcfqn = fqn.toLowerCase();
-            Collection<? extends IndexDocument> results = querySupport.query(field, lcfqn, kind, terms);
+            Collection<? extends IndexDocument> results = query(field, lcfqn, kind, terms);
 
             for (IndexDocument d : results) {
                 String[] signatures = d.getValues(field);
@@ -413,7 +419,7 @@ public class JsIndex {
                             } catch (Exception e) {
                                 // Silently ignore regexp failures in the search expression
                             }
-                        } else if (originalKind == QuerySupport.Kind.EXACT_NAME) {
+                        } else if (originalKind == QuerySupport.Kind.EXACT) {
                             // Make sure the name matches exactly
                             // We know that the prefix is correct from the first part of
                             // this if clause, by the signature may have more
@@ -444,7 +450,7 @@ public class JsIndex {
                             elementName = signature.substring(startCs, inEndIdx);
                             if (kind == QuerySupport.Kind.PREFIX && !elementName.startsWith(fqn)) {
                                 continue;
-                            } else if (kind == QuerySupport.Kind.EXACT_NAME && !elementName.equals(fqn)) {
+                            } else if (kind == QuerySupport.Kind.EXACT && !elementName.equals(fqn)) {
                                 continue;
                             }
                         }
@@ -543,7 +549,7 @@ public class JsIndex {
         String [] terms = TERMS_BASE;
         String lcsymbol = base.toLowerCase();
         assert lcsymbol.length() == baseLength;
-        Collection<? extends IndexDocument> results = querySupport.query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
+        Collection<? extends IndexDocument> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
         for (IndexDocument d : results) {
             String[] signatures = d.getValues(field);
@@ -614,7 +620,7 @@ public class JsIndex {
         String [] terms = TERMS_BASE;
         String lcsymbol = fqn.toLowerCase();
         int symbolLength = fqn.length();
-        Collection<? extends IndexDocument> results = querySupport.query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
+        Collection<? extends IndexDocument> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
         for (IndexDocument d : results) {
             String[] signatures = d.getValues(field);

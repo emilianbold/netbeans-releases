@@ -79,15 +79,10 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     protected IndexedElement findElement(List<IndexDocument> documents, String key, String valuePrefix, JsIndex index) {
-        for (IndexDocument document : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)document;
-            for (int i = 0, n = doc.indexedKeys.size(); i < n; i++) {
-                String k = doc.indexedKeys.get(i);
-                if (k.equals(key)) {
-                    String v = doc.indexedValues.get(i);
-                    if (v.startsWith(valuePrefix)) {
-                        return IndexedElement.create(valuePrefix, v, "file:/bogus", index, false);
-                    }
+        for (IndexDocument doc : documents) {
+            for (String v : doc.getValues(key)) {
+                if (v.startsWith(valuePrefix)) {
+                    return IndexedElement.create(valuePrefix, v, "file:/bogus", index, false);
                 }
             }
         }
@@ -153,13 +148,14 @@ public class JsIndexerTest extends JsTestBase {
     //public void testIsIndexable9() throws Exception {
     //    checkIsIndexable("testfiles/indexable/view.erb", true);
     //}
-    
-    public void testQueryPath() throws Exception {
-        JsIndexer indexer = new JsIndexer();
-        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
-        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
-        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
-    }
+
+// XXX: parsingapi
+//    public void testQueryPath() throws Exception {
+//        JsIndexer indexer = new JsIndexer();
+//        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
+//        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
+//        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
+//    }
     
     public void testIndex0() throws Exception {
         checkIndexer("testfiles/prototype.js");

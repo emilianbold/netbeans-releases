@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -55,8 +56,8 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     // EmbeddingIndexerFactory implementation
     
     @Override
-    public EmbeddingIndexer createIndexer() {
-        return getFactory().createIndexer();
+    public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
+        return getFactory().createIndexer(indexable, snapshot);
     }
 
     @Override
@@ -87,7 +88,7 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         };
 
         @Override
-        public EmbeddingIndexer createIndexer() {
+        public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             return voidIndexer;
         }
 

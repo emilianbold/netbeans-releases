@@ -320,7 +320,7 @@ public class TypeAndSymbolProvider {
     private static QuerySupport.Kind t2t(SearchType searchType) {
         switch(searchType) {
             case EXACT_NAME:
-                return QuerySupport.Kind.EXACT_NAME;
+                return QuerySupport.Kind.EXACT;
             case PREFIX:
                 return QuerySupport.Kind.PREFIX;
             case CASE_INSENSITIVE_PREFIX:

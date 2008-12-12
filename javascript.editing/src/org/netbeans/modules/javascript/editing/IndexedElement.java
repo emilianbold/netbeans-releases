@@ -387,7 +387,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT_NAME, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT, null);
             for (IndexedElement e : elements) {
                 if (e.isDocumented()) {
                     return e;
@@ -406,7 +406,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT_NAME, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT, null);
             for (IndexedElement e : elements) {
                 if (!e.isDocOnly()) {
                     return e;
