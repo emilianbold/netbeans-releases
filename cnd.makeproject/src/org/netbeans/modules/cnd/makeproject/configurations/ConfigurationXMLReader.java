@@ -158,7 +158,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             deregisterXMLDecoder(auxDecoder);
 
             if (!success) {
-                return configurationDescriptor;
+                return null;
             }
         }
         configurationDescriptor.setState(State.READY);
