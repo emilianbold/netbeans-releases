@@ -163,7 +163,7 @@ made subject to such option by the copyright holder.
     </tstamp>
 
     <property environment="hudson"/>
-    <condition property="buildnumber" value="${hudson.JOB_NAME}-#${hudson.BUILD_NUMBER}-on-${buildstamp}">
+    <condition property="buildnumber" value="${hudson.JOB_NAME}-${hudson.BUILD_NUMBER}-on-${buildstamp}">
       <and>
         <isset property="hudson.JOB_NAME"/>
         <isset property="hudson.BUILD_NUMBER"/>
