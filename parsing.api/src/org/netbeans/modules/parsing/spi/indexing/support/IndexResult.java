@@ -56,7 +56,7 @@ public final class IndexResult {
 
     private volatile FileObject cachedFile;
 
-    public IndexResult (final IndexDocumentImpl spi, final URL root) {
+    IndexResult (final IndexDocumentImpl spi, final URL root) {
         assert spi != null;
         assert root != null;
         this.spi = spi;
