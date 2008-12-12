@@ -63,7 +63,6 @@ import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.ProxyClassLoader;
-import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -93,7 +92,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
             InputStream is = fakeBundle(m);
             if (is != null) {
                 Bundle bundle;
-                bundle = getContainer().getBundleContext().installBundle(m.getCodeNameBase(), is);
+                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                activator.register(m);
                 is.close();
             }
             return m;
@@ -308,6 +308,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public Enumeration<URL> findResources(String name) {
             try {
                 return bundle.getResources(name);
@@ -326,5 +327,5 @@ public class NetigsoModuleFactory extends ModuleFactory {
                 return null;
             }
         }
-    }
+    } // end of BundleLoader
 }
