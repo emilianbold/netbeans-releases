@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.openide.DialogDisplayer;
@@ -103,11 +104,13 @@ public class ConfigurationXMLReader extends XMLDocReader {
         Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    //try {
-                    //    Thread.sleep(10000); // to emulate long reading for testing purpose
-                    //} catch (InterruptedException ex) {
-                    //    ex.printStackTrace();
-                    //}
+                    if (MakeProjectConfigurationProvider.ASYNC_LOAD) {
+                        try {
+                            Thread.sleep(10000); // to emulate long reading for testing purpose
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     if (_read(relativeOffset, tag, xml, configurationDescriptor) == null){
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
