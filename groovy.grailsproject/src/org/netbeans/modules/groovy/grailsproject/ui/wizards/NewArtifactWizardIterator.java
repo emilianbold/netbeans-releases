@@ -59,6 +59,8 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,7 +121,12 @@ public class NewArtifactWizardIterator implements
             Future<Integer> future = service.run();
             try {
                 // TODO handle return value
-                future.get();
+                Integer ret = future.get();
+                if (ret.intValue() != 0) {
+                    String msg = NbBundle.getMessage(NewArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_ARTIFACT");
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {

@@ -32,7 +32,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel3" max="32767" attributes="0"/>
+                      <Component id="jLabel3" pref="606" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -42,12 +42,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPasswordField1" alignment="0" pref="293" max="32767" attributes="0"/>
-                          <Component id="loginField" alignment="0" pref="293" max="32767" attributes="0"/>
-                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="asAGuestCheckBox" alignment="0" max="32767" attributes="1"/>
-                              <Component id="rememberCheckBox" alignment="0" max="32767" attributes="1"/>
-                          </Group>
+                          <Component id="jPasswordField1" alignment="0" pref="307" max="32767" attributes="0"/>
+                          <Component id="loginField" alignment="0" pref="307" max="32767" attributes="0"/>
+                          <Component id="rememberCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="asAGuestCheckBox" alignment="0" pref="307" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -61,29 +59,29 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="summaryField" pref="515" max="32767" attributes="0"/>
+                              <Component id="summaryField" pref="527" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel7" pref="283" max="32767" attributes="0"/>
+                              <Component id="jLabel7" pref="297" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jLabel4" alignment="0" pref="593" max="32767" attributes="1"/>
+                          <Component id="jLabel4" alignment="0" pref="606" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jScrollPane1" alignment="1" pref="594" max="32767" attributes="1"/>
-                          <Component id="jSeparator1" alignment="1" pref="594" max="32767" attributes="1"/>
+                          <Component id="jScrollPane1" alignment="1" pref="607" max="32767" attributes="1"/>
+                          <Component id="jSeparator1" alignment="1" pref="607" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="168" max="32767" attributes="0"/>
+                      <EmptySpace pref="185" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -108,7 +106,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="159" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="151" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -125,9 +123,9 @@
               </Group>
               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
               <Component id="rememberCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
               <Component id="asAGuestCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>

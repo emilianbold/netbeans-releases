@@ -58,7 +58,9 @@ import org.openide.windows.TopComponent;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author David Kaspar
@@ -160,7 +162,8 @@ public final class ProjectUtils {
      *  RequestVisibity for TopComponent
      */
     public static void requestVisibility (DataObjectContext context, String topComponentDisplayName) {
-        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+        Set<TopComponent> topComponents = new HashSet<TopComponent>(TopComponent.getRegistry().getOpened());
+        for (TopComponent tc : topComponents) {
             DataEditorView dev = tc.getLookup().lookup(DataEditorView.class);
             if (dev == null  ||  dev.getContext() != context)
                 continue;
