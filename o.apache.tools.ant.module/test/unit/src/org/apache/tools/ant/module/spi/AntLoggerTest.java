@@ -91,6 +91,10 @@ public class AntLoggerTest extends NbTestCase {
         assertNotNull("have testdirFO", testdirFO);
     }
 
+    protected @Override int timeOut() {
+        return 300000;
+    }
+
     private void run(FileObject script) throws Exception {
         run(script, null, AntEvent.LOG_INFO);
     }
