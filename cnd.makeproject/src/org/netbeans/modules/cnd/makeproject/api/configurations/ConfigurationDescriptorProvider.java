@@ -115,7 +115,7 @@ public class ConfigurationDescriptorProvider {
                         }
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
-                        if (SwingUtilities.isEventDispatchThread()) {
+                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
                             new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
                             // PLEASE DO NOT ADD HACKS like Task.waitFinished()
                             // CHANGE YOUR LOGIC INSTEAD
