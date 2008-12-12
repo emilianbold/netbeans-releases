@@ -41,6 +41,10 @@ package org.netbeans.modules.languages.yaml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
 import org.jvyamlb.PositioningComposerImpl;
@@ -84,7 +88,7 @@ public class YamlParser implements Parser {
     private ParserResult parse(String source, ParserFile file) {
         try {
             if (source.length() > 512*1024) {
-                YamlParserResult result = new YamlParserResult(null, this, file, false, null, null);
+                YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
                 DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null, file.getFileObject(), 0, 0, Severity.WARNING);
                 result.addError(error);
                 return result;
@@ -141,10 +145,15 @@ public class YamlParser implements Parser {
             }
 
             Composer composer = new PositioningComposerImpl(new PositioningParserImpl(new PositioningScannerImpl(byteList)), new ResolverImpl());
-            Node yaml = composer.getNode();
+            List<Node> nodes = new ArrayList<Node>();
+            Iterator iterator = composer.eachNode();
+            while (iterator.hasNext()) {
+                Node node = (Node) iterator.next();
+                nodes.add(node);
+            }
 
             //Object yaml = YAML.load(stream);
-            return new YamlParserResult(yaml, this, file, true, byteToUtf8, utf8toByte);
+            return new YamlParserResult(nodes, this, file, true, byteToUtf8, utf8toByte);
         } catch (Exception ex) {
             int pos = 0;
             if (ex instanceof PositionedParserException) {
@@ -152,7 +161,7 @@ public class YamlParser implements Parser {
                 pos = ppe.getPosition().offset;
             }
 
-            YamlParserResult result = new YamlParserResult(null, this, file, false, null, null);
+            YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
             String message = ex.getMessage();
             if (message != null && message.length() > 0) {
                 // Strip off useless prefixes to make errors more readable
@@ -235,7 +244,7 @@ public class YamlParser implements Parser {
                 result = parse(source, file);
             } catch (Exception ioe) {
                 listener.exception(ioe);
-                result = new YamlParserResult(null, this, file, false, null, null);
+                result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
             } 
 
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
