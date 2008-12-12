@@ -41,14 +41,15 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
-import javax.swing.UIManager;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,6 +62,7 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
     
     // map because of faster searching
     private final Map<String, MessageDestination.Type> destinationMap;
+    private NotificationLineSupport statusLine;
     
     // private because correct initialization is needed
     private MessageDestinationPanel(Map<String, MessageDestination.Type> destinationMap) {
@@ -78,7 +80,11 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
         mdp.initialize();
         return mdp;
     }
-    
+
+    public void setNotificationLine(NotificationLineSupport statusLine) {
+        this.statusLine = statusLine;
+    }
+
     /**
      * Get the name of the message destination.
      * @return message destination name.
@@ -101,7 +107,6 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
     
     private void initialize() {
         registerListeners();
-        setupErrorLabel();
         verifyAndFire();
     }
     
@@ -111,11 +116,9 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
             public void insertUpdate(DocumentEvent event) {
                 verifyAndFire();
             }
-
             public void removeUpdate(DocumentEvent event) {
                 verifyAndFire();
             }
-
             public void changedUpdate(DocumentEvent event) {
                 verifyAndFire();
             }
@@ -132,29 +135,32 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
                 verifyAndFire();
             }
         });
-    }
-    
-    private void setupErrorLabel() {
-        setError(null);
-        errorLabel.setForeground(getErrorColor());
+
+        addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                verifyAndFire();
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                verifyAndFire();
+            }
+            public void ancestorMoved(AncestorEvent event) {
+                verifyAndFire();
+            }
+        });
     }
     
     private void setError(String key) {
-        if (key == null) {
-            errorLabel.setText("");
-            return;
+        if (statusLine != null) {
+            statusLine.setErrorMessage(NbBundle.getMessage(MessageDestinationPanel.class, key));
         }
-        errorLabel.setText(NbBundle.getMessage(MessageDestinationPanel.class, key));
     }
     
-    private Color getErrorColor() {
-        Color errorColor = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (errorColor != null) {
-            return errorColor;
+    private void setInfo(String key) {
+        if (statusLine != null) {
+            statusLine.setInformationMessage(NbBundle.getMessage(MessageDestinationPanel.class, key));
         }
-        return new Color(255, 0, 0);
     }
-    
+
     private void verifyAndFire() {
         boolean isValid = verifyComponents();
         firePropertyChange(IS_VALID, !isValid, isValid);
@@ -164,7 +170,7 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
         // destination name - form & duplicity
         String destinationName = destinationNameText.getText();
         if (destinationName == null || destinationName.trim().length() == 0) {
-            setError("ERR_NoDestinationName"); // NOI18N
+            setInfo("ERR_NoDestinationName"); // NOI18N
             return false;
         } else {
             destinationName = destinationName.trim();
@@ -177,12 +183,12 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
         
         // destination type (radio)
         if (destinationTypeGroup.getSelection() == null) {
-            setError("ERR_NoDestinationType"); // NOI18N
+            setInfo("ERR_NoDestinationType"); // NOI18N
             return false;
         }
         
         // no errors
-        setError(null);
+        statusLine.clearMessages();
         return true;
     }
     
@@ -200,7 +206,6 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
         destinationTypeLabel = new javax.swing.JLabel();
         queueTypeRadio = new javax.swing.JRadioButton();
         topicTypeRadio = new javax.swing.JRadioButton();
-        errorLabel = new javax.swing.JLabel();
 
         destinationNameLabel.setLabelFor(destinationNameText);
         org.openide.awt.Mnemonics.setLocalizedText(destinationNameLabel, org.openide.util.NbBundle.getMessage(MessageDestinationPanel.class, "LBL_DestinationName")); // NOI18N
@@ -219,8 +224,6 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
         topicTypeRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         topicTypeRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(MessageDestinationPanel.class, "ERR_NoDestinationName")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -228,16 +231,13 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(destinationTypeLabel)
-                            .add(destinationNameLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(topicTypeRadio)
-                            .add(queueTypeRadio)
-                            .add(destinationNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))))
+                    .add(destinationTypeLabel)
+                    .add(destinationNameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(topicTypeRadio)
+                    .add(queueTypeRadio)
+                    .add(destinationNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -253,8 +253,6 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
                     .add(queueTypeRadio))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(topicTypeRadio)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -272,7 +270,6 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField destinationNameText;
     private javax.swing.ButtonGroup destinationTypeGroup;
     private javax.swing.JLabel destinationTypeLabel;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JRadioButton queueTypeRadio;
     private javax.swing.JRadioButton topicTypeRadio;
     // End of variables declaration//GEN-END:variables

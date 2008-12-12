@@ -433,6 +433,10 @@ public class JaxWsCodeGenerator {
             return;
         }
         JavaSource targetSource = JavaSource.forFileObject(targetFile);
+        if (targetSource == null) {
+            result.setResult("null;"); //NOI18N
+            return;
+        }
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             public void run(CompilationController controller) throws IOException {

@@ -43,6 +43,7 @@ package org.netbeans.modules.gsfret.editor.completion;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
@@ -70,7 +71,25 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         this.idx = idx;
         this.component = component;
     }
-    
+
+    public @Override void paint(Graphics g) {
+        Object value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        Map renderingHints = (value instanceof Map) ? (java.util.Map)value : null;
+        if (renderingHints != null && g instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D) g;
+            RenderingHints oldHints = g2d.getRenderingHints();
+            g2d.setRenderingHints(renderingHints);
+            try {
+                super.paint(g2d);
+            } finally {
+                g2d.setRenderingHints(oldHints);
+            }
+        } else {
+            super.paint(g);
+        }
+    }
+
+    @Override
     public void paintComponent(Graphics g) {
         // clear background
         g.setColor(getBackground());

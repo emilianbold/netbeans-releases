@@ -105,7 +105,7 @@ import org.openide.util.Lookup;
  */
 public class ImportProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject");
+    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
 
     private File dirF;
     private String name;

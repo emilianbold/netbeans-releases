@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -166,6 +167,8 @@ public abstract class MessageDestinationUiSupport {
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(MessageDestinationPanel.class),
                 null);
+        NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
+        messageDestination.setNotificationLine(statusLine);
         // initial invalidation
         dialogDescriptor.setValid(false);
         messageDestination.addPropertyChangeListener(MessageDestinationPanel.IS_VALID,

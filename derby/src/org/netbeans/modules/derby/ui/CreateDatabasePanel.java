@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.derby.ui;
 
-import java.awt.Color;
 import java.io.File;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.api.DerbyDatabases;
@@ -57,8 +55,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     private File derbySystemHome;
     private DialogDescriptor descriptor;
-    private Color nbErrorForeground;
-    private Color nbWarningForeground;
 
     private DocumentListener docListener = new DocumentListener() {
         
@@ -76,25 +72,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     };
     
     public CreateDatabasePanel(String derbySystemHome) {
-        // copied from WizardDescriptor
-        nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (nbErrorForeground == null) {
-            //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
-            nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
-        }
-        nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
-        if (nbWarningForeground == null) {
-            nbWarningForeground = new Color(51, 51, 51); // Label.foreground
-        }
-
         this.derbySystemHome = new File(derbySystemHome);
-        
         initComponents();
         databaseNameTextField.getDocument().addDocumentListener(docListener);
         userTextField.getDocument().addDocumentListener(docListener);
         passwordTextField.getDocument().addDocumentListener(docListener);
         updateLocation();
-        errorInfoPanel.setup();
     }
     
     public void setDialogDescriptor(DialogDescriptor descriptor) {
@@ -115,7 +98,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         String password = passwordTextField.getText().trim();
         return password.length() > 0 ? password : null;
     }
-    
+
+    public void setIntroduction() {
+        String info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_DatabaseNameEmpty");
+        descriptor.getNotificationLineSupport().setInformationMessage(info);
+        descriptor.setValid(false);
+    }
+
     private void validateDatabaseName() {
         if (descriptor == null) {
             return;
@@ -123,6 +112,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         String error = null;
         String warning = null;
+        String info = null;
         
         String databaseName = getDatabaseName();
         int illegalChar = DerbyDatabases.getFirstIllegalCharacter(databaseName);
@@ -138,17 +128,21 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (unsupportedChar >= 0) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
-            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
+            info = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
         
         if (error != null) {
-            errorInfoPanel.set(error, true);
+            descriptor.getNotificationLineSupport().setErrorMessage(error);
             descriptor.setValid(false);
         } else if (warning != null) {
-            errorInfoPanel.set(warning, false);
+            descriptor.getNotificationLineSupport().setWarningMessage(warning);
+            descriptor.setValid(false);
+        } else if (info != null) {
+            descriptor.getNotificationLineSupport().setInformationMessage(info);
             descriptor.setValid(true);
         } else {
-            errorInfoPanel.clear();
+            descriptor.getNotificationLineSupport().clearMessages();
+            descriptor.setValid(true);
         }
     }
     
@@ -183,7 +177,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         passwordLabel = new javax.swing.JLabel();
         passwordTextField = new javax.swing.JTextField();
         propertiesButton = new javax.swing.JButton();
-        errorInfoPanel = new org.netbeans.modules.derby.ErrorInfoPanel();
 
         databaseNameLabel.setLabelFor(databaseNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName")); // NOI18N
@@ -217,7 +210,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, errorInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(databaseNameLabel)
@@ -255,7 +247,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(propertiesButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
@@ -280,7 +271,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     public javax.swing.JTextField databaseLocationTextField;
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
-    public org.netbeans.modules.derby.ErrorInfoPanel errorInfoPanel;
     public javax.swing.JLabel passwordLabel;
     public javax.swing.JTextField passwordTextField;
     public javax.swing.JButton propertiesButton;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -357,6 +357,7 @@ public class Outline extends ETable {
                 this.ascending = ascending;
             }
             @Override
+            @SuppressWarnings("unchecked")
             public int compare(RowMapping rm1, RowMapping rm2) {
                 int index1 = rm1.getModelRowIndex();
                 int index2 = rm2.getModelRowIndex();
@@ -577,15 +578,16 @@ public class Outline extends ETable {
         //Users of themes can set an explicit row height, so check for it
         Integer i = (Integer) UIManager.get("netbeans.outline.rowHeight"); //NOI18N
         
-        int rHeight;
+        int rHeight = 20;
         if (i != null) {
             rHeight = i.intValue();
         } else {
             //Derive a row height to accomodate the font and expando icon
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
-            rHeight = Math.max(fm.getHeight()+3,
-                DefaultOutlineCellRenderer.getExpansionHandleHeight());
+            int h = Math.max (fm.getHeight () + fm.getMaxDescent (),
+                DefaultOutlineCellRenderer.getExpansionHandleHeight ());
+            rHeight = Math.max (rHeight, h) + 2; // XXX: two pixels for cell's insets
         }
         //Set row height.  If displayable, this will generate a new call
         //to paint()

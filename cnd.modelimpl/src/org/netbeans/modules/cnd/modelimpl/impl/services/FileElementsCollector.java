@@ -95,31 +95,52 @@ public class FileElementsCollector {
             mapsGathered = false;
             visibleUsedDeclarations = null;
             visibleNamespaces = null;
+
+            localDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+            localDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
+            localUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
+            localNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
+            localUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
         } else if (startOffset > destOffset) {
             throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset); // NOI18N
         }
     }
 
+    private LinkedHashSet<CsmNamespace> globalDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
+    private final LinkedHashSet<CsmUsingDirective> globalUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
+    private LinkedHashSet<CsmNamespaceAlias> globalNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
+    private final LinkedHashSet<CsmUsingDeclaration> globalUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
 
-    private LinkedHashSet<CsmNamespace> directVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-    private final LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
-    private LinkedHashSet<CsmNamespaceAlias> namespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
-    private final LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
-//    private LinkedHashSet<CsmNamespaceDefinition> directVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+    private LinkedHashSet<CsmNamespace> localDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
+    private LinkedHashSet<CsmUsingDirective> localUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
+    private LinkedHashSet<CsmNamespaceAlias> localNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
+    private LinkedHashSet<CsmUsingDeclaration> localUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
+
+    private LinkedHashSet<CsmNamespaceDefinition> globalDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+    private LinkedHashSet<CsmNamespaceDefinition> localDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
 
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
-        return Collections.unmodifiableCollection(usingDeclarations);
+        Collection<CsmUsingDeclaration> res = new LinkedHashSet<CsmUsingDeclaration>();
+        res.addAll(globalUsingDeclarations);
+        res.addAll(localUsingDeclarations);
+        return Collections.unmodifiableCollection(res);
     }
 
     public Collection<CsmUsingDirective> getUsingDirectives() {
         initMaps();
-        return Collections.unmodifiableCollection(usingNamespaces);
+        Collection<CsmUsingDirective> res = new LinkedHashSet<CsmUsingDirective>();
+        res.addAll(globalUsingNamespaces);
+        res.addAll(localUsingNamespaces);
+        return Collections.unmodifiableCollection(res);
     }
 
     public Collection<CsmNamespaceAlias> getNamespaceAliases() {
         initMaps();
-        return Collections.unmodifiableCollection(namespaceAliases);
+        Collection<CsmNamespaceAlias> res = new LinkedHashSet<CsmNamespaceAlias>();
+        res.addAll(globalNamespaceAliases);
+        res.addAll(localNamespaceAliases);
+        return Collections.unmodifiableCollection(res);
     }
 
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
@@ -131,7 +152,8 @@ public class FileElementsCollector {
     private synchronized Collection<CsmDeclaration> _getUsedDeclarations() {
         Collection<CsmDeclaration> res = visibleUsedDeclarations;
         if (res == null) {
-            res = CsmUsingResolver.extractDeclarations(usingDeclarations);
+            res = CsmUsingResolver.extractDeclarations(globalUsingDeclarations);
+            res.addAll(CsmUsingResolver.extractDeclarations(localUsingDeclarations));
             visibleUsedDeclarations = res;
         }
         return Collections.unmodifiableCollection(res);
@@ -146,9 +168,11 @@ public class FileElementsCollector {
     public synchronized Collection<CsmNamespace> _getVisibleNamespaces() {
         Collection<CsmNamespace> res = visibleNamespaces;
         if (res == null) {
-            res = CsmUsingResolver.extractNamespaces(usingNamespaces);
+            res = CsmUsingResolver.extractNamespaces(globalUsingNamespaces);
+            res.addAll(CsmUsingResolver.extractNamespaces(localUsingNamespaces));
             // add scope's and unnamed visible namespaces
-            res.addAll(directVisibleNamespaces);
+            res.addAll(globalDirectVisibleNamespaces);
+            res.addAll(localDirectVisibleNamespaces);
             visibleNamespaces = res;
         }
         return Collections.unmodifiableCollection(res);
@@ -194,14 +218,14 @@ public class FileElementsCollector {
             }
         }
         // gather this file maps
-        gatherDeclarationsMaps(CsmSelect.getDefault().getDeclarations(file, filter), startOffset, endOffset);
+        gatherDeclarationsMaps(CsmSelect.getDefault().getDeclarations(file, filter), startOffset, endOffset, true);
     }
 
-    protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset) {
-        gatherDeclarationsMaps(declarations.iterator(), startOffset, endOffset);
+    protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset, boolean global) {
+        gatherDeclarationsMaps(declarations.iterator(), startOffset, endOffset, global);
     }
 
-    protected void gatherDeclarationsMaps(Iterator it, int startOffset, int endOffset) {
+    protected void gatherDeclarationsMaps(Iterator it, int startOffset, int endOffset, boolean global) {
         while(it.hasNext()) {
             CsmOffsetable o = (CsmOffsetable) it.next();
             try {
@@ -215,7 +239,7 @@ public class FileElementsCollector {
                 }
                 //assert o instanceof CsmScopeElement;
                 if(CsmKindUtilities.isScopeElement((CsmObject)o)) {
-                    gatherScopeElementMaps((CsmScopeElement) o, end, endOffset);
+                    gatherScopeElementMaps((CsmScopeElement) o, end, endOffset, global);
                 } else {
                     if( FileImpl.reportErrors ) {
                         System.err.println("Expected CsmScopeElement, got " + o);
@@ -234,44 +258,79 @@ public class FileElementsCollector {
     /**
      * It is quaranteed that element.getStartOffset < this.destOffset
      */
-    protected void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset) {
-
+    protected void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset, boolean global) {
         CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
-        if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
+        if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
             if (nsd.getName().length() == 0) {
                 // this is unnamed namespace and it should be considered as
                 // it declares using itself
-                directVisibleNamespaces.add(nsd.getNamespace());
+                if (global) {
+                    globalDirectVisibleNamespaces.add(nsd.getNamespace());
+                } else {
+                    localDirectVisibleNamespaces.add(nsd.getNamespace());
+                }
             }
-            if( endOffset < end ) {
+            if (endOffset < end) {
                 // put in the end of list
-                directVisibleNamespaces.remove(nsd.getNamespace());
-                directVisibleNamespaces.add(nsd.getNamespace());
-                //currentNamespace = nsd.getNamespace();
-                gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
+                localDirectVisibleNamespaces.remove(nsd.getNamespace());
+                localDirectVisibleNamespaces.add(nsd.getNamespace());
+                gatherLocalNamespaceElementsFromMaps(nsd, 0, endOffset, global);
+                gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset, false);
             }
-//            directVisibleNamespaceDefinitions.add(nsd);
-//            gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
-        } else if( kind == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
+            if (global) {
+                globalDirectVisibleNamespaceDefinitions.add(nsd);
+            } else {
+                localDirectVisibleNamespaceDefinitions.add(nsd);
+            }
+        } else if (kind == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
             CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
-            namespaceAliases.add(alias);
-//            namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
-        } else if( kind == CsmDeclaration.Kind.USING_DECLARATION ) {
-            CsmUsingDeclaration udecl = (CsmUsingDeclaration) element;
-            usingDeclarations.add(udecl);
-        } else if( kind == CsmDeclaration.Kind.USING_DIRECTIVE ) {
-            CsmUsingDirective udir = (CsmUsingDirective) element;
-            usingNamespaces.add(udir);
-//            directVisibleNamespaces.add(udir.getName()); // getReferencedNamespace()
-        } else if( CsmKindUtilities.isDeclarationStatement(element) ) {
-            CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
-            if( ds.getStartOffset() < endOffset ) {
-                gatherDeclarationsMaps( ((CsmDeclarationStatement) element).getDeclarators(), 0, endOffset);
+            if (global) {
+                globalNamespaceAliases.add(alias);
+            } else {
+                localNamespaceAliases.add(alias);
             }
-        } else if( CsmKindUtilities.isScope(element) ) {
-            if( endOffset < end ) {
-                gatherDeclarationsMaps( ((CsmScope) element).getScopeElements(), 0, endOffset);
+//            namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
+        } else if (kind == CsmDeclaration.Kind.USING_DECLARATION) {
+            CsmUsingDeclaration udecl = (CsmUsingDeclaration) element;
+            if (global) {
+                globalUsingDeclarations.add(udecl);
+            } else {
+                localUsingDeclarations.add(udecl);
+            }
+        } else if (kind == CsmDeclaration.Kind.USING_DIRECTIVE) {
+            CsmUsingDirective udir = (CsmUsingDirective) element;
+            if (global) {
+                globalUsingNamespaces.add(udir);
+            } else {
+                localUsingNamespaces.add(udir);
+            }
+//            directVisibleNamespaces.add(udir.getName()); // getReferencedNamespace()
+        } else if (CsmKindUtilities.isDeclarationStatement(element)) {
+            CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
+            if (ds.getStartOffset() < endOffset) {
+                gatherDeclarationsMaps(((CsmDeclarationStatement) element).getDeclarators(), 0, endOffset, false);
+            }
+        } else if (CsmKindUtilities.isScope(element)) {
+            if (endOffset < end) {
+                gatherDeclarationsMaps(((CsmScope) element).getScopeElements(), 0, endOffset, false);
+            }
+        }
+    }
+    
+    protected void gatherLocalNamespaceElementsFromMaps(CsmNamespaceDefinition ns, int end, int endOffset, boolean global) {
+        CharSequence nsName = ns.getQualifiedName();
+        if (global) {
+            for (CsmNamespaceDefinition nsd : globalDirectVisibleNamespaceDefinitions) {
+                if (nsd.getQualifiedName().equals(nsName)) {
+                    gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);
+                }
+            }
+        } else {
+            for (CsmNamespaceDefinition nsd : localDirectVisibleNamespaceDefinitions) {
+                if (nsd.getQualifiedName().equals(nsName)) {
+                    gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);
+                }
             }
         }
     }

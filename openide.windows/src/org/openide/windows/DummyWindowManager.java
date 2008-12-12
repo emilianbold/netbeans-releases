@@ -384,6 +384,8 @@ final class DummyWindowManager extends WindowManager {
     }
     
     protected void topComponentClose(TopComponent tc) {
+        if( !tc.canClose() )
+            return;
         componentHidden(tc);
         componentCloseNotify(tc);
 

@@ -272,6 +272,11 @@ public class RADProperty extends FormProperty {
                 list.add(value);
                 list.add(enumClass.getName().replace('$', '.') + '.' + value.name());
             }
+            // null value is always valid
+            list.add("null");
+            list.add(null);
+            list.add("null");
+
             return new EnumEditor(list.toArray());
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
