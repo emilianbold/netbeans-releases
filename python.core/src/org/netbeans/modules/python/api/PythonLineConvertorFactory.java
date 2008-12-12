@@ -76,7 +76,7 @@ public final class PythonLineConvertorFactory implements LineConvertorFactory {
     //public static final Pattern RUBY_TEST_OUTPUT = Pattern.compile("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
 
     // See the traceback module for details
-    Pattern PYTHON_STACKTRACE_PATTERN = Pattern.compile(".*\"(.+\\.py)\", line (\\d+),.*");
+    static final Pattern PYTHON_STACKTRACE_PATTERN = Pattern.compile(".*\"(.+\\.py)\", line (\\d+).*");
     /** Regexp. for extensions. */
     public static final Pattern EXT_RE = Pattern.compile(".*\\.(py|pyw)"); // NOI18N
 
