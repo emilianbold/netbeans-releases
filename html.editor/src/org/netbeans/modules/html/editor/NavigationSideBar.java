@@ -123,6 +123,8 @@ public class NavigationSideBar extends JPanel implements Accessible {
     }
 
     private void change(Result info, SchedulerEvent event) {
+
+
         int caretPosition = ((CursorMovedSchedulerEvent)event).getCaretOffset();
 
         AstNode root = ((HtmlParserResult)info).root();

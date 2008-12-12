@@ -104,6 +104,11 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
+        //xxx: how come I can get null event here? parsing api bug?
+        if(event == null) {
+            return ;
+        }
+
         forDocument(result.getSnapshot().getSource().getDocument()).parsed(result, event);
     }
 

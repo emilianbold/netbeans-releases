@@ -109,18 +109,19 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
                 if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
                     int dso = snapshot.getOriginalOffset(node.startOffset());
                     int deo =snapshot.getOriginalOffset(node.endOffset());
-                    OffsetRange range = new OffsetRange(dso, deo);
                     //filter out generated and inlined style definitions - they have just virtual selector which
                     //is mapped to empty string
-                    if (!range.isEmpty() && deo > dso) {
+                    if(dso >= 0 || deo >= 0) {
+                        OffsetRange range = new OffsetRange(dso, deo);
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
                 } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
-                    //check vendor speficic property
-                    OffsetRange range = new OffsetRange(snapshot.getOriginalOffset(node.startOffset()),
-                            snapshot.getOriginalOffset(node.endOffset()));
+                    int dso = snapshot.getOriginalOffset(node.startOffset());
+                    int deo =snapshot.getOriginalOffset(node.endOffset());
 
-                    if (!range.isEmpty()) { //filter virtual nodes
+                    if (dso >= 0 || deo >= 0) { //filter virtual nodes
+                        //check vendor speficic property
+                        OffsetRange range = new OffsetRange(dso, deo);
 
                         String propertyName = node.image().trim();
                         if(CSSGSFParser.containsGeneratedCode(propertyName)) {

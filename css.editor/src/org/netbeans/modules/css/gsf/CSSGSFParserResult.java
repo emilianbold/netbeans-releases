@@ -64,6 +64,7 @@ public class CSSGSFParserResult extends ParserResult {
         super(snapshot);
         this.snapshot = snapshot;
         this.root = root;
+        this.errors = errors;
 //        this.currentPhase = Phase.PARSED;
     }
     
