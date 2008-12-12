@@ -1,0 +1,36 @@
+#     fix % other         => Numeric
+#     fix.modulo(other)   => Numeric
+#     fix & other     => integer
+#     fix ** other         => Numeric
+#     fix * numeric   =>  numeric_result
+#     fix + numeric   =>  numeric_result
+#     -fix   =>  integer
+#     fix - numeric   =>  numeric_result
+#     fix / numeric      =>  numeric_result
+#     fix.div(numeric)   =>  numeric_result
+#     fix << count     => integer
+#     fix <=> numeric    => -1, 0, +1
+#     fix <= other     => true or false
+#     fix < other     => true or false
+#     fix >= other     => true or false
+#     fix >> count     => integer
+#     fix > other     => true or false
+#     fix[n]     => 0, 1
+#     fix ^ other     => integer
+#     fix | other     => integer
+#     ~fix     => integer
+#     fix / numeric      =>  numeric_result
+#     fix.div(numeric)   =>  numeric_result
+#     fix.divmod(numeric)    => array
+#     fix.quo(numeric)    => float
+#     fix.fdiv(numeric)   => float
+#     fix.quo(numeric)    => float
+#     fix.fdiv(numeric)   => float
+#     Fixnum.induced_from(obj)    =>  fixnum
+#     fix % other         => Numeric
+#     fix.modulo(other)   => Numeric
+#     fix.quo(numeric)    => float
+#     fix.fdiv(numeric)   => float
+#     fix.quo(numeric)    => float
+#     fix.fdiv(numeric)   => float
+#     fix.zero?    => true or false

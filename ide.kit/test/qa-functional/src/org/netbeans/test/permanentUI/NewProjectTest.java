@@ -85,6 +85,7 @@ public class NewProjectTest extends JellyTestCase{
         conf = conf.addTest("testNewProjectsNetBeansModules");
         conf = conf.addTest("testNewProjectsGroovy");
         conf = conf.addTest("testNewProjectsPHP");
+        conf = conf.addTest("testNewProjectsMaven");
 
         return NbModuleSuite.create(conf);
 
@@ -282,6 +283,14 @@ public class NewProjectTest extends JellyTestCase{
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
+    public void testNewProjectsMaven(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Maven", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);
+    }
+
     /**
      * For categories with simple names, which can be used as filename of the golden file.
      * @param categoryName - name of the category = name of the godlen file
@@ -308,8 +317,8 @@ public class NewProjectTest extends JellyTestCase{
         JListOperator jlo = newProjectOperator.lstProjects();
         ArrayList<String> actualProjects = getProjectsList(jlo);
 
-        final String permCategoryFileName = getWorkDirPath() + File.separator + getName() + "_ide.txt";
-        final String ideCategoryFileName = getWorkDirPath() + File.separator + getName() +"_golden.txt";
+        final String permCategoryFileName = getWorkDirPath() + File.separator + getName() +"_golden.txt";
+        final String ideCategoryFileName = getWorkDirPath() + File.separator + getName() + "_ide.txt";
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         String message = null;
 

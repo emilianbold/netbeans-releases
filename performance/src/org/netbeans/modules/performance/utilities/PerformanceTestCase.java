@@ -130,8 +130,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public double HEURISTIC_FACTOR = 1.25;
 
     /** Count of repeats */
-    //protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
-protected static int repeat = 4;
+    protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 4).intValue();
 
     /** Count of repeats for measure memory usage */
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();

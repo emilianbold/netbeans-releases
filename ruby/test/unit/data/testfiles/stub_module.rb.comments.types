@@ -1,0 +1,243 @@
+#     mod <=> other_mod   => -1, 0, +1, or nil
+  ==> [NilClass]
+
+#     mod <= other   =>  true, false, or nil
+  ==> [TrueClass, FalseClass, NilClass]
+
+#     mod < other   =>  true, false, or nil
+  ==> [TrueClass, FalseClass, NilClass]
+
+#     mod === obj    => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj == other        => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj.equal?(other)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj.eql?(other)     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj == other        => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj.equal?(other)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     obj.eql?(other)     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     mod >= other   =>  true, false, or nil
+  ==> [TrueClass, FalseClass, NilClass]
+
+#     mod > other   =>  true, false, or nil
+  ==> [TrueClass, FalseClass, NilClass]
+
+#     alias_method(new_name, old_name)   => self
+  ==> []
+
+#     append_features(mod)   => mod
+  ==> [Module]
+
+#     attr(symbol, writable=false)    => nil
+  ==> [NilClass]
+
+#     attr_accessor(symbol, ...)    => nil
+  ==> [NilClass]
+
+#     attr_reader(symbol, ...)    => nil
+  ==> [NilClass]
+
+#     attr_writer(symbol, ...)    => nil
+  ==> [NilClass]
+
+#     mod.autoload?(name)   => String or nil
+  ==> [String, NilClass]
+
+#    A.autoload?(:B)            # => "b"
+  ==> []
+
+#     mod.autoload(name, filename)   => nil
+  ==> [NilClass]
+
+#     mod.class_eval(string [, filename [, lineno]])  => obj
+  ==> [Object]
+
+#     mod.module_eval {|| block }                     => obj
+  ==> [Object]
+
+#     mod.module_exec(arg...) {|var...| block }       => obj
+  ==> [Object]
+
+#     mod.class_exec(arg...) {|var...| block }        => obj
+  ==> [Object]
+
+#     mod.module_exec(arg...) {|var...| block }       => obj
+  ==> [Object]
+
+#     mod.class_exec(arg...) {|var...| block }        => obj
+  ==> [Object]
+
+#     obj.class_variable_defined?(symbol)    => true or false
+  ==> [TrueClass, FalseClass]
+
+#     mod.class_variable_get(symbol)    => obj
+  ==> [Object]
+
+#     obj.class_variable_set(symbol, obj)    => obj
+  ==> [Object]
+
+#     mod.class_variables   => array
+  ==> [Array]
+
+#     mod.const_defined?(sym)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     mod.const_get(sym)    => obj
+  ==> [Object]
+
+#     mod.const_missing(sym)    => obj
+  ==> [Object]
+
+#     mod.const_set(sym, obj)    => obj
+  ==> [Object]
+
+#     Module.constants   => array
+  ==> [Array]
+
+#     mod.constants    => array
+  ==> [Array]
+
+#     define_method(symbol, method)     => new_method
+  ==> [UnboundMethod]
+
+#     define_method(symbol) { block }   => proc
+  ==> [Proc]
+
+#     define_method(symbol, method)     => new_method
+  ==> [UnboundMethod]
+
+#     define_method(symbol) { block }   => proc
+  ==> [Proc]
+
+#     extend_object(obj)    => obj
+  ==> [Object]
+
+#     mod.include?(module)    => true or false
+  ==> [TrueClass, FalseClass]
+
+#     include(module, ...)    => self
+  ==> []
+
+#     mod.instance_method(symbol)   => unbound_method
+  ==> [UnboundMethod]
+
+#       ?a => instance_method(:do_a),
+  ==> []
+
+#       ?d => instance_method(:do_d),
+  ==> []
+
+#       ?e => instance_method(:do_e),
+  ==> []
+
+#       ?v => instance_method(:do_v)
+  ==> []
+
+#     mod.instance_methods(include_super=true)   => array
+  ==> [Array]
+
+#     mod.method_defined?(symbol)    => true or false
+  ==> [TrueClass, FalseClass]
+
+#     mod.class_eval(string [, filename [, lineno]])  => obj
+  ==> [Object]
+
+#     mod.module_eval {|| block }                     => obj
+  ==> [Object]
+
+#     mod.module_exec(arg...) {|var...| block }       => obj
+  ==> [Object]
+
+#     mod.class_exec(arg...) {|var...| block }        => obj
+  ==> [Object]
+
+#     mod.module_exec(arg...) {|var...| block }       => obj
+  ==> [Object]
+
+#     mod.class_exec(arg...) {|var...| block }        => obj
+  ==> [Object]
+
+#     module_function(symbol, ...)    => self
+  ==> []
+
+#     mod.name    => string
+  ==> [String]
+
+#     Module.nesting    => array
+  ==> [Array]
+
+#     Module.new                  => mod
+  ==> [Module]
+
+#     Module.new {|mod| block }   => mod
+  ==> [Module]
+
+#     private                 => self
+  ==> []
+
+#     private(symbol, ...)    => self
+  ==> []
+
+#     mod.private_class_method(symbol, ...)   => mod
+  ==> [Module]
+
+#     mod.private_instance_methods(include_super=true)    => array
+  ==> [Array]
+
+#     mod.private_method_defined?(symbol)    => true or false
+  ==> [TrueClass, FalseClass]
+
+#     protected                => self
+  ==> []
+
+#     protected(symbol, ...)   => self
+  ==> []
+
+#     mod.protected_instance_methods(include_super=true)   => array
+  ==> [Array]
+
+#     mod.protected_method_defined?(symbol)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     public                 => self
+  ==> []
+
+#     public(symbol, ...)    => self
+  ==> []
+
+#     mod.public_class_method(symbol, ...)    => mod
+  ==> [Module]
+
+#     mod.public_instance_methods(include_super=true)   => array
+  ==> [Array]
+
+#     mod.public_method_defined?(symbol)   => true or false
+  ==> [TrueClass, FalseClass]
+
+#     remove_class_variable(sym)    => obj
+  ==> [Object]
+
+#     remove_const(sym)   => obj
+  ==> [Object]
+
+#     remove_method(symbol)   => self
+  ==> []
+
+#     mod.to_s   => string
+  ==> [String]
+
+#     undef_method(symbol)    => self
+  ==> []
+

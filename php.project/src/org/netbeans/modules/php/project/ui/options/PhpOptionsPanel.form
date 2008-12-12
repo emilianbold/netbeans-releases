@@ -41,7 +41,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="phpInterpreterTextField" pref="133" max="32767" attributes="0"/>
+                              <Component id="phpInterpreterTextField" pref="142" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -59,12 +59,12 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="commandLineSeparator" pref="349" max="32767" attributes="0"/>
+                      <Component id="commandLineSeparator" pref="358" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="debuggingLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="debuggingSeparator" pref="374" max="32767" attributes="0"/>
+                      <Component id="debuggingSeparator" pref="383" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
@@ -80,18 +80,17 @@
                               <Component id="debuggerSessionIdTextField" min="-2" pref="124" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="globalIncludePathSeparator" pref="323" max="32767" attributes="0"/>
+                      <Component id="globalIncludePathSeparator" pref="332" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="includePathScrollPane" pref="326" max="32767" attributes="0"/>
+                              <Component id="includePathScrollPane" pref="335" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="addFolderButton" linkSize="2" min="-2" max="-2" attributes="0"/>
@@ -154,7 +153,7 @@
               <Component id="useTheFollowingPathByDefaultLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="includePathScrollPane" alignment="0" pref="142" max="32767" attributes="2"/>
+                  <Component id="includePathScrollPane" alignment="0" pref="156" max="32767" attributes="2"/>
                   <Group type="102" attributes="0">
                       <Component id="addFolderButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>

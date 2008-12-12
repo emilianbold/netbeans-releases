@@ -584,10 +584,10 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void addMethod(final EditorOperator eo, String dlgTitle, String opName, String opRetVal) {
         NbDialogOperator dialog = new NbDialogOperator(dlgTitle);
-        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, 2);
+        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, "operation"); //NOI18N
         jtfo.clearText();
         jtfo.typeText(opName);
-        jtfo = new JTextFieldOperator(dialog, 1);
+        jtfo = new JTextFieldOperator(dialog, "java.lang.String"); //NOI18N
         jtfo.clearText();
         jtfo.typeText(opRetVal);
         dialog.ok();
@@ -847,7 +847,7 @@ public class WsValidation extends WebServicesTestBase {
         //Add...
         JButtonOperator jbo = new JButtonOperator(ndo, 0);
         //Add Message Handler Class
-        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "TTL_SelectHandler");
+        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.ui.Bundle", "TTL_SelectHandler");
         //Source Packages
         String srcPkgLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
         for (int i = 0; i < handlers.length; i++) {

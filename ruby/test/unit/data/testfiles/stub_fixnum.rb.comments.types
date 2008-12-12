@@ -1,0 +1,108 @@
+#     fix % other         => Numeric
+  ==> [Numeric]
+
+#     fix.modulo(other)   => Numeric
+  ==> [Numeric]
+
+#     fix & other     => integer
+  ==> [Integer]
+
+#     fix ** other         => Numeric
+  ==> [Numeric]
+
+#     fix * numeric   =>  numeric_result
+  ==> [Numeric]
+
+#     fix + numeric   =>  numeric_result
+  ==> [Numeric]
+
+#     -fix   =>  integer
+  ==> [Integer]
+
+#     fix - numeric   =>  numeric_result
+  ==> [Numeric]
+
+#     fix / numeric      =>  numeric_result
+  ==> [Numeric]
+
+#     fix.div(numeric)   =>  numeric_result
+  ==> [Numeric]
+
+#     fix << count     => integer
+  ==> [Integer]
+
+#     fix <=> numeric    => -1, 0, +1
+  ==> []
+
+#     fix <= other     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     fix < other     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     fix >= other     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     fix >> count     => integer
+  ==> [Integer]
+
+#     fix > other     => true or false
+  ==> [TrueClass, FalseClass]
+
+#     fix[n]     => 0, 1
+  ==> []
+
+#     fix ^ other     => integer
+  ==> [Integer]
+
+#     fix | other     => integer
+  ==> [Integer]
+
+#     ~fix     => integer
+  ==> [Integer]
+
+#     fix / numeric      =>  numeric_result
+  ==> [Numeric]
+
+#     fix.div(numeric)   =>  numeric_result
+  ==> [Numeric]
+
+#     fix.divmod(numeric)    => array
+  ==> [Array]
+
+#     fix.quo(numeric)    => float
+  ==> [Float]
+
+#     fix.fdiv(numeric)   => float
+  ==> [Float]
+
+#     fix.quo(numeric)    => float
+  ==> [Float]
+
+#     fix.fdiv(numeric)   => float
+  ==> [Float]
+
+#     Fixnum.induced_from(obj)    =>  fixnum
+  ==> [Fixnum]
+
+#     fix % other         => Numeric
+  ==> [Numeric]
+
+#     fix.modulo(other)   => Numeric
+  ==> [Numeric]
+
+#     fix.quo(numeric)    => float
+  ==> [Float]
+
+#     fix.fdiv(numeric)   => float
+  ==> [Float]
+
+#     fix.quo(numeric)    => float
+  ==> [Float]
+
+#     fix.fdiv(numeric)   => float
+  ==> [Float]
+
+#     fix.zero?    => true or false
+  ==> [TrueClass, FalseClass]
+
