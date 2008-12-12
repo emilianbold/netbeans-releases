@@ -169,7 +169,33 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isValidRubyLocalVarName("abcDef"));
     
     }
-    
+
+    public void testNumericIdentifiers() {
+        assertFalse(RubyUtils.isSafeIdentifierName("1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("1a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("a1", 0));
+    }
+
+    public void testVariableNameAndKind() {
+        assertTrue(RubyUtils.isSafeIdentifierName("a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@@a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName(":a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("$a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(" ", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(":", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@@", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@@a", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$$", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$$a", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("::", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("::a", 0));
+    }
+
     private static final String[] RUBY_BUILTINS =
         new String[] {
             // Keywords

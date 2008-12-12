@@ -334,7 +334,7 @@ public class RubyUtils {
     }
     
     // There are lots of valid method names...   %, *, +, -, <=>, ...
-    
+
     /**
      * Ruby identifiers should consist of [a-zA-Z0-9_]
      * http://www.headius.com/rubyspec/index.php/Variables
@@ -344,12 +344,33 @@ public class RubyUtils {
      */
     public static boolean isSafeIdentifierName(String name, int fromIndex) {
         int i = fromIndex;
-        for (; i < name.length(); i++) {
+        int nameLength = name.length();
+
+        if ("".equals(name.substring(fromIndex).trim())) {
+            return false;
+        }
+
+        for (; i < nameLength; i++) {
             char c = name.charAt(i);
             if (!(c == '$' || c == '@' || c == ':')) {
                 break;
             }
+            if (i > 0 && c != '@') {
+                return false;
+            }
+            if (i > 1) {
+                return false;
+            }
+            if (i + 1 == nameLength) {
+                return false;
+            }
         }
+        // digits are not allowed as the first char, except in
+        // pre-defined variables which this method does not handle
+        if (Character.isDigit(name.charAt(i))) {
+            return false;
+        }
+        
         for (; i < name.length(); i++) {
             char c = name.charAt(i);
             if (!((c >= 'a' && c <= 'z') || (c == '_') ||
