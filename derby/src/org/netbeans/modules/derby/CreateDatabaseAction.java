@@ -79,6 +79,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
         desc.createNotificationLineSupport();
         panel.setDialogDescriptor(desc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        panel.setIntroduction();
         String acsd = NbBundle.getMessage(CreateDatabaseAction.class, "ACSD_CreateDatabaseAction");
         dialog.getAccessibleContext().setAccessibleDescription(acsd);
         dialog.setVisible(true);
@@ -104,7 +105,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
             Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
-    
+
     void makeDatabase(String dbname, String user, String password) throws Exception {
         RegisterDerby.getDefault().postCreateNewDatabase(dbname, user, password);
     }

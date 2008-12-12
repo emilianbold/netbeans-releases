@@ -104,6 +104,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
 
         for (;;) {                    
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+            if (panel.getInstallLocation().length() == 0) {
+                panel.setIntroduction();
+            }
             String acsd = NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel");
             dialog.getAccessibleContext().setAccessibleDescription(acsd);
             dialog.setVisible(true);
@@ -148,7 +151,6 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
-        validatePanel();
     }
 
     private String getDerbySystemHome() {
@@ -167,7 +169,11 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         derbySystemHomeTextField.setText(derbySystemHome);
     }
 
-
+    public void setIntroduction() {
+        String info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_EnterDerbyLocation");
+        descriptor.getNotificationLineSupport().setInformationMessage(info);
+        descriptor.setValid(false);
+    }
     
     private void validatePanel() {
         if (descriptor == null) {
@@ -188,7 +194,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                 error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
             }
         } else if (location.length() == 0) {
-            info = NbBundle.getMessage(DerbyOptions.class, "INFO_EnterDerbyLocation"); // NOI18N
+            warning = NbBundle.getMessage(DerbyOptions.class, "ERR_EnterDerbyLocation"); // NOI18N
         }
 
         if (error == null) {
