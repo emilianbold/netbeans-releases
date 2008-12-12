@@ -39,72 +39,22 @@
 
 package org.netbeans.modules.notifications.api;
 
-import java.util.Collections;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.netbeans.modules.kenai.collab.notifications.APIAccessor;
-import org.netbeans.modules.kenai.collab.notifications.NotifyIndicator;
 import org.netbeans.modules.notifications.spi.Notification;
 
 /**
- * Pool of notifications
- * Use add(Notification) to add new and Notification.remove() to remove notification
- * TODO: should be moved to org.openide.awt
+ *
  * @author Jan Becicka
  */
-public final class Notifications {
+class APIAccessorImpl extends APIAccessor {
 
-    static {
-        APIAccessor.DEFAULT = new APIAccessorImpl();
+    public SortedSet<Notification> toSortedSet(Notifications n) {
+        return n.notifications;
     }
 
-    private static Notifications instance;
-
-    
-    final SortedSet<Notification> notifications;
-    private Notifications() {
-        notifications = Collections.synchronizedSortedSet(new TreeSet<Notification>());
-    }
-
-    /**
-     * singleton instance
-     * @return
-     */
-    public static synchronized Notifications getDefault() {
-        if (instance==null)
-            instance = new Notifications();
-        return instance;
-    }
-
-    /**
-     * adds notification to pool
-     * Use Notification.remove() to remove from the pool
-     * @param notification
-     * @return
-     */
-    public boolean add(Notification notification) {
-        final boolean result = notifications.add(notification);
-        NotifyIndicator.getDefault().update(this);
-        return result;
-    }
-
-    /**
-     * removes notification from pool
-     * @param notification
-     * @return
-     */
-    boolean remove(Notification notification) {
-        final boolean result = notifications.remove(notification);
-        NotifyIndicator.getDefault().update(this);
-        return result;
-    }
-
-    /**
-     * Return Notification with highest priority
-     * @return
-     */
-    public Notification top() {
-        return notifications.first();
+    public boolean remove(Notifications ns, Notification n) {
+        return ns.remove(n);
     }
 
 }

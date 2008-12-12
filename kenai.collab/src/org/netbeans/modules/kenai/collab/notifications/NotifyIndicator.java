@@ -47,6 +47,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
+import java.util.SortedSet;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.netbeans.modules.notifications.api.Notifications;
@@ -70,6 +71,10 @@ public class NotifyIndicator implements Runnable {
     private Helper helper;
     private Notifications notifications;
 
+    public void update(Notifications aThis) {
+        label.setIcon(aThis.top().getIcon());
+    }
+
     Component getComponent() {
         return label;
     }
@@ -89,7 +94,7 @@ public class NotifyIndicator implements Runnable {
     
     private NotifyIndicator() {
         helper = new Helper();
-        label = new JLabel(P1_NOTIFICATION);
+        label = new JLabel();
         label.addMouseListener(helper);
         notifications = Notifications.getDefault();
     }
@@ -118,8 +123,9 @@ public class NotifyIndicator implements Runnable {
 //        notify.setCellRenderer(new NotificationRenderer());
 
         NotificationPanel p = new NotificationPanel();
-        synchronized (notifications.notifications) {
-            Iterator<Notification> i = notifications.notifications.iterator();
+        final SortedSet<Notification> nlist = APIAccessor.DEFAULT.toSortedSet(notifications);
+        synchronized (nlist) {
+            Iterator<Notification> i = nlist.iterator();
             while (i.hasNext())
                 p.addNotification(i.next());
         }

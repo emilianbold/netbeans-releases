@@ -81,7 +81,7 @@ public class NotificationPanel extends javax.swing.JPanel {
         setLayout(layout);
     }
 
-    public void addNotification(Notification n) {
+    public void addNotification(final Notification n) {
         layout.setRows(layout.getRows()+1);
         final JEditorPane pane = new JEditorPane();
         final JPanel row = new JPanel();
@@ -124,6 +124,7 @@ public class NotificationPanel extends javax.swing.JPanel {
                 NotificationPanel.this.remove(row);
                 layout.setRows(layout.getRows() - 1);
                 NotificationPanel.this.getParent().validate();
+                n.remove();
             }
         });
         JPanel closePane = new JPanel();
