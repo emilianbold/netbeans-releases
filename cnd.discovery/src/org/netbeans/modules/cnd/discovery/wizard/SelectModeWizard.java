@@ -130,7 +130,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
             component.read(wizardDescriptor);
             inited = true;
         }
-        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);
+        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);// NOI18N
     }
     
     public void storeSettings(Object settings) {
@@ -145,7 +145,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
 
     public void validate() throws WizardValidationException {
         if (wizardDescriptor.isSimpleMode()) {
-            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress"));
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress")); // NOI18N
             handle.setInitialDelay(100);
             handle.start();
             boolean res;
@@ -157,7 +157,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
             component.updateControls();
             if (!res) {
                 fireChangeEvent();
-                ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.TRUE);
+                ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.TRUE);// NOI18N
             }
         }
     }

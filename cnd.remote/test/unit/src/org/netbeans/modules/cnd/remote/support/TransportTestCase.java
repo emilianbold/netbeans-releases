@@ -124,7 +124,7 @@ public class TransportTestCase extends RemoteTestBase {
             RemoteCommandSupport rcs2 = new RemoteCommandSupport(getHKey(), "cat " + remoteFile);
             assert rcs2.run() == 0;
             assert rcs2.getOutput().equals(sb.toString());
-            //assert RemoteCommandSupport.run(getHKey(), "rm " + remoteFile) == 0;
+            assert RemoteCommandSupport.run(getHKey(), "rm " + remoteFile) == 0;
         }
     }
     

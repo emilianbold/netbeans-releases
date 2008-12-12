@@ -131,7 +131,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
-        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);
+        ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE); // NOI18N
     }
 }
 
