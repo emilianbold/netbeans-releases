@@ -102,7 +102,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     public java.util.List<String> getGoals() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getLocalName())) {
                 return list.getListChildren();
             }
         }
@@ -112,7 +112,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     public void addGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getLocalName())) {
                 list.addListChild(goal);
                 return;
             }
@@ -123,7 +123,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getLocalName())) {
                 list.addListChild(goal);
                 return;
             }
@@ -133,7 +133,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     public void removeGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getLocalName())) {
                 list.removeListChild(goal);
                 return;
             }

@@ -474,7 +474,18 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         protected boolean createKeys(List<ServerInstance> toPopulate) {
             List<ServerInstance> fresh = new ArrayList<ServerInstance>();
             for (ServerInstanceProvider provider : ServerRegistry.getInstance().getProviders()) {
-                fresh.addAll(provider.getInstances());
+                // need to make sure instances with null display names do not
+                // end up in fresh...  152834
+                for (ServerInstance instance : provider.getInstances()) {
+                    if (null != instance.getDisplayName()) {
+                        fresh.add(instance);
+                    } else {
+                        LOGGER.finer("found instance with a null display name: "+
+                                instance.getServerDisplayName() + "  " +
+                                instance.toString());
+                    }
+                }
+                //fresh.addAll(provider.getInstances());
             }
 
             Collections.sort(fresh, COMPARATOR);

@@ -557,7 +557,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
 
-            co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(constNode));
+            co.setTypes(RubyTypeAnalyzer.inferTypesOfRHS(constNode));
             co.setIn(in);
 
             if (parent != null) {
@@ -638,7 +638,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
                     assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
-                    co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(node));
+                    co.setTypes(RubyTypeAnalyzer.inferTypesOfRHS(node));
                     co.setIn(in);
                     structure.add(co);
                 }
@@ -1029,9 +1029,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node.getType() != null) {
+            Set<? extends String> types = node.getTypes();
+            if (!types.isEmpty() && !types.equals(RubyTypeAnalyzer.UNKNOWN_TYPE_SET)) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(node.getType());
+                formatter.appendText(RubyUtils.join(types, "|"));
             }
 
             return formatter.getText();

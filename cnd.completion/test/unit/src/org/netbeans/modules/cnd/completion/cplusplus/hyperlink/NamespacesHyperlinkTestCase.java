@@ -240,6 +240,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ145071.cc", 3, 21, "IZ145071.cc", 3, 5);
     }
 
+    public void testIZ155148() throws Exception {
+        // IZ#155148: Unresolved namespace alias
+        performTest("iz155148.cc", 12, 13, "iz155148.cc", 5, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

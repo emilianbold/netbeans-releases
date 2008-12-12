@@ -406,7 +406,7 @@ public class RubyElementCtx {
                         // up and do it a bit more cleverly
                         RubyTypeAnalyzer analyzer =
                             new RubyTypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
-                        types = analyzer.getTypes(lhs);
+                        types = analyzer.inferTypes(lhs);
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 

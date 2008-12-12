@@ -177,7 +177,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setMessage(String message) {
         putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
-    
+
     public void clean() {
         setProject(null);
         setProvider(null);

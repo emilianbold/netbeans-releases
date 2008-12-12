@@ -574,8 +574,13 @@ public class SchemaView_0002 extends SchemaView {
     TreeModel tm = jtUsages.getModel( );
     Object o[] = new Object[ 11 ];
     o[ 0 ] = tm.getRoot( );
+    //System.out.println( "===" + o[ 0 ] );
     for( int i = 1; i < 11; i++ )
+    {
       o[ i ] = tm.getChild( o[ i - 1 ], 0 );
+      //System.out.println( "===" + o[ i ] );
+    }
+    Sleep( 1000 );
     TreePath tpp = new TreePath( o );
     jtUsages.selectPath( tpp );
 

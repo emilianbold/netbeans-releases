@@ -34,7 +34,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButton1" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <Component id="errorInfoPanel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -57,9 +56,7 @@
                   <Component id="derbySystemHomeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="41" max="32767" attributes="0"/>
-              <Component id="errorInfoPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace pref="79" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -143,8 +140,6 @@
           <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="ACSN_DerbySystemHomePanel_derbyInstallInfoTextField" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-    </Component>
-    <Component class="org.netbeans.modules.derby.ErrorInfoPanel" name="errorInfoPanel">
     </Component>
   </SubComponents>
 </Form>

@@ -1395,7 +1395,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public String getHtmlDisplayName() {
             if (isExcluded()) {
-                return "<font color='!controlShadow'>" + getDisplayName(); // NOI18N
+                String baseName = super.getHtmlDisplayName();
+                if (baseName != null && baseName.toLowerCase().contains("color=")) {
+                    // decorating node already has color, leave it
+                    return baseName;
+                } else {
+                    // add own "disabled" color
+                    baseName = baseName != null ? baseName : getDisplayName();
+                    return "<font color='!controlShadow'>" + baseName;
+                }
             }
             return super.getHtmlDisplayName();
         }
