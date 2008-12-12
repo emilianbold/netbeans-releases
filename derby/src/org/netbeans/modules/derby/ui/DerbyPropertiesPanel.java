@@ -205,9 +205,10 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             descriptor.setValid(false);
             descriptor.getNotificationLineSupport().setErrorMessage(error);
         } else if (warning != null) {
-            descriptor.setValue(true);
+            descriptor.setValid(false);
             descriptor.getNotificationLineSupport().setWarningMessage(warning);
         } else {
+            descriptor.setValid(true);
             descriptor.getNotificationLineSupport().clearMessages();
         }
     }
