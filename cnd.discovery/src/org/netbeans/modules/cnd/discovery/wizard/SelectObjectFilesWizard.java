@@ -79,11 +79,11 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectObjectFilesPanel)getComponent()).valid();
-	if (valid) {
-	    wizardDescriptor.setMessage(""); // NOI18N
+    	boolean valid = ((SelectObjectFilesPanel)getComponent()).valid();
+        if (valid) {
+            wizardDescriptor.setMessage(null);
         }
-	return valid;
+        return valid;
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.rest.spi;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -93,6 +92,8 @@ import org.openide.modules.InstalledFileLocator;
 public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
+    public static final String SWDP_LIBRARY_IN_GFV2 = "restlib_gfv2"; //NOI18N
+    public static final String SWDP_LIBRARY_IN_GFV3 = "restlib_gfv3"; //NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N
@@ -436,7 +437,17 @@ public abstract class RestSupport {
         if (restapiLibrary == null) {
             return;
         }
-        
+        addSwdpLibrary(classPathTypes, restapiLibrary);
+        addSwdpLibrary(classPathTypes, swdpLibrary);
+    }
+
+    /**
+     *  Add SWDP library for given source file on specified class path types.
+     *
+     *  @param source source file object for which the libraries is added.
+     *  @param classPathTypes types of class path to add ("javac.compile",...)
+     */
+    public void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs == null || sgs.length < 1) {
             throw new IOException("Project has no Java sources"); //NOI18N
@@ -444,7 +455,7 @@ public abstract class RestSupport {
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
-                ProjectClassPathModifier.addLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
+                ProjectClassPathModifier.addLibraries(new Library[] {lib}, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }

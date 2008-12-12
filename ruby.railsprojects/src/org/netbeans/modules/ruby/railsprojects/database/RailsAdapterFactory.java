@@ -94,7 +94,15 @@ public class RailsAdapterFactory {
      * @return the default adapter.
      */
     public static RailsDatabaseConfiguration getDefaultAdapter(RubyPlatform platform) {
-        return getAdapters(platform).get(0);
+        RailsDatabaseConfiguration defaultAdapter  = getAdapters(platform).get(0);
+        return defaultAdapter.requiresJdbc()
+                ? new ConfigurableRailsAdapter(defaultAdapter, null, null, null, true)
+                : defaultAdapter;
+    }
+
+    // just for tests, returns the mysql adapter
+    public static RailsDatabaseConfiguration getDefaultAdapter() {
+        return new MySQLAdapter();
     }
     
 }

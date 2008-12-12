@@ -3,3 +3,4 @@ Other                   > Declaration           D
                           Application Actions   A
                           CSS Preview           S
                           CSS Style Builder     B
+                          Maven Repository Browser

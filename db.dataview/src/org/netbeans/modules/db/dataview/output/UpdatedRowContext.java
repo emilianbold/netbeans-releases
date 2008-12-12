@@ -40,13 +40,10 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
  * Holds the updated row data
@@ -55,60 +52,43 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  */
 class UpdatedRowContext {
 
-    private Map<String, String> updateStatements = new LinkedHashMap<String, String>();
-    private Map<String, String> rawUpdateSQL = new LinkedHashMap<String, String>();
-    private Map<String, List<Object>> valuesList = new LinkedHashMap<String, List<Object>>();
-    private Map<String, List<Integer>> typesList = new LinkedHashMap<String, List<Integer>>();
-    private SQLStatementGenerator stmtGenerator;
+    private Map<Integer, Map<Integer, Object>> changedData = new LinkedHashMap<Integer, Map<Integer, Object>>();
 
-    public UpdatedRowContext(SQLStatementGenerator stmtGenerator) {
-        this.stmtGenerator = stmtGenerator;
+    public UpdatedRowContext() {
     }
 
-    // TODO: We can defer creating these statements till user request to execute
-    public void createUpdateStatement(int row, int col, Object value, TableModel tblModel) throws DBException {
-        List<Object> values = new ArrayList<Object>();
-        List<Integer> types = new ArrayList<Integer>();
-        String changeData = (row + 1) + ";" + (col + 1); // NOI18N
-        String[] updateStmt = stmtGenerator.generateUpdateStatement(row, col, value, values, types, tblModel);
-
-        updateStatements.put(changeData, updateStmt[0]);
-        rawUpdateSQL.put(changeData, updateStmt[1]);
-        valuesList.put(changeData, values);
-        typesList.put(changeData, types);
+    public void addUpdates(int row, int col, Object value, TableModel tblModel)  {
+        Map<Integer, Object> rowMap = changedData.get(row);
+        if(rowMap == null){
+            rowMap = new LinkedHashMap<Integer, Object>();
+            changedData.put(new Integer(row), rowMap);
+        }
+        rowMap.put(new Integer(col), value);
     }
 
-    public void resetUpdateState() {
-        updateStatements = new LinkedHashMap<String, String>();
-        rawUpdateSQL = new LinkedHashMap<String, String>();
-        valuesList = new LinkedHashMap<String, List<Object>>();
-        typesList = new LinkedHashMap<String, List<Integer>>();
+    public void removeAllUpdates() {
+        changedData = new LinkedHashMap<Integer, Map<Integer, Object>>();
     }
 
-    public Set<String> getUpdateKeys() {
-        return updateStatements.keySet();
+    public void removeUpdateForSelectedRow(int row) {
+        if(changedData.containsKey(new Integer(row))){
+            changedData.remove(new Integer(row));
+        }
     }
 
-    public String getUpdateStmt(String key) {
-        return updateStatements.get(key);
+    public Set<Integer> getUpdateKeys() {
+        return changedData.keySet();
     }
 
-    public void removeUpdateStmt(String key) {
-        rawUpdateSQL.remove(key);
-        updateStatements.remove(key);
-        valuesList.remove(key);
-        typesList.remove(key);
+    public Map<Integer, Object> getChangedData(int row) {
+        return changedData.get(new Integer(row));
     }
 
-    public String getRawUpdateStmt(String key) {
-        return rawUpdateSQL.get(key);
-    }
-
-    public List<Integer> getTypeList(String key) {
-        return typesList.get(key);
-    }
-
-    public List<Object> getValueList(String key) {
-        return valuesList.get(key);
+    boolean hasUpdates(int row, int col) {
+        Map<Integer, Object> rowMap = changedData.get(new Integer(row));
+        if(rowMap != null && rowMap.containsKey(new Integer(col))){
+           return true;
+        }
+        return false;
     }
 }

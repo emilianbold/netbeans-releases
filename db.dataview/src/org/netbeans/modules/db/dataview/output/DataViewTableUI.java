@@ -61,6 +61,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
@@ -167,7 +168,7 @@ class DataViewTableUI extends ExtendedJTable {
         }
     }
 
-    private UpdatedRowContext getResultSetRowContext() {
+    private UpdatedRowContext getUpdatedRowContext() {
         return tablePanel.getUpdatedRowContext();
     }
 
@@ -206,7 +207,7 @@ class DataViewTableUI extends ExtendedJTable {
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                handler.cancelEditPerformed();
+                handler.cancelEditPerformed(true);
             }
         });
         tablePopupMenu.add(miCancelEdits);
@@ -285,7 +286,7 @@ class DataViewTableUI extends ExtendedJTable {
                     String insertSQL = "";
                     for (int j = 0; j < rows.length; j++) {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
-                        String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
+                        String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
                         insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
@@ -312,8 +313,8 @@ class DataViewTableUI extends ExtendedJTable {
                     final List<Integer> types = new ArrayList<Integer>();
 
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                    final String[] deleteStmt = generator.generateDeleteStatement(types, values, rows[j], getModel());
-                    rawDeleteStmt += deleteStmt[1] + ";\n"; // NOI18N
+                    final String deleteStmt = generator.generateDeleteStatement(rows[j], getModel());
+                    rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
                 dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -328,17 +329,22 @@ class DataViewTableUI extends ExtendedJTable {
 
             public void actionPerformed(ActionEvent e) {
                 String rawUpdateStmt = "";
-                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
-                if (tblContext.getUpdateKeys().isEmpty()) {
-                    return;
+                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
+
+                try {
+                    for (Integer row : updatedRowCtx.getUpdateKeys()) {
+                        Map <Integer, Object> changedData = updatedRowCtx.getChangedData(row);
+                        rawUpdateStmt += generator.generateUpdateStatement(row, changedData, dataModel) + ";\n"; // NOI18N
+                    }
+                    ShowSQLDialog dialog = new ShowSQLDialog();
+                    dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+                    dialog.setText(rawUpdateStmt);
+                    dialog.setVisible(true);
+                } catch (DBException ex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
                 }
-                for (String key : tblContext.getUpdateKeys()) {
-                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + ";\n"; // NOI18N
-                }
-                ShowSQLDialog dialog = new ShowSQLDialog();
-                dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
-                dialog.setText(rawUpdateStmt);
-                dialog.setVisible(true);
             }
         });
         tablePopupMenu.add(miCommitSQLScript);
@@ -480,7 +486,7 @@ class DataViewTableUI extends ExtendedJTable {
         DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
         if (dbCol.isGenerated()) {
             return new GeneratedResultSetCellRenderer();
-        } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) { // NOI18N
+        } else if (getUpdatedRowContext().hasUpdates(row , column)) { // NOI18N
             return new UpdatedResultSetCellRenderer(dView);
         }
         return super.getCellRenderer(row, column);

@@ -69,6 +69,7 @@ public class RunSingleCommand extends Command {
             pyexec.setShowControls(true);
             pyexec.setShowInput(true);
             pyexec.setShowWindow(true);
+            pyexec.addStandardRecognizers();
             pyexec.run();
         }
     }

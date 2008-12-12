@@ -678,6 +678,8 @@ public class Reformatter implements ReformatTask {
                                     semiRead = false;
                                     continue;
                                 }
+                                if (!first)
+                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 int index = tokens.index();
                                 int c = col;
                                 Diff d = diffs.isEmpty() ? null : diffs.getFirst();
@@ -686,8 +688,6 @@ public class Reformatter implements ReformatTask {
                                 } else {
                                     rollback(index, col, d);
                                 }
-                                if (!first)
-                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
                                 break;
@@ -1184,8 +1184,8 @@ public class Reformatter implements ReformatTask {
             }
             if (isEmpty || templateEdit)
                 newline();
-            indent = halfIndent;
             if (node instanceof FakeBlock) {
+                indent = halfIndent;
                 int i = tokens.index();
                 boolean loop = true;
                 while(loop) {
@@ -1221,6 +1221,7 @@ public class Reformatter implements ReformatTask {
                 lastBlankLinesDiff = null;
             } else {
                 blankLines();
+                indent = halfIndent;
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
                 if (diff != null && diff.end == tokens.offset()) {
                     if (diff.text != null) {
@@ -1587,11 +1588,11 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeForParen() ? 1 : 0);
             accept(LPAREN);
             spaces(cs.spaceWithinForParens() ? 1 : 0);
+            int alignIndent = cs.alignMultilineFor() ? col : -1;
             scan(node.getVariable(), p);
             spaces(cs.spaceBeforeColon() ? 1 : 0);
             accept(COLON);
-            spaces(cs.spaceAfterColon() ? 1 : 0);
-            scan(node.getExpression(), p);
+            wrapTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;
@@ -2904,30 +2905,35 @@ public class Reformatter implements ReformatTask {
         private int getIndentLevel(TokenSequence<JavaTokenId> tokens, TreePath path) {
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
                 return 0;
-            int indent = 0;
             Tree lastTree = null;
+            int indent = -1;
             while (path != null) {
                 int offset = (int)sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
                 if (offset < 0)
-                    return -1;
+                    return indent;
                 tokens.move(offset);
-                if (tokens.movePrevious()) {
+                String text = null;
+                while (tokens.movePrevious()) {
                     Token<JavaTokenId> token = tokens.token();
                     if (token.id() == WHITESPACE) {
-                        String text = token.text().toString();
+                        text = token.text().toString();
                         int idx = text.lastIndexOf('\n');
                         if (idx >= 0) {
                             text = text.substring(idx + 1);
                             indent = getCol(text);
                             break;
-                        } else if (tokens.movePrevious()) {
-                            if (tokens.token().id() == LINE_COMMENT) {
-                                indent = getCol(text);
-                                break;
-                            }                        
                         }
+                    } else if (token.id() == LINE_COMMENT) {
+                        indent = text != null ? getCol(text) : 0;
+                        break;
+                    } else if (token.id() == BLOCK_COMMENT || token.id() == JAVADOC_COMMENT) {
+                        text = null;
+                    } else {
+                        break;
                     }
                 }
+                if (indent >= 0)
+                    break;
                 lastTree = path.getLeaf();
                 path = path.getParentPath();
             }

@@ -10,11 +10,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -33,6 +38,10 @@ public class PythonExecution {
     private String scriptArgs;
     private String displayName;    
     private boolean redirect;
+    private final List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private boolean addStandardConvertors;
+    private FileLocator fileLocator;
+
     
     
     //internal process control    
@@ -178,7 +187,21 @@ public class PythonExecution {
        descriptor = descriptor.controllable(showControls);
     }
 
-    
+
+    public void addStandardRecognizers() {
+        this.addStandardConvertors = true;
+        descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
+    }
+
+    private LineConvertorFactory lineConvertorFactory(List<LineConvertor> convertors) {
+        LineConvertor[] convertorArray = convertors.toArray(new LineConvertor[convertors.size()]);
+        if (addStandardConvertors) {
+            return PythonLineConvertorFactory.withStandardConvertors(fileLocator, convertorArray);
+        }
+        return PythonLineConvertorFactory.create(fileLocator, convertorArray);
+    }
+
 
     public synchronized void setShowInput(boolean showInput) {
         descriptor = descriptor.inputVisible(showInput);
