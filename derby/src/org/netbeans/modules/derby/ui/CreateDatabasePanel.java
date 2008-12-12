@@ -106,6 +106,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         String error = null;
         String warning = null;
+        String info = null;
         
         String databaseName = getDatabaseName();
         int illegalChar = DerbyDatabases.getFirstIllegalCharacter(databaseName);
@@ -121,7 +122,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (unsupportedChar >= 0) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
-            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
+            info = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
         
         if (error != null) {
@@ -129,6 +130,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             descriptor.setValid(false);
         } else if (warning != null) {
             descriptor.getNotificationLineSupport().setWarningMessage(warning);
+            descriptor.setValid(false);
+        } else if (info != null) {
+            descriptor.getNotificationLineSupport().setInformationMessage(info);
             descriptor.setValid(true);
         } else {
             descriptor.getNotificationLineSupport().clearMessages();
