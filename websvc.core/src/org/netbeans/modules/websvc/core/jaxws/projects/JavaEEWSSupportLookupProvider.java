@@ -130,7 +130,12 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
         };
 
         ProjectWebServiceNotifier servicesNotifier = new ProjectWebServiceNotifier(prj);
-        return Lookups.fixed(openhook, servicesNotifier, new JaxWsArtifactsClassPathProvider(prj), new JavaEEJAXWSVersionProvider(prj), new JaxWsSourceForBinaryQueryImpl(prj), new JaxWsSourceForBinaryQueryImpl1());
+        return Lookups.fixed(
+                openhook,
+                servicesNotifier,
+                new JaxWsArtifactsClassPathProvider(prj),
+                new JavaEEJAXWSVersionProvider(prj),
+                new JaxWsSourceForBinaryQueryImpl(prj, true));
     }
 
     private class WebservicesChangeListener implements PropertyChangeListener {

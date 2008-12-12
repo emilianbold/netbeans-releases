@@ -245,9 +245,11 @@ public class LayerUtilsTest extends LayerTestBase {
         cmf.add(cmf.createLayerEntry("test-module2-some-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceClass", "test.module2.SomeAction")));
         cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
         cmf.add(cmf.createLayerEntry("test-module2-factory-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceCreate", "methodvalue:test.module2.FactoryAction.create")));
+        cmf.add(cmf.createLayerEntry("test-module2-localized-action.instance", null, null, "Localized Action", Collections.<String,Object>singletonMap("instanceCreate", "methodvalue:test.module2.LocalizedAction.create")));
         cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.<String,Object>singletonMap("instanceClass", "javax.swing.JSeparator")));
         cmf.add(cmf.createLayerEntry("link-to-standard.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "Actions/System/org-openide-actions-OpenAction.instance")));
         cmf.add(cmf.createLayerEntry("link-to-custom.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "test-module2-MyAction.instance")));
+        cmf.add(cmf.createLayerEntry("link-to-localized.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "test-module2-localized-action.instance")));
         File dummyDir = new File(getWorkDir(), "dummy");
         dummyDir.mkdir();
         cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", dummyDir.toURI().toURL())));
@@ -262,9 +264,11 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "label for instanceClass", "test-module2-some-action.instance", "<instance of SomeAction>");
         assertDisplayName(fs, "label for newvalue instanceCreate", "test-module2-another-action.instance", "<instance of AnotherAction>");
         assertDisplayName(fs, "label for methodvalue instanceCreate", "test-module2-factory-action.instance", "<instance from FactoryAction.create>");
+        assertDisplayName(fs, "label for localized methodvalue instanceCreate", "test-module2-localized-action.instance", "Localized Action");
         assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
         assertDisplayName(fs, "link to standard menu item", "link-to-standard.shadow", "Open");
         assertDisplayName(fs, "link to custom menu item", "link-to-custom.shadow", "<instance of MyAction>");
+        assertDisplayName(fs, "link to localized action", "link-to-localized.shadow", "Localized Action");
         DataObject.find(fs.findResource("link-to-url.shadow")).getNodeDelegate().getDisplayName(); // #65665
         /* XXX too hard to unit test in practice, since we will get a CNFE trying to load a class from editor here:
         //System.err.println("items in Menu/Edit: " + java.util.Arrays.asList(fs.findResource("Menu/Edit").getChildren()));

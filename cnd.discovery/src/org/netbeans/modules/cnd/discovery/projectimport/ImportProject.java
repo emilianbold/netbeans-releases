@@ -93,6 +93,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class ImportProject {
+    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
 
     private File dirF;
     private String name;
@@ -101,6 +102,7 @@ public class ImportProject {
     private String configurePath;
     private String configureArguments;
     private boolean runConfigure;
+    private boolean setAsMain;
     private String workingDir;
     private String buildCommand = "${MAKE} all";  // NOI18N
     private String cleanCommand = "${MAKE} clean";  // NOI18N
@@ -133,6 +135,7 @@ public class ImportProject {
             }
         }
         runMake = wizardStorage.isBuildProject();
+        setAsMain = wizardStorage.isSetMain();
     }
 
     public Set<FileObject> create() throws IOException {
@@ -196,6 +199,7 @@ public class ImportProject {
                         runMake = false;
                         postponeModel = true;
                     }
+                    if (TRACE) {System.out.println("#configure "+configureArguments);} // NOI18N
                     ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
                 }
             } catch (DataObjectNotFoundException e) {
@@ -227,15 +231,17 @@ public class ImportProject {
                 new MakeConfiguration[]{extConf}, sources.iterator(), importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(dirF);
         resultSet.add(dir);
+        switchModel(false);
         OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-        OpenProjects.getDefault().setMainProject(makeProject);
+        if (setAsMain) {
+            OpenProjects.getDefault().setMainProject(makeProject);
+        }
         if (runMake) {
             makeProject(true);
             postponeModel = true;
         }
-        if (postponeModel) {
-            switchModel(false);
-        } else {
+        if (!postponeModel) {
+            switchModel(true);
             postModelDiscovery();
         }
 
@@ -310,6 +316,7 @@ public class ImportProject {
                 postMake(node);
             }
         };
+        if (TRACE) {System.out.println("#make clean");} // NOI18N
         MakeAction.execute(node, "clean", listener, null); // NOI18N
     }
 
@@ -330,6 +337,7 @@ public class ImportProject {
                 Exceptions.printStackTrace(ex);
             }
         }
+        if (TRACE) {System.out.println("#make > "+makeLog.getAbsolutePath());} // NOI18N
         MakeAction.execute(node, "", listener, outputListener); // NOI18N
     }
 
@@ -353,15 +361,19 @@ public class ImportProject {
         IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             if (extension.canApply(map, makeProject)) {
+                if (TRACE) {System.out.println("#start discovery by object files");} // NOI18N
                 try {
                     extension.apply(map, makeProject);
                     does = true;
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
+            } else {
+                if (TRACE) {System.out.println("#no dwarf information found in object files");} // NOI18N
             }
         }
         if (!does) {
+            if (TRACE) {System.out.println("#start discovery by model");} // NOI18N
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(dirF.getAbsolutePath()); // NOI18N
@@ -388,6 +400,7 @@ public class ImportProject {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
                 if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {System.out.println("#start discovery by object files");} // NOI18N
                     try {
                         done = true;
                         extension.apply(map, makeProject);
@@ -395,6 +408,8 @@ public class ImportProject {
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
+                } else {
+                    if (TRACE) {System.out.println("#no dwarf information found in object files");} // NOI18N
                 }
             }
         }
@@ -405,6 +420,7 @@ public class ImportProject {
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
                 if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {System.out.println("#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
                     try {
                         done = true;
                         extension.apply(map, makeProject);
@@ -412,6 +428,8 @@ public class ImportProject {
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
+                } else {
+                    if (TRACE) {System.out.println("#discovery cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
                 }
             }
         }
@@ -448,8 +466,10 @@ public class ImportProject {
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
+                if (TRACE) {System.out.println("#enable model for "+np.getProjectDisplayName());} // NOI18N
                 ((ModelImpl) model).enableProject(np);
             } else {
+                if (TRACE) {System.out.println("#disable model for "+np.getProjectDisplayName());} // NOI18N
                 ((ModelImpl) model).disableProject(np);
             }
         }

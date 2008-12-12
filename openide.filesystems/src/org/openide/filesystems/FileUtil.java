@@ -47,8 +47,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.SyncFailedException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -1379,9 +1377,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            StringWriter stackTraceWriter = new StringWriter();
-            ioe.printStackTrace(new PrintWriter(stackTraceWriter));
-            LOG.warning("Normalization failed on file " + file + ": " + stackTraceWriter);
+            LOG.log(Level.INFO, "Normalization failed on file " + file, ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();

@@ -3526,7 +3526,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return provider;
     }
 
-    private GsfHintsManager getHintsManager(org.netbeans.modules.gsf.Language language) {
+    protected GsfHintsManager getHintsManager(org.netbeans.modules.gsf.Language language) {
         return new GsfHintsManager(getPreferredMimeType(), getHintsProvider(), language);
     }
     
