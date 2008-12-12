@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.SearchResult;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -92,7 +92,7 @@ public final class JsIndex {
         return new JsIndex(querySupport);
     }
 
-    private Collection<? extends IndexDocument> query(
+    private Collection<? extends IndexResult> query(
             final String fieldName, final String fieldValue,
             final QuerySupport.Kind kind, final String... fieldsToLoad
     ) {
@@ -100,7 +100,7 @@ public final class JsIndex {
             return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
-            return Collections.<IndexDocument>emptySet();
+            return Collections.<IndexResult>emptySet();
         }
     }
 
@@ -123,11 +123,11 @@ public final class JsIndex {
     }
     
     public Map<String,String> getAllExtends() {
-        Collection<? extends IndexDocument> results = query(
+        Collection<? extends IndexResult> results = query(
                 JsIndexer.FIELD_EXTEND, "", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND); //NOI18N
 
         Map<String,String> classes = new HashMap<String,String>();
-        for (IndexDocument d : results) {
+        for (IndexResult d : results) {
             String[] exts = d.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
@@ -146,11 +146,11 @@ public final class JsIndex {
     }
     
     public String getExtends(String className) {
-        Collection<? extends IndexDocument> results = query(
+        Collection<? extends IndexResult> results = query(
                 JsIndexer.FIELD_EXTEND, className.toLowerCase(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND);
 
         String target = className.toLowerCase() + ";"; //NOI18N
-        for (IndexDocument d : results) {
+        for (IndexResult d : results) {
             String[] exts = d.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
@@ -217,7 +217,7 @@ public final class JsIndex {
         }
         
         String lcname = name.toLowerCase();
-        Collection<? extends IndexDocument> results = query(field, lcname, kind, terms);
+        Collection<? extends IndexResult> results = query(field, lcname, kind, terms);
 
         final Set<IndexedElement> elements = new HashSet<IndexedElement>();
         String searchUrl = null;
@@ -229,7 +229,7 @@ public final class JsIndex {
             }
         }
 
-        for (IndexDocument d : results) {
+        for (IndexResult d : results) {
             String[] signatures = d.getValues(field);
             
             if (signatures != null) {
@@ -307,7 +307,7 @@ public final class JsIndex {
                     }
                     
                     String fqn = null; // Compute lazily
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), fqn, elementName, funcIn, inEndIdx, this, false);
+                    IndexedElement element = IndexedElement.create(signature, fqn, elementName, funcIn, inEndIdx, this, d, false);
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
@@ -385,9 +385,9 @@ public final class JsIndex {
             }
 
             String lcfqn = fqn.toLowerCase();
-            Collection<? extends IndexDocument> results = query(field, lcfqn, kind, terms);
+            Collection<? extends IndexResult> results = query(field, lcfqn, kind, terms);
 
-            for (IndexDocument d : results) {
+            for (IndexResult d : results) {
                 String[] signatures = d.getValues(field);
 
                 if (signatures != null) {
@@ -470,10 +470,10 @@ public final class JsIndex {
                                 }
                                 if (type != null && type.length() > 0) {
                                     String pkg = elementName.substring(type.length()+1, nextDot);
-                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, d, signature, flags, k);
                                 } else {
                                     String pkg = elementName.substring(0, nextDot);
-                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, d, signature, flags, k);
                                 }
                             } else {
                                 funcIn = elementName.substring(0, lastDot);
@@ -484,7 +484,7 @@ public final class JsIndex {
                             elementName = elementName.substring(lastDot+1);
                         }
                         if (element == null) {
-                            element = IndexedElement.create(signature, map.getPersistentUrl(), null, elementName, funcIn, inEndIdx, this, false);
+                            element = IndexedElement.create(signature, null, elementName, funcIn, inEndIdx, this, d, false);
                         }
                         boolean isFunction = element instanceof IndexedFunction;
                         if (isFunction && !includeMethods) {
@@ -549,9 +549,9 @@ public final class JsIndex {
         String [] terms = TERMS_BASE;
         String lcsymbol = base.toLowerCase();
         assert lcsymbol.length() == baseLength;
-        Collection<? extends IndexDocument> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
+        Collection<? extends IndexResult> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
-        for (IndexDocument d : results) {
+        for (IndexResult d : results) {
             String[] signatures = d.getValues(field);
             
             if (signatures != null) {
@@ -620,9 +620,9 @@ public final class JsIndex {
         String [] terms = TERMS_BASE;
         String lcsymbol = fqn.toLowerCase();
         int symbolLength = fqn.length();
-        Collection<? extends IndexDocument> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
+        Collection<? extends IndexResult> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
-        for (IndexDocument d : results) {
+        for (IndexResult d : results) {
             String[] signatures = d.getValues(field);
             
             if (signatures != null) {

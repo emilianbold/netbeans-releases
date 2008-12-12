@@ -4088,5 +4088,9 @@ public abstract class CslTestBase extends NbTestCase {
             return value == null ? null : new String [] { value };
         }
 
+        public String getSourceName() {
+            return indexable.getRelativePath();
+        }
+
     } // End of TestIndexFactoryImpl class
 }
