@@ -8,8 +8,6 @@ main(int argc, char** argv) int
 usingS1() void
 usingS1S2() void
 usingS2() void
-AliasS1
-AliasS2
 Gtk
 S1
 S3
