@@ -90,6 +90,10 @@ import junit.framework.TestResult;
  */
 public class NbModuleSuite {
 
+    static {
+        System.setProperty("org.netbeans.MainImpl.154417", "true");
+    }
+
     private NbModuleSuite() {}
     
     

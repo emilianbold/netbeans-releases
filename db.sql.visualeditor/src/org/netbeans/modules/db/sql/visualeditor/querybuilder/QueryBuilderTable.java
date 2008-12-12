@@ -54,6 +54,7 @@ import java.awt.*;
 
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
+import org.openide.util.NbBundle;
 
 // Represents the information presented inside a table node, which includes
 // selected status, key status, and column name
@@ -82,6 +83,9 @@ public class QueryBuilderTable extends JTable {
         this.setRowHeight(this.getRowHeight() + 2);
         this.setRowSelectionAllowed (false);
         this.setTableHeader (null);
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(QueryBuilderTable.class, "ACS_QueryBuilderTableName"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(QueryBuilderTable.class, "ACS_QueryBuilderTableDescription"));
     }
 
 

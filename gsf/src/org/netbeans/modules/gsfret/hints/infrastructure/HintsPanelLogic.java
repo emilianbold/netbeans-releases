@@ -230,7 +230,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
-            if ( o instanceof Rule ) {
+            if ( o instanceof UserConfigurableRule ) {
                 UserConfigurableRule hint = (UserConfigurableRule) o;
                 if ( HintsSettings.isEnabled(manager, hint, getCurrentPrefernces(hint)) ) {
                     return true;
@@ -387,7 +387,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             model.nodeChanged(node);
             model.nodeChanged(node.getParent());
         }
-        else if ( o instanceof FileObject ) {
+        else if ( o instanceof FileObject || o instanceof String) {
             boolean value = !isSelected(node);
                                    
             for( int i = 0; i < node.getChildCount(); i++ ) {
