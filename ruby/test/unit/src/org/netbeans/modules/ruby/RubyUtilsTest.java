@@ -174,7 +174,24 @@ public class RubyUtilsTest extends TestCase {
     public void testNumericIdentifiers() {
         assertFalse(RubyUtils.isSafeIdentifierName("1", 0));
         assertFalse(RubyUtils.isSafeIdentifierName("1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("@1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("@@1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("$1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName(":1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(":1a", 0));
+
         assertTrue(RubyUtils.isSafeIdentifierName("a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@@a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName(":a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("$a1", 0));
     }
 
     public void testVariableNameAndKind() {
