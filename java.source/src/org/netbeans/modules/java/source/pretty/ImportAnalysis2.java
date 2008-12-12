@@ -331,6 +331,14 @@ public class ImportAnalysis2 {
         if (imported.contains(element)) {
             return make.Identifier(element.getSimpleName());
         }
+
+        if (elements.getPackageOf(element) != null && elements.getPackageOf(element).isUnnamed()) {
+            if (orig.getExpression().getKind() == Kind.MEMBER_SELECT) {
+                return make.MemberSelect(resolveImport((MemberSelectTree) orig.getExpression(), element.getEnclosingElement()),
+                                         element.getSimpleName());
+            }
+            return orig;
+        }
         
         if (!clash && javaLangElements.contains(simpleName) && !element.getEnclosingElement().equals(javaLang)) {
             //check clashes between (hidden) java.lang and the newly added element:

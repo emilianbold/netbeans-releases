@@ -24,7 +24,7 @@
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
     <!-- E4X -->
-    <fontcolor name="mod-custom1" bgColor="ffffe4ff" />
+    <fontcolor name="mod-custom1" bgColor="ffffe4ff" foreColor="black" />
     <!-- E4X: element -->
     <fontcolor name="mod-custom2" foreColor="blue" />
     <!-- E4X: text -->

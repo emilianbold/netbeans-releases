@@ -207,7 +207,10 @@ public final class TreePathHandle {
         try {
             URL url = treePath.getCompilationUnit().getSourceFile().toUri().toURL();
             file = URLMapper.findFileObject(url);
-            assert file!=null: "Cannot find FileObject for: " + url;
+            if (file == null) {
+                //#155161:
+                throw new IllegalStateException("Cannot find FileObject for: " + url);
+            }
         } catch (MalformedURLException e) {
             throw (RuntimeException) new RuntimeException().initCause(e);
         }

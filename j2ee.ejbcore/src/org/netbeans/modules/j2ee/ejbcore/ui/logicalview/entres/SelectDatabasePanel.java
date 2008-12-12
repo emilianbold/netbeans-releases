@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -143,7 +144,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         dsRefLabel = new javax.swing.JLabel();
         serviceLocatorPanel = new javax.swing.JPanel();
-        errorLabel = new javax.swing.JLabel();
         dsRefCombo = new javax.swing.JComboBox();
         buttonAdd = new javax.swing.JButton();
 
@@ -153,8 +153,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(dsRefLabel, bundle.getString("LBL_DsReference")); // NOI18N
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonAdd, org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_Add")); // NOI18N
         buttonAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -171,18 +169,14 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 377, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dsRefLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dsRefCombo, 0, 351, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(buttonAdd))))
+                        .add(dsRefLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(dsRefCombo, 0, 351, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(buttonAdd))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(serviceLocatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)))
+                        .add(serviceLocatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -195,8 +189,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                     .add(buttonAdd))
                 .add(26, 26, 26)
                 .add(serviceLocatorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(25, 25, 25)
-                .add(errorLabel))
+                .add(41, 41, 41))
         );
 
         dsRefLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_DsReference")); // NOI18N
@@ -217,6 +210,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 DialogDescriptor.DEFAULT_ALIGN,
                 HelpCtx.DEFAULT_HELP,
                 null);
+        NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
+        referencePanel.setNotificationLine(statusLine);
         
         // register listener
         referencePanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -263,15 +258,12 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             
         }
     }//GEN-LAST:event_buttonAddActionPerformed
-    
-    
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdd;
     private javax.swing.JComboBox dsRefCombo;
     private javax.swing.JLabel dsRefLabel;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
@@ -284,7 +276,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     }
 
     private void populateReferences() {
-        
         SortedSet<String> refNames = new TreeSet<String>(references.keySet());
         
         dsRefCombo.removeAllItems();
@@ -295,8 +286,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     
     private class ReferenceListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());

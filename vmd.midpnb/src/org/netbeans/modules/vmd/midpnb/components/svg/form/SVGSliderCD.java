@@ -123,7 +123,7 @@ public class SVGSliderCD extends ComponentDescriptor{
                                         "DISP_SVGSliderValue"), 
                                         PropertyEditorNumber.createIntegerInstance( false,
                                                 NbBundle.getMessage(SVGSliderCD.class, 
-                                                "LBL_SVGCheckBox_Value")), PROP_VALUE);// NOI18N
+                                                "LBL_SVGSlider_Value")), PROP_VALUE);// NOI18N
                 
     }
     

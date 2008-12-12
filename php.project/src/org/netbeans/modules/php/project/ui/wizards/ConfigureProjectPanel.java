@@ -48,13 +48,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -206,6 +206,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
+                error = validateProjectDirectory();
+                if (error != null) {
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
+                    return false;
+                }
                 break;
             case EXISTING:
                 String sourcesFolder = configureProjectPanelVisual.getSourcesFolder();
@@ -222,6 +227,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 error = validateProject();
                 if (error != null) {
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    return false;
+                }
+                error = validateProjectDirectory();
+                if (error != null) {
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
                 break;
@@ -450,6 +460,21 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
+    }
+
+    // #154874
+    private String validateProjectDirectory() {
+        File[] fsRoots = File.listRoots();
+        if (fsRoots == null || fsRoots.length == 0) {
+            // definitely should not happen
+            return null;
+        }
+        File projectDirectory = configureProjectPanelVisual.isProjectFolderUsed() ? getProjectFolderFile() : getSourcesFolder();
+        assert projectDirectory != null;
+        if (Arrays.asList(fsRoots).contains(projectDirectory)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderIsRoot");
+        }
+        return null;
     }
 
     private boolean isRunConfigurationStepValid() {
