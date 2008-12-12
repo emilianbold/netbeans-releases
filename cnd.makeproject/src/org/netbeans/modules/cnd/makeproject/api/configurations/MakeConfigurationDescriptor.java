@@ -108,7 +108,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
     private HashMap<String,Item> projectItems = null;
-    private List<String> sourceRoots = null;
+    private final List<String> sourceRoots = new ArrayList<String>();
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
@@ -120,7 +120,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap<String,Item>();
-        sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
     }
@@ -785,7 +784,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     
     public void setSourceRoots(List<String> list) {
         synchronized (sourceRoots) {
-            sourceRoots = list;
+            sourceRoots.clear();
+            sourceRoots.addAll(list);
         }
     }
 
