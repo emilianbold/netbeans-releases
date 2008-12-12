@@ -44,6 +44,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Currently serves (mainly) for analyzing RDoc of generated stubs of Ruby core
+ * methods which are written in native language (Java, C).
+ * 
+ * <p>
+ * Might be just temporary solution until we utilize different approach, like
+ * e.g. <em>base_types.rb</em> described in
+ * <a href="http://www.cs.umd.edu/~jfoster/ruby.pdf">Static Type Inference for Ruby</a>
+ * paper.
+ */
 final class RDocAnalyzer {
 
     private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
