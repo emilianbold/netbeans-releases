@@ -39,6 +39,8 @@
 
 package org.netbeans.core.netigso;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.cache.BundleCache;
@@ -60,9 +63,9 @@ import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.ProxyClassLoader;
+import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
-import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -86,7 +89,16 @@ public class NetigsoModuleFactory extends ModuleFactory {
         ModuleManager mgr, Events ev
     ) throws IOException {
         try {
-            return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
+            Module m = super.create(jar, history, reloadable, autoload, eager, mgr, ev);
+            InputStream is = fakeBundle(m);
+            if (is != null) {
+                Bundle bundle;
+                bundle = getContainer().getBundleContext().installBundle(m.getCodeNameBase(), is);
+                is.close();
+            }
+            return m;
+        } catch (BundleException ex) {
+            throw new IOException(ex);
         } catch (InvalidException ex) {
             Manifest mani = ex.getManifest();
             if (mani != null) {
@@ -127,6 +139,35 @@ public class NetigsoModuleFactory extends ModuleFactory {
         return felix;
     }
 
+    /** Creates a fake bundle definition that represents one NetBeans module
+     *
+     * @param m the module
+     * @return the stream to read the definition from or null, if it does not
+     *   make sense to represent this module as bundle
+     */
+    private static final InputStream fakeBundle(Module m) throws IOException {
+        String exp = (String) m.getAttribute("OpenIDE-Module-Public-Packages"); // NOI18N
+        if ("-".equals(exp)) { // NOI18N
+            return null;
+        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Manifest man = new Manifest();
+        man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
+        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
+        SpecificationVersion spec = m.getSpecificationVersion();
+        if (spec != null) {
+            man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
+        }
+        if (exp != null) {
+            man.getMainAttributes().putValue("Export-Package", exp.replaceAll("\\.\\*", "")); // NOI18N
+        } else {
+            man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N
+        }
+        JarOutputStream jos = new JarOutputStream(os, man);
+        jos.close();
+        return new ByteArrayInputStream(os.toByteArray());
+    }
 
     private static final class BundleModule extends Module {
         final Bundle bundle;
