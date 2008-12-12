@@ -200,7 +200,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         if (error == null) {
             File derbySystemHome = new File(getDerbySystemHome());
             if (derbySystemHome.getPath().length() <= 0) {
-                warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotEntered");
+                info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_DerbySystemHomeNotEntered");
             }
 
             if (derbySystemHome.exists() && !derbySystemHome.isDirectory()) {
