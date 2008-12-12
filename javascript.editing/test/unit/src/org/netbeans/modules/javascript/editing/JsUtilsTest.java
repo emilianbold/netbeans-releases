@@ -37,30 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid;
+package org.netbeans.modules.javascript.editing;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import javax.swing.text.Document;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author tester
+ * @author tor
  */
-public class ProfilerStableTestSuite {
-    public static Test suite() {
-    return NbModuleSuite.create(
-      NbModuleSuite.emptyConfiguration()
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.memory.BasicTest.class)
-	    .addTest(org.netbeans.lib.profiler.tests.jfluid.memory.MemorySnapshotTest.class)
-	    .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.cpu.CPUSnapshotTest.class)
-	//.addTest(org.netbeans.lib.profiler.tests.jfluid.benchmarks.JbbTest.class)
-	//.addTest(org.netbeans.lib.profiler.tests.jfluid.others.MeasureDiffsTest.class)
-    );
-  }
+public class JsUtilsTest {
 
+    public JsUtilsTest() {
+    }
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void testIsSafeIdentifierName() {
+        assertTrue(JsUtils.isSafeIdentifierName("foo", 0));
+        assertTrue(JsUtils.isSafeIdentifierName("_foo", 0));
+        assertTrue(JsUtils.isSafeIdentifierName("$foo", 0));
+        assertTrue(JsUtils.isSafeIdentifierName("f\\u4231oo", 0));
+        assertTrue(JsUtils.isSafeIdentifierName("\\u1234foo", 0));
+        assertTrue(JsUtils.isSafeIdentifierName("foo$_", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("fo o", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("foo ", 0));
+        assertFalse(JsUtils.isSafeIdentifierName(" foo", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("7foo", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("f\\noo", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("false", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("function", 0));
+        assertFalse(JsUtils.isSafeIdentifierName("*", 0));
+    }
 }

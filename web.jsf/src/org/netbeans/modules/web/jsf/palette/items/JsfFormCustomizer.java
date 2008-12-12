@@ -45,6 +45,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
@@ -59,6 +60,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.DialogDisplayer;
@@ -309,16 +311,16 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+
         descriptor.setValid(hasModuleJsf && validClassName);
         statusLine.clearMessages();
-        if (!validClassName) {
+        if (!hasModuleJsf) {
+            statusLine.setErrorMessage(bundle.getString("MSG_NoJSF")); //NOI18N
+        } else if (!validClassName) {
             if (classTextField.getText().length() < 1)
                 statusLine.setInformationMessage(bundle.getString("MSG_EmptyClassName"));  //NOI18N
             else
                 statusLine.setErrorMessage(bundle.getString("MSG_InvalidClassName"));  //NOI18N
-        }
-        if (!hasModuleJsf) {
-            statusLine.setErrorMessage(bundle.getString("MSG_NoJSF")); //NOI18N
         }
     }
 
@@ -352,7 +354,13 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     protected static boolean classExists(FileObject referenceFO, final String className) throws IOException {
         final boolean[] result = new boolean[] { false };
         if (referenceFO != null) {
-            JavaSource javaSource = JavaSource.forFileObject(referenceFO);
+            WebModule wm = WebModule.getWebModule(referenceFO);
+            if (wm == null) {
+                return result[0];
+            }
+
+            ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
+            JavaSource javaSource = JavaSource.create(cpi, Collections.EMPTY_LIST);
             if (javaSource == null) {
                 return result[0];
             }
