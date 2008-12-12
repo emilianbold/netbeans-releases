@@ -1396,13 +1396,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public String getHtmlDisplayName() {
             if (isExcluded()) {
                 String baseName = super.getHtmlDisplayName();
-                if (baseName != null && baseName.toLowerCase().contains("color=")) {
+                if (baseName != null && baseName.toLowerCase().contains("color=")) { // NOI18N
                     // decorating node already has color, leave it
                     return baseName;
                 } else {
                     // add own "disabled" color
                     baseName = baseName != null ? baseName : getDisplayName();
-                    return "<font color='!controlShadow'>" + baseName;
+                    return "<font color='!controlShadow'>" + baseName; // NOI18N
                 }
             }
             return super.getHtmlDisplayName();
