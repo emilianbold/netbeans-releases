@@ -98,7 +98,7 @@ class JdbcMySQlAdapter extends RailsDatabaseConfiguration {
     }
 
     @Override
-    public boolean forceJdbc() {
+    public boolean requiresJdbc() {
         return true;
     }
 

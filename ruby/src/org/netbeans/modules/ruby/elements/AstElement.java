@@ -66,12 +66,13 @@ public abstract class AstElement extends RubyElement {
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
-    private String type;
+    private Set<? extends String> types;
 
     public AstElement(CompilationInfo info, Node node) {
         super();
         this.info = info;
         this.node = node;
+        this.types = Collections.emptySet();
     }
 
     public String getFqn() {
@@ -187,11 +188,12 @@ public abstract class AstElement extends RubyElement {
         return info;
     }
 
-    public void setType(final String type) {
-        this.type = type;
+    public void setTypes(final Set<? extends String> types) {
+        assert types != null : "Cannot pass null to AstElement#setTypes";
+        this.types = types;
     }
 
-    public String getType() {
-        return type;
+    public Set<? extends String> getTypes() {
+        return types;
     }
 }

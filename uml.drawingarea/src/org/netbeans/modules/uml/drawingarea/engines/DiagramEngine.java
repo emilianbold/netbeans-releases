@@ -58,10 +58,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.animator.AnimatorEvent;
-import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -94,6 +91,7 @@ import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;
 import org.netbeans.modules.uml.drawingarea.actions.UMLHoverProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetMoveActionMenu;
+import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
@@ -603,49 +601,17 @@ abstract public class DiagramEngine {
     public void layout(boolean save)
     {
         DesignerScene diagramScene = getScene();
-        GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(diagramScene, true);
-//        GraphLayout gLayout = GraphLayoutFactory.createOrthogonalGraphLayout(scene, true);
-        if (save)
-        {
-            diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
-        }
+        GraphLayout gLayout = new HierarchicalLayout();
         gLayout.layoutGraph(diagramScene);
-
-    }
-
-    private class MyAnimatorListener implements AnimatorListener
-    {
-
-        public void animatorStarted(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorReset(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorFinished(AnimatorEvent event)
-        {
-            saveDiagram();
-            scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
-        }
-
-        public void animatorPreTick(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorPostTick(AnimatorEvent event)
-        {           
-        }
-
+        saveDiagram();
     }
 
     private void saveDiagram()
     {
-        DesignerScene scene = getScene();
-        if (scene != null)
+        DesignerScene sc = getScene();
+        if ( sc != null)
         {
-            IDiagram diagram = scene.getDiagram();
+            IDiagram diagram =  sc.getDiagram();
             if (diagram != null)
             {
                 try

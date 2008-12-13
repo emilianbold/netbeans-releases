@@ -301,23 +301,21 @@ public class LogReader {
             if (end >= line.length() || line.charAt(end)!='-') {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
-            } 
-            
-            else if (start > 0 && line.charAt(start-1)!='/') {
-                // suspected compiler invocation is not first command in line?? -- noway
-                String prefix = line.substring(0, start - 1).trim();
-                // wait! maybe it's called in condition?
-                if (!(line.charAt(start - 1) == ' ' && 
-                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
-                    // or it's a lib compiled by libtool? 
-                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
-                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
-                        // no, it's not a compile line
-                        li.compilerType = CompilerType.UNKNOWN;
-                        // I hope
-                        if (TRACE) {System.err.println("Suspicious line: " + line);}
-                    }
-                }
+//            } else if (start > 0 && line.charAt(start-1)!='/') {
+//                // suspected compiler invocation is not first command in line?? -- noway
+//                String prefix = line.substring(0, start - 1).trim();
+//                // wait! maybe it's called in condition?
+//                if (!(line.charAt(start - 1) == ' ' &&
+//                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
+//                    // or it's a lib compiled by libtool?
+//                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
+//                        if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
+//                            // no, it's not a compile line
+//                            li.compilerType = CompilerType.UNKNOWN;
+//                            // I hope
+//                            if (TRACE) {System.err.println("Suspicious line: " + line);}
+//                        }
+//                    }
             }
         }
         return li;

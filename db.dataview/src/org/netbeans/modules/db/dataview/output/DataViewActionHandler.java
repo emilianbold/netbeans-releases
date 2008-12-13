@@ -79,26 +79,28 @@ class DataViewActionHandler {
     void cancelEditPerformed(boolean selectedOnly) {
 
         synchronized (dataView) {
-//            if(selectedOnly) {
-//                DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
-//                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
-//                int[] rows = rsTable.getSelectedRows();
-//                for (int row = 0; row < rows.length; row++) {
-//                    updatedRowCtx.resetUpdateState(row);
-//                }
-//
-//                // need to reset for this column
-//                // dataView.setRowsInTableModel();
-//                if(updatedRowCtx.getUpdateKeys().isEmpty()){
-//                    dataViewUI.setCancelEnabled(false);
-//                    dataViewUI.setCommitEnabled(false);
-//                }
-//            } else {
-                dataView.getUpdatedRowContext().resetUpdateState();
+            if(selectedOnly) {
+                DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
+                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                int[] rows = rsTable.getSelectedRows();
+                for (int i = 0; i < rows.length; i++) {
+                    int row = rows[i];
+                    for(int col = 0, CNT = rsTable.getColumnCount(); col < CNT; col++){
+                        dataViewUI.resetValueAt(row, col);
+                    }
+                    updatedRowCtx.removeUpdateForSelectedRow(row);
+                }
+
+                if(updatedRowCtx.getUpdateKeys().isEmpty()){
+                    dataViewUI.setCancelEnabled(false);
+                    dataViewUI.setCommitEnabled(false);
+                }
+            } else {
+                dataView.getUpdatedRowContext().removeAllUpdates();
                 dataView.setRowsInTableModel();
                 dataViewUI.setCancelEnabled(false);
                 dataViewUI.setCommitEnabled(false);
-//            }
+            }
         }
     }
 

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.java.ui;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
@@ -52,7 +54,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
  *
  * @author  phrebejk
  */
-public class FmtWrapping extends javax.swing.JPanel {
+public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     
     /** Creates new form FmtWrapping */
     public FmtWrapping() {
@@ -60,27 +62,46 @@ public class FmtWrapping extends javax.swing.JPanel {
         
         scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
         
-        
         extendsImplementsKeywordCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsKeyword);
+        extendsImplementsKeywordCombo.addFocusListener(this);
         extendsImplementsListCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsList);
+        extendsImplementsListCombo.addFocusListener(this);
         methodParamsCombo.putClientProperty(OPTION_ID, wrapMethodParams);
+        methodParamsCombo.addFocusListener(this);
         methodCallArgsCombo.putClientProperty(OPTION_ID, wrapMethodCallArgs);
+        methodCallArgsCombo.addFocusListener(this);
         annotationArgsCombo.putClientProperty(OPTION_ID, wrapAnnotationArgs);
+        annotationArgsCombo.addFocusListener(this);
         chainedMethodCallsCombo.putClientProperty(OPTION_ID, wrapChainedMethodCalls);
+        chainedMethodCallsCombo.addFocusListener(this);
         throwsKeywordCombo.putClientProperty(OPTION_ID, wrapThrowsKeyword);
+        throwsKeywordCombo.addFocusListener(this);
         throwsListCombo.putClientProperty(OPTION_ID, wrapThrowsList);
+        throwsListCombo.addFocusListener(this);
         arrayInitCombo.putClientProperty(OPTION_ID, wrapArrayInit);
+        arrayInitCombo.addFocusListener(this);
         forCombo.putClientProperty(OPTION_ID, wrapFor);
+        forCombo.addFocusListener(this);
         forStatementCombo.putClientProperty(OPTION_ID, wrapForStatement );
+        forStatementCombo.addFocusListener(this);
         ifStatementCombo.putClientProperty(OPTION_ID, wrapIfStatement);
+        ifStatementCombo.addFocusListener(this);
         whileStatementComboBox.putClientProperty(OPTION_ID, wrapWhileStatement);
+        whileStatementComboBox.addFocusListener(this);
         doWhileStatementCombo.putClientProperty(OPTION_ID, wrapDoWhileStatement);
+        doWhileStatementCombo.addFocusListener(this);
         assertCombo.putClientProperty(OPTION_ID, wrapAssert);
+        assertCombo.addFocusListener(this);
         enumConstantsCombo.putClientProperty(OPTION_ID, wrapEnumConstants);
+        enumConstantsCombo.addFocusListener(this);
         annotationsCombo.putClientProperty(OPTION_ID, wrapAnnotations);
+        annotationsCombo.addFocusListener(this);
         binaryOpsCombo.putClientProperty(OPTION_ID, wrapBinaryOps);
+        binaryOpsCombo.addFocusListener(this);
         ternaryOpsCombo.putClientProperty(OPTION_ID, wrapTernaryOps);
+        ternaryOpsCombo.addFocusListener(this);
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
+        assignOpsCombo.addFocusListener(this);
     }
     
     public static PreferencesCustomizer.Factory getController() {
@@ -93,7 +114,14 @@ public class FmtWrapping extends javax.swing.JPanel {
                 new String[] { FmtOptions.redundantWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() }
         ); // NOI18N
     }
-    
+
+    public void focusGained(FocusEvent e) {
+        scrollPane.getViewport().scrollRectToVisible(e.getComponent().getBounds());
+    }
+
+    public void focusLost(FocusEvent e) {
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -498,5 +526,5 @@ public class FmtWrapping extends javax.swing.JPanel {
     private javax.swing.JComboBox whileStatementComboBox;
     private javax.swing.JLabel whileStatementLabel;
     // End of variables declaration//GEN-END:variables
-    
+
 }
