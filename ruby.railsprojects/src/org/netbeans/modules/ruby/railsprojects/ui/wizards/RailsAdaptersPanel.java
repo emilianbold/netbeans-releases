@@ -232,7 +232,7 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     void initJdbcCheckBox() {
         RailsDatabaseConfiguration selected = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
-        if (selected != null && selected.forceJdbc()) {
+        if (selected != null && selected.requiresJdbc()) {
             parent.getUseJdbc().setSelected(true);
             parent.getUseJdbc().setEnabled(false);
         } else {
