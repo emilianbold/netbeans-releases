@@ -96,7 +96,7 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
     public void bundleChanged(BundleEvent ev) {
         String loc = ev.getBundle().getLocation();
         final String pref = "netigso://"; // NOI18N
-        if (ev.getType() == Bundle.ACTIVE && loc != null && loc.startsWith(pref)) {
+        if (ev.getType() == BundleEvent.RESOLVED && loc != null && loc.startsWith(pref)) {
             String cnb = loc.substring(pref.length());
             for (ModuleInfo mi : all) {
                 if (cnb.equals(mi.getCodeNameBase())) {
