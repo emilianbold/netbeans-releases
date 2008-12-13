@@ -43,13 +43,10 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.junit.*;
@@ -64,6 +61,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         super (name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
     }
