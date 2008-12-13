@@ -359,7 +359,7 @@
     <folder name="Templates">  
         <folder name="Python">           
             <attr name="position" intvalue="1403"/>
-            <file name="ExecutableModule.py" url="templates/ExecutableModule.template">
+            <file name="_main.py" url="templates/executable_module.py.ftl">
                 <attr name="position" intvalue="888"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
@@ -367,7 +367,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/ExecutableModule.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>           
-            <file name="Module.py" url="templates/Module.template">
+            <file name="_module.py" url="templates/module.py.ftl">
                 <attr name="position" intvalue="900"/>
                 <attr name="templateCategory" stringvalue="python"/>
                 <attr name="template" boolvalue="true"/>
@@ -376,8 +376,26 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
             </file>        
-            <!-- Missing init.htm
-            <file name="init.py" url="templates/init.template">
+            <file name="_empty_module.py" url="templates/emptymodule.py.ftl">
+                <attr name="position" intvalue="905"/>
+                <attr name="templateCategory" stringvalue="python"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/EmptyModule.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
+            </file>
+            <file name="_test.py" url="templates/unittest.py.ftl">
+                <attr name="position" intvalue="920"/>
+                <attr name="templateCategory" stringvalue="python"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/UnitTest.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
+                <attr name="templateNamePrefix" stringvalue="New"/>
+            </file>
+            <file name="_init.py" url="templates/init.py.ftl">
                 <attr name="position" intvalue="901"/>
                 <attr name="templateCategory" stringvalue="python"/>
                 <attr name="template" boolvalue="false"/>
@@ -386,10 +404,8 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
             </file>
-            -->
-            
-            <file name="pythonPackage">
-                <attr name="position" intvalue="905"/>
+            <file name="_package">
+                <attr name="position" intvalue="908"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/wizards/pypackage/package.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.python.editor.wizards.pypackage.PythonPackageWizardIterator"/>
