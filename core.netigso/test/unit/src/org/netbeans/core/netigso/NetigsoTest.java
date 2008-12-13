@@ -79,7 +79,7 @@ public class NetigsoTest extends SetupHid {
 
     public static Test suite() {
         Test t = null;
-//        t = new NetigsoTest("testOSGiCanDependOnNetBeans");
+//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
         if (t == null) {
             t = new NbTestSuite(NetigsoTest.class);
         }
@@ -119,7 +119,7 @@ public class NetigsoTest extends SetupHid {
                 "Bundle-Version: 1.1.0\n" +
                 "Export-Package: org.foo";
             String mfBar =
-                "OpenIDE-Module: org.baz/1\n" +
+                "OpenIDE-Module: org.bar/1\n" +
                 "OpenIDE-Module-Name: Depends on bar test module\n" +
                 "OpenIDE-Module-Module-Dependencies: org.foo\n" +
                 "some";
@@ -158,7 +158,7 @@ public class NetigsoTest extends SetupHid {
                 "Bundle-Version: 1.1.0\n" +
                 "Export-Package: org.foo";
             String mfBar =
-                "OpenIDE-Module: org.baz/1\n" +
+                "OpenIDE-Module: org.bar/1\n" +
                 "OpenIDE-Module-Name: Depends on bar test module\n" +
                 "OpenIDE-Module-Module-Dependencies: org.foo > 1.0\n" +
                 "some";
@@ -216,10 +216,43 @@ public class NetigsoTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         HashSet<Module> both = null;
         try {
-            String mfBar = "Bundle-SymbolicName: org.baz\n" +
+            String mfBar = "Bundle-SymbolicName: org.bar\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Export-Package: org.bar\n" +
                 "Import-Package: org.foo\n" +
+                "\n\n";
+
+            File j1 = new File(jars, "simple-module.jar");
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            Module m1 = mgr.create(j1, null, false, false, false);
+            Module m2 = mgr.create(j2, null, false, false, false);
+            HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
+            mgr.enable(b);
+            both = b;
+
+            Class<?> clazz = m2.getClassLoader().loadClass("org.bar.SomethingElse");
+            Class<?> sprclass = m2.getClassLoader().loadClass("org.foo.Something");
+
+            assertEquals("Correct parent is used", sprclass, clazz.getSuperclass());
+        } finally {
+            if (both != null) {
+                mgr.disable(both);
+            }
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testOSGiCanRequireBundleOnNetBeans() throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        HashSet<Module> both = null;
+        try {
+            String mfBar = "Bundle-SymbolicName: org.bar\n" +
+                "Bundle-Version: 1.1.0\n" +
+                "Export-Package: org.bar\n" +
+                "Require-Bundle: org.foo/1;bundle-version=\"[1.0,2.0)\"\n" +
                 "\n\n";
 
             File j1 = new File(jars, "simple-module.jar");

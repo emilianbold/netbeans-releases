@@ -122,7 +122,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
     private synchronized static Felix getContainer() throws BundleException {
         if (activator == null) {
-            Map<String,String> configMap = new HashMap<String, String>();
+            Map<String,Object> configMap = new HashMap<String,Object>();
             // Configure the Felix instance to be embedded.
             configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
             // Add core OSGi packages to be exported from the class path
@@ -137,10 +137,13 @@ public class NetigsoModuleFactory extends ModuleFactory {
             if (ud == null) {
                 throw new IllegalStateException();
             }
-            configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix");
+            String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix";
+            configMap.put("felix.cache.profiledir", cache);
+            configMap.put("felix.cache.dir", cache);
             activator = new NetigsoActivator();
             List<BundleActivator> activators = new ArrayList<BundleActivator>();
             activators.add(activator);
+            configMap.put("felix.systembundle.activators", activators);
             felix = new Felix(configMap, activators);
             felix.start();
         }
@@ -301,7 +304,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public Object getLocalizedAttribute(String attr) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            // TBD;
+            return null;
         }
 
         @Override

@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 import org.apache.felix.moduleloader.IContent;
 import org.apache.felix.moduleloader.IContentLoader;
 import org.apache.felix.moduleloader.IModule;
@@ -67,6 +68,8 @@ import org.osgi.framework.SynchronousBundleListener;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
+    private static Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
+
     private Set<Module> all = new CopyOnWriteArraySet<Module>();
 
     public NetigsoActivator() {
@@ -98,8 +101,10 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
             for (ModuleInfo mi : all) {
                 if (cnb.equals(mi.getCodeNameBase())) {
                     join(ev.getBundle(), mi);
+                    return;
                 }
             }
+            LOG.warning("No join for " + cnb);
         }
     }
 
