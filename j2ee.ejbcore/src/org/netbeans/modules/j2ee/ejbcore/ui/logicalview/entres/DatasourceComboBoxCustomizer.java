@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -103,6 +105,17 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
                 verify();
             }
             public void removeUpdate(DocumentEvent documentEvent) {
+                verify();
+            }
+        });
+        addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                verify();
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                verify();
+            }
+            public void ancestorMoved(AncestorEvent event) {
                 verify();
             }
         });

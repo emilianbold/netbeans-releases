@@ -213,6 +213,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.kit</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <package>com.sun.webui.html</package>
                 <package>com.sun.webui.jsf.bean</package>

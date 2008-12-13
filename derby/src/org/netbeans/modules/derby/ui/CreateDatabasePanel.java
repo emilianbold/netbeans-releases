@@ -98,7 +98,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         String password = passwordTextField.getText().trim();
         return password.length() > 0 ? password : null;
     }
-    
+
+    public void setIntroduction() {
+        String info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_DatabaseNameEmpty");
+        descriptor.getNotificationLineSupport().setInformationMessage(info);
+        descriptor.setValid(false);
+    }
+
     private void validateDatabaseName() {
         if (descriptor == null) {
             return;

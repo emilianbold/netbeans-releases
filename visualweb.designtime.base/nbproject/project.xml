@@ -83,6 +83,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
+                <friend>org.netbeans.modules.visualweb.kit</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
