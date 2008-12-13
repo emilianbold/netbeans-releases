@@ -58,10 +58,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import junit.framework.Test;
 import org.netbeans.Events;
 import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -73,6 +75,15 @@ import org.openide.filesystems.FileUtil;
 public class NetigsoTest extends SetupHid {
     public NetigsoTest(String name) {
         super(name);
+    }
+
+    public static Test suite() {
+        Test t = null;
+//        t = new NetigsoTest("testOSGiCanDependOnNetBeans");
+        if (t == null) {
+            t = new NbTestSuite(NetigsoTest.class);
+        }
+        return t;
     }
 
     protected @Override void setUp() throws Exception {
@@ -151,6 +162,39 @@ public class NetigsoTest extends SetupHid {
                 "some";
 
             File j1 = changeManifest(new File(jars, "simple-module.jar"), mf);
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            Module m1 = mgr.create(j1, null, false, false, false);
+            Module m2 = mgr.create(j2, null, false, false, false);
+            HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
+            mgr.enable(b);
+            both = b;
+
+            Class<?> clazz = m2.getClassLoader().loadClass("org.bar.SomethingElse");
+            Class<?> sprclass = m2.getClassLoader().loadClass("org.foo.Something");
+
+            assertEquals("Correct parent is used", sprclass, clazz.getSuperclass());
+        } finally {
+            if (both != null) {
+                mgr.disable(both);
+            }
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testOSGiCanDependOnNetBeans() throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        HashSet<Module> both = null;
+        try {
+            String mfBar = "Bundle-SymbolicName: org.baz\n" +
+                "Bundle-Version: 1.1.0\n" +
+                "Export-Package: org.bar\n" +
+                "Import-Package: org.foo\n" +
+                "\n\n";
+
+            File j1 = new File(jars, "simple-module.jar");
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             Module m1 = mgr.create(j1, null, false, false, false);
             Module m2 = mgr.create(j2, null, false, false, false);
