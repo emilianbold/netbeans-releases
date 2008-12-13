@@ -87,6 +87,17 @@ public class NetigsoModuleFactory extends ModuleFactory {
     }
 
     @Override
+    public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws InvalidException {
+        Module m = super.createFixed(mani, history, loader, autoload, eager, mgr, ev);
+        try {
+            registerBundle(m);
+        } catch (IOException ex) {
+            throw (InvalidException)new InvalidException(m, ex.getMessage()).initCause(ex);
+        }
+        return m;
+    }
+
+    @Override
     public Module create(
         File jar, Object history,
         boolean reloadable, boolean autoload, boolean eager,
@@ -94,16 +105,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
     ) throws IOException {
         try {
             Module m = super.create(jar, history, reloadable, autoload, eager, mgr, ev);
-            InputStream is = fakeBundle(m);
-            if (is != null) {
-                Bundle bundle;
-                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
-                activator.register(m);
-                is.close();
-            }
+            registerBundle(m);
             return m;
-        } catch (BundleException ex) {
-            throw new IOException(ex);
         } catch (InvalidException ex) {
             Manifest mani = ex.getManifest();
             if (mani != null) {
@@ -340,4 +343,18 @@ public class NetigsoModuleFactory extends ModuleFactory {
             }
         }
     } // end of BundleLoader
+
+    private void registerBundle(Module m) throws IOException {
+        InputStream is = fakeBundle(m);
+        if (is != null) {
+            try {
+                Bundle bundle;
+                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                activator.register(m);
+                is.close();
+            } catch (BundleException ex) {
+                throw new IOException(ex);
+            }
+        }
+    }
 }
