@@ -180,14 +180,13 @@ public class CheckoutPanel extends JPanel {
         );
         layout.linkSize(new Component[] {lblRepoFolders, lblLocalFolder});
 
-        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Foldres");
-        scanForProjectsCheckBox.getAccessibleContext().setAccessibleDescription(getString("ACSD_Scan_After_Checkout")); // NOI18N
-        lblRepoFolders.getAccessibleContext().setAccessibleDescription("Repository Folders to Checkout");
-        lblRepoRevision.getAccessibleContext().setAccessibleDescription("Repository Revision");
-        browseWorkdirButton.getAccessibleContext().setAccessibleDescription("Browse Local Directory");
-        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revision Number");
-        lblLocalFolder.getAccessibleContext().setAccessibleDescription("Local Folder");
-        atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription("Checkout only folder contents");
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Repository_Foldres")); //NOI18N
+        scanForProjectsCheckBox.getAccessibleContext().setAccessibleDescription(getString("ACSD_Scan_After_Checkout")); //NOI18N
+        lblRepoFolders.getAccessibleContext().setAccessibleDescription(getString("ASCD_Repository_Folders_to_Checkout"));    //NOI18N
+        lblRepoRevision.getAccessibleContext().setAccessibleDescription(getString("ASCD_Repository_Revision"));  //NOI18N
+        browseWorkdirButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Local_Directory"));   //NOI18N
+        searchRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Search_Revision_Number"));  //NOI18N
+        atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_only_folder_contents"));  //NOI18N
     }// </editor-fold>
 
     private static String getString(String msgKey) {
