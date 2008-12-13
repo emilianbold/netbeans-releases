@@ -111,7 +111,6 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(browseWorkdirButton, getString("CTL_Checkout_Browse2")); // NOI18N
         Mnemonics.setLocalizedText(lblWorkingCopy, getString("CTL_Checkout_LocalHint")); // NOI18N
 
-        scanForProjectsCheckBox.setMnemonic('c');
         scanForProjectsCheckBox.setSelected(true);
         scanForProjectsCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
