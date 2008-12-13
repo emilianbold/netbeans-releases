@@ -81,6 +81,8 @@ public class CreateTableDialog {
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    private static final String[] fixedTypes = {"java.sql.Types.INTEGER", "java.sql.Types.CHAR", "java.sql.Types.NCHAR", "java.sql.Types.DECIMAL", "java.sql.Types.NUMERIC", "java.sql.Types.BINARY"}; // NOI18N
+    private static final int SIZE_COL_INDEX = 6;
     private static Logger LOGGER = Logger.getLogger(
             CreateTableDialog.class.getName());
 
@@ -189,7 +191,7 @@ public class CreateTableDialog {
             constr.gridwidth = 4;
             constr.gridheight = 3;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            table = new DataTable(new DataModel());
+            table = new DataTable(new ColumnDataModel());
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             table.setToolTipText(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             table.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableColumnTableA11yName"));
@@ -441,6 +443,28 @@ public class CreateTableDialog {
 
     }
 
+    private class ColumnDataModel extends DataModel {
+        boolean isFixed = false;
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            if (column == SIZE_COL_INDEX) {
+                for (String fixedType : fixedTypes) {
+                    if (fixedType.equals(((TypeElement)table.getValueAt(row, column-1)).getType())) {
+                        isFixed = true;
+                    }
+                }
+            }
+
+            if (column == SIZE_COL_INDEX && isFixed) {
+                isFixed = false; // reset flag
+                return false;
+            }
+            return true;
+        }
+    }
+
+
     class ComboBoxEditor extends DefaultCellEditor {
         public ComboBoxEditor(final JComboBox jComboBox) {
             super(jComboBox);
@@ -456,6 +480,7 @@ public class CreateTableDialog {
 
     private static final class ListCellRendererImpl extends DefaultListCellRenderer {
         
+        @Override
         public Dimension getPreferredSize() {
             Dimension size = super.getPreferredSize();
             // hack to fix issue 65759
