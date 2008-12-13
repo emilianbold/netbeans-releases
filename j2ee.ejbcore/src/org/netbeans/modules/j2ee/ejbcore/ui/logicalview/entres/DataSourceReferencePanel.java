@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
@@ -172,6 +174,18 @@ public class DataSourceReferencePanel extends JPanel {
         });
         serverDsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
+                verify();
+            }
+        });
+
+        addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                verify();
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                verify();
+            }
+            public void ancestorMoved(AncestorEvent event) {
                 verify();
             }
         });

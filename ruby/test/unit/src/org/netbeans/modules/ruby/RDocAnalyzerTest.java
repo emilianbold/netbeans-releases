@@ -59,10 +59,6 @@ public final class RDocAnalyzerTest extends RubyTestBase {
         assertEquals("Got correct tyeps", Arrays.asList(expectedTypes), new ArrayList<String>(actualTypes));
     }
 
-    private void testPrint(Set<? extends String> actualTypes, String[] comment) {
-        System.out.println("assertTypes(\"" + actualTypes + "\", \"" + comment[0] + "\");");
-    }
-
     protected void checkTypesForComments(final String commentRelFilePath) throws Exception {
         File commentFile = new File(getDataDir(), commentRelFilePath);
         String fileUrl = commentFile.toURI().toURL().toExternalForm();
@@ -123,16 +119,18 @@ public final class RDocAnalyzerTest extends RubyTestBase {
                 "#");
     }
 
-    public void testModuleStub() throws Exception {
-        checkTypesForComments("testfiles/stub_module.rb.comments");
-    }
-
-    public void testStringStub() throws Exception {
-        checkTypesForComments("testfiles/stub_string.rb.comments");
-    }
-
-    public void testFixnumStub() throws Exception {
-        checkTypesForComments("testfiles/stub_fixnum.rb.comments");
+    /** all_stubs.rb was generated with:
+     * <pre>
+     *   findf | grep stub_ | xargs cat >> ~/tmp/all_stubs.rb.comments
+     *   gvim:
+     *     g!/.*#  .* => .*&#47;d
+     *     by macro convert each line to:
+     *       #  stub => str
+     *   cat ~/tmp/all_stubs.rb.comments | sort -k 12 | uniq > all_stubs.rb
+     * </pre>
+     */
+    public void testAllStubs() throws Exception {
+        checkTypesForComments("testfiles/all_stubs.rb.comments");
     }
 
 }
