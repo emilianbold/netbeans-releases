@@ -135,9 +135,11 @@
                         <file name="org-netbeans-modules-python-editor-hints-UnusedImports.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-UnusedDetector.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-UnresolvedDetector.instance"/>
+                        <file name="org-netbeans-modules-python-editor-hints-UnresolvedClassComponents.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-AllAssignExists.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-AccessToProtected.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-AttributeDefinedOutsideInit.instance"/>
+                        <file name="org-netbeans-modules-python-editor-hints-ClassCircularRedundancy.instance"/>
                     </folder>    
                 </folder>    
                 <folder name="selection">
