@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -70,7 +72,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 /**
  * @author Tomas Stupka
  */
-public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener {
+public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener, ItemListener {
 
     public static final String CHECKOUT_DIRECTORY = "checkoutStep.checkoutDirectory";
     
@@ -86,8 +88,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if (workdirPanel == null) {
             workdirPanel = new CheckoutPanel();
             workdirPanel.browseWorkdirButton.addActionListener(this);
-            workdirPanel.browseRepositoryButton.addActionListener(this);
-            workdirPanel.scanForProjectsCheckBox.addActionListener(this);
+            workdirPanel.scanForProjectsCheckBox.addItemListener(this);
                     
             workdirPanel.workdirTextField.setText(defaultWorkingDirectory().getPath());            
             workdirPanel.workdirTextField.getDocument().addDocumentListener(this);                
@@ -285,11 +286,13 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
         
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==workdirPanel.browseWorkdirButton) {            
-            onBrowseWorkdir();
-        } else if (e.getSource() == workdirPanel.scanForProjectsCheckBox) {
-            SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
-        }
+        assert e.getSource() == workdirPanel.browseWorkdirButton;
+        onBrowseWorkdir();
+    }
+
+    public void itemStateChanged(ItemEvent e) {
+        assert e.getSource() == workdirPanel.scanForProjectsCheckBox;
+        SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
     }
     
     public File getWorkdir() {
