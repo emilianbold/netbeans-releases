@@ -89,6 +89,8 @@ public class NetigsoTest extends SetupHid {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
+        NetigsoModuleFactory.clear();
+        
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
@@ -176,6 +178,32 @@ public class NetigsoTest extends SetupHid {
         } finally {
             if (both != null) {
                 mgr.disable(both);
+            }
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+
+    public void testLongDepsAreShortened() throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        Module m2 = null;
+        try {
+            String mfBar =
+                "OpenIDE-Module: org.bar/1\n" +
+                "OpenIDE-Module-Specification-Version: 2.3.0.42.2\n" +
+                "OpenIDE-Module-Name: Too many dots in version\n" +
+                "OpenIDE-Module-Public-Packages: org.bar.*\n" +
+                "some";
+
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            m2 = mgr.create(j2, null, false, false, false);
+            mgr.enable(m2);
+        } finally {
+            if (m2 != null) {
+                mgr.disable(m2);
             }
             mgr.mutexPrivileged().exitWriteAccess();
         }
