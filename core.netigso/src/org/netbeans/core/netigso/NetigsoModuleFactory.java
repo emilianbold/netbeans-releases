@@ -81,6 +81,11 @@ public class NetigsoModuleFactory extends ModuleFactory {
     private static NetigsoActivator activator;
     private static Felix felix;
 
+    static void clear() {
+        activator = null;
+        felix = null;
+    }
+
     @Override
     public Module create(
         File jar, Object history,
@@ -155,8 +160,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
         man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
-        SpecificationVersion spec = m.getSpecificationVersion();
-        if (spec != null) {
+        if (m.getSpecificationVersion() != null) {
+            String spec = just3Dots(m.getSpecificationVersion().toString());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
         }
         if (exp != null) {
@@ -167,6 +172,13 @@ public class NetigsoModuleFactory extends ModuleFactory {
         JarOutputStream jos = new JarOutputStream(os, man);
         jos.close();
         return new ByteArrayInputStream(os.toByteArray());
+    }
+
+    private static String just3Dots(String version) {
+        int first = version.indexOf('.');
+        int second = first >= 0 ? version.indexOf('.', first + 1) : -1;
+        int third = second >= 0 ? version.indexOf('.', second + 1) : -1;
+        return (third >= 0) ? version.substring(0, third) : version;
     }
 
     private static final class BundleModule extends Module {
