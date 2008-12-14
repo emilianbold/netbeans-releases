@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.api;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.api.lexer.Language;
@@ -126,4 +127,10 @@ public interface GsfLanguage {
      */
     @NonNull
     Map<String,String> getSourceGroupNames();
+
+    @NonNull
+    Set<String> getSourcePathIds();
+
+    @NonNull
+    Set<String> getBinaryPathIds();
 }

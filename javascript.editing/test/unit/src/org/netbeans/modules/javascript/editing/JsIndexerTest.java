@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.IndexDocument;
-
 /**
  * @author Tor Norbye
  */
@@ -78,69 +75,55 @@ public class JsIndexerTest extends JsTestBase {
         return value;
     }
 
-    protected IndexedElement findElement(List<IndexDocument> documents, String key, String valuePrefix, JsIndex index) {
-        for (IndexDocument document : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)document;
-            for (int i = 0, n = doc.indexedKeys.size(); i < n; i++) {
-                String k = doc.indexedKeys.get(i);
-                if (k.equals(key)) {
-                    String v = doc.indexedValues.get(i);
-                    if (v.startsWith(valuePrefix)) {
-                        return IndexedElement.create(valuePrefix, v, "file:/bogus", index, false);
-                    }
-                }
-            }
-        }
-        
-        return null;
-    }
-    
     public void testIsIndexable1() throws Exception {
         checkIsIndexable("testfiles/indexable/lib.js", true);
     }
-    
-    public void testIsIndexable2() throws Exception {
-        checkIsIndexable("testfiles/indexable/data.json", false);
-    }
-    
+
+// this test is obsolete JsIndexer will only ever run on snapshots with javascript mimetype
+//    public void testIsIndexable2() throws Exception {
+//        checkIsIndexable("testfiles/indexable/data.json", false);
+//    }
+
     public void testIsIndexable3() throws Exception {
         checkIsIndexable("testfiles/indexable/ext-all-debug.js", true);
         checkIsIndexable("testfiles/indexable/ext-all.js", false);
     }
-    
+
     public void testIsIndexable4() throws Exception {
         checkIsIndexable("testfiles/indexable/yui.js", false);
         checkIsIndexable("testfiles/indexable/yui-min.js", false);
         checkIsIndexable("testfiles/indexable/yui-debug.js", true);
     }
-    
-    public void testIsIndexable5() throws Exception {
-        checkIsIndexable("testfiles/indexable/index.html", true);
-        checkIsIndexable("testfiles/indexable/servlet.jsp", true);
-        checkIsIndexable("testfiles/indexable/view2.php", true);
-        checkIsIndexable("testfiles/indexable/view3.rhtml", true);
-    }
-    
+
+// this test is obsolete JsIndexer will only ever run on snapshots with javascript mimetype
+// if these files contain embedded javascript they will be indexed by JsIndexer
+//    public void testIsIndexable5() throws Exception {
+//        checkIsIndexable("testfiles/indexable/index.html", true);
+//        checkIsIndexable("testfiles/indexable/servlet.jsp", true);
+//        checkIsIndexable("testfiles/indexable/view2.php", true);
+//        checkIsIndexable("testfiles/indexable/view3.rhtml", true);
+//    }
+
     public void testIsIndexable6() throws Exception {
         checkIsIndexable("testfiles/indexable/dojo.js", false);
         checkIsIndexable("testfiles/indexable/dojo.uncompressed.js", true);
     }
-    
+
     public void testIsIndexable7() throws Exception {
         checkIsIndexable("testfiles/indexable/foo.js", true);
         checkIsIndexable("testfiles/indexable/foo.min.js", false);
     }
-    
+
     public void testIsIndexable8() throws Exception {
         checkIsIndexable("testfiles/indexable/doc.sdoc", true);
     }
-    
+
     public void testIsIndexableDeletedFiles() throws Exception {
         // isIndexable should return true for files that have been deleted as well
-        
+
         checkIsIndexable("testfiles/indexable/lib.js", true);
     }
-    
+
     public void testIsIndexableEverythingSdoc1() throws Exception {
         checkIsIndexable("testfiles/indexable/sdoconly/everything.sdoc", true);
     }
@@ -148,19 +131,20 @@ public class JsIndexerTest extends JsTestBase {
     public void testIsIndexableEverythingSdoc2() throws Exception {
         checkIsIndexable("testfiles/indexable/sdoconly/foo.js", false);
     }
-    
+
     // Not yet hooked up
     //public void testIsIndexable9() throws Exception {
     //    checkIsIndexable("testfiles/indexable/view.erb", true);
     //}
-    
-    public void testQueryPath() throws Exception {
-        JsIndexer indexer = new JsIndexer();
-        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
-        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
-        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
-    }
-    
+
+// XXX: parsingapi
+//    public void testQueryPath() throws Exception {
+//        JsIndexer indexer = new JsIndexer();
+//        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
+//        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
+//        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
+//    }
+
     public void testIndex0() throws Exception {
         checkIndexer("testfiles/prototype.js");
     }
@@ -168,7 +152,7 @@ public class JsIndexerTest extends JsTestBase {
     public void testIndexPrototypeNew() throws Exception {
         checkIndexer("testfiles/prototype-new.js");
     }
-    
+
     public void testIndex1() throws Exception {
         checkIndexer("testfiles/SpryEffects.js");
     }
@@ -294,7 +278,7 @@ public class JsIndexerTest extends JsTestBase {
 //        assertEquals(1, func.getArgs().length);
 //        assertEquals("canceller", func.getArgs()[0]);
 //    }
-    
+
     public void testOldPrototypes() throws Exception {
         checkIndexer("testfiles/oldstyle-prototype.js");
     }
@@ -306,7 +290,7 @@ public class JsIndexerTest extends JsTestBase {
     public void testFunctionStyle() throws Exception {
         checkIndexer("testfiles/class-via-function.js");
     }
-    
+
     public void testExtStyle() throws Exception {
         checkIndexer("testfiles/class-inheritance-ext.js");
     }
@@ -326,11 +310,11 @@ public class JsIndexerTest extends JsTestBase {
     public void testYahoo() throws Exception {
         checkIndexer("testfiles/yui.js");
     }
-    
+
     public void testYahooAnim() throws Exception {
         checkIndexer("testfiles/yui-anim.js");
     }
-    
+
     public void testTypes2() throws Exception {
         checkIndexer("testfiles/types2.js");
     }

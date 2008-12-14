@@ -41,20 +41,17 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test Add New XML Schema
  *
@@ -63,8 +60,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class AddNewXMLSchemaTest extends PerformanceTestCase {
     
     private NewFileNameLocationStepOperator location;
-    
-    private int index;
     
     /**
      * Creates a new instance of AddNewXMLSchema
@@ -97,8 +92,6 @@ public class AddNewXMLSchemaTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-        index=1;
-//        new CloseAllDocumentsAction().performAPI();
     }
 
     public void testAddNewXMLSchemaTest() {
@@ -107,7 +100,6 @@ public class AddNewXMLSchemaTest extends PerformanceTestCase {
     
     public void prepare(){
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
-        
         // Workaround for issue 143497
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
@@ -115,8 +107,6 @@ public class AddNewXMLSchemaTest extends PerformanceTestCase {
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("XML Schema"); //NOI18N
         wizard.next();
-        
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("XMLSchema_"+System.currentTimeMillis());
     }
@@ -129,6 +119,5 @@ public class AddNewXMLSchemaTest extends PerformanceTestCase {
     @Override
     public void close(){
     }
-    
  
 }

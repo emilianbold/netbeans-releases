@@ -1,6 +1,6 @@
 Code completion result for source line:
 my| //Foo
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     myFunc() : void                            test129036.js
 GLOBAL     myVar                                      test129036.js

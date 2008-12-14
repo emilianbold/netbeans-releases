@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -58,7 +59,6 @@ import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.editor.semantic.ColoringManager;
@@ -66,6 +66,7 @@ import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -96,7 +97,7 @@ public final class Language {
     private DeclarationFinder declarationFinder;
     private Formatter formatter;
     private KeystrokeHandler keystrokeHandler;
-    private Indexer indexer;
+    private EmbeddingIndexerFactory indexerFactory;
     private StructureScanner structure;
     private HintsProvider hintsProvider;
     private GsfHintsManager hintsManager;
@@ -118,7 +119,10 @@ public final class Language {
     private FileObject semanticFile;
     private FileObject occurrencesFile;
     private FileObject indexSearcherFile;
-    
+
+    private Set<String> sourcePathIds;
+    private Set<String> binaryPathIds;
+
     /** Creates a new instance of DefaultLanguage */
     public Language(String mime) {
         this.mime = mime;
@@ -127,7 +131,7 @@ public final class Language {
     /** For testing purposes only!*/
     public Language(String iconBase, String mime, List<Action> actions,
             GsfLanguage gsfLanguage, CodeCompletionHandler completionProvider, InstantRenamer renamer,
-            DeclarationFinder declarationFinder, Formatter formatter, KeystrokeHandler bracketCompletion, Indexer indexer,
+            DeclarationFinder declarationFinder, Formatter formatter, KeystrokeHandler bracketCompletion, EmbeddingIndexerFactory indexerFactory ,
             StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
         this.iconBase = iconBase;
         this.mime = mime;
@@ -138,7 +142,7 @@ public final class Language {
         this.declarationFinder = declarationFinder;
         this.formatter = formatter;
         this.keystrokeHandler = bracketCompletion;
-        this.indexer = indexer;
+        this.indexerFactory = indexerFactory;
         this.structure = structure;
 //        this.palette = palette;
         this.useCustomEditorKit = useCustomEditorKit;
@@ -441,22 +445,22 @@ public final class Language {
      * Get an associated indexer, if any
      */
     @CheckForNull
-    public Indexer getIndexer() {
-        if (indexer == null) {
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        if (indexerFactory == null) {
             if (indexerFile != null) {
-                indexer = (Indexer)createInstance(indexerFile);
-                if (indexer == null) {
+                indexerFactory = (EmbeddingIndexerFactory)createInstance(indexerFile);
+                if (indexerFactory == null) {
                     // Don't keep trying
                     indexerFile = null;
                 }
             } else {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
-                    indexer = languageConfig.getIndexer();
+                    indexerFactory = languageConfig.getIndexerFactory();
                 }
             }
         }
-        return indexer;
+        return indexerFactory;
     }
 
     void setIndexerFile(FileObject indexerFile) {
@@ -701,5 +705,25 @@ public final class Language {
 
     void setIndexSearcher(FileObject indexSearcherFile) {
         this.indexSearcherFile = indexSearcherFile;
+    }
+
+    public Set<String> getSourcePathIds() {
+        if (sourcePathIds == null) {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                sourcePathIds = languageConfig.getSourcePathIds();
+            }
+        }
+        return sourcePathIds;
+    }
+
+    public Set<String> getBinaryPathIds() {
+        if (binaryPathIds == null) {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                binaryPathIds = languageConfig.getBinaryPathIds();
+            }
+        }
+        return binaryPathIds;
     }
 }

@@ -92,11 +92,7 @@ import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.IndexDocument;
-import org.netbeans.modules.csl.api.IndexDocumentFactory;
-import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureItem;
@@ -111,6 +107,10 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -164,7 +164,13 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -198,7 +204,7 @@ public abstract class CslTestBase extends NbTestCase {
                     defaultLanguage, getCodeCompleter(),
                     getRenameHandler(), defaultLanguage.getDeclarationFinder(),
                     defaultLanguage.getFormatter(), getKeystrokeHandler(), 
-                    getIndexer(), getStructureScanner(), null, 
+                    getIndexerFactory(), getStructureScanner(), null,
                     defaultLanguage.isUsingCustomEditorKit());
             List<org.netbeans.modules.csl.core.Language> languages = new ArrayList<org.netbeans.modules.csl.core.Language>();
             languages.add(dl);
@@ -1322,31 +1328,46 @@ public abstract class CslTestBase extends NbTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // Indexing Tests
     ////////////////////////////////////////////////////////////////////////////
-    public Indexer getIndexer() {
-        Indexer handler = getPreferredLanguage().getIndexer();
-        assertNotNull("You must override getIndexer, either from your GsfLanguage or your test class", handler);
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        EmbeddingIndexerFactory handler = getPreferredLanguage().getIndexerFactory();
+        assertNotNull("You must override getIndexerFactory, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
-    protected List<IndexDocument> indexFile(String relFilePath) throws Exception {
-        Source testSource = getTestSource(getTestFile(relFilePath));
 
-        final Object [] ret = new Object [] { null };
+    private List<TestIndexDocumentImpl> indexFile(String relFilePath) throws Exception {
+        FileObject testSourceFile = getTestFile(relFilePath);
+        Source testSource = getTestSource(testSourceFile);
+
+        final Indexable indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(testSourceFile.getParent(), testSourceFile));
+        final EmbeddingIndexerFactory factory = getIndexerFactory();
+        assertNotNull("getIndexer must be implemented", factory);
+        File indexFolder = new File(getWorkDir(), "Indicies");
+        boolean created = indexFolder.mkdirs();
+        assertTrue("Can't create index folder: " + indexFolder.getAbsolutePath(), created);
+
+        TestIndexFactoryImpl tifi = new TestIndexFactoryImpl();
+        final Context context = SPIAccessor.getInstance().createContext(
+                FileUtil.toFileObject(indexFolder),
+                testSourceFile.getParent().getURL(),
+                factory.getIndexerName(),
+                factory.getIndexVersion(),
+                tifi
+        );
+        TestIndexFactoryImpl.map.put(context.getIndexFolder(), context.getRoot());
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
 
-                Indexer indexer = getIndexer();
-                assertNotNull("getIndexer must be implemented", indexer);
-                IndexDocumentFactory factory = new IndexDocumentFactoryImpl(/*info.getIndex(info.getPreferredMimeType())*/);
-                ret[0] = indexer.index((ParserResult) r, factory);
+                EmbeddingIndexer indexer = factory.createIndexer(indexable, r.getSnapshot());
+                assertNotNull("getIndexer must be implemented", factory);
+
+                SPIAccessor.getInstance().index(indexer, indexable, r, context);
             }
         });
 
-        @SuppressWarnings("unchecked")
-        List<IndexDocument> result = (List<IndexDocument>) ret[0];
-        return result == null ? Collections.<IndexDocument>emptyList() : result;
+        return ((TestIndexImpl) tifi.getIndex(context.getIndexFolder())).documents.get(indexable.getRelativePath());
     }
     
     protected void checkIndexer(String relFilePath) throws Exception {
@@ -1357,24 +1378,35 @@ public abstract class CslTestBase extends NbTestCase {
         if (index != -1) {
             localUrl = localUrl.substring(0, index);
         }
-        
-        List<IndexDocument> result = indexFile(relFilePath);
+
+        List<TestIndexDocumentImpl> result = indexFile(relFilePath);
         String annotatedSource = prettyPrint(result, localUrl);
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
     }
     
-    
     protected void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
-        Indexer indexer = getIndexer();
-        assertNotNull("getIndexer must be implemented", indexer);
-        FileObject fo = getTestFile(relFilePath);
+        final EmbeddingIndexerFactory factory = getIndexerFactory();
+        assertNotNull("getIndexerFactory must be implemented", factory);
+        final FileObject fo = getTestFile(relFilePath);
         assertNotNull(fo);
-        File file = FileUtil.toFile(fo);
-        
-        assertEquals(isIndexable, indexer.isIndexable(file));
+
+        final Boolean result [] = new Boolean [] { null };
+        Source testSource = getTestSource(fo);
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = resultIterator.getParserResult();
+                EmbeddingIndexer indexer = factory.createIndexer(
+                    SPIAccessor.getInstance().create(new FileObjectIndexable(fo.getParent(), fo)),
+                    r.getSnapshot());
+                result[0] = Boolean.valueOf(indexer != null);
+            }
+        });
+
+        assertNotNull(result[0]);
+        assertEquals(isIndexable, result[0].booleanValue());
     }
-    
+
     private String sortCommaList(String s) {
         String[] items = s.split(",");
         Arrays.sort(items);
@@ -1393,23 +1425,16 @@ public abstract class CslTestBase extends NbTestCase {
         return value;
     }
     
-    private String prettyPrint(List<IndexDocument> documents, String localUrl) throws IOException {
+    private String prettyPrint(List<TestIndexDocumentImpl> documents, String localUrl) throws IOException {
         List<String> nonEmptyDocuments = new ArrayList<String>();
         List<String> emptyDocuments = new ArrayList<String>();
 
         StringBuilder sb = new StringBuilder();
 
-        for (IndexDocument d : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)d;
-        
+        for (TestIndexDocumentImpl doc : documents) {
+
             sb = new StringBuilder();
-            
-            if (doc.overrideUrl != null) {
-                sb.append("Override URL: ");
-                sb.append(doc.overrideUrl);
-                sb.append("\n");
-            }
-                            
+
             sb.append("Searchable Keys:");
             sb.append("\n");
             List<String> strings = new ArrayList<String>();
@@ -1479,44 +1504,30 @@ public abstract class CslTestBase extends NbTestCase {
 
         return sb.toString().replace(localUrl, "<TESTURL>");
     }
-        
-        
-    public class IndexDocumentImpl implements IndexDocument {
-        public List<String> indexedKeys = new ArrayList<String>();
-        public List<String> indexedValues = new ArrayList<String>();
-        public List<String> unindexedKeys = new ArrayList<String>();
-        public List<String> unindexedValues = new ArrayList<String>();
 
-        public String overrideUrl;
-
-        private IndexDocumentImpl(String overrideUrl) {
-            this.overrideUrl = overrideUrl;
-        }
-
-        public void addPair(String key, String value, boolean indexed) {
-            if (indexed) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-    }
-
-    private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-        private IndexDocumentFactoryImpl() {
-        }
-
-        public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(null);
-        }
-
-        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
-            return new IndexDocumentImpl(overrideUrl);
-        }
-    }
-
+//    public class IndexDocumentImpl extends IndexDocument {
+//        public List<String> indexedKeys = new ArrayList<String>();
+//        public List<String> indexedValues = new ArrayList<String>();
+//        public List<String> unindexedKeys = new ArrayList<String>();
+//        public List<String> unindexedValues = new ArrayList<String>();
+//
+//        public String overrideUrl;
+//
+//        private IndexDocumentImpl(String overrideUrl) {
+//            this.overrideUrl = overrideUrl;
+//        }
+//
+//        public void addPair(String key, String value, boolean indexed) {
+//            if (indexed) {
+//                indexedKeys.add(key);
+//                indexedValues.add(value);
+//            } else {
+//                unindexedKeys.add(key);
+//                unindexedValues.add(value);
+//            }
+//        }
+//    }
+//
     ////////////////////////////////////////////////////////////////////////////
     // Structure Analyzer Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -2085,7 +2096,7 @@ public abstract class CslTestBase extends NbTestCase {
         return s.substring(prevLineBegin, offset)+"|"+s.substring(offset, nextLineEnd);
     }
 
-    private String describeCompletion(String caretLine, String text, int caretOffset, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
+    private String describeCompletion(String caretLine, String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type, List<CompletionProposal> proposals,
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
         StringBuilder sb = new StringBuilder();
@@ -2095,7 +2106,7 @@ public abstract class CslTestBase extends NbTestCase {
             sourceLine = getSourceWindow(text, caretOffset);
         }
         sb.append(sourceLine);
-        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n(QueryType=" + type + ", prefixSearch=" + prefixSearch + ", caseSensitive=" + caseSensitive + ")");
         sb.append("\n");
 
         // Sort to make test more stable
@@ -2245,7 +2256,6 @@ public abstract class CslTestBase extends NbTestCase {
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
-        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
         Source testSource = getTestSource(getTestFile(file));
 
@@ -2311,8 +2321,8 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     @Override
-                    public NameKind getNameKind() {
-                        return kind;
+                    public boolean isPrefixMatch() {
+                        return true;
                     }
 
                     @Override
@@ -2379,7 +2389,7 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 };
 
-                String described = describeCompletion(caretLine, pr.getSnapshot().getText().toString(), caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder, formatter);
+                String described = describeCompletion(caretLine, pr.getSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".completion");
             }
         });
@@ -2391,7 +2401,6 @@ public abstract class CslTestBase extends NbTestCase {
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
-        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
         Source testSource = getTestSource(getTestFile(file));
 
@@ -2457,8 +2466,8 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     @Override
-                    public NameKind getNameKind() {
-                        return kind;
+                    public boolean isPrefixMatch() {
+                        return false;
                     }
 
                     @Override
@@ -2538,13 +2547,13 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 };
                 
-                String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, kind, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
+                String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, false, caseSensitive, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".html");
             }
         });
     }
     
-    private String describeCompletionDoc(String text, int caretOffset, NameKind kind, QueryType type, 
+    private String describeCompletionDoc(String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type,
              CompletionProposal proposal, String documentation,
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
@@ -2558,7 +2567,7 @@ public abstract class CslTestBase extends NbTestCase {
             sourceLine = getSourceWindow(text, caretOffset);
         }
         sb.append(sourceLine);
-        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n(QueryType=" + type + ", prefixSearch=" + prefixSearch + ", caseSensitive=" + caseSensitive + ")");
         sb.append("\n");
 
         boolean isSmart = true;
@@ -3984,4 +3993,129 @@ public abstract class CslTestBase extends NbTestCase {
             throw new IllegalStateException("Can't enforce caret offset on " + source, e);
         }
     }
+
+    private static final class TestIndexFactoryImpl implements IndexFactoryImpl {
+        // --------------------------------------------------------------------
+        // IndexFactoryImpl implementation
+        // --------------------------------------------------------------------
+
+        public IndexDocumentImpl createDocument(Indexable indexable) {
+            return new TestIndexDocumentImpl(indexable);
+        }
+
+        public IndexImpl createIndex(Context ctx) throws IOException {
+            TestIndexImpl tii = new TestIndexImpl();
+            indicies.put(ctx.getRoot(), tii);
+            map.put(ctx.getIndexFolder(), ctx.getRoot());
+            return tii;
+        }
+
+        public IndexImpl getIndex(FileObject indexFolder) throws IOException {
+            FileObject root = map.get(indexFolder);
+            return root != null ? indicies.get(root) : null;
+        }
+
+        // indexFolder -> root
+        private static final Map<FileObject, FileObject> map = new HashMap<FileObject, FileObject>();
+
+        // root -> index
+        private static final Map<FileObject, TestIndexImpl> indicies = new HashMap<FileObject, TestIndexImpl>();
+    } // End of TestIndexFactoryImpl class
+
+    private static final class TestIndexImpl implements IndexImpl {
+        // --------------------------------------------------------------------
+        // IndexImpl implementation
+        // --------------------------------------------------------------------
+
+        public void addDocument(IndexDocumentImpl document) {
+            assert document instanceof TestIndexDocumentImpl;
+            TestIndexDocumentImpl tidi = (TestIndexDocumentImpl) document;
+            List<TestIndexDocumentImpl> list = documents.get(tidi.getIndexable().getRelativePath());
+            if (list == null) {
+                list = new ArrayList<TestIndexDocumentImpl>();
+                documents.put(tidi.getIndexable().getRelativePath(), list);
+            }
+            list.add(tidi);
+        }
+
+        public void removeDocument(String relativePath) {
+            Collection<String> toRemove = new HashSet<String>();
+            for(String rp : documents.keySet()) {
+                if (rp.equals(relativePath)) {
+                    toRemove.add(rp);
+                }
+            }
+            documents.keySet().removeAll(toRemove);
+        }
+
+        public void store() throws IOException {
+            // no-op
+        }
+
+        public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) {
+            Set<TestIndexDocumentImpl> docs = new HashSet<TestIndexDocumentImpl>();
+            for(List<TestIndexDocumentImpl> list : documents.values()) {
+                for(TestIndexDocumentImpl tidi : list) {
+                    if (org.openide.util.Utilities.compareObjects(tidi.getValue(fieldName), value)) {
+                        docs.add(tidi);
+                    }
+                }
+            }
+            return docs;
+        }
+
+        // --------------------------------------------------------------------
+        // private implementation
+        // --------------------------------------------------------------------
+
+        private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
+
+    } // End of TestIndexImpl class
+
+    private static final class TestIndexDocumentImpl implements IndexDocumentImpl {
+
+        public final List<String> indexedKeys = new ArrayList<String>();
+        public final List<String> indexedValues = new ArrayList<String>();
+        public final List<String> unindexedKeys = new ArrayList<String>();
+        public final List<String> unindexedValues = new ArrayList<String>();
+
+        private final Indexable indexable;
+
+        public TestIndexDocumentImpl(Indexable indexable) {
+            this.indexable = indexable;
+        }
+
+        public Indexable getIndexable() {
+            return indexable;
+        }
+
+        public void addPair(String key, String value, boolean searchable, boolean stored) {
+            if (searchable) {
+                indexedKeys.add(key);
+                indexedValues.add(value);
+            } else {
+                unindexedKeys.add(key);
+                unindexedValues.add(value);
+            }
+        }
+
+        public String getValue(String key) {
+            for(int i = 0; i < indexedKeys.size(); i++) {
+                if (indexedKeys.get(i).equals(key)) {
+                    return indexedValues.get(i);
+                }
+            }
+            return null;
+        }
+
+        public String[] getValues(String key) {
+            String value = getValue(key);
+            return value == null ? null : new String [] { value };
+        }
+
+        public String getSourceName() {
+            return indexable.getRelativePath();
+        }
+
+    } // End of TestIndexFactoryImpl class
 }

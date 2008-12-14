@@ -53,7 +53,6 @@ import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -63,10 +62,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -116,13 +117,12 @@ public class JsDeclarationFinder implements DeclarationFinder {
     @CheckForNull
     IndexedFunction findMethodDeclaration(ParserResult info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
         JsParseResult jspr = AstUtilities.getParseResult(info);
-        // XXX: parsingapi
-        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
         Set<IndexedElement> functions = null;
 
         String fqn = JsTypeAnalyzer.getCallFqn(jspr, call, true);
         if (fqn != null) {
-            functions = index.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, jspr);
+            functions = index.getElementsByFqn(fqn, QuerySupport.Kind.EXACT, jspr);
             // Prefer methods/constructors
             if (functions.size() > 0) {
                 Set<IndexedElement> filtered = new DuplicateElementSet(functions.size());
@@ -141,8 +141,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         if (functions == null || functions.size() == 0) {
             String prefix = AstUtilities.getCallName(call, false);
             if (prefix.length() > 0) {
-                functions = index.getAllNames(prefix,
-                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, jspr);
+                functions = index.getAllNames(prefix, QuerySupport.Kind.EXACT, jspr);
             }
         }
 
@@ -266,10 +265,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                // XXX: parsingapi
-                JsIndex index = null;//JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-                Set<IndexedElement> elements = index.getAllNames(prefix,
-                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+                JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
+                Set<IndexedElement> elements = index.getAllNames(prefix, QuerySupport.Kind.EXACT, parseResult);
 
                 String name = null; // unused!
                 return getMethodDeclaration(parseResult, name, elements, node, index/*, astOffset, lexOffset*/);
@@ -291,11 +288,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     @NonNull
     DeclarationLocation findLinkedMethod(JsParseResult info, String url) {
-        // XXX: parsingapi
-        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
-        Set<IndexedElement> elements = index.getAllNames(url,
-                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+        Set<IndexedElement> elements = index.getAllNames(url, QuerySupport.Kind.EXACT, parseResult);
         IndexedElement function = findBestElementMatch(info, elements, null, null);
         if (function != null) {
             return new DeclarationLocation(function.getFileObject(), 0, function);
@@ -337,7 +332,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     // Numeric::foo.
                     if (index != null && candidates.size() < elements.size()) {
                         // Repeat looking in the superclass
-                        fqn = index.getExtends(fqn, JsIndex.ALL_SCOPE);
+                        fqn = index.getExtends(fqn);
                     } else {
                         fqn = null;
                     }

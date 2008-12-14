@@ -59,7 +59,6 @@ import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.source.usages.ClassIndexManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -230,7 +229,8 @@ public class LanguageRegistry implements Iterable<Language> {
                             }
                             URL url = FileUtil.toFile(fo).toURI().toURL();
                             urls.add(url);
-                            ClassIndexManager.get(language).addBootRoot(url);
+// XXX: parsingapi: classpath, libraries and shit
+//                            ClassIndexManager.get(language).addBootRoot(url);
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

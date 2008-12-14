@@ -45,9 +45,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.SwingUtilities;
@@ -56,9 +63,21 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.PathRecognizerImpl;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -70,20 +89,22 @@ import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
+import org.openide.util.UserQuestionException;
 
 /**
  * Misc utilities to avoid code duplication among the various language plugins
  *
  * @author Tor Norbye
  */
-public class GsfUtilities {
+public final class GsfUtilities {
+    private static final Logger LOG = Logger.getLogger(GsfUtilities.class.getName());
+
     private GsfUtilities() { // Utility class only, no instances
     }
 
@@ -91,8 +112,7 @@ public class GsfUtilities {
         try {
             return IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, offset));
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
+            LOG.log(Level.WARNING, null, ble);
             return 0;
         }
     }
@@ -203,16 +223,21 @@ public class GsfUtilities {
         }
 
         try {
-            DataObject dobj = DataObject.find(fileObject);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fileObject, EditorCookie.class);
             if (ec != null) {
-                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
+                if (openIfNecessary) {
+                    try {
+                        return (BaseDocument) ec.openDocument();
+                    } catch (UserQuestionException uqe) {
+                        uqe.confirmed();
+                        return (BaseDocument) ec.openDocument();
+                    }
+                } else {
+                    return (BaseDocument) ec.getDocument();
+                }
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.WARNING, null, ex);
         }
 
         return null;
@@ -284,7 +309,7 @@ public class GsfUtilities {
                         offset += caretDelta;
                     }
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    LOG.log(Level.WARNING, null, ble);
                 }
             }
 
@@ -596,4 +621,118 @@ public class GsfUtilities {
     }
 
     private static final Map<Source, Integer> enforcedCaretOffsets = new WeakHashMap<Source, Integer>();
+
+    public static Collection<FileObject> getRoots(FileObject f, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
+        Collection<FileObject> roots = null;
+
+        Project p = FileOwnerQuery.getOwner(f);
+        if (p != null) {
+            Sources sources = ProjectUtils.getSources(p);
+            SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            for(SourceGroup group : sourceGroups) {
+                if (FileUtil.isParentOf(group.getRootFolder(), f)) {
+                    roots = new HashSet<FileObject>();
+
+                    // Collect source path roots
+                    if (sourcePathIds == null) {
+                        roots.add(group.getRootFolder());
+                    } else {
+                        collectClasspathRoots(group.getRootFolder(), sourcePathIds, false, roots);
+                    }
+
+                    // Collect binary path roots
+                    collectClasspathRoots(
+                        group.getRootFolder(),
+                        binaryPathIds != null ? binaryPathIds : PathRecognizerImpl.getInstance().getBinaryPathIds(),
+                        true,
+                        roots);
+
+                    break;
+                }
+            }
+        }
+
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(f.getMIMEType());
+        if (l != null) {
+            if (roots == null) {
+                roots = l.getGsfLanguage().getCoreLibraries();
+            } else {
+                roots.addAll(l.getGsfLanguage().getCoreLibraries());
+            }
+        }
+        
+        return roots != null ? roots : Collections.<FileObject>emptySet();
+    }
+
+    public static Collection<FileObject> getRoots(Project project, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
+        Set<FileObject> roots = new HashSet<FileObject>();
+
+        if (sourcePathIds == null) {
+            sourcePathIds = PathRecognizerImpl.getInstance().getSourcePathIds();
+        }
+
+        if (binaryPathIds == null) {
+            binaryPathIds = PathRecognizerImpl.getInstance().getBinaryPathIds();
+        }
+
+        if (project != null) {
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            for(SourceGroup group : sourceGroups) {
+                collectClasspathRoots(group.getRootFolder(), sourcePathIds, false, roots);
+                collectClasspathRoots(group.getRootFolder(), binaryPathIds, true, roots);
+            }
+        } else {
+            collectClasspathRoots(null, sourcePathIds, false, roots);
+            collectClasspathRoots(null, binaryPathIds, true, roots);
+        }
+
+        return roots;
+    }
+
+    public static void collectClasspathRoots(FileObject sourcesRoot, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
+        for(String id : pathIds) {
+            Collection<FileObject> classpathRoots = getClasspathRoots(sourcesRoot, id);
+            if (binaryPaths) {
+                // Filter out roots that do not have source files available
+                for(FileObject f : classpathRoots) {
+                    SourceForBinaryQuery.Result2 result;
+                    try {
+                        result = SourceForBinaryQuery.findSourceRoots2(f.getURL());
+                    } catch (FileStateInvalidException fsie) {
+                        LOG.warning("Ignoring invalid binary Path root: " + f.getPath()); //NOI18N
+                        LOG.log(Level.FINE, null, fsie);
+                        continue;
+                    }
+
+                    if (result.preferSources() && result.getRoots().length == 0) {
+                        roots.addAll(Arrays.asList(result.getRoots()));
+                    } else {
+                        roots.add(f);
+                    }
+                }
+            } else {
+                roots.addAll(classpathRoots);
+            }
+        }
+    }
+
+    private static Collection<FileObject> getClasspathRoots(FileObject sourcesRoot, String classpathId) {
+        Collection<FileObject> roots = Collections.<FileObject>emptySet();
+
+        if (sourcesRoot != null) {
+            ClassPath classpath = ClassPath.getClassPath(sourcesRoot, classpathId);
+            if (classpath != null) {
+                roots = Arrays.asList(classpath.getRoots());
+            }
+        } else {
+            roots = new HashSet<FileObject>();
+            Set<ClassPath> classpaths = GlobalPathRegistry.getDefault().getPaths(classpathId);
+            for(ClassPath classpath : classpaths) {
+                roots.addAll(Arrays.asList(classpath.getRoots()));
+            }
+        }
+
+        return roots;
+    }
 }

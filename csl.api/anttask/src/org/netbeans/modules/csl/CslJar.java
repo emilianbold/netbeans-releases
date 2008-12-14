@@ -625,5 +625,10 @@ public class CslJar extends JarWithModuleAttributes {
         // Code Template Filters
         Element codeFilter = mkdirs(mimeFolder, "CodeTemplateFilterFactories"); // NOI18N
         item = createFile(doc, codeFilter, "org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"); // NOI18N
+
+        // Indexer factory
+        item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance"); // NOI18N
+        setFileAttribute(doc, item, "instanceCreate", "methodvalue", "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
+        setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
     }
 }

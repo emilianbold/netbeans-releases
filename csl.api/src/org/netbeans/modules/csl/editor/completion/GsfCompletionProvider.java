@@ -67,7 +67,6 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -477,14 +476,14 @@ public class GsfCompletionProvider implements CompletionProvider {
             private final int caretOffset;
             private final ParserResult info;
             private final String prefix;
-            private final NameKind kind;
+            private final boolean prefixMatch;
             private final QueryType queryType;
 
-            public CodeCompletionContextImpl(int caretOffset, ParserResult info, String prefix, NameKind kind, QueryType queryType) {
+            public CodeCompletionContextImpl(int caretOffset, ParserResult info, String prefix, boolean prefixMatch, QueryType queryType) {
                 this.caretOffset = caretOffset;
                 this.info = info;
                 this.prefix = prefix;
-                this.kind = kind;
+                this.prefixMatch = prefixMatch;
                 this.queryType = queryType;
             }
 
@@ -504,13 +503,13 @@ public class GsfCompletionProvider implements CompletionProvider {
             }
 
             @Override
-            public NameKind getNameKind() {
-                return kind;
+            public QueryType getQueryType() {
+                return queryType;
             }
 
             @Override
-            public QueryType getQueryType() {
-                return queryType;
+            public boolean isPrefixMatch() {
+                return prefixMatch;
             }
 
             @Override
@@ -539,7 +538,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 CodeCompletionHandler completer = env.getCompletable();
 
                 if (completer != null) {
-                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION);
+                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, false, QueryType.DOCUMENTATION);
                     CodeCompletionResult result = completer.complete(context);
                     if (result == null) {
                         Logger.getLogger(this.getClass().getName()).log(Level.WARNING, completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null");
@@ -587,9 +586,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         }
         
         private void addCodeCompletionItems(ParserResult controller, CodeCompletionHandler completer, int offset, String prefix) {
-            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
-                    isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
-                    QueryType.COMPLETION);
+            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, true, QueryType.COMPLETION);
             CodeCompletionResult result = completer.complete(context);
 
             if (result == null) {

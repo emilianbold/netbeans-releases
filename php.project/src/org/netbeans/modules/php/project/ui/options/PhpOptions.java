@@ -59,6 +59,7 @@ public final class PhpOptions {
 
     // these constants are used in API javadoc so therefore public modifier
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
+    public static final String DEFAULT_DEBUGGER_SESSION_ID = "netbeans-xdebug"; // NOI18N
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
 
     // php cli
@@ -69,6 +70,7 @@ public final class PhpOptions {
 
     // debugger
     public static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
+    public static final String PHP_DEBUGGER_SESSION_ID = "phpDebuggerSessionId"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
 
     // global include path
@@ -143,6 +145,14 @@ public final class PhpOptions {
 
     public void setDebuggerPort(int debuggerPort) {
         getPreferences().putInt(PHP_DEBUGGER_PORT, debuggerPort);
+    }
+
+    public String getDebuggerSessionId() {
+        return getPreferences().get(PHP_DEBUGGER_SESSION_ID, DEFAULT_DEBUGGER_SESSION_ID);
+    }
+
+    public void setDebuggerSessionId(String sessionId) {
+        getPreferences().put(PHP_DEBUGGER_SESSION_ID, sessionId);
     }
 
     public boolean isDebuggerStoppedAtTheFirstLine() {
