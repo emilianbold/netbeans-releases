@@ -50,14 +50,15 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ParameterInfo;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.awt.HtmlBrowser;
 
 /**
  * A GSF-based code completion provider for HTML. 
@@ -77,13 +78,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 public class HtmlGsfCompletionHandler implements CodeCompletionHandler {
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        Document document = context.getInfo().getDocument();
-        if (document != null && document instanceof BaseDocument) {
-            final BaseDocument doc = (BaseDocument) document;
-
-            doc.readLock(); // Read-lock due to Token hierarchy use
-            try {
-                TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
+                TokenHierarchy tokenHierarchy = TokenHierarchy.create(context.getParserResult().getSnapshot().getText(), HTMLTokenId.language());
                 TokenSequence ts = tokenHierarchy.tokenSequence();
                 int offset = context.getCaretOffset();
                 ts.move(offset);
@@ -128,15 +123,11 @@ public class HtmlGsfCompletionHandler implements CodeCompletionHandler {
                         }
                     }
                 }
-            } finally {
-                doc.readUnlock();
-            }
-        }
 
         return CodeCompletionResult.NONE;
     }
 
-    public String document(CompilationInfo info, ElementHandle element) {
+    public String document(ParserResult info, ElementHandle element) {
         return null;
     }
 
@@ -144,7 +135,7 @@ public class HtmlGsfCompletionHandler implements CodeCompletionHandler {
         return null;
     }
 
-    public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
+    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         return null;
     }
 
@@ -152,15 +143,15 @@ public class HtmlGsfCompletionHandler implements CodeCompletionHandler {
         return QueryType.NONE;
     }
 
-    public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
+    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return null;
     }
 
-    public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
+    public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
     }
 }

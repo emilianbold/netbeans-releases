@@ -40,16 +40,18 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.Map;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
  * @author marek
  */
-public class CSSOccurancesFinder implements OccurrencesFinder {
+public class CSSOccurancesFinder extends OccurrencesFinder {
 
     public void setCaretPosition(int position) {
         
@@ -60,11 +62,23 @@ public class CSSOccurancesFinder implements OccurrencesFinder {
     }
 
     public void cancel() {
-        
+        //ignore
     }
 
-    public void run(CompilationInfo parameter) throws Exception {
-        
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
+        //do nothing
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return null;
     }
 
 }

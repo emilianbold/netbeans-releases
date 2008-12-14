@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;

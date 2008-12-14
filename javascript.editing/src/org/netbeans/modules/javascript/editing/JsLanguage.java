@@ -45,19 +45,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 
@@ -66,6 +65,8 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
  *
  * @author Tor Norbye
  */
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -94,7 +95,8 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public Collection<FileObject> getCoreLibraries() {
-        return Collections.singletonList(getJsStubs());
+        FileObject f = getJsStubs();
+        return f != null ? Collections.singleton(f) : Collections.<FileObject>emptySet();
     }
 
     // TODO - add classpath recognizer for these ? No, don't need go to declaration inside these files...
@@ -149,6 +151,23 @@ public class JsLanguage extends DefaultLanguageConfig {
         return sourceGroups;
     }
 
+    @Override
+    public Set<String> getBinaryPathIds() {
+        // We don't really have libraries in binary form. IDE bundled javascript
+        // libraries are simply extracted to a project among its original sources
+        // in a special folder.
+        return Collections.<String>emptySet();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        // We don't have our own source path id, because javascript files can be
+        // anywhere in a project. So, for index search we will use all available
+        // sourcepath ids.
+        return null;
+    }
+
+
     // Service Registrations
     
     @Override
@@ -187,8 +206,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Indexer getIndexer() {
-        return new JsIndexer();
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new JsIndexer.Factory();
     }
 
     @Override

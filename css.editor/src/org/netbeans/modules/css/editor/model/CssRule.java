@@ -41,9 +41,8 @@
 
 package org.netbeans.modules.css.editor.model;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
+import java.util.List;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Immutable content of a CSS rule.
@@ -57,24 +56,23 @@ import javax.swing.text.Position;
  */
 public class CssRule {
 
-    private Position ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
-    //private int ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
+    private int ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
     private String ruleName;
-    private CssRuleContent styleData;
+    private List<CssRuleItem> items;
     
-    public CssRule(Document doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset,CssRuleContent styleData) throws BadLocationException {
+    public CssRule(Snapshot doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset, List<CssRuleItem> items) {
         this.ruleName = ruleName;
-        this.ruleNameOffset = doc == null ? new SimplePosition(ruleNameOffset) : doc.createPosition(ruleNameOffset);
-        this.ruleOpenBracketOffset = doc == null ? new SimplePosition(ruleOpenBracketOffset) : doc.createPosition(ruleOpenBracketOffset);
-        this.ruleCloseBracketOffset = doc == null ? new SimplePosition(ruleCloseBracketOffset) : doc.createPosition(ruleCloseBracketOffset);
-        this.styleData = styleData;
+        this.ruleNameOffset = ruleNameOffset;
+        this.ruleOpenBracketOffset = ruleOpenBracketOffset;
+        this.ruleCloseBracketOffset = ruleCloseBracketOffset;
+        this.items = items;
     }
 
     /** @return an instance of {@link CssRuleContent} which represents the items inside the css rule.
      * It also allows to listen on the changes in the rule items.
      */
-    public CssRuleContent ruleContent() {
-        return styleData;
+    public List<CssRuleItem> items() {
+        return items;
     }
     
     /** @return the css rule name */
@@ -84,60 +82,22 @@ public class CssRule {
 
     /** @return offset of the rule name in the model's document. */
     public int getRuleNameOffset() {
-        return ruleNameOffset.getOffset();
+        return ruleNameOffset;
     }
     
     /** @return offset of the rule's closing bracket in the model's document. */
     public int getRuleCloseBracketOffset() {
-        return ruleCloseBracketOffset.getOffset();
+        return ruleCloseBracketOffset;
     }
 
     /** @return offset of the rule's opening bracket in the model's document. */
     public int getRuleOpenBracketOffset() {
-        return ruleOpenBracketOffset.getOffset();
+        return ruleOpenBracketOffset;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof CssRule) {
-            CssRule r = (CssRule)obj;
-            if(name().equals(r.name()) 
-                    && getRuleNameOffset() == r.getRuleNameOffset() 
-                    && getRuleCloseBracketOffset() == r.getRuleCloseBracketOffset() 
-                    && getRuleOpenBracketOffset() == r.getRuleOpenBracketOffset()
-                    && ruleContent().equals(r.ruleContent())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 17 * hash + (this.ruleNameOffset != null ? this.ruleNameOffset.hashCode() : 0);
-        hash = 17 * hash + (this.ruleOpenBracketOffset != null ? this.ruleOpenBracketOffset.hashCode() : 0);
-        hash = 17 * hash + (this.ruleCloseBracketOffset != null ? this.ruleCloseBracketOffset.hashCode() : 0);
-        hash = 17 * hash + (this.ruleName != null ? this.ruleName.hashCode() : 0);
-        hash = 17 * hash + (this.styleData != null ? this.styleData.hashCode() : 0);
-        return hash;
-    }
-
-    
-    
     @Override
     public String toString() {
-        return "CssRule[" + name() + "\n" + ruleContent().toString() + "]"; //NOI18N
-    }
-    
-    static class SimplePosition implements Position {
-        private int offset;
-        SimplePosition(int offset) {
-            this.offset = offset;
-        }
-        public int getOffset() {
-            return offset;
-        }
+        return "CssRule[" + name() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
     }
     
 }

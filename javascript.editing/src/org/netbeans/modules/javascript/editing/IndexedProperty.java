@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -47,8 +48,8 @@ import org.netbeans.modules.gsf.api.ElementKind;
  */
 public class IndexedProperty extends IndexedElement {
     
-    IndexedProperty(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
+    IndexedProperty(String fqn, String name, String in, JsIndex index, IndexResult indexResult, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, indexResult, attributes, flags, kind);
     }
     
     @Override

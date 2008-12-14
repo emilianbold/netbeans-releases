@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+
 
 /**
  *
@@ -69,5 +70,7 @@ public class JsDeclarationFinderTest extends JsTestBase {
     public void testDeclaration3() throws Exception {
         // Make sure there is no assertion
         DeclarationLocation loc = findDeclaration("testfiles/issue149795.js", ".^x");
+
+        // XXX: Huh, what is this testing ??
     }
 }
