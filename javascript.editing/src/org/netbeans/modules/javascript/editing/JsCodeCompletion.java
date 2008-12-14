@@ -72,6 +72,7 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
@@ -344,8 +345,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             request.result = parseResult;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            // XXX: parsingapi
-            request.index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+            request.index = JsIndex.get(GsfUtilities.getRoots(fileObject, null, Collections.<String>emptySet()));
             request.doc = doc;
             request.info = AstUtilities.getParseResult(info);
             request.prefix = prefix;

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -94,7 +95,8 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public Collection<FileObject> getCoreLibraries() {
-        return Collections.singletonList(getJsStubs());
+        FileObject f = getJsStubs();
+        return f != null ? Collections.singleton(f) : Collections.<FileObject>emptySet();
     }
 
     // TODO - add classpath recognizer for these ? No, don't need go to declaration inside these files...
@@ -148,6 +150,23 @@ public class JsLanguage extends DefaultLanguageConfig {
         
         return sourceGroups;
     }
+
+    @Override
+    public Set<String> getBinaryPathIds() {
+        // We don't really have libraries in binary form. IDE bundled javascript
+        // libraries are simply extracted to a project among its original sources
+        // in a special folder.
+        return Collections.<String>emptySet();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        // We don't have our own source path id, because javascript files can be
+        // anywhere in a project. So, for index search we will use all available
+        // sourcepath ids.
+        return null;
+    }
+
 
     // Service Registrations
     

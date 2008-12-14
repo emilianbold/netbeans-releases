@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.spi;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -97,7 +98,15 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     }
 
     public Map<String,String> getSourceGroupNames() {
-        return Collections.emptyMap();
+        return Collections.<String, String>emptyMap();
+    }
+
+    public Set<String> getBinaryPathIds() {
+        return Collections.<String>emptySet();
+    }
+
+    public Set<String> getSourcePathIds() {
+        return null;
     }
 
     /** 

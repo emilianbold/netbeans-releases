@@ -42,9 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -61,7 +59,6 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -78,6 +75,8 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class JsTypeSearcher implements IndexSearcher {
+    private static final Logger LOG = Logger.getLogger(JsTypeSearcher.class.getName());
+    
     public JsTypeSearcher() {
     }
     
@@ -132,13 +131,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        QuerySupport querySupport;
-        try {
-            querySupport = QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()]));
-        } catch (IOException ioe) {
-            return Collections.<Descriptor>emptySet();
-        }
-        JsIndex index = JsIndex.get(querySupport);
+        JsIndex index = JsIndex.get(roots);
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
@@ -247,13 +240,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        QuerySupport querySupport;
-        try {
-            querySupport = QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()]));
-        } catch (IOException ioe) {
-            return Collections.<Descriptor>emptySet();
-        }
-        JsIndex index = JsIndex.get(querySupport);
+        JsIndex index = JsIndex.get(roots);
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {

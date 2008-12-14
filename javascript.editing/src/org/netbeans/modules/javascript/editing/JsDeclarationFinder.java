@@ -62,6 +62,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -116,8 +117,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     @CheckForNull
     IndexedFunction findMethodDeclaration(ParserResult info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
         JsParseResult jspr = AstUtilities.getParseResult(info);
-        // XXX: parsingapi
-        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
         Set<IndexedElement> functions = null;
 
         String fqn = JsTypeAnalyzer.getCallFqn(jspr, call, true);
@@ -265,8 +265,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                // XXX: parsingapi
-                JsIndex index = null;//JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
                 Set<IndexedElement> elements = index.getAllNames(prefix, QuerySupport.Kind.EXACT, parseResult);
 
                 String name = null; // unused!
@@ -289,8 +288,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     @NonNull
     DeclarationLocation findLinkedMethod(JsParseResult info, String url) {
-        // XXX: parsingapi
-        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url, QuerySupport.Kind.EXACT, parseResult);
         IndexedElement function = findBestElementMatch(info, elements, null, null);

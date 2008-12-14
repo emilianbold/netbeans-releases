@@ -51,8 +51,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.SearchResult;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
@@ -80,6 +82,8 @@ public final class JsIndex {
     private static final String [] TERMS_FQN = new String [] { JsIndexer.FIELD_FQN };
     private static final String [] TERMS_BASE = new String [] { JsIndexer.FIELD_BASE };
     private static final String [] TERMS_EXTEND = new String [] { JsIndexer.FIELD_EXTEND };
+
+    private static final JsIndex EMPTY = new JsIndex(null);
     
     private final QuerySupport querySupport;
 
@@ -88,20 +92,28 @@ public final class JsIndex {
         this.querySupport = querySupport;
     }
 
-    public static JsIndex get(QuerySupport querySupport) {
-        return new JsIndex(querySupport);
+    public static JsIndex get(Collection<FileObject> roots) {
+        try {
+            return new JsIndex(QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()])));
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return EMPTY;
+        }
     }
 
     private Collection<? extends IndexResult> query(
             final String fieldName, final String fieldValue,
             final QuerySupport.Kind kind, final String... fieldsToLoad
     ) {
-        try {
-            return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-        } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
-            return Collections.<IndexResult>emptySet();
+        if (querySupport != null) {
+            try {
+                return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
         }
+        
+        return Collections.<IndexResult>emptySet();
     }
 
     @SuppressWarnings("unchecked")

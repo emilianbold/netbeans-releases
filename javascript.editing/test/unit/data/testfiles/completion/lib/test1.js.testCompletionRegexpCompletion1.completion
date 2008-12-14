@@ -1,6 +1,6 @@
 Code completion result for source line:
 y = /re|g/
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    $ End of line                              null
 KEYWORD    () Grouping                                null

@@ -1,6 +1,6 @@
 Code completion result for source line:
 $("foo").s|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     scrollIntoView(alignWithTop) :             Element
 METHOD     setAttribute(String name, Stri             Element
 METHOD     ---setAttributeNS(namespace---             Element

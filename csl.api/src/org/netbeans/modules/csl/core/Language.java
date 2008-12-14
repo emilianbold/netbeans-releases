@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -118,7 +119,10 @@ public final class Language {
     private FileObject semanticFile;
     private FileObject occurrencesFile;
     private FileObject indexSearcherFile;
-    
+
+    private Set<String> sourcePathIds;
+    private Set<String> binaryPathIds;
+
     /** Creates a new instance of DefaultLanguage */
     public Language(String mime) {
         this.mime = mime;
@@ -701,5 +705,25 @@ public final class Language {
 
     void setIndexSearcher(FileObject indexSearcherFile) {
         this.indexSearcherFile = indexSearcherFile;
+    }
+
+    public Set<String> getSourcePathIds() {
+        if (sourcePathIds == null) {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                sourcePathIds = languageConfig.getSourcePathIds();
+            }
+        }
+        return sourcePathIds;
+    }
+
+    public Set<String> getBinaryPathIds() {
+        if (binaryPathIds == null) {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                binaryPathIds = languageConfig.getBinaryPathIds();
+            }
+        }
+        return binaryPathIds;
     }
 }

@@ -41,25 +41,18 @@ package org.netbeans.modules.csl.core;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.navigation.Icons;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -68,7 +61,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
@@ -159,7 +151,7 @@ public class TypeAndSymbolProvider {
     private final boolean typeProvider;
 
     private boolean cancelled;
-    private Map<Language, Set<FileObject>> cachedRoots = null;
+    private Map<Language, Collection<FileObject>> cachedRoots = null;
     private Reference<Project> cachedRootsProjectRef = null;
 
     private TypeAndSymbolProvider(boolean typeProvider) {
@@ -181,7 +173,7 @@ public class TypeAndSymbolProvider {
             }
 
             Set<? extends IndexSearcher.Descriptor> languageResults;
-            Set<FileObject> searchRoots = getRoots(project, language);
+            Collection<FileObject> searchRoots = getRoots(project, language);
             if (typeProvider) {
                 languageResults = searcher.getTypes(searchRoots, text, t2t(searchType), HELPER);
             } else {
@@ -208,12 +200,12 @@ public class TypeAndSymbolProvider {
         }
     }
 
-    private Set<FileObject> getRoots(Project project, Language language) {
+    private Collection<FileObject> getRoots(Project project, Language language) {
         synchronized (this) {
             if (cachedRoots != null) {
                 Project cachedRootsProject = cachedRootsProjectRef != null ? cachedRootsProjectRef.get() : null;
                 if (cachedRootsProject == project) {
-                    Set<FileObject> roots = cachedRoots.get(language);
+                    Collection<FileObject> roots = cachedRoots.get(language);
                     if (roots != null) {
                         return roots;
                     }
@@ -224,97 +216,21 @@ public class TypeAndSymbolProvider {
             }
         }
 
-        Set<FileObject> roots = new HashSet<FileObject>();
-        // XXX: get the source classpath ids somehow from the language
-        Set<String> sourceClasspathIds = Collections.<String>emptySet();
-        for(String id : sourceClasspathIds) {
-            if (isCancelled()) {
-                return null;
-            }
-
-            Set<FileObject> classpathRoots = getClasspathRoots(project, id);
-            roots.addAll(classpathRoots);
-        }
-
-        // XXX: get the binary classpath ids somehow from the language
-        Set<String> binaryClasspathIds = Collections.<String>emptySet();
-        for(String id : binaryClasspathIds) {
-            if (isCancelled()) {
-                return null;
-            }
-
-            Set<FileObject> classpathRoots = getClasspathRoots(project, id);
-
-            // Filter out roots that do not have source files available
-            for(FileObject f : classpathRoots) {
-                if (isCancelled()) {
-                    return null;
-                }
-
-                SourceForBinaryQuery.Result2 result;
-                try {
-                    result = SourceForBinaryQuery.findSourceRoots2(f.getURL());
-                } catch (FileStateInvalidException fsie) {
-                    LOG.warning("Ignoring invalid binary ClassPath root: " + f.getPath()); //NOI18N
-                    LOG.log(Level.FINE, null, fsie);
-                    continue;
-                }
-
-                if (result.getRoots().length == 0) {
-                    continue;
-                }
-
-                if (result.preferSources()) {
-                    roots.addAll(Arrays.asList(result.getRoots()));
-                } else {
-                    roots.add(f);
-                }
-            }
-        }
-
+        Collection<FileObject> roots = GsfUtilities.getRoots(project, language.getSourcePathIds(), language.getBinaryPathIds());
+        
         synchronized (this) {
             if (cancelled) {
                 return null;
             }
 
             if (cachedRoots == null) {
-                cachedRoots = new HashMap<Language, Set<FileObject>>();
+                cachedRoots = new HashMap<Language, Collection<FileObject>>();
                 cachedRootsProjectRef = project == null ? null : new WeakReference<Project>(project);
             }
 
             cachedRoots.put(language, roots);
             return roots;
         }
-    }
-
-    private Set<FileObject> getClasspathRoots(Project project, String classpathId) {
-        Set<FileObject> roots = new HashSet<FileObject>();
-
-        if (project != null) {
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            for(SourceGroup group : sourceGroups) {
-                if (isCancelled()) {
-                    return null;
-                }
-
-                ClassPath classpath = ClassPath.getClassPath(group.getRootFolder(), classpathId);
-                if (classpath != null) {
-                    roots.addAll(Arrays.asList(classpath.getRoots()));
-                }
-            }
-        } else {
-            Set<ClassPath> classpaths = GlobalPathRegistry.getDefault().getPaths(classpathId);
-            for(ClassPath classpath : classpaths) {
-                if (isCancelled()) {
-                    return null;
-                }
-
-                roots.addAll(Arrays.asList(classpath.getRoots()));
-            }
-        }
-
-        return roots;
     }
 
     private static QuerySupport.Kind t2t(SearchType searchType) {

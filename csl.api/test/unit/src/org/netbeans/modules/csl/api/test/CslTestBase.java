@@ -120,7 +120,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
@@ -1336,32 +1335,39 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     private List<TestIndexDocumentImpl> indexFile(String relFilePath) throws Exception {
-        Source testSource = getTestSource(getTestFile(relFilePath));
+        FileObject testSourceFile = getTestFile(relFilePath);
+        Source testSource = getTestSource(testSourceFile);
 
-        final TestIndexFactoryImpl tifi = new TestIndexFactoryImpl();
+        final Indexable indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(testSourceFile.getParent(), testSourceFile));
+        final EmbeddingIndexerFactory factory = getIndexerFactory();
+        assertNotNull("getIndexer must be implemented", factory);
+        File indexFolder = new File(getWorkDir(), "Indicies");
+        boolean created = indexFolder.mkdirs();
+        assertTrue("Can't create index folder: " + indexFolder.getAbsolutePath(), created);
+
+        TestIndexFactoryImpl tifi = new TestIndexFactoryImpl();
+        final Context context = SPIAccessor.getInstance().createContext(
+                FileUtil.toFileObject(indexFolder),
+                testSourceFile.getParent().getURL(),
+                factory.getIndexerName(),
+                factory.getIndexVersion(),
+                tifi
+        );
+        TestIndexFactoryImpl.map.put(context.getIndexFolder(), context.getRoot());
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
 
-                FileObject sourceFile = r.getSnapshot().getSource().getFileObject();
-                Indexable indexable = SPIAccessor.getInstance().create(new FileObjectIndexable(sourceFile.getParent(), sourceFile));
-                EmbeddingIndexerFactory factory = getIndexerFactory();
-                assertNotNull("getIndexer must be implemented", factory);
                 EmbeddingIndexer indexer = factory.createIndexer(indexable, r.getSnapshot());
                 assertNotNull("getIndexer must be implemented", factory);
-                Context context = SPIAccessor.getInstance().createContext(
-                        FileUtil.toFileObject(new File(new File(getWorkDir(), factory.getIndexerName()), Integer.toString(factory.getIndexVersion()))),
-                        sourceFile.getParent().getURL(),
-                        factory.getIndexerName(),
-                        factory.getIndexVersion(),
-                        tifi
-                );
+
                 SPIAccessor.getInstance().index(indexer, indexable, r, context);
             }
         });
 
-        return tifi.documents;
+        return ((TestIndexImpl) tifi.getIndex(context.getIndexFolder())).documents.get(indexable.getRelativePath());
     }
     
     protected void checkIndexer(String relFilePath) throws Exception {
@@ -1377,7 +1383,6 @@ public abstract class CslTestBase extends NbTestCase {
         String annotatedSource = prettyPrint(result, localUrl);
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
-        fail("Indexers testing does not work at the moment");
     }
     
     protected void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
@@ -3989,7 +3994,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
     }
 
-    private static final class TestIndexFactoryImpl implements IndexFactoryImpl, IndexImpl {
+    private static final class TestIndexFactoryImpl implements IndexFactoryImpl {
         // --------------------------------------------------------------------
         // IndexFactoryImpl implementation
         // --------------------------------------------------------------------
@@ -3999,13 +4004,25 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         public IndexImpl createIndex(Context ctx) throws IOException {
-            return this;
+            TestIndexImpl tii = new TestIndexImpl();
+            indicies.put(ctx.getRoot(), tii);
+            map.put(ctx.getIndexFolder(), ctx.getRoot());
+            return tii;
         }
 
         public IndexImpl getIndex(FileObject indexFolder) throws IOException {
-            return this;
+            FileObject root = map.get(indexFolder);
+            return root != null ? indicies.get(root) : null;
         }
 
+        // indexFolder -> root
+        private static final Map<FileObject, FileObject> map = new HashMap<FileObject, FileObject>();
+
+        // root -> index
+        private static final Map<FileObject, TestIndexImpl> indicies = new HashMap<FileObject, TestIndexImpl>();
+    } // End of TestIndexFactoryImpl class
+
+    private static final class TestIndexImpl implements IndexImpl {
         // --------------------------------------------------------------------
         // IndexImpl implementation
         // --------------------------------------------------------------------
@@ -4013,16 +4030,22 @@ public abstract class CslTestBase extends NbTestCase {
         public void addDocument(IndexDocumentImpl document) {
             assert document instanceof TestIndexDocumentImpl;
             TestIndexDocumentImpl tidi = (TestIndexDocumentImpl) document;
-            documents.add(tidi);
+            List<TestIndexDocumentImpl> list = documents.get(tidi.getIndexable().getRelativePath());
+            if (list == null) {
+                list = new ArrayList<TestIndexDocumentImpl>();
+                documents.put(tidi.getIndexable().getRelativePath(), list);
+            }
+            list.add(tidi);
         }
 
         public void removeDocument(String relativePath) {
-            for(Iterator<TestIndexDocumentImpl> i = documents.iterator(); i.hasNext(); ) {
-                TestIndexDocumentImpl tidi = i.next();
-                if (tidi.getIndexable().getRelativePath().equals(relativePath)) {
-                    i.remove();
+            Collection<String> toRemove = new HashSet<String>();
+            for(String rp : documents.keySet()) {
+                if (rp.equals(relativePath)) {
+                    toRemove.add(rp);
                 }
             }
+            documents.keySet().removeAll(toRemove);
         }
 
         public void store() throws IOException {
@@ -4031,9 +4054,11 @@ public abstract class CslTestBase extends NbTestCase {
 
         public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) {
             Set<TestIndexDocumentImpl> docs = new HashSet<TestIndexDocumentImpl>();
-            for(TestIndexDocumentImpl tidi : documents) {
-                if (org.openide.util.Utilities.compareObjects(tidi.getValue(fieldName), value)) {
-                    docs.add(tidi);
+            for(List<TestIndexDocumentImpl> list : documents.values()) {
+                for(TestIndexDocumentImpl tidi : list) {
+                    if (org.openide.util.Utilities.compareObjects(tidi.getValue(fieldName), value)) {
+                        docs.add(tidi);
+                    }
                 }
             }
             return docs;
@@ -4043,9 +4068,9 @@ public abstract class CslTestBase extends NbTestCase {
         // private implementation
         // --------------------------------------------------------------------
 
-        private List<TestIndexDocumentImpl> documents = new ArrayList<TestIndexDocumentImpl>();
-        
-    } // End of TestIndexFactoryImpl class
+        private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
+
+    } // End of TestIndexImpl class
 
     private static final class TestIndexDocumentImpl implements IndexDocumentImpl {
 

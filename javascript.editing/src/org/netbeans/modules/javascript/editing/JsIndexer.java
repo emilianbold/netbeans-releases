@@ -854,7 +854,7 @@ public class JsIndexer extends EmbeddingIndexer {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    private static void setClusterUrl(String url) {
+    /* test */ static void setClusterUrl(String url) {
         clusterUrl = url;
     }
 
@@ -931,7 +931,7 @@ public class JsIndexer extends EmbeddingIndexer {
         private boolean cachedIndexable;
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-            String name = indexable.getName();
+            String name = snapshot.getSource().getFileObject().getNameExt();
 
             if (name.endsWith(".js"))  {
                 // we are indexing a javascript file (not embedded javascript)

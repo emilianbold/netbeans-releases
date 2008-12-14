@@ -100,7 +100,7 @@ public abstract class JsTestBase extends CslTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
+        JsIndexer.setClusterUrl("file:/bogus"); // No translation
         getXTestJsCluster();
     }
     

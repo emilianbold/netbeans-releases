@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 
@@ -460,8 +462,7 @@ public class JsTypeAnalyzer {
     }
     
     public static String getCallFqn(JsParseResult info, Node callNode, boolean resolveLocals) {
-        // XXX: parsingapi
-        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
         Node methodNode = callNode.getParentNode();
         while (methodNode != null) {
             if (methodNode.getType() == Token.FUNCTION) {
