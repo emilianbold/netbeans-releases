@@ -273,9 +273,12 @@ public class RADProperty extends FormProperty {
                 list.add(enumClass.getName().replace('$', '.') + '.' + value.name());
             }
             // null value is always valid
-            list.add("null");
+            list.add(org.openide.util.NbBundle.
+                    getBundle(RADProperty.class).
+                    getString("CTL_NullText") // NOI18N
+                    );
             list.add(null);
-            list.add("null");
+            list.add("null"); // NOI18N
 
             return new EnumEditor(list.toArray());
         } catch (Exception ex) {
