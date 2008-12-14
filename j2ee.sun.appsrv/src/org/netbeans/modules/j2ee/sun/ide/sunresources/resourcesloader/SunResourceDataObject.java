@@ -41,6 +41,8 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.xml.sax.InputSource;
 
 
@@ -49,11 +51,9 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -78,7 +78,6 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBeanDataNode;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBeanDataNode;
-import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -92,14 +91,16 @@ import org.openide.util.WeakListeners;
  * @author nityad
  */
 public class SunResourceDataObject extends XMLDataObject implements FileChangeListener { // extends MultiDataObject{
+    private static final Logger LOG = Logger.getLogger(SunResourceDataObject.class.getName());
+
     private static String JDBC_CP = "jdbc-connection-pool"; //NOI18N
     private static String JDBC_DS = "jdbc-resource"; //NOI18N
     private static String PMF = "persistence-manager-factory-resource"; //NOI18N
     private static String MAIL = "mail-resource"; //NOI18N
     private static String JMS = "jms-resource"; //NOI18N
 
-    private ValidateXMLCookie validateCookie = null;
-    private CheckXMLCookie checkCookie = null;
+    transient private ValidateXMLCookie validateCookie = null;
+    transient private CheckXMLCookie checkCookie = null;
     
     ConnPoolBean cpBean = null;
     DataSourceBean dsBean = null;
@@ -164,7 +165,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 return node;
             }else{
                 String mess = NbBundle.getMessage(SunResourceDataObject.class, "Info_notSunResource"); //NOI18N
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, mess); 
+                LOG.log(Level.INFO, mess);
                 return new SunResourceDataNode(this);
             }    
         }else{
@@ -176,8 +177,6 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
        String type = null;
        try {
             if((! primaryFile.isFolder()) && primaryFile.isValid()){
-                ResourceUtils.migrateResources(primaryFile.getParent());
-                
                 InputStream in = primaryFile.getInputStream();
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
@@ -187,7 +186,6 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     ConnPoolBean currCPBean = ConnPoolBean.createBean(pools[0]);
                     type = this.JDBC_CP;
                     setPool(currCPBean);
-                    return type;
                 }  
                 
                 // identify JDBC Resources xml
@@ -196,7 +194,6 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     DataSourceBean currDSBean = DataSourceBean.createBean(dataSources[0]);
                     type = this.JDBC_DS;
                     setDataSource(currDSBean);
-                    return type;
                 }
                 
                 // import Persistence Manager Factory Resources
@@ -205,7 +202,6 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     PersistenceManagerBean currPMFBean = PersistenceManagerBean.createBean(pmfResources[0]);
                     type = this.PMF;
                     setPersistenceManager(currPMFBean);
-                    return type;
                 }
                 
                 // import Mail Resources
@@ -214,49 +210,41 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     JavaMailSessionBean currMailBean = JavaMailSessionBean.createBean(mailResources[0]);
                     type = this.MAIL;
                     setMailSession(currMailBean);
-                    return type;
                 }
                 
                 // import JMS Resources and convert to Admin Object
                 JmsResource[] jmsResources = resources.getJmsResource();
                 if (jmsResources.length != 0) {
-                    JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
+                    JMSBean currJmsBean = JMSBean.createBean(jmsResources[0]);
                     type = this.JMS;
-                    setJMS(jmsBean);
-                    return type;
+                    setJMS(currJmsBean);
                 }
                 
                 // import Admin Object Resources
                 AdminObjectResource[] aoResources = resources.getAdminObjectResource();
                 if(aoResources.length != 0){
-                    JMSBean jmsBean = JMSBean.createBean(aoResources[0]);
+                    JMSBean currJmsBean = JMSBean.createBean(aoResources[0]);
                     type = this.JMS;
-                    setJMS(jmsBean);
-                    return type;
+                    setJMS(currJmsBean);
                 }
                 
                 ConnectorResource[] connResources = resources.getConnectorResource();
                 ConnectorConnectionPool[] connPoolResources = resources.getConnectorConnectionPool();
                 if(connResources.length != 0 && connPoolResources.length != 0){
-                    JMSBean jmsBean = JMSBean.createBean(resources);
+                    JMSBean currJmsBean = JMSBean.createBean(resources);
                     type = this.JMS;
-                    setJMS(jmsBean);
-                    return type;
+                    setJMS(currJmsBean);
                 }
-                
-                return type;
-            }else
-                return type;
+            }
         }catch(NullPointerException npe){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
-            return type;
+            LOG.log(Level.SEVERE, "Unable to load *.sun-resource file", npe);
         }catch(Exception ex){
-            //ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getLocalizedMessage());
+            LOG.log(Level.SEVERE, "Unable to load *.sun-resource file", ex);
+
+        }
             return type;
         }
        
-    }
-    
     private void setPool(ConnPoolBean in_cpBean){
         this.cpBean = in_cpBean;
     }
