@@ -137,7 +137,7 @@ public class NameRule extends PythonAstRule {
                     String message = NbBundle.getMessage(NameRule.class, "WrongStyle", def.name,
                             NbBundle.getMessage(NameRule.class, typeKey),
                             functionStyle.getDisplayName());
-                    List<HintFix> hintFixes = getNameStyleFixes(def.name, context, functionStyle, MODULE_STYLE_NAME, typeKey);
+                    List<HintFix> hintFixes = getNameStyleFixes(def.name, context, functionStyle, FUNCTION_STYLE_NAME, typeKey);
                     addError(def.name, context, message, def, result, hintFixes);
                 }
             }
@@ -201,6 +201,10 @@ public class NameRule extends PythonAstRule {
                 fixes.add(cs);
             }
         }
+
+        // No preference always last
+        fixes.add(new ChangeStyleFix(this, context, NO_PREFERENCE, key, type));
+
         return fixes;
     }
 
@@ -367,7 +371,11 @@ public class NameRule extends PythonAstRule {
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(NameRule.class, "ChangeStyle", NbBundle.getMessage(NameRule.class, typeKey), style.getDisplayName());
+            if (style == NO_PREFERENCE) {
+                return NbBundle.getMessage(NameRule.class, "ChangeNoStyle", NbBundle.getMessage(NameRule.class, typeKey));
+            } else {
+                return NbBundle.getMessage(NameRule.class, "ChangeStyle", NbBundle.getMessage(NameRule.class, typeKey), style.getDisplayName());
+            }
         }
 
         public void implement() throws Exception {

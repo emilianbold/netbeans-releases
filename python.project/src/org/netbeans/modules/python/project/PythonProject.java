@@ -260,9 +260,11 @@ public PythonProject()
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Python/pythonPackage", // NOI18N
-            "Templates/Python/Module.py", //NOI18N
-            "Templates/Python/ExecutableModule.py", // NOI18N     
+            "Templates/Python/_package", // NOI18N
+            "Templates/Python/_module.py", //NOI18N
+            "Templates/Python/_main.py", // NOI18N
+            "Templates/Python/_empty_module.py", // NOI18N
+            "Templates/Python/_test.py", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

@@ -5,6 +5,7 @@ FIX:Ignore name violations for "tmxxx"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks
 class timedelta(object):
       ---------
 HINT:Name "timedelta" is not a valid class name according to your code style (CapitalizedWords)
@@ -12,6 +13,7 @@ FIX:Ignore name violations for "timedelta"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks
 class date(object):
       ----
 HINT:Name "date" is not a valid class name according to your code style (CapitalizedWords)
@@ -19,11 +21,13 @@ FIX:Ignore name violations for "date"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks
     def _checkOverflow(self, year):
         --------------
 HINT:Name "_checkOverflow" is not a valid function name according to your code style (lowercase_with_underscores)
 FIX:Ignore name violations for "_checkOverflow"
 FIX:Change preferred function name style to mixedCase
+FIX:Turn off function name style checks
 class tzinfo(object):
       ------
 HINT:Name "tzinfo" is not a valid class name according to your code style (CapitalizedWords)
@@ -31,6 +35,7 @@ FIX:Ignore name violations for "tzinfo"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks
 class time(object):
       ----
 HINT:Name "time" is not a valid class name according to your code style (CapitalizedWords)
@@ -38,6 +43,7 @@ FIX:Ignore name violations for "time"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks
 class datetime(date):
       --------
 HINT:Name "datetime" is not a valid class name according to your code style (CapitalizedWords)
@@ -45,3 +51,4 @@ FIX:Ignore name violations for "datetime"
 FIX:Change preferred class name style to lowercase
 FIX:Change preferred class name style to lowercase_with_underscores
 FIX:Change preferred class name style to mixedCase
+FIX:Turn off class name style checks

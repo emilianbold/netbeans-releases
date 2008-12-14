@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.kit</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <package>org.w3c.dom</package>
                 <package>org.w3c.tidy</package>

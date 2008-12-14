@@ -104,6 +104,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
 
         for (;;) {                    
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+            if (panel.getInstallLocation().length() == 0) {
+                panel.setIntroduction();
+            }
             String acsd = NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel");
             dialog.getAccessibleContext().setAccessibleDescription(acsd);
             dialog.setVisible(true);
@@ -148,7 +151,6 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
-        validatePanel();
     }
 
     private String getDerbySystemHome() {
@@ -167,7 +169,11 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         derbySystemHomeTextField.setText(derbySystemHome);
     }
 
-
+    public void setIntroduction() {
+        String info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_EnterDerbyLocation");
+        descriptor.getNotificationLineSupport().setInformationMessage(info);
+        descriptor.setValid(false);
+    }
     
     private void validatePanel() {
         if (descriptor == null) {
@@ -176,6 +182,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         
         String error = null;
         String warning = null;
+        String info = null;
         
         String location = getInstallLocation();
         if (location !=  null && location.length() > 0) {
@@ -186,17 +193,19 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             if (!Util.isDerbyInstallLocation(locationFile)) {
                 error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
             }
+        } else if (location.length() == 0) {
+            warning = NbBundle.getMessage(DerbyOptions.class, "ERR_EnterDerbyLocation"); // NOI18N
         }
 
         if (error == null) {
             File derbySystemHome = new File(getDerbySystemHome());
             if (derbySystemHome.getPath().length() <= 0) {
-                warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotEntered");
+                info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_DerbySystemHomeNotEntered");
             }
 
             if (derbySystemHome.exists() && !derbySystemHome.isDirectory()) {
                 error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotDirectory");
-            } else if (!derbySystemHome.getPath().equals("") && !derbySystemHome.isAbsolute()) {
+            } else if ((derbySystemHome.getPath().length() > 0) && !derbySystemHome.isAbsolute()) {
                 error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotAbsolute");
             }
         }
@@ -207,6 +216,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         } else if (warning != null) {
             descriptor.setValid(false);
             descriptor.getNotificationLineSupport().setWarningMessage(warning);
+        } else if (info != null) {
+            descriptor.setValid(false);
+            descriptor.getNotificationLineSupport().setInformationMessage(info);
         } else {
             descriptor.setValid(true);
             descriptor.getNotificationLineSupport().clearMessages();
