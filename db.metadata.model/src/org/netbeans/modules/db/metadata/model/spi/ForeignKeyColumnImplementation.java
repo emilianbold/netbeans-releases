@@ -37,39 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
+
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public abstract class ForeignKeyColumnImplementation {
+    private ForeignKeyColumn column;
 
-    MetadataElement() {}
+    public final ForeignKeyColumn getForeignKeyColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createForeignKeyColumn(this);
+        }
+        return column;
+    }
 
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
     public abstract String getName();
 
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
-    }
+    public abstract ForeignKey getParent();
+
+    public abstract Column getReferredColumn();
+
+    public abstract Column getReferringColumn();
+
+    public abstract int getPosition();
 }

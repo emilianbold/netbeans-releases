@@ -39,37 +39,68 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
+
 /**
- * Encapsulates a metadata element (catalog, schema, table, etc.).
+ * This class represents a column in an index.  It provides more information
+ * about the column, such as whether it's used in the index ascending or
+ * descending
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class MetadataElement {
+public class IndexColumn extends MetadataElement {
+    private IndexColumnImplementation impl;
 
-    MetadataElement() {}
-
-    /**
-     * Returns the metadata element which is the parent of this metadata
-     * element.
-     *
-     * @return the parent.
-     */
-    public abstract MetadataElement getParent();
-
-    /**
-     * Returns the name of this metadata element or {@code null} if
-     * this element has no name.
-     *
-     * @return the name.
-     */
-    public abstract String getName();
-
-    /**
-     * This can be overriden by elements that can have names that are null.  The default
-     * is to just use the name provided by the database.
-     * @return
-     */
-    String getInternalName() {
-        return getName();
+    IndexColumn(IndexColumnImplementation impl) {
+        this.impl = impl;
     }
+
+    /**
+     * Return the ordering for this column in the index
+     *
+     * @return the ordering for this column
+     */
+    public Ordering getOrdering() {
+        return impl.getOrdering();
+    }
+
+    /**
+     * Get the ordinal position for the column in this index
+     *
+     * @return the ordinal position, starting at 1
+     */
+    public int getPosition() {
+        return impl.getPosition();
+    }
+
+    @Override
+    public Index getParent() {
+        return impl.getParent();
+    }
+
+    /**
+     * Returns the name of the column
+     *
+     * @return the column name
+     */
+    @Override
+    public String getName() {
+        return impl.getName();
+    }
+
+    /**
+     * Get the underlying column for this index column
+     *
+     * @return the column for this index column.
+     */
+    public Column getColumn() {
+        return impl.getColumn();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
+
+
 }
