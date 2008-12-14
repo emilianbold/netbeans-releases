@@ -62,7 +62,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -103,7 +102,6 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        NameKind kind = context.getNameKind();
         QueryType queryType = context.getQueryType();
         boolean caseSensitive = context.isCaseSensitive();
     
