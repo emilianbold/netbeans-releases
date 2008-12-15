@@ -46,11 +46,13 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 import org.apache.felix.moduleloader.IContent;
 import org.apache.felix.moduleloader.IContentLoader;
 import org.apache.felix.moduleloader.IModule;
 import org.apache.felix.moduleloader.ISearchPolicy;
 import org.apache.felix.moduleloader.IURLPolicy;
+import org.apache.felix.moduleloader.ResourceNotFoundException;
 import org.netbeans.Module;
 import org.netbeans.ProxyClassLoader;
 import org.openide.modules.ModuleInfo;
@@ -67,6 +69,8 @@ import org.osgi.framework.SynchronousBundleListener;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
+    private static Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
+
     private Set<Module> all = new CopyOnWriteArraySet<Module>();
 
     public NetigsoActivator() {
@@ -93,40 +97,56 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
     public void bundleChanged(BundleEvent ev) {
         String loc = ev.getBundle().getLocation();
         final String pref = "netigso://"; // NOI18N
-        if (ev.getType() == Bundle.ACTIVE && loc != null && loc.startsWith(pref)) {
+        if (ev.getType() == BundleEvent.RESOLVED && loc != null && loc.startsWith(pref)) {
             String cnb = loc.substring(pref.length());
             for (ModuleInfo mi : all) {
                 if (cnb.equals(mi.getCodeNameBase())) {
                     join(ev.getBundle(), mi);
+                    return;
                 }
             }
+            LOG.warning("No join for " + cnb);
         }
     }
 
     void register(Module m) {
         all.add(m);
-    }
+        }
 
 
     /** Injects classloader of mi to Felix's bundle.
      */
     private void join(Bundle bundle, ModuleInfo mi) {
         try {
-            Method m = bundle.getClass().getDeclaredMethod("getInfo");
-            m.setAccessible(true);
+            Method m = findMethod(bundle, "getInfo");
             Object info = m.invoke(bundle);
-            Method m2 = info.getClass().getDeclaredMethod("getCurrentModule");
-            m2.setAccessible(true);
-            IModule imodule = (IModule) m2.invoke(info);
-            Method m3 = imodule.getClass().getDeclaredMethod("setContentLoader", IContentLoader.class);
-            m3.setAccessible(true);
+            Method m2 = findMethod(info, "getCurrentModule");
+            IModule imodule = (IModule)m2.invoke(info);
+            Method m3 = findMethod(imodule, "setContentLoader", IContentLoader.class);
             m3.invoke(imodule, new ModuleContentLoader(mi));
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
     }
 
-    private static final class ModuleContentLoader implements IContentLoader {
+    private static Method findMethod(Object obj, String name, Class... args) throws Exception {
+        Exception first = null;
+        Class<?> c = obj.getClass();
+        while (c != null) {
+            try {
+                Method m = c.getDeclaredMethod(name, args);
+                m.setAccessible(true);
+                return m;
+            } catch (Exception e) {
+                first = e;
+            }
+            c = c.getSuperclass();
+        }
+        throw first;
+    }
+
+    private static final class ModuleContentLoader implements IContentLoader,
+    ISearchPolicy {
         private final ModuleInfo mi;
 
         public ModuleContentLoader(ModuleInfo mi) {
@@ -146,7 +166,7 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
         }
 
         public ISearchPolicy getSearchPolicy() {
-            return sp;
+            return sp == null ? this : sp;
         }
 
         IURLPolicy up;
@@ -204,6 +224,26 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
 
         public InputStream getInputStream(int arg0, String name) throws IOException {
             return getResource(name).openStream();
+        }
+
+        public Object[] definePackage(String arg0) {
+            return null;
+        }
+
+        public Class findClass(String name) throws ClassNotFoundException {
+            return getClass(name);
+        }
+
+        public URL findResource(String name) throws ResourceNotFoundException {
+            return findResource(name);
+        }
+
+        public Enumeration findResources(String name) throws ResourceNotFoundException {
+            return getResources(name);
+        }
+
+        public String findLibrary(String arg0) {
+            return null;
         }
 
     } // end of ModuleContentLoader

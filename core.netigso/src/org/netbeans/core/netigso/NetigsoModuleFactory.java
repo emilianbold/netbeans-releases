@@ -52,11 +52,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.felix.framework.Felix;
-import org.apache.felix.framework.cache.BundleCache;
-import org.apache.felix.framework.util.FelixConstants;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -87,6 +86,17 @@ public class NetigsoModuleFactory extends ModuleFactory {
     }
 
     @Override
+    public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws InvalidException {
+        Module m = super.createFixed(mani, history, loader, autoload, eager, mgr, ev);
+        try {
+            registerBundle(m);
+        } catch (IOException ex) {
+            throw (InvalidException)new InvalidException(m, ex.getMessage()).initCause(ex);
+        }
+        return m;
+    }
+
+    @Override
     public Module create(
         File jar, Object history,
         boolean reloadable, boolean autoload, boolean eager,
@@ -94,16 +104,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
     ) throws IOException {
         try {
             Module m = super.create(jar, history, reloadable, autoload, eager, mgr, ev);
-            InputStream is = fakeBundle(m);
-            if (is != null) {
-                Bundle bundle;
-                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
-                activator.register(m);
-                is.close();
-            }
+            registerBundle(m);
             return m;
-        } catch (BundleException ex) {
-            throw new IOException(ex);
         } catch (InvalidException ex) {
             Manifest mani = ex.getManifest();
             if (mani != null) {
@@ -119,9 +121,9 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
     private synchronized static Felix getContainer() throws BundleException {
         if (activator == null) {
-            Map<String,String> configMap = new HashMap<String, String>();
+            Map<String,Object> configMap = new HashMap<String,Object>();
             // Configure the Felix instance to be embedded.
-            configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
+            //configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
             // Add core OSGi packages to be exported from the class path
             // via the system bundle.
             configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
@@ -134,11 +136,15 @@ public class NetigsoModuleFactory extends ModuleFactory {
             if (ud == null) {
                 throw new IllegalStateException();
             }
-            configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix");
+            String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix";
+            configMap.put("felix.cache.profiledir", cache);
+            configMap.put("felix.cache.dir", cache);
+            configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
             List<BundleActivator> activators = new ArrayList<BundleActivator>();
             activators.add(activator);
-            felix = new Felix(configMap, activators);
+            configMap.put("felix.systembundle.activators", activators);
+            felix = new Felix(configMap);
             felix.start();
         }
         return felix;
@@ -159,7 +165,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
         Manifest man = new Manifest();
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
-        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
+        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeName()); // NOI18N
         if (m.getSpecificationVersion() != null) {
             String spec = just3Dots(m.getSpecificationVersion().toString());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
@@ -298,7 +304,8 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public Object getLocalizedAttribute(String attr) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            // TBD;
+            return null;
         }
 
         @Override
@@ -340,4 +347,18 @@ public class NetigsoModuleFactory extends ModuleFactory {
             }
         }
     } // end of BundleLoader
+
+    private void registerBundle(Module m) throws IOException {
+        InputStream is = fakeBundle(m);
+        if (is != null) {
+            try {
+                Bundle bundle;
+                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                activator.register(m);
+                is.close();
+            } catch (BundleException ex) {
+                throw new IOException(ex);
+            }
+        }
+    }
 }

@@ -164,6 +164,9 @@ public class CreateModuleXML extends Task {
                     Attributes attr = m.getMainAttributes();
                     String codename = attr.getValue("OpenIDE-Module");
                     if (codename == null) {
+                        codename = attr.getValue("Bundle-SymbolicName");
+                    }
+                    if (codename == null) {
                         throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
                     }
                     if (codename.endsWith(" ") || codename.endsWith("\t")) { // #62887
