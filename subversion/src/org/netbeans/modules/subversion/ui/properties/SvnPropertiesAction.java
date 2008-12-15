@@ -38,18 +38,16 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.subversion.ui.properties;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.io.File;
-import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -59,8 +57,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * 
@@ -68,20 +64,24 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public final class SvnPropertiesAction extends ContextAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
         return nodes.length == 1;
     }
     
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_VERSIONED 
              | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(SvnPropertiesAction.class, "CTL_PropertiesAction");      // NOI18N
     }
