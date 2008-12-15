@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import org.netbeans.modules.notifications.api.Notifications;
 import org.netbeans.modules.notifications.spi.Notification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -69,10 +68,9 @@ public class NotifyIndicator implements Runnable {
 
     private JLabel label;
     private Helper helper;
-    private Notifications notifications;
 
-    public void update(Notifications aThis) {
-        label.setIcon(aThis.top().getIcon());
+    public void update() {
+        label.setIcon(APIAccessor.DEFAULT.getNotifications().first().getIcon());
     }
 
     Component getComponent() {
@@ -87,16 +85,15 @@ public class NotifyIndicator implements Runnable {
     }
 
     public void run() {
-        notifications.add(new BuildFailedNotification());
-        notifications.add(new NewCodeReviewNotification());
-        notifications.add(new TestFailedNotification());
+        new BuildFailedNotification().add();
+        new NewCodeReviewNotification().add();
+        new TestFailedNotification().add();
     }
     
     private NotifyIndicator() {
         helper = new Helper();
         label = new JLabel();
         label.addMouseListener(helper);
-        notifications = Notifications.getDefault();
     }
     
     public static String getStatusDescription(int status) {
@@ -123,7 +120,7 @@ public class NotifyIndicator implements Runnable {
 //        notify.setCellRenderer(new NotificationRenderer());
 
         NotificationPanel p = new NotificationPanel();
-        final SortedSet<Notification> nlist = APIAccessor.DEFAULT.toSortedSet(notifications);
+        final SortedSet<Notification> nlist = APIAccessor.DEFAULT.getNotifications();
         synchronized (nlist) {
             Iterator<Notification> i = nlist.iterator();
             while (i.hasNext())

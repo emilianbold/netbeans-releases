@@ -40,7 +40,6 @@
 package org.netbeans.modules.kenai.collab.notifications;
 
 import java.util.SortedSet;
-import org.netbeans.modules.notifications.api.Notifications;
 import org.netbeans.modules.notifications.spi.Notification;
 
 /**
@@ -50,8 +49,6 @@ import org.netbeans.modules.notifications.spi.Notification;
 public abstract class APIAccessor {
 
     public static APIAccessor DEFAULT;
-    public abstract SortedSet<Notification> toSortedSet(Notifications n) ;
-
-    public abstract boolean remove(Notifications ns, Notification n);
+    public abstract SortedSet<Notification> getNotifications() ;
 
 }

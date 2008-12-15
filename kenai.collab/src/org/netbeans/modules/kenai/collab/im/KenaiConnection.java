@@ -69,7 +69,10 @@ public class KenaiConnection {
 
     XMPPConnection connection;
     MultiUserChat nbChat;
-    private final String USER = "netbeans";
+    private static final String USER = "testuser1";
+    private static final String PASSWORD = "password";
+    private static final String XMPP_SERVER = "bco108.central.sun.com";
+    private static final String CHAT_ROOM = "nbchat@muc.central.sun.com";
 
     private static KenaiConnection instance;
 
@@ -93,19 +96,19 @@ public class KenaiConnection {
     }
 
     private void connect() throws XMPPException {
-        connection = new XMPPConnection("127.0.0.1");
+        connection = new XMPPConnection(XMPP_SERVER);
         connection.connect();
         login();
     }
 
     private void login() throws XMPPException {
-        connection.login(USER, "netbeans");
+        connection.login(USER,PASSWORD);
     }
 
     private MultiUserChat joinChat() {
         if (!connection.isConnected())
             return null;
-        nbChat = new MultiUserChat(connection, "nb@conference.127.0.0.1");
+        nbChat = new MultiUserChat(connection,CHAT_ROOM);
         try {
             // User2 joins the new room
             // The room service will decide the amount of history to send
