@@ -39,12 +39,12 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.filesystems.FileObject;
@@ -84,22 +84,26 @@ public class GrailsRuntimeTest extends NbTestCase {
     }
 
     public void testCommandDescriptor() throws IOException {
-        GrailsRuntime.CommandDescriptor desc = new GrailsRuntime.CommandDescriptor(
-                "test", getWorkDir(), GrailsEnvironment.DEV);
+        Project project = new TestProject("test", FileUtil.toFileObject(
+                FileUtil.normalizeFile(getWorkDir())));
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+
+        GrailsRuntime.CommandDescriptor desc = GrailsRuntime.CommandDescriptor.forProject(
+                "test", getWorkDir(), config, new String[]{}, null);
 
         assertEquals("test", desc.getName());
         assertEquals(getWorkDir(), desc.getDirectory());
-        assertEquals(GrailsEnvironment.DEV, desc.getEnvironment());
+        assertEquals(config, desc.getProjectConfig());
         assertEquals(new String[] {}, desc.getArguments());
         assertEquals(new Properties(), desc.getProps());
 
         String[] args = new String[] {"arg1", "arg2"};
-        desc = new GrailsRuntime.CommandDescriptor(
-                "test", getWorkDir(), GrailsEnvironment.DEV, args);
+        desc = GrailsRuntime.CommandDescriptor.forProject(
+                "test", getWorkDir(), config, args, null);
 
         assertEquals("test", desc.getName());
         assertEquals(getWorkDir(), desc.getDirectory());
-        assertEquals(GrailsEnvironment.DEV, desc.getEnvironment());
+        assertEquals(config, desc.getProjectConfig());
         assertEquals(args, desc.getArguments());
         assertEquals(new Properties(), desc.getProps());
 
@@ -107,12 +111,12 @@ public class GrailsRuntimeTest extends NbTestCase {
         props.setProperty("prop1", "value1");
         props.setProperty("prop2", "value2");
 
-        desc = new GrailsRuntime.CommandDescriptor(
-                "test", getWorkDir(), GrailsEnvironment.DEV, args, props);
+        desc = GrailsRuntime.CommandDescriptor.forProject(
+                "test", getWorkDir(), config, args, props);
 
         assertEquals("test", desc.getName());
         assertEquals(getWorkDir(), desc.getDirectory());
-        assertEquals(GrailsEnvironment.DEV, desc.getEnvironment());
+        assertEquals(config, desc.getProjectConfig());
         assertEquals(args, desc.getArguments());
         assertEquals(props, desc.getProps());
 
