@@ -75,9 +75,4 @@ final class MacPhpEnvironment extends PhpEnvironment {
         }
         return Arrays.asList(php.getAbsolutePath());
     }
-
-    @Override
-    public List<String> getAllPhpUnits() {
-        return getAllPhpUnits0();
-    }
 }

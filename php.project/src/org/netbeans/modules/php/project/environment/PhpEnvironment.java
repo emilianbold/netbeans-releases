@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -131,7 +132,10 @@ public abstract class PhpEnvironment {
      * @return list of all found PHP Unit scripts, never <code>null</code>.
      * @see #getAnyPhpUnit()
      */
-    public abstract List<String> getAllPhpUnits();
+    public List<String> getAllPhpUnits() {
+        // simple detection - just try to find phpunit it on user's PATH
+        return findFileOnUsersPath("phpunit"); // NOI18N
+    }
 
     /**
      * Get any PHP Unit script.
@@ -194,11 +198,6 @@ public abstract class PhpEnvironment {
             sb.append(" }"); // NOI18N
             return sb.toString();
         }
-    }
-
-    List<String> getAllPhpUnits0() {
-        // XXX
-        return new ArrayList<String>();
     }
 
     static boolean isSolaris() {
@@ -280,24 +279,25 @@ public abstract class PhpEnvironment {
         return docRoot;
     }
 
-    // suitable for *nix as well as windows
     static List<String> getAllPhpInterpreters(String phpFilename) {
+        return findFileOnUsersPath(phpFilename);
+    }
+
+    // suitable for *nix as well as windows
+    private static List<String> findFileOnUsersPath(String filename) {
         String path = System.getenv("PATH"); // NOI18N
         if (path == null) {
             return Collections.<String>emptyList();
         }
         // on linux there are usually duplicities in PATH
         Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> clis = new ArrayList<String>(dirs.size());
-        for (String p : dirs) {
-            File php = new File(p, phpFilename);
-            if (php.exists()) {
-                clis.add(php.getAbsolutePath());
+        List<String> found = new ArrayList<String>(dirs.size());
+        for (String d : dirs) {
+            File file = new File(d, filename);
+            if (file.isFile()) {
+                found.add(FileUtil.normalizeFile(file).getAbsolutePath());
             }
         }
-        if (clis.isEmpty()) {
-            return Collections.<String>emptyList();
-        }
-        return clis;
+        return found;
     }
 }

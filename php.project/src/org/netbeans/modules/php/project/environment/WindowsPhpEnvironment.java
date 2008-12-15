@@ -111,11 +111,6 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         return getAllPhpInterpreters(PHP);
     }
 
-    @Override
-    public List<String> getAllPhpUnits() {
-        return getAllPhpUnits0();
-    }
-
     private static boolean isFloppy(File root) {
         String absolutePath = root.getAbsolutePath();
         LOGGER.fine("Testing floppy on " + absolutePath);

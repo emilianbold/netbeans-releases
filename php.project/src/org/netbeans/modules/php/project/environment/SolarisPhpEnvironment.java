@@ -95,9 +95,4 @@ final class SolarisPhpEnvironment extends PhpEnvironment {
     public List<String> getAllPhpInterpreters() {
         return getAllPhpInterpreters(PHP);
     }
-
-    @Override
-    public List<String> getAllPhpUnits() {
-        return getAllPhpUnits0();
-    }
 }
