@@ -344,7 +344,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             // ignore
         }
 
-        if(repositoryFiles == null || 
+        if ((repositoryFiles == null) || (repositoryFiles.length == 0) ||
            repositoryFiles.length >  1) 
         { 
             resetWorkingDirLevelCheckBox();
