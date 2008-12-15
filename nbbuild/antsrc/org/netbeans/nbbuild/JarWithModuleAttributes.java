@@ -167,7 +167,6 @@ public class JarWithModuleAttributes extends Jar {
                             int equals = one.indexOf('=');
                             if (equals == -1) {
                                 sb.append(one.trim());
-                                sb.append(";version=\"[0,999]\"");
                             } else {
                                 throw new BuildException("Implementation dependencies not supported in Netigso mode: " + one);
                             }
@@ -180,7 +179,7 @@ public class JarWithModuleAttributes extends Jar {
                             } else {
                                 nextMajor = Integer.parseInt(version.substring(0, dot)) + 1;
                             }
-                            sb.append(one.substring(0, great).trim()).append(";version=\"[").append(version).
+                            sb.append(one.substring(0, great).trim()).append(";bundle-version=\"[").append(version).
                                     append(", ").append(nextMajor).
                                     append(")\"");
                         }

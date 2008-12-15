@@ -165,7 +165,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
         Manifest man = new Manifest();
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
-        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
+        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeName()); // NOI18N
         if (m.getSpecificationVersion() != null) {
             String spec = just3Dots(m.getSpecificationVersion().toString());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N

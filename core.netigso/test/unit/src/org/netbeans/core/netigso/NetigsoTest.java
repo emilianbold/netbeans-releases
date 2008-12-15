@@ -117,6 +117,7 @@ public class NetigsoTest extends SetupHid {
         try {
             String mf = "Bundle-SymbolicName: org.foo\n" +
                 "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.foo";
             String mfBar =
                 "OpenIDE-Module: org.bar/1\n" +
@@ -156,6 +157,7 @@ public class NetigsoTest extends SetupHid {
         try {
             String mf = "Bundle-SymbolicName: org.foo\n" +
                 "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.foo";
             String mfBar =
                 "OpenIDE-Module: org.bar/1\n" +
@@ -218,6 +220,7 @@ public class NetigsoTest extends SetupHid {
         try {
             String mfBar = "Bundle-SymbolicName: org.bar\n" +
                 "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.bar\n" +
                 "Import-Package: org.foo\n" +
                 "\n\n";
@@ -251,6 +254,7 @@ public class NetigsoTest extends SetupHid {
         try {
             String mfBar = "Bundle-SymbolicName: org.bar\n" +
                 "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.bar\n" +
                 "Require-Bundle: org.foo/1;bundle-version=\"[1.0,2.0)\"\n" +
                 "\n\n";
@@ -263,8 +267,8 @@ public class NetigsoTest extends SetupHid {
             mgr.enable(b);
             both = b;
 
+            Class<?> sprclass = m1.getClassLoader().loadClass("org.foo.Something");
             Class<?> clazz = m2.getClassLoader().loadClass("org.bar.SomethingElse");
-            Class<?> sprclass = m2.getClassLoader().loadClass("org.foo.Something");
 
             assertEquals("Correct parent is used", sprclass, clazz.getSuperclass());
         } finally {
