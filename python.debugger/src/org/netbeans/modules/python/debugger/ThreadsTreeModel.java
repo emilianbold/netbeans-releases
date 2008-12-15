@@ -1,4 +1,41 @@
-
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.python.debugger;
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -14,39 +51,33 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 
-
 /**
  * Manage Python threading instances
  *
- * @author jean-yves
+ * @author jean-yves Mengant
  */
 public class ThreadsTreeModel
-implements TreeModel , 
-           TableModel , 
-           NodeModel ,
-           DebuggerContextChangeListener
-{
+        implements TreeModel,
+        TableModel,
+        NodeModel,
+        DebuggerContextChangeListener {
 
   private static final String _RUNNING_THREAD_ =
-        "org/netbeans/modules/python/debugger/resources/RunningThread";
+          "org/netbeans/modules/python/debugger/resources/RunningThread";
   private static final String _CURRENT_THREAD_ =
-        "org/netbeans/modules/python/debugger/resources/CurrentThread";
-  
-  private static final String _SHORT_DESCRIPTION_ =  "Python thread name" ;  
-  private static final String _CURRENT_ = "Current" ;
-  private static final String _RUNNING_ = "Running" ;
-  
-  private PythonDebugger  _debugger;
+          "org/netbeans/modules/python/debugger/resources/CurrentThread";
+  private static final String _SHORT_DESCRIPTION_ = "Python thread name";
+  private static final String _CURRENT_ = "Current";
+  private static final String _RUNNING_ = "Running";
+  private PythonDebugger _debugger;
   private ContextProvider _lookupProvider;
-  private Vector          _listeners = new Vector();
+  private Vector _listeners = new Vector();
 
-  
   /**
    * Creates a new instance of ThreadsTreeModel
    */
-  public ThreadsTreeModel( ContextProvider lookupProvider )
-  {
-    _debugger       = (PythonDebugger) lookupProvider.lookupFirst( null, PythonDebugger.class );
+  public ThreadsTreeModel(ContextProvider lookupProvider) {
+    _debugger = (PythonDebugger) lookupProvider.lookupFirst(null, PythonDebugger.class);
     _lookupProvider = lookupProvider;
   }
 
@@ -55,52 +86,42 @@ implements TreeModel ,
    *
    * @return the translated root node of the tree or null
    */
-  public Object getRoot()
-  {
+  public Object getRoot() {
     return ROOT;
   }
-
 
   /**
    * Registers given listener.
    *
    * @param l the listener to add
    */
-  public void addModelListener( ModelListener l )
-  {
-    _listeners.add( l );
+  public void addModelListener(ModelListener l) {
+    _listeners.add(l);
     // provide a way to get called back by Python debugger
-    _debugger.addThreadListChangeListener(this) ;
+    _debugger.addThreadListChangeListener(this);
   }
-
 
   /**
    * Unregisters given listener.
    *
    * @param l the listener to remove
    */
-  public void removeModelListener( ModelListener l )
-  {
-    _listeners.remove( l );
+  public void removeModelListener(ModelListener l) {
+    _listeners.remove(l);
     // provide a way to get called back by Python debugger
-    _debugger.removeThreadListChangeListener(this) ;
+    _debugger.removeThreadListChangeListener(this);
   }
 
-  public void fireContextChanged () 
-  {
-  Object[] ls;
-    synchronized (_listeners) 
-    {
+  public void fireContextChanged() {
+    Object[] ls;
+    synchronized (_listeners) {
       ls = _listeners.toArray();
     }
     ModelEvent ev = new ModelEvent.TreeChanged(this);
-    for (int i = 0; i < ls.length; i++) 
-    {
-      ((ModelListener) ls[i]).modelChanged (ev);
+    for (int i = 0; i < ls.length; i++) {
+      ((ModelListener) ls[i]).modelChanged(ev);
     }
   }
-
-  
 
   /**
    * Returns number of children for given node.
@@ -112,16 +133,13 @@ implements TreeModel ,
    * @throws UnknownTypeException if this TreeModel implementation is not able
    *                              to resolve children for given node type
    */
-  public int getChildrenCount( Object node ) throws UnknownTypeException
-  {
-    if (node.equals( ROOT ))
-    {
+  public int getChildrenCount(Object node) throws UnknownTypeException {
+    if (node.equals(ROOT)) {
       return _debugger.getThreadCount();
     }
 
     return 0;
   }
-
 
   /**
    * Returns true if node is leaf.
@@ -131,13 +149,15 @@ implements TreeModel ,
    * @throws UnknownTypeException if this TreeModel implementation is not able
    *                              to resolve dchildren for given node type
    */
-  public boolean isLeaf( Object node ) throws UnknownTypeException
-  {
-    if (node instanceof PythonThreadInfos ) return true;
-    if (node == ROOT) return false;
-    throw new UnknownTypeException (node);
+  public boolean isLeaf(Object node) throws UnknownTypeException {
+    if (node instanceof PythonThreadInfos) {
+      return true;
+    }
+    if (node == ROOT) {
+      return false;
+    }
+    throw new UnknownTypeException(node);
   }
-
 
   /**
    * Returns translated children for given parent on given indexes.
@@ -152,11 +172,9 @@ implements TreeModel ,
    * @throws UnknownTypeException   if this TreeModel implementation is not able
    *                                to resolve dchildren for given node type
    */
-  public Object[] getChildren( Object parent, int from, int to )
-                       throws UnknownTypeException
-  {
-    if (parent.equals( ROOT ))
-    {
+  public Object[] getChildren(Object parent, int from, int to)
+          throws UnknownTypeException {
+    if (parent.equals(ROOT)) {
       return _debugger.getThreads();
     }
 
@@ -164,35 +182,34 @@ implements TreeModel ,
   }
 
   /** unused */
-  public void setValueAt( Object node , String ColumnID , Object value )
-  {}
-  
-  public boolean isReadOnly( Object node , String columnID )
-  { return true ; }
-  
-  public Object getValueAt( Object node , String columnID )
-  {
-    if ( node == ROOT )
-      return null ; 
-    if ( columnID == Constants.THREAD_STATE_COLUMN_ID )
-    {
-      if ( node instanceof PythonThreadInfos )
-      {  
-      PythonThreadInfos curThread = (PythonThreadInfos) node ; 
-        if ( curThread.isCurrent() )    
-          return _CURRENT_ ;
-        else
-          return _RUNNING_ ;
+  public void setValueAt(Object node, String ColumnID, Object value) {
+  }
+
+  public boolean isReadOnly(Object node, String columnID) {
+    return true;
+  }
+
+  public Object getValueAt(Object node, String columnID) {
+    if (node == ROOT) {
+      return null;
+    }
+    if (columnID == Constants.THREAD_STATE_COLUMN_ID) {
+      if (node instanceof PythonThreadInfos) {
+        PythonThreadInfos curThread = (PythonThreadInfos) node;
+        if (curThread.isCurrent()) {
+          return _CURRENT_;
+        } else {
+          return _RUNNING_;
+        }
       }
-    }    
-    return ("") ; 
-  }    
-  
- public String getShortDescription( Object node )
- {
-   return _SHORT_DESCRIPTION_ ;
- }
- 
+    }
+    return ("");
+  }
+
+  public String getShortDescription(Object node) {
+    return _SHORT_DESCRIPTION_;
+  }
+
   /**
    * Returns display name for given node.
    *
@@ -202,19 +219,18 @@ implements TreeModel ,
    *          able to resolve display name for given node type
    * @return  display name for given node
    */
-  public String getDisplayName (Object node) 
-  throws UnknownTypeException 
-  {
-    if (node == ROOT) 
+  public String getDisplayName(Object node)
+          throws UnknownTypeException {
+    if (node == ROOT) {
       return ROOT.toString();
-    if ( node instanceof PythonThreadInfos ) 
-    {
-    PythonThreadInfos curThread = (PythonThreadInfos) node ; 
-      return curThread.get_name() ; 
-    }    
-    throw new UnknownTypeException (node);
+    }
+    if (node instanceof PythonThreadInfos) {
+      PythonThreadInfos curThread = (PythonThreadInfos) node;
+      return curThread.get_name();
+    }
+    throw new UnknownTypeException(node);
   }
-  
+
   /**
    * Returns icon for given node.
    *
@@ -224,20 +240,18 @@ implements TreeModel ,
    *          able to resolve icon for given node type
    * @return  icon for given node
    */
-  public String getIconBase (Object node) 
-  throws UnknownTypeException {
-    if ( node == ROOT )
-        return null ; 
-    if ( node instanceof PythonThreadInfos ) 
-    {
-    PythonThreadInfos curThread = (PythonThreadInfos) node ; 
-      if ( curThread.isCurrent() )
-          return _CURRENT_THREAD_ ;
-      return  _RUNNING_THREAD_ ;   
-    }    
-    throw new UnknownTypeException (node);
+  public String getIconBase(Object node)
+          throws UnknownTypeException {
+    if (node == ROOT) {
+      return null;
+    }
+    if (node instanceof PythonThreadInfos) {
+      PythonThreadInfos curThread = (PythonThreadInfos) node;
+      if (curThread.isCurrent()) {
+        return _CURRENT_THREAD_;
+      }
+      return _RUNNING_THREAD_;
+    }
+    throw new UnknownTypeException(node);
   }
-  
-    
-  
 }
