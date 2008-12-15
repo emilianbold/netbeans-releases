@@ -894,11 +894,8 @@ public class ResourceUtils implements WizardConstants{
     private static List getProjectResources(FileObject targetFolder, String resourceType){
         List projectResources = new ArrayList();
         if(targetFolder != null){
-            FileObject setUpFolder = setUpExists(targetFolder);
-            java.util.Enumeration en = setUpFolder.getData(false);
-            while(en.hasMoreElements()){
-                FileObject resourceFile = (FileObject)en.nextElement();
-                File resource = FileUtil.toFile(resourceFile);
+            File resource = getServerResourcesFile(targetFolder);
+            if((resource != null) && resource.exists()){
                 if(resourceType.equals(__ConnectionPoolResource)) {
                     projectResources = getConnectionPools(resource, projectResources);
                 } else if(resourceType.equals(__JDBCResource)) {
@@ -931,7 +928,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }catch(Exception ex){
             //Could not get list of local Connection pools
-            LOG.log(Level.SEVERE, "filterConnectionPools failed", ex);
+            LOG.log(Level.SEVERE, "getConnectionPools failed", ex);
         }
         return projectCP;
     }
@@ -1434,7 +1431,6 @@ public class ResourceUtils implements WizardConstants{
             if(instanceProperties != null){
                 SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
                 if(eightDM.isRunning()){
-                    ServerInterface mejb = (ServerInterface)eightDM.getManagement();
                     poolValues = fillInPoolValues(eightDM, configObjName, poolName);
                 }else{
                     if(eightDM.isLocal()){
@@ -1763,14 +1759,16 @@ public class ResourceUtils implements WizardConstants{
         File sunResource = getServerResourcesFile(targetFolder);
         if((sunResource == null) || (! sunResource.exists())){
             File resourceDir = FileUtil.toFile(targetFolder);
-            File[] resources = resourceDir.listFiles(new ResourceFileFilter());
+            File[] resources = resourceDir.listFiles(new OldResourceFileFilter());
             if (resources.length > 0) {
                 Resources newGraph = DDProvider.getDefault().getResourcesGraph();
                 try {
                     for (int i = 0; i < resources.length; i++) {
-                        FileInputStream in = new java.io.FileInputStream(resources[i]);
+                        File oldResource = resources[i];
+                        FileInputStream in = new java.io.FileInputStream(oldResource);
                         Resources existResource = DDProvider.getDefault().getResourcesGraph(in);
                         newGraph = getResourceGraphs(newGraph, existResource);
+                        oldResource.delete();
                     }
                     createFile(targetFolder, newGraph);
                 } catch (Exception ex) {
@@ -1827,7 +1825,7 @@ public class ResourceUtils implements WizardConstants{
         return consolidatedGraph;
     }    
     
-    private static class ResourceFileFilter implements FileFilter {
+    private static class OldResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
             return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.ENGLISH).endsWith(".sun-resource")); //NOI18N
         }
