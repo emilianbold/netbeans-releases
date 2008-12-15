@@ -52,11 +52,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.felix.framework.Felix;
-import org.apache.felix.framework.cache.BundleCache;
-import org.apache.felix.framework.util.FelixConstants;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -124,7 +123,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
         if (activator == null) {
             Map<String,Object> configMap = new HashMap<String,Object>();
             // Configure the Felix instance to be embedded.
-            configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
+            //configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
             // Add core OSGi packages to be exported from the class path
             // via the system bundle.
             configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
@@ -140,11 +139,12 @@ public class NetigsoModuleFactory extends ModuleFactory {
             String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix";
             configMap.put("felix.cache.profiledir", cache);
             configMap.put("felix.cache.dir", cache);
+            configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
             List<BundleActivator> activators = new ArrayList<BundleActivator>();
             activators.add(activator);
             configMap.put("felix.systembundle.activators", activators);
-            felix = new Felix(configMap, activators);
+            felix = new Felix(configMap);
             felix.start();
         }
         return felix;

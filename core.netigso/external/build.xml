@@ -50,10 +50,11 @@ made subject to such option by the copyright holder.
     <target name="libs" depends="felix" description="Download necessary external libraries" />
     
     <target name="felix" depends="-init-proxy" unless="felix.downloaded">
-        <get dest="felix.zip" src="http://mirrors.enquira.com/apache/felix/felix-1.2.1.zip"/>
-        <unzip src="felix.zip" dest=".">
+        <property name="felix" value="felix-1.4.0"/>
+        <get dest="${felix}.zip" src="http://apache.mirror.superhosting.cz/felix/${felix}.zip"/>
+        <unzip src="${felix}.zip" dest=".">
             <patternset>
-                <include name="**/bin/felix.jar"/>
+                <include name="${felix}/**/bin/felix.jar"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
