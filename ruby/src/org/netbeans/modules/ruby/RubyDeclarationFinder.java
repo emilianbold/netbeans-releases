@@ -396,7 +396,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 }
                 String lhs = call.getLhs();
 
-                if ((types.isEmpty()) || (lhs != null) && (closest != null) &&
+                if (types.isEmpty() && lhs != null && closest != null &&
                         call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(closest, path);
 

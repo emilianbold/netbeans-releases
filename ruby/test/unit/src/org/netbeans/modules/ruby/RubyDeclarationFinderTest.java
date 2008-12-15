@@ -63,6 +63,10 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/declaration.rb", "ope^nssl", "openssl.rb", 0);
     }
 
+    public void testDeclaration6() throws Exception {
+        checkDeclaration("testfiles/declaration.rb", "File.fil^e?", "stub_file.rb", 12373);
+    }
+
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
     //}
