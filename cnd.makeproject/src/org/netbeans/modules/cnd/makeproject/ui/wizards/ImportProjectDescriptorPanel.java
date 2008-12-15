@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.projectimport;
+package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
@@ -48,13 +48,13 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
+public class ImportProjectDescriptorPanel implements WizardDescriptor.Panel {
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private ImportProjectPanel component;
     private WizardStorage wizardStorage= new WizardStorage();
     private boolean isValid = false;;
 
@@ -64,7 +64,7 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new ImportProjectVisualPanel1(this);
+            component = new ImportProjectPanel(this);
         }
         return component;
     }
@@ -147,6 +147,7 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
+        component.read((WizardDescriptor)settings);
     }
 
     public void storeSettings(Object settings) {
@@ -292,6 +293,34 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
         public void setBuildProject(boolean buildProject) {
             this.buildProject = buildProject;
             validate();
+        }
+    }
+
+    public static class WizardDescriptorAdapter extends WizardDescriptor{
+        private WizardStorage storage;
+        public WizardDescriptorAdapter(WizardStorage storage) {
+            this.storage = storage;
+        }
+        @Override
+        public synchronized Object getProperty(String name) {
+            if ("path".equals(name)) { // NOI18N
+                return storage.getPath();
+            } else if ("realFlags".equals(name)) { // NOI18N
+                return storage.getRealFlags();
+            } else if ("buildProject".equals(name)) { // NOI18N
+                if (storage.isBuildProject()) {
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            } else if ("setMain".equals(name)) { // NOI18N
+                if (storage.isSetMain()) {
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            }
+            return super.getProperty(name);
         }
     }
 }

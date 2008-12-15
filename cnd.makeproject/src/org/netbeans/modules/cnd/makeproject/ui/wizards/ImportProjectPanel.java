@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.projectimport;
+package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,19 +44,26 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.discovery.wizard.FileChooser;
+import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public final class ImportProjectVisualPanel1 extends JPanel {
+public final class ImportProjectPanel extends JPanel {
 
-    private final ImportProjectWizardPanel1 controller;
+    private final ImportProjectDescriptorPanel controller;
 
     /** Creates new form ImportProjectVisualPanel1 */
-    public ImportProjectVisualPanel1(ImportProjectWizardPanel1 controller) {
+    public ImportProjectPanel(ImportProjectDescriptorPanel controller) {
         initComponents();
+
+        jLabel1.setVisible(false);
+        projectFolder.setVisible(false);
+        browseButton.setVisible(false);
+
         jLabel2.setVisible(false);
         configureFlags.setVisible(false);
         buildProjectCheckBox.setVisible(false);
+
         todoPane.setBackground(jPanel1.getBackground());
         this.controller = controller;
         projectFolder.setText(controller.getWizardStorage().getPath());
@@ -115,6 +122,10 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         });
     }
 
+    void read(WizardDescriptor settings){
+        projectFolder.setText((String) settings.getProperty("simpleModeFolder")); // NOI18N
+    }
+
     private void checkFolderAndFlags(){
         boolean isProject = controller.getWizardStorage().isNbProjectFolder();
         String configure = null;
@@ -171,7 +182,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
     }
 
     private String getString(String key, String ... params){
-        return NbBundle.getMessage(ImportProjectVisualPanel1.class, key, params);
+        return NbBundle.getMessage(ImportProjectPanel.class, key, params);
     }
 
     @Override
@@ -203,14 +214,12 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(projectFolder);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportProjectPanel.class, "ImportProjectPanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
-
-        projectFolder.setText(org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.projectFolder.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -219,7 +228,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
         add(projectFolder, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ImportProjectPanel.class, "ImportProjectPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -231,17 +240,17 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         add(browseButton, gridBagConstraints);
 
         jLabel2.setLabelFor(configureFlags);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportProjectPanel.class, "ImportProjectPanel.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel2, gridBagConstraints);
-
-        configureFlags.setText(org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.configureFlags.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(configureFlags, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -275,16 +284,18 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         add(jPanel1, gridBagConstraints);
 
         setMainProjectCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setMainProjectCheckBox, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.setMainProjectCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(setMainProjectCheckBox, org.openide.util.NbBundle.getMessage(ImportProjectPanel.class, "ImportProjectPanel.setMainProjectCheckBox.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         add(setMainProjectCheckBox, gridBagConstraints);
 
         buildProjectCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(buildProjectCheckBox, org.openide.util.NbBundle.getMessage(ImportProjectVisualPanel1.class, "ImportProjectVisualPanel1.buildProjectCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buildProjectCheckBox, org.openide.util.NbBundle.getMessage(ImportProjectPanel.class, "ImportProjectPanel.buildProjectCheckBox.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -305,7 +316,7 @@ public final class ImportProjectVisualPanel1 extends JPanel {
         JFileChooser fileChooser = new FileChooser(
                 getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
-                JFileChooser.DIRECTORIES_ONLY, false,
+                JFileChooser.DIRECTORIES_ONLY, 
                 null,
                 seed,
                 false);
