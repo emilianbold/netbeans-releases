@@ -92,6 +92,7 @@ public class Generate {
     private static String license = null;
 
     static {
+        EXCEPTION_WRAPPERS.put(com.sun.jdi.InternalException.class, PACKAGE+".InternalExceptionWrapper");
         EXCEPTION_WRAPPERS.put(com.sun.jdi.ObjectCollectedException.class, PACKAGE+".ObjectCollectedExceptionWrapper");
         EXCEPTION_WRAPPERS.put(com.sun.jdi.VMDisconnectedException.class, PACKAGE+".VMDisconnectedExceptionWrapper");
     }
@@ -131,7 +132,7 @@ public class Generate {
         Writer w = new BufferedWriter(new FileWriter(cf));
         w.write(getLicense());
         w.write("\npackage "+PACKAGE+";\n\n");
-        w.write("/** Wrapper for "+name+" JDI exception */\n");
+        w.write("/** Wrapper for "+name+" JDI exception. The calling code must count with this exception being thrown. */\n");
         w.write("public final class "+cName+" extends Exception {\n");
         w.write("\n    public "+cName+"("+jdiException.getName()+" ex) {\n");
         w.write("        super(ex);\n");
@@ -357,7 +358,7 @@ public class Generate {
                     w.write(paramNames[i]);
                 }
                 w.write(");\n");
-                w.write("        } catch (");
+                w.write("        }");
                 /*// First re-throw the checked exceptions:
                 for (int i = 0; i < exceptionTypes.length; i++) {
                     w.write(exceptionTypes[i].getName());
@@ -367,26 +368,20 @@ public class Generate {
                 }*/
                 for (Iterator<Class> it = thrownWrappers.keySet().iterator(); it.hasNext(); ) {
                     Class cex = it.next();
+                    w.write(" catch (");
                     w.write(cex.getName());
                     w.write(" ex) {\n");
+                    if (com.sun.jdi.InternalException.class.equals(cex)) {
+                        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
+                    }
                     if (defaultReturn == null) {
                         w.write("            throw new "+thrownWrappers.get(cex)+"(ex);\n");
                     } else {
                         w.write("            return "+defaultReturn+";\n");
                     }
-                    w.write("        } catch (");
+                    w.write("        }");
                 }
-                w.write(com.sun.jdi.InternalException.class.getName());
-                w.write(" ex) {\n");
-                w.write("            ex = ("+com.sun.jdi.InternalException.class.getName()+") org.openide.util.Exceptions.attachMessage(ex, \"Unknown internal exception occured in debug interface layer. Please submit this to your JVM vendor.\");\n");
-                if (defaultReturn != null) {
-                    w.write("            org.openide.util.Exceptions.printStackTrace(ex);\n");
-                    w.write("            return "+defaultReturn+";\n");
-                } else {
-                    w.write("            throw ex;\n");
-                }
-                w.write("        }\n");
-                w.write("    }\n\n");
+                w.write("\n    }\n\n");
             }
             writeHigherVersionMethods(w, null, className, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
             w.write("}\n");
@@ -491,7 +486,6 @@ public class Generate {
         StringBuilder mLog = new StringBuilder(" ");
         mLog.append(mName);
         mLog.append("(");
-        String[] paramNames = new String[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             String paramType = translateType(paramTypes[i]);
             if (i > 0) mLog.append(", ");
@@ -643,6 +637,9 @@ public class Generate {
         for (Iterator<Class> it = thrownWrappers.keySet().iterator(); it.hasNext(); ) {
             Class cex = it.next();
             w.write("            if (t instanceof "+cex.getName()+") {\n");
+            if (com.sun.jdi.InternalException.class.equals(cex)) {
+                w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(("+com.sun.jdi.InternalException.class.getName()+") t);\n");
+            }
             if (defaultReturn == null) {
                 w.write("                throw new "+thrownWrappers.get(cex)+"(("+cex.getName()+") t);\n");
             } else {
@@ -651,18 +648,7 @@ public class Generate {
             w.write("            }\n");
             //w.write("        } catch (");
         }
-        w.write("            if (t instanceof "+com.sun.jdi.InternalException.class.getName()+") {\n");
-        //w.write(" ex) {\n");
-        w.write("                t = org.openide.util.Exceptions.attachMessage(t, \"Unknown internal exception occured in debug interface layer. Please submit this to your JVM vendor.\");\n");
-        if (defaultReturn != null) {
-            w.write("                org.openide.util.Exceptions.printStackTrace(t);\n");
-            w.write("                return "+defaultReturn+";\n");
-        } else {
-            w.write("                throw ("+com.sun.jdi.InternalException.class.getName()+") t;\n");
-        }
-        w.write("            } else {\n");
-        w.write("                throw new IllegalStateException(t);\n");
-        w.write("            }\n");
+        w.write("            throw new IllegalStateException(t);\n");
         w.write("        }\n");
         w.write("    }\n\n");
     }
