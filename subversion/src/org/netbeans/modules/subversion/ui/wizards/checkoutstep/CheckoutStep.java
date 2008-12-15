@@ -89,6 +89,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             workdirPanel = new CheckoutPanel();
             workdirPanel.browseWorkdirButton.addActionListener(this);
             workdirPanel.scanForProjectsCheckBox.addItemListener(this);
+            workdirPanel.atWorkingDirLevelCheckBox.addItemListener(this);
                     
             workdirPanel.workdirTextField.setText(defaultWorkingDirectory().getPath());            
             workdirPanel.workdirTextField.getDocument().addDocumentListener(this);                
@@ -119,6 +120,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                
         workdirPanel.repositoryPathTextField.setText(repositoryFile.getPath());
+        refreshWorkingCopy(new RepositoryFile[] {repositoryFile});
         if(!repositoryFile.getRevision().equals(SVNRevision.HEAD)) {
             workdirPanel.revisionTextField.setText(repositoryFile.getRevision().toString());
         } else {
@@ -266,12 +268,12 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public void insertUpdate(DocumentEvent e) {        
         validateUserInput(false);
-        refreshSkipLabel();
+        repositoryFoldersChanged();
     }
 
     public void removeUpdate(DocumentEvent e) {
         validateUserInput(false);
-        refreshSkipLabel();
+        repositoryFoldersChanged();
     }
 
     public void changedUpdate(DocumentEvent e) {        
@@ -282,7 +284,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public void focusLost(FocusEvent e) {
         validateUserInput(true);
-        refreshSkipLabel();
+        repositoryFoldersChanged();
     }
         
     public void actionPerformed(ActionEvent e) {
@@ -291,8 +293,22 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
 
     public void itemStateChanged(ItemEvent e) {
-        assert e.getSource() == workdirPanel.scanForProjectsCheckBox;
-        SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
+        Object source = e.getSource();
+        if (source == workdirPanel.scanForProjectsCheckBox) {
+            SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
+        } else if (source == workdirPanel.atWorkingDirLevelCheckBox) {
+            RepositoryFile[] repositoryFiles = null;
+            if (getRepositoryPath().length() != 0) {
+                try {
+                    repositoryFiles = repositoryPaths.getRepositoryFiles();
+                } catch (NumberFormatException ex) {
+                    // ignore
+                } catch (MalformedURLException ex) {
+                    // ignore
+                }
+            }
+            refreshWorkingCopy(repositoryFiles);
+        }
     }
     
     public File getWorkdir() {
@@ -312,9 +328,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         return workdirPanel.atWorkingDirLevelCheckBox.isSelected();
     }
 
-    private void refreshSkipLabel() {
-        if(workdirPanel.repositoryPathTextField.getText().trim().equals("")) { 
+    private void repositoryFoldersChanged() {
+        if (getRepositoryPath().equals("")) {
             resetWorkingDirLevelCheckBox();
+            refreshWorkingCopy(null);
             return;
         }        
         
@@ -326,11 +343,12 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         } catch (MalformedURLException ex) {
             // ignore
         }
-        
+
         if(repositoryFiles == null || 
            repositoryFiles.length >  1) 
         { 
             resetWorkingDirLevelCheckBox();
+            refreshWorkingCopy(repositoryFiles);
             return;
         }        
         
@@ -339,6 +357,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
            repositoryFolder.equals("."))        // or more as one folder to be checked out  
         {
             resetWorkingDirLevelCheckBox();
+            refreshWorkingCopy(repositoryFiles);
             return;
         } else {                        
             workdirPanel.atWorkingDirLevelCheckBox.setText (
@@ -347,12 +366,86 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                                          new Object[] {repositoryFolder})
             );
             workdirPanel.atWorkingDirLevelCheckBox.setEnabled(true);                
+            refreshWorkingCopy(repositoryFiles);
         }
     }
-    
+
     private void resetWorkingDirLevelCheckBox() {
         workdirPanel.atWorkingDirLevelCheckBox.setText(NbBundle.getMessage(CheckoutStep.class, "CTL_Checkout_CheckoutContentEmpty"));
         workdirPanel.atWorkingDirLevelCheckBox.setEnabled(false);
     }
+
+    private String getRepositoryPath() {
+        return workdirPanel.repositoryPathTextField.getText().trim();
+    }
+
+    private void refreshWorkingCopy(RepositoryFile[] repositoryFiles) {
+        String localFolderPath = trimTrailingSlashes(workdirPanel.workdirTextField.getText().trim());
+        int filesCount = (repositoryFiles != null) ? repositoryFiles.length : 0;
+
+        String workingCopyPath;
+        if (filesCount == 0) {
+            workingCopyPath = localFolderPath;
+        } else {
+            String repositoryFilePath = trimSlashes(repositoryFiles[0].getPath());
+            if (repositoryFilePath.equals(".")) {                       //NOI18N
+                repositoryFilePath = "";                                //NOI18N
+            }
+            if ((filesCount == 1)
+                && (workdirPanel.atWorkingDirLevelCheckBox.isSelected()
+                    || (repositoryFilePath.length() == 0))) {
+                workingCopyPath = localFolderPath;
+            } else {
+                String repositoryFolderName = repositoryFiles[0].getName();
+                StringBuilder buf = new StringBuilder(localFolderPath.length()
+                                                      + repositoryFolderName.length()
+                                                      + 10);
+                buf.append(localFolderPath).append(File.separatorChar).append(repositoryFolderName);
+                if (filesCount > 1) {
+                    buf.append(", ...");                                //NOI18N
+                }
+                workingCopyPath = buf.toString();
+            }
+        }
+        workdirPanel.workingCopy.setText(workingCopyPath);
+    }
+
+    private static String trimTrailingSlashes(String path) {
+        return trimSlashes(path, true);
+    }
+
+    private static String trimSlashes(String path) {
+        return trimSlashes(path, false);
+    }
+
+    private static String trimSlashes(String path, boolean trailingOnly) {
+        final int length = path.length();
+        if (length == 0) {
+            return path;
+        }
+
+        int startIndex = 0;
+        if (!trailingOnly) {
+            while ((startIndex < length) && (path.charAt(startIndex) == '/')) {
+                startIndex++;
+            }
+            if (startIndex == length) {
+                return "";                                              //NOI18N
+            }
+        }
+
+        int endIndex = length;
+        while ((endIndex != 0) && (path.charAt(endIndex - 1) == '/')) {
+            endIndex--;
+        }
+        if (endIndex == 0) {
+            return "";                                                  //NOI18N
+        }
+
+        return (startIndex == 0) && (endIndex == length)
+               ? path
+               : path.substring(startIndex, endIndex);
+    }
+
 }
 
