@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -112,6 +113,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         rootFolderButton = new javax.swing.JButton();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
+        alertPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
         labelForRoot = new javax.swing.JLabel();
         prividersComboBox = new javax.swing.JComboBox();
         labelForProviders = new javax.swing.JLabel();
@@ -141,6 +144,10 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(rootFolderButton, gridBagConstraints);
 
+        instructionPanel.setEnabled(false);
+        instructionPanel.setFocusable(false);
+        instructionPanel.setRequestFocusEnabled(false);
+        instructionPanel.setVerifyInputWhenFocusTarget(false);
         instructionPanel.setLayout(new java.awt.GridBagLayout());
 
         instructionsTextArea.setBackground(instructionPanel.getBackground());
@@ -149,12 +156,26 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         instructionsTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         instructionPanel.add(instructionsTextArea, gridBagConstraints);
+
+        alertPanel.setLayout(new java.awt.BorderLayout());
+
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/info.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SelectProviderPanel.class, "selectedAdvancedLabel")); // NOI18N
+        alertPanel.add(jLabel1, java.awt.BorderLayout.SOUTH);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        instructionPanel.add(alertPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -269,8 +290,10 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel alertPanel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel labelForProviders;
     private javax.swing.JLabel labelForRoot;
     private javax.swing.JComboBox prividersComboBox;
@@ -373,6 +396,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     boolean valid(DiscoveryDescriptor wizardDescriptor) {
+  	    wizardDescriptor.setMessage(null);
         String path = rootFolder.getText();
         File file = new File(path);
         if (!(file.exists() && file.isDirectory())) {
@@ -392,7 +416,13 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         }
         return true;
     }
-    
+
+   void showAlert(DiscoveryDescriptor wizardDescriptor){
+        Object o = ((WizardDescriptor)wizardDescriptor).getProperty("ShowAlert");
+        alertPanel.setVisible(Boolean.TRUE.equals(o));
+    }
+
+
     private String getString(String key) {
         return NbBundle.getBundle(SelectProviderPanel.class).getString(key);
     }

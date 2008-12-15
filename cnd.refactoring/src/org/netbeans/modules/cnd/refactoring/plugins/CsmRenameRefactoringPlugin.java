@@ -46,27 +46,19 @@ import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
@@ -85,31 +77,28 @@ import org.openide.util.Utilities;
  *
  * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
  */
-public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
-    
-    private final CsmObject startReferenceObject;
-    private Collection overriddenByMethods = null; // methods that override the method to be renamed
-    private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
-    private boolean doCheckName = true;
-    private Collection<CsmObject> referencedObjects;
+public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin {
+
     private final RenameRefactoring refactoring;
+    // objects affected by refactoring
+    private Collection<CsmObject> referencedObjects;
     
     /** Creates a new instance of RenameRefactoring */
     public CsmRenameRefactoringPlugin(RenameRefactoring rename) {
+        super(rename);
         this.refactoring = rename;
-        startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);     
-        assert startReferenceObject != null : "no start reference";
     }
-    
-    private static final String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
+
+    @Override
+    protected Collection<CsmObject> getRefactoredObjects() {
+        return referencedObjects == null ? null : Collections.unmodifiableCollection(referencedObjects);
     }
-    
+
     @Override
     public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
         String newName = refactoring.getNewName();
-        String oldName = CsmRefactoringUtils.getSimpleText(startReferenceObject);
+        String oldName = CsmRefactoringUtils.getSimpleText(getStartReferenceObject());
         
         if (oldName.equals(newName)) {
             fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged")); // NOI18N
@@ -128,112 +117,30 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     }
     
     @Override
-    public Problem checkParameters() {
-        return fastCheckParameters();
-    }
-    
-    @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 5);
         if (this.referencedObjects == null) {
-            initReferencedObjects(startReferenceObject);
+            initReferencedObjects();
             fireProgressListenerStep();
         }    
-        preCheckProblem = isResovledElement(startReferenceObject);
+        preCheckProblem = isResovledElement(getStartReferenceObject());
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         // check read-only elements
-        preCheckProblem = checkRenameInFile(preCheckProblem, directReferencedObject);
-        fireProgressListenerStep();
-        if (preCheckProblem != null) {
-            return preCheckProblem;            
-        }
-        if (CsmKindUtilities.isMethod(directReferencedObject)) {
-            fireProgressListenerStep();
-            CsmMethod method = (CsmMethod)directReferencedObject;
-            if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true);
-                if (overridenMethods.size() > 1) {
-                    // check all overriden methods
-                    for (CsmMethod csmMethod : overridenMethods) {
-                        preCheckProblem = checkRenameInFile(preCheckProblem, csmMethod);
-                        CsmFunction def = csmMethod.getDefinition();
-                        if (def != null && !csmMethod.equals(def)) {
-                            preCheckProblem = checkRenameInFile(preCheckProblem, def);
-                        }
-                    }
-                    boolean fatal = (preCheckProblem != null);
-                    String msg = fatal? getString("ERR_Overrides_Fatal") : getString("ERR_OverridesOrOverriden");
-                    preCheckProblem = createProblem(preCheckProblem, fatal, msg);                    
-                }
-            }
-        } else {
-            fireProgressListenerStep();
-        }
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
         fireProgressListenerStop();
         return preCheckProblem;
-    }
-    
-    public Problem prepare(RefactoringElementsBag elements) {
-        if (this.referencedObjects == null || this.referencedObjects.size() == 0) {
-            return null;
-        }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
-        CsmFile startFile = getCsmFile(startReferenceObject);
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
-            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
-            refactoring.getContext().add(ar);
-            files.addAll(getRelevantFiles(startFile, obj, refactoring));
-        }
-        fireProgressListenerStart(ProgressEvent.START, files.size());
-        createAndAddElements(files, elements, refactoring);
-        fireProgressListenerStop();        
-        return null;
-    }
-    
-    @Override
-    protected ModificationResult processFiles(Collection<CsmFile> files) {
-        ModificationResult out = null;
-        for (CsmFile csmFile : files) {
-            if (cancelRequest) {
-                // may be return what we already have?
-                return null;
-            }
-            if (out == null) {
-                out = new ModificationResult(csmFile.getProject());
-            }
-            processFile(csmFile, out);            
-            fireProgressListenerStep();
-        }
-        return out;
-    }
-    
+    }   
+
     private static final String getString(String key) {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
-    private static Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
-        CsmFile csmFile = null; 
-        if (CsmKindUtilities.isFile(csmObject)) {
-            csmFile = (CsmFile) csmObject;
-        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
-            csmFile = ((CsmOffsetable)csmObject).getContainingFile();
-        }
-        if (csmFile != null) {
-            FileObject fo = CsmUtilities.getFileObject(csmFile);
-            if (!CsmRefactoringUtils.isRefactorable(fo)) {
-                problem = createProblem(problem, true, getCannotRename(fo));
-            }            
-        }
-        return problem;
-    }
-
-    private void initReferencedObjects(CsmObject startReferenceObject) {
-        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+    private void initReferencedObjects() {
+        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         if (referencedObject != null) {
             this.referencedObjects = new LinkedHashSet<CsmObject>();
             if (CsmKindUtilities.isClass(referencedObject)) {
@@ -272,41 +179,24 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
             }
         }
         return out;
+    }
 
-    }
-    
-    private void processFile(CsmFile csmFile, ModificationResult mr) {
-        assert this.referencedObjects != null && this.referencedObjects.size() > 0: "method must be called for resolved element";
-        FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
-            refs.addAll(curRefs);
-        }
-        if (refs.size() > 0) {
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
-            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
-                public int compare(CsmReference o1, CsmReference o2) {
-                    return o1.getStartOffset() - o2.getStartOffset();
-                }
-            });
-            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-            String newName = refactoring.getNewName();
-            for (CsmReference ref : sortedRefs) {
-                String oldName = ref.getText().toString();
-                String descr = getDescription(ref, oldName);
-                Difference diff = rename(ref, ces, oldName, newName, descr);
-                assert diff != null;
-                mr.addDifference(fo, diff);
-            }
+    protected final void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
+        String newName = refactoring.getNewName();
+        for (CsmReference ref : sortedRefs) {
+            String oldName = ref.getText().toString();
+            String descr = getDescription(ref, oldName);
+            Difference diff = rename(ref, ces, oldName, newName, descr);
+            assert diff != null;
+            mr.addDifference(fo, diff);
         }
     }
-    
+
     private String getDescription(CsmReference ref, String targetName) {
         String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateRef", targetName);
         return out;
     }
-    
+
     private Difference rename(CsmReference ref, CloneableEditorSupport ces,
             String oldName, String newName, String descr) {
         if (oldName == null) {

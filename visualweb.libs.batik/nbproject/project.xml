@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.cssengine</friend>
                 <friend>org.netbeans.modules.visualweb.designer.markup</friend>
+                <friend>org.netbeans.modules.visualweb.kit</friend>
                 <package>org.apache.batik</package>
                 <package>org.apache.batik.css.engine</package>
                 <package>org.apache.batik.css.engine.sac</package>

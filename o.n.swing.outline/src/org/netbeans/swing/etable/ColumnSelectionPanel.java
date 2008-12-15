@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -99,6 +99,7 @@ class ColumnSelectionPanel extends JPanel {
     /**
      * Adds checkbox for each ETableColumn contained in the columns parameter.
      */
+    @SuppressWarnings("unchecked")
     private void layoutPanel(List columns, int width, ETable table) {
         Map<String, Object> displayNameToCheckBox = new HashMap<String, Object>();
         ArrayList<String> displayNames = new ArrayList<String>();
@@ -182,7 +183,7 @@ class ColumnSelectionPanel extends JPanel {
         }
         for (Iterator it = checkBoxes.keySet().iterator(); it.hasNext(); ) {
             ETableColumn etc = (ETableColumn) it.next();
-            JCheckBox checkBox = (JCheckBox)checkBoxes.get(etc);
+            JCheckBox checkBox = checkBoxes.get (etc);
             columnModel.setColumnHidden(etc,! checkBox.isSelected());
         }
     }
@@ -190,6 +191,7 @@ class ColumnSelectionPanel extends JPanel {
     /**
      * Shows the popup allowing to show/hide columns.
      */
+    @SuppressWarnings("unchecked")
     static void showColumnSelectionPopup(Component c, final ETable table) {
         if( !table.isColumnHidingAllowed() )
             return;

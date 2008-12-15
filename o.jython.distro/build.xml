@@ -20,9 +20,7 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- Jython+Rails stuff -->
             <include name="jython-${jython_src_version}/**"/>
-            <!--
             <exclude name="jython-${jython_src_version}/**/netbeans-index-*.zip"/>
-            -->
         </patternset>
     </target>    
 

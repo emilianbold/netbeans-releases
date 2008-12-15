@@ -168,7 +168,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 // up and do it a bit more cleverly
                 types = getTypesForConstant(lhs);
                 if (types.isEmpty()) {
-                    types = createTypeAnalyzer(request, method).getTypes(_lhs);
+                    types = createTypeAnalyzer(request, method).inferTypes(_lhs);
                 }
                 if (!types.isEmpty() && call.isLHSConstant()) {
                     // lhs is not a class or module, is a constant for which we have
@@ -240,7 +240,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         // Try just the method call (e.g. across all classes). This is ignoring the
         // left hand side because we can't resolve it.
-        if ((methods.isEmpty()) || types.contains(null)) {
+        if ((methods.isEmpty()) || types.contains(RubyTypeAnalyzer.UNKNOWN_TYPE)) {
             methods = getIndex().getMethods(prefix, null, kind);
         }
 
@@ -612,9 +612,9 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         Set<? extends IndexedConstant> constants = getIndex().getConstants(constantFqn);
         for (IndexedConstant indexedConstant : constants) {
             if (module.equals(indexedConstant.getFqn())) {
-                String type = indexedConstant.getType();
-                if (type != null) {
-                    return Collections.singleton(type);
+                Set<? extends String> types = indexedConstant.getTypes();
+                if (types != null) {
+                    return types;
                 }
             }
         }

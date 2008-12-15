@@ -576,8 +576,8 @@ public final class RubyIndex {
             signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedMethod m =
-            IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
+        IndexedMethod m = IndexedMethod.create(this, signature, fqn, clz,
+                fileUrl, require, attributes, flags, context);
 
         m.setInherited(inherited);
         return m;
@@ -630,10 +630,11 @@ public final class RubyIndex {
         String name = typeIndex == -1 ? signature : signature.substring(0, typeIndex);
         int flags = 0;
 
+        // TODO parse possibly multiple types
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
-        IndexedConstant m =IndexedConstant.create(
-                this, name, classFQN, fileUrl, require, flags, context, type);
+        IndexedConstant m = IndexedConstant.create(
+                this, name, classFQN, fileUrl, require, flags, context, Collections.singleton(type));
 
         return m;
     }
@@ -1838,7 +1839,7 @@ public final class RubyIndex {
         return getPreindexUrl(url, null);
     }
     static String getPreindexUrl(String url, FileObject context) {
-        if (RubyIndexer.PREINDEXING) {
+        if (RubyIndexer.isPreindexing()) {
             Iterator<RubyPlatform> it = null;
             if (context != null && context.isValid()) {
                 Project project = FileOwnerQuery.getOwner(context);

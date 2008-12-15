@@ -41,9 +41,12 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.openide.filesystems.FileObject;
@@ -61,6 +64,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
+    
     /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
     public static final int BLOCK = 1 << 6;
     /** This method takes an optional block */
@@ -77,25 +81,22 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private boolean smart;
     private boolean inherited; 
     private MethodType methodType = MethodType.METHOD;
-    
+
     private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags, FileObject context) {
+            String clz, String require, String attributes, int flags, FileObject context) {
         super(index, fileUrl, fqn, clz, require, attributes, flags, context);
         this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags, FileObject context) {
-        IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
-
-        return m;
+            String fileUrl, String require, String attributes, int flags, FileObject context) {
+        return new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
     }
     
     public MethodType getMethodType() {
         return methodType;
     }
-    
+
     public void setMethodType(MethodType methodType) {
         this.methodType = methodType;
     }
@@ -262,5 +263,34 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     
     public String getEncodedAttributes() {
         return attributes;
+    }
+
+    @Override
+    public Set<? extends String> getTypes() {
+        if (types == null) {
+            int lastSemiColon = attributes.lastIndexOf(';');
+            if (lastSemiColon != -1) {
+                int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon -1);
+                if (lastSemiColon != -1) {
+                    String typesS = attributes.substring(last2SemiColon + 1, lastSemiColon);
+                    types = parseTypes(typesS);
+                }
+            }
+        }
+        if (types == null) {
+            types = Collections.emptySet();
+        }
+        return types;
+    }
+
+    private Set<? extends String> parseTypes(final String typesS) {
+        if (typesS.length() == 0) {
+            return Collections.emptySet();
+        }
+        if (!typesS.contains("|")) { // just one type
+            return Collections.singleton(typesS);
+        }
+        return new HashSet<String>(Arrays.asList(typesS.split("\\|"))); // NOI18N
+
     }
 }

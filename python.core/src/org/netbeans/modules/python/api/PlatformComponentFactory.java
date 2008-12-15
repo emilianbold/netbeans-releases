@@ -219,7 +219,15 @@ public final class PlatformComponentFactory {
             PythonPlatform[] platforms = _platforms.toArray(new PythonPlatform[_platforms.size()]);
             Arrays.sort(platforms, new Comparator<PythonPlatform>() {
                 public int compare(PythonPlatform p1, PythonPlatform p2) {
-                    int res = Collator.getInstance().compare(p1.getName(), p2.getName());
+                    String p1Name = p1.getName();
+                    String p2Name = p2.getName();
+                    if (p1Name == null) {
+                        p1Name = "";
+                    }
+                    if (p2Name == null) {
+                        p2Name = "";
+                    }
+                    int res = Collator.getInstance().compare(p1Name,p2Name);
                     if (res != 0) {
                         return res;
                     } else {
