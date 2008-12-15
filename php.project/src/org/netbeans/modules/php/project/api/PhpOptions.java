@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPRETER;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_SESSION_ID;
@@ -135,9 +136,20 @@ public final class PhpOptions {
     /**
      * Get the global PHP include path.
      * @return the global PHP include path or an empty String if no folders are defined.
+     * @see #getPhpGlobalIncludePathAsArray()
      */
     public String getPhpGlobalIncludePath() {
         return getPhpOptions().getPhpGlobalIncludePath();
+    }
+
+    /**
+     * Get the global PHP include path as array of strings.
+     * @return the global PHP include path as array or an empty array of strings if no folders are defined.
+     * @see #getPhpGlobalIncludePath()
+     * @since 2.7
+     */
+    public String[] getPhpGlobalIncludePathAsArray() {
+        return PropertyUtils.tokenizePath(getPhpGlobalIncludePath());
     }
 
     /**

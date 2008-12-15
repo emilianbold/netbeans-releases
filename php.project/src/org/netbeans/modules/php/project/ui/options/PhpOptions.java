@@ -163,8 +163,11 @@ public final class PhpOptions {
         getPreferences().putBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, debuggerStoppedAtTheFirstLine);
     }
 
-    // XXX the default value could be improved (OS dependent)
+    /**
+     * @see #getPhpGlobalIncludePathAsArray()
+     */
     public String getPhpGlobalIncludePath() {
+        // XXX the default value could be improved (OS dependent)
         String phpGlobalIncludePath = getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, null);
         if (phpGlobalIncludePath == null) {
             // first time we want to read it => write an empty string to the global properties so property evaluator is not confused
@@ -173,6 +176,10 @@ public final class PhpOptions {
             phpGlobalIncludePath = ""; // NOI18N
         }
         return phpGlobalIncludePath;
+    }
+
+    public String[] getPhpGlobalIncludePathAsArray() {
+        return PropertyUtils.tokenizePath(getPhpGlobalIncludePath());
     }
 
     public void setPhpGlobalIncludePath(String phpGlobalIncludePath) {
