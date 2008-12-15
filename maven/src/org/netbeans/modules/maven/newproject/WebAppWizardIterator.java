@@ -40,25 +40,13 @@
 package org.netbeans.modules.maven.newproject;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,7 +57,6 @@ public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiat
     
     private int index;
     private WizardDescriptor.Panel[] panels;
-    private ArchetypeProviderImpl ngprovider;
     private WizardDescriptor wiz;
     
     private WebAppWizardIterator() {}
@@ -96,86 +83,7 @@ public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiat
     }
     
     public Set instantiate(ProgressHandle handle) throws IOException {
-        try {
-            handle.start(4);
-            handle.progress(1);
-            final File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); //NOI18N
-            final File parent = dirF.getParentFile();
-            if (parent != null && parent.exists()) {
-                ProjectChooser.setProjectsFolder(parent);
-            }
-
-            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-//            final Archetype archetype = (Archetype)wiz.getProperty("archetype"); //NOI18N<
-            dirF.getParentFile().mkdirs();
-
-            handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), 2);
-            ngprovider.runArchetype(dirF.getParentFile(), wiz);
-//            } else {
-//                final String art = (String)wiz.getProperty("artifactId"); //NOI18N
-//                final String ver = (String)wiz.getProperty("version"); //NOI18N
-//                final String gr = (String)wiz.getProperty("groupId"); //NOI18N
-//                final String pack = (String)wiz.getProperty("package"); //NOI18N
-//                runArchetype(dirF.getParentFile(), gr, art, ver, pack, archetype);
-//            }
-            handle.progress(3);
-            // Always open top dir as a project:
-            FileObject fDir = FileUtil.toFileObject(dirF);
-            if (fDir != null) {
-                // the archetype generation didn't fail.
-                resultSet.add(fDir);
-                addJavaRootFolders(fDir);
-                // Look for nested projects to open as well:
-                Enumeration e = fDir.getFolders(true);
-                while (e.hasMoreElements()) {
-                    FileObject subfolder = (FileObject) e.nextElement();
-                    if (ProjectManager.getDefault().isProject(subfolder)) {
-                        resultSet.add(subfolder);
-                        addJavaRootFolders(subfolder);
-                    }
-                }
-                Project prj = ProjectManager.getDefault().findProject(fDir);
-                if (prj != null) {
-                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-                    if (nbprj != null) { //#147006 how can this happen?
-                        // maybe when the archetype contains netbeans specific project files?
-                        prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-                    }
-                }
-            }
-            return resultSet;
-        } finally {
-            handle.finish();
-        }
-    }
-
-    private void addJavaRootFolders(FileObject fo) {
-        try {
-            Project prj = ProjectManager.getDefault().findProject(fo);
-            if (prj == null) { //#143596
-                return;
-            }
-            NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
-            if (watch != null) {
-                // do not create java/test for pom type projects.. most probably not relevant.
-                if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
-                    URI mainJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getSourceDirectory());
-                    URI testJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getTestSourceDirectory());
-                    File file = new File(mainJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                    file = new File(testJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        return ArchetypeWizardUtils.instantiate(handle, wiz);
     }
     
     public void initialize(WizardDescriptor wiz) {
@@ -200,8 +108,6 @@ public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiat
                 jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
             }
         }
-        ngprovider = new ArchetypeProviderImpl();
-        wiz.putProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR, ngprovider);
     }
     
     public void uninitialize(WizardDescriptor wiz) {

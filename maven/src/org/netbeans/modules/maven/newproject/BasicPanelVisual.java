@@ -93,7 +93,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
 
     private boolean changedPackage = false;
     
-    private ArchetypeProviderImpl ngprovider;
+    private ArchetypeWizardUtils ngprovider;
 
     private boolean webAppWizard;
 
@@ -467,7 +467,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
-        ngprovider = (ArchetypeProviderImpl)settings.getProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR);
+        ngprovider = (ArchetypeWizardUtils)settings.getProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR);
         final Archetype arch = getArchetype(settings);
         lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
         lblAdditionalProps.setVisible(true);
