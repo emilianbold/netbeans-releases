@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
@@ -75,55 +74,34 @@ import org.openide.util.NbBundle;
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
-    private Phase whatRun = Phase.DEFAULT;
-    private Problem problem;
     protected volatile boolean cancelRequest = false;
     
-    public void cancel() {
-    }
-    
     public Problem preCheck() {
-        return run(Phase.PRECHECK);
+        return null;
     }
 
     public Problem checkParameters() {
-        return run(Phase.CHECKPARAMETERS);
+        return fastCheckParameters();
     }
 
     public Problem fastCheckParameters() {
-        return run(Phase.FASTCHECKPARAMETERS);
-    }
-
-    private Problem run(Phase s) {
-        this.whatRun = s;
-        this.problem = null;
-//        if (js==null) {
-//            return null;
-//        }
-//        try {
-//            js.runUserActionTask(this, true);
-//        } catch (IOException ex) {
-//            throw new RuntimeException(ex);
-//        }
-        return problem;
-    }
-    
-    public void cancelRequest() {
-        cancelRequest = true;
-//        if (currentTask!=null) {
-//            currentTask.cancel();
-//        }
-    }
-    
-    protected ModificationResult processFiles(Collection<CsmFile> files) {
         return null;
     }
+    
+    public final void cancelRequest() {
+        cancelRequest = true;
+    }
+
+    protected final boolean isCancelled() {
+        return cancelRequest;
+    }
+    
+    protected abstract ModificationResult processFiles(Collection<CsmFile> files);
     
     private Collection<ModificationResult> processFiles(Iterable<? extends List<CsmFile>> fileGroups) {
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         for (List<CsmFile> list : fileGroups) {
-            if (cancelRequest) {
+            if (isCancelled()) {
                 // may be return partial "results"?
                 return Collections.<ModificationResult>emptyList();
             }
