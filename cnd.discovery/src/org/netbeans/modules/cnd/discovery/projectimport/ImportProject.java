@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardPanel1.WizardStorage;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
@@ -91,6 +90,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -123,10 +123,9 @@ public class ImportProject {
     private boolean runMake;
     private boolean postponeModel;
 
-
-    public ImportProject(WizardStorage wizardStorage) {
+    public ImportProject(WizardDescriptor wizard) {
         if (TRACE) {logger.setLevel(Level.ALL);}
-        String path = wizardStorage.getPath().trim();
+        String path = (String) wizard.getProperty("path");  // NOI18N
         dirF = new File(path);
         name = dirF.getName();
         makefileName = "Makefile-"+name+".mk"; // NOI18N
@@ -141,14 +140,14 @@ public class ImportProject {
             } else {
                 file = new File(path + "/configure"); // NOI18N
                 configurePath = file.getAbsolutePath();
-                configureArguments = wizardStorage.getRealFlags();
+                configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
                 runConfigure = true;
                 file = new File(path + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         }
-        runMake = wizardStorage.isBuildProject();
-        setAsMain = wizardStorage.isSetMain();
+        runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
+        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
@@ -178,52 +177,15 @@ public class ImportProject {
             configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
             configurePath = FilePathAdaptor.normalize(configurePath);
             importantItems.add(configurePath);
-
-            try {
-                FileObject configureFileObject = FileUtil.toFileObject(configureFile);
-                DataObject dObj = DataObject.find(configureFileObject);
-                Node node = dObj.getNodeDelegate();
-
-                // Add arguments to configure script?
-                if (configureArguments != null) {
-                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                    // Keep user arguments as is in args[0]
-                    ses.setArguments(new String[]{configureArguments});
-                }
-                // Possibly run the configure script
-                if (runConfigure) {
-                    // If no makefile, create empty one so it shows up in Interesting Files
-                    //if (!makefileFile.exists()) {
-                    //    makefileFile.createNewFile();
-                    //}
-                    final boolean userRunMake = runMake;
-                    //final File configureLog = createTempFile("configure");
-                    ExecutionListener listener = new ExecutionListener() {
-                        public void executionStarted() {
-                        }
-                        public void executionFinished(int rc) {
-                            if (userRunMake && rc == 0) {
-                                //parseConfigureLog(configureLog);
-                                makeProject(false);
-                            }
-                        }
-                    };
-                    if (runMake) {
-                        runMake = false;
-                        postponeModel = true;
-                    }
-                    if (TRACE) {logger.log(Level.INFO, "#configure "+configureArguments);} // NOI18N
-                    ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
-                }
-            } catch (DataObjectNotFoundException e) {
-            }
+            postConfigure(configureFile);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
 
-        SourceFolderInfo info = new SourceFolderInfo() {
+        List<SourceFolderInfo> sources = new ArrayList<SourceFolderInfo>();
+        sources.add(new SourceFolderInfo() {
             public File getFile() {
                 return dirF;
             }
@@ -237,9 +199,7 @@ public class ImportProject {
             public FileFilter getFileFilter() {
                 return AllSourceFileFilter.getInstance();
             }
-        };
-        List<SourceFolderInfo> sources = new ArrayList<SourceFolderInfo>();
-        sources.add(info);
+        });
         makeProject = ProjectGenerator.createProject(dirF, name, makefileName, 
                 new MakeConfiguration[]{extConf}, sources.iterator(), importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(dirF);
@@ -286,6 +246,46 @@ public class ImportProject {
             return file;
         } catch (IOException ex) {
             return null;
+        }
+    }
+
+    private void postConfigure(File configureFile) throws IOException {
+        try {
+            FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+            DataObject dObj = DataObject.find(configureFileObject);
+            Node node = dObj.getNodeDelegate();
+            // Add arguments to configure script?
+            if (configureArguments != null) {
+                ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                // Keep user arguments as is in args[0]
+                ses.setArguments(new String[]{configureArguments});
+            }
+            // Possibly run the configure script
+            if (runConfigure) {
+                // If no makefile, create empty one so it shows up in Interesting Files
+                //if (!makefileFile.exists()) {
+                //    makefileFile.createNewFile();
+                //}
+                final boolean userRunMake = runMake;
+                //final File configureLog = createTempFile("configure");
+                ExecutionListener listener = new ExecutionListener() {
+                    public void executionStarted() {
+                    }
+                    public void executionFinished(int rc) {
+                        if (userRunMake && rc == 0) {
+                            //parseConfigureLog(configureLog);
+                            makeProject(false);
+                        }
+                    }
+                };
+                if (runMake) {
+                    runMake = false;
+                    postponeModel = true;
+                }
+                if (TRACE) {logger.log(Level.INFO, "#configure " + configureArguments); } // NOI18N
+                ShellRunAction.performAction(node, listener, null); //, new BufferedWriter(new FileWriter(configureLog)));
+            }
+        } catch (DataObjectNotFoundException e) {
         }
     }
 
