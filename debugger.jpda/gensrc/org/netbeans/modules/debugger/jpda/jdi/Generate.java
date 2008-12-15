@@ -59,6 +59,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,15 +88,71 @@ public class Generate {
 
     private static final Map<Class, String> EXCEPTION_WRAPPERS = new LinkedHashMap<Class, String>();
 
+    private static final Map<String/*class name*/, Map<String/*method*/, Set<Class/*exception*/>>> EXCEPTIONS_BY_METHODS = new LinkedHashMap<String, Map<String, Set<Class>>>();
+
+    // Fake values can be returned if these exceptions are thrown:
+    private static final Set<Class> SILENT_EXCEPTIONS = Collections.unmodifiableSet(new HashSet<Class>(Arrays.asList(new Class[] {
+           com.sun.jdi.InternalException.class, com.sun.jdi.ObjectCollectedException.class, com.sun.jdi.VMDisconnectedException.class })));
+    
     private static final String METHODS_BY_JDK = "MethodsByJDK";
 
     private static String license = null;
 
+    // Runtime exceptions:
+    // VMDisconnectedException on all JDI calls
+    // InternalException on all JDI calls
+    // ObjectCollectedException on all calls on ObjectReference
+    // Other exceptions on selected methods
+
     static {
-        EXCEPTION_WRAPPERS.put(com.sun.jdi.InternalException.class, PACKAGE+".InternalExceptionWrapper");
-        EXCEPTION_WRAPPERS.put(com.sun.jdi.ObjectCollectedException.class, PACKAGE+".ObjectCollectedExceptionWrapper");
-        EXCEPTION_WRAPPERS.put(com.sun.jdi.VMDisconnectedException.class, PACKAGE+".VMDisconnectedExceptionWrapper");
+        Map<String, Set<Class>> AllClassExceptions = new LinkedHashMap<String, Set<Class>>();
+        AllClassExceptions.put("*", new HashSet<Class>(Arrays.asList(
+                new Class[] { com.sun.jdi.InternalException.class,
+                              com.sun.jdi.VMDisconnectedException.class })));
+        EXCEPTIONS_BY_METHODS.put("*", AllClassExceptions);
+
+        Map<String, Set<Class>> ReferenceTypeExceptions = new LinkedHashMap<String, Set<Class>>();
+        ReferenceTypeExceptions.put("fields", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("visibleFields", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("allFields", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("fieldByName", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("methods", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("visibleMethods", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("allMethods", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("methodsByName", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("allLineLocations", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("locationsOfLine", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ReferenceType.class.getName(), ReferenceTypeExceptions);
+        Map<String, Set<Class>> ClassTypeExceptions = new LinkedHashMap<String, Set<Class>>();
+        ClassTypeExceptions.put("interfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ClassTypeExceptions.put("allInterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ClassTypeExceptions.put("setValue", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class)); // JDWP protocol says that this can be thrown!
+        ClassTypeExceptions.put("concreteMethodByName", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ClassType.class.getName(), ClassTypeExceptions);
+        Map<String, Set<Class>> InterfaceTypeExceptions = new LinkedHashMap<String, Set<Class>>();
+        InterfaceTypeExceptions.put("superinterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.InterfaceType.class.getName(), InterfaceTypeExceptions);
+
+        Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
+        ThreadReferenceExceptions.put("popFrames", new HashSet<Class>(Arrays.asList(
+                new Class[] { com.sun.jdi.NativeMethodException.class,
+                              com.sun.jdi.InvalidStackFrameException.class })));
+        ThreadReferenceExceptions.put("forceEarlyReturn", new HashSet<Class>(Arrays.asList(
+                new Class[] { com.sun.jdi.NativeMethodException.class,
+                              com.sun.jdi.InvalidStackFrameException.class })));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ThreadReference.class.getName(), ThreadReferenceExceptions);
+
+        Map<String, Set<Class>> StackFrameExceptions = new LinkedHashMap<String, Set<Class>>();
+        StackFrameExceptions.put("*", Collections.singleton((Class) com.sun.jdi.InvalidStackFrameException.class));
+        StackFrameExceptions.put("visibleVariableByName", Collections.singleton((Class) com.sun.jdi.NativeMethodException.class));
+        StackFrameExceptions.put("visibleVariables", Collections.singleton((Class) com.sun.jdi.NativeMethodException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.StackFrame.class.getName(), StackFrameExceptions);
+
+        Map<String, Set<Class>> MonitorInfoExceptions = new LinkedHashMap<String, Set<Class>>();
+        MonitorInfoExceptions.put("*", Collections.singleton((Class) com.sun.jdi.InvalidStackFrameException.class));
+        EXCEPTIONS_BY_METHODS.put("com.sun.jdi.MonitorInfo", MonitorInfoExceptions);
     }
+
 
     private static String readLicense() throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -125,7 +182,7 @@ public class Generate {
         return license;
     }
 
-    private static void generateWrapperException(File dir, Class jdiException) throws IOException {
+    private static String generateWrapperException(File dir, Class jdiException) throws IOException {
         String name = jdiException.getSimpleName();
         String cName = name + "Wrapper";
         File cf = new File(dir, cName+".java");
@@ -139,6 +196,7 @@ public class Generate {
         w.write("    }\n\n");
         w.write("}\n");
         w.close();
+        return PACKAGE+"."+cName;
     }
 
     private static List<Class> getJDIClasses() throws IOException {
@@ -178,9 +236,16 @@ public class Generate {
 
     private static void generate(File dir) throws IOException {
         List<Class> classes = getJDIClasses();
-        for (Class ec : EXCEPTION_WRAPPERS.keySet()) {
-            generateWrapperException(dir, ec);
+        for (Map<String, Set<Class>> map : EXCEPTIONS_BY_METHODS.values()) {
+            for (Set<Class> set : map.values()) {
+                for (Class ex : set) {
+                    if (!EXCEPTION_WRAPPERS.containsKey(ex)) {
+                        EXCEPTION_WRAPPERS.put(ex, generateWrapperException(dir, ex));
+                    }
+                }
+            }
         }
+        EXCEPTION_WRAPPERS.put(com.sun.jdi.ObjectCollectedException.class, generateWrapperException(dir, com.sun.jdi.ObjectCollectedException.class));
 
         // Add classes and methods that are in JDK 1.6 and higher versions and generate reflection calls
         String jdkVersion = System.getProperty("java.specification.version");
@@ -198,7 +263,7 @@ public class Generate {
         Writer log = new BufferedWriter(new FileWriter(jdkLogFile));
         // Information about all JDI methods of the current JDK version are stored
         // in the following form:
-        // <class name>:<wrapper class simple name>
+        // <class name>:<wrapper class simple name> [isObjectReference]
         //  <method name>(<generic parameter types>):<generic return type>:<default return value> throws <exception classes>
 
         Map<String, List<String>> higherVersionMethods = getHigherVersionMethods(rootResource, jdkVersion);
@@ -316,31 +381,40 @@ public class Generate {
                 log.write("\n");
                 
                 // Add wrappers of JDI runtime exceptions...
-                Map<Class, String> thrownWrappers;
-                //if (defaultReturn != null) {
-                    // catch JDI runtime exceptions and return the default return value
-                //    thrownWrappers = Collections.emptyMap();
-                //} else {
-                    // wrap JDI runtime exceptions into our wrapper exceptions.
-                    thrownWrappers = new LinkedHashMap<Class, String>(EXCEPTION_WRAPPERS);
-                //}
-                if (!com.sun.jdi.Mirror.class.isAssignableFrom(c)) {
-                    thrownWrappers.remove(com.sun.jdi.ObjectCollectedException.class);
+                Set<Class> thrownExceptions = new LinkedHashSet<Class>();
+                thrownExceptions.addAll(EXCEPTIONS_BY_METHODS.get("*").get("*"));
+                if (com.sun.jdi.ObjectReference.class.isAssignableFrom(c)) {
+                    thrownExceptions.add(com.sun.jdi.ObjectCollectedException.class);
+                }
+                Map<String, Set<Class>> excByMethods = EXCEPTIONS_BY_METHODS.get(c.getName());
+                if (excByMethods != null) {
+                    Set<Class> excs = excByMethods.get("*");
+                    if (excs != null) {
+                        thrownExceptions.addAll(excs);
+                    }
+                    excs = excByMethods.get(mName);
+                    if (excs != null) {
+                        thrownExceptions.addAll(excs);
+                    }
                 }
 
-                if (exceptionTypes.length > 0 || (defaultReturn == null && thrownWrappers.size() > 0)) {
+                Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
+                if (defaultReturn != null) thrownExceptions.removeAll(SILENT_EXCEPTIONS);
+
+
+                if (exceptionTypes.length > 0 || thrownExceptions.size() > 0) {
                     w.write(" throws ");
                     for (int i = 0; i < exceptionTypes.length; i++) {
                         if (i > 0) w.write(", ");
                         w.write(exceptionTypes[i].getName());
                     }
-                    if (exceptionTypes.length > 0 && thrownWrappers.size() > 0) {
+                    if (exceptionTypes.length > 0 && thrownExceptions.size() > 0) {
                         w.write(", ");
                     }
                     int i = 0;
-                    for (Iterator it = thrownWrappers.keySet().iterator(); it.hasNext(); i++) {
+                    for (Iterator it = thrownExceptions.iterator(); it.hasNext(); i++) {
                         if (i > 0) w.write(", ");
-                        w.write(thrownWrappers.get(it.next()));
+                        w.write(EXCEPTION_WRAPPERS.get(it.next()));
                     }
                 }
                 w.write(" {\n");
@@ -366,7 +440,7 @@ public class Generate {
                     w.write("            throw ex;\n");
                     w.write("        } catch (");
                 }*/
-                for (Iterator<Class> it = thrownWrappers.keySet().iterator(); it.hasNext(); ) {
+                for (Iterator<Class> it = caughtExceptions.iterator(); it.hasNext(); ) {
                     Class cex = it.next();
                     w.write(" catch (");
                     w.write(cex.getName());
@@ -374,10 +448,10 @@ public class Generate {
                     if (com.sun.jdi.InternalException.class.equals(cex)) {
                         w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
                     }
-                    if (defaultReturn == null) {
-                        w.write("            throw new "+thrownWrappers.get(cex)+"(ex);\n");
-                    } else {
+                    if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
                         w.write("            return "+defaultReturn+";\n");
+                    } else {
+                        w.write("            throw new "+EXCEPTION_WRAPPERS.get(cex)+"(ex);\n");
                     }
                     w.write("        }");
                 }
@@ -549,6 +623,27 @@ public class Generate {
         if (defaultReturn.length() == 0) {
             defaultReturn = null;
         }
+
+        Set<Class> thrownExceptions = new LinkedHashSet<Class>();
+        thrownExceptions.addAll(EXCEPTIONS_BY_METHODS.get("*").get("*"));
+        //if (com.sun.jdi.ObjectReference.class.isAssignableFrom(c)) {
+        //    thrownExceptions.add(com.sun.jdi.ObjectCollectedException.class);
+        //}
+        Map<String, Set<Class>> excByMethods = EXCEPTIONS_BY_METHODS.get(className);
+        if (excByMethods != null) {
+            Set<Class> excs = excByMethods.get("*");
+            if (excs != null) {
+                thrownExceptions.addAll(excs);
+            }
+            excs = excByMethods.get(mName);
+            if (excs != null) {
+                thrownExceptions.addAll(excs);
+            }
+        }
+
+        Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
+        if (defaultReturn != null) thrownExceptions.removeAll(SILENT_EXCEPTIONS);
+        
         className = substituteHigherClasses(className, higherVersionClasses);
 
         w.write("    /** Wrapper for method "+mName+" from JDK "+jdkVersion+". */\n");
@@ -561,21 +656,19 @@ public class Generate {
         }
         w.write(")");
         
-        Map<Class, String> thrownWrappers;
-        thrownWrappers = new LinkedHashMap<Class, String>(EXCEPTION_WRAPPERS);
-        if (exceptionTypes.size() > 0 || (defaultReturn == null && thrownWrappers.size() > 0)) {
+        if (exceptionTypes.size() > 0 || thrownExceptions.size() > 0) {
             w.write(" throws ");
             for (int i = 0; i < exceptionTypes.size(); i++) {
                 if (i > 0) w.write(", ");
                 w.write(exceptionTypes.get(i));
             }
-            if (exceptionTypes.size() > 0 && thrownWrappers.size() > 0) {
+            if (exceptionTypes.size() > 0 && thrownExceptions.size() > 0) {
                 w.write(", ");
             }
             int i = 0;
-            for (Iterator it = thrownWrappers.keySet().iterator(); it.hasNext(); i++) {
+            for (Iterator it = thrownExceptions.iterator(); it.hasNext(); i++) {
                 if (i > 0) w.write(", ");
-                w.write(thrownWrappers.get(it.next()));
+                w.write(EXCEPTION_WRAPPERS.get(it.next()));
             }
         }
         w.write(" {\n");
@@ -634,16 +727,16 @@ public class Generate {
             w.write("            }\n");
             //w.write("        } catch (");
         }
-        for (Iterator<Class> it = thrownWrappers.keySet().iterator(); it.hasNext(); ) {
+        for (Iterator<Class> it = caughtExceptions.iterator(); it.hasNext(); ) {
             Class cex = it.next();
             w.write("            if (t instanceof "+cex.getName()+") {\n");
             if (com.sun.jdi.InternalException.class.equals(cex)) {
                 w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(("+com.sun.jdi.InternalException.class.getName()+") t);\n");
             }
-            if (defaultReturn == null) {
-                w.write("                throw new "+thrownWrappers.get(cex)+"(("+cex.getName()+") t);\n");
-            } else {
+            if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
                 w.write("                return "+defaultReturn+";\n");
+            } else {
+                w.write("                throw new "+EXCEPTION_WRAPPERS.get(cex)+"(("+cex.getName()+") t);\n");
             }
             w.write("            }\n");
             //w.write("        } catch (");
