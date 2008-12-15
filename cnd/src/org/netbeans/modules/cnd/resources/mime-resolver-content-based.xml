@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <file>
         <!-- Do not resolve FreeMaker templates with <#include directive. -->
         <ext name=""/>
-        <pattern value="<#include" range="128"/>
+        <pattern value="&lt;#include" range="128"/>
         <exit/>
     </file>
     <file>
