@@ -127,12 +127,23 @@ public abstract class PhpEnvironment {
     }
 
     /**
+     * Get the list of all found PHP Unit scripts. The list can be empty.
+     * @return list of all found PHP Unit scripts, never <code>null</code>.
+     * @see #getAnyPhpUnit()
+     */
+    public abstract List<String> getAllPhpUnits();
+
+    /**
      * Get any PHP Unit script.
      * @return PHP Unit script or <code>null</code> if none found.
      */
     public String getAnyPhpUnit() {
-        // XXX
-        return null;
+        List<String> allPhpUnits = getAllPhpUnits();
+        if (allPhpUnits.isEmpty()) {
+            return null;
+        }
+        // return the first one
+        return allPhpUnits.get(0);
     }
 
     /**
@@ -183,6 +194,11 @@ public abstract class PhpEnvironment {
             sb.append(" }"); // NOI18N
             return sb.toString();
         }
+    }
+
+    List<String> getAllPhpUnits0() {
+        // XXX
+        return new ArrayList<String>();
     }
 
     static boolean isSolaris() {

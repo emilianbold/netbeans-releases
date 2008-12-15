@@ -91,4 +91,9 @@ final class UnixPhpEnvironment extends PhpEnvironment {
     public List<String> getAllPhpInterpreters() {
         return getAllPhpInterpreters(PHP);
     }
+
+    @Override
+    public List<String> getAllPhpUnits() {
+        return getAllPhpUnits0();
+    }
 }

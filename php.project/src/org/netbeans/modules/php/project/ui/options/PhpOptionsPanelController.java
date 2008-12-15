@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;

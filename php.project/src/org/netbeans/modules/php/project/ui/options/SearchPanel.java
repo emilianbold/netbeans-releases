@@ -54,7 +54,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -65,35 +64,66 @@ import org.openide.util.RequestProcessor.Task;
  * Heavily inspired by Andrei's {@link org.netbeans.modules.spring.beans.ui.customizer.SelectConfigFilesPanel}.
  * @author Tomas Mysik
  */
-public class SelectPhpInterpreterPanel extends JPanel {
-    private static final long serialVersionUID = 2632292202688721433L;
+public class SearchPanel extends JPanel {
+    private static final long serialVersionUID = 26389758945641322L;
 
-    private final RequestProcessor rp = new RequestProcessor("PHP interpreter detection thread", 1, true); // NOI18N
+    private final RequestProcessor rp;
+    private final Detector detector;
+    private final Strings strings;
 
-    private List<String> availablePhpInterpreters;
+    private List<String> foundItems;
     private DialogDescriptor descriptor;
     private Task detectTask;
 
-    public SelectPhpInterpreterPanel() {
+    private SearchPanel(Strings strings, Detector detector) {
+        assert strings != null;
+        assert detector != null;
+
         initComponents();
+
+        rp = new RequestProcessor("PHP Options detection thread (" + strings.pleaseWaitPart + ")", 1, true); // NOI18N
+        this.strings = strings;
+        this.detector = detector;
+
+        detectedFilesLabel.setText(strings.listTitle);
+        messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "LBL_PleaseWait", strings.pleaseWaitPart));
+    }
+
+    public static SearchPanel create(Strings strings, Detector detector) {
+        return new SearchPanel(strings, detector);
     }
 
     public boolean open() {
-        String title = NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PhpInterpretersTitle");
-        descriptor = new DialogDescriptor(this, title, true, new ActionListener() {
+        descriptor = new DialogDescriptor(this, strings.windowTitle, true, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
             }
         });
-        if (availablePhpInterpreters == null) {
-            // no available files, will run the detection task
+        if (foundItems == null) {
+            // no available items, will run the detection task
             descriptor.setValid(false);
-            phpInterpretersList.setEnabled(true);
+            foundItemsList.setEnabled(true);
             progressBar.setIndeterminate(true);
-            detectTask = rp.create(new PhpInterpreterDetector());
+            detectTask = rp.create(new Runnable() {
+                public void run() {
+                    // just to be sure that the progress bar is displayed at least for a while
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                    final List<String> allItems = detector.detect();
+                    assert allItems != null;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateFoundItems(allItems);
+                        }
+                    });
+                }
+            });
             detectTask.schedule(0);
         } else {
-            updateAvailablePhpInterpreters(availablePhpInterpreters);
+            updateFoundItems(foundItems);
         }
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
@@ -104,12 +134,12 @@ public class SelectPhpInterpreterPanel extends JPanel {
         return descriptor.getValue() == DialogDescriptor.OK_OPTION;
     }
 
-    public List<String> getAvailablePhpInterpreters() {
-        return availablePhpInterpreters;
+    public List<String> getFoundItems() {
+        return foundItems;
     }
 
-    public String getSelectedPhpInterpreter() {
-        return (String) phpInterpretersList.getSelectedValue();
+    public String getSelectedItem() {
+        return (String) foundItemsList.getSelectedValue();
     }
 
     private void cancelDetection() {
@@ -118,18 +148,18 @@ public class SelectPhpInterpreterPanel extends JPanel {
         }
     }
 
-    private void updateAvailablePhpInterpreters(List<String> availablePhpInterpreters) {
-        this.availablePhpInterpreters = availablePhpInterpreters;
-        phpInterpretersList.setEnabled(true);
-        phpInterpretersList.setListData(availablePhpInterpreters.toArray(new String[availablePhpInterpreters.size()]));
+    private void updateFoundItems(List<String> foundItems) {
+        this.foundItems = foundItems;
+        foundItemsList.setEnabled(true);
+        foundItemsList.setListData(foundItems.toArray(new String[foundItems.size()]));
         // In an attempt to hide the progress bar and label, but force the occupy the same space.
         String message = null;
-        if (availablePhpInterpreters.size() == 0) {
-            message = NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_NoPhpInterpretersFound");
+        if (foundItems.size() == 0) {
+            message = strings.noItemsFound;
         } else {
             message = " "; // NOI18N
             // preselect the 1st item
-            phpInterpretersList.setSelectedIndex(0);
+            foundItemsList.setSelectedIndex(0);
         }
         messageLabel.setText(message);
         progressBar.setIndeterminate(false);
@@ -148,23 +178,23 @@ public class SelectPhpInterpreterPanel extends JPanel {
     private void initComponents() {
 
         detectedFilesLabel = new JLabel();
-        phpInterpretersScrollPane = new JScrollPane();
-        phpInterpretersList = new JList();
+        foundItemsScrollPane = new JScrollPane();
+        foundItemsList = new JList();
         messageLabel = new JLabel();
         progressBar = new JProgressBar();
 
-        detectedFilesLabel.setLabelFor(phpInterpretersList);
+        detectedFilesLabel.setLabelFor(foundItemsList);
+        detectedFilesLabel.setText("title"); // NOI18N
 
-        detectedFilesLabel.setText(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PhpInterpreters")); // NOI18N
-        phpInterpretersList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        phpInterpretersList.setEnabled(false);
-        phpInterpretersScrollPane.setViewportView(phpInterpretersList);
+        foundItemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        foundItemsList.setEnabled(false);
+        foundItemsScrollPane.setViewportView(foundItemsList);
 
-        phpInterpretersList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
-        phpInterpretersList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
+        foundItemsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
+        foundItemsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
         messageLabel.setLabelFor(progressBar);
+        messageLabel.setText("please wait..."); // NOI18N
 
-        messageLabel.setText(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PleaseWait")); // NOI18N
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
@@ -176,12 +206,11 @@ public class SelectPhpInterpreterPanel extends JPanel {
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, phpInterpretersScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, foundItemsScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                     .add(GroupLayout.LEADING, progressBar, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                     .add(GroupLayout.LEADING, detectedFilesLabel)
                     .add(GroupLayout.LEADING, messageLabel))
                 .addContainerGap())
-        
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -189,51 +218,55 @@ public class SelectPhpInterpreterPanel extends JPanel {
                 .addContainerGap()
                 .add(detectedFilesLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpInterpretersScrollPane, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .add(foundItemsScrollPane, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(messageLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0))
-        
         );
 
-        detectedFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleName")); // NOI18N
-        detectedFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpInterpretersScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleName")); // NOI18N
-        phpInterpretersScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
-        messageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
-        messageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        progressBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleName")); // NOI18N
-        progressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleDescription")); // NOI18N
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        detectedFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleName")); // NOI18N
+        detectedFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        foundItemsScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        foundItemsScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        progressBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleName")); // NOI18N
+        progressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel detectedFilesLabel;
+    private JList foundItemsList;
+    private JScrollPane foundItemsScrollPane;
     private JLabel messageLabel;
-    private JList phpInterpretersList;
-    private JScrollPane phpInterpretersScrollPane;
     private JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
 
-    private final class PhpInterpreterDetector implements Runnable {
+    public static final class Strings {
+        final String windowTitle;
+        final String listTitle;
+        final String pleaseWaitPart;
+        final String noItemsFound;
 
-        public void run() {
-            // just to be sure that the progress bar is displayed at least for a while
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                return;
-            }
-            final List<String> allPhps = PhpEnvironment.get().getAllPhpInterpreters();
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateAvailablePhpInterpreters(allPhps);
-                }
-            });
+        public Strings(String windowTitle, String listTitle, String pleaseWaitPart, String noItemsFound) {
+            assert windowTitle != null;
+            assert listTitle != null;
+            assert pleaseWaitPart != null;
+            assert noItemsFound != null;
+
+            this.windowTitle = windowTitle;
+            this.listTitle = listTitle;
+            this.pleaseWaitPart = pleaseWaitPart;
+            this.noItemsFound = noItemsFound;
         }
+    }
+
+    public static interface Detector {
+        List<String> detect();
     }
 }

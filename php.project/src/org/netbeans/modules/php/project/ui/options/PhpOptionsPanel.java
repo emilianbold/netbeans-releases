@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -58,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.awt.Mnemonics;
@@ -521,23 +523,48 @@ public class PhpOptionsPanel extends JPanel {
 
     private void phpInterpreterBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterBrowseButtonActionPerformed
         Utils.browsePhpInterpreter(this, phpInterpreterTextField);
-}//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
+    }//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed
-        SelectPhpInterpreterPanel panel = new SelectPhpInterpreterPanel();
-        if (panel.open()) {
-            if (panel.getSelectedPhpInterpreter() != null) {
-                phpInterpreterTextField.setText(panel.getSelectedPhpInterpreter());
+        SearchPanel.Strings strings = new SearchPanel.Strings(
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersTitle"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreters"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersPleaseWaitPart"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpInterpretersFound"));
+        SearchPanel searchPanel = SearchPanel.create(strings, new SearchPanel.Detector() {
+            public List<String> detect() {
+                return PhpEnvironment.get().getAllPhpInterpreters();
+            }
+        });
+        if (searchPanel.open()) {
+            String phpInterpreter = searchPanel.getSelectedItem();
+            if (phpInterpreter != null) {
+                phpInterpreterTextField.setText(phpInterpreter);
             }
         }
-}//GEN-LAST:event_phpInterpreterSearchButtonActionPerformed
+    }//GEN-LAST:event_phpInterpreterSearchButtonActionPerformed
 
     private void phpUnitBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitBrowseButtonActionPerformed
         Utils.browsePhpUnit(this, phpUnitTextField);
     }//GEN-LAST:event_phpUnitBrowseButtonActionPerformed
 
     private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
-        // TODO add your handling code here:
+        SearchPanel.Strings strings = new SearchPanel.Strings(
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsTitle"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnits"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart"),
+                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpUnitsFound"));
+        SearchPanel searchPanel = SearchPanel.create(strings, new SearchPanel.Detector() {
+            public List<String> detect() {
+                return PhpEnvironment.get().getAllPhpUnits();
+            }
+        });
+        if (searchPanel.open()) {
+            String phpUnit = searchPanel.getSelectedItem();
+            if (phpUnit != null) {
+                phpUnitTextField.setText(phpUnit);
+            }
+        }
     }//GEN-LAST:event_phpUnitSearchButtonActionPerformed
 
 
