@@ -98,6 +98,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
         this.propertiesTable = propertiesTable;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);        
@@ -106,6 +107,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
         txtAreaValue.selectAll();
     }
 
+    @Override
     public void removeNotify() {
         propertiesTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
