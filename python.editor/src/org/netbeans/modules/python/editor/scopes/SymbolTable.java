@@ -442,7 +442,6 @@ public class SymbolTable {
                         signature = PythonIndexer.computeClassSig((ClassDef)node, sym);
                     } else if (sym.isFunction() && node instanceof FunctionDef) {
                         assert sym.isFunction() && node instanceof FunctionDef : name + ";" + sym + " in " + module;
-                        ;
                         signature = PythonIndexer.computeFunctionSig(name, (FunctionDef)node, sym);
                     } else {
                         // Probably a generator expression
@@ -808,7 +807,7 @@ public class SymbolTable {
         return null;
     }
 
-    private boolean belongsToParents(ClassDef cls, String name, HashMap cycling)
+    private boolean belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling)
             throws IllegalStateException {
         if (cls.bases == null) {
             return false; // no parents
@@ -945,14 +944,14 @@ public class SymbolTable {
     public HashMap<ClassDef, String> getClassesCyclingRedundancies(CompilationInfo info) {
         HashMap<ClassDef, String> cyclingRedundancies = new HashMap<ClassDef, String>();
         for (String cur : classes.keySet()) {
-            HashMap returned = new HashMap();
+            HashMap<String, String> returned = new HashMap<String, String>();
             ClassDef curClass = classes.get(cur);
             if (!cyclingRedundancies.containsKey(curClass)) {
                 try {
                     belongsToParents(curClass, null, returned);
                 } catch (IllegalStateException e) {
                     // store hashMap returned
-                    Map.Entry<String, String> cycling = (Map.Entry<String, String>)returned.entrySet().iterator().next();
+                    Map.Entry<String, String> cycling = returned.entrySet().iterator().next();
                     cyclingRedundancies.put(curClass, cycling.getKey());
                 }
             }
@@ -1016,7 +1015,7 @@ public class SymbolTable {
 
         if (unresolvedNodes.size() > 1) {
             Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unresolvedNodes;
@@ -1083,7 +1082,7 @@ public class SymbolTable {
 
         if (unresolvedNodes.size() > 1) {
             Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unresolvedNodes;
@@ -1119,7 +1118,7 @@ public class SymbolTable {
 
         if (unusedNodes.size() > 1) {
             Collections.sort(unusedNodes, PythonUtils.NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unusedNodes;
