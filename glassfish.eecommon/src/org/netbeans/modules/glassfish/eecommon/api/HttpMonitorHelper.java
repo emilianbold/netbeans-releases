@@ -346,7 +346,7 @@ public class HttpMonitorHelper {
         
     } // end of specifyFilterPortParameter
     
-    public static String getLocalHost() {
+    private static String getLocalHost() {
         // just return 127.0.0.1, other values don't seem to work reliably
         return "127.0.0.1"; // NOI18N
         /**
