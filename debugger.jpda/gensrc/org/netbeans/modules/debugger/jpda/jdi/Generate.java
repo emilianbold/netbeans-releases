@@ -204,20 +204,31 @@ public class Generate {
         int[] higherVersionMethodIndexes = new int[higherVersionMethods.size()];
 
         Set<String> higherVersionClasses = new HashSet<String>();
+        int[] indexes = new int[higherVersionMethods.size()];
         for (Class c : classes) {
-            for (Iterator<String> it = higherVersionMethods.keySet().iterator(); it.hasNext(); ) {
+            if (c.getDeclaredMethods().length == 0) {
+                continue;
+            }
+            int ii = 0;
+            for (Iterator<String> it = higherVersionMethods.keySet().iterator(); it.hasNext(); ii++) {
                 String version = it.next();
                 List<String> methodsLog = higherVersionMethods.get(version);
-                for (int i = 0; i < methodsLog.size(); i++) {
+                int i;
+                for (i = indexes[ii]; i < methodsLog.size(); i++) {
                     String loggedClass = methodsLog.get(i);
                     if (loggedClass.startsWith(" ")) continue;
                     int colonIndex = loggedClass.indexOf(':');
                     if (!loggedClass.substring(0, colonIndex).equals(c.getName())) {
                         higherVersionClasses.add(loggedClass.substring(0, colonIndex).replace('$', '.'));
+                    } else {
+                        i++;
+                        break;
                     }
                 }
+                indexes[ii] = i;
             }
         }
+        System.out.println("\nHigher version classes: "+higherVersionClasses+"\n");
         
         for (Class c : classes) {
             String name = c.getSimpleName();
@@ -435,7 +446,7 @@ public class Generate {
                         if (!method.startsWith(" ")) {
                             break;
                         }
-                        writeHigherVersionMethod(w, loggedClassName, method, version);
+                        writeHigherVersionMethod(w, loggedClassName, method, version, higherVersionClasses);
                     }
                     higherVersionMethodIndexes[versionIndex] = i;
                     w.write("}\n");
@@ -463,7 +474,7 @@ public class Generate {
                     higherVersionMethodIndexes[versionIndex]++;
                     if (m == null || !isLoggedMethod(m, loggedMethod)) {
                         //System.out.println(" Method "+loggedMethod.substring(1, loggedMethod.indexOf("):") + 1)+" from JDK "+version);
-                        writeHigherVersionMethod(w, className, loggedMethod, version);
+                        writeHigherVersionMethod(w, className, loggedMethod, version, higherVersionClasses);
                     } else {
                         break;
                     }
@@ -491,7 +502,9 @@ public class Generate {
     }
 
 
-    private static void writeHigherVersionMethod(Writer w, String className, String methodLine, String jdkVersion) throws IOException {
+    private static void writeHigherVersionMethod(Writer w, String className,
+                                                 String methodLine, String jdkVersion,
+                                                 Set<String> higherVersionClasses) throws IOException {
         methodLine = methodLine.trim();
         System.err.println("  Method: "+methodLine+" from JDK "+jdkVersion);
         int index = methodLine.indexOf('(');
@@ -502,7 +515,7 @@ public class Generate {
         char c;
         while ((c = methodLine.charAt(index2)) != ')') {
             if (c == ',') {
-                paramTypes.add(methodLine.substring(index, index2));
+                paramTypes.add(substituteHigherClasses(methodLine.substring(index, index2), higherVersionClasses));
                 index = index2 + 2; // ", "
                 index2 = index;
             } else if (c == '<') {
@@ -513,11 +526,12 @@ public class Generate {
             //System.err.println("  c = "+c+", index = "+index+", index2 = "+index2);
         }
         if (index2 > index) {
-            paramTypes.add(methodLine.substring(index, index2));
+            paramTypes.add(substituteHigherClasses(methodLine.substring(index, index2), higherVersionClasses));
         }
         index = index2 + 2; // "):"
         index2 = methodLine.indexOf(":", index);
         String rType = methodLine.substring(index, index2);
+        rType = substituteHigherClasses(rType, higherVersionClasses);
         index = index2 + 1; // ":"
         index2 = methodLine.indexOf(" throws ", index);
         String defaultReturn;
@@ -541,6 +555,7 @@ public class Generate {
         if (defaultReturn.length() == 0) {
             defaultReturn = null;
         }
+        className = substituteHigherClasses(className, higherVersionClasses);
 
         w.write("    /** Wrapper for method "+mName+" from JDK "+jdkVersion+". */\n");
         w.write("    public static "+rType+" "+mName+"("+className+" a");
@@ -574,6 +589,7 @@ public class Generate {
         if (!"void".equals(rType)) {
             if ("boolean".equals(rType)) rType = "Boolean";
             if ("int".equals(rType)) rType = "Integer";
+            if ("long".equals(rType)) rType = "Long";
             w.write("            return ("+rType+") ");
         } else {
             w.write("            ");
@@ -673,6 +689,32 @@ public class Generate {
         }
         log.close();
         return list;
+    }
+
+    private static String substituteHigherClasses(String type, Set<String> higherVersionClasses) {
+        int l = type.length();
+        for (String higherVersionClass : higherVersionClasses) {
+            int i0 = 0;
+            int i1;
+            StringBuilder sb = null;
+            while ((i1 = type.indexOf(higherVersionClass, i0)) >= 0) {
+                int i2 = i1 + higherVersionClass.length();
+                if (i2 == l || type.charAt(i2) == ',' || type.charAt(i2) == '>') {
+                    if (sb == null) {
+                        sb = new StringBuilder(type.substring(i0, i1));
+                    }
+                    sb.append("Object/*");
+                    sb.append(higherVersionClass);
+                    sb.append("*/");
+                }
+                i0 = i2;
+            }
+            if (sb != null) {
+                sb.append(type.substring(i0));
+                type = sb.toString();
+            }
+        }
+        return type;
     }
 
     private static String translateType(Type t) {
