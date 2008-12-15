@@ -40,6 +40,7 @@
             <exclude name="ide1*"/>
             <exclude name="platform*"/>
             <exclude name="ergonomics*"/>
+            <exclude name="gsf*"/>
             <exclude name="nb*.*"/>
             <exclude name="bin"/>
             <exclude name="etc"/>
