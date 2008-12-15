@@ -6,21 +6,14 @@
             <code-name-base>org.jython</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.antlr3</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.jython.distro</code-name-base>
                     <build-prerequisite/>
                 </dependency>
             </module-dependencies>
             <public-packages>
                 <subpackages>org.python</subpackages>
+                <subpackages>com.sun.jna</subpackages>
+                <subpackages>org.antlr.runtime</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jython.jar</runtime-relative-path>

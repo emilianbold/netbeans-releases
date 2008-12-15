@@ -67,7 +67,6 @@ made subject to such option by the copyright holder.
         <subant target="netbeans" inheritAll="false">
             <property name="scan.binaries" value="true"/>
             
-            <buildpath location="o.antlr3"/>
             <buildpath location="o.jython.distro"/>
             <buildpath location="o.jython"/>
             <buildpath location="python.core"/>
@@ -94,7 +93,6 @@ made subject to such option by the copyright holder.
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
 
-            <buildpath location="o.antlr3"/>
             <buildpath location="o.jython.distro"/>
             <buildpath location="o.jython"/>
             <buildpath location="python.core"/>
