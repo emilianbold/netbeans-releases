@@ -47,14 +47,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -68,6 +71,10 @@ public class DiscoveryExtension implements IteratorExtension {
     public DiscoveryExtension() {
     }
     
+    public Set<FileObject> createProject(WizardDescriptor wizard) throws IOException{
+        return new ImportProject(wizard).create();
+    }
+
     public void apply(WizardDescriptor wizard, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setProject(project);
@@ -246,7 +253,7 @@ public class DiscoveryExtension implements IteratorExtension {
         }
         return null;
     }
-    
+
     private static class ProjectProxyImpl implements ProjectProxy {
             private DiscoveryDescriptor descriptor;
             private ProjectProxyImpl(DiscoveryDescriptor descriptor){
