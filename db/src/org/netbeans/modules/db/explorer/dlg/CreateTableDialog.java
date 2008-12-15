@@ -445,15 +445,15 @@ public class CreateTableDialog {
 
     private List<String> getTypes() {
         // TODO: replace with static metadata API to return a List of the fixed SQL types
-        final String[] fixedTypes = {"java.sql.Types.INTEGER", "java.sql.Types.CHAR", "java.sql.Types.NCHAR", "java.sql.Types.DECIMAL", "java.sql.Types.NUMERIC", "java.sql.Types.BINARY"}; // NOI18N
-        return Arrays.asList(fixedTypes);
+        final String[] varTypes = {"java.sql.Types.VARCHAR", "java.sql.Types.BLOB", "java.sql.Types.BINARY"}; // NOI18N
+        return Arrays.asList(varTypes);
     }
 
     private class ColumnDataModel extends DataModel {
-        List<String> fixedTypeList;
+        List<String> varTypeList;
 
-        ColumnDataModel(List<String> fixedTypes) {
-            fixedTypeList = fixedTypes;
+        ColumnDataModel(List<String> varTypes) {
+            varTypeList = varTypes;
         }
 
         @Override
@@ -461,7 +461,7 @@ public class CreateTableDialog {
             boolean isFixed = false;
             if (column == SIZE_COL_INDEX) {
                 String selectedSQLType = ((TypeElement) table.getValueAt(row, column - 1)).getType();
-                if (fixedTypeList.contains(selectedSQLType)) {
+                if (!varTypeList.contains(selectedSQLType)) {
                     isFixed = true;
                 }
             }
