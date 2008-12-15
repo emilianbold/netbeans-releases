@@ -61,6 +61,8 @@ final class Notifications {
 
     
     final SortedSet<Notification> notifications;
+    private final NotifyIndicator indicator = NotifyIndicator.getDefault();
+    
     private Notifications() {
         notifications = Collections.synchronizedSortedSet(new TreeSet<Notification>());
     }
@@ -83,7 +85,7 @@ final class Notifications {
      */
     public boolean add(Notification notification) {
         final boolean result = notifications.add(notification);
-        NotifyIndicator.getDefault().update();
+        indicator.update();
         return result;
     }
 
@@ -94,8 +96,13 @@ final class Notifications {
      */
     public boolean remove(Notification notification) {
         final boolean result = notifications.remove(notification);
-        NotifyIndicator.getDefault().update();
+        indicator.update();
         return result;
+    }
+
+    public void clear() {
+        notifications.clear();
+        indicator.update();
     }
 
     /**

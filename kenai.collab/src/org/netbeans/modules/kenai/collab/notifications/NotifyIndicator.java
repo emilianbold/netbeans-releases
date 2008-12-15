@@ -70,7 +70,8 @@ public class NotifyIndicator implements Runnable {
     private Helper helper;
 
     public void update() {
-        label.setIcon(APIAccessor.DEFAULT.getNotifications().first().getIcon());
+        Notification top = APIAccessor.DEFAULT.top();
+        label.setIcon(top!=null?top.getIcon():null);
     }
 
     Component getComponent() {
@@ -79,6 +80,7 @@ public class NotifyIndicator implements Runnable {
     public static synchronized NotifyIndicator getDefault() {
         if (instance == null) {
             instance = new NotifyIndicator();
+            //Just for domo
             RequestProcessor.getDefault().post(instance);
         }
         return instance;

@@ -51,4 +51,9 @@ class APIAccessorImpl extends APIAccessor {
     public SortedSet<Notification> getNotifications() {
         return Notifications.getDefault().notifications;
     }
+
+    @Override
+    public Notification top() {
+        return Notifications.getDefault().top();
+    }
 }

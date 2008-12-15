@@ -50,5 +50,6 @@ public abstract class APIAccessor {
 
     public static APIAccessor DEFAULT;
     public abstract SortedSet<Notification> getNotifications() ;
+    public abstract Notification top();
 
 }
