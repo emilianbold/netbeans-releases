@@ -1,7 +1,7 @@
 /*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -110,14 +111,14 @@ public final class SvnPropertiesAction extends ContextAction {
         panel.propsPanel.setLayout(new BorderLayout());
         panel.propsPanel.add(component, BorderLayout.CENTER);
         SvnProperties svnProperties = new SvnProperties(panel, propTable, root);   
-        ResourceBundle loc = NbBundle.getBundle(SvnPropertiesAction.class);
-        JButton cancel = new JButton(loc.getString("CTL_Properties_Action_Cancel"));    // NOI18N
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnPropertiesAction.class, "CTL_Properties_Action_Cancel")); // NOI18N
-        cancel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SvnPropertiesAction.class, "CTL_Properties_Action_Cancel"));    // NOI18N
+        JButton btnClose = new JButton();
+        Mnemonics.setLocalizedText(btnClose, getString("CTL_Properties_Action_Close"));   //NOI18N
+        btnClose.getAccessibleContext().setAccessibleDescription(getString("CTL_Properties_Action_Close")); //NOI18N
+        btnClose.getAccessibleContext().setAccessibleName(getString("CTL_Properties_Action_Close"));    //NOI18N
 
         DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(SvnPropertiesAction.class, "CTL_PropertiesDialog_Title", ctxDisplayName)); // NOI18N
         dd.setModal(true);
-        dd.setOptions(new Object[] {cancel}); 
+        dd.setOptions(new Object[] {btnClose});
         dd.setHelpCtx(new HelpCtx(SvnPropertiesAction.class));
 
         panel.putClientProperty("contentTitle", ctxDisplayName);  // NOI18N
@@ -128,7 +129,8 @@ public final class SvnPropertiesAction extends ContextAction {
         dialog.setVisible(true);        
     }
     
+    private static String getString(String msgKey) {
+        return NbBundle.getMessage(SvnPropertiesAction.class, msgKey);
+    }
+
 }
-
-
-
