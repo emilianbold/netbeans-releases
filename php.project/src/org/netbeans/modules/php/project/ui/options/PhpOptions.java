@@ -73,12 +73,16 @@ public final class PhpOptions {
     public static final String PHP_DEBUGGER_SESSION_ID = "phpDebuggerSessionId"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
 
+    // php unit
+    public static final String PHP_UNIT = "phpUnit"; // NOI18N
+
     // global include path
     public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
 
     private boolean phpInterpreterSearched = false;
+    private boolean phpUnitSearched = false;
 
     private PhpOptions() {
     }
@@ -113,6 +117,22 @@ public final class PhpOptions {
 
     public void setPhpInterpreter(String phpInterpreter) {
         getPreferences().put(PHP_INTERPRETER, phpInterpreter);
+    }
+
+    public synchronized String getPhpUnit() {
+        String phpUnit = getPreferences().get(PHP_UNIT, null);
+        if (phpUnit == null && !phpUnitSearched) {
+            phpUnitSearched = true;
+            phpUnit = PhpEnvironment.get().getAnyPhpUnit();
+            if (phpUnit != null) {
+                setPhpUnit(phpUnit);
+            }
+        }
+        return phpUnit;
+    }
+
+    public void setPhpUnit(String phpUnit) {
+        getPreferences().put(PHP_UNIT, phpUnit);
     }
 
     public boolean isOpenResultInOutputWindow() {

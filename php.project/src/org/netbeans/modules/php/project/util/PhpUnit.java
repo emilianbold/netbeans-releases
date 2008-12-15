@@ -42,19 +42,19 @@ package org.netbeans.modules.php.project.util;
 /**
  * @author Tomas Mysik
  */
-public final class PhpInterpreter extends PhpProgram {
+public final class PhpUnit extends PhpProgram {
 
     /**
      * {@inheritDoc}
      */
-    public PhpInterpreter(String command) {
+    public PhpUnit(String command) {
         super(command);
     }
 
     /**
-     * @return PHP interpreter, never <code>null</code>.
+     * @return PHP Unit, never <code>null</code>.
      */
-    public String getInterpreter() {
+    public String getPhpUnit() {
         return super.getProgram();
     }
 

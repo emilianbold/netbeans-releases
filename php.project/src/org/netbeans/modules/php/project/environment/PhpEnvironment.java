@@ -127,6 +127,15 @@ public abstract class PhpEnvironment {
     }
 
     /**
+     * Get any PHP Unit script.
+     * @return PHP Unit script or <code>null</code> if none found.
+     */
+    public String getAnyPhpUnit() {
+        // XXX
+        return null;
+    }
+
+    /**
      * Document root and its URL. It also contains flag whether this pair is preferred or not
      * (e.g. "~/public_html" is preferred to "/var/www" on Linux). Only writable directories can be preferred.
      */

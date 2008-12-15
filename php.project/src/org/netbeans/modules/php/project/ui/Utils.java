@@ -63,6 +63,7 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -167,10 +168,10 @@ public final class Utils {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpInterpreter());
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
             File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
+            LastUsedFolders.setOptionsPhpInterpreter(phpInterpreter);
             textField.setText(phpInterpreter.getAbsolutePath());
         }
     }
@@ -185,13 +186,46 @@ public final class Utils {
         PhpInterpreter phpInterpreter = new PhpInterpreter(command);
         File file = new File(phpInterpreter.getInterpreter());
         if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpNotAbsolutePath");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotAbsolutePath");
         }
         if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpNotFile");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotFile");
         }
         if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpCannotRead");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterCannotRead");
+        }
+        return null;
+    }
+
+    public static void browsePhpUnit(Component parent, JTextField textField) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpUnit());
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
+            File phpUnit = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsPhpUnit(phpUnit);
+            textField.setText(phpUnit.getAbsolutePath());
+        }
+    }
+
+    // input can be with parameters e.g. "/usr/bin/phpunit  --repeat 3"
+    public static String validatePhpUnit(String command) {
+        assert command != null;
+        if (command.trim().length() == 0) {
+            return NbBundle.getMessage(Utils.class, "MSG_NoPhpUnit");
+        }
+
+        PhpUnit phpUnit = new PhpUnit(command);
+        File file = new File(phpUnit.getPhpUnit());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitCannotRead");
         }
         return null;
     }

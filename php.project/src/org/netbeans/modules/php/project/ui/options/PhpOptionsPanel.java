@@ -83,6 +83,7 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
+        phpUnitTextField.getDocument().addDocumentListener(documentListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -157,6 +158,14 @@ public class PhpOptionsPanel extends JPanel {
 
     public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
         stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
+    }
+
+    public String getPhpUnit() {
+        return phpUnitTextField.getText();
+    }
+
+    public void setPhpUnit(String phpUnit) {
+        phpUnitTextField.setText(phpUnit);
     }
 
     public String getPhpGlobalIncludePath() {
@@ -281,10 +290,19 @@ public class PhpOptionsPanel extends JPanel {
 
 
 
-
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.text"));
+        phpUnitBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                phpUnitBrowseButtonActionPerformed(evt);
+            }
+        });
         Mnemonics.setLocalizedText(phpUnitSearchButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitSearchButton.text"));
+        phpUnitSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                phpUnitSearchButtonActionPerformed(evt);
+            }
+        });
         Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath"));
         useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
 
@@ -513,6 +531,14 @@ public class PhpOptionsPanel extends JPanel {
             }
         }
 }//GEN-LAST:event_phpInterpreterSearchButtonActionPerformed
+
+    private void phpUnitBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitBrowseButtonActionPerformed
+        Utils.browsePhpUnit(this, phpUnitTextField);
+    }//GEN-LAST:event_phpUnitBrowseButtonActionPerformed
+
+    private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_phpUnitSearchButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
