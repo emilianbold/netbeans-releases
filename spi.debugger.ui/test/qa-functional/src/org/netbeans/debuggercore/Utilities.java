@@ -387,6 +387,21 @@ public class Utilities {
         }
     }
 
+
+     public static void waitStatusText(String text, int time) {
+        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
+        try {
+            // increase time to wait to 240 second (it fails on slower machines)
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 30000 + time);
+            MainWindowOperator.getDefault().waitStatusText(text);
+        } finally {
+            // start status text tracer again because we use it further
+            MainWindowOperator.getDefault().getStatusTextTracer().start();
+            // restore default timeout
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
+        }
+    }
+
     public static void waitStatusTextPrefix(final String text) {
         try {
             new Waiter(new Waitable() {

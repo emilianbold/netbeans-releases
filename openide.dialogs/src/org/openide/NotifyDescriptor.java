@@ -981,6 +981,7 @@ public class NotifyDescriptor extends Object {
         */
         protected Component createDesign(final String text) {
             JPanel panel = new JPanel();
+            panel.setOpaque (false);
 
             JLabel textLabel = new JLabel();
             Mnemonics.setLocalizedText(textLabel, text);

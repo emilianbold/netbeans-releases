@@ -52,7 +52,6 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
-import org.netbeans.modules.ruby.RubyParser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -95,7 +94,7 @@ public class YamlParserTest extends YamlTestBase {
         String annotatedSource = annotateErrors(text, diagnostics);
         assertDescriptionMatches("testfiles/" + relFilePath, annotatedSource, false, ".errors", false);
         // Make sure we actually skipped parsing this large document!
-        assertNull(((YamlParserResult)pr).getObject());
+        assertTrue(((YamlParserResult)pr).getRootNodes().size() == 0);
     }
 
     public void testValidResult() throws Exception {

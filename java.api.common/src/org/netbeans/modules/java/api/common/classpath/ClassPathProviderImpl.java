@@ -79,6 +79,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
     private final ClassPath[] cache = new ClassPath[8];
+    private boolean canHaveWebServices;
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
@@ -92,6 +93,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
+        this.canHaveWebServices = false;
         listener = new PropertyChangeListener() {
                 public synchronized void propertyChange(PropertyChangeEvent evt) {
                     dirCache.remove(evt.getPropertyName());
@@ -104,7 +106,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             SourceRoots sourceRoots, SourceRoots testSourceRoots,
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
-            String[] runTestClasspath) {
+            String[] runTestClasspath, boolean canHaveWebServices) {
         this(helper, evaluator, sourceRoots, testSourceRoots);
         this.buildClassesDir = buildClassesDir;
         this.distJar = distJar;
@@ -113,6 +115,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.javacTestClasspath = javacTestClasspath;
         this.runClasspath = runClasspath;
         this.runTestClasspath = runTestClasspath;
+        this.canHaveWebServices = canHaveWebServices;
     }
 
     
@@ -277,10 +280,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator, canHaveWebServices));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.testSourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.testSourceRoots, helper, evaluator, canHaveWebServices));
                     break;
             }
         }

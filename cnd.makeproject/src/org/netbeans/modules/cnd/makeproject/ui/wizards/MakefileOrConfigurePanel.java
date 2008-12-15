@@ -58,11 +58,10 @@ import org.openide.util.NbBundle;
 public class MakefileOrConfigurePanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
     private DocumentListener documentListener;
-    private boolean valid = false;
     private MakefileOrConfigureDescriptorPanel descriptorPanel;
     
     
-    public MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
+    MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.descriptorPanel = buildActionsDescriptorPanel;
@@ -121,6 +120,29 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     void read(WizardDescriptor wizardDescriptor) {
         initFields();
+        String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
+        if (path != null) {
+            File file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                makefileNameTextField.setText(file.getAbsolutePath());
+                makefileRadioButton.setSelected(true);
+                return;
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                makefileNameTextField.setText(file.getAbsolutePath());
+                makefileRadioButton.setSelected(true);
+                return;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                configureNameTextField.setText(file.getAbsolutePath());
+                configureRadioButton.setSelected(true);
+                runConfigureCheckBox.setSelected(true);
+                configureArgumentsTextField.setText("CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+                return;
+            }
+        }
     }
     
     void store(WizardDescriptor wizardDescriptor) {
@@ -456,8 +478,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         path = FilePathAdaptor.normalize(path);
         configureNameTextField.setText(path);
@@ -481,8 +504,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         path = FilePathAdaptor.normalize(path);
         makefileNameTextField.setText(path);

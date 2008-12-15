@@ -34,7 +34,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -73,6 +75,19 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringUtils {
+    public static boolean isElementInOpenProject(FileObject f) {
+        if (f == null) {
+            return false;
+        }
+        Project p = FileOwnerQuery.getOwner(f);
+        Project[] opened = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < opened.length; i++) {
+            if (p == opened[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static boolean isRefactorable(FileObject fo) {
         if (fo != null && (FileUtil.getArchiveFile(fo) != null || !fo.canWrite())) {

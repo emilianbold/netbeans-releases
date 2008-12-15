@@ -456,6 +456,7 @@ public class Commit extends GeneralPHP
     eoPHP.deleteLine( il );
     Sleep( 1500 );
 
+    boolean b = true;
     // Insert get
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
     Sleep( 1500 );
@@ -504,14 +505,19 @@ public class Commit extends GeneralPHP
       "$this->f = $f;",
       "}"
     };
-    CheckResult( eoPHP, asResult2, -24 );
+    CheckResult( eoPHP, asResult2, - ( asResult2.length + 1 ) );
     // Remove added
-    il = eoPHP.getLineNumber( ) - 24;
-    for( int i = 0; i < asResult.length; i++ )
+    il = eoPHP.getLineNumber( ) - ( asResult2.length + 1 );
+    for( int i = 0; i < asResult2.length + 1; i++ )
+    {
       eoPHP.deleteLine( il );
+      Sleep( 100 );
+    }
 
+    Sleep( 2000 );
     // Close to prevent affect on next tests
     eoPHP.close( false );
+
   }
 
   public void ManipulateIndexPHP( )

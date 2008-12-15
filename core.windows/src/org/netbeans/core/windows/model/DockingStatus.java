@@ -59,6 +59,7 @@ public class DockingStatus {
     protected Model model;
     protected List<String> docked = new ArrayList<String>(10);
     protected List<String> slided = new ArrayList<String>(10);
+    private boolean marked = false;
     
     /** Creates a new instance of DockingStatus */
     DockingStatus( Model model ) {
@@ -84,6 +85,7 @@ public class DockingStatus {
                 slided.addAll( views );
             }
         }
+        marked = true;
     }
     
     /**
@@ -91,7 +93,9 @@ public class DockingStatus {
      * (Used when switching to/from maximized mode)
      */
     public boolean shouldDock( String tcID ) {
-        return null != tcID && docked.contains( tcID );
+        return null != tcID && docked.contains( tcID ) 
+                && marked; //when maximizing for the first time keep TC slided-out
+                           //even if it is docked by default in maximized mode
     }
     
     /**

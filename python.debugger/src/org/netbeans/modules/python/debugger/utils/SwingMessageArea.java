@@ -1,21 +1,41 @@
-/**
- * Copyright (C) 2003 Jean-Yves Mengant
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or any later version.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-package org.netbeans.modules.python.debugger.utils;
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */package org.netbeans.modules.python.debugger.utils;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -30,8 +50,7 @@ with Text coloring calpabilities
 
  */
 public class SwingMessageArea
-        extends JPanel
-{
+        extends JPanel {
 
   public final static String PYTHON_SHELL_INVITE = ">>>";
   private final long _OBSERVER_SLEEP_TIME_ = 250;
@@ -67,48 +86,37 @@ public class SwingMessageArea
   private _SHELL_OBSERVER_ _observer = new _SHELL_OBSERVER_();
   private CommandLineListener _listener = null;
 
-  public synchronized void addCommandLineListener(CommandLineListener listener)
-  {
+  public synchronized void addCommandLineListener(CommandLineListener listener) {
     _listener = listener;
   }
 
-  public synchronized void removeCommandLineListener(CommandLineListener listener)
-  {
-    if (_listener == listener)
-    {
+  public synchronized void removeCommandLineListener(CommandLineListener listener) {
+    if (_listener == listener) {
       _listener = null;
     }
   }
 
-  public void hasEnabled(boolean enabled)
-  {
-    if (!enabled)
-    {
+  public void hasEnabled(boolean enabled) {
+    if (!enabled) {
       _observer.enterSleep();
     }
   }
 
   class _MESSAGE_POPUP_
-          extends MouseAdapter
-  {
+          extends MouseAdapter {
 
     private JPopupMenu _popup = null;
 
-    public _MESSAGE_POPUP_()
-    {
+    public _MESSAGE_POPUP_() {
     }
 
-    private void createPopup(MouseEvent e)
-    {
-      if (e.isPopupTrigger())
-      {
+    private void createPopup(MouseEvent e) {
+      if (e.isPopupTrigger()) {
         _popup = new JPopupMenu();
         JMenuItem mi = _popup.add(new JMenuItem("clear message area"));
-        mi.addActionListener(new ActionListener()
-        {
+        mi.addActionListener(new ActionListener() {
 
-          public void actionPerformed(ActionEvent ev)
-          {
+          public void actionPerformed(ActionEvent ev) {
             clearScreen();
           }
         });
@@ -116,11 +124,9 @@ public class SwingMessageArea
         JMenuItem mi1 = _popup.add(new JMenuItem("copy"));
         mi1.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-        mi1.addActionListener(new ActionListener()
-        {
+        mi1.addActionListener(new ActionListener() {
 
-          public void actionPerformed(ActionEvent ev)
-          {
+          public void actionPerformed(ActionEvent ev) {
             _textPane.copy();
           }
         });
@@ -138,34 +144,28 @@ public class SwingMessageArea
     }
 
     @Override
-    public void mouseReleased(MouseEvent e)
-    {
+    public void mouseReleased(MouseEvent e) {
       createPopup(e);
     }
 
     @Override
-    public void mousePressed(MouseEvent e)
-    {
+    public void mousePressed(MouseEvent e) {
       createPopup(e);
     }
 
     @Override
-    public void mouseClicked(MouseEvent e)
-    {
+    public void mouseClicked(MouseEvent e) {
       createPopup(e);
     }
   }
 
-  public void set_refresh(boolean refresh)
-  {
+  public void set_refresh(boolean refresh) {
     _refresh = refresh;
   }
 
-  class _SCROLLER_ extends JScrollPane
-  {
+  class _SCROLLER_ extends JScrollPane {
 
-    public _SCROLLER_(Component view)
-    {
+    public _SCROLLER_(Component view) {
       super(view);
     }
 
@@ -174,19 +174,16 @@ public class SwingMessageArea
     Full motion calpability to the SplitPane Divider
      */
     @Override
-    public Dimension getMinimumSize()
-    {
+    public Dimension getMinimumSize() {
       return new Dimension(0, 0);
     }
 
-    public float getAlignment()
-    {
+    public float getAlignment() {
       return LEFT_ALIGNMENT;
     }
   }
 
-  private void populateStyle(Style style, Font f, Color c)
-  {
+  private void populateStyle(Style style, Font f, Color c) {
     style.addAttribute(StyleConstants.Foreground, c);
     style.addAttribute(StyleConstants.FontSize, new Integer((f.getSize())));
     style.addAttribute(StyleConstants.FontFamily, f.getFamily());
@@ -197,8 +194,7 @@ public class SwingMessageArea
   @param  no parameters
   @return none
    */
-  public void setStyles()
-  {
+  public void setStyles() {
     // populate background color
     _textPane.setBackground(_backgroundColor);
     populateStyle(_messageStyle, _font, _normalColor);
@@ -207,8 +203,7 @@ public class SwingMessageArea
     populateStyle(_headerStyle, _font, _headerColor);
   }
 
-  private void initStyles()
-  {
+  private void initStyles() {
     // Use message style as default
     _messageStyle = _textPane.getStyle(StyleContext.DEFAULT_STYLE);
     _errorStyle = _textPane.addStyle(_ERROR_STYLE_, null);
@@ -222,25 +217,21 @@ public class SwingMessageArea
   @param  Document doc
   @exception BadLocationException
    */
-  public void removeFirstLine()
-  {
+  public void removeFirstLine() {
     Document doc = _textPane.getDocument();
     Element root = doc.getDefaultRootElement();
 
     int children = root.getElementCount();
 
-    if (children > 1)
-    {
+    if (children > 1) {
       Element firstLine = root.getElement(0);
-      try
-      {
+      try {
         int length = firstLine.getEndOffset() -
                 firstLine.getStartOffset();
         doc.remove(firstLine.getStartOffset(), length);
         _curSize--;
       // TextDump.textDump(root);
-      } catch (BadLocationException e)
-      {
+      } catch (BadLocationException e) {
         e.printStackTrace();
       }
     }
@@ -249,23 +240,19 @@ public class SwingMessageArea
   /**
   remove all lines
    */
-  public void clearScreen()
-  {
+  public void clearScreen() {
     Document doc = _textPane.getDocument();
     Element root = doc.getDefaultRootElement();
     int children = root.getElementCount();
-    while (children > 1)
-    {
+    while (children > 1) {
       Element firstLine = root.getElement(0);
-      try
-      {
+      try {
         int length = firstLine.getEndOffset() -
                 firstLine.getStartOffset();
         doc.remove(firstLine.getStartOffset(), length);
         _curSize--;
       // TextDump.textDump(root);
-      } catch (BadLocationException e)
-      {
+      } catch (BadLocationException e) {
         e.printStackTrace();
       }
       children = root.getElementCount();
@@ -273,53 +260,42 @@ public class SwingMessageArea
   }
 
   /** position window on last inserted line */
-  private void refreshPosition()
-  {
+  private void refreshPosition() {
     Rectangle r = new Rectangle(0, _textPane.getHeight() - 2, 1, 1);
     _textPane.scrollRectToVisible(r);
     _textPane.validate();
   }
 
   class _INSERTER_
-          extends Thread
-  {
+          extends Thread {
 
     private StringBuffer _msg = null;
     private Style _style;
 
-    public _INSERTER_(String msg, Style style, boolean eol)
-    {
+    public _INSERTER_(String msg, Style style, boolean eol) {
       _style = style;
-      if (msg != null)
-      {
+      if (msg != null) {
         _msg = new StringBuffer(msg);
-        if (eol)
-        {
+        if (eol) {
           _msg.append('\n');
         }
       }
     }
 
-    public void insert()
-    {
-      if (_msg != null)
-      {
-        synchronized (_textPane)
-        {
+    public void insert() {
+      if (_msg != null) {
+        synchronized (_textPane) {
           Document doc = _textPane.getDocument();
 
-          try
-          {
+          try {
             doc.insertString(doc.getLength(),
                     _msg.toString(),
                     _style);
             _curSize++; // One more line Added
-            if (_refresh)
-            {
+            if (_refresh) {
               refreshPosition();
             }
-          } catch (BadLocationException e)
-          {
+          } catch (BadLocationException e) {
             e.printStackTrace();
           }
         }
@@ -327,8 +303,7 @@ public class SwingMessageArea
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
       insert();
     }
   }
@@ -343,87 +318,70 @@ public class SwingMessageArea
    */
   private void insertLine(String msg,
           Style style,
-          boolean eol)
-  {
+          boolean eol) {
     _INSERTER_ inserter = new _INSERTER_(msg, style, eol);
-    try
-    {
+    try {
       SwingUtilities.invokeAndWait(inserter);
       _observer.setTimeStamp();
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  private void insertShellInvite()
-  {
+  private void insertShellInvite() {
     _INSERTER_ inserter = new _INSERTER_(PYTHON_SHELL_INVITE, _messageStyle, false);
     SwingUtilities.invokeLater(inserter);
 
   }
 
   class _INPUT_KEY_
-          extends KeyAdapter
-  {
+          extends KeyAdapter {
 
-    private void parseCommand()
-    {
+    private void parseCommand() {
       Document doc = _textPane.getDocument();
       int curPos = _textPane.getCaretPosition();
-      try
-      {
+      try {
         String command = doc.getText(0, curPos);
         curPos--;
         int commandStartPos = -1;
-        while (curPos >= 2)
-        {
+        while (curPos >= 2) {
           if ((command.charAt(curPos) == '>') &&
                   (command.charAt(curPos - 1) == '>') &&
-                  (command.charAt(curPos - 2) == '>'))
-          {
+                  (command.charAt(curPos - 2) == '>')) {
             commandStartPos = curPos + 1;
             break;
-          } else if (command.charAt(curPos) == '\n')
-          // give upt if endof line is before >>>
+          } else if (command.charAt(curPos) == '\n') // give upt if endof line is before >>>
           {
             break;
           }
           curPos--;
         }
-        if (commandStartPos == -1)
-        {
+        if (commandStartPos == -1) {
           shellInvite();
           return;
         }
-        if (commandStartPos < command.length())
-        {
+        if (commandStartPos < command.length()) {
           command = command.substring(commandStartPos);
-          if (command.charAt(0) == '\n')
-          {
+          if (command.charAt(0) == '\n') {
             // empty command ignore
             shellInvite();
             return;
           }
-          if (_listener != null)
-          {
+          if (_listener != null) {
             _listener.commandEntered(new CommandLineEvent(command));
           }
           // awake observer after command submission
           _observer.awake();
-        } else
-        {
+        } else {
           shellInvite();
         }
 
-      } catch (BadLocationException e)
-      {
+      } catch (BadLocationException e) {
       }
     }
 
     @Override
-    public void keyPressed(KeyEvent ke)
-    {
+    public void keyPressed(KeyEvent ke) {
       // suspend shell observer while typing commands
       _observer.enterSleep();
       char entered = ke.getKeyChar();
@@ -434,8 +392,7 @@ public class SwingMessageArea
     }
   }
 
-  private void init()
-  {
+  private void init() {
     setLayout(new BorderLayout()); // request a sample BorderLayout
     _textPane = new JTextPane();
     _textPane.setEditable(true);
@@ -455,8 +412,7 @@ public class SwingMessageArea
   /**
   MessageArea constructor
    */
-  public SwingMessageArea()
-  {
+  public SwingMessageArea() {
     init();
   }
 
@@ -465,41 +421,33 @@ public class SwingMessageArea
           Color header,
           Color error,
           Color warning,
-          Color normal)
-  {
+          Color normal) {
     boolean guiChanged = false;
-    if  ( ( font != null) && (_font != font) )
-    {
+    if ((font != null) && (_font != font)) {
       _font = font;
       guiChanged = true;
     }
-    if  ( (background != null ) && (_backgroundColor != background) )
-    {
+    if ((background != null) && (_backgroundColor != background)) {
       _backgroundColor = background;
       guiChanged = true;
     }
-    if ( ( header != null ) && (_headerColor != header) )
-    {
+    if ((header != null) && (_headerColor != header)) {
       _headerColor = header;
       guiChanged = true;
     }
-    if ( ( error != null ) && ( _errorColor != error) )
-    {
+    if ((error != null) && (_errorColor != error)) {
       _errorColor = error;
       guiChanged = true;
     }
-    if ( ( warning != null ) && (_warningColor != warning) )
-    {
+    if ((warning != null) && (_warningColor != warning)) {
       _warningColor = warning;
       guiChanged = true;
     }
-    if (( normal != null ) && (_normalColor != normal))
-    {
+    if ((normal != null) && (_normalColor != normal)) {
       _normalColor = normal;
       guiChanged = true;
     }
-    if (guiChanged)
-    {
+    if (guiChanged) {
       setStyles();
     }
   }
@@ -512,8 +460,7 @@ public class SwingMessageArea
           Color header,
           Color error,
           Color warning,
-          Color normal)
-  {
+          Color normal) {
     _font = font;
     _backgroundColor = background;
     _normalColor = normal;
@@ -529,18 +476,15 @@ public class SwingMessageArea
   @param  String msg the one to be displayed
   @return none
    */
-  public void message(String msg)
-  {
+  public void message(String msg) {
     insertLine(msg, _messageStyle, true);
   }
 
-  public void messageAppend(String msg)
-  {
+  public void messageAppend(String msg) {
     insertLine(msg, _messageStyle, false);
   }
 
-  public void headerAppend(String msg)
-  {
+  public void headerAppend(String msg) {
     insertLine(msg, _headerStyle, false);
   }
 
@@ -549,8 +493,7 @@ public class SwingMessageArea
   @param  String msg the one to be displayed
   @return none
    */
-  public void error(String msg)
-  {
+  public void error(String msg) {
     insertLine(msg, _errorStyle, true);
   }
 
@@ -559,8 +502,7 @@ public class SwingMessageArea
   @param  String msg the one to be displayed
   @return none
    */
-  public void warning(String msg)
-  {
+  public void warning(String msg) {
     insertLine(msg, _warningStyle, true);
   }
 
@@ -569,88 +511,71 @@ public class SwingMessageArea
   @param  String msg the one to be displayed
   @return none
    */
-  public void headerFooter(String msg)
-  {
+  public void headerFooter(String msg) {
     insertLine(msg, _headerStyle, true);
   }
 
   class _SHELL_OBSERVER_
-          extends Thread
-  {
+          extends Thread {
 
     private long _sleepTime = _OBSERVER_SLEEP_TIME_;
     private long _lastDisplay = System.currentTimeMillis();
     private boolean _sleeping = true;
     private boolean _running = true;
 
-    public synchronized void setTimeStamp()
-    {
+    public synchronized void setTimeStamp() {
       _lastDisplay = System.currentTimeMillis();
-      if (_sleeping)
-      {
+      if (_sleeping) {
         awake();
       }
     }
 
-    public void enterSleep()
-    {
+    public void enterSleep() {
       _sleeping = true;
     }
 
-    public void awake()
-    {
+    public void awake() {
       _sleeping = false;
       super.interrupt();
     }
 
     @Override
-    public void run()
-    {
-      while (_running)
-      {
-        try
-        {
-          if (_sleeping)
-          {
+    public void run() {
+      while (_running) {
+        try {
+          if (_sleeping) {
             Thread.sleep(Long.MAX_VALUE);
-          } else
-          {
+          } else {
             Thread.sleep(_sleepTime);
             if (!_sleeping) // check that it has not been entering sleeping
             {
               long cur = System.currentTimeMillis();
-              if ((cur - _lastDisplay) > _sleepTime)
-              {
+              if ((cur - _lastDisplay) > _sleepTime) {
                 // check Shell at bottom of doc
                 shellInvite();
               }
             }
           }
-        } catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
         }
       }
     }
   }
 
-  private synchronized void shellInvite()
-  {
+  private synchronized void shellInvite() {
     Document doc = _textPane.getDocument();
     int length = doc.getLength();
     int inviteLength = PYTHON_SHELL_INVITE.length();
-    try
-    {
+    try {
       String endOfText = doc.getText(length - inviteLength, inviteLength);
       // append >>> python shell invite
-      if (endOfText.equals(PYTHON_SHELL_INVITE))
-      {
+      if (endOfText.equals(PYTHON_SHELL_INVITE)) {
         return; // already in place
       }
       insertShellInvite();
       // and position the caret after
       _textPane.setCaretPosition(doc.getLength());
-    } catch (BadLocationException e)
-    {
+    } catch (BadLocationException e) {
       e.printStackTrace();
     }
   }
@@ -658,40 +583,33 @@ public class SwingMessageArea
   /**
   the main method is allways devoted to unit test purposes
    */
-  public static void main(String argv[])
-  {
+  public static void main(String argv[]) {
     // Exit the debug window frame
-    class WL extends WindowAdapter
-    {
+    class WL extends WindowAdapter {
 
       @Override
-      public void windowClosing(WindowEvent e)
-      {
+      public void windowClosing(WindowEvent e) {
         System.exit(0);
       }
     }
 
-    class _MESSAGE_INSERTER_ extends Thread
-    {
+    class _MESSAGE_INSERTER_ extends Thread {
 
       private int _howMuch;
       private SwingMessageArea _message;
       private int _count;
 
       public _MESSAGE_INSERTER_(int howMuch,
-              SwingMessageArea message)
-      {
+              SwingMessageArea message) {
         _howMuch = howMuch;
         _message = message;
       }
 
       @Override
-      public void run()
-      {
+      public void run() {
         Runtime rt = Runtime.getRuntime();
         // insert some stuffs
-        for (int ii = 1; ii < _howMuch; ii++)
-        {
+        for (int ii = 1; ii < _howMuch; ii++) {
           long started = System.currentTimeMillis();
           _message.headerFooter("displaying a test message group : " + _count + " started");
           _message.message(ii + " : OPPING : register functions");
@@ -708,61 +626,50 @@ public class SwingMessageArea
           _message.headerFooter("displaying message group : " + _count++ + " ended");
           _message.headerFooter("elapsed : " + (System.currentTimeMillis() - started) +
                   " free memory : " + rt.freeMemory());
-          try
-          {
+          try {
             Thread.sleep(5); // give AWT thread a timeSlice
-          } catch (InterruptedException ex)
-          {
+          } catch (InterruptedException ex) {
           }
         }
 
       }
     }
 
-    class _ADD_MESSAGE_ implements ActionListener
-    {
+    class _ADD_MESSAGE_ implements ActionListener {
 
       private SwingMessageArea _message; // Acting on that guy
 
-      public _ADD_MESSAGE_(SwingMessageArea message)
-      {
+      public _ADD_MESSAGE_(SwingMessageArea message) {
         _message = message;
       }
 
-      public void actionPerformed(ActionEvent e)
-      {
+      public void actionPerformed(ActionEvent e) {
         _message.error("test new error message insert");
       }
     }
 
-    class _REMOVEALL_PRESSED_ implements ActionListener
-    {
+    class _REMOVEALL_PRESSED_ implements ActionListener {
 
       private SwingMessageArea _message; // Acting on that guy
 
-      public _REMOVEALL_PRESSED_(SwingMessageArea message)
-      {
+      public _REMOVEALL_PRESSED_(SwingMessageArea message) {
         _message = message;
       }
 
-      public void actionPerformed(ActionEvent e)
-      {
+      public void actionPerformed(ActionEvent e) {
         _message.clearScreen();
       }
     }
 
-    class _REMOVE_PRESSED_ implements ActionListener
-    {
+    class _REMOVE_PRESSED_ implements ActionListener {
 
       private SwingMessageArea _message; // Acting on that guy
 
-      public _REMOVE_PRESSED_(SwingMessageArea message)
-      {
+      public _REMOVE_PRESSED_(SwingMessageArea message) {
         _message = message;
       }
 
-      public void actionPerformed(ActionEvent e)
-      {
+      public void actionPerformed(ActionEvent e) {
         long started = System.currentTimeMillis();
         _message.removeFirstLine();
         System.out.println("elapsed : " + (System.currentTimeMillis() - started));

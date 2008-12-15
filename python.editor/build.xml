@@ -24,7 +24,7 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- Python module additions -->
             <include name="pythonstubs/"/>
-            <include name="jython1/jython-2.5/**/netbeans-index-*.zip"/>
+            <include name="jython-2.5/**/netbeans-index-*.zip"/>
         </patternset>
     </target>   
 

@@ -445,13 +445,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             return true;
         }
 
-        if (canClose()) {
-            WindowManager.getDefault().topComponentClose(this);
-
-            return true;
-        } else {
-            return false;
-        }
+        WindowManager.getDefault().topComponentClose(this);
+        return !isOpened();
     }
 
     /** This method is called when this <code>TopComponent</code> is about to close.

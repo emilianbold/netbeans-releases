@@ -407,7 +407,7 @@ public class ProjectBridge {
                 boolean find = false;
                 for(String m : list){
                     if (m.equals(entry.getKey()) ||
-                        m.startsWith(entry.getKey()+"=")){
+                        m.startsWith(entry.getKey()+"=")) {// NOI18N
                         find = true;
                         break;
                     }
