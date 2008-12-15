@@ -58,6 +58,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -109,7 +111,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/CPWizard.xml";  // NOI18N
 
-    private boolean showMsg = false;
     private DeploymentManager currentDM = null;
     
     public static final String JDBC_RESOURCE = "jdbc"; // NOI18N
@@ -117,6 +118,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     public static final String JMS_PREFIX = "jms/"; // NOI18N
         
     ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(ResourceConfigurator.class.getName());
     
     /**
      * Creates a new instance of ResourceConfigurator
@@ -514,6 +517,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             
             // XXX why do we suppress this?
             // Unable to create Wizard object -- supppress.
+            LOG.log(Level.SEVERE, "getDatasourceClassName failed", ex);
         }
         
         return null;
@@ -535,6 +539,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             
             // XXX why do we suppress this?
             // Unable to create Wizard object -- supppress.
+            LOG.log(Level.SEVERE, "getDatabaseVendorName failed", ex);
         }
         
         return vendorName;
@@ -548,9 +553,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 if(!isFriendlyFilename(vendorName)) {
                     vendorName = makeLegalFilename(vendorName);
                 }
-                this.showMsg = false;
             } else {
-                this.showMsg = true;
                 vendorName = makeShorterLegalFilename(database);
             }
         }
@@ -779,7 +782,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     PropertyElement[] props = connectionPoolBean.getPropertyElement();
                     String dsClass = connectionPoolBean.getDatasourceClassname();
                     String resType = connectionPoolBean.getResType();
-                    HashMap properties = new HashMap();
                     for (int j = 0; j < props.length; j++) {
                         Object val = props[j].getValue();
                         String propValue = "";
@@ -1002,7 +1004,9 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
         try{
             Thread.sleep(1000);
-        }catch(Exception ex){}
+        }catch(Exception ex){
+            LOG.log(Level.SEVERE, "createCPPoolResource failed", ex);
+        }
     }
     
     private void createJDBCResource(String jndiName, String poolName, File resourceDir) throws IOException {
