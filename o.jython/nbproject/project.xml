@@ -26,6 +26,10 @@
                 <runtime-relative-path>ext/jython.jar</runtime-relative-path>
                 <binary-origin>build/jython.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jarjar.jar</runtime-relative-path>
+                <binary-origin>build/jarjar.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
