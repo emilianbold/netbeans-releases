@@ -92,7 +92,25 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
         justAddedPair = 0;
         justAddedPairOffset = -1;
-        
+
+        if (ch == '}') {
+            //handle curly bracket skipping
+            //if there is a matching opening bracket and there is no opened unpaired bracket before
+            //then just skip the typed char
+            TokenSequence<CSSTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
+            if (ts != null) {
+                ts.move(dot);
+                if (ts.moveNext()) {
+                    //ts is already positioned
+                    if (ts.token().id() == CSSTokenId.RBRACE) {
+                        //skip it
+                        caret.setDot(dot + 1);
+                        return true;
+                    }
+                }
+            }
+        }
+
         //test if we care about the typed character
         int pairIdx = pairIndex(ch);
         if (pairIdx == -1) {
@@ -168,9 +186,14 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        if(justAddedPairOffset - 1 == dot) {
+            //removed the paired char, remove the pair as well
+            doc.remove(dot, 1);
+        }
+
         justAddedPair = 0;
         justAddedPairOffset = -1;
-        
+
         return false;
 
     }
@@ -219,13 +242,13 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
 
 //        CSSGSFParserResult result = (CSSGSFParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
-        SimpleNode root = ((CSSGSFParserResult)info).root();
+        SimpleNode root = ((CSSGSFParserResult) info).root();
         Snapshot snapshot = info.getSnapshot();
 
-        if(root != null) {
+        if (root != null) {
             //find leaf at the position
             SimpleNode node = SimpleNodeUtil.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
-            if(node != null) {
+            if (node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
                     int from = node.startOffset();
@@ -233,26 +256,24 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
-                    if(last == null || !(last.getStart() == from && last.getEnd() == to)) {
+                    if (last == null || !(last.getStart() == from && last.getEnd() == to)) {
                         ranges.add(new OffsetRange(from, to));
                     }
-                } while ((node = (SimpleNode)node.jjtGetParent()) != null);
+                } while ((node = (SimpleNode) node.jjtGetParent()) != null);
             }
         }
 
         //the bottom most element represents the whole parse tree, replace it by the document
         //range since they doesn't need to be the same
-        if(!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0, 
+        if (!ranges.isEmpty()) {
+            ranges.set(ranges.size() - 1, new OffsetRange(0,
                     info.getSnapshot().getSource().getDocument().getLength()));
         }
 
         return ranges;
     }
 
-
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
-    
 }
