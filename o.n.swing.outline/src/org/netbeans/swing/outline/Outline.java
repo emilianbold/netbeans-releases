@@ -53,6 +53,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -323,8 +324,12 @@ public class Outline extends ETable {
         }
     }
 
-    /**
-     */
+    @Override
+    public void setRowHeight (int row, int rowHeight) {
+        Logger.getLogger (Outline.class.getName ()).warning ("Not supported yet."); // NOI18N
+    }
+
+
     @Override
     protected TableColumn createColumn(int modelIndex) {
         return new OutlineColumn(modelIndex);
