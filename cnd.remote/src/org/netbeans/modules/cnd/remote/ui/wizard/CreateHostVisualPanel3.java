@@ -64,8 +64,8 @@ public final class CreateHostVisualPanel3 extends JPanel {
         textHostDisplayName.setText(RemoteUtils.getHostName(hkey));
         CompilerSetManager csm = CompilerSetManager.getDefault(hkey);
         labelPlatform.setText("Platform: " + PlatformTypes.toString(csm.getPlatform()));//NOI18N
-        labelUsername.setText("User: " + RemoteUtils.getUserName(hkey));
-        labelHostname.setText("Host: " + RemoteUtils.getHostName(hkey));
+        labelUsername.setText("User: " + RemoteUtils.getUserName(hkey));//NOI18N
+        labelHostname.setText("Host: " + RemoteUtils.getHostName(hkey));//NOI18N
         List<String> sets = csm.getCompilerSetDisplayNames();
         cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
         List<CompilerSet> sets2 = csm.getCompilerSets();
@@ -110,8 +110,6 @@ public final class CreateHostVisualPanel3 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(labelToolchains, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelToolchains.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
-
-        cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
