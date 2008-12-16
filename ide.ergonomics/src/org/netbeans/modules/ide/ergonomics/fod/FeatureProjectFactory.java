@@ -68,8 +68,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class FeatureProjectFactory implements ProjectFactory {
 
     public boolean isProject(FileObject projectDirectory) {
-        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances ()) {
+        for (FeatureInfo info : Feature2LayerMapping.features()) {
             if (info.isProject(projectDirectory, false)) {
                 return true;
             }
@@ -78,8 +77,7 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances ()) {
+        for (FeatureInfo info : Feature2LayerMapping.features()) {
             if (info.isProject(projectDirectory, true)) {
                 return new FeatureNonProject(projectDirectory, info, state);
             }

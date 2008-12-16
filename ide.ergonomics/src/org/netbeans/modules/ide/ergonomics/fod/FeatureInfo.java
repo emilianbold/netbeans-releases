@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor.Internal;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
@@ -138,20 +139,27 @@ public final class FeatureInfo {
     }
 
     boolean isProject(FileObject dir, boolean deepCheck) {
+        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", dir);
+        boolean toRet;
         if (isNbProject(dir, deepCheck)) {
-            return true;
+            toRet = true;
         } else {
             if (files.isEmpty()) {
-                return false;
+                toRet = false;
             } else {
+                toRet = false;
                 for (String s : files.keySet()) {
+                    FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
                     if (dir.getFileObject(s) != null) {
-                        return true;
+                        FoDFileSystem.LOG.log(Level.FINER, "    found", s);
+                        toRet = true;
+                        break;
                     }
                 }
-                return false;
             }
         }
+        FoDFileSystem.LOG.log(Level.FINE, "  isProject: {0}", toRet);
+        return toRet;
     }
 
     public final Set<String> getCodeNames() {
@@ -172,18 +180,21 @@ public final class FeatureInfo {
         } else {
             FileObject prj = dir.getFileObject("nbproject/project.xml");
             if (prj == null) {
+                FoDFileSystem.LOG.log(Level.FINEST, "    nbproject/project.xml not found"); // NOI18N
                 return false;
             }
             if (!deepCheck) {
+                FoDFileSystem.LOG.log(Level.FINEST, "    no deep check, OK"); // NOI18N
                 return true;
             }
-            byte[] arr = new byte[2048];
+            byte[] arr = new byte[4000];
             int len;
             InputStream is = null;
             try {
                 is = prj.getInputStream();
                 len = is.read(arr);
             } catch (IOException ex) {
+                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
                 len = -1;
             } finally {
                 if (is != null) {
@@ -194,15 +205,21 @@ public final class FeatureInfo {
                     }
                 }
             }
+            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
             if (len == -1) {
                 return false;
             }
             String text = new String(arr, 0, len);
             for (String t : nbproject.keySet()) {
-                if (text.indexOf("<type>" + t + "</type>") >= 0) { // NOI18N
+                final String pattern = "<type>" + t + "</type>";
+                if (text.indexOf(pattern) >= 0) { // NOI18N
+                    FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' found, OK"); // NOI18N
                     return true;
+                } else {
+                    FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' not found"); // NOI18N
                 }
             }
+            FoDFileSystem.LOG.log(Level.FINEST, "    not accepting"); // NOI18N
             return false;
         }
     }
