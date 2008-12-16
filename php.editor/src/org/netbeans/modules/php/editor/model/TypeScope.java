@@ -46,6 +46,7 @@ import org.netbeans.modules.gsf.api.NameKind;
  * @author Radek Matous
  */
 public interface TypeScope extends Scope {
+    PhpModifiers getPhpModifiers();
     List<? extends InterfaceScope> getInterfaces();
     List<? extends MethodScope> getAllMethods();
     List<? extends MethodScope> getMethods(final int... modifiers);

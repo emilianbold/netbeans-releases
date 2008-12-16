@@ -37,64 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model.nodes;
+package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.model.ModelScope;
 
 /**
+ *
  * @author Radek Matous
  */
-public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
-    ClassDeclarationInfo(ClassDeclaration node) {
-        super(node);
-    }
-
-    public static ClassDeclarationInfo create(ClassDeclaration classDeclaration) {
-        return new ClassDeclarationInfo(classDeclaration);
-    }
+abstract class ModelRule implements AstRule {
+    private ModelScope modelScope;
+    abstract void check (ModelScope modelScope, RuleContext context, List<Hint> hints);
 
     @Override
-    public Kind getKind() {
-        return Kind.CLASS;
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
     }
 
-    @Override
-    public String getName() {
-        ClassDeclaration classDeclaration = getOriginalNode();
-        return classDeclaration.getName().getName();
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
-    @Override
-    public OffsetRange getRange() {
-        ClassDeclaration classDeclaration = getOriginalNode();
-        Identifier name = classDeclaration.getName();
-        return new OffsetRange(name.getStartOffset(), name.getEndOffset());
+    public boolean appliesTo(RuleContext context) {
+        return true;
     }
 
-    public Identifier getSuperClass() {
-        return getOriginalNode().getSuperClass();
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
     }
-
-    public List<? extends Identifier> getInterfaces() {
-        return getOriginalNode().getInterfaes();
-    }
-
-    public PhpModifiers getAccessModifiers() {
-        Modifier modifier = getOriginalNode().getModifier();
-
-        if (modifier.equals(Modifier.ABSTRACT)) {
-            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.ABSTRACT);
-        } else if (modifier.equals(Modifier.FINAL)) {
-            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.FINAL);
-        }
-        return new PhpModifiers(PhpModifiers.PUBLIC);
-    }
-
 }
