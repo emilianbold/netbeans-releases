@@ -443,8 +443,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 }
                 // try Constant usage
                 RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder(info, root, path, index, closest);
-                decl = constantDF.findConstantDeclaration();
-                return decl;
+                return constantDF.findConstantDeclaration();
             } else if (closest instanceof SymbolNode) {
                 String name = ((SymbolNode)closest).getName();
 

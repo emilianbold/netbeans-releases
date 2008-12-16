@@ -155,8 +155,9 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     
     private CsmDeclaration _getReferencedDeclaration() {
         CsmDeclaration referencedDeclaration = null;
-        if (refDeclaration != null) {
-            referencedDeclaration =((Reference<CsmDeclaration>)refDeclaration).get();
+        WeakReference<CsmDeclaration> aRefDeclaration = refDeclaration;
+        if (aRefDeclaration != null) {
+            referencedDeclaration =((Reference<CsmDeclaration>)aRefDeclaration).get();
         }
         if (referencedDeclaration == null) {
             referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
