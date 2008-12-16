@@ -67,10 +67,6 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     
-    private HudsonInstanceImpl(String name, String url) {
-        this(new HudsonInstanceProperties(name, url));
-    }
-    
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
         this.connector = new HudsonConnector(this);
