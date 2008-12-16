@@ -46,6 +46,9 @@
                         </folder>
                     </folder>
                 </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-php-editor-actions-FastImportAction.instance"/>
+                </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
                         <attr name="position" intvalue="1300"/>
@@ -101,6 +104,10 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
                     </folder>
+                    <file name="fast-import">
+                        <attr name="position" intvalue="1181"/>
+                    </file>
+
                 </folder>
                 <!--end of issue #127161-->
                 
