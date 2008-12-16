@@ -21,10 +21,12 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -42,6 +44,9 @@ import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.HudsonNotificationController;
 import org.netbeans.modules.hudson.util.Utilities;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -66,6 +71,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
+    /**
+     * Must be kept here, not in {@link HudsonJobImpl}, because that is transient
+     * and this should persist across refreshes.
+     */
+    private final Map<String,JobWorkspaceFileSystem> workspaces = new HashMap<String,JobWorkspaceFileSystem>();
     
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
@@ -294,6 +304,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         // Update state
                         fireStateChanges();
                         
+                        for (JobWorkspaceFileSystem fs : workspaces.values()) {
+                            fs.refreshAll();
+                        }
+
                         // Sort retrieved list
                         Collections.sort(Arrays.asList(retrieved.toArray(new HudsonJob[] {})));
                         
@@ -303,7 +317,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         
                         // Update jobs
                         jobs = retrieved;
-                        
+
                         // Fire all changes
                         fireContentChanges();
                     } finally {
@@ -368,6 +382,21 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     public int compareTo(HudsonInstance o) {
         return getName().compareTo(o.getName());
+    }
+
+    /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(HudsonJob job) {
+        synchronized (workspaces) {
+            String name = job.getName();
+            if (!workspaces.containsKey(name)) {
+                try {
+                    workspaces.put(name, new JobWorkspaceFileSystem(job));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return FileUtil.createMemoryFileSystem();
+                }
+            }
+            return workspaces.get(name);
+        }
     }
 
     

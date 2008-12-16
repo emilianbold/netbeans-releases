@@ -173,7 +173,7 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
      * Requires Hudson 1.264 or later.
      */
     public FileSystem getRemoteWorkspace() {
-        return new JobWorkspaceFileSystem(this);
+        return instance.getRemoteWorkspace(this);
     }
     
     public boolean equals(Object o) {

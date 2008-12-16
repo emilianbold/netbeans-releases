@@ -53,31 +53,57 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.filesystems.AbstractFileSystem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
+import org.openide.util.NbCollections;
+import org.openide.util.WeakSet;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Virtual filesystem representing the remote workspace of a job.
- * XXX what should caching behavior be for best network efficiency and best accuracy?
- * Should there be some command to refresh the FS?
- * XXX should have a matching URLMapper in case some code asks for a URL
  */
-class JobWorkspaceFileSystem extends AbstractFileSystem implements
+final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         AbstractFileSystem.Attr, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Info {
 
     private static final Logger LOG = Logger.getLogger(JobWorkspaceFileSystem.class.getName());
 
     private final HudsonJob job;
+    private final URL baseURL;
 
-    JobWorkspaceFileSystem(HudsonJob job) {
+    JobWorkspaceFileSystem(HudsonJob job) throws MalformedURLException {
         this.job = job;
+        baseURL = new URL(job.getUrl() + "ws/"); // NOI18N
         attr = this;
         change = this;
         list = this;
         info = this;
+        synchronized (Mapper.class) {
+            if (Mapper.workspaces == null) {
+                Mapper.workspaces = new WeakSet<JobWorkspaceFileSystem>();
+            }
+            Mapper.workspaces.add(this);
+        }
+    }
+
+    /**
+     * For {@link HudsonInstanceImpl} to refresh after the workspace has been synchronized.
+     */
+    void refreshAll() {
+        lastModified.clear();
+        size.clear();
+        isDir.clear();
+        headers.clear();
+        for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
+            LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {job, f.getPath()});
+            f.refresh();
+        }
     }
 
     public String getDisplayName() {
@@ -88,10 +114,6 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
         return true;
     }
 
-    private URL baseURL() throws MalformedURLException {
-        return new URL(job.getUrl() + "ws/"); // NOI18N
-    }
-
     private final Map<String,Long> lastModified = new HashMap<String,Long>();
     private final Map<String,Integer> size = new HashMap<String,Integer>();
     private final Map<String,Boolean> isDir = new HashMap<String,Boolean>();
@@ -100,7 +122,7 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
     public String[] children(String f) {
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
-            URL url = new URL(baseURL(), fSlash + "*plain*"); // NOI18N
+            URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
             URLConnection conn = url.openConnection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
@@ -137,15 +159,23 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
 
     private URLConnection connection(String name) throws IOException {
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {job, name});
-        URLConnection conn = new URL(baseURL(), name).openConnection();
+        URLConnection conn = new URL(baseURL, name).openConnection();
         lastModified.put(name, conn.getLastModified());
         int contentLength = conn.getContentLength();
         size.put(name, contentLength);
         if (contentLength >= 0 && contentLength < /* more than MIMEResolverImpl needs */ 4050) {
             InputStream is = conn.getInputStream();
             byte[] buf = new byte[contentLength];
-            is.read(buf); // XXX readFully
-            headers.put(name, buf);
+            int p = 0;
+            int read;
+            while ((read = is.read(buf, p, contentLength - p)) != -1) {
+                p += read;
+            }
+            if (p == contentLength) {
+                headers.put(name, buf);
+            } else {
+                LOG.warning("incomplete read for " + name + " in " + job + ": read up to " + p + " where reported length is " + contentLength);
+            }
         } // for bigger files, just reread content later if requested
         return conn;
     }
@@ -162,7 +192,7 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
             try {
                 connection(name);
             } catch (IOException x) {
-                LOG.log(Level.INFO, "cannot get metadata for " + name + " in " + job, x);
+                LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
                 return new Date(0);
             }
         }
@@ -181,7 +211,7 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
             try {
                 connection(name);
             } catch (IOException x) {
-                LOG.log(Level.INFO, "cannot get metadata for " + name + " in " + job, x);
+                LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
                 return 0;
             }
         }
@@ -251,4 +281,62 @@ class JobWorkspaceFileSystem extends AbstractFileSystem implements
     public void unlock(String name) {}
 
     public void markUnimportant(String name) {}
+
+    @ServiceProvider(service=URLMapper.class)
+    public static class Mapper extends URLMapper {
+
+        static Set<JobWorkspaceFileSystem> workspaces = null;
+
+        public URL getURL(FileObject fo, int type) {
+            synchronized (Mapper.class) {
+                if (workspaces == null) { // shortcut
+                    return null;
+                }
+            }
+            return doGetURL(fo);
+        }
+
+        public FileObject[] getFileObjects(URL url) {
+            synchronized (Mapper.class) {
+                if (workspaces == null) { // shortcut
+                    return null;
+                }
+            }
+            return doGetFileObjects(url);
+        }
+
+        private static URL doGetURL(FileObject fo) {
+            try {
+                FileSystem fs = fo.getFileSystem();
+                if (fs instanceof JobWorkspaceFileSystem) {
+                    return new URL(((JobWorkspaceFileSystem) fs).baseURL, fo.getPath());
+                }
+            } catch (IOException x) {
+                LOG.log(Level.INFO, "trying to get URL for " + fo, x);
+            }
+            return null;
+        }
+
+        private static FileObject[] doGetFileObjects(URL url) {
+            JobWorkspaceFileSystem fs = null;
+            String urlS = url.toString();
+            synchronized (Mapper.class) {
+                for (JobWorkspaceFileSystem _fs : workspaces) {
+                    if (urlS.startsWith(_fs.baseURL.toString())) {
+                        fs = _fs;
+                        break;
+                    }
+                }
+            }
+            if (fs != null) {
+                FileObject f = fs.findResource(urlS.substring(fs.baseURL.toString().length()));
+                if (f != null) {
+                    return new FileObject[] {f};
+                }
+            }
+            return null;
+        }
+
+    }
+
 }
