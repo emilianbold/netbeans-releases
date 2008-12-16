@@ -1285,7 +1285,7 @@ public class Reformatter implements ReformatTask {
                 }
                 CodeStyle.WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
                 if(exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                    wrapToken(wrapStyle, -1, 0, IDENTIFIER);
+                    wrapToken(wrapStyle, -1, 0, IDENTIFIER, THIS, SUPER);
                 } else {
                     int index = tokens.index();
                     int c = col;

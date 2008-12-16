@@ -60,6 +60,10 @@ public class DebugCommand extends RunCommand {
         //Set python script
         path = FileUtil.toFile(script).getAbsolutePath();
         pyDebuggee.setScript(path);
+
+        // TODO - insert coverage script here?
+        // See PythonCoverageProvider.getCoverageExecution(pyProject);
+
         // set user Arguments
         pyDebuggee.setScriptArgs(pyProject.getEvaluator().getProperty(PythonProjectProperties.APPLICATION_ARGS) ) ;
 

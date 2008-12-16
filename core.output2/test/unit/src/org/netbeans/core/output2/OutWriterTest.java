@@ -47,6 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.TestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /** Tests the OutWriter class
  *
@@ -233,7 +234,7 @@ public class OutWriterTest extends TestCase {
              }
         });
         } catch (Exception e) {}
-        Thread.currentThread().yield();
+        Thread.yield();
         
         assertTrue ("Linecount should be 4 after printing 3 lines, not " +
             ow.getLines().getLineCount(), ow.getLines().getLineCount() == 4);
@@ -288,7 +289,8 @@ public class OutWriterTest extends TestCase {
         ow.println(threeLines);
         assertTrue ("Line count should be 7, not " + ow.getLines().getLineCount(), ow.getLines().getLineCount() == 7);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1887
     public void testRemoveChangeListener() {
         System.out.println("testRemoveChangeListener");
         
