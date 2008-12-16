@@ -74,7 +74,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return false;
     }
 
-    protected RubyProject getRubyProject(String path) {
+    protected RubyProject getRubyProject(String path) throws Exception {
         Project p = getTestProject(path);
         assertNotNull(p);
         assertTrue(p instanceof RubyProject);
