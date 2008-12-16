@@ -37,55 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
-import org.netbeans.modules.php.editor.parser.api.Utils;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.model.ModelScope;
 
 /**
+ *
  * @author Radek Matous
  */
-public final class Model {
-    private ModelVisitor modelVisitor;
-    private CompilationInfo info;
-    private int offset;
+abstract class ModelRule implements AstRule {
+    private ModelScope modelScope;
+    abstract void check (ModelScope modelScope, RuleContext context, List<Hint> hints);
 
-    Model(CompilationInfo info) {
-        this.info = info;
-        this.offset = -1;
+    @Override
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
     }
 
-    public ModelScope getModelScope() {
-        return getModelVisitor(-1).getModelScope();
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
-    public OccurencesSupport getOccurencesSupport(final int offset) {
-        return new OccurencesSupport(getModelVisitor(offset), offset);
+    public boolean appliesTo(RuleContext context) {
+        return true;
     }
 
-    public ParameterInfoSupport getParameterInfoSupport(final int offset) {
-        return new ParameterInfoSupport(getModelVisitor(-1), info.getDocument(), offset);
-    }
-
-
-    /*private ModelVisitor getModelVisitor() {
-        return getModelVisitor(-1);
-    }*/
-
-    /**
-     * @return the modelVisitor
-     */
-    private ModelVisitor getModelVisitor(int offset) {
-        if (modelVisitor == null || (offset >= 0 && this.offset != offset)) {
-            if (offset < 0) {
-                modelVisitor = new ModelVisitor(info);
-            } else {
-                modelVisitor = new ModelVisitor(info, offset);
-            }
-            modelVisitor.scan(Utils.getRoot(info));
-        }
-
-        return modelVisitor;
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
     }
 }
