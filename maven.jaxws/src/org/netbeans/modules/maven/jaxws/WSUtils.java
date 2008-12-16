@@ -425,11 +425,11 @@ public class WSUtils {
         return DEFAULT_PACKAGE_NAME;
         
     }
-    public static boolean isProjectReferenceable(Project clientProject, Project targetProject) {
-        if (clientProject == targetProject) {
+    public static boolean isProjectReferenceable(Project sourceProject, Project targetProject) {
+        if (sourceProject == targetProject) {
             return true;
         } else {
-            NbMavenProject mavenProject = targetProject.getLookup().lookup(NbMavenProject.class);
+            NbMavenProject mavenProject = sourceProject.getLookup().lookup(NbMavenProject.class);
             if (mavenProject != null && NbMavenProject.TYPE_JAR.equals(mavenProject.getPackagingType())) {
                 return true;
             }

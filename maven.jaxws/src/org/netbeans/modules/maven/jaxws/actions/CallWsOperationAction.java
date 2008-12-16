@@ -46,10 +46,8 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.jaxws.nodes.OperationNode;
-import org.netbeans.modules.websvc.project.api.WebServiceData;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -81,11 +79,8 @@ public class CallWsOperationAction  implements CodeGenerator {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 if (controller != null) {
                     FileObject targetSource = controller.getFileObject();
-                    if (targetSource != null) {
-                        Project prj = FileOwnerQuery.getOwner(targetSource);
-                        if (WebServiceData.getWebServiceData(prj) != null) {
-                            ret.add(new CallWsOperationAction(targetSource, component));
-                        }
+                    if (targetSource != null && JAXWSLightSupport.getJAXWSLightSupport(targetSource) != null) {
+                        ret.add(new CallWsOperationAction(targetSource, component));
                     }
                 }
             } catch (IOException ex) {

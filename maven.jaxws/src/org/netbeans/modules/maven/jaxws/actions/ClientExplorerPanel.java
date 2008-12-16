@@ -54,7 +54,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.project.api.WebService;
 import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-
 import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -73,16 +72,16 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
     private DialogDescriptor descriptor;
     private ExplorerManager manager;
     private BeanTreeView treeView;
-    private FileObject srcFileObject;
+    private FileObject targetSource;
     private Node selectedMethod;
-    private Project[] projects;
+    private Project[] sourceProjects;
     private Children rootChildren;
     private Node explorerClientRoot;
     private List<Node> projectNodeList;
 
-    public ClientExplorerPanel(FileObject srcFileObject) {
-        this.srcFileObject = srcFileObject;
-        projects = OpenProjects.getDefault().getOpenProjects();
+    public ClientExplorerPanel(FileObject targetSource) {
+        this.targetSource = targetSource;
+        sourceProjects = OpenProjects.getDefault().getOpenProjects();
         rootChildren = new Children.Array();
         explorerClientRoot = new AbstractNode(rootChildren);
         projectNodeList = new ArrayList<Node>();
@@ -147,15 +146,15 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
     public void addNotify() {
         super.addNotify();
         manager.addPropertyChangeListener(this);
-        for (int i = 0; i < projects.length; i++) {
-            Project srcFileProject = FileOwnerQuery.getOwner(srcFileObject);
-            if (srcFileProject != null
-                    && WSUtils.isProjectReferenceable(projects[i], srcFileProject)) {
+        for (int i = 0; i < sourceProjects.length; i++) {
+            Project targetProject = FileOwnerQuery.getOwner(targetSource);
+            if (targetProject != null
+                    && WSUtils.isProjectReferenceable(sourceProjects[i], targetProject)) {
                 LogicalViewProvider logicalProvider =
-                        (LogicalViewProvider) projects[i].getLookup().lookup(LogicalViewProvider.class);
+                        (LogicalViewProvider) sourceProjects[i].getLookup().lookup(LogicalViewProvider.class);
                 if (logicalProvider != null) {
                     Node rootNode = logicalProvider.createLogicalView();
-                    Node[] servicesNodes = getClientNodes(projects[i]);
+                    Node[] servicesNodes = getClientNodes(sourceProjects[i]);
                     if (servicesNodes.length > 0) {
                         Children children = new Children.Array();
                         children.add(servicesNodes);
