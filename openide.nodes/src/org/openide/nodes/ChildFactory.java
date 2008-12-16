@@ -77,6 +77,7 @@ import org.openide.util.NbBundle;
  * @param T The type of objects in the keys collection
  * @author Tim Boudreau
  * @see Children#create(ChildFactory, boolean)
+ * @since org.openide.nodes 7.1
  */
 public abstract class ChildFactory <T> {
     /**
@@ -231,6 +232,7 @@ public abstract class ChildFactory <T> {
      * on first use and last use.
      *
      * @param <T> The key type for this child factory
+     * @since org.openide.nodes 7.7
      */
     public static abstract class Detachable<T> extends ChildFactory<T>{
         /**
