@@ -66,7 +66,7 @@ public class Main implements Runnable {
     public void run() {
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        chatPanel = new ChatPanel(KenaiConnection.getDefault().getChat());
+        chatPanel = new ChatPanel(KenaiConnection.getDefault().getChats().first());
         ChatContainer chats = new ChatContainer();
         chats.addChats("chat 1", chatPanel);
         frame.getContentPane().add(chats);

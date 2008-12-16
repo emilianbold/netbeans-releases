@@ -40,11 +40,13 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -82,8 +84,10 @@ public class ChatTopComponent extends TopComponent {
                     }
                 }
             });
-            add(retry, BorderLayout.CENTER);
+            setLayout(new FlowLayout());
+            add(retry, FlowLayout.LEFT);
         } else {
+            setLayout(new BorderLayout());
             putChats();
         }
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
@@ -91,7 +95,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void putChats() {
         removeAll();
-        chatPanel = new ChatPanel(KenaiConnection.getDefault().getChat());
+        chatPanel = new ChatPanel(KenaiConnection.getDefault().getChats().iterator().next());
         ChatContainer chats = new ChatContainer();
         chats.addChats("chat 1", chatPanel);
         add(chats, BorderLayout.CENTER);

@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.kenai.collab.im;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jivesoftware.smack.Roster;
@@ -49,6 +53,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
+import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
 
 /**
  * Class representing connection to kenai
@@ -62,6 +67,7 @@ public class KenaiConnection {
             connect();
             joinChat();
             nbChat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
+            PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
             XMPPLOG.log(Level.WARNING, ex.getMessage());
         }
@@ -119,8 +125,8 @@ public class KenaiConnection {
         return nbChat;
     }
 
-    public MultiUserChat getChat() {
-        return nbChat;
+    public SortedSet<MultiUserChat> getChats() {
+        return Collections.unmodifiableSortedSet(new TreeSet<MultiUserChat>(Collections.singleton(nbChat)));
     }
 
     public Roster getRoster() {
