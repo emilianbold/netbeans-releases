@@ -60,7 +60,7 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
         initComponents();
         this.prefs = prefs;
         skipParams.setSelected(UnusedDetector.getSkipParameters(prefs));
-        skipReturnTuples.setSelected(UnusedDetector.getSkipReturnTuples(prefs));
+        skipTupleAssignments.setSelected(UnusedDetector.getSkipTupleAssignments(prefs));
         String ignore = UnusedDetector.getIgnoreNames(prefs);
         if (ignore == null) {
             ignore = "";
@@ -73,15 +73,15 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
     private void initComponents() {
 
         skipParams = new javax.swing.JCheckBox();
-        skipReturnTuples = new javax.swing.JCheckBox();
+        skipTupleAssignments = new javax.swing.JCheckBox();
         ignoredNames = new javax.swing.JTextField();
         ignoredLabel = new javax.swing.JLabel();
 
         skipParams.setText(org.openide.util.NbBundle.getMessage(UnusedDetectorPrefs.class, "UnusedDetectorPrefs.skipParams.text")); // NOI18N
         skipParams.addActionListener(this);
 
-        skipReturnTuples.setText(org.openide.util.NbBundle.getMessage(UnusedDetectorPrefs.class, "UnusedDetectorPrefs.skipReturnTuples.text")); // NOI18N
-        skipReturnTuples.addActionListener(this);
+        skipTupleAssignments.setText(org.openide.util.NbBundle.getMessage(UnusedDetectorPrefs.class, "UnusedDetectorPrefs.skipTupleAssignments.text")); // NOI18N
+        skipTupleAssignments.addActionListener(this);
 
         ignoredNames.setColumns(25);
         ignoredNames.addActionListener(this);
@@ -94,7 +94,7 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(skipParams)
-            .add(skipReturnTuples)
+            .add(skipTupleAssignments)
             .add(layout.createSequentialGroup()
                 .add(ignoredLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -105,7 +105,7 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
             .add(layout.createSequentialGroup()
                 .add(skipParams)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(skipReturnTuples)
+                .add(skipTupleAssignments)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(ignoredLabel)
@@ -120,7 +120,7 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
         if (evt.getSource() == skipParams) {
             UnusedDetectorPrefs.this.changed(evt);
         }
-        else if (evt.getSource() == skipReturnTuples) {
+        else if (evt.getSource() == skipTupleAssignments) {
             UnusedDetectorPrefs.this.changed(evt);
         }
         else if (evt.getSource() == ignoredNames) {
@@ -134,8 +134,8 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
             UnusedDetector.setIgnoreNames(prefs, ignoredNames.getText().trim());
         } else if (source == skipParams) {
             UnusedDetector.setSkipParameters(prefs, skipParams.isSelected());
-        } else if (source == skipReturnTuples) {
-            UnusedDetector.setSkipReturnTuples(prefs, skipReturnTuples.isSelected());
+        } else if (source == skipTupleAssignments) {
+            UnusedDetector.setSkipTupleAssignments(prefs, skipTupleAssignments.isSelected());
         } else {
             assert false : source;
         }
@@ -144,6 +144,6 @@ public class UnusedDetectorPrefs extends javax.swing.JPanel implements ActionLis
     private javax.swing.JLabel ignoredLabel;
     private javax.swing.JTextField ignoredNames;
     private javax.swing.JCheckBox skipParams;
-    private javax.swing.JCheckBox skipReturnTuples;
+    private javax.swing.JCheckBox skipTupleAssignments;
     // End of variables declaration//GEN-END:variables
 }

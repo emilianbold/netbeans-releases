@@ -86,6 +86,10 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public void traverse(PythonTree node) throws Exception {
+        // Jython's parser often doesn't set the parent references correctly
+        // so try to fix that here
+        node.parent = parent;
+
         PythonTree oldParent = parent;
         parent = node;
 
@@ -133,8 +137,8 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
             visit(root);
         } catch (Throwable t) {
             Exceptions.printStackTrace(t);
-        //throw org.python.core.ParserFacade.fixParseError(null, t,
-        //        code_compiler.getFilename());
+            //throw org.python.core.ParserFacade.fixParseError(null, t,
+            //        code_compiler.getFilename());
         }
     }
 
@@ -194,7 +198,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         // <netbeans>
         info.flags |= (DEF | extraFlags);
         info.node = node;
-    // </netbeans>
+        // </netbeans>
     }
 
     @Override
@@ -431,6 +435,10 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitName(Name node) throws Exception {
+        // Jython's parser doesn't always initialize the parent references correctly;
+        // try to correct that here.
+        node.parent = parent;
+
         String name = node.id;
         if (node.ctx != expr_contextType.Load) {
             if (name.equals("__debug__")) {
