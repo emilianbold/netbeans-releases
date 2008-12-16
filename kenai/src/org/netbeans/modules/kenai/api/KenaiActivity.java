@@ -87,6 +87,14 @@ public enum KenaiActivity {
     PROFILES_DELETE (KenaiFeature.PROFILES, "delete")
             ;
 
+    static KenaiActivity valueOf(String featureText, String activityText) {
+        for (KenaiActivity kenaiActivity : KenaiActivity.values()) {
+            if (kenaiActivity.feature.getId().equals(featureText) && kenaiActivity.name.equals(activityText)) return kenaiActivity;
+        }
+
+        return null;
+    }
+
     private final KenaiFeature feature;
     private final String name;
 

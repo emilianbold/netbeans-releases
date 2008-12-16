@@ -39,88 +39,34 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.net.URL;
-import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
-import org.netbeans.modules.kenai.util.Utils;
+import java.io.File;
+import java.util.Collection;
 
 /**
- * IDE-side representation of a Kenai project.
+ * Provides persistence services to Kenai module.
  *
  * @author Maros Sandor
  */
-public final class KenaiProject {
+class Persistence {
 
-    private final Kenai kenai;
-
-    private final String name;
-
-    private final URL   location;
-
-    private String      displayName;
-
-    private String      description;
-
-    private String      owner;
-
-    private long        createdTimestamp;
-
-    private long        updatedTimestamp;
-
-    private URL         imageLocation;
-
-    private String []   tags;
-
-    /**
-     * When detailed properties of this project has been fetched.
-     */
-    private long        detailsTimestamp;
-
-    /**
-     * I assume that this constructor does NOT provide full project information. If it does then
-     * call fillInfo() just after the object is created.
-     *
-     * @param p
-     */
-    KenaiProject(Kenai kenai, KenaiProjectImpl p) {
-        this.kenai = kenai;
-        this.name = (String) p.get(KenaiProjectImpl.NAME);
-        this.location = (URL) p.get(KenaiProjectImpl.LOCATION);
-        this.displayName = (String) p.get(KenaiProjectImpl.DISPLAY_NAME);
+    public Persistence() {
     }
 
-    public String getName() {
-        return name;
+    public void storeProjects(Collection<KenaiProject> projects) {
+        File master = getMasterStorage();
     }
 
-    public URL getWebLocation() {
-        return location;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getDescription() {
-        fetchDetailsIfNotAvailable();
-        return description;
-    }
-
-    public String[] getTags() {
-        return new String[0];
-    }
-
-    void fillInfo(KenaiProjectImpl prj) {
-        detailsTimestamp = System.currentTimeMillis();
-    }
-
-    private void fetchDetailsIfNotAvailable() {
-        if (detailsTimestamp > 0) return;
-
-        try {
-            KenaiProjectImpl prj = kenai.getDetails(name);
-            fillInfo(prj);
-        } catch (KenaiException kenaiException) {
-            Utils.logError(this, kenaiException);
+    private File getMasterStorage() {
+        File masterStorage;
+        String homeDir = System.getProperty("user.home"); // NOI18N
+        if (homeDir == null) {
+            homeDir = System.getProperty("netbeans.user"); // NOI18N
+            masterStorage = new File(homeDir);
+        } else {
+            masterStorage = new File(new File(homeDir), "NetBeansKenai");
         }
+        File store = new File(new File(masterStorage, "config"), "Kenai"); // NOI18N
+        store.mkdirs();
+        return store;
     }
 }
