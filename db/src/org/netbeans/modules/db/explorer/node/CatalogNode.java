@@ -43,8 +43,8 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -84,8 +84,8 @@ public class CatalogNode extends BaseNode {
 
         boolean connected = !connection.getConnector().isDisconnected();
         if (connected && metaDataModel != null) {
-            MetadataReader.readModel(metaDataModel, null,
-                new MetadataReader.MetadataReadListener() {
+            MetadataUtils.readModel(metaDataModel, null,
+                new MetadataUtils.MetadataReadListener() {
                     public void run(Metadata metaData, DataWrapper wrapper) {
                         Catalog catalog = catalogHandle.resolve(metaData);
                         renderNames(catalog);

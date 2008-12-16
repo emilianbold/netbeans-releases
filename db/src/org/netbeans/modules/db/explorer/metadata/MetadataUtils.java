@@ -49,11 +49,19 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.Lookup;
 
 /**
+ * Some utility methods for working with the meta data api.
  *
  * @author Rob Englander
  */
-public class MetadataReader {
+public class MetadataUtils {
 
+    /**
+     * The DataWrapper is s simple object holder.  An instance is passed to the
+     * MetadataUtils.readModel() method, and in turn it gets passed to the MetadataReaderListener.
+     * This allows the caller to manipulate the object while under the metadata lock.
+     *
+     * @param <C> the class of the wrapped object.
+     */
     public static class DataWrapper<C> {
         C object;
 
@@ -74,14 +82,27 @@ public class MetadataReader {
         }
     }
 
+    /**
+     * This interface is called by the readModel method while under
+     * the metadata lock.
+     */
     public interface MetadataReadListener {
         public void run(Metadata metaData, DataWrapper wrapper);
     }
 
-    private MetadataReader() {
-
+    private MetadataUtils() {
     }
 
+    /**
+     * This is a helper method for determining the working name
+     * of the provided schema.  It accounts for the possibility
+     * that the schema has no name, and in that case uses the
+     * catalog name.  This isn't meant to imply that the schema name
+     * and catalog name are equivalent.
+     *
+     * @param schema
+     * @return the working name
+     */
     public static String getSchemaWorkingName(Schema schema) {
         String schemaName = schema.getName();
         if (schemaName == null) {
@@ -91,6 +112,17 @@ public class MetadataReader {
         return schemaName;
     }
 
+    /**
+     * This is a helper method for determining the working name
+     * of the provided catalog.  It accounts for the possibility
+     * that the catalog has no name, and in that case uses the
+     * name of the provided schema.  This isn't meant to imply that
+     * the schema name and catalog name are equivalent.
+     *
+     * @param schema
+     * @param catalog
+     * @return the working name
+     */
     public static String getCatalogWorkingName(Schema schema, Catalog catalog) {
         String catName = catalog.getName();
 
@@ -101,6 +133,13 @@ public class MetadataReader {
         return catName;
     }
 
+    /**
+     * Find a Schema instance in the provided lookup.  This is based on the
+     * lookup containing a MetadataElementHandle for the schema.
+     *
+     * @param lookup
+     * @return Schema instance
+     */
     public static Schema findSchema(Lookup lookup) {
         MetadataModel model = lookup.lookup(MetadataModel.class);
         final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
@@ -118,6 +157,13 @@ public class MetadataReader {
         return wrapper.getObject();
     }
 
+    /**
+     * Find a Catalog instance in the provided lookup.  This is based on the
+     * lookup containing a MetadataElementHandle for the catalog.
+     *
+     * @param lookup
+     * @return Schema instance
+     */
     public static Catalog findCatalog(Lookup lookup) {
         MetadataModel model = lookup.lookup(MetadataModel.class);
         final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
@@ -135,11 +181,25 @@ public class MetadataReader {
         return wrapper.getObject();
     }
 
+    /**
+     * Read the meta data model and call the listener while holding the lock.
+     *
+     * @param model the model to read
+     * @param wrapper the data wrapper to pass back to the listener
+     * @param listener the listener to call while holding the lock
+     */
     public static void readModel(MetadataModel model, DataWrapper wrapper, MetadataReadListener listener) {
-        MetadataReader reader = new MetadataReader();
+        MetadataUtils reader = new MetadataUtils();
         reader.read(model, wrapper, listener);
     }
 
+    /**
+     * Read the meta data model and call the listener while holding the lock.
+     *
+     * @param model the model to read
+     * @param wrapper the data wrapper to pass back to the listener
+     * @param listener the listener to call while holding the lock
+     */
     private void read(MetadataModel model, final DataWrapper wrapper, final MetadataReadListener listener) {
         try {
             model.runReadAction(

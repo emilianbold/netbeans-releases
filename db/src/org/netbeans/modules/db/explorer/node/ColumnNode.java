@@ -47,9 +47,9 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
@@ -154,7 +154,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
     public Column getColumn() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Column> wrapper = new DataWrapper<Column>();
-        MetadataReader.readModel(metaDataModel, wrapper,
+        MetadataUtils.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
                     Column column = columnHandle.resolve(metaData);
@@ -189,7 +189,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         try {
             RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
 
-            String schema = MetadataReader.getSchemaWorkingName(getSchema());
+            String schema = MetadataUtils.getSchemaWorkingName(getSchema());
 
             command.setObjectOwner(schema);
             command.removeColumn(getName());

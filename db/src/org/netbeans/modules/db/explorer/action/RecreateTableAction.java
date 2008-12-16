@@ -56,7 +56,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dataview.DataViewWindow2;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.node.SchemaProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -141,7 +141,7 @@ public class RecreateTableAction extends BaseAction {
 
                     SchemaProvider schemaProvider = node.getLookup().lookup(SchemaProvider.class);
                     Schema schema = schemaProvider.getSchema();
-                    String schemaName = MetadataReader.getSchemaWorkingName(schema);
+                    String schemaName = MetadataUtils.getSchemaWorkingName(schema);
 
                     cmd.setObjectOwner(schemaName);
 

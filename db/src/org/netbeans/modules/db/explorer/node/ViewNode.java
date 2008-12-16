@@ -46,9 +46,9 @@ import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
@@ -98,7 +98,7 @@ public class ViewNode extends BaseNode implements SchemaProvider {
     public View getView() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<View> wrapper = new DataWrapper<View>();
-        MetadataReader.readModel(metaDataModel, wrapper,
+        MetadataUtils.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
                     View view = viewHandle.resolve(metaData);

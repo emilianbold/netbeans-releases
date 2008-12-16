@@ -76,6 +76,8 @@ import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
@@ -909,6 +911,21 @@ public class DatabaseConnection implements DBConnection {
            if (info instanceof ConnectionNodeInfo && connection.equals(info.getName())) {
                return (ConnectionNodeInfo)info;
            }
+        }
+
+        return null;
+    }
+
+    // Needed by unit tests as well as internally
+    public static ConnectionNode findConnectionNode(String connection) throws DatabaseException {
+        assert connection != null;
+
+        RootNode root = RootNode.instance();
+        Collection<? extends Node> children = root.getChildNodes();
+        for (Node node : children) {
+            if (node instanceof ConnectionNode) {
+                return (ConnectionNode)node;
+            }
         }
 
         return null;

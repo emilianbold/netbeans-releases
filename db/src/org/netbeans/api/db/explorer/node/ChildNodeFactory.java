@@ -74,6 +74,14 @@ public class ChildNodeFactory extends ChildFactory<Lookup> {
         super.refresh(false);
     }
 
+    /**
+     * Refreshes this factory which causes it to get its
+     * child keys and subsequently its child nodes immeditately.
+     */
+    public void refreshSync() {
+        super.refresh(true);
+    }
+
     @Override
     public Node[] createNodesForKey(Lookup key) {
         

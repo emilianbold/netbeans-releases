@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
@@ -52,9 +53,12 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.ChangeSupport;
@@ -163,8 +167,8 @@ public class DatabaseConnector {
     public void performDisconnect() throws DatabaseException {
         if (connection != null) {
             String message = null;
+            Connection con = connection;
             try {
-                Connection con = connection;
                 setConnection(null); // fires change
                 con.close();
             } catch (Exception exc) {
@@ -175,7 +179,7 @@ public class DatabaseConnector {
             }
 
             // XXX hack for Derby
-            DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), connection);
+            DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), con);
 
             if (message != null) {
                 throw new DatabaseException(message);
@@ -201,15 +205,57 @@ public class DatabaseConnector {
         notifyChange();
     }
 
+    public static boolean containsColumn(Collection<Column> columnList, Column column) {
+        boolean result = false;
+
+        // this code is currently working around a metadata api bug.  the Column instances
+        // should be the same, but they aren't always.  so for now we create handles
+        // and determine equivalence from there
+        MetadataElementHandle columnHandle = MetadataElementHandle.create(column);
+        for (Column col : columnList) {
+            MetadataElementHandle colHandle = MetadataElementHandle.create(col);
+            if (columnHandle.equals(colHandle)) {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean containsIndexColumn(Collection<Index> columnList, Column column) {
+        boolean result = false;
+
+        // this code is currently working around a metadata api bug.  the Column instances
+        // should be the same, but they aren't always.  so for now we create handles
+        // and determine equivalence from there
+        MetadataElementHandle columnHandle = MetadataElementHandle.create(column);
+        for (Index idx : columnList) {
+            Collection<IndexColumn> cols = idx.getColumns();
+            for (IndexColumn col : cols) {
+                MetadataElementHandle colHandle = MetadataElementHandle.create(col);
+                if (columnHandle.equals(colHandle)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public TableColumn getColumnSpecification(Table table, Column column) throws DatabaseException {
         TableColumn col = null;
 
         try {
             CreateTable cmd = (CreateTable) spec.createCommandCreateTable("DUMMY"); //NOI18N
 
-            if (table.getPrimaryKey().getColumns().contains(column)) {
+            // When the metadata api bug fix is available, we can just ask if the
+            // collections contain the column and then eliminate the special methods
+            // we're using
+            if (containsColumn(table.getPrimaryKey().getColumns(), column)) {
                 col = cmd.createPrimaryKeyColumn(column.getName());
-            } else if (table.getIndexes().contains(column)) {
+            } else if (containsIndexColumn(table.getIndexes(), column)) {
                 col = cmd.createUniqueColumn(column.getName());
             } else {
                 col = (TableColumn)cmd.createColumn(column.getName());
@@ -218,7 +264,7 @@ public class DatabaseConnector {
             Schema schema = table.getParent();
             Catalog catalog = schema.getParent();
 
-            DriverSpecification drvSpec = getDriverSpecification(MetadataReader.getCatalogWorkingName(schema, catalog));
+            DriverSpecification drvSpec = getDriverSpecification(MetadataUtils.getCatalogWorkingName(schema, catalog));
             drvSpec.getColumns(table.getName(), column.getName());
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {

@@ -44,7 +44,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.node.ColumnNode;
 import org.netbeans.modules.db.explorer.node.ColumnProvider;
 import org.netbeans.modules.db.explorer.node.SchemaProvider;
@@ -106,7 +106,7 @@ public abstract class QueryAction extends BaseAction {
 
         Schema schema = activatedNodes[0].getLookup().lookup(SchemaProvider.class).getSchema();
 
-        String schemaName = MetadataReader.getSchemaWorkingName(schema);
+        String schemaName = MetadataUtils.getSchemaWorkingName(schema);
 
         boolean isColumn = activatedNodes[0].getLookup().lookup(ColumnNode.class) != null;
 

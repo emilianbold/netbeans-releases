@@ -50,7 +50,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddIndexDialog;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.node.IndexListNode;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -106,8 +106,8 @@ public class AddIndexAction extends BaseAction {
             Schema schema = table.getParent();
             Catalog catalog = schema.getParent();
 
-            String schemaName = MetadataReader.getSchemaWorkingName(schema);
-            String catalogName = MetadataReader.getCatalogWorkingName(schema, catalog);
+            String schemaName = MetadataUtils.getSchemaWorkingName(schema);
+            String catalogName = MetadataUtils.getCatalogWorkingName(schema, catalog);
 
             Specification spec = connector.getDatabaseSpecification();
 

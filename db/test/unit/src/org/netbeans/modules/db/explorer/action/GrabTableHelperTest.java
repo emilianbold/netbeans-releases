@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,23 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.actions;
+
+package org.netbeans.modules.db.explorer.action;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,22 +47,23 @@ import java.util.Iterator;
 import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
- * @author David Van Couvering
+ *
+ * @author Rob Englander
  */
 public class GrabTableHelperTest extends DDLTestBase {
 
     public GrabTableHelperTest(String name) {
         super(name);
     }
-    
+
     public void testGrabTable() throws Exception {
-        /*
         File file = null;
-        
+
         try {
             String tablename = "grabtable";
             String pkName = "id";
@@ -65,7 +78,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             file = new File(filename);
             if ( file.exists() ) {
                 file.delete();
-            }            
+            }
 
             createBasicTable(tablename, pkName);
             addBasicColumn(tablename, col1, Types.VARCHAR, 255);
@@ -76,41 +89,43 @@ public class GrabTableHelperTest extends DDLTestBase {
             // quote existing (versus) new identifiers, so we need to
             // make sure they are quoted correctly.
             String fixedName = fixIdentifier(tablename);
+            pkName = fixIdentifier(pkName);
             col1 = fixIdentifier(col1);
             col2 = fixIdentifier(col2);
-            pkName = fixIdentifier(pkName);
-            
+
             // Initialize the table information in the format required
             // by the helper.  This is done by creating a DatabaseNodeInfo
-            // for the table
-            DatabaseNodeInfo tableInfo = getTableNodeInfo(tablename);
-            assertNotNull(tableInfo);
+            // for the table.
+            TableNode tableNode = getTableNode(tablename);
+            assertNotNull(tableNode);
 
-            new GrabTableHelper().execute(getSpecification(), fixedName,
-                    tableInfo.getChildren().elements(), file);
-            
+
+            new GrabTableHelper().execute(tableNode.getLookup().lookup(DatabaseConnection.class).getConnector(),
+                    getSpecification(), tableNode.getTable(),
+                    tableNode.getChildren().nodes(), file);
+
             assertTrue(file.exists());
-            
-            // Now recreate the table info and make sure it's accurate 
+
+            // Now recreate the table info and make sure it's accurate
             FileInputStream fstream = new FileInputStream(file);
             ObjectInputStream istream = new ObjectInputStream(fstream);
             CreateTable cmd = (CreateTable)istream.readObject();
             istream.close();
             cmd.setSpecification(getSpecification());
             cmd.setObjectOwner(getSchema());
-            
+
             assertEquals(fixedName, cmd.getObjectName());
-            
+
             Vector cols = cmd.getColumns();
             assertTrue(cols.size() == 3);
-            
+
             Iterator it = cols.iterator();
-            
+
             while ( it.hasNext() ) {
                 TableColumn col = (TableColumn)it.next();
-                
+
                 if ( col.getColumnName().equals(pkName)) {
-                    assertEquals(col.getColumnType(), Types.INTEGER);  
+                    assertEquals(col.getColumnType(), Types.INTEGER);
                     assertEquals(col.getObjectType(), TableColumn.PRIMARY_KEY);
                 } else if ( col.getColumnName().equals(col1) ) {
                     assertEquals(col.getColumnType(), Types.VARCHAR);
@@ -121,18 +136,17 @@ public class GrabTableHelperTest extends DDLTestBase {
                     fail("Unexpected column with name " + col.getColumnName());
                 }
             }
-            
+
             // OK, now see if we can actually create this guy
             dropTable(tablename);
             cmd.execute();
-            
+
             assertFalse(cmd.wasException());
             assertTrue(tableExists(fixedName));
-        } finally {        
+        } finally {
             if ( file != null && file.exists()) {
                 file.delete();
             }
         }
-        */
     }
 }

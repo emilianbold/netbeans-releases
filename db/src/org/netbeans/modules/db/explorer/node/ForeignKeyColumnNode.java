@@ -42,9 +42,9 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
@@ -95,7 +95,7 @@ public class ForeignKeyColumnNode extends BaseNode {
     public ForeignKeyColumn getForeignKeyColumn() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<ForeignKeyColumn> wrapper = new DataWrapper<ForeignKeyColumn>();
-        MetadataReader.readModel(metaDataModel, wrapper,
+        MetadataUtils.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
                     ForeignKeyColumn column = keyColumnHandle.resolve(metaData);

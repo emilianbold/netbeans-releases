@@ -177,6 +177,13 @@ public abstract class BaseNode extends AbstractNode {
      * 
      * @return the list of child nodes.
      */
+    public Collection<? extends Node> getChildNodesSync() {
+        if (childNodeFactory != null) {
+            childNodeFactory.refreshSync();
+        }
+        return nodeRegistry.getNodes();
+    }
+
     public Collection<? extends Node> getChildNodes() {
         return nodeRegistry.getNodes();
     }

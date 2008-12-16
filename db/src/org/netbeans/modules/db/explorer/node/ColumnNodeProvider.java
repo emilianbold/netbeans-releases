@@ -46,9 +46,9 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataReader.MetadataReadListener;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -91,7 +91,7 @@ public class ColumnNodeProvider extends NodeProvider {
     public Table getTable() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<Table> wrapper = new DataWrapper<Table>();
-        MetadataReader.readModel(metaDataModel, wrapper,
+        MetadataUtils.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
                     Table table = (Table)handle.resolve(metaData);
@@ -106,7 +106,7 @@ public class ColumnNodeProvider extends NodeProvider {
     public View getView() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         DataWrapper<View> wrapper = new DataWrapper<View>();
-        MetadataReader.readModel(metaDataModel, wrapper,
+        MetadataUtils.readModel(metaDataModel, wrapper,
             new MetadataReadListener() {
                 public void run(Metadata metaData, DataWrapper wrapper) {
                     View view = (View)handle.resolve(metaData);
