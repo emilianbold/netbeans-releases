@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Represents a PHP comment
- * <pre>e.g.<pre> // this is a single line comment
- * # this is a single line comment
- * /** this is php doc block (end php docblock here)
+ * Represents a single line comment, where user is able to assigna a type to variable
+ * <pre> @var $variable type </pre> . It has to be single line comment. Also it can
+ * contains mixed type. e.g. <pre> @var $variable type1|type2 </pre>
+ * @author Petr Pisl
  */
-public class Comment extends ASTNode {
+public class PHPVarComment extends Comment {
 
-    public enum Type {
+    private final PHPDocVarTypeTag variable;
 
-        TYPE_SINGLE_LINE ("singleLine"),    //NOI18N
-        TYPE_MULTILINE ("multiLine"),       //NOI18N
-        TYPE_PHPDOC ("phpDoc"),             //NOI18N
-        TYPE_VARTYPE("vartype");            //NOI18N
-        
-        private final String text;
-        
-        Type(String textRepresentation) {
-            text = textRepresentation;
-        }
-        
-        public String toString() {
-            return text;
-        }
-    };
-    
-    private Type commentType;
-
-    public Comment(int start, int end, Type type) {
-        super(start, end);
-        commentType = type;
+    public PHPVarComment(int start, int end, PHPDocVarTypeTag  variable) {
+        super(start, end, Comment.Type.TYPE_VARTYPE);
+        this.variable = variable;
     }
 
-    public Type getCommentType() {
-        return commentType;
+
+    public PHPDocVarTypeTag getVariable() {
+        return variable;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
