@@ -121,6 +121,11 @@ class PropertiesRowModel implements RowModel {
         return prop[column].getDisplayName();
     }
 
+    public String getShortDescription (int column) {
+        assert column < prop.length : column + " must be bellow " + prop.length;
+        return prop [column].getShortDescription ();
+    }
+
     public Object getValueFor(Object node, int column) {
         Node n = Visualizer.findNode(node);
         if (n == null) {
