@@ -43,9 +43,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -170,5 +174,17 @@ public class CommandUtils {
         String message = NbBundle.getMessage(CommandUtils.class, "MSG_NoMoreDebugSession");
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message, NotifyDescriptor.OK_CANCEL_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
+    }
+
+    public static void processExecutionException(ExecutionException exc) {
+        final Throwable cause = exc.getCause();
+        assert cause != null;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
+                        cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            }
+        });
     }
 }

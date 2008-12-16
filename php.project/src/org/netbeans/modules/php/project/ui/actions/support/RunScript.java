@@ -52,8 +52,6 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -113,10 +111,7 @@ public class RunScript extends Command implements Displayable {
                 try {
                     result.get();
                 } catch (ExecutionException exc) {
-                    Throwable cause = exc.getCause();
-                    assert cause != null;
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(
-                            cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                    CommandUtils.processExecutionException(exc);
                 }
                 return new Cancellable() {
                     public boolean cancel() {
