@@ -93,6 +93,11 @@ public class Generate {
     // Fake values can be returned if these exceptions are thrown:
     private static final Set<Class> SILENT_EXCEPTIONS = Collections.unmodifiableSet(new HashSet<Class>(Arrays.asList(new Class[] {
            com.sun.jdi.InternalException.class, com.sun.jdi.ObjectCollectedException.class, com.sun.jdi.VMDisconnectedException.class })));
+
+    private static final Set<String> NOT_USED_CLASSES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] {
+            com.sun.jdi.Accessible.class.getName(), com.sun.jdi.Bootstrap.class.getName(),
+            com.sun.jdi.ClassLoaderReference.class.getName()
+    })));
     
     private static final String METHODS_BY_JDK = "MethodsByJDK";
 
@@ -383,7 +388,9 @@ public class Generate {
                 // Add wrappers of JDI runtime exceptions...
                 Set<Class> thrownExceptions = new LinkedHashSet<Class>();
                 thrownExceptions.addAll(EXCEPTIONS_BY_METHODS.get("*").get("*"));
-                if (com.sun.jdi.ObjectReference.class.isAssignableFrom(c)) {
+                if (com.sun.jdi.Value.class.isAssignableFrom(c) &&
+                    !com.sun.jdi.PrimitiveValue.class.isAssignableFrom(c)) {
+                    
                     thrownExceptions.add(com.sun.jdi.ObjectCollectedException.class);
                 }
                 Map<String, Set<Class>> excByMethods = EXCEPTIONS_BY_METHODS.get(c.getName());
