@@ -117,7 +117,7 @@ public class WadlComponentWidget<T extends WadlComponent> extends AbstractTitled
     
     public void findPath(WadlComponent c, StringBuffer path) {
         if(c instanceof Application) {
-            createPath(path, ((Application)c).getResources().iterator().next().getBase());
+            createPath(path, "");
         } else if(c instanceof Resources) {
             createPath(path, ((Resources)c).getBase());
         } else if(c instanceof Resource) {
@@ -125,6 +125,8 @@ public class WadlComponentWidget<T extends WadlComponent> extends AbstractTitled
             createPath(path, ((Resource) c).getPath());
         } else if(c instanceof Method) {
             findPath(c.getParent(), path);
+        } else if(c instanceof ResourceType) {
+            createPath(path, ((ResourceType)c).getId());
         }
     }
     

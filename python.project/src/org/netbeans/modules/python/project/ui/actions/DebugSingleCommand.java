@@ -59,6 +59,10 @@ public class DebugSingleCommand extends RunSingleCommand {
                pyDebuggee.setScriptArgs(args);
 
             }
+
+            // TODO - insert coverage script here?
+            // See PythonCoverageProvider.getCoverageExecution(pyProject);
+
             final PythonProject pyProject = getProject();
             final PythonPlatform platform = checkProjectPythonPlatform(pyProject);
             if ( platform == null )

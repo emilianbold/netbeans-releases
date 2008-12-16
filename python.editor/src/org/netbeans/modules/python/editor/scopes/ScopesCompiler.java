@@ -14,6 +14,7 @@ import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.Attribute;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
+import org.python.antlr.ast.Delete;
 import org.python.antlr.ast.Exec;
 import org.python.antlr.ast.Expression;
 import org.python.antlr.ast.FunctionDef;
@@ -462,6 +463,18 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         }
 
         return ret;
+    }
+
+    @Override
+    public Object visitDelete(Delete node) throws Exception {
+        for (exprType et : node.targets) {
+            if (et instanceof Name) {
+                String name = ((Name)et).id;
+                cur.addUsed(name, node);
+            }
+        }
+
+        return super.visitDelete(node);
     }
 
     @Override

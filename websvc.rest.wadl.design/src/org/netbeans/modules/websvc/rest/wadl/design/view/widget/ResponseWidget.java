@@ -66,6 +66,7 @@ public class ResponseWidget extends WadlComponentWidget implements TabWidget {
     private transient Widget tabComponent;
     private Response response;
     private Object key = new Object();
+    private Method method;
 
     /**
      * Creates a new instance of MethodWidget
@@ -76,6 +77,7 @@ public class ResponseWidget extends WadlComponentWidget implements TabWidget {
         super(scene,
               !method.getResponse().isEmpty()?method.getResponse().iterator().next():
                   model.getFactory().createResponse(), model);
+        this.method = method;
         initUI();
     }
 
@@ -137,7 +139,7 @@ public class ResponseWidget extends WadlComponentWidget implements TabWidget {
         ParametersWidget headerParamsWidget = new ParametersWidget(
                 NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Header"),
                 ParamStyle.HEADER, getObjectScene(), getResponse(),
-                getWadlComponent(),
+                this.method,
                 ParametersWidget.getParameters(getResponse().getParam(),
                 ParamStyle.HEADER), getModel());
         containerWidget.addChild(headerParamsWidget);

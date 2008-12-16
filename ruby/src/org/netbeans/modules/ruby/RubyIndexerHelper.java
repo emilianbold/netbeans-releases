@@ -29,6 +29,8 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -279,7 +281,7 @@ public final class RubyIndexerHelper {
                 flags |= IndexedMethod.BLOCK;
             }
 
-            String returnTypes = getReturnTypes(line, callseq, name);
+            Set<? extends String> returnTypes = getReturnTypes(line, callseq, name);
 
             // Replace attributes
             int attributeIndex = signature.indexOf(';');
@@ -319,8 +321,8 @@ public final class RubyIndexerHelper {
 
 
             // See RubyIndexer for a description of the signature format
-            if (blockArgs.length() > 0 || returnTypes.length() > 0 || hashNames.length() > 0) {
-                return signature + ";" + blockArgs + ";" + returnTypes + ";" + hashNames;
+            if (blockArgs.length() > 0 || returnTypes.size() > 0 || hashNames.length() > 0) {
+                return signature + ";" + blockArgs + ";" + RubyUtils.join(returnTypes, "|") + ";" + hashNames; // NOI18N
             } else {
                 return signature;
             }
@@ -433,134 +435,25 @@ public final class RubyIndexerHelper {
         return callseq;
     }
 
-    private static String getReturnTypes(String line, List<String> callseq, String name) {
-        String returnTypes = "";
-
+    private static Set<? extends String> getReturnTypes(String line, List<String> callseq, String name) {
         // Compute return types
-        if (name.equals("to_s")) {
-            returnTypes = "String";
-        } // XXX what else?
+        if (name.equals("to_s")) { // NOI18N
+            return Collections.singleton("String"); // NOI18N
+        }
         if (callseq != null) {
-            returnTypes = getReturnTypeFromCallseq(line, callseq, returnTypes);
-        }
-
-        // Methods ending with "?" are probably question methods
-        // returning a boolean
-        if (returnTypes.length() == 0 && name.endsWith("?")) {
-            returnTypes = "boolean";
-        }
-
-        return returnTypes;
-    }
-
-    private static String getReturnTypeFromCallseq(String line,
-            List<String> callseq, String returnTypes) {
-        // TODO - handle methods like the "slice" method in
-        // String which has a number of competing callseqs
-        // but each one is replicated so actually only one of
-        // them applies, and I can look at the parameter name
-        // to determine which one I care about!
-        Set<String> rets = new HashSet<String>();
-        for (String l : callseq) {
-            if (endsWithIgnSpace(l, "=>str") || endsWithIgnSpace(l, "=>new_str") || endsWithIgnSpace(l,
-                    "=>strornil") || endsWithIgnSpace(l, "=>string") || endsWithIgnSpace(l,
-                    "=>aString") || endsWithIgnSpace(l, "=>stringornil")) {
-                rets.add("String");
-            } else if (endsWithIgnSpace(l, "=>strio")) {
-                rets.add("StringIO");
-            }
-            if (endsWithIgnSpace(l, "=>file")) {
-                rets.add("File");
-            }
-            if (endsWithIgnSpace(l, "=>thread") || endsWithIgnSpace(l, "=>thr")) {
-                rets.add("Thread");
-            }
-            if (endsWithIgnSpace(l, "=>trueorfalse") || endsWithIgnSpace(l,
-                    "=>true,false,ornil") || endsWithIgnSpace(l, "=>bool") || endsWithIgnSpace(l,
-                    "=>boolean")) {
-                rets.add("boolean");
-            } else if (endsWithIgnSpace(l, "=>fixnumornil") || endsWithIgnSpace(l,
-                    "=>fixnum") || endsWithIgnSpace(l, "=>aFixnum")) {
-                rets.add("Fixnum");
-            }
-            if (endsWithIgnSpace(l, "=>integer") || endsWithIgnSpace(l, "=>int") || endsWithIgnSpace(l,
-                    "=>integerornil")) {
-                rets.add("Integer");
-            }
-            if (endsWithIgnSpace(l, "=>numornil") || endsWithIgnSpace(l, "=>num") || endsWithIgnSpace(l,
-                    "=>numeric")) {
-                rets.add("Numeric");
-            }
-            if (endsWithIgnSpace(l, "=>symbol") || endsWithIgnSpace(l,
-                    "=>aSymbol") || endsWithIgnSpace(l, "=>sym")) {
-                rets.add("Symbol");
-            }
-            if (endsWithIgnSpace(l, "=>float") || endsWithIgnSpace(l, "=>fl")) {
-                rets.add("Float");
-            }
-            if (endsWithIgnSpace(l, "=>array") || endsWithIgnSpace(l,
-                    "=>arrayornil") || endsWithIgnSpace(l, "=>anArray") || endsWithIgnSpace(l,
-                    "=>arrayornil") || endsWithIgnSpace(l, "=>an_arrayornil") || endsWithIgnSpace(l,
-                    "=>an_array")) {
-                rets.add("Array");
-            }
-            if (endsWithIgnSpace(l, "=>hash") || endsWithIgnSpace(l, "=>aHash") || endsWithIgnSpace(l,
-                    "=>hsh") || endsWithIgnSpace(l, "=>hshornil") || endsWithIgnSpace(l,
-                    "=>a_hash")) {
-                rets.add("Hash");
-            }
-            if (endsWithIgnSpace(l, "=>matchdata") || endsWithIgnSpace(l,
-                    "=>matchdataornil")) {
-                rets.add("MatchData");
-            }
-            if (endsWithIgnSpace(l, "=>regexp")) {
-                rets.add("Regexp");
-            }
-            if (endsWithIgnSpace(l, "=>class") || endsWithIgnSpace(l,
-                    "=>a_class")) {
-                rets.add("Class");
-            }
-            if (endsWithIgnSpace(l, "=>mod") || endsWithIgnSpace(l, "=>a_mod") || endsWithIgnSpace(l,
-                    "=>module")) {
-                rets.add("Module");
-            }
-            if (endsWithIgnSpace(l, "=>exception") || endsWithIgnSpace(l,
-                    "=>an_exceptionorexc")) {
-                rets.add("Exception");
-            }
-            if (endsWithIgnSpace(l, "=>range") || endsWithIgnSpace(l, "=>rng")) {
-                rets.add("Range");
-            }
-            if (endsWithIgnSpace(l, "=>stat")) {
-                rets.add("File::Stat");
-            }
-            if (endsWithIgnSpace(l, "=>time") || endsWithIgnSpace(l, "=>aTime") || endsWithIgnSpace(l,
-                    "=>anArray") || endsWithIgnSpace(l, "=>an_array")) {
-                rets.add("Time");
-            }
-
-            if (rets.size() == 0 && (line.contains("=>") || line.contains("->"))) {
-                String returnExp = line.substring(Math.max(line.indexOf("=>"),
-                        line.indexOf("->")));
-                if (RubyIndexer.PREINDEXING && returnExp.indexOf("obj") == -1
-                        && !returnExp.trim().equals("=>")) {
-                    // Don't warn about obj
-                    System.out.println("Warning: no return type found for " + returnExp);
-                }
+            Set<? extends String> types = RDocAnalyzer.collectTypesFromComment(callseq);
+            if (!types.isEmpty()) {
+                return types;
             }
         }
 
-        // I can't handle the case where there are multiple
-        // return types implied by the call seqs, since
-        // they could be referring to slightly different
-        // method signatures (rdoc which produced the stubs
-        // will produce separate ones but just include the
-        // same whole comment with all callseqs on each and
-        // every one
-        if (rets.size() == 1) {
-            returnTypes = rets.iterator().next();
+        // Methods ending with "?" are probably question methods returning a
+        // boolean
+        if (name.endsWith("?")) {
+            return new HashSet<String>(Arrays.asList("FalseClass", "TrueClass")); // NOI18N
         }
-        return returnTypes;
+
+        return Collections.<String>emptySet();
     }
     
     // BEGIN AUTOMATICALLY GENERATED CODE. SEE THE http://hg.netbeans.org/main/misc/ruby/indexhelper PROJECT FOR DETAILS.

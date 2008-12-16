@@ -98,8 +98,7 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public final class UI {
 
-    private UI() {
-    }
+    private UI() {}
 
     public static boolean isAlt(int modifiers) {
         return isModifier(modifiers, KeyEvent.ALT_MASK);
@@ -639,20 +638,21 @@ public final class UI {
             show(true, true);
         }
 
-        public void show(boolean withCorner) {
-            show(true, withCorner);
+        public void show(boolean isResizable) {
+            show(true, isResizable);
         }
 
         public void showAndWait() {
             show(false, true);
         }
 
-        private void show(boolean inSwingThread, boolean withCorner) {
+        private void show(boolean inSwingThread, boolean isResizable) {
             if (myDialog == null) {
                 myDialog = DialogDisplayer.getDefault().createDialog(createDescriptor());
                 myDialog.addWindowListener(this);
+                myDialog.setResizable(isResizable);
 
-                if (withCorner) {
+                if (isResizable) {
                     setCorner();
                 }
                 myDialog.addComponentListener(

@@ -396,7 +396,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 }
                 String lhs = call.getLhs();
 
-                if ((types.isEmpty()) || (lhs != null) && (closest != null) &&
+                if (types.isEmpty() && lhs != null && closest != null &&
                         call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(closest, path);
 
@@ -443,8 +443,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 }
                 // try Constant usage
                 RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder(info, root, path, index, closest);
-                decl = constantDF.findConstantDeclaration();
-                return decl;
+                return constantDF.findConstantDeclaration();
             } else if (closest instanceof SymbolNode) {
                 String name = ((SymbolNode)closest).getName();
 
