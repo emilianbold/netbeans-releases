@@ -610,7 +610,7 @@ public class CompilerSetManager {
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
-        report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NPI18N
+        report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
         record.validate(connect);
         if (record.isOnline()) {
             report("done.\n"); //NOI18N
@@ -618,7 +618,7 @@ public class CompilerSetManager {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    report("Configuring host.\n");
+                    report("Configuring host.\n");//NOI18N
                     provider.init(key); //NOI18N
                     platform = provider.getPlatform();
                     report("Validating platform...found " + PlatformTypes.toString(platform) + ".\nLooking for tool collections:\n");//NOI18N
@@ -627,7 +627,7 @@ public class CompilerSetManager {
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
                         CompilerSet cs = parseCompilerSetString(key, platform, data);
-                        report("  Found " + cs.getDisplayName() + " at " + cs.getDirectory() + ".\n");
+                        report("  Found " + cs.getDisplayName() + " at " + cs.getDirectory() + ".\n");//NOI18N
                         add(cs);
                     }
                     completeCompilerSets(platform);
@@ -643,11 +643,11 @@ public class CompilerSetManager {
                     if (sets.size() == 0) {
                         report("Done. No tool collections were found in default locations. You can configure them manually later using Tools > Options dialog.\n"); //NOI18N
                     } else {
-                        report("Done. Found " + sets.size() + " tool collection(s).\n");
+                        report("Done. Found " + sets.size() + " tool collection(s).\n");//NOI18N
                     }
                     state = STATE_COMPLETE;
 
-                    report("Your host was successfully configured.\n");
+                    report("Your host was successfully configured.\n");//NOI18N
                     provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
 
                         public void taskFinished(org.openide.util.Task task) {
@@ -658,7 +658,7 @@ public class CompilerSetManager {
                 }
             });
         } else {
-            report("...failed. Hostname is wrong or host is offline.\n");
+            report("...failed. Hostname is wrong or host is offline.\n");//NOI18N
             // create empty CSM
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
