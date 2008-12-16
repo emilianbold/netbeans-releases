@@ -56,12 +56,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.gsf.api.EditList;
 
 /**
  *
@@ -260,7 +259,7 @@ public class FixImportsHelper {
 
     public void doImport(FileObject fo, String fqnName) throws MissingResourceException {
         int firstFreePosition = 0;
-        BaseDocument baseDoc = AstUtilities.getBaseDocument(fo, true);
+        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
 
         firstFreePosition = getImportPosition(baseDoc);
 

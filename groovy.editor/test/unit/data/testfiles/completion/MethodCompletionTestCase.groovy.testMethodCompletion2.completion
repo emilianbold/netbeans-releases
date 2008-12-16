@@ -1,6 +1,6 @@
 Code completion result for source line:
 new String().find|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     find(Closure)                              Object
 METHOD     findAll(Closure)                           List

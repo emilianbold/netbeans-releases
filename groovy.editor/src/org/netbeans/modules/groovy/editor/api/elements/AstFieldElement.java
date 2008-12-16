@@ -2,7 +2,7 @@ package org.netbeans.modules.groovy.editor.api.elements;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 
 public class AstFieldElement extends AstElement {
     public AstFieldElement(ASTNode node) {

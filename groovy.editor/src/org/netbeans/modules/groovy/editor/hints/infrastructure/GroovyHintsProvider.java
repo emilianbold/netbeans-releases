@@ -44,17 +44,17 @@ import java.util.logging.Logger;
 import java.util.List;
 import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.Rule;
-import org.netbeans.modules.gsf.api.RuleContext;
 
 /**
  *
@@ -109,14 +109,14 @@ public class GroovyHintsProvider implements HintsProvider {
         // LOG.setLevel(Level.FINEST);
         LOG.log(Level.FINEST, "@@@ computeErrors()");
 
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         GroovyParserResult rpr = AstUtilities.getParseResult(info);
         
         if (rpr == null) {
             return;
         }
 
-        List<Error> errors = rpr.getDiagnostics();
+        List<? extends Error> errors = rpr.getDiagnostics();
         LOG.log(Level.FINEST, "@@@ errors.size() : {0}", errors.size());
 
         if (errors == null || errors.size() == 0) {

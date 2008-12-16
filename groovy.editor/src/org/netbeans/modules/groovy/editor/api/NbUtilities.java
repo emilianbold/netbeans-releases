@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
 
 

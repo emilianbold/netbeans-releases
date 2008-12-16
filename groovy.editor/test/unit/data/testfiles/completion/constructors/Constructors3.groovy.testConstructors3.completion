@@ -1,6 +1,6 @@
 Code completion result for source line:
 FileOutputStream fos = new fileoutputstr|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CONSTRUCTO FileOutputStream(File)                     null
 CONSTRUCTO FileOutputStream(File, boolean             null
 CONSTRUCTO FileOutputStream(FileDescripto             null

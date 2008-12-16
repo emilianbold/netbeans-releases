@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import java.util.Iterator;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -50,11 +49,11 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  *

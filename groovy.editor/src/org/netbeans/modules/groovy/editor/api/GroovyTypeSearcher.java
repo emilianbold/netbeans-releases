@@ -42,10 +42,11 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.io.IOException;
-import java.util.EnumSet;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
@@ -56,16 +57,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.csl.api.IndexSearcher.Helper;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,18 +80,27 @@ import org.openide.util.NbBundle;
  */
 public class GroovyTypeSearcher implements IndexSearcher {
 
-    public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
-        GroovyIndex index = new GroovyIndex(gsfIndex);
+    private static final Logger LOGGER = Logger.getLogger(GroovyTypeSearcher.class.getName());
+
+    public Set<? extends Descriptor> getSymbols(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
+        // TODO - search for methods too!!
+
+        // For now, just at a minimum do the types
+        return getTypes(roots, textForQuery, kind, helper);
+    }
+
+    public Set<? extends Descriptor> getTypes(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
+        GroovyIndex index = GroovyIndex.get(roots);
 
         kind = adjustKind(kind, textForQuery);
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase(Locale.ENGLISH);
         }
         
         Set<IndexedClass> classes = null;
         if (textForQuery.length() > 0) {
-            classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+            classes = index.getClasses(textForQuery, kind, true, false, false, null);
         }
         
         Set<GroovyTypeDescriptor> result = new HashSet<GroovyTypeDescriptor>();
@@ -119,29 +129,22 @@ public class GroovyTypeSearcher implements IndexSearcher {
          return camelCasePattern.matcher(text).matches();
     }
 
-    private NameKind cachedKind;
+    private QuerySupport.Kind cachedKind;
     private String cachedString = "/";
 
-    private NameKind adjustKind(NameKind kind, String text) {
+    private QuerySupport.Kind adjustKind(QuerySupport.Kind kind, String text) {
         if (text.equals(cachedString)) {
             return cachedKind;
         }
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
             if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
-                kind = NameKind.CAMEL_CASE;            
+                kind = QuerySupport.Kind.CAMEL_CASE;
             }
         }
 
         cachedString = text;
         cachedKind = kind;
         return kind;
-    }
-
-    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
-        // TODO - search for methods too!!
-
-        // For now, just at a minimum do the types
-        return getTypes(gsfIndex, textForQuery, kind, scope, helper);
     }
     
     private class GroovyTypeDescriptor extends Descriptor {
@@ -191,7 +194,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 }
             } else {
                 isLibrary = true;
-                Logger.getLogger(GroovyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFileUrl());
+                LOGGER.log(Level.FINE, "No fileobject for " + element.toString());
             }
             if (projectName == null) {
                 projectName = "";

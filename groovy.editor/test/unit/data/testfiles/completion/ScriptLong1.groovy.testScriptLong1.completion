@@ -1,5 +1,5 @@
 Code completion result for source line:
 l.MA|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FIELD      MAX_VALUE                                  long

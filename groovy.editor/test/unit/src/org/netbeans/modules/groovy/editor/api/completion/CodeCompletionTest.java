@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
