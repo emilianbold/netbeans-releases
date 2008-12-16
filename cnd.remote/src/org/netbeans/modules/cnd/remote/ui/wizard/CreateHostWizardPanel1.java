@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
-package org.netbeans.modules.cnd.api.remote;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 
-import java.util.Collection;
+public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
-/**
- * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
- * 
- * @author gordonp
- */
-public interface ServerList {
-    
-    /** The index of the default development server */
-    public int getDefaultIndex();
+    private CreateHostVisualPanel1 component;
 
-    public Collection<? extends ServerRecord> getRecords();
-    
-    /** Set the index of the default development server */
-    public void setDefaultIndex(int defaultIndex);
-    
-    /** A String[] containing the names of all currently defined development servers */
-    public String[] getServerNames();
+    public CreateHostVisualPanel1 getComponent() {
+        if (component == null) {
+            component = new CreateHostVisualPanel1(this);
+        }
+        return component;
+    }
 
-    public ServerRecord get(String key);
-    
-    public ServerRecord getDefaultRecord();
-    
-    public void clear();
-    
-    public ServerRecord addServer(String key, boolean asDefault, boolean connect);
+    public HelpCtx getHelp() {
+        return HelpCtx.DEFAULT_HELP;
+    }
 
-    public void removeServer(int idx);
-    
-    public void removeServer(ServerRecord record);
+    public boolean isValid() {
+        return getComponent().getHostname().length() > 0;
+    }
 
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard);
-    
-    public boolean isValidExecutable(String hkey, String path);
+    ////////////////////////////////////////////////////////////////////////////
+    // change support
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    public final void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // settings
+    public void readSettings(WizardDescriptor settings) {
+    }
+
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(PROP_HOSTNAME, getComponent().getHostname());
+    }
+    static final String PROP_HOSTNAME = "hostname"; // NOI18N
+
 }
+

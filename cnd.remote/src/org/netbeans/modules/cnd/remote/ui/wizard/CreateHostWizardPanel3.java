@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
-package org.netbeans.modules.cnd.api.remote;
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
-import java.util.Collection;
+public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
 
-/**
- * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
- * 
- * @author gordonp
- */
-public interface ServerList {
-    
-    /** The index of the default development server */
-    public int getDefaultIndex();
+    /**
+     * The visual component that displays this panel. If you need to access the
+     * component from this class, just use getComponent().
+     */
+    private CreateHostVisualPanel3 component;
 
-    public Collection<? extends ServerRecord> getRecords();
-    
-    /** Set the index of the default development server */
-    public void setDefaultIndex(int defaultIndex);
-    
-    /** A String[] containing the names of all currently defined development servers */
-    public String[] getServerNames();
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    public CreateHostVisualPanel3 getComponent() {
+        if (component == null) {
+            component = new CreateHostVisualPanel3();
+        }
+        return component;
+    }
 
-    public ServerRecord get(String key);
-    
-    public ServerRecord getDefaultRecord();
-    
-    public void clear();
-    
-    public ServerRecord addServer(String key, boolean asDefault, boolean connect);
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+    // If you have context help:
+    // return new HelpCtx(SampleWizardPanel1.class);
+    }
 
-    public void removeServer(int idx);
-    
-    public void removeServer(ServerRecord record);
+    public boolean isValid() {
+        // If it is always OK to press Next or Finish, then:
+        return true;
+    // If it depends on some condition (form filled out...), then:
+    // return someCondition();
+    // and when this condition changes (last form field filled in...) then:
+    // fireChangeEvent();
+    // and uncomment the complicated stuff below.
+    }
 
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard);
-    
-    public boolean isValidExecutable(String hkey, String path);
+    public final void addChangeListener(ChangeListener l) {
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+    }
+
+    public void readSettings(WizardDescriptor settings) {
+        getComponent().setHkey((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY));
+    }
+
+    public void storeSettings(WizardDescriptor settings) {
+    }
 }
+

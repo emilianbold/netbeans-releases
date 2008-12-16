@@ -381,13 +381,12 @@
                 <package>org.netbeans.modules.cnd.api.xml</package>
                 <package>org.netbeans.modules.cnd.builds</package>
                 <package>org.netbeans.modules.cnd.editor</package>
-                <package>org.netbeans.modules.cnd.editor.fortran</package>
-                <package>org.netbeans.modules.cnd.editor.makefile</package>
                 <package>org.netbeans.modules.cnd.editor.parser</package>
                 <package>org.netbeans.modules.cnd.execution</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
                 <package>org.netbeans.modules.cnd.loaders</package>
+                <package>org.netbeans.modules.cnd.remote.ui</package>
                 <package>org.netbeans.modules.cnd.settings</package>
                 <package>org.netbeans.modules.cnd.ui.options</package>
             </friend-packages>

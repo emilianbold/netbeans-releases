@@ -1000,7 +1000,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private void editDevHosts() {
         assert serverList != null;
         // Show the Dev Host Manager dialog
-        ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
+        ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache, false);
 
         // Now update the dropdown (we assume the ServerList has changed)
         if (newServerUpdateCache != null) {
