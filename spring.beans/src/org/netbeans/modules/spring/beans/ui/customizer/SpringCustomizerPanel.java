@@ -145,7 +145,7 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
         } else {
             currentGroup = null;
             ConfigFilesUIs.disconnect(groupFilesList);
-            editGroupButton.setEnabled(true);
+            editGroupButton.setEnabled(false);
             removeGroupButton.setEnabled(false);
             addGroupFilesButton.setEnabled(false);
             detectFilesButton.setEnabled(false);
