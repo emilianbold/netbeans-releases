@@ -118,17 +118,20 @@ public class MappingsTestCase extends RemoteTestBase {
     }
 
     public void testSimpleConfigParser() {
-        
         SimpleConfigParser p = new SimpleConfigParser();
         StringBuilder sb = getConfigFile();
         sb.insert(0, "orphan=orphanValue\n");
         p.parse(new StringReader(sb.toString()));
-        System.err.println(p.toString());
         assert p.getSections().contains("global");
         assert p.getOrphanAttributes().get("orphan").equals("orphanValue");
         assert p.getAttributes("pub").get("path").equals("/export/pub");
-
     }
+
+//    public void testMappingsValidation() {
+//        if (canTestRemote()) {
+//            RemotePathMap.validateMapping(getHKey(), rpath, "/net/endif/export");
+//        }
+//    }
 
     public MappingsTestCase(String testName) {
         super(testName);
