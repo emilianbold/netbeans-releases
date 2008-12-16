@@ -125,7 +125,7 @@ public class KeyMapOperator extends JDialogOperator {
 
     public void searchActionName(String actionName) {
         actionSearchByName().setText(actionName);
-        sleep(3000);
+        sleep(2000);
     }
 
     public TableModel getActionsTableModel() {
@@ -206,9 +206,9 @@ public class KeyMapOperator extends JDialogOperator {
             System.out.println("[TEST_DEBUG]  Examining action \"" + _str + "\", which is no. " + (i + 1) + " in the table...");
             if (_str.toLowerCase().equals(actionName.toLowerCase())) {
                 System.out.println("[TEST_DEBUG]  -> action \"" + _str + "\" (" + actionName + ") was found");
-                sleep(1000);
+                sleep(100);
                 tab.clickForEdit(i, 1);
-                sleep(1000);
+                sleep(100);
                 injectKeyBinding(tab, Key, mask);
                 if (expectedAlreadyAssigned) {
                     if (reassign) {
@@ -217,7 +217,7 @@ public class KeyMapOperator extends JDialogOperator {
                         new NbDialogOperator("Conflicting Shortcut Dialog").cancel();
                     }
                 }
-                sleep(1000);
+                sleep(500);
                 break;
             }
         }
@@ -253,7 +253,7 @@ public class KeyMapOperator extends JDialogOperator {
                 } catch (Exception e) {
                     retval = false;
                 }
-                sleep(1000);
+                sleep(100);
                 injectKeyBinding(tab, Key, mask);
                 if (expectedAlreadyAssigned) {
                     if (reassign) {
@@ -262,7 +262,7 @@ public class KeyMapOperator extends JDialogOperator {
                         new NbDialogOperator("Conflicting Shortcut Dialog").cancel();
                     }
                 }
-                sleep(1000);
+                sleep(100);
                 System.out.println("[TEST_DEBUG] ### Assigning alternative shortcut for " + actionName + " - OK");
                 break;
             }
@@ -287,7 +287,7 @@ public class KeyMapOperator extends JDialogOperator {
                 System.out.println("[TEST_DEBUG]  Action " + actionName + "was found");
                 JListOperator jli = clickShortcutEllipsisButton(tab, i);
                 jli.clickOnItem("Clear");
-                sleep(1000);
+                sleep(100);
                 System.out.println("[TEST_DEBUG] ### Unassigning alternative shortcut for " + actionName + " - OK");
                 break;
             }
@@ -314,7 +314,7 @@ public class KeyMapOperator extends JDialogOperator {
         manageProfilesButton().push();
         ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
         mpdo.checkProfileListContent(profileNames);
-        mpdo.ok();
+        mpdo.cancel();
     }
 
     public JButtonOperator ok() {
