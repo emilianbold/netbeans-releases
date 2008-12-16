@@ -33,7 +33,7 @@ def convert_to_nb_format():
         output_file.write(k.__str__())
         output_file.write('\n')
         x = c1_dict.get(k)
-        output_file.write(x.__str__())
+        output_file.write(x.keys().__str__())
         output_file.write('\n')
 
     output_file.close()

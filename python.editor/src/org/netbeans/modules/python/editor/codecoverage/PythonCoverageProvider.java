@@ -128,22 +128,18 @@ public final class PythonCoverageProvider implements CoverageProvider {
             }
 
             // Compute coverage:
-            List<LineCount> counts = getLineCounts(entry.getValue());
+            List<Integer> linenos = getLineCounts(entry.getValue());
             int lineCount = 0;
             int executed = 0;
             //int notExecuted = 0;
             //int inferred = 0;
-            for (LineCount lc : counts) {
-                if (lc.lineno > lineCount) {
-                    lineCount = lc.lineno;
+            for (Integer lineno : linenos) {
+                int line = lineno.intValue();
+                if (line > lineCount) {
+                    lineCount = lineno;
                 }
-                if (lc.count > 0) {
-                    executed++;
-                    //} else if (lc.count == COUNT_NOT_COVERED) {
-                    //    notExecuted++;
-                    //} else if (lc.count == COUNT_INFERRED) {
-                    //    inferred++;
-                }
+                // The lines explicitly listed are executed
+                executed++;
             }
 
             //int executed = lineCount - notExecuted;
@@ -236,11 +232,11 @@ public final class PythonCoverageProvider implements CoverageProvider {
         }
 
         if (lines != null) {
-            List<LineCount> hits = getLineCounts(lines);
+            List<Integer> linenos = getLineCounts(lines);
             int max = 0;
-            for (LineCount lineCount : hits) {
-                if (lineCount.lineno > max) {
-                    max = lineCount.lineno;
+            for (Integer lineno : linenos) {
+                if (lineno > max) {
+                    max = lineno;
                 }
             }
 
@@ -248,9 +244,8 @@ public final class PythonCoverageProvider implements CoverageProvider {
             for (int i = 0; i < max; i++) {
                 result[i] = COUNT_UNKNOWN;
             }
-            for (LineCount lineCount : hits) {
-                assert lineCount.lineno > 0;
-                result[lineCount.lineno - 1] = lineCount.count;
+            for (Integer lineno : linenos) {
+                result[lineno - 1] = 1;
             }
 
             inferCounts(result, doc);
@@ -273,22 +268,18 @@ public final class PythonCoverageProvider implements CoverageProvider {
         return new File(getNbCoverageDir(), ".coverage"); // NOI18N
     }
 
-    private List<LineCount> getLineCounts(String lines) {
+    private List<Integer> getLineCounts(String lines) {
         int size = lines.length() / 6;
-        List<LineCount> lineCounts = new ArrayList<LineCount>(size);
+        List<Integer> lineCounts = new ArrayList<Integer>(size);
 
         int start = 1;
         int i = start;
         int length = lines.length();
-        int line = 0;
         while (i < length) {
             char c = lines.charAt(i);
-            if (c == ':') {
-                line = Integer.valueOf(lines.substring(start, i));
-                start = i + 1;
-            } else if (c == ',' || c == '}') {
-                int count = Integer.valueOf(lines.substring(start, i));
-                lineCounts.add(new LineCount(line, count));
+            if (c == ',' || c == ']') {
+                Integer line = Integer.valueOf(lines.substring(start, i));
+                lineCounts.add(line);
                 start = i + 1;
             } else if (c == ' ') {
                 start = i + 1;
@@ -505,8 +496,8 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
                         fullNames.put(base, file);
 
-                        assert lines.startsWith("{");
-                        assert lines.endsWith("}");
+                        assert lines.startsWith("[");
+                        assert lines.endsWith("]");
 
                         hitCounts.put(file, lines);
                     } catch (IOException ex) {
@@ -582,38 +573,6 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
     public Set<String> getMimeTypes() {
         return mimeTypes;
-    }
-
-    private static class LineCount {
-        private final int lineno;
-        private int count;
-
-        public LineCount(int lineno, int count) {
-            this.lineno = lineno;
-            this.count = count;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final LineCount other = (LineCount) obj;
-            if (this.lineno != other.lineno) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 59 * hash + this.lineno;
-            return hash;
-        }
     }
 
     private static class PythonFileCoverageDetails implements FileCoverageDetails {
