@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
@@ -423,6 +424,17 @@ public class WSUtils {
         }
         return DEFAULT_PACKAGE_NAME;
         
+    }
+    public static boolean isProjectReferenceable(Project clientProject, Project targetProject) {
+        if (clientProject == targetProject) {
+            return true;
+        } else {
+            NbMavenProject mavenProject = targetProject.getLookup().lookup(NbMavenProject.class);
+            if (mavenProject != null && NbMavenProject.TYPE_JAR.equals(mavenProject.getPackagingType())) {
+                return true;
+            }
+            return false;
+        }
     }
     
 //    public static String getPackageNameForWsdl(File wsdl) {
