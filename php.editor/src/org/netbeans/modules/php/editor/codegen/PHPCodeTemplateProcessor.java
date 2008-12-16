@@ -52,6 +52,9 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -62,6 +65,7 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
+    private final static String NEXT_VARIABLE_NAME = "nextVariable"; //NOI18N
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -93,6 +97,30 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             String hintName = entry.getKey();
             if (NEW_VAR_NAME.equals(hintName)) {
                 return newVarName(param.getValue());
+            }
+            else if (NEXT_VARIABLE_NAME.equals(hintName)) {
+                return getNextVariableName();
+            }
+        }
+        return null;
+    }
+
+
+    private String getNextVariableName() {
+        if (!initParsing()) {
+            return null;
+        }
+        final int caretOffset = request.getComponent().getCaretPosition();
+        ASTNode node = Utils.getNodeAtOffset(info, caretOffset);
+        Assignment assignment = new AssignmentLocator().locate(node, caretOffset);
+        if (assignment != null) {
+            ASTNode leftHandSide = assignment.getLeftHandSide();
+
+            if (leftHandSide != null && leftHandSide instanceof Variable ) {
+                if (((Variable)leftHandSide).getName() instanceof Identifier) {
+                    Identifier identifier = (Identifier)((Variable)leftHandSide).getName();
+                    return identifier.getName();
+                }
             }
         }
         return null;
@@ -153,6 +181,40 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
             return new PHPCodeTemplateProcessor(request);
+        }
+    }
+
+    private static final class AssignmentLocator extends DefaultVisitor {
+
+        private int offset;
+        protected Assignment node = null;
+
+        /**
+         * Locates the nearest assignement after the offset
+         * @param beginNode
+         * @param astOffset
+         * @return
+         */
+        public Assignment locate(ASTNode beginNode, int astOffset) {
+            offset = astOffset;
+            scan(beginNode);
+            return this.node;
+        }
+        
+        @Override
+        public void scan(ASTNode current) {
+            if (this.node == null && current != null) {
+                current.accept(this);
+            }
+        }
+
+        @Override
+        public void visit(Assignment node) { 
+            if (node != null) {
+                if (node.getStartOffset() > offset) {
+                    this.node = node;
+                }
+            }
         }
     }
 }

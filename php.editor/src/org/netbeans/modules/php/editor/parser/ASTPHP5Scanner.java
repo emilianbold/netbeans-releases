@@ -1416,7 +1416,6 @@ public class ASTPHP5Scanner implements Scanner {
             comment = null;
         }
         else if(type == Comment.Type.TYPE_VARTYPE) {
-            System.out.println(comment);
             PHPVarCommentParser parser = new PHPVarCommentParser();
             comm = parser.parse(commentStartPosition, leftPosition + getTokenLength(),  comment);
             comment = null;
