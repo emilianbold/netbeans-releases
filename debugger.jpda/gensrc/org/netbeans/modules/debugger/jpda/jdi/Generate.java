@@ -346,123 +346,16 @@ public class Generate {
                 writeHigherVersionMethods(w, m, className, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
                 String mName = m.getName();
                 Type[] paramTypes = m.getGenericParameterTypes();
+                String rType = translateType(m.getGenericReturnType());
+                String defaultReturn = getDefaultReturn(m.getReturnType());
+                Class[] exceptionTypes = m.getExceptionTypes();
                 
                 System.err.println("  Method: "+mName);
-                log.write(" "+mName+"(");
-                /*Class[] rawParamTypes = m.getParameterTypes();
-                for (int i = 0; i < rawParamTypes.length; i++) {
-                    if (i > 0) log.write(",");
-                    log.write(translateType(rawParamTypes[i]));
+                logMethod(log, mName, paramTypes, exceptionTypes, rType, defaultReturn);
+                if (defaultReturn != null) {
+                    writeMethod(w, c, className, mName, mName+"0", paramTypes, exceptionTypes, rType, defaultReturn);
                 }
-                log.write(")(");*/
-
-                String rType = translateType(m.getGenericReturnType());
-                w.write("    public static "+rType+" "+mName+"("+className+" a");
-                String[] paramNames = new String[paramTypes.length];
-                for (int i = 0; i < paramTypes.length; i++) {
-                    //Class t = paramTypes[i];
-                    paramNames[i] = Character.toString((char) ('a'+(i+1)));
-                    String paramType = translateType(paramTypes[i]);
-                    w.write(", "+paramType+" "+paramNames[i]);
-
-                    if (i > 0) log.write(", ");
-                    log.write(paramType);
-                }
-                w.write(")");
-
-                String defaultReturn = getDefaultReturn(m.getReturnType());
-                //log.write("):"+translateType(m.getReturnType())+":"+rType);
-                log.write("):"+rType+":"+((defaultReturn != null) ? defaultReturn : ""));
-
-                Class[] exceptionTypes = m.getExceptionTypes();
-
-                if (exceptionTypes.length > 0) {
-                    log.write(" throws ");
-                    for (int i = 0; i < exceptionTypes.length; i++) {
-                        if (i > 0) log.write(", ");
-                        log.write(exceptionTypes[i].getName());
-                    }
-                }
-                log.write("\n");
-                
-                // Add wrappers of JDI runtime exceptions...
-                Set<Class> thrownExceptions = new LinkedHashSet<Class>();
-                thrownExceptions.addAll(EXCEPTIONS_BY_METHODS.get("*").get("*"));
-                if (com.sun.jdi.Value.class.isAssignableFrom(c) &&
-                    !com.sun.jdi.PrimitiveValue.class.isAssignableFrom(c)) {
-                    
-                    thrownExceptions.add(com.sun.jdi.ObjectCollectedException.class);
-                }
-                Map<String, Set<Class>> excByMethods = EXCEPTIONS_BY_METHODS.get(c.getName());
-                if (excByMethods != null) {
-                    Set<Class> excs = excByMethods.get("*");
-                    if (excs != null) {
-                        thrownExceptions.addAll(excs);
-                    }
-                    excs = excByMethods.get(mName);
-                    if (excs != null) {
-                        thrownExceptions.addAll(excs);
-                    }
-                }
-
-                Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
-                if (defaultReturn != null) thrownExceptions.removeAll(SILENT_EXCEPTIONS);
-
-
-                if (exceptionTypes.length > 0 || thrownExceptions.size() > 0) {
-                    w.write(" throws ");
-                    for (int i = 0; i < exceptionTypes.length; i++) {
-                        if (i > 0) w.write(", ");
-                        w.write(exceptionTypes[i].getName());
-                    }
-                    if (exceptionTypes.length > 0 && thrownExceptions.size() > 0) {
-                        w.write(", ");
-                    }
-                    int i = 0;
-                    for (Iterator it = thrownExceptions.iterator(); it.hasNext(); i++) {
-                        if (i > 0) w.write(", ");
-                        w.write(EXCEPTION_WRAPPERS.get(it.next()));
-                    }
-                }
-                w.write(" {\n");
-                w.write("        try {\n");
-                if (!"void".equals(rType)) {
-                    w.write("            return ");
-                } else {
-                    w.write("            ");
-                }
-                w.write("a."+mName+"(");
-                for (int i = 0; i < paramNames.length; i++) {
-                    if (i > 0) {
-                        w.write(", ");
-                    }
-                    w.write(paramNames[i]);
-                }
-                w.write(");\n");
-                w.write("        }");
-                /*// First re-throw the checked exceptions:
-                for (int i = 0; i < exceptionTypes.length; i++) {
-                    w.write(exceptionTypes[i].getName());
-                    w.write(" ex) {\n");
-                    w.write("            throw ex;\n");
-                    w.write("        } catch (");
-                }*/
-                for (Iterator<Class> it = caughtExceptions.iterator(); it.hasNext(); ) {
-                    Class cex = it.next();
-                    w.write(" catch (");
-                    w.write(cex.getName());
-                    w.write(" ex) {\n");
-                    if (com.sun.jdi.InternalException.class.equals(cex)) {
-                        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
-                    }
-                    if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
-                        w.write("            return "+defaultReturn+";\n");
-                    } else {
-                        w.write("            throw new "+EXCEPTION_WRAPPERS.get(cex)+"(ex);\n");
-                    }
-                    w.write("        }");
-                }
-                w.write("\n    }\n\n");
+                writeMethod(w, c, className, mName, mName, paramTypes, exceptionTypes, rType, null);
             }
             writeHigherVersionMethods(w, null, className, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
             w.write("}\n");
@@ -495,6 +388,119 @@ public class Generate {
         w.write("public final class "+cName+" {\n");
         w.write("\n    private "+cName+"() {}\n\n");
         return w;
+    }
+
+    private static void logMethod(Writer log, String mName,
+                                  Type[] paramTypes, Class[] exceptionTypes,
+                                  String rType, String defaultReturn) throws IOException {
+        log.write(" "+mName+"(");
+        for (int i = 0; i < paramTypes.length; i++) {
+            String paramType = translateType(paramTypes[i]);
+            if (i > 0) log.write(", ");
+            log.write(paramType);
+        }
+        log.write("):"+rType+":"+((defaultReturn != null) ? defaultReturn : ""));
+        if (exceptionTypes.length > 0) {
+            log.write(" throws ");
+            for (int i = 0; i < exceptionTypes.length; i++) {
+                if (i > 0) log.write(", ");
+                log.write(exceptionTypes[i].getName());
+            }
+        }
+        log.write("\n");
+    }
+
+    private static void writeMethod(Writer w, Class c, String className,
+                                    String mName, String mGenName, Type[] paramTypes, Class[] exceptionTypes,
+                                    String rType, String defaultReturn) throws IOException {
+        w.write("    public static "+rType+" "+mGenName+"("+className+" a");
+        String[] paramNames = new String[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            //Class t = paramTypes[i];
+            paramNames[i] = Character.toString((char) ('a'+(i+1)));
+            String paramType = translateType(paramTypes[i]);
+            w.write(", "+paramType+" "+paramNames[i]);
+        }
+        w.write(")");
+
+        // Add wrappers of JDI runtime exceptions...
+        Set<Class> thrownExceptions = new LinkedHashSet<Class>();
+        thrownExceptions.addAll(EXCEPTIONS_BY_METHODS.get("*").get("*"));
+        if (com.sun.jdi.Value.class.isAssignableFrom(c) &&
+            !com.sun.jdi.PrimitiveValue.class.isAssignableFrom(c)) {
+
+            thrownExceptions.add(com.sun.jdi.ObjectCollectedException.class);
+        }
+        Map<String, Set<Class>> excByMethods = EXCEPTIONS_BY_METHODS.get(c.getName());
+        if (excByMethods != null) {
+            Set<Class> excs = excByMethods.get("*");
+            if (excs != null) {
+                thrownExceptions.addAll(excs);
+            }
+            excs = excByMethods.get(mName);
+            if (excs != null) {
+                thrownExceptions.addAll(excs);
+            }
+        }
+
+        Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
+        if (defaultReturn != null) thrownExceptions.removeAll(SILENT_EXCEPTIONS);
+
+
+        if (exceptionTypes.length > 0 || thrownExceptions.size() > 0) {
+            w.write(" throws ");
+            for (int i = 0; i < exceptionTypes.length; i++) {
+                if (i > 0) w.write(", ");
+                w.write(exceptionTypes[i].getName());
+            }
+            if (exceptionTypes.length > 0 && thrownExceptions.size() > 0) {
+                w.write(", ");
+            }
+            int i = 0;
+            for (Iterator it = thrownExceptions.iterator(); it.hasNext(); i++) {
+                if (i > 0) w.write(", ");
+                w.write(EXCEPTION_WRAPPERS.get(it.next()));
+            }
+        }
+        w.write(" {\n");
+        w.write("        try {\n");
+        if (!"void".equals(rType)) {
+            w.write("            return ");
+        } else {
+            w.write("            ");
+        }
+        w.write("a."+mName+"(");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) {
+                w.write(", ");
+            }
+            w.write(paramNames[i]);
+        }
+        w.write(");\n");
+        w.write("        }");
+        /*// First re-throw the checked exceptions:
+        for (int i = 0; i < exceptionTypes.length; i++) {
+            w.write(exceptionTypes[i].getName());
+            w.write(" ex) {\n");
+            w.write("            throw ex;\n");
+            w.write("        } catch (");
+        }*/
+        for (Iterator<Class> it = caughtExceptions.iterator(); it.hasNext(); ) {
+            Class cex = it.next();
+            w.write(" catch (");
+            w.write(cex.getName());
+            w.write(" ex) {\n");
+            if (com.sun.jdi.InternalException.class.equals(cex)) {
+                w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
+            }
+            if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
+                w.write("            return "+defaultReturn+";\n");
+            } else {
+                w.write("            throw new "+EXCEPTION_WRAPPERS.get(cex)+"(ex);\n");
+            }
+            w.write("        }");
+        }
+        w.write("\n    }\n\n");
     }
 
     public static void writeHigherVersionClasses(File dir, Class c,
@@ -648,13 +654,26 @@ public class Generate {
             }
         }
 
-        Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
-        if (defaultReturn != null) thrownExceptions.removeAll(SILENT_EXCEPTIONS);
-        
         className = substituteHigherClasses(className, higherVersionClasses);
 
+        Set<Class> caughtExceptions = new LinkedHashSet<Class>(thrownExceptions);
+
+        writeHigherVersionMethod(w, className, mName, mName, paramTypes, exceptionTypes, thrownExceptions, caughtExceptions, rType, null, jdkVersion);
+        if (defaultReturn != null) {
+            thrownExceptions.removeAll(SILENT_EXCEPTIONS);
+            writeHigherVersionMethod(w, className, mName, mName+"0", paramTypes, exceptionTypes, thrownExceptions, caughtExceptions, rType, defaultReturn, jdkVersion);
+        }
+
+    }
+
+    private static void writeHigherVersionMethod(Writer w, String className,
+                                                 String mName, String mGenName,
+                                                 List<String> paramTypes, List<String> exceptionTypes,
+                                                 Set<Class> thrownExceptions, Set<Class> caughtExceptions,
+                                                 String rType, String defaultReturn,
+                                                 String jdkVersion) throws IOException {
         w.write("    /** Wrapper for method "+mName+" from JDK "+jdkVersion+". */\n");
-        w.write("    public static "+rType+" "+mName+"("+className+" a");
+        w.write("    public static "+rType+" "+mGenName+"("+className+" a");
         String[] paramNames = new String[paramTypes.size()];
         for (int i = 0; i < paramTypes.size(); i++) {
             paramNames[i] = Character.toString((char) ('a'+(i+1)));
@@ -662,7 +681,7 @@ public class Generate {
             w.write(", "+paramType+" "+paramNames[i]);
         }
         w.write(")");
-        
+
         if (exceptionTypes.size() > 0 || thrownExceptions.size() > 0) {
             w.write(" throws ");
             for (int i = 0; i < exceptionTypes.size(); i++) {
