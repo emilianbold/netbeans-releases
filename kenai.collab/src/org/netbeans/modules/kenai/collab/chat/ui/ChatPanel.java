@@ -213,7 +213,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         try {
-            ctrl.getChat().sendMessage(outbox.getText().trim());
+            ctrl.getChats().first().sendMessage(outbox.getText().trim());
         } catch (XMPPException ex) {
             Exceptions.printStackTrace(ex);
         }

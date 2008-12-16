@@ -41,16 +41,19 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -60,23 +63,24 @@ import org.openide.util.ImageUtilities;
 
 public class PresenceIndicator {
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
-    private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+    private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.gif"));
     private static PresenceIndicator instance;
 
-
     private JLabel label;
-    private Helper helper;
+    private MouseL helper;
+
+    public static enum Status {
+        ONLINE,
+        OFFLINE
+    }
+
+    public void setStatus(Status status) {
+        label.setIcon(status == Status.ONLINE?ONLINE:OFFLINE);
+    }
 
     Component getComponent() {
         return label;
     }
-
-    public class PresenceListener implements PacketListener {
-        public void processPacket(Packet packet) {
-            label.setText(KenaiConnection.getDefault().getChat().getOccupantsCount() + " online");
-        }
-    }
-
 
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
@@ -87,44 +91,84 @@ public class PresenceIndicator {
 
     
     private PresenceIndicator() {
-        helper = new Helper();
-        label = new JLabel(0 + " online", OFFLINE, JLabel.HORIZONTAL);
+        helper = new MouseL();
+        label = new JLabel(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOffline"), OFFLINE, JLabel.HORIZONTAL);
         label.addMouseListener(helper);
     }
     
-    public static String getStatusDescription(int status) {
-        return "description";
-    }
-
-    public static ImageIcon getStatusIcon(int status) {
-        return OFFLINE;
-
-    }
-
-    protected static String getStatusToolTip() {
-        return "tool tip";
-    }
-    
-    private class Helper extends MouseAdapter implements PropertyChangeListener, Runnable {
+    private class MouseL extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent event) {
-            ChatTopComponent.getDefault().open();
-            ChatTopComponent.getDefault().requestActive();
+            if (event.getClickCount() == 2) {
+                ChatTopComponent.getDefault().open();
+                ChatTopComponent.getDefault().requestActive();
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            processEvent(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            processEvent(e);
+        }
+
+        private void processEvent(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                JPopupMenu menu = new JPopupMenu();
+                menu.add(new JMenuItem(new Online()));
+                menu.add(new JMenuItem(new Offline()));
+                menu.add(new JMenuItem(new OpenChat()));
+                menu.show(label, 0, 0);
+            }
+        }
+
+
+        
+        private class Online extends AbstractAction {
+            
+            public Online() {
+                super(org.openide.util.NbBundle.getMessage(PresenceIndicator.class, "CTL_Available", new Object[] {}));
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
         }
         
-        public void propertyChange(PropertyChangeEvent event) {
-//            // session list changed
-//            if (event.getSource() instanceof CollabManager) {
-//                attachListeners();
-//            }
-//
-//            // either session list or session status changed
-//            updateStatus();
+        private class Offline extends AbstractAction {
+            public Offline() {
+                super(org.openide.util.NbBundle.getMessage(PresenceIndicator.class, "CTL_Offline", new Object[] {}));
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
         }
-        
-        public void run() {
-//            Image statusIcon = getStatusIcon(currentStatus);
-//            label.setIcon(new ImageIcon(statusIcon));
-//            label.setToolTipText(getStatusToolTip());
+
+        private class OpenChat extends AbstractAction {
+
+            public OpenChat() {
+                super(NbBundle.getMessage(PresenceIndicator.class, "CTL_OpenChat", new Object[] {}));
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                ChatTopComponent.getDefault().open();
+                ChatTopComponent.getDefault().requestActive();
+            }
+        }
+
+    }
+
+    public class PresenceListener implements PacketListener {
+        /**
+         *
+         * @param packet
+         */
+        public void processPacket(Packet packet) {
+            label.setText(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOnline", new Object[] {KenaiConnection.getDefault().getChats().first().getOccupantsCount()}));
         }
     }
 
