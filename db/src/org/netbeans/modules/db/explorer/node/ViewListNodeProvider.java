@@ -59,7 +59,6 @@ public class ViewListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ViewListNodeProvider createInstance(Lookup lookup) {
                 ViewListNodeProvider provider = new ViewListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
@@ -71,6 +70,6 @@ public class ViewListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return ViewListNode.create(lookup);
+        return ViewListNode.create(lookup, this);
     }
 }
