@@ -41,17 +41,12 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,12 +68,12 @@ public class GroovyIndexerTest extends GroovyTestBase {
         checkIsIndexable("testfiles/BookmarkController.groovy", true);
     }
 
-    public void testQueryPath() throws Exception {
-        GroovyIndexer indexer = new GroovyIndexer();
-        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
-        assertFalse(indexer.acceptQueryPath("/foo/target/bar"));
-        assertFalse(indexer.acceptQueryPath("/foo/art/bar"));
-    }
+//    public void testQueryPath() throws Exception {
+//        GroovyIndexer indexer = new GroovyIndexer();
+//        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
+//        assertFalse(indexer.acceptQueryPath("/foo/target/bar"));
+//        assertFalse(indexer.acceptQueryPath("/foo/art/bar"));
+//    }
 
     public void testIndex1() throws Exception {
         checkIndexer("testfiles/BookmarkController.groovy");
@@ -94,11 +89,11 @@ public class GroovyIndexerTest extends GroovyTestBase {
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
         // get methods starting with 'm'
-        Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+        Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", QuerySupport.Kind.PREFIX);
         assertEquals(3, methods.size());
 
         // get all methods from class
-        methods = index.getMethods(".*", "demo.GroovyClass1", NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+        methods = index.getMethods(".*", "demo.GroovyClass1", QuerySupport.Kind.REGEXP);
         assertEquals(4, methods.size());
     }
 
@@ -108,7 +103,7 @@ public class GroovyIndexerTest extends GroovyTestBase {
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
         // get all classes
-        Set<IndexedClass> classes = index.getClasses(".*", NameKind.REGEXP, true, false, false);
+        Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP, true, false, false);
         assertEquals(6, classes.size());
     }
 

@@ -1,6 +1,6 @@
 Code completion result for source line:
 No|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      NoClassDefFoundError                       null
 CLASS      NoRouteToHostException                     null

@@ -41,19 +41,17 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
-import java.io.IOException;
 import java.util.Scanner;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
@@ -72,12 +70,9 @@ public class GroovyParserTest extends GroovyTestBase {
                 .setLevel(Level.FINEST);
     }
     
-    
-    
-    
     private void checkParseTree(FileObject file, String caretLine, String nodeName) throws Exception {
-        CompilationInfo info = getInfo(file);
-        
+        ParserResult info = getInfo(file);
+
         String text = info.getText();
 
         int caretOffset = -1;
@@ -95,7 +90,7 @@ public class GroovyParserTest extends GroovyTestBase {
 
         ASTNode root = AstUtilities.getRoot(info);
         assertNotNull("Parsing broken input failed for " + file, root);
-        
+
         // Ensure that we find the node we're looking for
         if (nodeName != null) {
 //            GroovyParserResult rpr = (GroovyParserResult)info.getParserResult();
@@ -103,7 +98,7 @@ public class GroovyParserTest extends GroovyTestBase {
             if (range.containsInclusive(caretOffset)) {
                 caretOffset = range.getStart();
             }
-            
+
             Scanner scanner = new Scanner(text);
             int lineNumber = 1;
             int column = -1;
@@ -158,28 +153,28 @@ public class GroovyParserTest extends GroovyTestBase {
                 "\t\tprintln 'Hello, world'\n" +
                 "\t}\n" +
                 "}");
-        
+
         CompilationInfo info = getInfo(testFO);
         ASTNode root = AstUtilities.getRoot(info);
         AstPath path = new AstPath(root ,1, (BaseDocument)info.getDocument());
         assertNotNull("new AstPath() failed", path);
-    }    
+    }
     
     
     public void testSanatizerRemoveDotBeforeError() throws Exception {
-        
+
         copyStringToFileObject(testFO,
                 "def m() {\n" +
                 "\tObject x = new Object()\n" +
                 "\tx.\n" +
                 "}\n");
-        
+
         /*
             0000000   d   e   f       m   (   )       {  \n  \t   O   b   j   e   c
             0000016   t       x       =       n   e   w       O   b   j   e   c   t
             0000032   (   )  \n  \t   x   .  \n   }  \n
          */
-        
+
         CompilationInfo info = getInfo(testFO);
         ASTNode root = AstUtilities.getRoot(info);
         assertNotNull(root);
@@ -200,7 +195,4 @@ public class GroovyParserTest extends GroovyTestBase {
 //        assertNotNull("AstUtilities.getRoot(info) failed", root);
 //    }
     
-
-
-
 }

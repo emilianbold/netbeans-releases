@@ -41,7 +41,6 @@ package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
@@ -56,9 +57,8 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -68,13 +68,13 @@ public final class GroovyElementHandler {
 
     private static final Logger LOGGER = Logger.getLogger(GroovyElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private GroovyElementHandler(CompilationInfo info) {
+    private GroovyElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static GroovyElementHandler forCompilationInfo(CompilationInfo info) {
+    public static GroovyElementHandler forCompilationInfo(ParserResult info) {
         return new GroovyElementHandler(info);
     }
 
@@ -83,7 +83,13 @@ public final class GroovyElementHandler {
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
             String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels) {
 
-        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.emptyMap();
+        }
+
+        // FIXME parsing API
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
 
         if (index == null) {
             return Collections.emptyMap();
@@ -97,11 +103,9 @@ public final class GroovyElementHandler {
         Set<IndexedMethod> methods;
 
         if (methodName.equals("")) {
-            methods = index.getMethods(".*", className,
-                    NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+            methods = index.getMethods(".*", className, QuerySupport.Kind.REGEXP);
         } else {
-            methods = index.getMethods(methodName, className,
-                    NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+            methods = index.getMethods(methodName, className, QuerySupport.Kind.PREFIX);
         }
 
         if (methods.size() == 0) {
@@ -141,7 +145,13 @@ public final class GroovyElementHandler {
     public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
             String prefix, int anchor, boolean emphasise) {
 
-        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.emptyMap();
+        }
+
+        // FIXME parsing API
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
 
         if (index == null) {
             return Collections.emptyMap();
@@ -155,11 +165,9 @@ public final class GroovyElementHandler {
         Set<IndexedField> fields;
 
         if (methodName.equals("")) {
-            fields = index.getFields(".*", className,
-                    NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+            fields = index.getFields(".*", className, QuerySupport.Kind.REGEXP);
         } else {
-            fields = index.getFields(methodName, className,
-                    NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+            fields = index.getFields(methodName, className, QuerySupport.Kind.PREFIX);
         }
 
         if (fields.size() == 0) {
