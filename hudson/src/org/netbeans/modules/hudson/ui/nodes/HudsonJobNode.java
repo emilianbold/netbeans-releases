@@ -21,6 +21,7 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
@@ -30,7 +31,9 @@ import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
@@ -58,11 +61,25 @@ public class HudsonJobNode extends AbstractNode {
     private HudsonJobImpl job;
     
     public HudsonJobNode(HudsonJobImpl job) {
-        super(Children.LEAF, Lookups.singleton(job));
-        
+        super(makeChildren(job), Lookups.singleton(job));
         setHudsonJob(job);
     }
-    
+
+    private static Children makeChildren(final HudsonJobImpl job) {
+        return Children.create(new ChildFactory<Object>() {
+            @Override
+            protected boolean createKeys(List<Object> toPopulate) {
+                // XXX would be nicer to avoid adding this in case there is no remote workspace...
+                toPopulate.add(new Object());
+                return true;
+            }
+            @Override
+            protected Node createNodeForKey(Object key) {
+                return new HudsonWorkspaceNode(job);
+            }
+        }, false);
+    }
+
     @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;

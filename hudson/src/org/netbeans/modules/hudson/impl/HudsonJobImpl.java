@@ -26,6 +26,7 @@ import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.constants.HudsonJobConstants;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
@@ -165,6 +166,14 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
         }
         
         return set;
+    }
+
+    /**
+     * Obtains a filesystem representing the remote workspace as accessed by Hudson web services.
+     * Requires Hudson 1.264 or later.
+     */
+    public FileSystem getRemoteWorkspace() {
+        return new JobWorkspaceFileSystem(this);
     }
     
     public boolean equals(Object o) {
