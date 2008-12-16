@@ -25,6 +25,7 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.actions.PropertiesAction;
@@ -72,6 +73,7 @@ public class HudsonJobNode extends AbstractNode {
         return new Action [] {
             SystemAction.get(ShowJobDetailAction.class),
             SystemAction.get(StartJobAction.class),
+            new ShowBuildConsole(job, job.getLastBuild()),
             null,
             SystemAction.get(OpenUrlAction.class),
             null,
