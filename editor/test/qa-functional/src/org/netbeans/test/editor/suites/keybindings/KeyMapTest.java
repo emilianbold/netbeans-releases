@@ -58,7 +58,8 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -89,7 +90,11 @@ public class KeyMapTest extends JellyTestCase {
         new JTextFieldOperator(npnlso, 1).setText(getDataDir().getAbsolutePath()); // NOI18N
         newProjectOper.finish();
         newProjectOper.waitClosed();
-        ProjectSupport.waitScanFinished();
+        try {
+            RepositoryUpdater.getDefault().waitScanFinished();
+        } catch (InterruptedException ex) {
+            fail("Waiting for project scanning was interupted. Other tests will fail.");
+        }
 
         new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
         editor = new EditorOperator("Main.java");
