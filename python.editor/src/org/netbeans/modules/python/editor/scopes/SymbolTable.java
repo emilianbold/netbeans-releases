@@ -91,6 +91,10 @@ import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
  * @author Tor Norbye
  */
 public class SymbolTable {
+    private final static int YES = 1;
+    private final static int NO = 0;
+    private final static int CIRCULAR = -1;
+
     private Map<PythonTree, ScopeInfo> scopes = new HashMap<PythonTree, ScopeInfo>();
     private PythonTree root;
     private FileObject fileObject;
@@ -807,10 +811,9 @@ public class SymbolTable {
         return null;
     }
 
-    private boolean belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling)
-            throws IllegalStateException {
+    private int belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling) {
         if (cls.bases == null) {
-            return false; // no parents
+            return NO; // no parents
         }
         for (int ii = 0; ii < cls.bases.length; ii++) {
             String className = null;
@@ -820,14 +823,14 @@ public class SymbolTable {
                 // should be Attribute here( module.className form )
                 // which imply imported from external scope
                 // So we give up on scope returning optimistaically True
-                return true;
+                return YES;
             }
             assert (className != null);
             if (cycling.get(className) != null) {
                 cycling.clear();
                 // put parent child conficting back in cycling
                 cycling.put(className, cls.name);
-                throw new IllegalStateException("inheritance circular redundancy");
+                return CIRCULAR ;
             }
             cycling.put(className, className);
             ScopeInfo localClassScope = getClassScope(className);
@@ -837,37 +840,22 @@ public class SymbolTable {
                 // name is resolved by imported classes inheritance
                 // scanning imported classed from here is discouraged for
                 // performances reasons
-                return true;
+                return YES;
             } else {
                 if ((name != null) &&
                         (localClassScope.attributes.get(name) != null)) {
-                    return true;
+                    return YES;
                 }
                 // try recurse parentage to resolve attribute
                 ClassDef parentClass = (ClassDef)localClassScope.scope_node;
-                if (belongsToParents(parentClass, name, cycling)) {
-                    return true;
-
-                }
+                int recResult = belongsToParents(parentClass, name, cycling ) ;
+                if ( recResult != NO ) // stop on FOUND(YES) or CIRCULAR error
+                    return recResult ;
             }
         }
-        return false;
+        return NO;
     }
 
-    /*
-    private void addUnresolvedParent(HashMap<ClassDef, String> unresolvedParents, ClassDef curClass, String curUnresolved) {
-    String unresolved = unresolvedParents.get(curClass) ;
-    if ( unresolved == null ) {
-    unresolvedParents.put(curClass, curUnresolved ) ;
-    }
-    else {
-    StringBuffer composite = new StringBuffer(unresolved) ;
-    composite.append(',') ;
-    composite.append(curUnresolved) ;
-    unresolvedParents.put(curClass, composite.toString() ) ;
-    }
-    }
-     */
     private boolean isImported(String moduleName) {
         for (Import imported : imports) {
             for (int ii = 0; ii < imported.names.length; ii++) {
@@ -947,9 +935,7 @@ public class SymbolTable {
             HashMap<String, String> returned = new HashMap<String, String>();
             ClassDef curClass = classes.get(cur);
             if (!cyclingRedundancies.containsKey(curClass)) {
-                try {
-                    belongsToParents(curClass, null, returned);
-                } catch (IllegalStateException e) {
+                if (  belongsToParents(curClass, null, returned) == CIRCULAR ) {
                     // store hashMap returned
                     Map.Entry<String, String> cycling = returned.entrySet().iterator().next();
                     cyclingRedundancies.put(curClass, cycling.getKey());
@@ -986,19 +972,15 @@ public class SymbolTable {
                             if (classAttr == null) {
                                 // do not bother with method since they are
                                 // managed by completion
-                                try {
-                                    ClassDef curClass = (ClassDef)parentScope.scope_node;
-                                    if (!belongsToParents(curClass, curAttr.getKey(), new HashMap())) {
-                                        if (!symInfo.isCalled()) {
-                                            // no corresponding attributes
-                                            //PythonTree tree = symInfo.node ;
-                                            Attribute attr = (Attribute)symInfo.node;
-                                            // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
-                                            unresolvedNodes.add(attr);
-                                        }
+                                ClassDef curClass = (ClassDef)parentScope.scope_node;
+                                if (belongsToParents(curClass, curAttr.getKey(), new HashMap()) == NO) {
+                                    if (!symInfo.isCalled()) {
+                                        // no corresponding attributes
+                                        //PythonTree tree = symInfo.node ;
+                                        Attribute attr = (Attribute)symInfo.node;
+                                        // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
+                                        unresolvedNodes.add(attr);
                                     }
-                                } catch (IllegalStateException e) {
-                                    // just ignore thrown inheritance redundancy cycles ( not handle by current hint )
                                 }
                             }
                         }

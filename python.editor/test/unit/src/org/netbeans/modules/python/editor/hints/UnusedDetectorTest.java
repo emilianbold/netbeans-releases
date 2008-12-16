@@ -52,12 +52,12 @@ public class UnusedDetectorTest extends PythonTestBase {
         super(name);
     }
 
-    private void setHintOptions(boolean skipParams, boolean skipReturns, String ignoreNames) {
+    private void setHintOptions(boolean skipParams, boolean skipTupleAssigns, String ignoreNames) {
         org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
         GsfHintsManager hintsManager = getHintsManager(language);
         Preferences prefs = hintsManager.getPreferences(createRule());
         UnusedDetector.setSkipParameters(prefs, skipParams);
-        UnusedDetector.setSkipReturnTuples(prefs, skipReturns);
+        UnusedDetector.setSkipTupleAssignments(prefs, skipTupleAssigns);
         UnusedDetector.setIgnoreNames(prefs, ignoreNames);
     }
 
@@ -92,5 +92,20 @@ public class UnusedDetectorTest extends PythonTestBase {
     public void testUnusedHints5() throws Exception {
         setHintOptions(false, false, " jday, mm ");
         findHints(this, createRule(), "testfiles/datetime.py", null, null);
+    }
+
+    public void testUnusedHints6() throws Exception {
+        setHintOptions(false, false, "");
+        findHints(this, createRule(), "testfiles/delete.py", null, null);
+    }
+
+    public void testUnusedHints7() throws Exception {
+        setHintOptions(false, false, "");
+        findHints(this, createRule(), "testfiles/tuples.py", null, null);
+    }
+
+    public void testUnusedHints8() throws Exception {
+        setHintOptions(true, true, "");
+        findHints(this, createRule(), "testfiles/tuples.py", null, null);
     }
 }
