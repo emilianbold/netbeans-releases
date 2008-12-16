@@ -153,7 +153,7 @@ public final class CreateTestsAction extends NodeAction {
 
     static SourceGroup getSourceGroup(FileObject file, Project prj) {
         Sources src = ProjectUtils.getSources(prj);
-        SourceGroup[] srcGrps = src.getSourceGroups(PhpSources.TYPE_PHP);
+        SourceGroup[] srcGrps = src.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
         for (SourceGroup srcGrp : srcGrps) {
             FileObject rootFolder = srcGrp.getRootFolder();
             if (((file == rootFolder) || FileUtil.isParentOf(rootFolder, file))
