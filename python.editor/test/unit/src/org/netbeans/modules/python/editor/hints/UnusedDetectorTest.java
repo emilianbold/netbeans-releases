@@ -93,4 +93,9 @@ public class UnusedDetectorTest extends PythonTestBase {
         setHintOptions(false, false, " jday, mm ");
         findHints(this, createRule(), "testfiles/datetime.py", null, null);
     }
+
+    public void testUnusedHints6() throws Exception {
+        setHintOptions(false, false, "");
+        findHints(this, createRule(), "testfiles/delete.py", null, null);
+    }
 }
