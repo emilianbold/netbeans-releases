@@ -104,6 +104,10 @@ public class ConnectionNode extends BaseNode {
         updateModel();
     }
 
+    public DatabaseConnection getDatabaseConnection() {
+        return connection;
+    }
+    
     private synchronized void updateModel() {
         RequestProcessor.getDefault().post(
             new Runnable() {
