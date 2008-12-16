@@ -183,6 +183,13 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    public void onFileImplRemoved(List<FileImpl> files){
+        for(FileImpl impl : files) {
+			onFileRemovedImpl(impl);
+        }
+        DeepReparsingUtils.reparseOnRemoved(files,this);
+    }
+
     private FileImpl onFileRemovedImpl(FileImpl impl) {
         APTIncludeUtils.clearFileExistenceCache();
         if( impl != null ) {
@@ -231,7 +238,7 @@ public final class ProjectImpl extends ProjectBase {
 	    APTIncludeUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
-                createIfNeed(nativeFile, isSourceFile(nativeFile), null);
+                createIfNeed(nativeFile, isSourceFile(nativeFile));
                 return nativeFile;
             } finally {
                 //Notificator.instance().endTransaction();
