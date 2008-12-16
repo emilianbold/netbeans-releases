@@ -1035,7 +1035,7 @@ exists or setup the property manually. For example like this:
             </xsl:comment>
             <target name="debug">
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-                <xsl:attribute name ="depends">init,compile,dist</xsl:attribute>
+                <xsl:attribute name ="depends">init,compile,dist-directory-deploy</xsl:attribute>
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <nbdeploy debugmode="true"/>
                 <antcall target="connect-debugger"/>
