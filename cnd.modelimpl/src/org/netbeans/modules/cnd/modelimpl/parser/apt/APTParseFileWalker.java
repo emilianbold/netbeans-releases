@@ -156,20 +156,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     private ErrorDirectiveImpl createError(APTError error) {
-        SimpleOffsetableImpl pos = getOffsetable(error.getToken());
-        APTToken last = error.getToken();
-        try {
-            TokenStream ts = error.getTokenStream();
-            for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token);) {
-                assert (token != null) : "list of tokens must not have 'null' elements"; // NOI18N
-                if (!APTUtils.isEOF(token)) {
-                    last = token;
-                }
-            }
-        } catch (TokenStreamException ex) {
-            // ignore
-        }
-        setEndPosition(pos, last);
+        APTToken token = error.getToken();
+        SimpleOffsetableImpl pos = getOffsetable(token);
+        setEndPosition(pos, token);
         return ErrorDirectiveImpl.create(pos);
     }
 

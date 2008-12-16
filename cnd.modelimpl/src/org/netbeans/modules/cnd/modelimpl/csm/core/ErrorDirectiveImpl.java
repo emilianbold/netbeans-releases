@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * @author Vladimir Voskresensky
  */
 public final class ErrorDirectiveImpl extends SimpleOffsetableImpl implements CsmErrorDirective {
-
     private ErrorDirectiveImpl(CsmOffsetable offs) {
         super(offs);
     }
@@ -59,6 +58,10 @@ public final class ErrorDirectiveImpl extends SimpleOffsetableImpl implements Cs
         return new ErrorDirectiveImpl(offs);
     }
 
+    @Override
+    public CharSequence getText() {
+        return "#error"; // NOI18N
+    }
     ///////////////////////////////////////////////////////////////////////
     // serialization
     
