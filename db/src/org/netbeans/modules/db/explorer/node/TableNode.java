@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -46,6 +49,7 @@ import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
@@ -57,6 +61,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
@@ -157,5 +162,22 @@ public class TableNode extends BaseNode implements SchemaProvider {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Table"); //NOI18N
+    }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.TABLE_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createTableData(connection.getDatabaseConnection(),
+                        connection.findJDBCDriver(), getName());
+            }
+        });
+        return result;
     }
 }

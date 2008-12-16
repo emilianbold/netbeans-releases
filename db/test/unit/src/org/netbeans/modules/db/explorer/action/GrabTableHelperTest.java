@@ -93,9 +93,6 @@ public class GrabTableHelperTest extends DDLTestBase {
             col1 = fixIdentifier(col1);
             col2 = fixIdentifier(col2);
 
-            // Initialize the table information in the format required
-            // by the helper.  This is done by creating a DatabaseNodeInfo
-            // for the table.
             TableNode tableNode = getTableNode(tablename);
             assertNotNull(tableNode);
 
