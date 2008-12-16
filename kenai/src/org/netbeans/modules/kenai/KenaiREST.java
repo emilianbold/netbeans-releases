@@ -42,6 +42,9 @@ package org.netbeans.modules.kenai;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -84,12 +87,25 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException {
-        Iterator<KenaiProjectImpl> allProjects = searchProjects(name, username, password);
-        for (; allProjects.hasNext(); ) {
-            KenaiProjectImpl prj = allProjects.next();
-            if (name.equals(prj.get(KenaiProjectImpl.NAME))) return prj;
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name);
+        RestResponse resp = null;
+        try {
+            resp = conn.get(null);
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
         }
-        return null;
+
+        if (resp.getResponseCode() != 200) return null;
+
+        String sss = resp.getDataAsString();
+
+        PojsonLoad pload = PojsonLoad.create();
+        JsonProjectInfo obj = pload.load(sss, JsonProjectInfo.class);
+        try {
+            return parse(obj);
+        } catch (Exception ex) {
+            throw new KenaiException(ex);
+        }
     }
 
     @Override
@@ -125,5 +141,47 @@ public class KenaiREST extends KenaiImpl {
             }
         }
         return projects.iterator();
+    }
+
+    @Override
+    public KenaiProjectImpl createProject(String name, String displayName, String username, char[] password) throws KenaiException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void register(String username, char[] password) throws KenaiException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void verify(String username, char[] password) throws KenaiException {
+        String [][] params = {
+            new String [] { "username", username },
+            new String [] { "password", new String(password) }
+        };
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate", params);
+        RestResponse resp = null;
+        try {
+            resp = conn.get(null);
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+        if (resp.getResponseCode() != 200) {
+            throw new KenaiException("Authentication failed");
+        }
+    }
+
+    private KenaiProjectImpl parse(JsonProjectInfo o) throws MalformedURLException, ParseException {
+        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");
+        KenaiProjectImpl p = new KenaiProjectImpl(o.name, new URL(o.href));
+        
+        p.put("display_name", o.display_name);
+        p.put("image", new URL(o.image));
+        p.put("owner", o.owner);
+        p.put("description", o.description);
+        p.put("created_at", df.parse(o.created_at));
+        p.put("updated_at", df.parse(o.updated_at));
+
+        return p;
     }
 }

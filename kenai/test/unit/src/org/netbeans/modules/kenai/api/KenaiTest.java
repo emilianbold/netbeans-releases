@@ -76,9 +76,10 @@ public class KenaiTest {
     @Before
     public void setUp() {
         try {
+//            instance = new Kenai(new KenaiMockup());
             instance = Kenai.getInstance(new URL("http://testkenai.com"));
             Authenticator.setDefault(new TestKenaiAuthenticator());
-        } catch (MalformedURLException ex) {
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -113,6 +114,7 @@ public class KenaiTest {
     public void testIsAuthorized() throws Exception {
         String name = "java-inline";
 
+        instance.login("jerry", "mouse".toCharArray());
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);

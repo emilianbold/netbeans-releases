@@ -47,29 +47,17 @@ import org.netbeans.modules.kenai.api.KenaiException;
  *
  * @author Maros Sandor
  */
-public class KenaiImpl {
+public abstract class KenaiImpl {
 
-    public KenaiProjectImpl createProject(String name, String displayName, String username, char [] password) throws KenaiException {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract KenaiProjectImpl createProject(String name, String displayName, String username, char [] password) throws KenaiException;
 
-    public Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException;
 
-    public KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException;
 
-    public boolean isAuthorized(String projectName, String feature, String activity, String username, char [] password) throws KenaiException {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract boolean isAuthorized(String projectName, String feature, String activity, String username, char [] password) throws KenaiException;
 
-    public void verify(String username, char[] password) throws KenaiException {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract void verify(String username, char[] password) throws KenaiException;
 
-    public void register(String username, char[] password) throws KenaiException  {
-        throw new KenaiException("Unsupported operation");
-    }
+    public abstract void register(String username, char[] password) throws KenaiException ;
 }

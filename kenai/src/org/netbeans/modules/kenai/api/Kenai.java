@@ -74,7 +74,9 @@ public final class Kenai {
         return kenai;
     }
 
-    private final KenaiImpl impl;
+    private final KenaiImpl     impl;
+
+    private final Persistence   persistence;
 
     /**
      * Currently user username.
@@ -86,10 +88,14 @@ public final class Kenai {
      */
     private char[] password;
 
-    private Kenai(KenaiImpl impl) {
+    Kenai(KenaiImpl impl) {
         this.impl = impl;
+        this.persistence = new Persistence();
     }
 
+    /**
+     * Cached list of all Kenai projects that we know of.
+     */
     private final Map<String, KenaiProject> projects = new HashMap<String, KenaiProject>();
 
     /**
@@ -138,21 +144,32 @@ public final class Kenai {
     }
 
     /**
-     * Search for Kenai domains on the kenai server.
+     * Get information about a specific project.
      *
-     * @param pattern search pattern. Only one method is recognized now: substring match
-     * @return an interator over kenai domains that match given search pattern
+     * @param name name of the project
+     * @return KenaiProject
      */
     public KenaiProject getProject(String name) throws KenaiException {
         KenaiProject p = projects.get(name);
         if (p == null) {
             KenaiProjectImpl prj = impl.getProject(name, username, password);
             if (prj != null) {
-                p = new KenaiProject(prj);
+                p = new KenaiProject(this, prj);
+                p.fillInfo(prj);
                 projects.put(name, p);
+                persistence.storeProjects(projects.values());
             }
         }
         return p;
+    }
+
+    KenaiProjectImpl getDetails(String name) throws KenaiException {
+        return impl.getProject(name, username, password);
+    }
+
+    private void fillProjectInfo(KenaiProject p) throws KenaiException {
+        KenaiProjectImpl prj = impl.getProject(p.getName(), username, password);
+        p.fillInfo(prj);
     }
 
     /**
@@ -168,7 +185,7 @@ public final class Kenai {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
         KenaiProjectImpl prj = impl.createProject(name, displayName, username, password);
-        return new KenaiProject(prj);
+        return new KenaiProject(this, prj);
     }
 
     public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
@@ -200,7 +217,7 @@ public final class Kenai {
     private KenaiProject toProject(KenaiProjectImpl prj) {
         KenaiProject p = projects.get(KenaiProjectImpl.NAME);
         if (p == null) {
-            p = new KenaiProject(prj);
+            p = new KenaiProject(this, prj);
         }
         return p;
     }
