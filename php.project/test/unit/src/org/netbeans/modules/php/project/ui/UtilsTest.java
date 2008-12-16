@@ -53,6 +53,8 @@ public class UtilsTest extends NbTestCase {
 
     public void testValidUrl() throws Exception {
         final String[] correctUrls = new String[] {
+            "http://localhost",
+            "http://localhost/",
             "http://localhost/phpProject1",
             "http://localhost:8080/phpProject1",
             "http://localhost/phpProject1?a=b",
