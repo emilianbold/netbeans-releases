@@ -51,6 +51,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
 
@@ -193,6 +194,7 @@ public class FileChooserBuilderTest extends NbTestCase {
         return null;
     }
 
+    @RandomlyFails // NB-Core-Build #1896
     public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException {
         FileChooserBuilder instance = new FileChooserBuilder("i");
         instance.setDirectoriesOnly(true);
