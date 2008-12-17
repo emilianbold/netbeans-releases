@@ -42,20 +42,35 @@ made subject to such option by the copyright holder.
 -->
 <project name="run" basedir=".">
 
-    <target name="-init">
+    <target name="-taskdefs" unless="harness.taskdefs.done">
+        <dirname property="harness.dir" file="${suite.file}"/>
+        <echo level="verbose">Using build harness in ${harness.dir}</echo>
+        <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <property name="harness.taskdefs.done" value="true"/>
+    </target>
+
+    <target name="-init" depends="-taskdefs">
+
         <property name="run.jdkhome" location="${nbjdk.home}"/>
-        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
+        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir" else="build/testuserdir">
             <isset property="suite.dir"/>
         </condition>
-        <property name="test.user.dir" location="build/testuserdir"/>
+        <condition property="suite.dir" value="${basedir}">
+            <not>
+                <isset property="suite.dir"/>
+            </not>
+        </condition>
+        <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
+        <!-- In case run from a suite module, to get app.name and/or branding.token: -->
+        <property file="${suite.dir}/nbproject/private/platform-private.properties"/>
+        <property file="${suite.dir}/nbproject/platform.properties"/>
+        <property file="${suite.dir}/nbproject/private/private.properties"/>
+        <property file="${suite.dir}/nbproject/project.properties"/>
+       <convertclusterpath from="${cluster.path}" id="cluster.path.id" basedir="${suite.dir}"/>
         <pathconvert property="install">
             <path refid="cluster.path.id"/>
             <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
         </pathconvert>
-        <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
-        <!-- In case run from a suite module, to get app.name and/or branding.token: -->
-        <property file="${suite.dir}/nbproject/private/private.properties"/>
-        <property file="${suite.dir}/nbproject/project.properties"/>
         <property name="run.app.exe" value="bin\nb.exe"/>
         <property name="run.app.sh" value="bin/netbeans"/>
         <property name="run.exe.candidate" location="${install}\${run.app.exe}"/>
@@ -91,7 +106,7 @@ made subject to such option by the copyright holder.
         <property name="run.sh" location="${run.sh.candidate}"/>
         <mkdir dir="${test.user.dir}/etc"/>
         <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${cluster}"</echo>
-        <property name="run.args.prepared" value=""/>
+        <property name="run.args.prepared" value=''/>
     </target>
 
     <target name="-prepare-as-platform" depends="-init" if="app.name">
@@ -107,7 +122,7 @@ made subject to such option by the copyright holder.
             <path>
                 <pathelement location="${cluster}"/>
                 <!-- Does not exclude clusters in which all modules are excluded, shouldn't be a problem -->
-                <pathelement refid="cluster.path.id"/>
+                <path refid="cluster.path.id"/>
             </path>
         </pathconvert>
         <pathconvert property="run.exe">
