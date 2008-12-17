@@ -105,14 +105,4 @@ public class NodeDataLookup extends AbstractLookup {
         content.set(dataInstances, null);
     }
     
-    /**
-     * Remove the object instance from the lookup.
-     * 
-     * @param data
-     */
-    public void remove(Object data) {
-        dataInstances.remove(data);
-        content.set(dataInstances, null);
-    }
-    
 }
