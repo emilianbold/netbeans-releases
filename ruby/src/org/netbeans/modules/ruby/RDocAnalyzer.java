@@ -39,10 +39,8 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Currently serves (mainly) for analyzing RDoc of generated stubs of Ruby core
@@ -120,13 +118,13 @@ final class RDocAnalyzer {
         COMMENT_TYPE_TO_REAL_TYPE.put("unbound_method", "UnboundMethod"); // NOI18N
     }
 
-    private final Set<String> types;
+    private final RubyType type;
 
     private RDocAnalyzer() {
-        this.types = new HashSet<String>(2);
+        this.type = new RubyType();
     }
 
-    static Set<? extends String> collectTypesFromComment(final List<? extends String> comment) {
+    static RubyType collectTypesFromComment(final List<? extends String> comment) {
         RDocAnalyzer rda = new RDocAnalyzer();
         for (String line : comment) {
             line = line.trim();
@@ -135,7 +133,7 @@ final class RDocAnalyzer {
             }
             rda.parseTypeFromLine(line);
         }
-        return rda.types;
+        return rda.type;
     }
 
     private void parseTypeFromLine(String line) {
@@ -170,7 +168,7 @@ final class RDocAnalyzer {
             realType = commentType;
         }
         if (realType != null) {
-            types.add(realType);
+            type.add(realType);
         } /* TODO: uncomment else block and run the RDocAnalyzerTest, try to
          handle the unknown types like literals:
            * 1, -1, ...

@@ -40,17 +40,12 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;
-
-import static org.netbeans.modules.ruby.RubyTypeAnalyzer.UNKNOWN_TYPE;
 
 /**
  * @todo Test compound assignment:  x = File::Stat.new
@@ -96,21 +91,33 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         return instance;
     }
 
-    private void assertTypes(final Set<? extends String> actualTypes, final String... expectedTypes) {
+    private void assertTypes(final RubyType actualTypes, final String... expectedTypes) {
         assertTypes(null, actualTypes, expectedTypes);
     }
 
-    private void assertTypes(final String message, final Set<? extends String> actualTypes, final String... expectedTypes) {
-        Set<String> expectedTypesHash = new HashSet<String>(Arrays.asList(expectedTypes));
+    private void assertTypes(final String message, final RubyType actualTypes, final String... expectedTypes) {
+        assertTypes(message, actualTypes, false, expectedTypes);
+    }
+
+    private void assertTypes(final String message, final RubyType actualTypes,
+            final boolean hasUnknownMember, final String... expectedTypes) {
+        RubyType expected = new RubyType(expectedTypes);
+        if (hasUnknownMember) {
+            expected.append(RubyType.createUnknown());
+        }
         assertTrue(message + ":" +
                 "\n  actualTypes:   " + actualTypes +
-                "\n  expectedTypes: " + expectedTypesHash, actualTypes.equals(expectedTypesHash));
+                "\n  expectedTypes: " + expected, actualTypes.equals(expected));
     }
 
     private void assertTypes(String relFilePath, String matchingLine,
             String exprToInfer, String... expectedTypes) throws Exception {
+        assertTypes(relFilePath, matchingLine, exprToInfer, false, expectedTypes);
+    }
+    private void assertTypes(String relFilePath, String matchingLine,
+            String exprToInfer, boolean hasUnknownMember, String... expectedTypes) throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer(relFilePath, matchingLine, false);
-        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), expectedTypes);
+        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), hasUnknownMember, expectedTypes);
     }
 
     public void testGetType() throws Exception {
@@ -204,7 +211,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testIfWithFailingInferenceInBranchType() throws Exception {
-        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", "NilClass", UNKNOWN_TYPE);
+        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", true, "NilClass");
     }
 
     // TODO inference is still not able to do the below
