@@ -215,6 +215,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         wiz.putProperty (CHOSEN_TEMPLATE, template);
+        wiz.putProperty(DELEGATE_ITERATOR, null);
         index = 0;
         createPanels (); // NOI18N
     }
