@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.impl.structure;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTError;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
- * impl for #error directive 
- * @author Vladimir Kvashin
+ *
+ * @author Vladimir Voskresensky
  */
-public class APTErrorNode extends APTStreamBaseNode 
-                                    implements APTError, Serializable {
-    
-    private static final long serialVersionUID = -6159626009326550770L;
-    
-    /** Copy constructor */
-    /**package*/ APTErrorNode(APTErrorNode orig) {
-        super(orig);
+public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
+    private final String msg;
+    private ErrorDirectiveImpl(CsmFile file, String text, CsmOffsetable offs) {
+        super(file, offs);
+        this.msg = text;
     }
-    
-    /** constructor for serialization **/
-    protected APTErrorNode() {
-    }
-    
-    /**
-     * Creates a new instance of APTUnknownNode
-     */
-    public APTErrorNode(APTToken token) {
-        super(token);
-    }
-    
-    public final int getType() {
-        return APT.Type.ERROR;
-    }
-    
-    protected boolean validToken(APTToken t) {
-        assert (t != null);
-        int ttype = t.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
-        // eat all till END_PREPROC_DIRECTIVE
-        return !APTUtils.isEndDirectiveToken(ttype);
-    }    
-}
 
+    public static ErrorDirectiveImpl create(CsmFile file, String msg, CsmOffsetable offs) {
+        return new ErrorDirectiveImpl(file, msg, offs);
+    }
+
+    @Override
+    public CharSequence getText() {
+        return msg;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + msg;
+    }
+
+    @Override
+    public int hashCode() {
+        return 47 * super.hashCode() + msg.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final ErrorDirectiveImpl other = (ErrorDirectiveImpl) obj;
+        return this.msg.equals(other.msg);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////
+    // serialization
+    
+    @SuppressWarnings("unchecked")
+    public ErrorDirectiveImpl(DataInput input) throws IOException {
+        super(input);
+        this.msg = input.readUTF();
+    }
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(msg);
+    }
+}
