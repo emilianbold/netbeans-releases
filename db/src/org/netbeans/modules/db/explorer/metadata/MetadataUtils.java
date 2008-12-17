@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.explorer.metadata;
 
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -141,7 +142,8 @@ public class MetadataUtils {
      * @return Schema instance
      */
     public static Schema findSchema(Lookup lookup) {
-        MetadataModel model = lookup.lookup(MetadataModel.class);
+        DatabaseConnection conn = lookup.lookup(DatabaseConnection.class);
+        MetadataModel model = conn.getMetadataModel();
         final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
 
         DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
@@ -165,7 +167,8 @@ public class MetadataUtils {
      * @return Schema instance
      */
     public static Catalog findCatalog(Lookup lookup) {
-        MetadataModel model = lookup.lookup(MetadataModel.class);
+        DatabaseConnection conn = lookup.lookup(DatabaseConnection.class);
+        MetadataModel model = conn.getMetadataModel();
         final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
 
         DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
