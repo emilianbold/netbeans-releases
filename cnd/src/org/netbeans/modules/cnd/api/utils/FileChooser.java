@@ -146,7 +146,7 @@ public class FileChooser extends JFileChooser {
         return currectChooserFile;
     }
 
-    public static void setCurrectChooserFile(File aCurrectChooserFile) {
+    private static void setCurrectChooserFile(File aCurrectChooserFile) {
         currectChooserFile = aCurrectChooserFile;
     }
 }
