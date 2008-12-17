@@ -51,10 +51,10 @@ import org.netbeans.modules.kenai.collab.notifications.NotifyIndicator;
  * TODO: should be moved to org.openide.awt
  * @author Jan Becicka
  */
-final class Notifications {
+final class Notifications extends APIAccessor {
 
     static {
-        APIAccessor.DEFAULT = new APIAccessorImpl();
+        APIAccessor.DEFAULT = Notifications.getDefault();
     }
 
     private static Notifications instance;
@@ -113,4 +113,7 @@ final class Notifications {
         return notifications.isEmpty()?null:notifications.first();
     }
 
+    public SortedSet<Notification> getNotifications() {
+        return notifications;
+    }
 }

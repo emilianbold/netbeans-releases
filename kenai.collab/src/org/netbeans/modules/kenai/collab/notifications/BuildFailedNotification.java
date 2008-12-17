@@ -51,7 +51,7 @@ import org.openide.util.ImageUtilities;
 public class BuildFailedNotification extends Notification {
 
     public String getLinkTitle() {
-        return "delete";
+        return "details";
     }
 
     public String getTitle() {
