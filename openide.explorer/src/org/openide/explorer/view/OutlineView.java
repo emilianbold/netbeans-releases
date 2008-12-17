@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -190,7 +190,7 @@ public class OutlineView extends JScrollPane {
             }
 
         });
-        TableColumnSelector tcs = (TableColumnSelector) Lookup.getDefault().lookup(TableColumnSelector.class);
+        TableColumnSelector tcs = Lookup.getDefault ().lookup (TableColumnSelector.class);
         if (tcs != null) {
             outline.setColumnSelector(tcs);
         }
@@ -406,7 +406,7 @@ public class OutlineView extends JScrollPane {
             }
             TreeNode tn = Visualizer.findVisualizer(arr[i]);
             if (tn != null) {
-                ArrayList al = new ArrayList();
+                ArrayList<TreeNode> al = new ArrayList<TreeNode> ();
                 while (tn != null) {
                     al.add(tn);
                     tn = tn.getParent();
@@ -462,14 +462,14 @@ public class OutlineView extends JScrollPane {
      */
     private JPopupMenu createPopup(Point p) {
         int[] selRows = outline.getSelectedRows();
-        ArrayList al = new ArrayList(selRows.length);
+        ArrayList<Node> al = new ArrayList<Node> (selRows.length);
         for (int i = 0; i < selRows.length; i++) {
             Node n = getNodeFromRow(selRows[i]);
             if (n != null) {
                 al.add(n);
             }
         }
-        Node[] arr = (Node[])al.toArray(new Node[al.size()]);
+        Node[] arr = al.toArray (new Node[al.size ()]);
         if (arr.length == 0) {
             // hack to show something even when no rows are selected
             arr = new Node[] { manager.getRootContext() };
@@ -764,14 +764,14 @@ public class OutlineView extends JScrollPane {
 
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
             int selectedRows[] = outline.getSelectedRows();
-            ArrayList selectedNodes = new ArrayList(selectedRows.length);
+            ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
             for (int i = 0; i < selectedRows.length;i++) {
                 Node n = getNodeFromRow(selectedRows[i]);
                 if (n != null) {
                     selectedNodes.add(n);
                 }
             }
-            callSelectionChanged((Node[])selectedNodes.toArray(new Node[selectedNodes.size()]));
+            callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 
         public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
@@ -817,6 +817,7 @@ public class OutlineView extends JScrollPane {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean editCellAt(int row, int column, EventObject e) {
             Object o = getValueAt(row, column);
             if (o instanceof Node.Property) { // && (e == null || e instanceof KeyEvent)) {
@@ -842,6 +843,7 @@ public class OutlineView extends JScrollPane {
                     Node.Property p = (Node.Property)o;
                     if( !Boolean.TRUE.equals(p.getValue("suppressCustomEditor") ) ) { //NOI18N
                         PropertyPanel panel = new PropertyPanel(p);
+                        @SuppressWarnings("deprecation")
                         PropertyEditor ed = panel.getPropertyEditor();
 
                         if ((ed != null) && ed.supportsCustomEditor()) {

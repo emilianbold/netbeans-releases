@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,7 +62,7 @@ class PropertiesRowModel implements RowModel {
    
     private Node.Property[] prop = new Node.Property[0];
     private Outline outline;
-    private WeakHashMap/*<Node, PropertyChangeListener>*/ nodesListenersCache = new WeakHashMap();
+    private WeakHashMap<Node, PropertyChangeListener> nodesListenersCache = new WeakHashMap<Node, PropertyChangeListener> ();
     
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
@@ -96,7 +96,7 @@ class PropertiesRowModel implements RowModel {
     private int rowForNode(Node n) {
         TreeNode tn = Visualizer.findVisualizer(n);
         if (tn != null) {
-            ArrayList al = new ArrayList();
+            ArrayList<TreeNode> al = new ArrayList<TreeNode> ();
             while (tn != null) {
                 al.add(tn);
                 tn = tn.getParent();
@@ -131,7 +131,7 @@ class PropertiesRowModel implements RowModel {
         if (n == null) {
             throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + node + " of class " + node.getClass().getName());
         }
-        PropertyChangeListener cacheEntry = (PropertyChangeListener)nodesListenersCache.get(n);
+        PropertyChangeListener cacheEntry = nodesListenersCache.get (n);
         if (cacheEntry == null) {
             PropertyChangeListener p = WeakListeners.propertyChange(pcl, n);
             nodesListenersCache.put(n, p);
@@ -217,13 +217,13 @@ class PropertiesRowModel implements RowModel {
     /**
      * Changes the value of the boolean property.
      */
-    public static void toggleBooleanProperty(Node.Property p) {
+    public static void toggleBooleanProperty(Node.Property<Boolean> p) {
         if (p.getValueType() == Boolean.class || p.getValueType() == Boolean.TYPE) {
             if (!p.canWrite()) {
                 return;
             }
             try {
-                Boolean val = (Boolean) p.getValue();
+                Boolean val = p.getValue ();
                 if (Boolean.FALSE.equals(val)) {
                     p.setValue(Boolean.TRUE);
                 } else {
