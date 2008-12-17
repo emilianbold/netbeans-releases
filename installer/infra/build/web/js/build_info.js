@@ -55,8 +55,8 @@ var ADD_VERSION_INFO_TO_URL = 0;
 
 var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-//var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
-var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
+var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
+//var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
 
 function add_download_tabs() {
 	add_download_tab("6.5", "http://www.netbeans.org/downloads");
