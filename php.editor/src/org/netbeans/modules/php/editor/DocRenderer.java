@@ -120,10 +120,10 @@ class DocRenderer {
                     // find the appropriate source root
                     Sources sources = ProjectUtils.getSources(project);
                     // TODO the PHPSOURCE constatnt has to be published in the project api
-                    SourceGroup[] groups = sources.getSourceGroups("PHPSOURCE");       //NOI18N
-                    for (int i = 0; i < groups.length; i++) {
-                        if (groups[i].contains(fobj)) {
-                            location = FileUtil.getRelativePath(groups[i].getRootFolder(), fobj);
+                    for (SourceGroup group : sources.getSourceGroups("PHPSOURCE")) { //NOI18N
+                        String relativePath = FileUtil.getRelativePath(group.getRootFolder(), fobj);
+                        if (relativePath != null) {
+                            location = relativePath;
                             break;
                         }
                     }
