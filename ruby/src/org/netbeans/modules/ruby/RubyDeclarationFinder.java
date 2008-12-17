@@ -845,6 +845,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
 
     private RailsTarget findRailsTarget(BaseDocument doc, TokenHierarchy<Document> th, int lexOffset) {
         try {
+            doc.readLock();
             // TODO - limit this to RHTML files only?
             int begin = Utilities.getRowStart(doc, lexOffset);
             if (begin != -1) {
@@ -900,6 +901,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
+        } finally {
+            doc.readUnlock();
         }
 
         return null;
