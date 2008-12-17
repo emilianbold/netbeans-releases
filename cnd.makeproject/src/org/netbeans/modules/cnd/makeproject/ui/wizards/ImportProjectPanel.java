@@ -137,9 +137,11 @@ public final class ImportProjectPanel extends JPanel {
         if (configure != null && make == null){
             jLabel2.setVisible(true);
             configureFlags.setVisible(true);
+            jSeparator1.setVisible(true);
         } else {
             jLabel2.setVisible(false);
             configureFlags.setVisible(false);
+            jSeparator1.setVisible(false);
         }
 
         StringBuilder buf = new StringBuilder();
@@ -178,6 +180,8 @@ public final class ImportProjectPanel extends JPanel {
                 buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
             }
         }
+        buf.append("\n- "); // NOI18N
+        buf.append(getString("Prompt_ConfigureCodeAssistance")); // NOI18N
         todoPane.setText(buf.toString());
     }
 
