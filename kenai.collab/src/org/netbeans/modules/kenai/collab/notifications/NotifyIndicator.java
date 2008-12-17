@@ -44,14 +44,10 @@ package org.netbeans.modules.kenai.collab.notifications;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.SortedSet;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.netbeans.modules.notifications.spi.Notification;
-import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -62,12 +58,10 @@ import org.openide.util.RequestProcessor;
  */
 
 public class NotifyIndicator implements Runnable {
-    private static ImageIcon P1_NOTIFICATION = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.gif"));
     private static NotifyIndicator instance;
 
-
     private JLabel label;
-    private Helper helper;
+    private MouseL helper;
 
     public void update() {
         Notification top = APIAccessor.DEFAULT.top();
@@ -93,34 +87,15 @@ public class NotifyIndicator implements Runnable {
     }
     
     private NotifyIndicator() {
-        helper = new Helper();
+        helper = new MouseL();
         label = new JLabel();
         label.addMouseListener(helper);
     }
     
-    public static String getStatusDescription(int status) {
-        return "description";
-    }
-
-    public static ImageIcon getStatusIcon(int status) {
-        return P1_NOTIFICATION;
-    }
-
-    protected static String getStatusToolTip() {
-        return "tool tip";
-    }
-
     
-    private class Helper extends MouseAdapter implements PropertyChangeListener, Runnable {
+    private class MouseL extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent event) {
-//         JList notify = new JList();
-//         notify.setModel(new javax.swing.AbstractListModel() {
-//            String[] strings = { "<html><b>Build failed</b><br><p align=\"right\"><a href=\"details\">details</a> <b><a href=\"delete\">x</a></b><br></p></html>", "<html><b>Tests failed</b><p align=\"right\"><a href=\"details\">details</a></p></html>", "<html><b>New Code Review</b><p align=\"right\"><a href=\"details\">details</a></p></html>", " " };
-//            public int getSize() { return strings.length; }
-//            public Object getElementAt(int i) { return strings[i]; }
-//         });
-//        notify.setCellRenderer(new NotificationRenderer());
-
         NotificationPanel p = new NotificationPanel();
         final SortedSet<Notification> nlist = APIAccessor.DEFAULT.getNotifications();
         synchronized (nlist) {
@@ -129,32 +104,8 @@ public class NotifyIndicator implements Runnable {
                 p.addNotification(i.next());
         }
 
-//        p.addRow("<html><b>Build failed</b><br><p align=\"right\"><a href=\"details\">details</a> <b><a href=\"delete\">x</a></b><br></p></html>");
-//        p.addRow("<html><b>Tests failed</b><p align=\"right\"><a href=\"details\">details</a></p></html>");
-//        p.addRow("<html><b>New Code Review</b><p align=\"right\"><a href=\"details\">details</a></p></html>");
-
         BalloonManager.show(label, p, null, 2000);
-//        Popup pop = PopupFactory.getSharedInstance().getPopup(label, notify, label.getLocation().x, label.getLocation().y);
-//        pop.show();
-//            CollabExplorerPanel.getInstance().open();
-//            CollabExplorerPanel.getInstance().requestActive();
-        }
-        
-        public void propertyChange(PropertyChangeEvent event) {
-//            // session list changed
-//            if (event.getSource() instanceof CollabManager) {
-//                attachListeners();
-//            }
-//
-//            // either session list or session status changed
-//            updateStatus();
-        }
-        
-        public void run() {
-//            Image statusIcon = getStatusIcon(currentStatus);
-//            label.setIcon(new ImageIcon(statusIcon));
-//            label.setToolTipText(getStatusToolTip());
         }
     }
-
 }
+
