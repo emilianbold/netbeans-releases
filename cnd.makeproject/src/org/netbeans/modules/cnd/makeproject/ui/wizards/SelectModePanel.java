@@ -304,7 +304,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             return true;
         } finally {
             if (messageKind > 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path));
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path)); // NOI18N
             } else {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
             }
