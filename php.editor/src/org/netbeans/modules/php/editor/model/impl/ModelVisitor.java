@@ -84,6 +84,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -108,6 +109,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScope fileScope;
     private Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
+    private Map<String, String> var2DefaultType;
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
     private ModelBuilder modelBuilder;
@@ -119,6 +121,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public ModelVisitor(CompilationInfo info, int offset) {
         this.fileScope = new FileScope(info);
+        var2DefaultType = new HashMap<String, String>();
         occurencesBuilder = new OccurenceBuilder(offset);
         markerBuilder = new CodeMarkerBuilder(offset);
         this.modelBuilder = new ModelBuilder(this.fileScope, occurencesBuilder.getOffset());
@@ -145,6 +148,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         modelBuilder.setProgram(program);
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
         try {
+            List<Comment> comments = program.getComments();
+            for (Comment comment : comments) {
+                Comment.Type type = comment.getCommentType();
+                if (type.equals(Comment.Type.TYPE_VARTYPE)) {
+                    checkComments(comment);
+                }
+            }
             super.visit(program);
         } finally {
             program = null;
@@ -338,7 +348,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             String name = VariableNameImpl.toName(node);
             VariableName original = map.get(name);
             if (original == null) {
-                map.put(name, ps.createElement(modelBuilder.getProgram(), node));
+                map.put(name, ps.createElement(modelBuilder.getProgram(), node, var2DefaultType.get(name)));
             }
         } else {
             assert scope instanceof ClassScopeImpl : scope;
@@ -430,7 +440,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //FunctionScopeImpl scope = (FunctionScopeImpl) currentScope.peek();
         FunctionScopeImpl scope = (FunctionScopeImpl) modelBuilder.getCurrentScope();
         if (typeName != null && parameterName instanceof Variable) {
-            VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), (Variable) parameterName);
+            VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), (Variable) parameterName, typeName);
             varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, scope.getBlockRange(),
                     new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
         }
@@ -456,7 +466,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 map = new HashMap<String, VariableNameImpl>();
                 vars.put(ps, map);
             }
-            VariableNameImpl varNameImpl = varContainer.createElement(modelBuilder.getProgram(), variable);
+            ASTNodeInfo<Variable> nodeInfo = ASTNodeInfo.create(variable);
+            VariableNameImpl varNameImpl = varContainer.createElement(modelBuilder.getProgram(), variable, var2DefaultType.get(nodeInfo.getName()));
             String name = varNameImpl.getName();
             varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scopeImpl,new OffsetRange(node.getStartOffset(), node.getEndOffset()),
                     VariableNameImpl.toOffsetRange(variable), className.getName()));
@@ -590,12 +601,24 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private void checkComments(ASTNode node) {
-        Comment comment = Utils.getCommentForNode(modelBuilder.getProgram(), node);
+        Comment comment = node instanceof Comment ? (Comment)node :
+            Utils.getCommentForNode(modelBuilder.getProgram(), node);
         if (comment instanceof PHPDocBlock) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
             for (PHPDocTag tag : phpDoc.getTags()) {
                 scan(tag);
             }
+        } else if (comment instanceof PHPVarComment) {
+            PHPDocVarTypeTag typeTag = ((PHPVarComment) comment).getVariable();
+            List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, fileScope);
+            for (PhpDocTypeTagInfo tagInfo : tagInfos) {
+                if (tagInfo.getKind().equals(ASTNodeInfo.Kind.VARIABLE)) {
+                    String name = tagInfo.getName();
+                    String typeName = tagInfo.getTypeName();
+                    var2DefaultType.put(name, typeName);
+                }
+            }
+            scan(typeTag);
         }
     }
 

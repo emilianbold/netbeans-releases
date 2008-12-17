@@ -49,7 +49,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 interface VariableContainerImpl  {
-    VariableNameImpl createElement(Program program, Variable node);
+    VariableNameImpl createElement(Program program, Variable node, String typeName);
     public List<? extends VariableNameImpl> getAllVariablesImpl();
     public List<? extends VariableNameImpl> getVariablesImpl(final String... queryName);
     public List<? extends VariableNameImpl> getVariablesImpl(final NameKind nameKind, final String... queryName);
