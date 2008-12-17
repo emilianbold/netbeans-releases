@@ -95,11 +95,11 @@ final class RubyClassCompleter extends RubyBaseCompleter {
             return false;
         }
 
-        String type = call.getType();
+        RubyType type = call.getType();
         String lhs = call.getLhs();
 
-        if ((lhs != null) && lhs.equals(type)) {
-            fullPrefix = type + "::" + prefix;
+        if (lhs != null && type.isSingleton() && lhs.equals(type.first())) {
+            fullPrefix = type + "::" + prefix; // NOI18N
         }
 
         AstPath path = request.path;

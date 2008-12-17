@@ -1394,10 +1394,10 @@ public class RubyIndexer implements Indexer {
 //                flags |= IndexedElement.NODOC;
 //            }
 
-            Set<? extends String> types = child.getTypes();
+            RubyType type = child.getType();
             StringBuilder signature = new StringBuilder(child.getName() + ';');
-            if (!types.equals(RubyTypeAnalyzer.UNKNOWN_TYPE_SET)) {
-                signature.append(RubyUtils.join(types, "|"));
+            if (type.isKnown()) {
+                signature.append(type.asIndexedString());
             }
 
             document.addPair(FIELD_CONSTANT_NAME, signature.toString(), true);
