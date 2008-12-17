@@ -44,6 +44,9 @@
 #include "Exdisp.h"
 #include "Utils.h"
 
+// initialize default value to NULL
+DbgpConnection* DbgpConnection::lastInstance = NULL;
+
 DbgpConnection::DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrowserCookie) {
     m_port = port;
     m_sessionId = sessionId;
@@ -54,6 +57,8 @@ DbgpConnection::DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrows
         Utils::log(1, _T("WSAStartup failed: %d\n"), iResult);
     }
     m_dwWebBrowserCookie = dwWebBrowserCookie;
+
+    lastInstance = this;
 }
 
 void DbgpConnection::close() {
@@ -392,7 +397,7 @@ void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnec
                     //- arg switch indicates data
                     //no more options are expected after this
                     argValueIndex = index+2;
-                    index = args.length()-1;
+                    index = (unsigned int)(args.length()-1);
                 }else {
                     index++;
                 }
