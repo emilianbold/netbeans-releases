@@ -77,7 +77,7 @@ public class AddOperationEditorAction extends NodeAction {
             fo = getFileObjectFromNode(activatedNodes[0]);
             if (fo!=null) {
                 cookie = WebServiceActionProvider.getAddOperationAction(fo);
-                return cookie!=null && activatedNodes.length == 1 && cookie.isEnabled(fo);
+                return cookie!=null && activatedNodes.length == 1 && cookie.isEnabledInEditor(activatedNodes[0].getLookup());
             }
         }
         return false;
@@ -99,6 +99,6 @@ public class AddOperationEditorAction extends NodeAction {
             cookie = WebServiceActionProvider.getAddOperationAction(fo);
         }
         if(cookie == null) return;
-        cookie.addOperation(fo);
+        cookie.addOperation();
     }
 }

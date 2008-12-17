@@ -155,15 +155,13 @@ class SQLExecutionHelper {
                         Object val = insertedRow[i];
 
                         // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                        boolean isSQLConstant = false;
-                        if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
-                            isSQLConstant = true;
+                        if (DataViewUtils.isSQLConstantString(val)) {
+                            continue;
                         }
 
-                        if (!isSQLConstant) { // literals
-                            int colType = dataView.getDataViewDBTable().getColumnType(i);
-                            DBReadWriteHelper.setAttributeValue(pstmt, pos++, colType, val);
-                        }
+                        // literals
+                        int colType = dataView.getDataViewDBTable().getColumnType(i);
+                        DBReadWriteHelper.setAttributeValue(pstmt, pos++, colType, val);
                     }
 
                     executePreparedStatement(pstmt);
@@ -318,6 +316,11 @@ class SQLExecutionHelper {
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
                 for (Object val : values) {
+                    // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+                    if (DataViewUtils.isSQLConstantString(val)) {
+                        continue;
+                    }
+
                     DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
                     pos++;
                 }
@@ -368,7 +371,7 @@ class SQLExecutionHelper {
 
             @Override
             public void execute() throws SQLException, DBException {
-                
+
 
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
                 String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(true); // NOI18N
@@ -574,7 +577,7 @@ class SQLExecutionHelper {
             }
         }
 
-        mLogger.log(Level.FINE, "Executing Statement: " + sql); // NOI18N
+        mLogger.log(Level.FINE, "Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -584,12 +587,8 @@ class SQLExecutionHelper {
         } else {
             isResultSet = stmt.execute(sql);
         }
+
         long executionTime = System.currentTimeMillis() - startTime;
-
-        String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds"); // NOI18N
-        dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
-
         synchronized (dataView) {
             dataView.setHasResultSet(isResultSet);
             dataView.setUpdateCount(stmt.getUpdateCount());
@@ -599,12 +598,17 @@ class SQLExecutionHelper {
 
     private void executePreparedStatement(PreparedStatement stmt) throws SQLException {
         long startTime = System.currentTimeMillis();
-        stmt.execute();
+        boolean isResultSet = stmt.execute();
 
         long executionTime = System.currentTimeMillis() - startTime;
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds"); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
+
+        synchronized (dataView) {
+            dataView.setHasResultSet(isResultSet);
+            dataView.setUpdateCount(stmt.getUpdateCount());
+            dataView.setExecutionTime(executionTime);
+        }
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt) {

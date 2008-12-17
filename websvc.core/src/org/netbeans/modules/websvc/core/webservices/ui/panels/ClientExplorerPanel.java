@@ -62,7 +62,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 
 /**
@@ -200,9 +200,9 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject,node);
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject);
                     if(invokeCookie != null){
-                        if(invokeCookie.isWebServiceOperation(node)) {
+                        if(invokeCookie.isWebServiceOperation(node.getLookup())) {
                             // This is a method node.
                             selectedMethod = node;
                             descriptor.setValid(true);

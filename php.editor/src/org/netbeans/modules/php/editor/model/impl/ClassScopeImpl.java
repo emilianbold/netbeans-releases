@@ -180,17 +180,29 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
     }
 
 
+    @Override
     public List<? extends MethodScope> getAllInheritedMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getAllMethods());
         IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
+        if (indexScopeImpl == null) {
+            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
+        }
         PHPIndex index = indexScopeImpl.getIndex();
-        Set<? extends ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
-        for (ClassScope clz : superClasses) {
-            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+        ClassScope clz = ModelUtils.getFirst(getSuperClasses());
+        List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
+        interfaces.addAll(getInterfaces());
+        while(clz != null) {
+            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
+            interfaces.addAll(clz.getInterfaces());
+            clz = ModelUtils.getFirst(clz.getSuperClasses());
+        }
+        
+        for (InterfaceScope ifaceScope : interfaces) {
+            allMethods.addAll(ifaceScope.getAllInheritedMethods());
         }
         return allMethods;
     }
@@ -233,5 +245,30 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
             collectSuperClassesChain(result, superCls);
         }
         return result;
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return super.getNormalizedName()+getSuperClassName();
+    }
+
+    @NonNull
+    String getSuperClassName() {
+        List<? extends ClassScope> retval = null;
+        retval = superClass.hasSecond() ? superClass.second() : null;
+        if (retval == null) {
+            assert superClass.hasFirst();
+            String superClasName = superClass.first();
+            if (superClasName != null) {
+                return superClasName;
+
+            }
+        } else if (retval.size() > 0) {
+            ClassScope cls = ModelUtils.getFirst(retval);
+            if (cls != null) {
+                return cls.getName();
+            }
+        }
+        return "";//NOI18N
     }
 }

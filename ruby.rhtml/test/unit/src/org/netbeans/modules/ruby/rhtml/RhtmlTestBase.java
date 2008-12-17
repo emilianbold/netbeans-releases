@@ -150,7 +150,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
     }
     
     @Override
-    protected BaseDocument getDocument(FileObject fo) {
+    public BaseDocument getDocument(FileObject fo) {
         BaseDocument doc = super.getDocument(fo);
         doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
         doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);

@@ -40,13 +40,8 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.util.EventObject;
-import org.netbeans.modules.db.dataview.util.ExtendedJTable;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -55,43 +50,25 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
-import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.netbeans.modules.db.dataview.table.ResultSetCellRenderer;
+import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
+import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -103,73 +80,185 @@ import org.openide.windows.WindowManager;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewTableUI extends ExtendedJTable {
+class DataViewTableUI extends ResultSetJXTable {
 
-    private String[] columnToolTips;
     private JPopupMenu tablePopupMenu;
-    private final int multiplier;
     private final DataViewTablePanel tablePanel;
-    private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
-    private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
-    private DataView dView;
-    int selectedRow = -1;
-    int selectedColumn = -1;
+    private DataViewActionHandler handler;
+    private int selectedRow = -1;
+    private int selectedColumn = -1;
 
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
+        super(dataView);
+
         this.tablePanel = tablePanel;
-        addKeyListener(new Control0KeyListener());
-        getTableHeader().setReorderingAllowed(false);
-
-        setDefaultRenderer(Object.class, new ResultSetCellRenderer());
-        setDefaultRenderer(String.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Number.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Boolean.class, new ResultSetCellRenderer());
-        setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer());
-
-        setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
-        setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
-        setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
-        setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
+        this.handler = handler;
 
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
-        setRowHeight(getFontMetrics(getFont()).getHeight() + 5);
-
-        dView = dataView;
+        addKeyListener(createControKeyListener());
         createPopupMenu(handler, dataView);
     }
 
     @Override
-    //Implement table header tool tips.
-    protected JTableHeader createDefaultTableHeader() {
-        return new JTableHeaderImpl(columnModel);
+    public TableCellRenderer getCellRenderer(int row, int column) {
+        if (dView.getUpdatedRowContext().hasUpdates(row, column)) {
+            return new UpdatedResultSetCellRenderer(dView);
+        }
+        return super.getCellRenderer(row, column);
     }
 
-    protected int getMultiplier() {
-        return multiplier;
+    @Override
+    protected KeyListener createControKeyListener() {
+        return new Control0KeyListener();
     }
 
-    protected void setColumnToolTips(String[] columnToolTips) {
-        this.columnToolTips = columnToolTips;
+    @Override
+    protected DefaultTableModel getDefaultTableModel() {
+        return new DataViewTableUIModel(this);
     }
 
-    private String getColumnToolTipText(MouseEvent e) {
-        java.awt.Point p = e.getPoint();
-        int index = columnModel.getColumnIndexAtX(p.x);
-        try {
-            int realIndex = columnModel.getColumn(index).getModelIndex();
-            return columnToolTips[realIndex];
-        } catch (ArrayIndexOutOfBoundsException aio) {
-            return null;
+    private class DataViewTableUIModel extends ResultSetTableModel {
+
+        protected DataViewTableUIModel(ResultSetJXTable table) {
+            super(table);
+        }
+
+        @Override
+        protected void handleColumnUpdated(int row, int col, Object value) {
+            dView.getUpdatedRowContext().addUpdates(row, col, value, getModel());
+            tablePanel.handleColumnUpdated();
         }
     }
 
-    private UpdatedRowContext getUpdatedRowContext() {
-        return tablePanel.getUpdatedRowContext();
+    private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
+
+        static Color green = new Color(0, 128, 0);
+        static Color gray = new Color(245, 245, 245);
+        DataView dataView;
+
+        public UpdatedResultSetCellRenderer(DataView dView) {
+            dataView = dView;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
+            if (value == null) {
+                return c;
+            }
+
+            if (isSelected) {
+                if (obj != null && value.equals(obj)) {
+                    c.setForeground(gray);
+                } else {
+                    c.setForeground(Color.ORANGE);
+                }
+            } else {
+                if (obj != null && value.equals(obj)) {
+                    c.setForeground(table.getForeground());
+                } else {
+                    c.setForeground(green);
+                }
+            }
+            return c;
+        }
+    }
+
+    private class Control0KeyListener implements KeyListener {
+
+        public Control0KeyListener() {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DELETE) {
+                TableCellEditor editor = getCellEditor();
+                if (editor != null) {
+                    editor.stopCellEditing();
+                }
+                handler.deleteRecordActionPerformed();
+            } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
+                int row = getSelectedRow();
+                int col = getSelectedColumn();
+                if (row == -1) {
+                    return;
+                }
+                editCellAt(row, col);
+
+                TableCellEditor editor = getCellEditor();
+                if (editor != null) {
+                    DBColumn dbcol = getDBColumn(col);
+                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                        Toolkit.getDefaultToolkit().beep();
+                        editor.stopCellEditing();
+                    } else {
+                        editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
+                        setValueAt(null, row, col);
+                        editor.stopCellEditing();
+                    }
+                    setRowSelectionInterval(row, row);
+                }
+            } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
+                int row = getSelectedRow();
+                int col = getSelectedColumn();
+                if (row == -1) {
+                    return;
+                }
+
+                editCellAt(row, col);
+                TableCellEditor editor = getCellEditor();
+                if (editor != null) {
+                    DBColumn dbcol = getDBColumn(col);
+                    Object val = getValueAt(row, col);
+                    if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+                        Toolkit.getDefaultToolkit().beep();
+                        editor.stopCellEditing();
+                    } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
+                        editor.getTableCellEditorComponent(DataViewTableUI.this, "", rowSelectionAllowed, row, col);
+                        setValueAt(null, row, col);
+                        editor.stopCellEditing();
+                    } else {
+                        editor.getTableCellEditorComponent(DataViewTableUI.this, "<DEFAULT>", rowSelectionAllowed, row, col);
+                        setValueAt("<DEFAULT>", row, col);
+                        editor.stopCellEditing();
+                    }
+                    setRowSelectionInterval(row, row);
+                }
+            }
+        }
+
+        public void keyReleased(KeyEvent e) {
+        }
+    }
+
+    private class TableSelectionListener implements ListSelectionListener {
+
+        JTable table;
+
+        TableSelectionListener(JTable table) {
+            this.table = table;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            if (tablePanel == null) {
+                return;
+            }
+
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+                int first = e.getFirstIndex();
+                if (first >= 0 && tablePanel.isEditable()) {
+                    tablePanel.enableDeleteBtn(true);
+                } else {
+                    tablePanel.enableDeleteBtn(false);
+                }
+            }
+        }
     }
 
     private void createPopupMenu(final DataViewActionHandler handler, final DataView dataView) {
@@ -308,10 +397,6 @@ class DataViewTableUI extends ExtendedJTable {
                 int[] rows = getSelectedRows();
                 String rawDeleteStmt = "";
                 for (int j = 0; j < rows.length; j++) {
-
-                    final List<Object> values = new ArrayList<Object>();
-                    final List<Integer> types = new ArrayList<Integer>();
-
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                     final String deleteStmt = generator.generateDeleteStatement(rows[j], getModel());
                     rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
@@ -334,7 +419,7 @@ class DataViewTableUI extends ExtendedJTable {
 
                 try {
                     for (Integer row : updatedRowCtx.getUpdateKeys()) {
-                        Map <Integer, Object> changedData = updatedRowCtx.getChangedData(row);
+                        Map<Integer, Object> changedData = updatedRowCtx.getChangedData(row);
                         rawUpdateStmt += generator.generateUpdateStatement(row, changedData, dataModel) + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
@@ -356,6 +441,7 @@ class DataViewTableUI extends ExtendedJTable {
         printTable.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+                Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
                 try {
                     if (!print()) {
                         mLogger.log(Level.INFO, NbBundle.getMessage(DataViewTableUI.class, "MSG_cancel_printing"));
@@ -476,476 +562,6 @@ class DataViewTableUI extends ExtendedJTable {
             }
         } catch (ArrayIndexOutOfBoundsException exc) {
             Exceptions.printStackTrace(exc);
-        }
-    }
-
-    @Override
-    public TableCellRenderer getCellRenderer(int row, int column) {
-        DataViewTableSorter model = (DataViewTableSorter) getModel();
-        row = model.modelIndex(row);
-        DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
-        if (dbCol.isGenerated()) {
-            return new GeneratedResultSetCellRenderer();
-        } else if (getUpdatedRowContext().hasUpdates(row , column)) { // NOI18N
-            return new UpdatedResultSetCellRenderer(dView);
-        }
-        return super.getCellRenderer(row, column);
-    }
-
-    private static class NullObjectCellRenderer extends DefaultTableCellRenderer {
-
-        static final String NULL_LABEL = "<NULL>"; // NOI18N
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setValue(NULL_LABEL);
-            setToolTipText(NULL_LABEL);
-            c.setForeground(Color.GRAY);
-            return c;
-        }
-    }
-
-    private static class NumberObjectCellRenderer extends DefaultTableCellRenderer.UIResource {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            ((JLabel) c).setHorizontalAlignment(JLabel.RIGHT);
-            setToolTipText(value.toString());
-            return c;
-        }
-    }
-
-    private static final class StringRenderer extends DefaultTableCellRenderer.UIResource {
-
-        public StringRenderer() {
-            super();
-            super.putClientProperty("html.disable", Boolean.TRUE); // NOI18N
-        }
-    }
-
-    private static class DateTimeRenderer extends DefaultTableCellRenderer.UIResource {
-
-        DateFormat formatter;
-
-        public DateTimeRenderer() {
-            super();
-        }
-
-        @Override
-        public void setValue(Object value) {
-            if (formatter == null) {
-                formatter = DateFormat.getDateTimeInstance();
-            }
-            setText((value == null) ? "" : formatter.format(value)); // NOI18N
-            setToolTipText(getText());
-        }
-    }
-
-    private static class TimeRenderer extends DefaultTableCellRenderer.UIResource {
-
-        DateFormat formatter;
-
-        public TimeRenderer() {
-            super();
-        }
-
-        @Override
-        public void setValue(Object value) {
-            if (formatter == null) {
-                formatter = DateFormat.getTimeInstance();
-            }
-            setText((value == null) ? "" : formatter.format(value)); // NOI18N
-            setToolTipText(getText());
-        }
-    }
-
-    private static class DateRenderer extends DefaultTableCellRenderer.UIResource {
-
-        DateFormat formatter;
-
-        public DateRenderer() {
-            super();
-        }
-
-        @Override
-        public void setValue(Object value) {
-            if (formatter == null) {
-                formatter = DateFormat.getDateInstance();
-            }
-            setText((value == null) ? "" : formatter.format(value)); // NOI18N
-            setToolTipText(getText());
-        }
-    }
-
-    private static class BooleanCellRenderer extends DefaultTableCellRenderer.UIResource {
-
-        JCheckBox cb;
-
-        public BooleanCellRenderer() {
-            super();
-            cb = new JCheckBox();
-            cb.setHorizontalAlignment(0);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            cb.setSelected(((Boolean) value).booleanValue());
-            if (!isSelected) {
-                cb.setBackground(table.getBackground());
-            } else {
-                cb.setBackground(table.getSelectionBackground());
-            }
-            return cb;
-        }
-    }
-
-    private static class GeneratedResultSetCellRenderer extends ResultSetCellRenderer {
-
-        static Color gray = new Color(245, 245, 245);
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if (!isSelected) {
-                c.setBackground(gray);
-            } else {
-                c.setBackground(table.getSelectionBackground());
-            }
-            return c;
-        }
-    }
-
-    private static class ResultSetCellRenderer extends DefaultTableCellRenderer.UIResource {
-
-        final TableCellRenderer NULL_RENDERER = new NullObjectCellRenderer();
-        final TableCellRenderer NUMNBER_RENDERER = new NumberObjectCellRenderer();
-        final TableCellRenderer TIME_RENDERER = new TimeRenderer();
-        final TableCellRenderer DATE_RENDERER = new DateRenderer();
-        final TableCellRenderer DATETIME_RENDERER = new DateTimeRenderer();
-        final TableCellRenderer STRING_RENDERER = new StringRenderer();
-        final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (null == value) {
-                return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof String) {
-                Component c = STRING_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setTableCellToolTip(c, value);
-                return c;
-            } else if (value instanceof Number) {
-                return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof Timestamp) {
-                return DATETIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof Date) {
-                return DATE_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof Time) {
-                return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (value instanceof Boolean) {
-                return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setTableCellToolTip(c, value);
-                return c;
-            }
-        }
-
-        private void setTableCellToolTip(Component c, Object value) {
-            if (c instanceof JComponent) {
-                String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>"; // NOI18N
-                tooltip += DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;"); // NOI18N
-                tooltip += "</td></tr></table></html>"; // NOI18N
-                ((JComponent) c).setToolTipText(tooltip);
-            }
-        }
-    }
-
-    private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
-
-        static Color green = new Color(0, 128, 0);
-        static Color gray = new Color(245, 245, 245);
-        DataView dataView;
-
-        public UpdatedResultSetCellRenderer(DataView dView) {
-            dataView = dView;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
-            if (value == null) {
-                return c;
-            }
-
-            if (isSelected) {
-                if (value.equals(obj)) {
-                    c.setForeground(gray);
-                } else {
-                    c.setForeground(Color.ORANGE);
-                }
-            } else {
-                if (value.equals(obj)) {
-                    c.setForeground(table.getForeground());
-                } else {
-                    c.setForeground(green);
-                }
-            }
-            return c;
-        }
-    }
-
-    private class JTableHeaderImpl extends JTableHeader {
-
-        public JTableHeaderImpl(TableColumnModel cm) {
-            super(cm);
-        }
-
-        @Override
-        public String getToolTipText(MouseEvent e) {
-            return getColumnToolTipText(e);
-        }
-    }
-
-    private class ResultSetTableCellEditor extends DefaultCellEditor {
-
-        protected Object val;
-        protected boolean editable = true;
-
-        public ResultSetTableCellEditor(final JTextField textField) {
-            super(textField);
-            textField.setFont(getFont());
-            delegate = new EditorDelegate() {
-
-                @Override
-                public void setValue(Object value) {
-                    val = value;
-                    textField.setText((value != null) ? value.toString() : ""); // NOI18N
-                }
-
-                @Override
-                public boolean isCellEditable(EventObject evt) {
-                    int clickcount;
-                    if (evt instanceof MouseEvent) {
-                        clickcount = 2;
-                        return ((MouseEvent) evt).getClickCount() >= clickcount;
-                    }
-                    return true;
-                }
-
-                @Override
-                public Object getCellEditorValue() {
-                    String txtVal = textField.getText();
-                    if (val == null && txtVal.equals("")) { // NOI18N
-                        return null;
-                    } else {
-                        try {
-                            int col = getEditingColumn();
-                            DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
-                            return DBReadWriteHelper.validate(txtVal, dbcol);
-                        } catch (Exception ex) {
-                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                            return txtVal;
-                        }
-                    }
-                }
-            };
-
-            textField.addActionListener(delegate);
-            textField.addKeyListener(new Control0KeyListener());
-        }
-
-        public ResultSetTableCellEditor(final JCheckBox checkBox) {
-            super(checkBox);
-            checkBox.setFont(getFont());
-            delegate = new EditorDelegate() {
-
-                @Override
-                public void setValue(Object value) {
-                    val = value;
-                    checkBox.setSelected((value != null) ? checkBox.isSelected() : false); // NOI18N
-                }
-
-                @Override
-                public boolean isCellEditable(EventObject evt) {
-                    int clickcount;
-                    if (evt instanceof MouseEvent) {
-                        clickcount = 2;
-                        return ((MouseEvent) evt).getClickCount() >= clickcount;
-                    }
-                    return true;
-                }
-
-                @Override
-                public Object getCellEditorValue() {
-                    Boolean bolVal = new Boolean(checkBox.isSelected());
-                    if (val == null && !checkBox.isSelected()) { // NOI18N
-                        return null;
-                    } else {
-                        return bolVal;
-                    }
-                }
-            };
-
-            checkBox.addActionListener(delegate);
-            checkBox.addKeyListener(new Control0KeyListener());
-        }
-
-        protected void setEditable(int column, Component c) {
-            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
-            if (dbCol.isGenerated()) {
-                editable = false;
-            } else if (!tablePanel.isEditable()) {
-                editable = false;
-            } else {
-                editable = dbCol.isEditable();
-            }
-            c.setEnabled(editable);
-        }
-    }
-
-    private class NumberEditor extends ResultSetTableCellEditor {
-
-        public NumberEditor(final JTextField textField) {
-            super(textField);
-            ((JTextField) getComponent()).setHorizontalAlignment(JTextField.RIGHT);
-        }
-    }
-
-    private class Control0KeyListener implements KeyListener {
-
-        public Control0KeyListener() {
-        }
-
-        public void keyTyped(KeyEvent e) {
-        }
-
-        public void keyPressed(KeyEvent e) {
-            if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
-
-                int row = getSelectedRow();
-                int col = getSelectedColumn();
-                if (row == -1) {
-                    return;
-                }
-                editCellAt(row, col);
-
-                TableCellEditor editor = getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
-                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
-                        setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    }
-                    setRowSelectionInterval(row, row);
-                }
-            }
-        }
-
-        public void keyReleased(KeyEvent e) {
-        }
-    }
-
-    public class TableSelectionListener implements ListSelectionListener {
-
-        JTable table;
-
-        TableSelectionListener(JTable table) {
-            this.table = table;
-        }
-
-        public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
-                int first = e.getFirstIndex();
-                if (first >= 0 && tablePanel.isEditable()) {
-                    tablePanel.enableDeleteBtn(true);
-                } else {
-                    tablePanel.enableDeleteBtn(false);
-                }
-            }
-        }
-    }
-
-    public class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {
-
-        private JButton customEditorButton = new JButton("...");
-        private JPanel panel = new JPanel(new BorderLayout());
-        private JTable table;
-        private int row, column;
-
-        public StringTableCellEditor(final JTextField textField) {
-            super(textField);
-            customEditorButton.addActionListener(this);
-
-            // ui-tweaking
-            customEditorButton.setFocusable(false);
-            customEditorButton.setFocusPainted(false);
-            customEditorButton.setMargin(new Insets(0, 0, 0, 0));
-            customEditorButton.setPreferredSize(new Dimension(20, 10));
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            panel.removeAll();
-            Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-            setEditable(column, c);
-
-            panel.add(c);
-            panel.add(customEditorButton, BorderLayout.EAST);
-            panel.revalidate();
-            panel.repaint();
-
-            this.table = table;
-            this.row = row;
-            this.column = column;
-            return panel;
-        }
-
-        public final void actionPerformed(ActionEvent e) {
-            super.cancelCellEditing();
-            editCell(table, row, column);
-        }
-
-        protected void editCell(JTable table, int row, int column) {
-            JTextArea textArea = new JTextArea(10, 50);
-            Object value = table.getValueAt(row, column);
-            if (value != null) {
-                textArea.setText((String) value);
-                textArea.setCaretPosition(0);
-                textArea.setEditable(editable);
-            }
-            JScrollPane pane = new JScrollPane(textArea);
-            Component parent = WindowManager.getDefault().getMainWindow();
-
-            if (editable) {
-                int result = JOptionPane.showOptionDialog(parent, pane, table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-                if (result == JOptionPane.OK_OPTION) {
-                    table.setValueAt(textArea.getText(), row, column);
-                }
-            } else {
-                JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
-            }
-        }
-    }
-
-    public class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor {
-
-        public BooleanTableCellEditor(JCheckBox cb) {
-            super(cb);
-            cb.setHorizontalAlignment(0);
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-            setEditable(column, c);
-            return c;
         }
     }
 }

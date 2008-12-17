@@ -41,8 +41,12 @@
 
 package org.netbeans.test.ide;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.lang.reflect.Method;
 import junit.framework.Test;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -126,7 +130,7 @@ public class WhitelistTest extends JellyTestCase {
 
         Thread.sleep(1000);
 
-        WatchProjects.waitScanFinished();
+        waitParsingFinished();
 
         System.out.println("TRACE 2 " + (System.currentTimeMillis() - start));
 
@@ -150,11 +154,51 @@ public class WhitelistTest extends JellyTestCase {
         File projectsDir = new File(getDataDir(), projectPath);
         Object prj = ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
-        OpenProjects.getDefault().openProjects().get();
-        WatchProjects.waitScanFinished();
+        waitParsingFinished();
     }
 
     public void openLime6Project() throws Exception {
         openProject("lime6");
     }
+
+    private static void waitParsingFinished() throws Exception {
+        Project[] arr = OpenProjects.getDefault().openProjects().get();
+        assertEquals("One project is open", 1, arr.length);
+        assertEquals("project dir is OK", "lime6", arr[0].getProjectDirectory().getNameExt());
+
+        class R implements Runnable {
+            boolean done;
+            public void run() {
+                if (done) {
+                    return;
+                }
+                if (EventQueue.isDispatchThread()) {
+                    done = true;
+                    ScanDialog.runWhenScanFinished(this, "Test waits scanning finished");
+                } else {
+                    try {
+                        EventQueue.invokeAndWait(this);
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
+        }
+        R run = new R();
+
+        run.run();
+
+
+        Class<?> taskClass = Class.forName("org.netbeans.modules.tasklist.impl.TaskManagerImpl");
+        Method getter = taskClass.getDeclaredMethod("getInstance");
+        Object taskManager = getter.invoke(null);
+        Method working = taskClass.getDeclaredMethod("isWorking");
+        working.setAccessible(true);
+        if (Boolean.TRUE.equals(working.invoke(taskManager))) {
+            Method waiter = taskClass.getDeclaredMethod("waitFinished");
+            waiter.setAccessible(true);
+            waiter.invoke(taskManager);
+        }
+    }
+
 }

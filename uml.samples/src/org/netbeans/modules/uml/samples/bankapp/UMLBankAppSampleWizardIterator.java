@@ -55,12 +55,14 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.project.UMLProjectGenerator;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
@@ -80,8 +82,6 @@ public class UMLBankAppSampleWizardIterator
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
-
-    private FileObject umlProjectZipFO;
     private FileObject readmeFO;
     
     public UMLBankAppSampleWizardIterator()
@@ -117,14 +117,12 @@ public class UMLBankAppSampleWizardIterator
 
         File javaPrjDir = 
             FileUtil.normalizeFile((File)wiz.getProperty("projdir")); // NOI18N
-        
-        //javaPrjDir.mkdirs();
         FileObject template = Templates.getTemplate(wiz);
         FileObject javaPrjFO = FileUtil.createFolder(javaPrjDir);
-        unZipFile(template.getInputStream(), javaPrjFO, false);
+         unZipFile(template.getInputStream(), javaPrjFO);
+        UMLLogger.logMessage("Java path in sample wizard: "+wiz.getProperty("projdir")+"; Normalized path: "+javaPrjDir+"; Java Project Name: "+wiz.getProperty("name"), Level.INFO);
         
         renameJavaProjectTokens(javaPrjDir, wiz.getProperty("name").toString()); // NOI18N
-        
         // Always open top dir as a project:
         resultSet.add(javaPrjFO);
         
@@ -248,7 +246,7 @@ public class UMLBankAppSampleWizardIterator
     {}
     
     private void unZipFile(
-        InputStream source, FileObject projectRoot, boolean isUmlPrj)
+        InputStream source, FileObject projectRoot)
         throws IOException
     {
         try
@@ -273,15 +271,8 @@ public class UMLBankAppSampleWizardIterator
                         OutputStream out = fo.getOutputStream(lock);
                         try
                         {
-                            if (!isUmlPrj)
-                            {
-                                if (fo.getNameExt().equals("umlProject.zip")) // NOI18N
-                                    umlProjectZipFO = fo;
-
-                                else if (fo.getName().equals("README")) // NOI18N
+                            if (fo.getName().equals("README")) // NOI18N
                                     readmeFO = fo;
-                            }
-
                             FileUtil.copy(str, out);
                         }
                         
@@ -290,7 +281,6 @@ public class UMLBankAppSampleWizardIterator
                             out.close();
                         }
                     }
-                    
                     finally
                     {
                         lock.releaseLock();
@@ -326,10 +316,7 @@ public class UMLBankAppSampleWizardIterator
     private void renameJavaProjectTokens(
         File javaPrjDir, String javaPrjName)
     {
-        File[] files = javaPrjDir.listFiles();
-
-        String[] args = {javaPrjName};
-        
+        File[] files = javaPrjDir.listFiles();        
         for (int i=0; i < files.length; i++)
         {
             if (files[i].isDirectory() && 
@@ -339,13 +326,11 @@ public class UMLBankAppSampleWizardIterator
 
                 try
                 {
-                    xml = new FileWriter(files[i].getAbsolutePath() + 
-                        File.separatorChar + "project.xml"); // NOI18N
-
+                    File projectXml=new File(new File(javaPrjDir,files[i].getName()),"project.xml");
+                    UMLLogger.logMessage("Project file for replacement: "+projectXml, Level.INFO);
+                    xml = new FileWriter(projectXml); // NOI18N
                     xml.flush();
-
-                    xml.write(MessageFormat.format(
-                        FILE_CONTENTS_JAVA_PROJECT_XML, args));
+                    xml.write(MessageFormat.format(FILE_CONTENTS_JAVA_PROJECT_XML, javaPrjName));
                 }
                 
                 catch (IOException ex)

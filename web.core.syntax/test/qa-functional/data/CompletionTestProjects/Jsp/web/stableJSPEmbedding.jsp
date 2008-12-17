@@ -26,7 +26,7 @@ color red
 
 <!-- completion for CSS style import -->
 <%--CC
-<style> @| </style>
+<style> | </style>
 @import
 <style> @import </style>
 --%>
