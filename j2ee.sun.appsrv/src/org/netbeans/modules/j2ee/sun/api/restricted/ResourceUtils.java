@@ -393,8 +393,7 @@ public class ResourceUtils implements WizardConstants{
          }
      }
          
-    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
-    public static void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
+     public static void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
         try{
             ObjectName objName = new ObjectName(MAP_RESOURCES);
             String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
@@ -1768,7 +1767,10 @@ public class ResourceUtils implements WizardConstants{
                         FileInputStream in = new java.io.FileInputStream(oldResource);
                         Resources existResource = DDProvider.getDefault().getResourcesGraph(in);
                         newGraph = getResourceGraphs(newGraph, existResource);
-                        oldResource.delete();
+                        boolean success = oldResource.delete();
+                        if(! success){
+                            LOG.log(Level.INFO, "Unable to delete *.sun-resource file(s)");
+                        }
                     }
                     createFile(targetFolder, newGraph);
                 } catch (Exception ex) {
