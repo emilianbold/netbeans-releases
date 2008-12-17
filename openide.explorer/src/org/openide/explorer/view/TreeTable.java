@@ -1039,21 +1039,14 @@ class TreeTable extends JTable implements Runnable {
         /**
          * Overridden to always set the size to the height of the TreeTable
          * and the width of column 0.  The paint() method will translate the
-         * coordinates to the correct position. */
+         * coordinates to the correct position. 
+         * Fire width property change so that we can revalidate horizontal scrollbar in TreeTableView.
+         */
         @Override
         public void setBounds(int x, int y, int w, int h) {
             transY = -y;
-            super.setBounds(0, 0, TreeTable.this.getColumnModel().getColumn(0).getWidth(), TreeTable.this.getHeight());
-        }
-
-        /* Fire width property change so that we can revalidate horizontal scrollbar in TreeTableView.
-         */
-        @Override
-        @SuppressWarnings("deprecation")
-        public void reshape(int x, int y, int w, int h) {
             int oldW = getWidth();
-            super.setBounds (x, y, w, h);
-
+            super.setBounds(0, 0, TreeTable.this.getColumnModel().getColumn(0).getWidth(), TreeTable.this.getHeight());
             if (oldW != w) {
                 firePropertyChange("width", oldW, w);
             }
