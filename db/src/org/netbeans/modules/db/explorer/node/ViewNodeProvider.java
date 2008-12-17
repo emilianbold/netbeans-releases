@@ -46,6 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
@@ -53,7 +59,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ViewNodeProvider extends NodeProvider {
 
@@ -67,39 +73,59 @@ public class ViewNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ViewNodeProvider createInstance(Lookup lookup) {
                 ViewNodeProvider provider = new ViewNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private final MetadataElementHandle<Schema> schemaHandle;
 
     private ViewNodeProvider(Lookup lookup) {
         super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    private void setup() {
-        update();
+    public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+        MetadataUtils.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Schema schema = schemaHandle.resolve(metaData);
+                    wrapper.setObject(schema);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
-    private synchronized void update() {
+    protected synchronized void initialize() {
+        
         List<Node> newList = new ArrayList<Node>();
 
-        Collection<View> views = schema.getViews();
-        for (View view : views) {
-            Collection<Node> matches = getNodes(view);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(view);
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Schema schema = getSchema();
 
-                newList.add(ViewNode.create(lookup));
+            if (schema != null) {
+                Collection<View> views = schema.getViews();
+                for (View view : views) {
+                    MetadataElementHandle<View> handle = MetadataElementHandle.create(view);
+                    Collection<Node> matches = getNodes(handle);
+                    if (matches.size() > 0) {
+                        newList.addAll(matches);
+                    } else {
+                        NodeDataLookup lookup = new NodeDataLookup();
+                        lookup.add(connection);
+                        lookup.add(handle);
+
+                        newList.add(ViewNode.create(lookup, this));
+                    }
+                }
             }
         }
 

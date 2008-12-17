@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 
 /**
  *
@@ -58,14 +59,14 @@ public class ViewListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ViewListNode instance
      */
-    public static ViewListNode create(NodeDataLookup dataLookup) {
-        ViewListNode node = new ViewListNode(dataLookup);
+    public static ViewListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ViewListNode node = new ViewListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private ViewListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ViewListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {

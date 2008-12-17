@@ -39,16 +39,44 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.RemoveColumn;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
+import org.netbeans.modules.db.explorer.action.RefreshAction;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
  * @author Rob Englander
  */
-public class ColumnNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/column.gif";
+public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvider {
+    private static final String COLUMN = "org/netbeans/modules/db/resources/column.gif";
+    private static final String PRIMARY = "org/netbeans/modules/db/resources/columnPrimary.gif";
+    private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
     private static final String FOLDER = "Column"; //NOI18N
 
     /**
@@ -57,38 +85,174 @@ public class ColumnNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ColumnNode instance
      */
-    public static ColumnNode create(NodeDataLookup dataLookup) {
-        ColumnNode node = new ColumnNode(dataLookup);
+    public static ColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ColumnNode node = new ColumnNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Column column;
+    private String name = ""; // NOI18N
+    private String icon;
+    private final MetadataElementHandle<Column> columnHandle;
+    private final DatabaseConnection connection;
 
-    private ColumnNode(NodeDataLookup lookup) {
-        super(lookup, FOLDER);
+    private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
+        columnHandle = getLookup().lookup(MetadataElementHandle.class);
+        connection = getLookup().lookup(DatabaseConnection.class);
+    }
+
+    @Override
+    public synchronized void refresh() {
+        setupNames();
+        super.refresh();
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        column = getLookup().lookup(Column.class);
+        setupNames();
+    }
 
+    private void setupNames() {
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Column column = getColumn();
+            if (column != null) {
+                name = column.getName();
+                icon = COLUMN;
+
+                Tuple tuple = column.getParent();
+                if (tuple instanceof Table) {
+                    Table table = (Table)tuple;
+                    PrimaryKey pkey = table.getPrimaryKey();
+
+                    boolean found = false;
+                    if (pkey != null) {
+                        Collection<Column> columns = pkey.getColumns();
+                        for (Column c : columns) {
+                            if (c.getName().equals(column.getName())) {
+                                found = true;
+                                icon = PRIMARY;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        Collection<Index> indexes = table.getIndexes();
+                        for (Index index : indexes) {
+                            Collection<IndexColumn> columns = index.getColumns();
+                            for (IndexColumn c : columns) {
+                                if (c.getName().equals(column.getName())) {
+                                    found = true;
+                                    icon = INDEX;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public Column getColumn() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        DataWrapper<Column> wrapper = new DataWrapper<Column>();
+        MetadataUtils.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Column column = columnHandle.resolve(metaData);
+                    wrapper.setObject(column);
+                }
+            }
+        );
+
+        return wrapper.getObject();
+    }
+
+    public Schema getSchema() {
+        Column column = getColumn();
+        return (Schema)column.getParent().getParent();
+    }
+
+    public Tuple getTuple() {
+        Column column = getColumn();
+        return column.getParent();
+    }
+
+    public int getPosition() {
+        Column column = getColumn();
+        return column.getPosition();
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = connection.getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
+
+            String schema = MetadataUtils.getSchemaWorkingName(getSchema());
+
+            command.setObjectOwner(schema);
+            command.removeColumn(getName());
+            command.execute();
+        } catch (Exception e) {
+        }
+
+        SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = connection.getConnector();
+        return connector.supportsCommand(Specification.REMOVE_COLUMN);
     }
 
     @Override
     public String getName() {
-        return column.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return column.getName();
+        return getName();
     }
 
     @Override
     public String getIconBase() {
-        return ICONBASE;
+        return icon;
     }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
+        return sheet;
+    }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.COLUMN_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createColumnData(connection.getDatabaseConnection(),
+                        connection.findJDBCDriver(), getTuple().getName(), getName());
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Column"); //NOI18N
+    }
+
 }
