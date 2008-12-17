@@ -56,9 +56,9 @@ public class FileChooser extends JFileChooser {
         super();
         setFileHidingEnabled(false);
         setFileSelectionMode(mode);
-        setDialogTitle(titleText); // NOI18N
+        setDialogTitle(titleText);
         if (buttonText != null) {
-            setApproveButtonText(buttonText); // NOI18N
+            setApproveButtonText(buttonText);
         }
         if (filters != null) {
             for (int i = 0; i < filters.length; i++) {
@@ -136,7 +136,7 @@ public class FileChooser extends JFileChooser {
             if (getSelectedFile().exists()) {
                 setCurrectChooserFile(getSelectedFile());
                 Preferences pref = NbPreferences.forModule(FileChooser.class);
-                pref.put("last-file", getCurrectChooserFile().getAbsolutePath());
+                pref.put("last-file", getCurrectChooserFile().getAbsolutePath()); // NOI18N
             }
         }
         return ret;
