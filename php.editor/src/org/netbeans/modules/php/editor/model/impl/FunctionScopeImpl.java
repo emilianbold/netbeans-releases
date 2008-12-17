@@ -108,8 +108,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
 
     //old contructors
 
-    public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
+    public VariableNameImpl createElement(Program program, Variable node, String typeName) {
+        VariableNameImpl retval = new VariableNameImpl(this, program, node, false, typeName);
         addElement(retval);
         return retval;
     }

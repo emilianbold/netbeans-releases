@@ -62,10 +62,11 @@ import org.openide.util.Union2;
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
     private boolean globallyVisible;
+    private VarAssignmentImpl defaultValue;
     VariableNameImpl(IndexScopeImpl inScope, IndexedVariable indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
-                new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
+                new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true, null);
     }
     VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
@@ -73,12 +74,15 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
-    VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible) {
-        this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
+    VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible, String typeName) {
+        this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible, typeName);
     }
-    private VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
+    private VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible, String typeName) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
         this.globallyVisible = globallyVisible;
+        if (typeName != null) {
+            defaultValue = new VarAssignmentImpl(this, inScope, offsetRange, offsetRange, typeName);
+        }
     }
 
     static String toName(Variable node) {
@@ -140,7 +144,12 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public List<? extends TypeScope> getTypes(int offset) {
         List<? extends TypeScope> empty = Collections.emptyList();
         VarAssignment assignment = findAssignment(offset);
-        return (assignment != null) ? assignment.getTypes() : empty;
+        List<? extends TypeScope> retval = (assignment != null) ? assignment.getTypes() : empty;
+        if (retval.isEmpty() && defaultValue != null) {
+            retval = defaultValue.getTypes();
+        }
+
+        return retval;
     }
 
     public boolean isGloballyVisible() {
