@@ -266,7 +266,7 @@ ${cursor}]]>
     </codetemplate>
 <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.vcom" abbreviation="vcom" contexts="php-code">
         <code>
-<![CDATA[/* @var $$${VARIABLE nextVariable default="variable"} ${VAR_TYPE default="type"} */]]>
+<![CDATA[/* @var $$${VARIABLE variableFromNextAssignment default="variable"} ${VAR_TYPE default="type"} */]]>
         </code>
     </codetemplate>
 

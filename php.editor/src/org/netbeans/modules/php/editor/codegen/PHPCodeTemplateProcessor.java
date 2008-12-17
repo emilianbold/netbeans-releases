@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
-    private final static String NEXT_VARIABLE_NAME = "nextVariable"; //NOI18N
+    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT = "variableFromNextAssignment"; //NOI18N
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -98,7 +98,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             if (NEW_VAR_NAME.equals(hintName)) {
                 return newVarName(param.getValue());
             }
-            else if (NEXT_VARIABLE_NAME.equals(hintName)) {
+            else if (VARIABLE_FROM_NEXT_ASSIGNMENT.equals(hintName)) {
                 return getNextVariableName();
             }
         }
