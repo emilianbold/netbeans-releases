@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -308,7 +309,12 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
         //if (cls == null) return Collections.emptyList();
         //assert cls.getName().equals(className);
-        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
+        Collection<IndexedFunction> methods = null;
+        if (cls instanceof InterfaceScope) {
+            methods = getIndex().getMethods(null, cls.getName(), queryName, nameKind, PHPIndex.ANY_ATTR);
+        } else {
+            methods = getIndex().getMethods(null, cls.getName(), queryName, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
+        }
         for (IndexedFunction idxFunc : methods) {
             MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
             retval.add(msi);
@@ -321,7 +327,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends MethodScopeImpl> getMethods(TypeScopeImpl cls, final int... modifiers) {
-        return getMethods(cls, "", modifiers);
+        return getMethods(NameKind.PREFIX, cls, "", modifiers);
     }
 
     public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, TypeScopeImpl cls, final String... queryName) {

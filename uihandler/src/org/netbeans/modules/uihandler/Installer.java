@@ -1019,7 +1019,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return decodeButtons(res, url, DataType.DATA_UIGESTURE);
     }
 
-    static String decodeButtons(Object res, URL[] url, DataType dataType) {
+    private static String decodeButtons(Object res, URL[] url, DataType dataType) {
         if (res instanceof JButton) {
             JButton b = (JButton)res;
             Object post = b.getClientProperty("url"); // NOI18N
@@ -1036,7 +1036,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 try {
                     url[0] = new URL((String) post);
                 } catch (MalformedURLException ex) {
-                    LOG.log(Level.WARNING, "Cannot decode URL: " + post, ex); // NOI18N
+                    LOG.log(Level.INFO, "Cannot decode URL: " + post, ex); // NOI18N
                     url[0] = null;
                     return null;
                 }
@@ -1400,6 +1400,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                } catch (IllegalStateException ex){
+                    catchConnectionProblem(ex);
+                    continue;
                 } catch (java.net.SocketTimeoutException ex) {
                     catchConnectionProblem(ex);
                     continue;

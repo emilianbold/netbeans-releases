@@ -51,8 +51,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 
 /**
@@ -61,12 +63,12 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
  */
 public class ErrorIncludesModel implements ListModel {
     private List<String> names = new ArrayList<String>();
-    private List<List<CsmInclude>> includeList = new ArrayList<List<CsmInclude>>();
+    private List<List<CsmOffsetable>> includeList = new ArrayList<List<CsmOffsetable>>();
     private int errorFiles;
     private int errorIncludes;
-    public ErrorIncludesModel(List<CsmInclude> includes){
+    public ErrorIncludesModel(List<CsmInclude> includes, List<CsmErrorDirective> errors){
         errorIncludes = includes.size();
-        Map<String, List<CsmInclude>> tree = new TreeMap<String,List<CsmInclude>>();
+        Map<String, List<CsmOffsetable>> tree = new TreeMap<String,List<CsmOffsetable>>();
         Set<CsmFile> files = new HashSet<CsmFile>();
         for (Iterator<CsmInclude> it = includes.iterator(); it.hasNext(); ){
             CsmInclude incl = it.next();
@@ -77,15 +79,25 @@ public class ErrorIncludesModel implements ListModel {
             } else {
                 name = "\""+incl.getIncludeName()+"\""; // NOI18N
             }
-            List<CsmInclude> list = tree.get(name);
+            List<CsmOffsetable> list = tree.get(name);
             if (list == null){
-                list = new ArrayList<CsmInclude>();
+                list = new ArrayList<CsmOffsetable>();
                 tree.put(name,list);
             }
             list.add(incl);
         }
-        for (Iterator<Entry<String, List<CsmInclude>>> it = tree.entrySet().iterator(); it.hasNext(); ){
-            Entry<String, List<CsmInclude>> entry = it.next();
+        for (CsmErrorDirective error : errors) {
+            files.add(error.getContainingFile());
+            String name = error.getText().toString();
+            List<CsmOffsetable> list = tree.get(name);
+            if (list == null) {
+                list = new ArrayList<CsmOffsetable>();
+                tree.put(name, list);
+            }
+            list.add(error);            
+        }
+        for (Iterator<Entry<String, List<CsmOffsetable>>> it = tree.entrySet().iterator(); it.hasNext(); ){
+            Entry<String, List<CsmOffsetable>> entry = it.next();
             names.add(entry.getKey());
             includeList.add(entry.getValue());
         }
@@ -108,7 +120,7 @@ public class ErrorIncludesModel implements ListModel {
         return names.get(index);
     }
     
-    public List<CsmInclude> getElementList(int index){
+    public List<CsmOffsetable> getElementList(int index){
         return includeList.get(index);
     }
     

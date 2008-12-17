@@ -41,34 +41,48 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNode extends BaseNode {
+public class TableListNode extends BaseNode implements SchemaProvider {
     private static final String NAME = "Tables"; // NOI18N
     private static final String DISPLAYNAME = "Tables"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "TableList"; //NOI18N
 
-    /** 
+    private MetadataElementHandle<Schema> schemaHandle;
+    private final DatabaseConnection connection;
+
+    /**
      * Create an instance of TableListNode.
      * 
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableListNode instance
      */
-    public static TableListNode create(NodeDataLookup dataLookup) {
-        TableListNode node = new TableListNode(dataLookup);
+    public static TableListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        TableListNode node = new TableListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private TableListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private TableListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
     
     protected void initialize() {
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
     
     @Override
@@ -84,5 +98,20 @@ public class TableListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+        MetadataUtils.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Schema schema = schemaHandle.resolve(metaData);
+                    wrapper.setObject(schema);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 }

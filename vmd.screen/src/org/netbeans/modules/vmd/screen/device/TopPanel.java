@@ -346,8 +346,14 @@ public class TopPanel extends JPanel {
                 } else {
                     if (component == null)
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.<DesignComponent>emptySet());
-                    else if (! document.getSelectedComponents().contains(component))
-                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.singleton(component));
+                    else if (! document.getSelectedComponents().contains(component)){
+                        if ( component.getPresenter( ScreenDisplayPresenter.class) != null ){
+                            component.getPresenter( ScreenDisplayPresenter.class).
+                                    getView().requestFocusInWindow();
+                        }
+                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, 
+                                Collections.singleton(component));
+                    }
                 }
             }
         });

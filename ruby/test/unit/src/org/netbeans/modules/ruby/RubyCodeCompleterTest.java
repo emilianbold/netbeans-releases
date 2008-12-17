@@ -343,7 +343,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     }
 
     public void testConstantMethods() throws Exception {
-        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^");
+        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^s");
+    }
+
+    public void testConstantAssignedToVariableMethods() throws Exception {
+        checkCompletion("testfiles/constants.rb", "puts b.down^case");
     }
 
     public void testConstants() throws Exception {

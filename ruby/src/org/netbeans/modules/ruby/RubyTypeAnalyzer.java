@@ -40,20 +40,12 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import java.util.Set;
 import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.GlobalVarNode;
 import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
@@ -87,16 +79,13 @@ import org.openide.filesystems.FileObject;
  */
 public final class RubyTypeAnalyzer {
 
-    static final String UNKNOWN_TYPE = "__nb_any__"; // NOI18N
-    static final Set<String> UNKNOWN_TYPE_SET = Collections.singleton(UNKNOWN_TYPE);
-    
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
 
     private RubyIndex index;
 
     /** Map from variable or field(etc) name to type. */
-    private Map<String, Set<String>> cachedTypesForSymbol;
+    private Map<String, RubyType> cachedTypeForSymbol;
     
     private final int astOffset;
     private final int lexOffset;
@@ -128,39 +117,37 @@ public final class RubyTypeAnalyzer {
      * given block}.
      *
      * @param symbol symbol for which to infer the type
-     * @return inferred types; might be empty, but never <code>null</code>,
-     *   might contains {@link #UNKNOWN_TYPE}.
+     * @return inferred {@link RubyType types}, never <code>null</code>;
      */
-    public Set<? extends String> inferTypes(final String symbol) {
-        if (cachedTypesForSymbol == null) {
-            cachedTypesForSymbol = new HashMap<String, Set<String>>();
+    public RubyType inferTypes(final String symbol) {
+        if (cachedTypeForSymbol == null) {
+            cachedTypeForSymbol = new HashMap<String, RubyType>();
 
             if (fileObject != null) {
-                initFileTypeVars(cachedTypesForSymbol);
+                initFileTypeVars(cachedTypeForSymbol);
             }
 
             if (doc != null) {
-                initTypeAssertions(cachedTypesForSymbol);
+                initTypeAssertions(cachedTypeForSymbol);
             }
 
-            analyze(root, cachedTypesForSymbol, true);
+            analyze(root, cachedTypeForSymbol, true);
         }
 
-        Set<String> types = cachedTypesForSymbol.get(symbol);
-        if (types == null) {
-            types = Collections.emptySet();
+        RubyType type = cachedTypeForSymbol.get(symbol);
+        if (type == null) {
+            type = RubyType.createUnknown();
         }
-        boolean emptyTypes = types.isEmpty() || types.equals(UNKNOWN_TYPE_SET);
-
+        
         // Special cases
-        if (emptyTypes) {
+        if (!type.isKnown()) {
             // Handle migrations. This needs better flow analysis of block
             // variables but do quickfix for 6.0 which will work in most
             // migrations files.
             if ("t".equals(symbol) && root.nodeId == NodeType.DEFSNODE) { // NOI18N
-                String n = ((INameNode) root).getName();
+                String n = getName(root);
                 if ("up".equals(n) || ("down".equals(n))) { // NOI18N
-                    return Collections.singleton("ActiveRecord::ConnectionAdapters::TableDefinition"); // NOI18N
+                    return RubyType.create("ActiveRecord::ConnectionAdapters::TableDefinition"); // NOI18N
                 }
             }
         }
@@ -170,15 +157,15 @@ public final class RubyTypeAnalyzer {
         // such that we can do the right thing when you operate
         // on an Array. However, clients should only see the "raw" (and real)
         // type.
-        if (!emptyTypes) {
-            for (String type : types) {
-                if (type.startsWith("Array<")) { // NOI18N
-                    return Collections.singleton("Array"); // NOI18N
+        if (type.isKnown()) {
+            for (String realType : type.getRealTypes()) {
+                if (realType.startsWith("Array<")) { // NOI18N
+                    return RubyType.ARRAY;
                 }
             }
         }
 
-        return types;
+        return type;
     }
 
     /**
@@ -188,7 +175,7 @@ public final class RubyTypeAnalyzer {
      */
     private void analyze(
             final Node node,
-            final Map<String, Set<String>> typesForSymbol,
+            final Map<String, RubyType> typeForSymbol,
             final boolean override) {
         // Avoid including definitions appearing later in the context than the
         // caret. (This only works for local variable analysis; for fields it
@@ -212,12 +199,12 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                Set<? extends String> types = inferTypesOfRHS(node, index, typesForSymbol);
+                RubyType type = inferTypesOfRHS(node, index, typeForSymbol);
 
                 // null element in types set means that we are not able to infer
                 // the expression
-                String symbol = ((INameNode) node).getName();
-                maybePutTypesForSymbol(typesForSymbol, symbol, types, override);
+                String symbol = getName(node);
+                maybePutTypesForSymbol(typeForSymbol, symbol, type, override);
                 break;
             }
 //        case ITERNODE: {
@@ -226,62 +213,62 @@ public final class RubyTypeAnalyzer {
 //        }
 //        case CALLNODE: {
 //            // Look for known calls whose return types we can guess
-//            String name = ((INameNode)node).getName();
+//            String name = getName(node);
 //            if (name.startsWith("find")) {
 //            }
 //        }
         }
 
         if (node.nodeId == NodeType.IFNODE) {
-            analyzeIfNode((IfNode) node, typesForSymbol);
+            analyzeIfNode((IfNode) node, typeForSymbol);
         } else {
             for (Node child : node.childNodes()) {
                 if (child.isInvisible()) {
                     continue;
                 }
-                analyze(child, typesForSymbol, override);
+                analyze(child, typeForSymbol, override);
             }
         }
     }
 
-    private void analyzeIfNode(final IfNode ifNode, final Map<String, Set<String>> typesForSymbol) {
+    private void analyzeIfNode(final IfNode ifNode, final Map<String, RubyType> typeForSymbol) {
         Node thenBody = ifNode.getThenBody();
-        Map<String, Set<String>> ifTypesAccu = new HashMap<String, Set<String>>();
+        Map<String, RubyType> ifTypesAccu = new HashMap<String, RubyType>();
         if (thenBody != null) { // might happen with e.g. 'unless'
             analyze(thenBody, ifTypesAccu, true);
         }
 
         Node elseBody = ifNode.getElseBody();
-        Map<String, Set<String>> elseTypesAccu = new HashMap<String, Set<String>>();
+        Map<String, RubyType> elseTypesAccu = new HashMap<String, RubyType>();
         if (elseBody != null) {
             analyze(elseBody, elseTypesAccu, true);
         }
 
-        Map<String, Set<String>> allTypesForSymbol = new HashMap<String, Set<String>>();
+        Map<String, RubyType> allTypeForSymbol = new HashMap<String, RubyType>();
 
         // accumulate 'then' and 'else' bodies into one collection so they will
         // not override each other
-        for (Map.Entry<String, Set<String>> entry : elseTypesAccu.entrySet()) {
-            maybePutTypesForSymbol(allTypesForSymbol, entry.getKey(), entry.getValue(), false);
+        for (Map.Entry<String, RubyType> entry : elseTypesAccu.entrySet()) {
+            maybePutTypesForSymbol(allTypeForSymbol, entry.getKey(), entry.getValue(), false);
         }
-        for (Map.Entry<String, Set<String>> entry : ifTypesAccu.entrySet()) {
-            maybePutTypesForSymbol(allTypesForSymbol, entry.getKey(), entry.getValue(), false);
+        for (Map.Entry<String, RubyType> entry : ifTypesAccu.entrySet()) {
+            maybePutTypesForSymbol(allTypeForSymbol, entry.getKey(), entry.getValue(), false);
         }
 
         // if there is no 'then' or 'else' body do not override assignment in
         // parent scope(s)
-        for (Map.Entry<String, Set<String>> entry : allTypesForSymbol.entrySet()) {
+        for (Map.Entry<String, RubyType> entry : allTypeForSymbol.entrySet()) {
             String var = entry.getKey();
             boolean override = ifTypesAccu.containsKey(var) && elseTypesAccu.containsKey(var);
-            maybePutTypesForSymbol(typesForSymbol,var, entry.getValue(), override);
+            maybePutTypesForSymbol(typeForSymbol, var, entry.getValue(), override);
         }
     }
 
     /** Called on AsgnNodes to compute RHS. */
-    private Set<? extends String> inferTypesOfRHS(
+    private RubyType inferTypesOfRHS(
             final Node node,
             final RubyIndex index,
-            final Map<String, Set<String>> typesForSymbol) {
+            final Map<String, RubyType> typeForSymbol) {
         // If it's a simple assignment, e.g. "= 5" it will have a single
         // child node
         // If it's a method call, it's slightly more complicated:
@@ -290,52 +277,54 @@ public final class RubyTypeAnalyzer {
         // and a ConstNode receiver (could be a composite too)
         List<Node> childs = node.childNodes();
         if (childs.size() != 1) {
-            return Collections.singleton(UNKNOWN_TYPE);
+            return RubyType.createUnknown();
         }
-        return inferTypes(childs.get(0), typesForSymbol, index);
+        return inferTypes(childs.get(0), typeForSymbol, index);
     }
 
-    private Set<? extends String> inferTypes(
+    private RubyType inferTypes(
             final Node node,
-            final Map<String, Set<String>> typesForSymbol,
+            final Map<String, RubyType> typeForSymbol,
             final RubyIndex index) {
-        if (typesForSymbol != null) {
+        if (typeForSymbol != null) {
             switch (node.nodeId) {
                 case LOCALVARNODE:
-                    return getTypesForSymbol(typesForSymbol, ((LocalVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case DVARNODE:
-                    return getTypesForSymbol(typesForSymbol, ((DVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case INSTVARNODE:
-                    return getTypesForSymbol(typesForSymbol, ((InstVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case GLOBALVARNODE:
-                    return getTypesForSymbol(typesForSymbol, ((GlobalVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case CLASSVARNODE:
-                    return getTypesForSymbol(typesForSymbol, ((ClassVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
+                case COLON2NODE:
+                    return getTypesForSymbol(typeForSymbol, getName(node));
             }
         }
         return inferTypes(node, index);
     }
 
-    static Set<? extends String> inferTypesOfRHS(final Node node) {
+    static RubyType inferTypesOfRHS(final Node node) {
         return inferTypesOfRHS(node, null);
     }
 
-    static Set<? extends String> inferTypesOfRHS(final Node node, final RubyIndex index) {
+    static RubyType inferTypesOfRHS(final Node node, final RubyIndex index) {
         List<Node> childs = node.childNodes();
         if (childs.size() != 1) {
-            return Collections.singleton(UNKNOWN_TYPE);
+            return RubyType.createUnknown();
         }
         return inferTypes(childs.get(0), index);
     }
 
-    private static Set<? extends String> inferTypes(
+    private static RubyType inferTypes(
             final Node node,
             final RubyIndex index) {
         switch (node.nodeId) {
             case CALLNODE:
                 return RubyMethodTypeInferencer.inferTypeFor((CallNode) node, index);
         }
-        return Collections.singleton(getTypeForLiteral(node));
+        return getTypeForLiteral(node);
     }
 
     /**
@@ -349,44 +338,44 @@ public final class RubyTypeAnalyzer {
      * @return Ruby type as used in Ruby code, e.g. <code>String</code>,
      *   <code>Array</code>,  <code>Hash</code>,  <code>Regexp</code>, ...
      */
-    static String getTypeForLiteral(final Node node) {
+    static RubyType getTypeForLiteral(final Node node) {
         switch (node.nodeId) {
             case ARRAYNODE:
             case ZARRAYNODE:
-                return "Array"; // NOI18N
+                return RubyType.ARRAY; // NOI18N
             case STRNODE:
             case DSTRNODE:
             case XSTRNODE:
             case DXSTRNODE:
-                return "String"; // NOI18N
+                return RubyType.STRING; // NOI18N
             case FIXNUMNODE:
-                return "Fixnum"; // NOI18N
+                return RubyType.FIXNUM; // NOI18N
             case BIGNUMNODE:
-                return "Bignum"; // NOI18N
+                return RubyType.BIGNUM; // NOI18N
             case HASHNODE:
-                return "Hash"; // NOI18N
+                return RubyType.HASH; // NOI18N
             case REGEXPNODE:
             case DREGEXPNODE:
-                return "Regexp"; // NOI18N
+                return RubyType.REGEXP; // NOI18N
             case SYMBOLNODE:
             case DSYMBOLNODE:
-                return "Symbol"; // NOI18N
+                return RubyType.SYMBOL; // NOI18N
             case FLOATNODE:
-                return "Float"; // NOI18N
+                return RubyType.FLOAT; // NOI18N
             case NILNODE:
                 // NilImplicitNode - don't use it, the type is really unknown!
                 if (!node.isInvisible()) {
-                    return "NilClass"; // NOI18N
+                    return RubyType.NIL_CLASS; // NOI18N
                 }
                 break;
             case TRUENODE:
-                return "TrueClass"; // NOI18N
+                return RubyType.TRUE_CLASS; // NOI18N
             case FALSENODE:
-                return "FalseClass"; // NOI18N
+                return RubyType.FALSE_CLASS; // NOI18N
             //} else if (child instanceof RangeNode) {
-            //    return "Range"; // NOI18N
+            //    return RubyType.RANGE; // NOI18N
         }
-        return UNKNOWN_TYPE;
+        return RubyType.createUnknown();
     }
 
     private static final String[] RAILS_CONTROLLER_VARS = new String[]{
@@ -411,7 +400,7 @@ public final class RubyTypeAnalyzer {
     };
 
     /** Look at the file type and see if we know about some known variables */
-    private void initFileTypeVars(final Map<String, Set<String>> typesForSymbol) {
+    private void initFileTypeVars(final Map<String, RubyType> typesForSymbol) {
         assert fileObject != null;
         
         String ext = fileObject.getExt();
@@ -448,7 +437,7 @@ public final class RubyTypeAnalyzer {
     }
 
     /** Look at type assertions in the document and initialize name context */
-    private void initTypeAssertions(final Map<String, Set<String>> typesForSymbol) {
+    private void initTypeAssertions(final Map<String, RubyType> typesForSymbol) {
         if (root instanceof MethodDefNode) {
             // Look for parameter hints
             List<String> rdoc = AstUtilities.gatherDocumentation(null, doc, root);
@@ -520,45 +509,37 @@ public final class RubyTypeAnalyzer {
         }
     }
 
-    private static Set<? extends String> getTypesForSymbol(
-            final Map<String, Set<String>> typesForSymbol, final String name) {
-        Set<String> type = typesForSymbol.get(name);
-        if (type == null) {
-            type = RubyTypeAnalyzer.UNKNOWN_TYPE_SET;
-        }
-        return type;
+    private static RubyType getTypesForSymbol(
+            final Map<String, RubyType> typeForSymbol, final String name) {
+        RubyType type = typeForSymbol.get(name);
+        return type == null ? RubyType.createUnknown() : type;
     }
 
-    private void maybePutTypeForSymbol(
-            final Map<String, Set<String>> typesForSymbol,
-            final String symbol,
-            final String type,
-            final boolean override) {
-        Set<String> types = typesForSymbol.get(symbol);
-        if (types == null) {
-            types = new HashSet<String>();
-            typesForSymbol.put(symbol, types);
-        }
-        if (override) {
-            types.clear();
-        }
-        types.add(type);
+    private void maybePutTypeForSymbol(Map<String, RubyType> typesForSymbol, String var, String type, boolean override) {
+        maybePutTypesForSymbol(typesForSymbol, var, RubyType.create(type), override);
     }
 
     private void maybePutTypesForSymbol(
-            final Map<String, Set<String>> typesForSymbol,
+            final Map<String, RubyType> typeForSymbol,
             final String symbol,
-            final Set<? extends String> _types,
+            final RubyType newType,
             final boolean override) {
-        Set<String> types = typesForSymbol.get(symbol);
-        if (types == null) {
-            types = new HashSet<String>();
-            typesForSymbol.put(symbol, types);
+        RubyType mapType = typeForSymbol.get(symbol);
+        if (mapType == null || override) {
+            mapType = new RubyType();
+            typeForSymbol.put(symbol, mapType);
         }
-        if (override) {
-            types.clear();
-        }
-        types.addAll(_types);
+        mapType.append(newType);
     }
 
+    /**
+     * Throws {@link ClassCastException} if the given node is not instance of
+     * {@link INameNode}.
+     *
+     * @param node instance of {@link INameNode}.
+     * @return node's name
+     */
+    private String getName(final Node node) {
+        return ((INameNode) node).getName();
+    }
 }

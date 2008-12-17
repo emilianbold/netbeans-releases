@@ -265,6 +265,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby</friend>
+                <friend>org.netbeans.modules.ruby.merbproject</friend>
                 <friend>org.netbeans.modules.ruby.platform</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>

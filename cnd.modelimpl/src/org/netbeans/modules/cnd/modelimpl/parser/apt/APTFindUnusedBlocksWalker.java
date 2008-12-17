@@ -32,8 +32,11 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
@@ -87,7 +90,14 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
         handleIf(apt, val);
         return val;
     }
-    
+
+    protected @Override void onErrorNode(APT apt) {
+        super.onErrorNode(apt);
+        int startOffset = apt.getEndOffset();
+        int endOffset = this.csmFile.getText().length();
+        addBlock(startOffset, endOffset);
+    }
+
     private void handleIf(APT opener, boolean value) {
         APT closer = opener.getNextSibling();
         if (closer != null && !value) {

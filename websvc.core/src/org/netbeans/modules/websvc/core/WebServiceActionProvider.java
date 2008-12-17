@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.core;
 
+import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.spi.support.AddOperationActionProvider;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.util.Collection;
@@ -76,10 +78,10 @@ public class WebServiceActionProvider {
     /** Find InvokeOperationCookie for given FileObject (target source)
      * and given web service operation
      */
-    public static InvokeOperationCookie getInvokeOperationAction(FileObject targetSource, Node node) {
+    public static InvokeOperationCookie getInvokeOperationAction(FileObject targetSource) {
         Collection<? extends InvokeOperationActionProvider> instances = invokeOperationActionProviders.allInstances();
         for (InvokeOperationActionProvider impl: instances) {
-            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(targetSource,node);
+            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(targetSource);
             if (cookie != null) {
                 return cookie;
             }

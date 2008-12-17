@@ -602,9 +602,12 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         setData(listData);
         if (selectedIndex >= 0) {
             ensureIndexIsVisible(selectedIndex);
+            checkSelection(selectedIndex);
             setSelectedIndex(selectedIndex);
         }
-        checkSelection();
+        else {
+            checkSelection();
+        }
         if (downButton.isEnabled()) {
             downButton.requestFocus();
         } else {
@@ -629,9 +632,12 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         setData(listData);
         if (selectedIndex >= 0) {
             ensureIndexIsVisible(selectedIndex);
+            checkSelection(selectedIndex);
             setSelectedIndex(selectedIndex);
         }
-        checkSelection();
+        else {
+            checkSelection();
+        }
         if (upButton.isEnabled()) {
             upButton.requestFocus();
         } else {
@@ -659,9 +665,11 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         selectedIndex = (selectedIndex >= listData.size()) ? selectedIndex - 1 : selectedIndex;
         if (selectedIndex >= 0) {
             ensureIndexIsVisible(selectedIndex);
+            checkSelection(selectedIndex);
             setSelectedIndex(selectedIndex);
+        } else {
+            checkSelection();
         }
-        checkSelection();
         if (removeButton.isEnabled()) {
             removeButton.requestFocus();
         } else {
@@ -730,7 +738,10 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     protected void checkSelection() {
-        int i = getSelectedIndex();
+        checkSelection(getSelectedIndex());
+    }
+
+    protected void checkSelection(int i) {
         if (i >= 0 && listData.size() > 0) {
             addButton.setEnabled(true);
             copyButton.setEnabled(true);
