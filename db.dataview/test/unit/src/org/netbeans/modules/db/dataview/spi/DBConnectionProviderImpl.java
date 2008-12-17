@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author jawed
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.dataview.spi.DBConnectionProvider.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.dataview.spi.DBConnectionProvider.class)
 public class DBConnectionProviderImpl implements DBConnectionProvider{
 
 /** Creates a new instance of DBConnectionProviderImpl */

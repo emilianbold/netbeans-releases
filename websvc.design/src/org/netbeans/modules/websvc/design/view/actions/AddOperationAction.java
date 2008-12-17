@@ -54,6 +54,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,16 +109,12 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
         }
     }
 
-    public void addOperation(FileObject implementationClass) {
+    public void addOperation() {
         actionPerformed(null);
     }
 
-    public boolean isEnabled(FileObject implClass) {
-        return isEnabled();
-    }
-
     @Override
-    public boolean isEnabled() {
+    public boolean isEnabledInEditor(Lookup nodeLookup) {
         return service != null && service.getWsdlUrl() == null;
     }
 }

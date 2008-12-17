@@ -42,7 +42,6 @@ package org.netbeans.modules.ruby;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -295,7 +294,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                         index.getMethods(text, null, NameKind.EXACT_NAME, RubyIndex.ALL_SCOPE);
 
                     if (methods.size() == 0) {
-                        methods = index.getMethods(text, null, NameKind.EXACT_NAME);
+                        methods = index.getMethods(text, NameKind.EXACT_NAME);
                     }
 
                     DeclarationLocation l = getMethodDeclaration(info, text, methods, 
@@ -389,14 +388,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
 
                 Call call = Call.getCallType(doc, th, lexOffset);
 
-                Set<? extends String> types = Collections.emptySet();
-                String type = call.getType();
-                if (type != null) {
-                    types = Collections.singleton(type);
-                }
+                RubyType type = call.getType();
                 String lhs = call.getLhs();
 
-                if (types.isEmpty() && lhs != null && closest != null &&
+                if (!type.isKnown() && lhs != null && closest != null &&
                         call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(closest, path);
 
@@ -404,7 +399,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
-                        types = analyzer.inferTypes(lhs);
+                        type = analyzer.inferTypes(lhs);
                     }
                 }
 
@@ -413,7 +408,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 // in which case I should show it, but that is discouraged and people
                 // SHOULD override initialize, which is what the default new method will
                 // call for initialization.
-                if (types.isEmpty()) { // unknown type - search locally
+                if (!type.isKnown()) { // search locally
 
                     if (name.equals("new")) { // NOI18N
                         name = "initialize"; // NOI18N
@@ -433,7 +428,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     fqn = "Object";
                 }
 
-                return findMethod(name, fqn, types, call, info, astOffset, lexOffset, path, closest, index);
+                return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
             } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
                 // try Class usage
                 RubyClassDeclarationFinder classDF = new RubyClassDeclarationFinder(info, root, path, index, closest);
@@ -910,15 +905,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
         return null;
     }
     
-    private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
+    private DeclarationLocation findMethod(String name, String possibleFqn, RubyType type, Call call,
         CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
-        return findMethod(name, possibleFqn, Collections.singleton(type), call,
-                info, caretOffset, lexOffset, path, closest, index);
-    }
-    
-    private DeclarationLocation findMethod(String name, String possibleFqn, Set<? extends String> types, Call call,
-        CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
-        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, types, call, index);
+        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, type, call, index);
 
         int astOffset = caretOffset;
         DeclarationLocation l = getMethodDeclaration(info, name, methods, 
@@ -928,10 +917,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
     }
 
     private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn, 
-            Set<? extends String> types, Call call, RubyIndex index) {
+            RubyType type, Call call, RubyIndex index) {
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         String fqn = possibleFqn;
-        if (types.isEmpty() && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
+        if (!type.isKnown() && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
             fqn = possibleFqn;
 
             // Possibly a class on the left hand side: try searching with the class as a qualifier.
@@ -951,7 +940,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             }
         }
 
-        if (!types.isEmpty() && methods.size() == 0) {
+        if (type.isKnown() && methods.size() == 0) {
             fqn = possibleFqn;
 
             // Possibly a class on the left hand side: try searching with the class as a qualifier.
@@ -959,8 +948,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             // Test::Unit when there's a call to Foo.x, we'll try
             // Test::Unit::Foo, and Test::Foo
             while (methods.size() == 0 && fqn != null && (fqn.length() > 0)) {
-                for (String type : types) {
-                    methods.addAll(index.getInheritedMethods(fqn + "::" + type, name, NameKind.EXACT_NAME));
+                for (String realType : type.getRealTypes()) {
+                    methods.addAll(index.getInheritedMethods(fqn + "::" + realType, name, NameKind.EXACT_NAME));
                 }
 
                 int f = fqn.lastIndexOf("::");
@@ -974,19 +963,17 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
 
             if (methods.size() == 0) {
                 // Add methods in the class (without an FQN)
-                for (String type : types) {
-                    methods.addAll(index.getInheritedMethods(type, name, NameKind.EXACT_NAME));
+                for (String realType : type.getRealTypes()) {
+                    methods.addAll(index.getInheritedMethods(realType, name, NameKind.EXACT_NAME));
                 }
                 
                 if (methods.size() == 0) {
-                    for (String type : types) {
-                        if (type == null) { // unknown type
-                            continue;
-                        }
-                        if (type.indexOf("::") == -1) {
+                    for (String realType : type.getRealTypes()) {
+                        assert realType != null : "Should not be null";
+                        if (realType.indexOf("::") == -1) {
                             // Perhaps we specified a class without its FQN, such as "TableDefinition"
                             // -- go and look for the full FQN and add in all the matches from there
-                            Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
+                            Set<IndexedClass> classes = index.getClasses(realType, NameKind.EXACT_NAME, false, false, false);
                             Set<String> fqns = new HashSet<String>();
                             for (IndexedClass cls : classes) {
                                 String f = cls.getFqn();
@@ -995,7 +982,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                                 }
                             }
                             for (String f : fqns) {
-                                if (!f.equals(type)) {
+                                if (!f.equals(realType)) {
                                     methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
                                 }
                             }
@@ -1007,33 +994,18 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             // Fall back to ALL methods across classes
             // Try looking at the libraries too
             if (methods.size() == 0) {
-                fqn = possibleFqn;
-                WHILE: while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
-                    for (String type : types) {
-                        methods.addAll(index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME));
-
-                        int f = fqn.lastIndexOf("::");
-
-                        if (f == -1) {
-                            break WHILE;
-                        } else {
-                            fqn = fqn.substring(0, f);
-                        }
-                    }
-                }
+                methods.addAll(index.getMethods(name, NameKind.EXACT_NAME));
             }
         }
 
         if (methods.size() == 0) {
-            if (types.isEmpty()) {
-                methods.addAll(index.getMethods(name, null, NameKind.EXACT_NAME));
+            if (!type.isKnown()) {
+                methods.addAll(index.getMethods(name, NameKind.EXACT_NAME));
             } else {
-                for (String type : types) {
-                    methods.addAll(index.getMethods(name, type, NameKind.EXACT_NAME));
-                }
+                methods.addAll(index.getMethods(name, type, NameKind.EXACT_NAME));
             }
-            if (methods.size() == 0 && !types.isEmpty()) {
-                methods = index.getMethods(name, null, NameKind.EXACT_NAME);
+            if (methods.size() == 0 && type.isKnown()) {
+                methods = index.getMethods(name, NameKind.EXACT_NAME);
             }
         }
         
@@ -1129,7 +1101,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     return null;
                 } else {
                     // A method?
-                    Set<IndexedMethod> methods = index.getMethods(text, null, NameKind.EXACT_NAME);
+                    Set<IndexedMethod> methods = index.getMethods(text, NameKind.EXACT_NAME);
 
                     BaseDocument bdoc = (BaseDocument)doc;
                     IndexedMethod candidate =
@@ -1163,16 +1135,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             boolean done = call.isMethodExpected();
             boolean skipInstanceMethods = call.isStatic();
 
-            Set<? extends String> types = Collections.emptySet();
-            String callType = call.getType();
-            if (callType != null) {
-                types = Collections.singleton(callType);
-            }
+            RubyType type = call.getType();
             String lhs = call.getLhs();
             NameKind kind = NameKind.EXACT_NAME;
 
             Node node = callNode;
-            if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+            if ((!type.isKnown()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
 
                 if (method != null) {
@@ -1180,15 +1148,15 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     // up and do it a bit more cleverly
                     RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
                             (BaseDocument)doc, info.getFileObject());
-                    types = analyzer.inferTypes(lhs);
+                    type = analyzer.inferTypes(lhs);
                 }
             }
 
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
-            if (!types.isEmpty()) {
+            if (type.isKnown()) {
                 if ("self".equals(lhs)) {
-                    types = Collections.singleton(fqn);
+                    type = RubyType.create(fqn);
                     skipPrivate = false;
                 } else if ("super".equals(lhs)) {
                     skipPrivate = false;
@@ -1196,17 +1164,17 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     IndexedClass sc = index.getSuperclass(fqn);
 
                     if (sc != null) {
-                        types = Collections.singleton(sc.getFqn());
+                        type = RubyType.create(sc.getFqn());
                     } else {
                         ClassNode cls = AstUtilities.findClass(path);
 
                         if (cls != null) {
-                            types = Collections.singleton(AstUtilities.getSuperclass(cls));
+                            type = RubyType.create(AstUtilities.getSuperclass(cls));
                         }
                     }
 
-                    if (types.isEmpty()) {
-                        types = Collections.singleton("Object"); // NOI18N
+                    if (!type.isKnown()) {
+                        type = RubyType.OBJECT; // NOI18N
                     }
                 }
             }
@@ -1214,11 +1182,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 fqn = "Object";
             }
 
-            Set<IndexedMethod> methods = getApplicableMethods(name, fqn, types, call, index);
+            Set<IndexedMethod> methods = getApplicableMethods(name, fqn, type, call, index);
             
             if (name.equals("new")) { // NOI18N
                 // Also look for initialize
-                Set<IndexedMethod> initializeMethods = getApplicableMethods("initialize", fqn, types, call, index);
+                Set<IndexedMethod> initializeMethods = getApplicableMethods("initialize", fqn, type, call, index);
                 methods.addAll(initializeMethods);
             }
 
@@ -1305,7 +1273,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 String clz = method.substring(0, methodIndex);
                 method = method.substring(methodIndex+1);
 
-                return findMethod(method, null, clz, Call.UNKNOWN, info, astOffset, lexOffset, path, closest, index);
+                return findMethod(method, null, RubyType.create(clz), Call.UNKNOWN,
+                        info, astOffset, lexOffset, path, closest, index);
             }
         }
 
@@ -1357,7 +1326,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
             String clz = method.substring(0, methodIndex);
             method = method.substring(methodIndex+1);
 
-            return findMethod(method, null, clz, Call.UNKNOWN, info, astOffset, lexOffset, path, closest, index);
+            return findMethod(method, null, RubyType.create(clz), Call.UNKNOWN, info, astOffset, lexOffset, path, closest, index);
         }
         
         return DeclarationLocation.NONE;
@@ -1456,11 +1425,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
 
             candidates = new HashSet<IndexedMethod>();
 
-            String type = call.getType();
+            RubyType type = call.getType();
 
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
-            if ((type != null) && (type.length() > 0)) {
+            if (type.isKnown()) {
                 String lhs = call.getLhs();
 
                 String fqn = AstUtilities.getFqnName(path);
@@ -1469,7 +1438,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 // (and picking just one of them), I should use the FIRST match as the
                 // one to show! (closest super class or include definition)
                 if ("self".equals(lhs)) {
-                    type = fqn;
+                    type = RubyType.create(fqn);
                     skipPrivate = false;
                 } else if ("super".equals(lhs)) {
                     skipPrivate = false;
@@ -1477,17 +1446,17 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     IndexedClass sc = index.getSuperclass(fqn);
 
                     if (sc != null) {
-                        type = sc.getFqn();
+                        type = RubyType.create(sc.getFqn());
                     } else {
                         ClassNode cls = AstUtilities.findClass(path);
 
                         if (cls != null) {
-                            type = AstUtilities.getSuperclass(cls);
+                            type = RubyType.create(AstUtilities.getSuperclass(cls));
                         }
                     }
                 }
 
-                if ((type != null) && (type.length() > 0)) {
+                if (type.isKnown()) {
                     // Possibly a class on the left hand side: try searching with the class as a qualifier.
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
@@ -1543,7 +1512,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 for (IndexedMethod m : candidates) {
                     // AppendIO might be the lhs - e.g. AppendIO.new, yet its FQN is Shell::AppendIO
                     // so do suffix comparison
-                    if ((m.getIn() != null) && m.getIn().endsWith(type)) {
+                    if ((m.getIn() != null) && type.isSingleton() && m.getIn().endsWith(type.first())) {
                         cs.add(m);
                     }
                 }

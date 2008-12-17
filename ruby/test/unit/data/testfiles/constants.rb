@@ -17,6 +17,9 @@ module Colors
 
 end
 
-Colors::RED.byte
+Colors::RED.bytes
 Colors::Converter::VERSION
 puts GLOBAL_CONSTANT
+
+b = Colors::BLUE
+puts b.downcase

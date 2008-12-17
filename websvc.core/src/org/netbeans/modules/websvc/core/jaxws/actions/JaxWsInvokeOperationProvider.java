@@ -48,36 +48,30 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.Node;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.InvokeOperationActionProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider.class)
 public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvider {
-	public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource,Node node) {
+	public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
         Project project = FileOwnerQuery.getOwner(targetSource);
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        if(isJaxWsService(node)) {
-            if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXRPCProject(project) && !isJAXWSProject(project)) 
-                    ||(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJAXWSProject(project) && isJaxWsLibraryOnClasspath(targetSource)) ||
-                    (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || 
-                    projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))
-                    ) {
-                return new JaxWsInvokeOperation();
-            } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
-                return new JaxWsInvokeOperation();
-            }
-            // Tomcat on J2EE14 project Case
-            if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
-                return new JaxWsInvokeOperation();
-            }
+        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXRPCProject(project) && !isJAXWSProject(project))
+                ||(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJAXWSProject(project) && isJaxWsLibraryOnClasspath(targetSource)) ||
+                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE ||
+                projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))
+                ) {
+            return new JaxWsInvokeOperation();
+        } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
+            return new JaxWsInvokeOperation();
+        }
+        // Tomcat on J2EE14 project Case
+        if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
+            return new JaxWsInvokeOperation();
         }
         return null;
     }
@@ -130,14 +124,6 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
         classPath = ClassPath.getClassPath(targetSource,ClassPath.BOOT);
         if (classPath != null) {
             if (classPath.findResource("javax/xml/ws/Service.class")!=null) return true;
-        }
-        return false;
-    }
-
-    private boolean isJaxWsService(Node node) {
-        if (node!=null) {
-            return //node.getLookup().lookup(WsdlService.class)!=null ||
-                    node.getLookup().lookup(WsdlOperation.class)!=null;
         }
         return false;
     }
