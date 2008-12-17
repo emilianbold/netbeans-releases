@@ -56,6 +56,10 @@ import java.awt.event.ActionEvent;
  */
 public final class DeleteAction extends SystemAction {
 
+    public DeleteAction(){
+        putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("DELETE"));    // NOI18N
+    }
+
     public void actionPerformed(ActionEvent e) {
         final DesignDocument activeDocument = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (activeDocument == null)
@@ -93,5 +97,4 @@ public final class DeleteAction extends SystemAction {
     public String getName() {
         return NbBundle.getMessage(DeleteAction.class, "NAME_DeleteAction"); // NOI18N
     }
-
 }
