@@ -383,7 +383,7 @@ public class HttpMonitorHelper {
     
     private static void startModuleSpy (final ModuleSpy spy) {
         // trying to hang a listener on monitor module 
-        res = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
+        res = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
         java.util.Iterator it = res.allInstances ().iterator ();
         final String moduleId = spy.getModuleId();        
        // boolean found = false;
