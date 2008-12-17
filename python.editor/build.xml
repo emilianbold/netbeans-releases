@@ -36,5 +36,7 @@
         </chmod>
         <copy todir="${cluster}/pythonstubs" file="external/pythonstubs-2_6.egg" overwrite="true"/>
         <unzip dest="${cluster}" src="external/preindexed.zip"/>
+        <copy todir="${cluster}/coverage" file="scripts/coverage.py" overwrite="true"/>
+        <copy todir="${cluster}/coverage" file="scripts/coverage_wrapper.py" overwrite="true"/>
     </target>
 </project>

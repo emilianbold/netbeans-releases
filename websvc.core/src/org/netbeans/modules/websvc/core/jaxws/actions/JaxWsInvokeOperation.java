@@ -41,34 +41,36 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author mkuchtiak
  */
 public class JaxWsInvokeOperation implements InvokeOperationCookie {
-    
-    /** Creates a new instance of JaxWsAddOperation */
+
+    /** Creates a new instance of JaxWsAddOperation. */
     public JaxWsInvokeOperation() {
     }
-    
-    /*
-     * Adds a WS invocation to the class
-     */
-    public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-        JaxWsCodeGenerator.insertMethodCall(targetSourceType, getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
-    }
-    
-    private DataObject getCurrentDataObject(Node n) {
-        return n.getCookie(DataObject.class);
+
+    @Override
+    public void invokeOperation(int targetSourceType, Lookup targetNodeLookup, Lookup sourceNodeLookup) {
+        JaxWsCodeGenerator.insertMethodCall(targetSourceType,
+                getCurrentDataObject(targetNodeLookup),
+                targetNodeLookup,
+                sourceNodeLookup);
     }
 
-    public boolean isWebServiceOperation(Node node) {
-        return node.getLookup().lookup(WsdlOperation.class)!=null;
+    private DataObject getCurrentDataObject(Lookup targetNodeLookup) {
+        return targetNodeLookup.lookup(DataObject.class);
     }
+
+    @Override
+    public boolean isWebServiceOperation(Lookup sourceNodeLookup) {
+        return sourceNodeLookup.lookup(WsdlOperation.class) != null;
+    }
+
 }

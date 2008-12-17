@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.Lookup;
@@ -88,7 +89,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /** Creates new form EditServerListDialog */
-    public EditServerListDialog(ServerUpdateCache cache) {
+    public EditServerListDialog(ServerUpdateCache cache, boolean tempUseWizard) {
         initComponents();
         initServerList(cache);
         desc = null;
@@ -96,6 +97,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
+        useWizard = tempUseWizard;
     }
     
     private void initListeners() {
@@ -300,14 +302,20 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lbReason.setText(" "); // NOI18N
         tfReason.setVisible(false);
     }
-    
+
+    private boolean useWizard;
+
     public void actionPerformed(ActionEvent evt) {
         Object o = evt.getSource();
         
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
-                showAddServerDialog();
+                if (useWizard) {
+                    CreateHostWizardIterator.invokeMe();
+                } else {
+                    showAddServerDialog();
+                }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
                 int idx = lstDevHosts.getSelectedIndex();
                 if (idx > 0) {

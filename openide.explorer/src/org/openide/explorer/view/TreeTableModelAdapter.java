@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -67,49 +67,60 @@ class TreeTableModelAdapter extends NodeTableModel {
     }
 
     // NodeTableModel methods
+    @Override
     public void setNodes(Node[] nodes) {
         nodeTableModel.setNodes(nodes);
     }
 
+    @Override
     public void setProperties(Node.Property[] props) {
         nodeTableModel.setProperties(props);
     }
 
+    @Override
     protected Node.Property getPropertyFor(Node node, Node.Property prop) {
         return nodeTableModel.getPropertyFor(node, prop);
     }
 
+    @Override
     Node nodeForRow(int row) {
         return Visualizer.findNode(tree.getPathForRow(row).getLastPathComponent());
     }
 
+    @Override
     Node.Property propertyForColumn(int column) {
         return nodeTableModel.propertyForColumn(column - 1);
     }
 
     // Wrappers, implementing TableModel interface. 
+    @Override
     public int getColumnCount() {
         return nodeTableModel.getColumnCount() + 1;
     }
 
+    @Override
     public String getColumnName(int column) {
         return (column == 0) ? Visualizer.findNode(tree.getModel().getRoot()).getDisplayName()
                              : nodeTableModel.getColumnName(column - 1);
     }
 
+    @Override
     public Class getColumnClass(int column) {
         return (column == 0) ? TreeTableModelAdapter.class : nodeTableModel.getColumnClass(column - 1);
     }
 
+    @Override
     public int getRowCount() {
         return tree.getRowCount();
     }
 
+    @Override
     public Object getValueAt(int row, int column) {
         return (column == 0) ? tree.getPathForRow(row).getLastPathComponent()
                              : nodeTableModel.getPropertyFor(nodeForRow(row), propertyForColumn(column));
     }
 
+    @Override
     public boolean isCellEditable(int row, int column) {
         if (column == 0) {
             return true;
@@ -128,6 +139,7 @@ class TreeTableModelAdapter extends NodeTableModel {
         return false;
     }
 
+    @Override
     public void setValueAt(Object value, int row, int column) {
     }
 

@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -443,9 +444,19 @@ public class ImportProject {
                 }
             }
         }
+        saveMakeConfigurationDescriptor();
+    }
+
+    private void saveMakeConfigurationDescriptor(){
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        makeConfigurationDescriptor.setModified();
         makeConfigurationDescriptor.save();
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
+           }
+        });
     }
 
     private void postModelDiscovery(final boolean isFull) {
@@ -500,9 +511,7 @@ public class ImportProject {
                         }
                     }
                 }
-                ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-                makeConfigurationDescriptor.save();
+                saveMakeConfigurationDescriptor();
             }
         }
     }

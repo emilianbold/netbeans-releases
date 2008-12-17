@@ -57,7 +57,7 @@ class ManageProfilesDialogOperator extends NbDialogOperator {
         for (String string : items) {
             new JListOperator(this).selectItem(string);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException ex) {
                 // ...
             }
@@ -92,5 +92,10 @@ class ManageProfilesDialogOperator extends NbDialogOperator {
     @Override
     public void ok() {
         new JButtonOperator(this, "OK").push();
+    }
+
+    @Override
+    public void cancel() {
+        new JButtonOperator(this, "Cancel").push();
     }
 }

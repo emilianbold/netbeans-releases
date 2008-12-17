@@ -400,12 +400,14 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.debugger</friend>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
+                <friend>org.netbeans.modules.ruby.merbproject</friend>
                 <friend>org.netbeans.modules.ruby.platform</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <package>org.netbeans.modules.ruby.rubyproject</package>
+                <package>org.netbeans.modules.ruby.rubyproject.queries</package>
                 <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.spi</package>
                 <package>org.netbeans.modules.ruby.rubyproject.ui</package>
