@@ -66,7 +66,7 @@ import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
- * Defines the various (BOOT and SOURCE) class paths for a PHP project.
+ * Defines the various (BOOT, SOURCE, TEST) class paths for a PHP project.
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePathImplementation, PropertyChangeListener {
 
@@ -76,6 +76,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private static enum ClassPathCache {
         PLATFORM,
         SOURCE,
+        TEST,
     }
 
     private final AntProjectHelper helper;
@@ -145,6 +146,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return dirs.get(0);
     }
 
+    private FileObject getTestPath() {
+        List<FileObject> dirs = getDirs(PhpProjectProperties.TEST_SRC_DIR);
+        if (dirs.size() == 0) {
+            // non-existing directory
+            return null;
+        }
+        assert dirs.size() == 1; // one source directory is allowed
+        return dirs.get(0);
+    }
+
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
@@ -153,19 +164,27 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 return FileType.INTERNAL;
             }
         }
-        
+
 //        for (FileObject dir : PhpSourcePath.getPreindexedFolders()) {
 //            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
 //                return FileType.INTERNAL;
 //            }
 //        }
-        
+
         for (FileObject dir : getPlatformPath()) {
             if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
                 return FileType.INCLUDE;
             }
         }
-        FileObject path = getSrcPath();
+
+        // first check tests because test directory can be underneath sources directory
+        FileObject path = getTestPath();
+        if (path != null
+                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
+            return FileType.TEST;
+        }
+
+        path = getSrcPath();
         if (path != null
                 && (path.equals(file) || FileUtil.isParentOf(path, file))) {
             return FileType.SOURCE;
@@ -207,6 +226,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                                 ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
                                 evaluator, new String[] {PhpProjectProperties.SRC_DIR}));
                         cache.put(ClassPathCache.SOURCE, cp);
+                    }
+                }
+                break;
+            case TEST:
+                synchronized (cache) {
+                    cp = cache.get(ClassPathCache.TEST);
+                    if (cp == null) {
+                        // XXX test cannot be changed
+                        cp = ClassPathFactory.createClassPath(
+                                ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
+                                evaluator, new String[] {PhpProjectProperties.SRC_DIR, PhpProjectProperties.TEST_SRC_DIR}));
+                        cache.put(ClassPathCache.TEST, cp);
                     }
                 }
                 break;

@@ -39,7 +39,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -68,7 +67,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     /**
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots}
      **/
-    private boolean externalRootsRegistered;
+    private volatile boolean externalRootsRegistered;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -108,11 +107,14 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     private Sources initSources() {
         sourcesHelper = new SourcesHelper(helper, evaluator);
-        /*
-         * Main source root config.
-         */
-        String label = NbBundle.getMessage(PhpProject.class, "LBL_Node_Sources");
+
+        // main source root config.
+        String label = NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources");
         sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.SRC_DIR + "}", label, null, null); // NOI18N
+
+        // roots
+        label = NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests");
+        sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.TEST_SRC_DIR + "}", label, null, null); // NOI18N
 
         List<String> labels = new ArrayList<String>();
         List<String> roots = new ArrayList<String>();
@@ -138,6 +140,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         ProjectManager.mutex().readAccess(new Runnable() {
             public void run() {
                 EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                // sources
                 for (Entry<String, String> entry : props.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
@@ -145,7 +148,21 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                         continue;
                     }
                     if (PhpProjectProperties.SRC_DIR.equals(key)) {
-                        labels.add("dir"); // NOI18N
+                        labels.add(NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources"));
+                        roots.add(value);
+                    }
+                    continue;
+                }
+                // tests
+                // XXX really not sure how this should be done (in compatibility manner)
+                for (Entry<String, String> entry : props.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
+                    if (key.equals("${" + PhpProjectProperties.TEST_SRC_DIR + "}")) { // NOI18N
+                        continue;
+                    }
+                    if (PhpProjectProperties.TEST_SRC_DIR.equals(key)) {
+                        labels.add(NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests"));
                         roots.add(value);
                     }
                     continue;
@@ -154,22 +171,14 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         });
     }
 
-    /*
-     * implementation of AntProjectListener.
-     * Is not used now because we do not store data in  project xml file
-     * (e.g. customizer doesn't update this file)
-     */
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        // PhpSources is not interested in xml changes
-    }
-
     /** impl of PropertyChangeListener.
      * Is used to listen updates in project properties file
      * (e.g. if customizer updates this file)
      */
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
-        if (PhpProjectProperties.SRC_DIR.equals(property)) {
+        if (PhpProjectProperties.SRC_DIR.equals(property)
+                || PhpProjectProperties.TEST_SRC_DIR.equals(property)) {
            fireChange();
         }
     }

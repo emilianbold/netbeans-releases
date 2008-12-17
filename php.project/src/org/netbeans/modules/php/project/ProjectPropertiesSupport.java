@@ -93,6 +93,13 @@ public final class ProjectPropertiesSupport {
         return project.getSourcesDirectory();
     }
 
+    /**
+     * @return test sources directory or <code>null</code> (if not set up yet e.g.)
+     */
+    public static FileObject getTestDirectory(PhpProject project) {
+        return project.getTestsDirectory();
+    }
+
     public static FileObject getWebRootDirectory(PhpProject project) {
         return getSourceSubdirectory(project, project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT));
     }

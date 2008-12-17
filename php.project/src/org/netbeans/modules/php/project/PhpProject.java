@@ -100,7 +100,9 @@ public class PhpProject implements Project, AntProjectListener {
     private final PropertyEvaluator eval;
     // @GuardedBy(this)
     private FileObject sourcesDirectory;
-    private Lookup lookup;
+    // @GuardedBy(this)
+    private FileObject testsDirectory;
+    private final Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -110,7 +112,7 @@ public class PhpProject implements Project, AntProjectListener {
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         helper.addAntProjectListener(this);
-        initLookup(configuration);
+        lookup = createLookup(configuration);
     }
 
     public Lookup getLookup() {
@@ -160,23 +162,51 @@ public class PhpProject implements Project, AntProjectListener {
 
     private FileObject resolveSourcesDirectory() {
         // get the first source root
-        //  in fact, there should *always* be only 1 source root but see #141200, #141204 or #141229
         FileObject[] sourceObjects = Utils.getSourceObjects(this);
         if (sourceObjects.length > 0) {
             return sourceObjects[0];
         }
+        return restoreDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderRestored", "MSG_SourcesFolderTemporaryToProjectDirectory");
+    }
+
+    /**
+     * @return tests directory or <code>null</code>
+     */
+    synchronized FileObject getTestsDirectory() {
+        if (testsDirectory == null) {
+            testsDirectory = resolveTestsDirectory();
+        }
+        return testsDirectory;
+    }
+
+    private FileObject resolveTestsDirectory() {
+        // get the second source root
+        FileObject[] sourceObjects = Utils.getSourceObjects(this);
+        if (sourceObjects.length > 1) {
+            return sourceObjects[1];
+        }
+        // similar to source directory
+        String testsProperty = eval.getProperty(PhpProjectProperties.TEST_SRC_DIR);
+        if (testsProperty == null) {
+            // test directory not set yet
+            return null;
+        }
+        return restoreDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderRestored", "MSG_TestsFolderTemporaryToProjectDirectory");
+    }
+
+    private FileObject restoreDirectory(String propertyName, String infoMessageKey, String errorMessageKey) {
         // #144371 - source folder probably deleted => so:
         //  1. try to restore it - if it fails, then
         //  2. just return the project directory & warn user about impossibility of creating src dir
         String projectName = getName();
-        File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
-        if (srcDir.mkdirs()) {
+        File dir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(propertyName))));
+        if (dir.mkdirs()) {
             // original sources restored
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
-            return FileUtil.toFileObject(srcDir);
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
+            return FileUtil.toFileObject(dir);
         }
         // temporary set sources to project directory, do not store it anywhere
-        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderTemporaryToProjectDirectory", srcDir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
+        informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         return helper.getProjectDirectory();
     }
 
@@ -265,10 +295,10 @@ public class PhpProject implements Project, AntProjectListener {
         return getLookup().lookup(CopySupport.class);
     }
 
-    private void initLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration) {
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
 
-        lookup = Lookups.fixed(new Object[] {
+        return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
                 new Info(),
@@ -357,6 +387,7 @@ public class PhpProject implements Project, AntProjectListener {
             // clear reference so the next time the project is opened we can check it again
             synchronized (PhpProject.this) {
                 sourcesDirectory = null;
+                testsDirectory = null;
             }
 
             try {

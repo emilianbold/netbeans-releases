@@ -73,6 +73,8 @@ public final class PhpSourcePath {
         INCLUDE,
         /** Project sources. */
         SOURCE,
+        /** Project test sources. */
+        TEST,
         /** Unknown file type. */
         UNKNOWN,
     }

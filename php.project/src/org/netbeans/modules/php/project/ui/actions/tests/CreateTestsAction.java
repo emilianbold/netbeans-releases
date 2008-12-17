@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.Integer;
 import java.util.HashSet;
 import java.util.Queue;
@@ -47,6 +48,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -56,12 +59,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -179,33 +186,35 @@ public final class CreateTestsAction extends NodeAction {
     private Runnable getRunnable(final Node[] activatedNodes, final PhpUnit phpUnit) {
         return new Runnable() {
             public void run() {
-                Set<File> parents = new HashSet<File>();
+                Set<FileObject> failed = new HashSet<FileObject>();
+                Set<File> toOpen = new HashSet<File>();
                 boolean error = false;
                 for (Node node : activatedNodes) {
-                    FileObject fileObj = getFileObject(node);
-                    assert fileObj != null : "A valid file object not found for node: " + node;
+                    FileObject sourceFo = getFileObject(node);
+                    assert sourceFo != null : "A valid file object not found for node: " + node;
 
-                    File parent = FileUtil.toFile(fileObj.getParent());
-                    parents.add(parent);
+                    final File parent = FileUtil.toFile(sourceFo.getParent());
+                    final File generatedFile = getGeneratedFile(sourceFo, parent);
+                    final File testFile = getTestFile(sourceFo, generatedFile);
+                    if (testFile.isFile()) {
+                        // already exists
+                        toOpen.add(testFile);
+                        continue;
+                    }
 
                     ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit());
                     externalProcessBuilder = externalProcessBuilder.workingDirectory(parent);
                     externalProcessBuilder = externalProcessBuilder.addArgument("--skeleton-test"); // NOI18N
-                    externalProcessBuilder = externalProcessBuilder.addArgument(fileObj.getName());
+                    externalProcessBuilder = externalProcessBuilder.addArgument(sourceFo.getName());
                     ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
                     Future<Integer> result = service.run();
                     try {
-                        result.get();
-                        File testFile = new File(parent, fileObj.getName() + "Test.php"); // NOI18N
-                        assert testFile.isFile() : "Test file not found for " + fileObj;
-                        FileObject testFo = FileUtil.toFileObject(testFile);
-                        assert testFo != null : "File object not found for " + testFile;
-                        assert testFo.isValid() : "File object not valid for " + testFile;
-                        DataObject dobj = DataObject.find(testFo);
-                        EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                        ec.open();
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
+                        if (result.get() != 0) {
+                            // test not generated
+                            failed.add(sourceFo);
+                            continue;
+                        }
+                        toOpen.add(moveGeneratedFile(generatedFile, testFile));
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
@@ -216,9 +225,77 @@ public final class CreateTestsAction extends NodeAction {
                         break;
                     }
                 }
-                if (!parents.isEmpty()) {
-                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                if (!failed.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (FileObject file : failed) {
+                        sb.append(file.getNameExt());
+                        sb.append("\n");
+                    }
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
                 }
+
+                Set<File> toRefresh = new HashSet<File>();
+                for (File file : toOpen) {
+                    toRefresh.add(file.getParentFile());
+                    try {
+                        FileObject fo = FileUtil.toFileObject(file);
+                        assert fo != null : "File object not found for " + file;
+                        assert fo.isValid() : "File object not valid for " + file;
+                        DataObject dobj = DataObject.find(fo);
+                        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                        ec.open();
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                if (!toRefresh.isEmpty()) {
+                    FileUtil.refreshFor(toRefresh.toArray(new File[toRefresh.size()]));
+                }
+            }
+
+            private File getGeneratedFile(FileObject source, File parent) {
+                return new File(parent, source.getName() + "Test.php"); // NOI18N
+            }
+
+            private File getTestFile(FileObject source, File generatedFile) {
+                Project project = FileOwnerQuery.getOwner(source);
+                assert project != null : "Project must be found";
+                final PhpProject phpProject = project.getLookup().lookup(PhpProject.class);
+                assert phpProject != null : "PHP project must be found for " + project;
+
+                FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject);
+                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+                FileObject targetDirectory = testDirectory != null ? testDirectory : sourcesDirectory;
+                assert targetDirectory != null && targetDirectory.isValid() : "Valid target folder for tests must be found for " + phpProject;
+
+                String relativePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
+                assert relativePath != null : String.format("Relative path must be found % and %s", sourcesDirectory, source.getParent());
+
+                return new File(new File(FileUtil.toFile(targetDirectory), relativePath), generatedFile.getName());
+            }
+
+            private File moveGeneratedFile(File generatedFile, File testFile) {
+                assert generatedFile.isFile() : "Generated files must exist: " + generatedFile;
+                assert !testFile.exists() : "Test file cannot exist: " + testFile;
+
+                // create all the parents
+                try {
+                    FileUtil.createFolder(testFile.getParentFile());
+                } catch (IOException exc) {
+                    // what to do now??
+                    Logger.getLogger(CreateTestsAction.class.getName()).log(Level.WARNING, null, exc);
+                    return generatedFile;
+                }
+
+                if (!generatedFile.renameTo(testFile)) {
+                    // what to do now??
+                    return generatedFile;
+                }
+                assert testFile.isFile() : "Test file must exist: " + testFile;
+                // XXX adjust 'require...' in the test file
+                return testFile;
             }
         };
     }
