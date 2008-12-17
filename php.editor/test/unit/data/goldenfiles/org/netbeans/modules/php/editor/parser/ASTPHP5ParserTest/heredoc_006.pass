@@ -203,6 +203,8 @@
         </token>
     </scanner>
     <Program start='0' end='408'>
+        <Comments>
+        </Comments>
         <Statements>
             <InLineHtml start='0' end='69'/>
             <ExpressionStatement start='76' end='102'>
