@@ -45,12 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.GlobalVarNode;
 import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
@@ -150,7 +145,7 @@ public final class RubyTypeAnalyzer {
             // variables but do quickfix for 6.0 which will work in most
             // migrations files.
             if ("t".equals(symbol) && root.nodeId == NodeType.DEFSNODE) { // NOI18N
-                String n = ((INameNode) root).getName();
+                String n = getName(root);
                 if ("up".equals(n) || ("down".equals(n))) { // NOI18N
                     return RubyType.create("ActiveRecord::ConnectionAdapters::TableDefinition"); // NOI18N
                 }
@@ -208,7 +203,7 @@ public final class RubyTypeAnalyzer {
 
                 // null element in types set means that we are not able to infer
                 // the expression
-                String symbol = ((INameNode) node).getName();
+                String symbol = getName(node);
                 maybePutTypesForSymbol(typeForSymbol, symbol, type, override);
                 break;
             }
@@ -218,7 +213,7 @@ public final class RubyTypeAnalyzer {
 //        }
 //        case CALLNODE: {
 //            // Look for known calls whose return types we can guess
-//            String name = ((INameNode)node).getName();
+//            String name = getName(node);
 //            if (name.startsWith("find")) {
 //            }
 //        }
@@ -294,15 +289,17 @@ public final class RubyTypeAnalyzer {
         if (typeForSymbol != null) {
             switch (node.nodeId) {
                 case LOCALVARNODE:
-                    return getTypesForSymbol(typeForSymbol, ((LocalVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case DVARNODE:
-                    return getTypesForSymbol(typeForSymbol, ((DVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case INSTVARNODE:
-                    return getTypesForSymbol(typeForSymbol, ((InstVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case GLOBALVARNODE:
-                    return getTypesForSymbol(typeForSymbol, ((GlobalVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case CLASSVARNODE:
-                    return getTypesForSymbol(typeForSymbol, ((ClassVarNode) node).getName());
+                    return getTypesForSymbol(typeForSymbol, getName(node));
+                case COLON2NODE:
+                    return getTypesForSymbol(typeForSymbol, getName(node));
             }
         }
         return inferTypes(node, index);
@@ -535,4 +532,14 @@ public final class RubyTypeAnalyzer {
         mapType.append(newType);
     }
 
+    /**
+     * Throws {@link ClassCastException} if the given node is not instance of
+     * {@link INameNode}.
+     *
+     * @param node instance of {@link INameNode}.
+     * @return node's name
+     */
+    private String getName(final Node node) {
+        return ((INameNode) node).getName();
+    }
 }
