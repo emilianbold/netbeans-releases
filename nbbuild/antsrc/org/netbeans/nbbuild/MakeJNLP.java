@@ -48,11 +48,11 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -155,6 +155,18 @@ public class MakeJNLP extends Task {
     public void addIndirectJars(FileSet fs) {
         indirectJars = fs;
     }
+
+    private FileSet indirectFiles;
+    /**
+     * Other non-JAR files which should be made available to InstalledFileLocator.
+     * The basedir of the fileset should be a cluster root; each
+     * such file will be packed into a ZIP entry META-INF/files/$relpath
+     * where the JAR will be available at runtime in a flat classpath,
+     * using ClassLoader.getResource.
+     */
+    public void addIndirectFiles(FileSet fs) {
+        indirectFiles = fs;
+    }
     
     private boolean signJars = true;
     /**
@@ -204,12 +216,13 @@ public class MakeJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
-        Set<String> indirectJarPaths = Collections.emptySet();
-        if (indirectJars != null) {
-            DirectoryScanner scan = indirectJars.getDirectoryScanner(getProject());
-            indirectJarPaths = new HashSet<String>();
-            for (String f : scan.getIncludedFiles()) {
-                indirectJarPaths.add(f.replace(File.pathSeparatorChar, '/'));
+        Set<String> indirectFilePaths = new HashSet<String>();
+        for (FileSet fs : new FileSet[] {indirectJars, indirectFiles}) {
+            if (fs != null) {
+                DirectoryScanner scan = fs.getDirectoryScanner(getProject());
+                for (String f : scan.getIncludedFiles()) {
+                    indirectFilePaths.add(f.replace(File.pathSeparatorChar, '/'));
+                }
             }
         }
 
@@ -263,7 +276,7 @@ public class MakeJNLP extends Task {
                 }
             }
             
-            Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify, indirectJarPaths);
+            Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify, indirectFilePaths);
             
             new File(targetFile, dashcnb).mkdir();
 
@@ -286,10 +299,11 @@ public class MakeJNLP extends Task {
             } else {
                 writeJNLP.write("  <resources os='" + osDep + "'>\n");
             }
-            writeJNLP.write("     <jar href='" + dashcnb + '/' + jar.getName() + "'/>\n");
+            writeJNLP.write("    <jar href='" + dashcnb + '/' + jar.getName() + "'/>\n");
             
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
-            processIndirectJars(writeJNLP, dashcnb, codebase);
+            processIndirectJars(writeJNLP, dashcnb);
+            processIndirectFiles(writeJNLP, dashcnb);
             
             writeJNLP.write("  </resources>\n");
             
@@ -334,7 +348,7 @@ public class MakeJNLP extends Task {
         
     }
     
-    private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify, Set<String> indirectJarPaths) throws IOException, BuildException {
+    private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify, Set<String> indirectFilePaths) throws IOException, BuildException {
         Map<String,List<File>> localizedFiles = new HashMap<String,List<File>>();
         
         
@@ -403,7 +417,7 @@ public class MakeJNLP extends Task {
 
         fileToOwningModule.remove("ant/nblib/" + dashcnb + ".jar");
 
-        fileToOwningModule.keySet().removeAll(indirectJarPaths);
+        fileToOwningModule.keySet().removeAll(indirectFilePaths);
         
         if (verifyExcludes != null) {
             StringTokenizer tok = new StringTokenizer(verifyExcludes, ", ");
@@ -515,7 +529,7 @@ public class MakeJNLP extends Task {
         }
     }
 
-    private void processIndirectJars(Writer fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
+    private void processIndirectJars(Writer fileWriter, String dashcnb) throws IOException, BuildException {
         if (indirectJars == null) {
             return;
         }
@@ -523,7 +537,12 @@ public class MakeJNLP extends Task {
         for (String f : scan.getIncludedFiles()) {
             File jar = new File(scan.getBasedir(), f);
             String rel = f.replace(File.separatorChar, '/');
-            String sig = isSigned(jar);
+            String sig;
+            try {
+                sig = isSigned(jar);
+            } catch (IOException x) {
+                throw new BuildException("Cannot check signature on " + jar, x, getLocation());
+            }
             // javaws will reject .zip files even with signatures.
             String rel2 = rel.endsWith(".jar") ? rel : rel.replaceFirst("(\\.zip)?$", ".jar");
             File ext = new File(new File(targetFile, dashcnb), rel2.replace('/', '-').replaceFirst("^modules-", ""));
@@ -549,6 +568,32 @@ public class MakeJNLP extends Task {
         }
     }
     
+    private void processIndirectFiles(Writer fileWriter, String dashcnb) throws IOException, BuildException {
+        if (indirectFiles == null) {
+            return;
+        }
+        DirectoryScanner scan = indirectFiles.getDirectoryScanner(getProject());
+        Map<String,File> entries = new LinkedHashMap<String,File>();
+        for (String f : scan.getIncludedFiles()) {
+            entries.put(f.replace(File.separatorChar, '/'), new File(scan.getBasedir(), f));
+        }
+        if (entries.isEmpty()) {
+            return;
+        }
+        File ext = new File(new File(targetFile, dashcnb), "extra-files.jar");
+        Zip jartask = (Zip) getProject().createTask("jar");
+        jartask.setDestFile(ext);
+        for (Map.Entry<String,File> entry : entries.entrySet()) {
+            ZipFileSet zfs = new ZipFileSet();
+            zfs.setFile(entry.getValue());
+            zfs.setFullpath("META-INF/files/" + entry.getKey());
+            jartask.addZipfileset(zfs);
+        }
+        jartask.execute();
+        fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
+        signOrCopy(ext, null);
+    }
+
     private static String relative(File file, File root) {
         String sfile = file.toString().replace(File.separatorChar, '/');
         String sroot = (root.toString() + File.separator).replace(File.separatorChar, '/');

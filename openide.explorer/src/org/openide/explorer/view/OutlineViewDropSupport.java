@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,6 @@
 package org.openide.explorer.view;
 
 import org.openide.ErrorManager;
-import org.openide.explorer.view.NodeRenderer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
@@ -64,7 +63,6 @@ import java.util.TreeSet;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
 
 
@@ -235,7 +233,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         endPointX = endPointX + SHIFT_RIGHT;
 
         // 2.b. check index cookie
-        Index indexCookie = (Index) dropNode.getCookie(Index.class);
+        Index indexCookie = dropNode.getCookie (Index.class);
         log("indexCookie == " + indexCookie); // NOI18N
         if (indexCookie != null) {
             if (pointAt == DragDropUtilities.NODE_UP) {
@@ -361,7 +359,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
     /** Removes timer and all listeners. */
     private void removeTimer() {
         if (timer != null) {
-            ActionListener[] l = (ActionListener[]) timer.getListeners(ActionListener.class);
+            ActionListener[] l = timer.getListeners (ActionListener.class);
 
             for (int i = 0; i < l.length; i++) {
                 timer.removeActionListener(l[i]);
@@ -436,7 +434,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // has folder a index cookie?
-        Index ic = (Index) folder.getCookie(Index.class);
+        Index ic = folder.getCookie (Index.class);
 
         if (ic == null) {
             log("canReorder returning false 3");
@@ -468,7 +466,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     private void performReorder(final Node folder, Node[] dragNodes, int lNode, int uNode) {
         try {
-            Index indexCookie = (Index) folder.getCookie(Index.class);
+            Index indexCookie = folder.getCookie (Index.class);
             log("performReorder indexCookie == " + indexCookie);
 
             if (indexCookie != null) {
@@ -666,12 +664,12 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                         );
                 }
 
-                TreeSet setPasteTypes = new TreeSet(
-                        new Comparator() {
-                            public int compare(Object obj1, Object obj2) {
+                TreeSet<PasteType> setPasteTypes = new TreeSet<PasteType> (
+                        new Comparator<PasteType> () {
+                            public int compare(PasteType obj1, PasteType obj2) {
                                 // have to fix: the different actions can have same name!!!
 
-                                int res = ((PasteType)obj1).getName ().compareTo (((PasteType)obj2).getName ());
+                                int res = (obj1).getName ().compareTo ((obj2).getName ());
                                 log("res1: "+res); // NOI18N
                                 if (res == 0) {
                                     res = System.identityHashCode(obj1)-System.identityHashCode(obj2);
