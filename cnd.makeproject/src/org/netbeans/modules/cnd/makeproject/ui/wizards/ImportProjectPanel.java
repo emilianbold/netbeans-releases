@@ -305,14 +305,7 @@ public final class ImportProjectPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String seed = null;
-        if (projectFolder.getText().length() > 0) {
-            seed = projectFolder.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
+        String seed = projectFolder.getText();
         JFileChooser fileChooser = new FileChooser(
                 getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
