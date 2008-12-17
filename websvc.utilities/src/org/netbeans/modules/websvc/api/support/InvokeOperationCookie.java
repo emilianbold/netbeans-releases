@@ -38,27 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.api.support;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
-/*
- * Provides a facility for obtaining the addOperation feature
+/**
+ * Provides a facility for obtaining the addOperation feature.
  * for both JAX-WS and JAX-RPC web service.
  */
 public interface InvokeOperationCookie extends Node.Cookie {
-    
-    public static int TARGET_SOURCE_UNKNOWN = 0;
-    public static int TARGET_SOURCE_JAVA = 1;
-    public static int TARGET_SOURCE_JSP = 2;
-    
-    /*
-     * Adds a method definition to the the implementation class, possibly to SEI
+
+    /** UNKNOWN target file type. */
+    int TARGET_SOURCE_UNKNOWN = 0;
+    /** java file type. */
+    int TARGET_SOURCE_JAVA = 1;
+    /** JSP file type. */
+    int TARGET_SOURCE_JSP = 2;
+
+    /** Adds a method definition to the the implementation class, possibly to SEI.
+     *
+     * @param targetSourceType type of target source file (JSP or java)
+     * @param targetNodeLookup target node lookup
+     * @param sourceNodeLookup source node lookup
      */
-    public void invokeOperation(int targetSourceTypeI, Node targetNode, Node serviceOperationNode);
-    
-    
-    /**
-     * Determines if the child node represents a web service operation
-     */ 
-    public boolean isWebServiceOperation(Node node);
+    void invokeOperation(int targetSourceType, Lookup targetNodeLookup, Lookup sourceNodeLookup);
+
+
+    /** Determines if node represents a web service operation.
+     * @param sourceNodeLookup source node lookup
+     * @return true or false
+     */
+    boolean isWebServiceOperation(Lookup sourceNodeLookup);
 }

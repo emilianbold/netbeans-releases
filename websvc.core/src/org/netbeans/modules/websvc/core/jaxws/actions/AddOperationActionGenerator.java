@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,42 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.openide.util.actions.NodeAction;
 
-public class AddOperationAction extends NodeAction  {
-    
-    public String getName() {
-        return NbBundle.getMessage(AddOperationAction.class, "LBL_OperationAction");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-        
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) return false;
-        FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        return implClassFo != null && WebServiceActionProvider.getAddOperationAction(implClassFo) != null;
-    }
-    
-    protected void performAction(Node[] activatedNodes) {
+/**
+ *
+ * @author mkuchtiak
+ */
+public class AddOperationActionGenerator implements CodeGenerator {
 
-        FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
+    private FileObject targetSource;
+    private AddOperationCookie addOperationCookie;
+
+    AddOperationActionGenerator(FileObject targetSource, AddOperationCookie addOperationCookie) {
+        this.targetSource = targetSource;
+        this.addOperationCookie = addOperationCookie;
+    }
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            CompilationController controller = context.lookup(CompilationController.class);
+            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            if (controller != null) {
+                try {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    FileObject targetSource = controller.getFileObject();
+                    if (targetSource != null) {
+                        AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(targetSource);
+                        if (addOperationCookie != null && addOperationCookie.isEnabledInEditor(context)) {
+                            ret.add(new AddOperationActionGenerator(targetSource, addOperationCookie));
+                        }
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            return ret;
+        }
+
+    }
+    public String getDisplayName() {
+        return NbBundle.getMessage(AddOperationActionGenerator.class, "LBL_AddWsOperationAction");
+    }
+
+    public void invoke() {
         addOperationCookie.addOperation();
     }
-}
 
+}

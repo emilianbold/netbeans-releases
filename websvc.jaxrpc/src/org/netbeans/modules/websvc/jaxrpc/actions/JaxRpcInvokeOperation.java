@@ -43,9 +43,9 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -62,16 +62,16 @@ public class JaxRpcInvokeOperation implements InvokeOperationCookie {
     /*
      * Adds a WS invocation to the class
      */
-    public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-            JaxrpcInvokeOperationGenerator.insertMethodCall(getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
+    public void invokeOperation(int targetSourceType, Lookup targetNodeLookup, Lookup sourceNodeLookup) {
+            JaxrpcInvokeOperationGenerator.insertMethodCall(getCurrentDataObject(targetNodeLookup), targetNodeLookup, sourceNodeLookup);
     }
     
-    private DataObject getCurrentDataObject(Node n) {
-        return (DataObject) n.getCookie(DataObject.class);
+    private DataObject getCurrentDataObject(Lookup targetNodeLookup) {
+        return targetNodeLookup.lookup(DataObject.class);
     }
     
-    public boolean isWebServiceOperation(Node node) {
-        return node.getLookup().lookup(WebServiceMethod.class)!=null; 
+    public boolean isWebServiceOperation(Lookup sourceNodeLookup) {
+        return sourceNodeLookup.lookup(WebServiceMethod.class)!=null;
     }
     
     
