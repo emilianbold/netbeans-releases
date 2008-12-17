@@ -1272,12 +1272,16 @@ public class ActionManager {
                 }
             }.execute();
             
-            if (result != null && !result.isEmpty()) {
+            // issue #155337 - getDesignResourceMap() returns null rarely ...
+            DesignResourceMap resourceMap =
+                    ResourceUtils.getDesignResourceMap(sourceFile, true);
+
+            if (result != null && !result.isEmpty() && resourceMap != null) {
                 // remember the actions, load resources
                 String className = AppFrameworkSupport.getClassNameForFile(sourceFile);
                 classNameToActions.put(className, result);
                 for (ProxyAction action : result) {
-                    action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile, true));
+                    action.setResourceMap(resourceMap);
                     action.loadFromResourceMap();
                 }
             }

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.api;
 
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -65,8 +64,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     // table of all the changes - it contains all the new parameters and also
     // changes in order
     private ParameterInfo[] paramTable;
-    // new modifier
-    private Set<CsmVisibility> modifiers;
+    // new vibility
+    private CsmVisibility visibility;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -86,11 +85,11 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     }
     
     /**
-     * Getter for new modifiers
-     * @return modifiers
+     * Getter for new vibility
+     * @return vibility
      */
-    public Set<CsmVisibility> getModifiers() {
-        return modifiers;
+    public CsmVisibility getVisibility() {
+        return visibility;
     }
     
     /**
@@ -102,11 +101,11 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     /**
-     * Sets modifiers for method
-     * @param modifiers new modifiers
+     * Sets vibility for method
+     * @param vibility new vibility
      */
-    public void setModifiers(Set<CsmVisibility> modifiers) {
-        this.modifiers = modifiers;
+    public void setVisibility(CsmVisibility visibility) {
+        this.visibility = visibility;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -120,9 +119,9 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      */
     public static final class ParameterInfo {
         int origIndex;
-        String name;
-        String type;
-        String defaultVal;
+        CharSequence name;
+        CharSequence type;
+        CharSequence defaultVal;
 
         /**
          * Creates a new instanceof of ParameterInfo. This constructor can be
@@ -138,7 +137,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          * @param  defaultVal should be provided for the all new parameters.
          *                    For changed parameters, it is ignored.
          */
-        public ParameterInfo(int origIndex, String name, String type, String defaultVal) {
+        public ParameterInfo(int origIndex, CharSequence name, CharSequence type, CharSequence defaultVal) {
             // new parameter
             // if (origIndex == -1 && (name == null || defaultVal == null || type == null || name.length() == 0 || defaultVal.length() == 0)) {
             //    throw new IllegalArgumentException(NbBundle.getMessage(ChangeParameters.class, "ERR_NoValues"));
@@ -174,7 +173,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          *
          * @return  new name for parameter or null in case that it was not changed.
          */
-        public String getName() { return name; }
+        public CharSequence getName() { return name; }
 
         /**
          * Returns value of the type of parameter. If the name was not
@@ -182,7 +181,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          *
          * @return new type for parameter or null if it was not changed.
          */
-        public String getType() { return type; }
+        public CharSequence getType() { return type; }
 
         /**
          * Returns value of the default value in case of the new parameter.
@@ -190,7 +189,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          *
          * @return default value for new parameter, otherwise null.
          */
-        public String getDefaultValue() { return defaultVal; }
+        public CharSequence getDefaultValue() { return defaultVal; }
     }
     
     ////////////////////////////////////////////////////////////////////////////

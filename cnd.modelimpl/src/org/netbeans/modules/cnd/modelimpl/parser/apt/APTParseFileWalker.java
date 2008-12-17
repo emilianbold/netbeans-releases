@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.*;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
@@ -122,6 +124,14 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
     }
 
+    @Override
+    protected void onErrorNode(APT apt) {
+        super.onErrorNode(apt);
+        if (needMacroAndIncludes()) {
+            getFile().addError(createError((APTError)apt));
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     @Override
@@ -145,6 +155,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
+    private ErrorDirectiveImpl createError(APTError error) {
+        APTToken token = error.getToken();
+        SimpleOffsetableImpl pos = getOffsetable(token);
+        setEndPosition(pos, token);
+        return ErrorDirectiveImpl.create(this.getFile(), token.getText(), pos);
+    }
+
     private MacroImpl createMacro(APTDefine define) {
 
         List<String> params = null;

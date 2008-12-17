@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
@@ -344,14 +345,6 @@ public class ProviderControl {
     }
     
     private void rootFolderButtonActionPerformed(ActionEvent evt, boolean isBinary, String title) {
-        String seed = null;
-        if (field.getText().length() > 0) {
-            seed = field.getText();
-        } else            if (FileChooser.getCurrectChooserFile()  != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        }  else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
         FileFilter[] filters = null;
         if (chooserMode == JFileChooser.FILES_ONLY){
             if (isBinary) {
@@ -379,9 +372,9 @@ public class ProviderControl {
         JFileChooser fileChooser = new FileChooser(
                 title,
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
-                chooserMode, false,
+                chooserMode,
                 filters,
-                seed,
+                field.getText(),
                 false
                 );
         int ret = fileChooser.showOpenDialog(panel);

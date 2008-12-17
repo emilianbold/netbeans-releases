@@ -103,7 +103,11 @@ import org.openide.util.Exceptions;
 public class RubyIndexer implements Indexer {
     //private static final boolean INDEX_UNDOCUMENTED = Boolean.getBoolean("ruby.index.undocumented");
     private static final boolean INDEX_UNDOCUMENTED = true;
-    public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+
+    // for unit tests
+    static boolean preindexingTest = false;
+
+    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     // Class/Module Document
     static final String FIELD_EXTENDS_NAME = "extends"; //NOI18N
@@ -214,7 +218,7 @@ public class RubyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "6.106"; // NOI18N
+        return "6.107"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -967,9 +971,9 @@ public class RubyIndexer implements Indexer {
                 switch (element.getKind()) {
                 case MODULE:
                 case CLASS:
-                    IndexDocument doc = analyzeClassOrModule(element);
+                    IndexDocument _doc = analyzeClassOrModule(element);
                     if (globalDoc == null) {
-                        globalDoc = doc;
+                        globalDoc = _doc;
                     }
 
                     break;
@@ -1016,7 +1020,7 @@ public class RubyIndexer implements Indexer {
         
         private boolean shouldIndexTopLevel() {
             // Don't index top level methods in the libraries
-            if (!file.isPlatform() && !PREINDEXING) {
+            if (!file.isPlatform() && !isPreindexing()) {
                 String name = file.getNameExt();
                 // Don't index spec methods or test methods
                 if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
@@ -1037,7 +1041,7 @@ public class RubyIndexer implements Indexer {
                 int flags = 0;
 
                 boolean nodoc = false;
-                if (file.isPlatform() || PREINDEXING) {
+                if (file.isPlatform() || isPreindexing()) {
                     // Should we skip this class? This is true for :nodoc: marked
                     // classes for example. We do NOT want to skip all children;
                     // in ActiveRecord for example we have this:
@@ -1324,7 +1328,7 @@ public class RubyIndexer implements Indexer {
                 signature = sb.toString();
             }
             
-            if (file.isPlatform() || PREINDEXING) {
+            if (file.isPlatform() || isPreindexing()) {
                 Node root = AstUtilities.getRoot(result);
                 signature = RubyIndexerHelper.getMethodSignature(child, root, 
                        flags, signature, file.getFileObject(), doc);
@@ -1420,7 +1424,7 @@ public class RubyIndexer implements Indexer {
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
             // Don't index globals in the libraries
-            if (!file.isPlatform() && !PREINDEXING) {
+            if (!file.isPlatform() && !isPreindexing()) {
 
                 String signature = child.getName();
 //            int flags = getModifiersFlag(child.getModifiers());
@@ -1515,5 +1519,9 @@ public class RubyIndexer implements Indexer {
             preindexedDb = FileUtil.toFileObject(preindexed);
         }
         return preindexedDb;
+    }
+    
+    static boolean isPreindexing() {
+        return PREINDEXING || preindexingTest;
     }
 }

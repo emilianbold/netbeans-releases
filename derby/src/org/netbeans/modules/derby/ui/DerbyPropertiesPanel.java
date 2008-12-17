@@ -194,7 +194,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                 error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
             }
         } else if (location.length() == 0) {
-            warning = NbBundle.getMessage(DerbyOptions.class, "ERR_EnterDerbyLocation"); // NOI18N
+            info = NbBundle.getMessage(CreateDatabasePanel.class, "INFO_EnterDerbyLocation"); // NOI18N
         }
 
         if (error == null) {

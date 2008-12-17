@@ -1,4 +1,6 @@
 <Program start='0' end='258'>
+    <Comments>
+    </Comments>
     <Statements>
         <FunctionDeclaration start='6' end='258' isReference='false'>
             <Identifier start='15' end='35' name='cookies_for_everyone'/>

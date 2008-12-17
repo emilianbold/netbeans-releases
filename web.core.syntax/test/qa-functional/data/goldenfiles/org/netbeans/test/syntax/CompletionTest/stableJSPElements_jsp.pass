@@ -24,16 +24,3 @@ testJSPDocumentBasic.jspx
 testJSPDocumentHTML.jspx
 testJSPElements.jsp
 End cursor position = 329
-[<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 474]
-SecurityException
-SecurityManager
-Short
-StackOverflowError
-StackTraceElement
-StrictMath
-String
-StringBuffer
-StringBuilder
-StringIndexOutOfBoundsException
-System
-End cursor position = 539

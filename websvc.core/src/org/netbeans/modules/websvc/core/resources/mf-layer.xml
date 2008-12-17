@@ -117,6 +117,19 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-websvc-core-jaxws-actions-AddOperationActionGenerator$Factory.instance">
+                        <attr name="position" intvalue="3700"/>
+                    </file>
+                    <file name="org-netbeans-modules-websvc-core-jaxws-actions-SetSoapVersionActionGenerator$Factory.instance">
+                        <attr name="position" intvalue="3705"/>
+                    </file>
+                    <!--
+                    <file name="org-netbeans-modules-websvc-core-jaxws-actions-CallWsOperationAction$Factory.instance">
+                        <attr name="position" intvalue="3710"/>
+                    </file>
+                    -->
+                </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-websvc-editor-completion-WSCompletionProvider.instance"/>
                 </folder>
@@ -125,9 +138,6 @@ made subject to such option by the copyright holder.
                     <file name="SeparatorBeforeWS.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="9600"/>
-                    </file>
-                    <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance">
-                        <attr name="position" intvalue="9610"/>
                     </file>
                     <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance">
                         <attr name="position" intvalue="9620"/>
@@ -184,4 +194,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
 </filesystem>
