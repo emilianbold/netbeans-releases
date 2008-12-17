@@ -16,7 +16,18 @@
             <file name="org-openide-actions-SaveAction.instance_hidden"/>
             <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
             <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
+
+            <folder name ="Import">
+                <file name="org-netbeans-modules-ide-ergonomics-ImportProjectAction.instance">
+                    <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.ImportProjectAction"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.Bundle#CTL_ImportProject"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="noIconInMenu" stringvalue="false"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
         </folder>
+        
         <folder name="Help">
             <file name="Separator1.instance_hidden"/>
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.shadow_hidden"/>

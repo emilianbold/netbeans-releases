@@ -36,15 +36,13 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.ide.ergonomics.prof;
+package org.netbeans.modules.ide.ergonomics;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.ide.ergonomics.Utilities;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
@@ -61,29 +59,23 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Pavel Flaska
  */
-abstract class ProxyProfilerAction implements ActionListener {
+public class ImportProjectAction implements ActionListener {
 
-    private final String actionInstance;
-
-    ProxyProfilerAction(String actionInstance) {
-        this.actionInstance = actionInstance;
-    }
-
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(final ActionEvent actionEvent) {
         Task task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 FeatureInfo featureInfo = null;
                 for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
-                    if ("Attach Profiler".equals(info.getProfilerAttachName())) { // NOI18N
+                    if ("Eclipse".equals(info.getProjecdImporter())) { // NOI18N
                         featureInfo = info;
                         break;
                     }
                 }
                 if (featureInfo != null) {
-                    boolean success = Utilities.featureNotFoundDialog(featureInfo, "Profiler");
+                    boolean success = Utilities.featureNotFoundDialog(featureInfo, "Importer");
                     if (success) {
-                        performRegular(e);
+                        performRegular(actionEvent);
                     }
                 }
             }
@@ -91,17 +83,16 @@ abstract class ProxyProfilerAction implements ActionListener {
         task.schedule(0);
     }
 
-
-    private void performRegular(final ActionEvent e) {
+    private void performRegular(final ActionEvent actionEvent) {
         try {
             FoDFileSystem.getInstance().waitFinished();
-            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource(actionInstance);
+            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource("Menu/File/Import/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance");
             InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
             final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 public void run() {
-                    regularAction.actionPerformed(e);
+                    regularAction.actionPerformed(actionEvent);
                 }
             });
         } catch (ClassNotFoundException ex) {

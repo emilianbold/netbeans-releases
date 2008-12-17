@@ -37,83 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics.prof;
+package org.netbeans.modules.ide.ergonomics;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.ide.ergonomics.Utilities;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
+ * Set of static useful methods.
  *
  * @author Pavel Flaska
  */
-abstract class ProxyProfilerAction implements ActionListener {
+public class Utilities {
 
-    private final String actionInstance;
-
-    ProxyProfilerAction(String actionInstance) {
-        this.actionInstance = actionInstance;
+    private Utilities() {
     }
 
-    public void actionPerformed(final ActionEvent e) {
-        Task task = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
-                FeatureInfo featureInfo = null;
-                for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
-                    if ("Attach Profiler".equals(info.getProfilerAttachName())) { // NOI18N
-                        featureInfo = info;
-                        break;
-                    }
-                }
-                if (featureInfo != null) {
-                    boolean success = Utilities.featureNotFoundDialog(featureInfo, "Profiler");
-                    if (success) {
-                        performRegular(e);
-                    }
-                }
+    public static final boolean featureNotFoundDialog(final FeatureInfo featureInfo, final String featureName) {
+        final boolean[] result = new boolean[] { false };
+        final DialogDescriptor[] descriptor = new DialogDescriptor[1];
+        final Callable<JComponent> call = new Callable<JComponent>() {
+            public JComponent call() throws Exception {
+                result[0] = true;
+                descriptor[0].setValue(DialogDescriptor.CLOSED_OPTION);
+                return new JPanel();
             }
-        });
-        task.schedule(0);
-    }
-
-
-    private void performRegular(final ActionEvent e) {
+        };
         try {
-            FoDFileSystem.getInstance().waitFinished();
-            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource(actionInstance);
-            InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
-            final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 public void run() {
-                    regularAction.actionPerformed(e);
+                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo), "Feature Not Found");
                 }
             });
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
+        } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         }
+        descriptor[0].setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor[0]);
+        descriptor[0].addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent arg0) {
+                d.setVisible(false);
+                d.dispose();
+            }
+        });
+        d.setVisible(true);
+        return result[0];
     }
 }

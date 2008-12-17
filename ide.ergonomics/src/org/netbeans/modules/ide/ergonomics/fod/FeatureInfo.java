@@ -134,6 +134,10 @@ public final class FeatureInfo {
         return properties.getProperty("profilerAttachName");
     }
 
+    public Object getProjecdImporter() {
+        return properties.getProperty("projectImporter");
+    }
+
     String getPreferredCodeNameBase() {
         return properties.getProperty("mainModule");
     }
