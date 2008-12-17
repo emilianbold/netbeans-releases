@@ -41,40 +41,42 @@
 
 package org.netbeans.modules.derby;
 
+import org.netbeans.modules.derby.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author David
  */
-public class DerbyNodeProvider implements NodeProvider {
-    private static DerbyNodeProvider DEFAULT = new DerbyNodeProvider();
-    
-    private ArrayList<Node> nodes = new ArrayList<Node>();
-    
-    public static DerbyNodeProvider getDefault() {
-        return DEFAULT;
-    }
-    
-    private DerbyNodeProvider() {
-        nodes.add(DerbyServerNode.getDefault());       
+public class DerbyNodeProvider extends NodeProvider {
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
     }
 
-    public List<Node> getNodes() {
-        return nodes;
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public DerbyNodeProvider createInstance(Lookup lookup) {
+                DerbyNodeProvider provider = new DerbyNodeProvider(lookup);
+                return provider;
+            }
+        };
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        // No change events at this time...  
-        // TODO only register the Java DB node if Java DB is detected.
-        // Requires adding action to register Java DB manually, like with
-        // MySQL.  For now the Java DB node is always there.
+    private DerbyNodeProvider(Lookup lookup) {
+        super(lookup);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
+    @Override
+    protected synchronized void initialize() {
+        List<Node> newList = new ArrayList<Node>();
+        newList.add(DerbyServerNode.getDefault());
+        setNodes(newList);
     }
 }

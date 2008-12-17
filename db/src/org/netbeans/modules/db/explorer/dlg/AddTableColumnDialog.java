@@ -41,30 +41,60 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.sql.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.beans.*;
+import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.ResultSet;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
-import org.openide.*;
-import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.util.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.node.CatalogNode;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
+import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.util.TextFieldValidator;
+import org.netbeans.modules.db.util.ValidableTextField;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+
 
 public class AddTableColumnDialog {
     static final Logger LOGGER = Logger.getLogger(AddTableColumnDialog.class.getName());
@@ -85,13 +115,27 @@ public class AddTableColumnDialog {
     DataModel dmodel = new DataModel();
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) throws DatabaseException {
+    public AddTableColumnDialog(final Specification spe, final TableNode nfo) throws DatabaseException {
         spec = spe;
         try {
-            String table = (String)nfo.get(DatabaseNode.TABLE);
-            String schema = (String)nfo.get(DatabaseNodeInfo.SCHEMA);
-            DriverSpecification drvSpec = nfo.getDriverSpecification();
-            ddl = new AddTableColumnDDL(spec, drvSpec, schema, table);
+            Table table = nfo.getTable();
+            String tableName = table.getName();
+
+            Schema schema = table.getParent();
+            Catalog catalog = schema.getParent();
+
+            String schemaName = schema.getName();
+            String catName = catalog.getName();
+
+            if (schemaName == null) {
+                schemaName = catalog.getName();
+            } else if (catName == null) {
+                catName = schemaName;
+            }
+
+            DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification(catName);
+            
+            ddl = new AddTableColumnDDL(spec, drvSpec, schemaName, tableName);
 
             JLabel label;
             JPanel pane = new JPanel();
@@ -366,7 +410,8 @@ public class AddTableColumnDialog {
             // are there primary keys?
             boolean isPK = false;
             try {
-                drvSpec.getPrimaryKeys(table);
+                drvSpec.getPrimaryKeys(tableName);
+
                 ResultSet rs = drvSpec.getResultSet();
 
                 if( rs != null ) {
