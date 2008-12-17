@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -466,24 +466,41 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 }
             }
         }
+
+        boolean canAdd = true;
+        String errMsg = null;
+
         String name = panel.comboName.getEditor().getItem().toString().trim();
-        String value = panel.txtAreaValue.getText().trim();
-
-        if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) {
-            panel.btnAdd.setEnabled(false);
+        if (name.length() == 0) {
+            canAdd = false;
+        } else if (name.equals("svn:ignore") || name.equals("svn:externals")) { //NOI18N
+            if (root.isFile()) {
+                canAdd = false;
+                errMsg = NbBundle.getMessage(SvnProperties.class,
+                                             "PropertiesPanel.errInvalidPropertyForFile", //NOI18N
+                                             name);
+            }
+        } else if (name.equals("svn:eol-style") || name.equals("svn:executable")    //NOI18N
+                   || name.equals("svn:keywords") || name.equals("svn:needs-lock")  //NOI18N
+                   || name.equals("svn:mime-type")) {                               //NOI18N
+            if (root.isDirectory()) {
+                canAdd = false;
+                errMsg = NbBundle.getMessage(SvnProperties.class,
+                                             "PropertiesPanel.errInvalidPropertyForDirectory", //NOI18N
+                                             name);
+            }
+        } else if (name.indexOf(' ') != -1) {
+            canAdd = false;
+            errMsg = NbBundle.getMessage(SvnProperties.class,
+                                         "PropertiesPanel.errPropNameInvalid"); //NOI18N
         } else {
-            panel.btnAdd.setEnabled(true);
-        }
-
-        if (root.isFile()) {
-            if (name.equals("svn:ignore") || name.equals("svn:externals")) {
-                panel.btnAdd.setEnabled(false);
-            }
-        } else if (root.isDirectory()) {
-            if (name.equals("svn:eol-style") || name.equals("svn:executable") || name.equals("svn:keywords") || name.equals("svn:needs-lock") || name.equals("svn:mime-type")) {
-                panel.btnAdd.setEnabled(false);
+            String value = panel.txtAreaValue.getText().trim();
+            if (value.length() == 0) {
+                canAdd = false;
             }
         }
+        panel.btnAdd.setEnabled(canAdd);
+        panel.setErrMessage(errMsg);
     }
 
     public class TableMouseListener extends MouseAdapter {

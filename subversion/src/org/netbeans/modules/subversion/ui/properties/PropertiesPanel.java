@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.subversion.ui.properties;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -54,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.jdesktop.layout.GroupLayout;
@@ -88,7 +90,8 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
     private PropertiesTable propertiesTable;
     private ListenersSupport listenerSupport = new ListenersSupport(this);
-    
+    private final JLabel lblErrMessage = new JLabel();
+
     /** Creates new form PropertiesPanel */
     public PropertiesPanel() {
         initComponents();
@@ -140,6 +143,10 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
         JScrollPane jScrollPane1 = new JScrollPane();
         jScrollPane1.setViewportView(txtAreaValue);
 
+        lblErrMessage.setForeground(Color.RED);
+        lblErrMessage.setVisible(false);
+        lblErrMessage.setText(" ");  //to get non-zero preferred height //NOI18N
+
         Mnemonics.setLocalizedText(btnBrowse, getString("PropertiesPanel.btnBrowse.text")); // NOI18N
         btnBrowse.setActionCommand(getString("btnBrowse.actionCommand")); // NOI18N
 
@@ -158,8 +165,6 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
 
         Mnemonics.setLocalizedText(labelForTable, getString("jLabel3.text")); // NOI18N
 
-        Component horizontalGlue = Box.createHorizontalGlue();
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -173,15 +178,17 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                                         .addPreferredGap(RELATED)
                                         .add(layout.createParallelGroup()
                                                 .add(comboName, 0, DEFAULT_SIZE, DEFAULT_SIZE)
-                                                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                                                        .add(jScrollPane1)
-                                                        .add(btnBrowse))))
+                                                .add(jScrollPane1)))
+                                .add(layout.createSequentialGroup()
+                                        .add(lblErrMessage, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(RELATED)
+                                        .add(btnBrowse))
                                 .add(jSeparator1)
                                 .add(layout.createSequentialGroup()
                                         .add(btnAdd)
                                         .addPreferredGap(RELATED)
                                         .add(cbxRecursively)
-                                        .add(horizontalGlue)
+                                        .addPreferredGap(cbxRecursively, btnRemove, RELATED, true)
                                         .add(btnRemove)
                                         .addPreferredGap(RELATED)
                                         .add(btnRefresh))
@@ -190,6 +197,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                         .addContainerGap()
         );
         layout.linkSize(new Component[] {btnAdd, btnBrowse, btnRefresh, btnRemove}, HORIZONTAL);
+        layout.setHonorsVisibility(false);
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
@@ -202,14 +210,15 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                                 .add(lblPropertyValue)
                                 .add(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
                         .addPreferredGap(RELATED)
-                        .add(btnBrowse)
+                        .add(layout.createParallelGroup(BASELINE)
+                                .add(lblErrMessage)
+                                .add(btnBrowse))
                         .addPreferredGap(RELATED)
                         .add(jSeparator1, PREFERRED_SIZE, 10, PREFERRED_SIZE)
                         .addPreferredGap(RELATED)
                         .add(layout.createParallelGroup(BASELINE)
                                 .add(btnAdd)
                                 .add(cbxRecursively)
-                                .add(horizontalGlue)
                                 .add(btnRemove)
                                 .add(btnRefresh))
                         .add(18)
@@ -237,6 +246,29 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
 
         labelForTable.getAccessibleContext().setAccessibleDescription(getString("labelForTable.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>
+
+    void setErrMessage(String message) {
+        if (message == null) {
+            lblErrMessage.setText(" ");                                 //NOI18N
+            lblErrMessage.setVisible(false);
+        } else {
+            lblErrMessage.setText(message);
+            lblErrMessage.setVisible(true);
+            int widthReserve = lblErrMessage.getSize().width - lblErrMessage.getPreferredSize().width;
+            if (widthReserve < 0) {
+                makeDialogWider(-widthReserve);
+            }
+        }
+    }
+
+    private void makeDialogWider(int delta) {
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w != null) {
+            Dimension size = w.getSize();
+            size.width += delta;
+            w.setSize(size);
+        }
+    }
 
     private static String getString(String msgKey) {
         return NbBundle.getMessage(PropertiesPanel.class, msgKey);
