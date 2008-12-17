@@ -193,18 +193,6 @@ public class DataViewDBTableTest extends NbTestCase {
     }
 
     /**
-     * Test of getColumns method, of class DataViewDBTable.
-     */
-    public void testGetColumns() {
-        int index = 5;
-        String sqlStr = context.getSqlSelect();
-        DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewDBTable();
-        Map result = instance.getColumns();
-        assertEquals(11, result.size());
-    }
-
-    /**
      * Test of getColumnToolTips method, of class DataViewDBTable.
      */
 /*    public void testGetColumnToolTips() {
