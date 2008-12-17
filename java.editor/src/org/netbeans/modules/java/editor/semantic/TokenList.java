@@ -134,9 +134,14 @@ public class TokenList {
 
                             for (TokenSequence tseq : seqs) {
                                 if (tseq.language() == JavaTokenId.language()) {
-                                    if (tseq != ts)
+                                    if (tseq != ts) {
                                         ts = tseq;
+                                    }
                                 }
+                            }
+
+                            if (ts == null) {
+                                return;
                             }
                         }
                     }
