@@ -180,7 +180,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                                                 .add(comboName, 0, DEFAULT_SIZE, DEFAULT_SIZE)
                                                 .add(jScrollPane1)))
                                 .add(layout.createSequentialGroup()
-                                        .add(lblErrMessage, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(lblErrMessage, 0, DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addPreferredGap(RELATED)
                                         .add(btnBrowse))
                                 .add(jSeparator1)
