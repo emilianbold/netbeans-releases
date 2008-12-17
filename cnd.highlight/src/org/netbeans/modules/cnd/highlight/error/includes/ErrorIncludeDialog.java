@@ -586,7 +586,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 }
             }
         } else {
-            buf.append(error.getText());
+            buf.append(error.getText()).append("\n"); // NOI18N
         }
         guessList.setText(buf.toString());
         CsmFile file = error.getContainingFile();
