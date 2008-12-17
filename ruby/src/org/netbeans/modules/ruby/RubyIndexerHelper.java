@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ruby;
@@ -281,7 +281,7 @@ public final class RubyIndexerHelper {
                 flags |= IndexedMethod.BLOCK;
             }
 
-            Set<? extends String> returnTypes = getReturnTypes(line, callseq, name);
+            RubyType returnType = getReturnTypes(line, callseq, name);
 
             // Replace attributes
             int attributeIndex = signature.indexOf(';');
@@ -321,8 +321,8 @@ public final class RubyIndexerHelper {
 
 
             // See RubyIndexer for a description of the signature format
-            if (blockArgs.length() > 0 || returnTypes.size() > 0 || hashNames.length() > 0) {
-                return signature + ";" + blockArgs + ";" + RubyUtils.join(returnTypes, "|") + ";" + hashNames; // NOI18N
+            if (blockArgs.length() > 0 || returnType.isKnown() || hashNames.length() > 0) {
+                return signature + ";" + blockArgs + ";" + returnType.asIndexedString() + ";" + hashNames; // NOI18N
             } else {
                 return signature;
             }
@@ -435,14 +435,14 @@ public final class RubyIndexerHelper {
         return callseq;
     }
 
-    private static Set<? extends String> getReturnTypes(String line, List<String> callseq, String name) {
+    private static RubyType getReturnTypes(String line, List<String> callseq, String name) {
         // Compute return types
         if (name.equals("to_s")) { // NOI18N
-            return Collections.singleton("String"); // NOI18N
+            return RubyType.STRING;
         }
         if (callseq != null) {
-            Set<? extends String> types = RDocAnalyzer.collectTypesFromComment(callseq);
-            if (!types.isEmpty()) {
+            RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
+            if (types.isKnown()) {
                 return types;
             }
         }
@@ -450,10 +450,10 @@ public final class RubyIndexerHelper {
         // Methods ending with "?" are probably question methods returning a
         // boolean
         if (name.endsWith("?")) {
-            return new HashSet<String>(Arrays.asList("FalseClass", "TrueClass")); // NOI18N
+            return RubyType.BOOLEAN;
         }
 
-        return Collections.<String>emptySet();
+        return RubyType.createUnknown();
     }
     
     // BEGIN AUTOMATICALLY GENERATED CODE. SEE THE http://hg.netbeans.org/main/misc/ruby/indexhelper PROJECT FOR DETAILS.
