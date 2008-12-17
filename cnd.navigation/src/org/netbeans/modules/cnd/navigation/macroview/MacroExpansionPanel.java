@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.navigation.macroview;
 
 import javax.swing.JPanel;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.explorer.ExplorerManager;
@@ -117,7 +115,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
 
-        Registry.addDocument((BaseDocument)doc);
+//        Registry.addDocument((BaseDocument)doc);
 
     }
 
