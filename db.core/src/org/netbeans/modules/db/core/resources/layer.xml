@@ -56,119 +56,6 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.core.Bundle"/>
                     </file>
                 </folder>
-                <folder name="Actions">
-                  <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
-                      <attr name="position" intvalue="200"/>
-                    </file>
-                  <file name="jsp-project-separator-3.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                      <attr name="position" intvalue="300"/>
-                    </file>
-                  <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                      <attr name="position" intvalue="400"/>
-                    </file>
-                  <file name="jsp-project-separator-4.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                      <attr name="position" intvalue="1000"/>
-                    </file>
-                  <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
-                      <attr name="position" intvalue="1100"/>
-                    </file>
-                  <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-                      <attr name="position" intvalue="1300"/>
-                    </file>
-                  <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
-                      <attr name="position" intvalue="1400"/>
-                    </file>
-                  <file name="jsp-project-separator-5.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                      <attr name="position" intvalue="1500"/>
-                    </file>
-                  <file name="NewAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
-                      <attr name="position" intvalue="1600"/>
-                    </file>
-                  <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-                      <attr name="position" intvalue="1700"/>
-                    </file>
-                  <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
-                      <attr name="position" intvalue="1800"/>
-                    </file>
-                  <file name="jsp-project-separator-6.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                      <attr name="position" intvalue="1900"/>
-                    </file>
-                  <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
-                      <attr name="position" intvalue="2000"/>
-                    </file>
-                  <file name="jsp-project-separator-7.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                      <attr name="position" intvalue="2100"/>
-                    </file>
-                  <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                      <attr name="position" intvalue="2200"/>
-                    </file>
-                  <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                      <attr name="position" intvalue="2300"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-OpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="sep-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                </folder>
             </folder>
         </folder>
     </folder>
@@ -185,6 +72,7 @@ made subject to such option by the copyright holder.
             <file name="SQLTemplate.sql" url="SQLTemplate.sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.core.Bundle"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="50"/>
             </file>
         </folder>
     </folder>
