@@ -13,3 +13,12 @@ void foo_3();
 #else
 void foo_4();
 #endif
+
+
+#error "stop preprocessor"
+
+
+#if 1
+this must be invisible
+#endif
+
