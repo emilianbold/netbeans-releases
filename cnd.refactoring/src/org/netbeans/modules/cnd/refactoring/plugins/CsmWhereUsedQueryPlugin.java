@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -132,11 +133,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         }   
         fireProgressListenerStep();
         return res;
-    }
-    
-    @Override
-    public Problem checkParameters() {
-        return super.checkParameters();
     }
 
     @Override
@@ -238,11 +234,11 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
         Interrupter interrupter = new Interrupter(){
             public boolean cancelled() {
-                return cancelRequest;
+                return isCancelled();
             }
         };
         for (CsmFile file : files) {
-            if (cancelRequest) {
+            if (isCancelled()) {
                 break;
             }
             Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
@@ -273,7 +269,12 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         } 
         return elements;
     }
-    
+
+    protected final ModificationResult processFiles(Collection<CsmFile> files) {
+        // where used query does not modify files
+        return null;
+    }
+
     private Collection<RefactoringElementImplementation> processIncludeQuery(final CsmFile csmFile) {
         assert isFindUsages() : "must be find usages";
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);

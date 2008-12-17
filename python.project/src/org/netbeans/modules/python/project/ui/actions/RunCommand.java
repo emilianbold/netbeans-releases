@@ -1,16 +1,12 @@
 
 package org.netbeans.modules.python.project.ui.actions;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.python.api.PythonExecution;
-import org.netbeans.modules.python.api.PythonMIMEResolver;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.project.PythonProject;
-import org.netbeans.modules.python.project.PythonProjectUtil;
 import org.netbeans.modules.python.project.ui.customizer.PythonProjectProperties;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
 import org.netbeans.modules.python.project.ui.Utils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -52,7 +48,7 @@ public class RunCommand extends Command {
         final FileObject parent = script.getParent();
         assert script != null;
 
-        final PythonExecution pyexec = new PythonExecution();
+        PythonExecution pyexec = new PythonExecution();
         pyexec.setDisplayName (ProjectUtils.getInformation(pyProject).getDisplayName());                
         //Set work dir - probably we need a property to store work dir
         String path = FileUtil.toFile(parent).getAbsolutePath();
@@ -71,6 +67,12 @@ public class RunCommand extends Command {
         pyexec.setShowInput(true);
         pyexec.setShowWindow(true);
         pyexec.addStandardRecognizers();
+
+        PythonCoverageProvider coverageProvider = PythonCoverageProvider.get(pyProject);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            pyexec = coverageProvider.wrapWithCoverage(pyexec);
+        }
+
         pyexec.run();
     }
 

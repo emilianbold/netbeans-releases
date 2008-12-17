@@ -43,15 +43,21 @@ package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface IteratorExtension {
-    
+    /**
+     * Methods for incorporating discovery in new make project wizard
+     * @param wizard
+     * @return
+     */
     boolean isApplicable(WizardDescriptor wizard);
 
     String getProviderID(WizardDescriptor wizard);
@@ -67,4 +73,14 @@ public interface IteratorExtension {
     void apply(Map<String,Object> map, Project project) throws IOException;
     
     void uninitialize(WizardDescriptor wizard);
+
+    /**
+     * Method delegates a project creating to discovery.
+     * Instantiate make project in simple mode.
+     * 
+     * @param wizard
+     * @return set make project
+     * @throws java.io.IOException
+     */
+    Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
 }

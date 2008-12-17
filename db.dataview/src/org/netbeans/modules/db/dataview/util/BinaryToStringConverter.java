@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.db.dataview.util;
 
+import org.netbeans.modules.db.dataview.meta.DBException;
+
 public class BinaryToStringConverter {
 
     static class ConversionConstants {
@@ -143,6 +145,29 @@ public class BinaryToStringConverter {
             default:
                 return hex;
         }
+    }
+
+    public static byte[] convertBitStringToBytes(String s) throws DBException {
+        int shtBits = s.length() % 8;
+        s = (shtBits > 0 ? "00000000".substring(0, 8 - shtBits) + s : s);
+
+        byte[] buf = new byte[s.length() / 8];
+
+        int bit = 0, index = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if ('1' == s.charAt(i)) { // NOI18N
+                int b = 1 << (7 - bit);
+                buf[index] |= b;
+            } else if ('0' != s.charAt(i)) { // NOI18N
+                throw new DBException(s.charAt(i) + "found at character " + i + "; 0 or 1 expected. ");
+            }
+            bit++;
+            if (bit > 7) {
+                bit = 0;
+                index++;
+            }
+        }
+        return buf;
     }
 
     private BinaryToStringConverter() {
