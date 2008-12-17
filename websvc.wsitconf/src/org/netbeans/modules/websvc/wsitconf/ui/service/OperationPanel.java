@@ -54,6 +54,8 @@ import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -66,6 +68,7 @@ public class OperationPanel extends SectionInnerPanel {
     private BindingOperation operation;
     private boolean inSync = false;
     private Project project;
+    private ConfigVersion cfgVersion;
     
     public OperationPanel(SectionView view, Node node, Project p, BindingOperation operation) {
         super(view);
@@ -73,6 +76,12 @@ public class OperationPanel extends SectionInnerPanel {
         this.node = node;
         this.project = p;
         this.operation = operation;
+
+        cfgVersion = PolicyModelHelper.getWrittenConfigVersion(operation.getParent());
+        if (cfgVersion == null) {
+            cfgVersion = ConfigVersion.getDefault();
+        }
+
         initComponents();
         
         txCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -119,9 +128,15 @@ public class OperationPanel extends SectionInnerPanel {
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) return;
         if (source.equals(txCombo)) {
+
+            cfgVersion = PolicyModelHelper.getWrittenConfigVersion(operation.getParent());
+            if (cfgVersion == null) {
+                cfgVersion = ConfigVersion.getDefault();
+            }
+            
             String selected = (String) txCombo.getSelectedItem();
             if ((selected != null) && (!selected.equals(TxModelHelper.getTx(operation, node)))) {
-                TxModelHelper.setTx(operation, node, selected);
+                TxModelHelper.getInstance(cfgVersion).setTx(operation, node, selected);
             }
         }
 
