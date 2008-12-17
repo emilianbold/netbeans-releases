@@ -359,7 +359,12 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
     @Override
     public PackagerFileElement copyAction(PackagerFileElement o) {
         PackagerFileElement elem = o;
-        return new PackagerFileElement(elem.getType(), new String(elem.getFrom()), new String(elem.getTo()));
+        PackagerFileElement copy;
+        copy = new PackagerFileElement(elem.getType(), new String(elem.getFrom()), new String(elem.getTo()));
+        copy.setOwner(elem.getOwner());
+        copy.setPermission(elem.getPermission());
+        copy.setGroup(elem.getGroup());
+        return copy;
     }
 
     @Override

@@ -46,12 +46,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -70,18 +69,19 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
 
-    CsmObject refactoredObj;
-    ParamTableModel model;
+    private final CsmObject refactoredObj;
+    private CsmFunction<CsmFunction> functionObj;
+    private ParamTableModel model;
     private ChangeListener parent;
     
     private static Action editAction = null;
-    private String returnType;
+    private CharSequence returnType;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
         "protected", // NOI18N
+        "private", // NOI18N
         "<default>", // NOI18N
-        "private" // NOI18N
     };
     
     public Component getComponent() {
@@ -99,8 +99,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     // modifier items in combo - indexes
     private static final int MOD_PUBLIC_INDEX = 0;
     private static final int MOD_PROTECTED_INDEX = 1;
-    private static final int MOD_DEFAULT_INDEX = 2;
-    private static final int MOD_PRIVATE_INDEX = 3;
+    private static final int MOD_PRIVATE_INDEX = 2;
+    private static final int MOD_DEFAULT_INDEX = 3;
 
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
@@ -114,52 +114,46 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private boolean initialized = false;
     public void initialize() {
-            if (initialized) {
-                return;
-            }
-//            org.netbeans.api.java.source.JavaSource source = org.netbeans.api.java.source.JavaSource.forFileObject(org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject(refactoredObj));
-//            source.runUserActionTask(new org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.CompilationController>() {
-//                public void run(org.netbeans.api.java.source.CompilationController info) {
-//                    try {
-//                        info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
-//                        ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
-//                        returnType = e.getReturnType().toString();
-//                        Element def = SourceUtils.getEnclosingTypeElement(e);
-//                        if (def.getKind().isInterface()) {
-//                            modifiersCombo.setEnabled(false);
-//                        }
-                        initTableData();
-//                        setModifier(e.getModifiers());
-                        previewChange.setText(genDeclarationString());
-//                    }
-//                    catch (IOException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//
-//                public void cancel() {
-//                }
-//            }, true);
-            initialized = true;
+        if (initialized) {
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        CsmFunction<CsmFunction> fun = ((CsmFunction<CsmFunction>) CsmRefactoringUtils.getReferencedElement(refactoredObj)).getDeclaration();
+        functionObj = fun;
+        returnType = functionObj.getReturnType().getCanonicalText();
+        if (CsmKindUtilities.isMethod(functionObj)) {
+            modifiersCombo.setEnabled(true);
+            setModifier(((CsmMethod)functionObj).getVisibility());
+        } else {
+            modifiersCombo.setEnabled(false);
+            setModifier(CsmVisibility.NONE);
+        }
+        initTableData();
+        previewChange.setText(genDeclarationString());
+        initialized = true;
     }
     
     protected DefaultTableModel getTableModel() {
         return model;
     }
     
-    protected Set<CsmVisibility> getModifier() {
-        modifiers.remove(CsmVisibility.PRIVATE);
-        modifiers.remove(CsmVisibility.PUBLIC);
-        modifiers.remove(CsmVisibility.PROTECTED);
-        
-        switch (modifiersCombo.getSelectedIndex()) {
-        case MOD_PRIVATE_INDEX: modifiers.add(CsmVisibility.PRIVATE);break;
-        case MOD_DEFAULT_INDEX: break; /* no modifier */
-        case MOD_PROTECTED_INDEX: modifiers.add(CsmVisibility.PROTECTED); break;
-        case MOD_PUBLIC_INDEX: modifiers.add(CsmVisibility.PUBLIC); break;
+    protected CsmVisibility getModifier() {
+        int index = modifiersCombo.getSelectedIndex();
+        switch (index) {
+            case MOD_PRIVATE_INDEX:
+                return CsmVisibility.PRIVATE;
+            case MOD_DEFAULT_INDEX:
+                return CsmVisibility.NONE;
+            case MOD_PROTECTED_INDEX:
+                return CsmVisibility.PROTECTED;
+            case MOD_PUBLIC_INDEX:
+                return CsmVisibility.PUBLIC;
+            default:
+                assert false: "unexpected index:" + index;
         }
-        return modifiers;
+        return CsmVisibility.NONE;
     }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -380,7 +374,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         acceptEditedValue(); 
         int rowCount = model.getRowCount();
-        model.addRow(new Object[] { "par" + rowCount, "Object", "null", new Integer(-1), Boolean.TRUE }); // NOI18N
+        model.addRow(new Object[] { "par" + rowCount, "void", "0", Integer.valueOf(-1), Boolean.TRUE }); // NOI18N
     }//GEN-LAST:event_addButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -463,49 +457,48 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private void initTableData() {
-//        ExecutableElement method = (ExecutableElement) refactoredObj.resolveElement(info);
-        @SuppressWarnings("unchecked")
-        CsmFunction<CsmFunction> method = (CsmFunction<CsmFunction>) refactoredObj;
-        CsmFunctionParameterList pars = method.getParameterList();
+        Collection<CsmParameter> pars = functionObj.getParameters();
 
-//        List typeList = new ArrayList();
-//        for (Iterator parIt = pars.iterator(); parIt.hasNext(); ) {
-//            Parameter par = (Parameter) parIt.next();
-//            typeList.add(par.getType());
-//        }
+        List<CsmType> typeList = new ArrayList<CsmType>();
+        for (CsmParameter par: pars) {
+            typeList.add(par.getType());
+        }
 
         Collection<CsmFunction<CsmFunction>> allMethods = new ArrayList<CsmFunction<CsmFunction>>();
 //        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
 //        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
-        allMethods.add(method);
+        allMethods.add(functionObj);
         
         for (CsmFunction<CsmFunction> currentMethod: allMethods) {
             int originalIndex = 0;
             for (CsmParameter par: currentMethod.getParameters()) {
                 CsmType desc = par.getType();
-//                String typeRepresentation;
-//                if (par.isVarArgs() && originalIndex == pars.size()-1) {
-//                    typeRepresentation = getTypeStringRepresentation(((ArrayType)desc).getComponentType()) + " ..."; // NOI18N
-//                } else {
-//                    typeRepresentation = getTypeStringRepresentation(desc);
-//                }
+                CharSequence typeRepresentation;
+                if (par.isVarArgs() && originalIndex == pars.size()-1) {
+                    typeRepresentation = "..."; // NOI18N
+                } else {
+                    typeRepresentation = getTypeStringRepresentation(desc);
+                }
 //                LocalVarScanner scan = new LocalVarScanner(info, null);
 //                scan.scan(info.getTrees().getPath(method), par);
 //                Boolean removable = !scan.hasRefernces();
+                Boolean removable = false;
                 if (model.getRowCount()<=originalIndex) {
-//                    Object[] parRep = new Object[] { par.toString(), typeRepresentation, "", new Integer(originalIndex), removable };
-//                    model.addRow(parRep);
+                    Object[] parRep = new Object[] { par.getName(), typeRepresentation, "", Integer.valueOf(originalIndex), removable };
+                    model.addRow(parRep);
                 } else {
-//                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
-//                    ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
+                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+                    @SuppressWarnings("unchecked")
+                    Vector<Object> data = (Vector<Object>) model.getDataVector().get(originalIndex);
+                    data.set(4, removable);
                 }
                 originalIndex++;
             }
         }
     }
     
-    private static String getTypeStringRepresentation(CsmType desc) {
-        return desc.toString();
+    private static CharSequence getTypeStringRepresentation(CsmType desc) {
+        return desc.getCanonicalText();
     }
 
     private boolean acceptEditedValue() {
@@ -546,19 +539,23 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
     }
 
-    private Set<CsmVisibility> modifiers = new HashSet<CsmVisibility>();
+    private CsmVisibility modifier = CsmVisibility.NONE;
 
-    private void setModifier(Set<CsmVisibility> mods) {
-        this.modifiers.clear();
-        this.modifiers.addAll(mods);
-        if (mods.contains(CsmVisibility.PRIVATE)) {
-            modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
-        } else if (mods.contains(CsmVisibility.PROTECTED)) {
-            modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
-        } else if (mods.contains(CsmVisibility.PUBLIC)) {
-            modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-        } else {
-            modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+    private void setModifier(CsmVisibility visibility) {
+        this.modifier = visibility;
+        switch (visibility) {
+            case NONE:
+                modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+                break;
+            case PRIVATE:
+                modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
+                break;
+            case PROTECTED:
+                modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
+                break;
+            case PUBLIC:
+                modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
+                break;
         }
     }
 
@@ -566,9 +563,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         // generate preview for modifiers
         // access modifiers
         String mod = modifiersCombo.getSelectedIndex() != MOD_DEFAULT_INDEX /*default modifier?*/ ?
-            (String) modifiersCombo.getSelectedItem() + ' ' : ""; // NOI18N
+            (String) modifiersCombo.getSelectedItem() + ":" : ""; // NOI18N
         
-        StringBuffer buf = new StringBuffer(mod);
+        StringBuilder buf = new StringBuilder(mod);
         // other than access modifiers - using data provided by the element
         // first of all, reset access modifier, because it is generated from combo value
 //        String otherMod = CsmVisibility.toString(((CallableFeature) refactoredObj).getModifiers() & 0xFFFFFFF8);
@@ -580,6 +577,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         // for the both - method and constructor
         String name;
         if (CsmKindUtilities.isConstructor(refactoredObj)) {
+            buf.append(' ');
             name = CsmRefactoringUtils.getSimpleText(refactoredObj);
         } else {
             buf.append(returnType);
@@ -592,7 +590,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @SuppressWarnings("unchecked")
         Vector<List<String>> data = model.getDataVector();
         @SuppressWarnings("unchecked")
-        List<String>[] parameters = data.toArray(new List[0]);
+        List<CharSequence>[] parameters = data.toArray(new List[0]);
         if (parameters.length > 0) {
             int i;
             for (i = 0; i < parameters.length - 1; i++) {
@@ -660,7 +658,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
         
         public boolean isRemovable(int row) {
-            return true;//((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
+            return ((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
         }
         
         @Override
