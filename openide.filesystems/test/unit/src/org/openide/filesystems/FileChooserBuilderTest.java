@@ -36,6 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.openide.filesystems;
 
 import java.awt.Component;
@@ -49,13 +50,11 @@ import javax.swing.JFileChooser;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
-import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
 
 /**
- *
  * @author tim
  */
 public class FileChooserBuilderTest extends NbTestCase {
@@ -67,9 +66,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setDirectoriesOnly method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetDirectoriesOnly() {
-        System.out.println("setDirectoriesOnly");
         FileChooserBuilder instance = new FileChooserBuilder("x");
         boolean dirsOnly = instance.createFileChooser().getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY;
         assertFalse(dirsOnly);
@@ -81,9 +78,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setFilesOnly method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetFilesOnly() {
-        System.out.println("setFilesOnly");
         FileChooserBuilder instance = new FileChooserBuilder("y");
         boolean filesOnly = instance.createFileChooser().getFileSelectionMode() == JFileChooser.FILES_ONLY;
         assertFalse(filesOnly);
@@ -95,9 +90,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setTitle method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetTitle() {
-        System.out.println("setTitle");
         FileChooserBuilder instance = new FileChooserBuilder("a");
         assertNull(instance.createFileChooser().getDialogTitle());
         instance.setTitle("foo");
@@ -107,9 +100,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setApproveText method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetApproveText() {
-        System.out.println("setApproveText");
         FileChooserBuilder instance = new FileChooserBuilder("b");
         assertNull(instance.createFileChooser().getDialogTitle());
         instance.setApproveText("bar");
@@ -119,9 +110,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setFileFilter method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetFileFilter() {
-        System.out.println("setFileFilter");
         FileFilter filter = new FileFilter() {
 
             @Override
@@ -142,9 +131,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setDefaultWorkingDirectory method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetDefaultWorkingDirectory() throws IOException {
-        System.out.println("setDefaultWorkingDirectory");
         FileChooserBuilder instance = new FileChooserBuilder("d");
         File dir = getWorkDir();
         assertTrue("tmpdir is not sane", dir.exists() && dir.isDirectory());
@@ -155,9 +142,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setFileHiding method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetFileHiding() {
-        System.out.println("setFileHiding");
         FileChooserBuilder instance = new FileChooserBuilder("e");
         assertFalse(instance.createFileChooser().isFileHidingEnabled());
         instance.setFileHiding(true);
@@ -167,9 +152,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setControlButtonsAreShown method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetControlButtonsAreShown() {
-        System.out.println("setControlButtonsAreShown");
         FileChooserBuilder instance = new FileChooserBuilder("f");
         assertTrue(instance.createFileChooser().getControlButtonsAreShown());
         instance.setControlButtonsAreShown(false);
@@ -179,9 +162,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of setAccessibleDescription method, of class FileChooserBuilder.
      */
-    @Test
     public void testSetAccessibleDescription() {
-        System.out.println("setAccessibleDescription");
         FileChooserBuilder instance = new FileChooserBuilder("g");
         String desc = "desc";
         instance.setAccessibleDescription(desc);
@@ -191,9 +172,7 @@ public class FileChooserBuilderTest extends NbTestCase {
     /**
      * Test of createFileChooser method, of class FileChooserBuilder.
      */
-    @Test
     public void testCreateFileChooser() {
-        System.out.println("createFileChooser");
         FileChooserBuilder instance = new FileChooserBuilder("h");
         assertNotNull(instance.createFileChooser());
     }
@@ -214,9 +193,7 @@ public class FileChooserBuilderTest extends NbTestCase {
         return null;
     }
 
-    @Test
     public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException {
-        System.out.println("forceUseOfDefaultWorkingDirectory");
         FileChooserBuilder instance = new FileChooserBuilder("i");
         instance.setDirectoriesOnly(true);
         final File toDir = getWorkDir();
