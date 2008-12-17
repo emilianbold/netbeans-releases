@@ -63,4 +63,13 @@ public abstract class MetadataElement {
      * @return the name.
      */
     public abstract String getName();
+
+    /**
+     * This can be overriden by elements that can have names that are null.  The default
+     * is to just use the name provided by the database.
+     * @return
+     */
+    String getInternalName() {
+        return getName();
+    }
 }
