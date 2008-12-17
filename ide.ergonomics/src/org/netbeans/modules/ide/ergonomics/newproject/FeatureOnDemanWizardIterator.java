@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.WizardDescriptor;
@@ -72,7 +71,6 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private WizardDescriptor.InstantiatingIterator delegateIterator;
     private Boolean doEnable = null;
     private FileObject template;
-    private LicenseStep licenseStep = null;
     
     public FeatureOnDemanWizardIterator (FileObject template) {
         this.template = template;
@@ -111,21 +109,6 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         return res;
     }
 
-    @SuppressWarnings("unchecked")
-    private void compatPanels () {
-        if (wiz != null && licenseStep != null) {
-            Collection<UpdateElement> approved = (Collection<UpdateElement>) wiz.getProperty (APPROVED_ELEMENTS);
-            Collection<UpdateElement> chosen = (Collection<UpdateElement>) wiz.getProperty (CHOSEN_ELEMENTS_FOR_INSTALL);
-            boolean allApproved = true;
-            for (UpdateElement el : chosen) {
-                allApproved &= approved.contains (el);
-            }
-            if (allApproved) {
-                panels.remove (licenseStep);
-            }
-        }
-    }
-    
     private void createPanels () {
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
@@ -244,7 +227,6 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     }
 
     public boolean hasNext () {
-        compatPanels ();
         if (getDelegateIterator () != null) {
             return getDelegateIterator ().hasNext ();
         }
@@ -252,11 +234,10 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     }
 
     public boolean hasPrevious () {
-        compatPanels ();
         if (getDelegateIterator () != null) {
             return getDelegateIterator ().hasPrevious ();
         }
-        return index > 0 && !(current () instanceof InstallStep);
+        return index > 0;
     }
 
     public void nextPanel () {
