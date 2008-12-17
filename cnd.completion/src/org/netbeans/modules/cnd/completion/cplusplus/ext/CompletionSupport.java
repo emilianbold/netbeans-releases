@@ -107,6 +107,23 @@ public final class CompletionSupport {
         return isIncludeCompletionEnabled(doc, offset);
     }
 
+    public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+        if (ts == null) {
+            return false;
+        }
+        if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            @SuppressWarnings("unchecked")
+            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) ts.embedded();
+            embedded.moveStart();
+            embedded.moveNext();
+            embedded.moveNext(); // skip starting #
+            CndTokenUtilities.shiftToNonWhite(embedded, false);
+            return embedded.offset() + embedded.token().length() >= offset;
+        }
+        return false;
+    }
+
     public static boolean isIncludeCompletionEnabled(Document doc, int offset) {
         TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
