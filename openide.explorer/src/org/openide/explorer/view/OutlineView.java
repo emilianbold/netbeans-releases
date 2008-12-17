@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.Properties;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -82,6 +83,7 @@ import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RowModel;
 import org.netbeans.swing.outline.TreePathSupport;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -804,14 +806,21 @@ public class OutlineView extends JScrollPane {
         public Object transformValue(Object value) {
             if (value instanceof OutlineViewOutlineColumn) {
                 OutlineViewOutlineColumn c = (OutlineViewOutlineColumn) value;
-                String dn = c.getHeaderValue ().toString ();
+                String dn = c.getRawColumnName ();
+                if (dn == null) {
+                    dn = c.getHeaderValue ().toString ();
+                }
                 String desc = c.getShortDescription (null);
                 if (desc == null) {
                     return dn;
                 }
-                return NbBundle.getMessage (OutlineView.class, "OutlineViewOutline_NameAndDesc", dn, desc);
+                return NbBundle.getMessage (OutlineView.class, "OutlineViewOutline_NameAndDesc", dn, desc); // NOI18N
             } else if (COLUMNS_SELECTOR_HINT.equals (value)) {
                 return NbBundle.getMessage (OutlineView.class, COLUMNS_SELECTOR_HINT);
+            } else if (value instanceof AbstractButton) {
+                AbstractButton b = (AbstractButton) value;
+                Mnemonics.setLocalizedText (b, b.getText ());
+                return b;
             }
             return PropertiesRowModel.getValueFromProperty(value);
         }
@@ -917,6 +926,17 @@ public class OutlineView extends JScrollPane {
                     return defaultValue;
                 }
                 return rowModel.getShortDescription (getModelIndex () - 1);
+            }
+
+            public String getRawColumnName () {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (getModelIndex () == 0) {
+                    return null;
+                }
+                return rowModel.getRawColumnName (getModelIndex () - 1);
             }
 
             /** This is here to compute and set the header tooltip. */

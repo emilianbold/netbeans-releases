@@ -45,12 +45,14 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.WeakHashMap;
+import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 
@@ -63,6 +65,9 @@ class PropertiesRowModel implements RowModel {
     private Node.Property[] prop = new Node.Property[0];
     private Outline outline;
     private WeakHashMap<Node, PropertyChangeListener> nodesListenersCache = new WeakHashMap<Node, PropertyChangeListener> ();
+    private String [] names = new String [prop.length];
+    private String [] descs = new String [prop.length];
+
     
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
@@ -118,12 +123,29 @@ class PropertiesRowModel implements RowModel {
     }
 
     public String getColumnName(int column) {
-        return prop[column].getDisplayName();
+        assert column < prop.length : column + " must be bellow " + prop.length;
+        if (names [column] == null) {
+            String n = prop[column].getDisplayName ();
+            JLabel l = new JLabel ();
+            Mnemonics.setLocalizedText (l, n);
+            names [column] = l.getText ();
+        }
+        return names [column];
     }
 
     public String getShortDescription (int column) {
         assert column < prop.length : column + " must be bellow " + prop.length;
-        return prop [column].getShortDescription ();
+        if (descs [column] == null) {
+            String n = prop[column].getShortDescription ();
+            JLabel l = new JLabel ();
+            Mnemonics.setLocalizedText (l, n);
+            descs [column] = l.getText ();
+        }
+        return descs [column];
+    }
+
+    public String getRawColumnName (int column) {
+        return prop[column].getDisplayName();
     }
 
     public Object getValueFor(Object node, int column) {
@@ -179,6 +201,8 @@ class PropertiesRowModel implements RowModel {
     
     public void setProperties(Node.Property[] newProperties) {
         prop = newProperties;
+        names = new String [prop.length];
+        descs = new String [prop.length];
     }
     
     /**
