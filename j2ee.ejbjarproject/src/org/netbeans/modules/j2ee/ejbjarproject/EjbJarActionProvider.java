@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -84,7 +85,9 @@ import org.openide.util.NbBundle;
  * strange things to Web actions. E.g. compile-single.
  */
 class EjbJarActionProvider implements ActionProvider {
-    
+
+    private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
+
     // Definition of commands
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
@@ -244,6 +247,7 @@ class EjbJarActionProvider implements ActionProvider {
         
         //EXECUTION PART
         if (command.equals(COMMAND_RUN_SINGLE)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupTestSingle(p, files);
@@ -284,8 +288,10 @@ class EjbJarActionProvider implements ActionProvider {
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
+            setDirectoryDeploymentProperty(p);
         //DEBUGGING PART
         } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] javaFiles = findJavaSources(context);
             if (javaFiles != null && javaFiles.length == 1 && !SourceUtils.getMainClasses(javaFiles[0]).isEmpty()) {
                 FileObject javaFile = javaFiles[0];
@@ -301,7 +307,8 @@ class EjbJarActionProvider implements ActionProvider {
                 targetNames = new String [] {"debug-single-main"};
                 return targetNames;
             }
-            
+
+            setDirectoryDeploymentProperty(p);
             FileObject[] testFiles = findTestSources(context, false);
             if (testFiles != null) {
                 targetNames = setupDebugTestSingle(p, testFiles);
@@ -315,6 +322,7 @@ class EjbJarActionProvider implements ActionProvider {
             }
         // APPLY CODE CHANGES DEBUGGING
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findJavaSources(context);
             String path = null;
             final String[] classes = { "" };
@@ -374,9 +382,11 @@ class EjbJarActionProvider implements ActionProvider {
             }
         // TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupTestSingle(p, files);
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
         } else {
@@ -387,7 +397,20 @@ class EjbJarActionProvider implements ActionProvider {
         
         return targetNames;
     }
-    
+
+     private void setDirectoryDeploymentProperty(Properties p) {
+        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+        if (instance != null) {
+            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+            String sdi = jmp.getServerInstanceID();
+            J2eeModule mod = jmp.getJ2eeModule();
+            if (sdi != null && mod != null) {
+                boolean cFD = Deployment.getDefault().canFileDeploy(instance, mod);
+                p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, "" + cFD); // NOI18N
+            }
+        }
+    }
+
     private String[] setupTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);

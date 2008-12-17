@@ -160,7 +160,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtRepositoryFolder() {
         if (repositoryFolder==null) {
-            repositoryFolder = new JTextFieldOperator(this, 1);
+            repositoryFolder = new JTextFieldOperator(this);
         }
         return repositoryFolder;
     }
@@ -195,7 +195,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtRepositoryRevision() {
         if (repositoryRevision==null) {
-            repositoryRevision = new JTextFieldOperator(this);
+            repositoryRevision = new JTextFieldOperator(this, 1);
         }
         return repositoryRevision;
     }

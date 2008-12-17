@@ -612,9 +612,9 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         Set<? extends IndexedConstant> constants = getIndex().getConstants(constantFqn);
         for (IndexedConstant indexedConstant : constants) {
             if (module.equals(indexedConstant.getFqn())) {
-                String type = indexedConstant.getType();
-                if (type != null) {
-                    return Collections.singleton(type);
+                Set<? extends String> types = indexedConstant.getTypes();
+                if (types != null) {
+                    return types;
                 }
             }
         }
