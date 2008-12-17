@@ -46,14 +46,14 @@ import java.io.UnsupportedEncodingException;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 
 /** Tests the OutWriter class
  *
  * @author Tim Boudreau
  */
-public class OutWriterTest extends TestCase {
+public class OutWriterTest extends NbTestCase {
 
     public OutWriterTest(String testName) {
         super(testName);

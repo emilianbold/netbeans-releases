@@ -921,14 +921,14 @@ public class ETable extends JTable {
                     b.getAccessibleContext().setAccessibleDescription(selectVisibleColumnsLabel);
                     b.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent evt) {
-                            ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
+                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
                         }
                     });
                     b.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent me) {
                             if (me.getButton() == MouseEvent.BUTTON3) {
-                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                                ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
                             }
                         }
                     });

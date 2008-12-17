@@ -153,7 +153,7 @@ public class OutlineView extends JScrollPane {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
-        outline = new OutlineViewOutline(model);
+        outline = new OutlineViewOutline(model, rowModel);
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
@@ -792,16 +792,30 @@ public class OutlineView extends JScrollPane {
      * for sorting the rows.
      */
     private static class OutlineViewOutline extends Outline {
-        public OutlineViewOutline(OutlineModel mdl) {
+        private final PropertiesRowModel rowModel;
+        private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
+        public OutlineViewOutline(OutlineModel mdl, PropertiesRowModel rowModel) {
             super(mdl);
-            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "ACN_ColumnsSelector")); //NOI18N
+            this.rowModel = rowModel;
+            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "CTL_ColumnsSelector")); //NOI18N
         }
         
         @Override
         public Object transformValue(Object value) {
+            if (value instanceof OutlineViewOutlineColumn) {
+                OutlineViewOutlineColumn c = (OutlineViewOutlineColumn) value;
+                String dn = c.getHeaderValue ().toString ();
+                String desc = c.getShortDescription (null);
+                if (desc == null) {
+                    return dn;
+                }
+                return NbBundle.getMessage (OutlineView.class, "OutlineViewOutline_NameAndDesc", dn, desc);
+            } else if (COLUMNS_SELECTOR_HINT.equals (value)) {
+                return NbBundle.getMessage (OutlineView.class, COLUMNS_SELECTOR_HINT);
+            }
             return PropertiesRowModel.getValueFromProperty(value);
         }
-        
+
         @Override
         public boolean editCellAt(int row, int column, EventObject e) {
             Object o = getValueAt(row, column);
@@ -890,6 +904,19 @@ public class OutlineView extends JScrollPane {
                 OutlineViewOutlineHeaderRenderer ovohr = new OutlineViewOutlineHeaderRenderer(orig);
                 return ovohr;
             }
+
+            public String getShortDescription (String defaultValue) {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (getModelIndex () == 0) {
+                    // 1st column
+                    return defaultValue;
+                }
+                return rowModel.getShortDescription (getModelIndex () - 1);
+            }
+
             /** This is here to compute and set the header tooltip. */
             class OutlineViewOutlineHeaderRenderer implements TableCellRenderer {
                 private TableCellRenderer orig;
@@ -899,16 +926,7 @@ public class OutlineView extends JScrollPane {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (tooltip == null) {
-                        TableModel model = getModel();
-                        if (model.getRowCount() <= 0) {
-                            // now rows --> we cannot compute the header tooltip
-                            return oc;
-                        }
-                        Object sampleValue = model.getValueAt(0, getModelIndex());
-                        if (sampleValue instanceof Node.Property) {
-                            Node.Property prop = (Node.Property)sampleValue;
-                            tooltip = prop.getShortDescription();
-                        }
+                        tooltip = getShortDescription (value.toString ());
                     }
                     if ((tooltip != null) && (oc instanceof JComponent)) {
                         JComponent jc = (JComponent)oc;
