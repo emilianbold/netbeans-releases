@@ -493,6 +493,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         _clearIncludes();
         _clearMacros();
+        _clearErrors();
         if (reportParse || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }

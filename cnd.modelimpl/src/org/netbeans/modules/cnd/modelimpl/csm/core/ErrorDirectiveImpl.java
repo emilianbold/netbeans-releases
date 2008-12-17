@@ -43,34 +43,61 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class ErrorDirectiveImpl extends SimpleOffsetableImpl implements CsmErrorDirective {
-    private ErrorDirectiveImpl(CsmOffsetable offs) {
-        super(offs);
+public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
+    private final String msg;
+    private ErrorDirectiveImpl(CsmFile file, String text, CsmOffsetable offs) {
+        super(file, offs);
+        this.msg = text;
     }
 
-    public static ErrorDirectiveImpl create(CsmOffsetable offs) {
-        return new ErrorDirectiveImpl(offs);
+    public static ErrorDirectiveImpl create(CsmFile file, String msg, CsmOffsetable offs) {
+        return new ErrorDirectiveImpl(file, msg, offs);
     }
 
     @Override
     public CharSequence getText() {
-        return "#error"; // NOI18N
+        return msg;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + msg;
+    }
+
+    @Override
+    public int hashCode() {
+        return 47 * super.hashCode() + msg.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final ErrorDirectiveImpl other = (ErrorDirectiveImpl) obj;
+        return this.msg.equals(other.msg);
+    }
+
+
     ///////////////////////////////////////////////////////////////////////
     // serialization
     
+    @SuppressWarnings("unchecked")
     public ErrorDirectiveImpl(DataInput input) throws IOException {
         super(input);
+        this.msg = input.readUTF();
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        output.writeUTF(msg);
     }
 }

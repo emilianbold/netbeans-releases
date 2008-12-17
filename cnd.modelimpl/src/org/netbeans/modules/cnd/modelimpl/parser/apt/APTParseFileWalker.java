@@ -159,7 +159,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);
         setEndPosition(pos, token);
-        return ErrorDirectiveImpl.create(pos);
+        return ErrorDirectiveImpl.create(this.getFile(), token.getText(), pos);
     }
 
     private MacroImpl createMacro(APTDefine define) {
