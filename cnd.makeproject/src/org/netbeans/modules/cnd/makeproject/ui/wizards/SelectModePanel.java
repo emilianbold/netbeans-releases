@@ -249,45 +249,70 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
     }
-    
+
+    private static final byte noMessage = 0;
+    private static final byte notFolder = 1;
+    private static final byte cannotReadFolder = 2;
+    private static final byte cannotWriteFolder = 3;
+    private static final byte alreadyNbPoject = 4;
+    private static final byte notFoundMakeAndConfigure = 5;
+    private byte messageKind = noMessage;
+
     boolean valid(WizardDescriptor wizardDescriptor) {
+        messageKind = noMessage;
         String path = projectFolder.getText().trim();
-        if (path.length() == 0) {
-            return false;
-        }
-        File file = new File(path);
-        if (!(file.isDirectory() && file.canRead())) {
-            return false;
-        }
-        if (simpleMode.isSelected()) {
-            if (!file.canWrite()) {
+        try {
+            if (path.length() == 0) {
                 return false;
             }
-            File nbFile = new File(path+"/nbproject/project.xml"); // NOI18N
-            if (nbFile.exists()) {
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead())) {
+                if (file.isDirectory()) {
+                    messageKind = cannotReadFolder;
+                } else {
+                    messageKind = notFolder;
+                }
                 return false;
             }
-        }
-        file = new File(path+"/Makefile"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
+            if (simpleMode.isSelected()) {
+                if (!file.canWrite()) {
+                    messageKind = cannotWriteFolder;
+                    return false;
+                }
+                File nbFile = new File(path+"/nbproject/project.xml"); // NOI18N
+                if (nbFile.exists()) {
+                    messageKind = alreadyNbPoject;
+                    return false;
+                }
+            }
+            file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            if (simpleMode.isSelected()) {
+                messageKind = notFoundMakeAndConfigure;
+                return false;
+            }
             return true;
+        } finally {
+            if (messageKind > 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path));
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+            }
         }
-        file = new File(path+"/makefile"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
-            return true;
-        }
-        file = new File(path+"/configure"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
-            return true;
-        }
-        if (simpleMode.isSelected()) {
-            return false;
-        }
-        return true;
     }
     
-    private String getString(String key) {
-        return NbBundle.getBundle(SelectModePanel.class).getString(key);
+    private String getString(String key, String ... params){
+        return NbBundle.getMessage(ImportProjectPanel.class, key, params);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
