@@ -83,14 +83,58 @@ public class Table extends Tuple {
     }
 
     /**
+     * Get the primary key for this table
+     *
+     * @return the primary key for this table
+     */
+    public PrimaryKey getPrimaryKey() {
+        return impl.getPrimaryKey();
+    }
+
+    /**
+     * Get the indexes for this table
+     *
+     * @return the indexes for this table, or an empty collection if none exist
+     */
+    public Collection<Index> getIndexes() {
+        return impl.getIndexes();
+    }
+
+    /**
+     * Get an index of a given name
+     * @param name the name of the index
+     * @return the index of the given name, or null if it doesn't exist
+     */
+    public Index getIndex(String name) {
+        return impl.getIndex(name);
+    }
+
+    /**
+     * Get the foreign keys for this table
+     *
+     * @return the foreign keys for the table, or an empty collection if none exist
+     */
+    public Collection<ForeignKey> getForeignKeys() {
+        return impl.getForeignKeys();
+    }
+
+    /**
      * Refresh the table metadata from the database
      */
     public void refresh() {
         impl.refresh();
     }
 
+
     @Override
     public String toString() {
         return "Table[name='" + getName() + "']"; // NOI18N
+    }
+
+    /**
+     * Used to find a foreign key if the actual name is null
+     */
+    ForeignKey getForeignKeyByInternalName(String internalName) {
+        return impl.getForeignKeyByInternalName(internalName);
     }
 }

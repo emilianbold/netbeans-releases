@@ -100,6 +100,10 @@ public class JDBCCatalog extends CatalogImplementation {
         return MetadataUtilities.find(name, initSchemas());
     }
 
+    public final void refresh() {
+        schemas = null;
+    }
+
     @Override
     public String toString() {
         return "JDBCCatalog[name='" + name + "',default=" + _default + "]"; // NOI18N
