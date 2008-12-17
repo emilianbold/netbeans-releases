@@ -97,10 +97,12 @@ public:
  
 private:
     CComPtr<IWebBrowser2>  m_spWebBrowser;
+    CComPtr<IClassFactory> m_spCFHTTP;  // for HTTP Monitor
+    CComPtr<IClassFactory> m_spCFHTTPS; // for HTTP Monitor
     DWORD m_dwWebBrowserCookie;
     DWORD m_dwThreadID;
     BOOL m_bAdvised;
-    DbgpConnection *m_pDbgpConnection;
+    DbgpConnection *m_pDbgpConnection; 
     BOOL debuggerStarted;
 
     void checkAndInitNetbeansDebugging(BSTR bstrURL);
