@@ -66,11 +66,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
@@ -105,6 +103,8 @@ public final class ServerRegistry implements java.io.Serializable {
     private transient Collection pluginListeners = new HashSet();
     private transient Collection instanceListeners = new ArrayList();
     private transient InstanceListener[] instanceListenersArray;
+    private transient PluginInstallListener pluginL;
+    private transient InstanceInstallListener instanceL;
 
     private ServerRegistry() {
         super();
@@ -124,7 +124,7 @@ public final class ServerRegistry implements java.io.Serializable {
         FileObject dir = rep.getDefaultFileSystem().findResource(DIR_JSR88_PLUGINS);
         if (dir != null) {
             LOGGER.log(Level.FINE, "Loading server plugins"); // NOI18N
-            dir.addFileChangeListener(new PluginInstallListener());
+            dir.addFileChangeListener(pluginL = new PluginInstallListener(dir));
             FileObject[] ch = dir.getChildren();
             for (int i = 0; i < ch.length; i++) {
                 addPlugin(ch[i]);
@@ -132,7 +132,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
             LOGGER.log(Level.FINE, "Loading server instances"); // NOI18N
             dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
-            dir.addFileChangeListener(new InstanceInstallListener());
+            dir.addFileChangeListener(instanceL = new InstanceInstallListener(dir));
             ch = dir.getChildren();
             for (int i = 0; i < ch.length; i++) {
                 addInstance(ch[i]);
@@ -212,9 +212,9 @@ public final class ServerRegistry implements java.io.Serializable {
             server = (Server) serversMap().get(name);
             if (server != null) {
                 // remove all registered server instances of the given server type
-                ServerInstance[] instances = getServerInstances();
-                for (int i = 0; i < instances.length; i++) {
-                    ServerInstance si = instances[i];
+                ServerInstance[] tmp = getServerInstances();
+                for (int i = 0; i < tmp.length; i++) {
+                    ServerInstance si = tmp[i];
                     if (server.equals(si.getServer())) {
                         removeServerInstance(si.getUrl());
                     }
@@ -227,45 +227,36 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    class PluginInstallListener extends LayerListener {
+    class PluginInstallListener extends FileChangeAdapter {
+        private final FileObject dir;
+
+        private PluginInstallListener(FileObject dir) {
+            this.dir = dir;
+        }
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             super.fileFolderCreated(fe);
             addPlugin(fe.getFile());
         }
+        @Override
         public void fileDeleted(FileEvent fe) {
             super.fileDeleted(fe);
             removePlugin(fe.getFile());
         }
     }
 
-    class InstanceInstallListener extends LayerListener {
+    class InstanceInstallListener extends FileChangeAdapter {
+        private final FileObject dir;
+
+        private InstanceInstallListener(FileObject dir) {
+            this.dir = dir;
+        }
+        @Override
         public void fileDataCreated(FileEvent fe) {
             super.fileDataCreated(fe);
             addInstance(fe.getFile());
         }
         // PENDING should support removing of instances?
-    }
-
-    class LayerListener implements FileChangeListener {
-
-        public void fileAttributeChanged(FileAttributeEvent fae) {
-        }
-        
-        public void fileChanged(FileEvent fe) {
-        }
-        
-        public void fileFolderCreated(FileEvent fe) {
-        }
-        
-        public void fileRenamed(FileRenameEvent fe) {
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-        }
-        
-        public void fileDeleted(FileEvent fe) {
-        }
-
     }
 
     public Collection<Server> getServers() {
@@ -310,11 +301,11 @@ public final class ServerRegistry implements java.io.Serializable {
         if (url == null)
             return;
 
-        ServerInstance instance = null;
+        ServerInstance tmp = null;
         synchronized (this) {
-            instance = (ServerInstance) instancesMap().remove(url);
+            tmp = (ServerInstance) instancesMap().remove(url);
         }
-        if (instance != null) {
+        if (tmp != null) {
             fireInstanceListeners(url, false);
             removeInstanceFromFile(url);
         }
@@ -429,21 +420,21 @@ public final class ServerRegistry implements java.io.Serializable {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
-                    ServerInstance instance = new ServerInstance(server,url);
+                    ServerInstance tmp = new ServerInstance(server,url);
                     // PENDING persist url/password in ServerString as well
-                    instancesMap().put(url,instance);
+                    instancesMap().put(url,tmp);
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
                     writeInstanceToFile(url,username,password);
-                    instance.getInstanceProperties().setProperty(
+                    tmp.getInstanceProperties().setProperty(
                             InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                     if (displayName != null) {
-                        instance.getInstanceProperties().setProperty(
+                        tmp.getInstanceProperties().setProperty(
                            InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                     }
 
                     for (Map.Entry<String, String> entry : properties.entrySet()) {
-                        instance.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
+                        tmp.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
                     }
 
                     DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
