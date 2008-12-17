@@ -111,7 +111,8 @@ public class FilesAndAttributesCheck extends NbTestCase {
         FileSystem mfs = Repository.getDefault().getDefaultFileSystem();
 
         Map<String, List<String>> filesAndAttribs = new TreeMap<String, List<String>>();
-        for (String f : System.getProperties().stringPropertyNames()) {
+        for (Object o : System.getProperties().keySet()) {
+            String f = (String)o;
             if (f.startsWith(dynVery)) {
                 int cnt = Integer.parseInt(System.getProperties().getProperty(f));
                 f = f.substring(dynVery.length());
