@@ -76,7 +76,7 @@ public final class Main extends Object {
   public static void setStatusText (String msg) {
         Splash.getInstance().print (msg);
         if (moduleSystemInitialized) {
-            org.netbeans.core.startup.CoreBridge.conditionallyPrintStatus (msg);
+            CoreBridge.getDefault().setStatusText(msg);
         }
   }
   
