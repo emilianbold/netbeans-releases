@@ -42,12 +42,8 @@ package org.netbeans.modules.maven.newproject;
 import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
@@ -55,39 +51,29 @@ import org.openide.util.NbBundle;
 
 /**
  *
- *@author mkleint
+ *@author Dafe Simonek
  */
-public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
-    private static final long serialVersionUID = 1L;
+    private int index;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor wiz;
     
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
-    static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
-    private final List<ChangeListener> listeners;
+    private WebAppWizardIterator() {}
     
-    public MavenWizardIterator() {
-        listeners = new ArrayList<ChangeListener>();
+    public static WebAppWizardIterator createIterator() {
+        return new WebAppWizardIterator();
     }
-    
-    public static MavenWizardIterator createIterator() {
-        return new MavenWizardIterator();
-    }
-
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ChooseWizardPanel(),
-            new BasicWizardPanel(false)
+            new BasicWizardPanel(true)
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep"),
-            NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep2")
+            NbBundle.getMessage(WebAppWizardIterator.class, "LBL_CreateProjectStep2"),
         };
     }
     
@@ -101,87 +87,20 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     }
     
     public void initialize(WizardDescriptor wiz) {
-        this.wiz = wiz;
         index = 0;
         panels = createPanels();
-        updateSteps();
-    }
-    
-    public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null); //NOI18N
-        this.wiz.putProperty("name",null); //NOI18N
-        this.wiz = null;
-        panels = null;
-        listeners.clear();
-    }
-    
-    public String name() {
-        return MessageFormat.format(org.openide.util.NbBundle.getMessage(MavenWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
-    }
-    
-    public boolean hasNext() {
-        return index < panels.length - 1;
-    }
-    
-    public boolean hasPrevious() {
-        return index > 0;
-    }
-    
-    public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        index++;
-    }
-    
-    public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        index--;
-    }
-    
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
-    
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-
-    private void fireChange() {
-        synchronized (listeners) {
-            for (ChangeListener list : listeners) {
-                list.stateChanged(new ChangeEvent(this));
-            }
-        }
-    }
-
-    private void updateSteps() {
+        this.wiz = wiz;
         // Make sure list of steps is accurate.
-        String[] steps = new String[panels.length];
-        String[] basicOnes = createSteps();
-        System.arraycopy(basicOnes, 0, steps, 0, basicOnes.length);
+        String[] steps = createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            if (i >= basicOnes.length || steps[i] == null) {
+            if (steps[i] == null) {
                 // Default step name to component name of panel.
                 // Mainly useful for getting the name of the target
                 // chooser to appear in the list of steps.
                 steps[i] = c.getName();
             }
-            if (c instanceof JComponent) {
-                // assume Swing components
+            if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
@@ -190,5 +109,36 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
             }
         }
     }
+    
+    public void uninitialize(WizardDescriptor wiz) {
+        panels = null;
+    }
+    
+    public String name() {
+        return MessageFormat.format(NbBundle.getMessage(WebAppWizardIterator.class, "NameFormat"),
+                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+    }
+    
+    public boolean hasNext() {
+        return false;
+    }
+    
+    public boolean hasPrevious() {
+        return false;
+    }
+    
+    public void nextPanel() {
+    }
+    
+    public void previousPanel() {
+    }
+    
+    public WizardDescriptor.Panel current() {
+        return panels[index];
+    }
+    
+    // If nothing unusual changes in the middle of the wizard, simply:
+    public final void addChangeListener(ChangeListener l) {}
+    public final void removeChangeListener(ChangeListener l) {}
     
 }

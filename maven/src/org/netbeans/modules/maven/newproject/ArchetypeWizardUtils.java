@@ -44,12 +44,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import org.apache.maven.archetype.metadata.ArchetypeDescriptor;
@@ -61,8 +65,16 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -70,10 +82,16 @@ import org.openide.util.NbBundle;
  * TODO, include this in the main module (nb-project)
  * @author mkleint
  */
-public class ArchetypeProviderImpl {
+public class ArchetypeWizardUtils {
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
 
-    public void runArchetype(File directory, WizardDescriptor wiz) throws IOException {
+    /**
+     * No instances, utility class.
+     */
+    private ArchetypeWizardUtils() {
+    }
+
+    public static void runArchetype(File directory, WizardDescriptor wiz) throws IOException {
         Properties props = new Properties();
         props.setProperty("artifactId", (String)wiz.getProperty("artifactId")); //NOI18N
         props.setProperty("version", (String)wiz.getProperty("version")); //NOI18N
@@ -98,7 +116,7 @@ public class ArchetypeProviderImpl {
         BeanRunConfig config = new BeanRunConfig();
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
-        config.setExecutionName(NbBundle.getMessage(ArchetypeProviderImpl.class, "RUN_Project_Creation"));
+        config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
         //TODO externalize somehow to allow advanced users to change the value..
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
         if (arch.getRepository() != null) {
@@ -111,7 +129,7 @@ public class ArchetypeProviderImpl {
         props.setProperty("archetype.interactive", "false");//NOI18N
         config.setProperties(props);
         
-        config.setTaskDisplayName(NbBundle.getMessage(ArchetypeProviderImpl.class, "RUN_Maven"));
+        config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
         // setup executor now..
         //hack - we need to setup the user.dir sys property..
         String oldUserdir = System.getProperty(USER_DIR_PROP); //NOI18N
@@ -128,7 +146,7 @@ public class ArchetypeProviderImpl {
         }
     }
 
-    public Map<String, String> getAdditionalProperties(Artifact art) {
+    public static Map<String, String> getAdditionalProperties(Artifact art) {
         HashMap<String, String> map = new HashMap<String, String>();
         File fil = art.getFile();
         JarFile jf = null;
@@ -163,6 +181,92 @@ public class ArchetypeProviderImpl {
             }
         }
         return map;
+    }
+
+    /**
+     * Instantiates archetype stored in given wizard descriptor, with progress UI notification.
+     */
+    public static Set<FileObject> instantiate (ProgressHandle handle, WizardDescriptor wiz) throws IOException {
+        try {
+            handle.start(4);
+            handle.progress(1);
+            final File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); //NOI18N
+            final File parent = dirF.getParentFile();
+            if (parent != null && parent.exists()) {
+                ProjectChooser.setProjectsFolder(parent);
+            }
+
+            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+//            final Archetype archetype = (Archetype)wiz.getProperty("archetype"); //NOI18N<
+            dirF.getParentFile().mkdirs();
+
+            handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), 2);
+            runArchetype(dirF.getParentFile(), wiz);
+//            } else {
+//                final String art = (String)wiz.getProperty("artifactId"); //NOI18N
+//                final String ver = (String)wiz.getProperty("version"); //NOI18N
+//                final String gr = (String)wiz.getProperty("groupId"); //NOI18N
+//                final String pack = (String)wiz.getProperty("package"); //NOI18N
+//                runArchetype(dirF.getParentFile(), gr, art, ver, pack, archetype);
+//            }
+            handle.progress(3);
+            // Always open top dir as a project:
+            FileObject fDir = FileUtil.toFileObject(dirF);
+            if (fDir != null) {
+                // the archetype generation didn't fail.
+                resultSet.add(fDir);
+                addJavaRootFolders(fDir);
+                // Look for nested projects to open as well:
+                Enumeration e = fDir.getFolders(true);
+                while (e.hasMoreElements()) {
+                    FileObject subfolder = (FileObject) e.nextElement();
+                    if (ProjectManager.getDefault().isProject(subfolder)) {
+                        resultSet.add(subfolder);
+                        addJavaRootFolders(subfolder);
+                    }
+                }
+                Project prj = ProjectManager.getDefault().findProject(fDir);
+                if (prj != null) {
+                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                    if (nbprj != null) { //#147006 how can this happen?
+                        // maybe when the archetype contains netbeans specific project files?
+                        prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    }
+                }
+            }
+            return resultSet;
+        } finally {
+            handle.finish();
+        }
+    }
+
+    private static void addJavaRootFolders(FileObject fo) {
+        try {
+            Project prj = ProjectManager.getDefault().findProject(fo);
+            if (prj == null) { //#143596
+                return;
+            }
+            NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
+            if (watch != null) {
+                // do not create java/test for pom type projects.. most probably not relevant.
+                if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
+                    URI mainJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getSourceDirectory());
+                    URI testJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getTestSourceDirectory());
+                    File file = new File(mainJava);
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                    file = new File(testJava);
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 }
