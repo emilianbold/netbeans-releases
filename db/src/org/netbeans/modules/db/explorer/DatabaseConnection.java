@@ -554,13 +554,6 @@ public class DatabaseConnection implements DBConnection {
         public void connectSync() throws DatabaseException {
         try {
             doConnect();
-
-            // Refresh synchronously so changes to info tree get propagated
-            // now, not later when the NodeChildren thread does the refresh
-            RootNodeInfo.getInstance().refreshChildren();
-
-            ConnectionNodeInfo cinfo = findConnectionNodeInfo(getName());
-            cinfo.connect(this);
         } catch (Exception exc) {
             try {
                 if (getConnection() != null) {
