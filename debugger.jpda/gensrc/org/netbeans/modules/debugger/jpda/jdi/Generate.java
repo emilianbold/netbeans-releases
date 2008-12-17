@@ -96,7 +96,9 @@ public class Generate {
 
     private static final Set<String> NOT_USED_CLASSES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] {
             com.sun.jdi.Accessible.class.getName(), com.sun.jdi.Bootstrap.class.getName(),
-            com.sun.jdi.ClassLoaderReference.class.getName()
+            com.sun.jdi.ClassLoaderReference.class.getName(),
+            com.sun.jdi.PathSearchingVirtualMachine.class.getName(),
+            com.sun.jdi.VoidValue.class.getName(),
     })));
     
     private static final String METHODS_BY_JDK = "MethodsByJDK";
@@ -341,7 +343,12 @@ public class Generate {
                 }
             });
             log.write(c.getName()+":"+cName+"\n");
-            Writer w = writeClassHeader(dir, name, classPackage, cName, null);
+            Writer w;
+            if (NOT_USED_CLASSES.contains(c.getName())) {
+                w = null;
+            } else {
+                w = writeClassHeader(dir, name, classPackage, cName, null);
+            }
             for (Method m : methods) {
                 writeHigherVersionMethods(w, m, className, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
                 String mName = m.getName();
@@ -352,14 +359,18 @@ public class Generate {
                 
                 System.err.println("  Method: "+mName);
                 logMethod(log, mName, paramTypes, exceptionTypes, rType, defaultReturn);
-                if (defaultReturn != null) {
-                    writeMethod(w, c, className, mName, mName+"0", paramTypes, exceptionTypes, rType, defaultReturn);
+                if (w != null) {
+                    if (defaultReturn != null) {
+                        writeMethod(w, c, className, mName, mName+"0", paramTypes, exceptionTypes, rType, defaultReturn);
+                    }
+                    writeMethod(w, c, className, mName, mName, paramTypes, exceptionTypes, rType, null);
                 }
-                writeMethod(w, c, className, mName, mName, paramTypes, exceptionTypes, rType, null);
             }
             writeHigherVersionMethods(w, null, className, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
-            w.write("}\n");
-            w.close();
+            if (w != null) {
+                w.write("}\n");
+                w.close();
+            }
         }
         writeHigherVersionClasses(dir, null, higherVersionMethods, higherVersionMethodIndexes, higherVersionClasses);
         log.close();
@@ -521,18 +532,27 @@ public class Generate {
                     String loggedClassName = loggedClassBinaryName.replace('$', '.');
                     String loggedName = loggedClassName.substring(loggedClassName.lastIndexOf('.') + 1);
                     System.err.println("Have class: "+loggedName+" from JDK "+version);
-                    Writer w = writeClassHeader(dir, loggedName, loggedClassPackage, loggedClass.substring(colonIndex + 1), version);
+                    Writer w;
+                    if (NOT_USED_CLASSES.contains(loggedClassBinaryName)) {
+                        w = null;
+                    } else {
+                        w = writeClassHeader(dir, loggedName, loggedClassPackage, loggedClass.substring(colonIndex + 1), version);
+                    }
                     int i;
                     for (i = higherVersionMethodIndexes[versionIndex]; i < methodsLog.size(); i++) {
                         String method = methodsLog.get(i);
                         if (!method.startsWith(" ")) {
                             break;
                         }
-                        writeHigherVersionMethod(w, loggedClassName, method, version, higherVersionClasses);
+                        if (w != null) {
+                            writeHigherVersionMethod(w, loggedClassName, method, version, higherVersionClasses);
+                        }
                     }
                     higherVersionMethodIndexes[versionIndex] = i;
-                    w.write("}\n");
-                    w.close();
+                    if (w != null) {
+                        w.write("}\n");
+                        w.close();
+                    }
                 } else {
                     break;
                 }
@@ -554,7 +574,7 @@ public class Generate {
                 String loggedMethod = methodsLog.get(higherVersionMethodIndexes[versionIndex]);
                 if (loggedMethod.startsWith(" ")) {
                     higherVersionMethodIndexes[versionIndex]++;
-                    if (m == null || !isLoggedMethod(m, loggedMethod)) {
+                    if (w != null && (m == null || !isLoggedMethod(m, loggedMethod))) {
                         //System.out.println(" Method "+loggedMethod.substring(1, loggedMethod.indexOf("):") + 1)+" from JDK "+version);
                         writeHigherVersionMethod(w, className, loggedMethod, version, higherVersionClasses);
                     } else {
