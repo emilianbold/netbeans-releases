@@ -27,10 +27,20 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="textHostDisplayName" pref="237" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="labelPlatform" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="labelHostname" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="labelUsername" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="labelPlatform" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="labelHostname" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="labelUsername" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="labelUsernameValue" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="labelHostnameValue" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="labelPlatformValue" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -41,7 +51,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" min="-2" pref="235" max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" pref="403" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -56,11 +66,20 @@
                   <Component id="textHostDisplayName" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="labelPlatform" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="labelPlatform" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelPlatformValue" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="labelHostname" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="labelHostname" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelHostnameValue" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="labelUsername" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="labelUsername" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelUsernameValue" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -72,7 +91,7 @@
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbDefaultToolchain" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="112" max="32767" attributes="0"/>
+              <EmptySpace pref="98" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -153,5 +172,26 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="labelPlatformValue">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/wizard/Bundle.properties" key="CreateHostVisualPanel3.labelPlatformValue.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="labelHostnameValue">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/wizard/Bundle.properties" key="CreateHostVisualPanel3.labelHostnameValue.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="labelUsernameValue">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/wizard/Bundle.properties" key="CreateHostVisualPanel3.labelUsernameValue.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>

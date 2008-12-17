@@ -63,9 +63,9 @@ public final class CreateHostVisualPanel3 extends JPanel {
         this.hkey = hkey;
         textHostDisplayName.setText(RemoteUtils.getHostName(hkey));
         CompilerSetManager csm = CompilerSetManager.getDefault(hkey);
-        labelPlatform.setText("Platform: " + PlatformTypes.toString(csm.getPlatform()));//NOI18N
-        labelUsername.setText("User: " + RemoteUtils.getUserName(hkey));//NOI18N
-        labelHostname.setText("Host: " + RemoteUtils.getHostName(hkey));//NOI18N
+        labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
+        labelUsernameValue.setText(RemoteUtils.getUserName(hkey));
+        labelHostnameValue.setText(RemoteUtils.getHostName(hkey));
         List<String> sets = csm.getCompilerSetDisplayNames();
         cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
         List<CompilerSet> sets2 = csm.getCompilerSets();
@@ -95,6 +95,9 @@ public final class CreateHostVisualPanel3 extends JPanel {
         cbDefaultToolchain = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        labelPlatformValue = new javax.swing.JLabel();
+        labelHostnameValue = new javax.swing.JLabel();
+        labelUsernameValue = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel1.text")); // NOI18N
 
@@ -116,6 +119,12 @@ public final class CreateHostVisualPanel3 extends JPanel {
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);
 
+        org.openide.awt.Mnemonics.setLocalizedText(labelPlatformValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelPlatformValue.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelHostnameValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelHostnameValue.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelUsernameValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsernameValue.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -130,10 +139,17 @@ public final class CreateHostVisualPanel3 extends JPanel {
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
-                            .add(labelPlatform)
-                            .add(labelHostname)
-                            .add(labelUsername)
-                            .add(jLabel2)))
+                            .add(jLabel2)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(labelPlatform)
+                                    .add(labelHostname)
+                                    .add(labelUsername))
+                                .add(14, 14, 14)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(labelUsernameValue)
+                                    .add(labelHostnameValue)
+                                    .add(labelPlatformValue)))))
                     .add(layout.createSequentialGroup()
                         .add(20, 20, 20)
                         .add(jLabel3)
@@ -141,7 +157,7 @@ public final class CreateHostVisualPanel3 extends JPanel {
                         .add(cbDefaultToolchain, 0, 221, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(40, 40, 40)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,11 +167,17 @@ public final class CreateHostVisualPanel3 extends JPanel {
                     .add(jLabel1)
                     .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelPlatform)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelPlatform)
+                    .add(labelPlatformValue))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelHostname)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelHostname)
+                    .add(labelHostnameValue))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelUsername)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelUsername)
+                    .add(labelUsernameValue))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -166,7 +188,7 @@ public final class CreateHostVisualPanel3 extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(cbDefaultToolchain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addContainerGap(98, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -178,8 +200,11 @@ public final class CreateHostVisualPanel3 extends JPanel {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel labelHostname;
+    private javax.swing.JLabel labelHostnameValue;
     private javax.swing.JLabel labelPlatform;
+    private javax.swing.JLabel labelPlatformValue;
     private javax.swing.JLabel labelUsername;
+    private javax.swing.JLabel labelUsernameValue;
     private javax.swing.JTextField textHostDisplayName;
     // End of variables declaration//GEN-END:variables
 }
