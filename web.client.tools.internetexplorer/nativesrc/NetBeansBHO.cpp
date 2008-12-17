@@ -43,8 +43,15 @@
 #include "ScriptDebugger.h"
 #include "DbgpConnection.h"
 #include "Utils.h"
-
+// JRW TODO: verify atl string header is still needed after testing code removed
+#include <atlstr.h>
+#include "ProtocolCF.h"
+#include "HttpMonitoringApp.h"
 // NetbeansBHO
+
+typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol,
+	CHttpMonitoringApp> MetaFactory;
+
 
 HRESULT CNetBeansBHO::FinalConstruct() {
     m_dwThreadID = GetCurrentThreadId();
@@ -60,6 +67,18 @@ void CNetBeansBHO::setDebuggerStopped() {
 STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
     HRESULT hr = E_FAIL;
     if (pUnkSite != NULL) {
+        // initialize HTTP Request Monitoring
+        CComPtr<IInternetSession> spSession;
+        CoInternetGetSession(0, &spSession, 0);
+
+        MetaFactory::CreateInstance(CLSID_HttpProtocol, &m_spCFHTTP);
+        spSession->RegisterNameSpace(m_spCFHTTP, CLSID_NULL, L"http", 0, 0, 0);
+
+        MetaFactory::CreateInstance(CLSID_HttpSProtocol, &m_spCFHTTPS);
+        spSession->RegisterNameSpace(m_spCFHTTPS, CLSID_NULL, L"https", 0, 0, 0);
+        // end initialize HTTP Request Monitoring
+
+        // initialize HTTP debugging
         hr = pUnkSite->QueryInterface(IID_IWebBrowser2, (void**)&m_spWebBrowser);
         if (SUCCEEDED(hr)) {
             // Register DWebBrowserEvents2
@@ -70,6 +89,16 @@ STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
         }
         Utils::registerInterfaceInGlobal(m_spWebBrowser, IID_IWebBrowser2, &m_dwWebBrowserCookie);
     } else {
+        // Uninitialize HTTP Monitoring code
+        CComPtr<IInternetSession> spSession;
+        CoInternetGetSession(0, &spSession, 0);
+        spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+        m_spCFHTTP.Release();
+        spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
+        m_spCFHTTPS.Release();
+        // End Uninitialize HTTP Monitoring code
+
+        // Unitialize Javascript Debugging code
         // Unregister DWebBrowserEvents2
         if (m_bAdvised) {
             DispEventUnadvise(m_spWebBrowser);
@@ -120,7 +149,7 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIAN
         }
     }
 }
-
+	
 void CNetBeansBHO::checkAndInitNetbeansDebugging(BSTR bstrURL) {
     tstring str = _bstr_t(bstrURL);
     tstring portArgName(L"--netbeans-debugger-port=");
@@ -149,7 +178,7 @@ void CNetBeansBHO::checkAndInitNetbeansDebugging(BSTR bstrURL) {
 void CNetBeansBHO::initializeNetbeansDebugging(tstring port, tstring sessionId) {
     DWORD threadID;
     m_pDbgpConnection = new DbgpConnection(port, sessionId, m_dwWebBrowserCookie);
-    //DebugBreak();
+//DebugBreak();
     if(m_pDbgpConnection->connectToIDE()) {
         //Create thread for debugger
         CreateThread(NULL, 0, CNetBeansBHO::DebuggerProc, this, 0, &threadID);
