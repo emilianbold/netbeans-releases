@@ -117,6 +117,14 @@ public class Catalog extends MetadataElement {
         return impl.getSchema(name);
     }
 
+    /**
+     * Refresh the entire catalog
+     *
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
     @Override
     public String toString() {
         return "Catalog[name='" + impl.getName() + "',default=" + isDefault() + "]"; // NOI18N

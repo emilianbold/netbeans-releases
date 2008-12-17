@@ -72,10 +72,13 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
-import org.netbeans.modules.db.explorer.actions.ConnectAction;
+import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.netbeans.modules.db.explorer.node.RootNode;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
@@ -134,6 +137,14 @@ public class DatabaseConnection implements DBConnection {
     
     /** Error code */
     private int errorCode = -1;
+
+    /** this is the connector used for performing connect and disconnect processing */
+    private DatabaseConnector connector = new DatabaseConnector(this);
+
+    /** the DatabaseConnection is essentially used as a container for a metadata model
+     * created elsewhere.
+     */
+    private MetadataModel metadataModel = null;
 
     /**
      * The API DatabaseConnection (delegates to this instance)
@@ -223,7 +234,7 @@ public class DatabaseConnection implements DBConnection {
         if (test) {
             if (! test(conn, getName())) {
                 try {
-                    this.disconnect();
+                    disconnect();
                 } catch (DatabaseException e) {
                     LOGGER.log(Level.FINE, null, e);
                 }
@@ -235,6 +246,14 @@ public class DatabaseConnection implements DBConnection {
         return conn;
     }
 
+    public void setMetadataModel(MetadataModel model) {
+        metadataModel = model;
+    }
+
+    public MetadataModel getMetadataModel() {
+        return metadataModel;
+    }
+    
     public static boolean test(Connection conn, String connectionName) {
         try {
             if (conn == null || conn.isClosed()) {
@@ -852,7 +871,7 @@ public class DatabaseConnection implements DBConnection {
             if (cni != null && cni.getConnection() == null) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
-                        new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, false);
+                        new ConnectAction.ConnectionDialogDisplayer().showDialog(DatabaseConnection.this, false);
                     }
                 });
             }
@@ -862,23 +881,24 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection() {
-        try {
-            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            if (cni != null && cni.getConnection() != null) {
-                return cni.getConnection();
-            }
-        } catch (DatabaseException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
+        return connector.getConnection();
+    }
+
+    public DatabaseConnector getConnector() {
+        return connector;
+    }
+
+    public void notifyChange() {
+        propertySupport.firePropertyChange("changed", null, null);
+    }
+
+    public void fireConnectionComplete() {
+        propertySupport.firePropertyChange("connectionComplete", null, null);
     }
 
     public void disconnect() throws DatabaseException {
-        setConnection(null);
-        ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-        if (cni != null && cni.getConnection() != null) {
-            cni.disconnect();
-        }
+        connector.performDisconnect();
+        propertySupport.firePropertyChange("disconnected", null, null);
     }
 
     // Needed by unit tests as well as internally
@@ -891,6 +911,21 @@ public class DatabaseConnection implements DBConnection {
            if (info instanceof ConnectionNodeInfo && connection.equals(info.getName())) {
                return (ConnectionNodeInfo)info;
            }
+        }
+
+        return null;
+    }
+
+    // Needed by unit tests as well as internally
+    public static ConnectionNode findConnectionNode(String connection) throws DatabaseException {
+        assert connection != null;
+
+        RootNode root = RootNode.instance();
+        Collection<? extends Node> children = root.getChildNodes();
+        for (Node node : children) {
+            if (node instanceof ConnectionNode) {
+                return (ConnectionNode)node;
+            }
         }
 
         return null;
