@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -51,6 +53,11 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelScope;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -65,7 +72,8 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
-    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT = "variableFromNextAssignment"; //NOI18N
+    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_NAME = "variableFromNextAssignmentName"; //NOI18N
+    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -92,14 +100,52 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         // No op.
     }
 
+    private String getNextVariableType(final String variableName) {
+        int offset = request.getComponent().getCaretPosition();
+
+        ModelScope modelScope = ModelFactory.getModel(info).getModelScope();
+        String varName = variableName;
+        if (varName == null) {
+            varName = getNextVariableName();
+        }
+        if (varName == null) {
+            return null;
+        }
+        if (varName.charAt(0) != '$') {
+            varName = "$" + varName; //NOI18N
+        }
+        List<? extends VariableName> variables = modelScope.getVariables(varName);
+        VariableName first = ModelUtils.getFirst(variables);
+        if (first != null) {
+            ArrayList<String> uniqueTypeNames = new ArrayList<String>();
+            for(TypeScope type : first.getTypes(offset)) {
+                if (!uniqueTypeNames.contains(type.getName())) {
+                    uniqueTypeNames.add(type.getName());
+                }
+            }
+            String typeNames = "";
+            for(String typeName : uniqueTypeNames) {
+                typeNames =  typeNames + "|" + typeName;
+            }
+            typeNames = typeNames.substring(1);
+            return typeNames;
+        }
+        return null;
+    }
+
     private String getProposedValue(CodeTemplateParameter param) {
+        String variableName = null;
         for (Entry<String, String> entry : param.getHints().entrySet()) {
             String hintName = entry.getKey();
             if (NEW_VAR_NAME.equals(hintName)) {
                 return newVarName(param.getValue());
             }
-            else if (VARIABLE_FROM_NEXT_ASSIGNMENT.equals(hintName)) {
-                return getNextVariableName();
+            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_NAME.equals(hintName)) {
+                variableName = getNextVariableName();
+                return variableName;
+            }
+            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE.equals(hintName)) {
+                return getNextVariableType(variableName);
             }
         }
         return null;
