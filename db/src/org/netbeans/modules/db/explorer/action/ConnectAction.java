@@ -41,13 +41,46 @@ package org.netbeans.modules.db.explorer.action;
 
 
 
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.modules.db.ExceptionListener;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
+import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
 import org.openide.nodes.Node;
 
 //import org.netbeans.modules.db.explorer.PointbasePlus;
 
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
+import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
+import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 public class ConnectAction extends BaseAction {
@@ -67,9 +100,7 @@ public class ConnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                if (dbconn != null) {
-                    enabled = (null == dbconn.getJDBCConnection(true));
-                }
+                enabled = dbconn.getConnector().isDisconnected();
             }
         }
 
@@ -78,14 +109,15 @@ public class ConnectAction extends BaseAction {
 
     @Override
     public void performAction(Node[] activatedNodes) {
-        //ConnectionNodeModel model = (ConnectionNodeModel)activatedNodes[0].getLookup().lookup(ConnectionNodeModel.class);
+        
+        ConnectionNode node = activatedNodes[0].getLookup().lookup(ConnectionNode.class);
                 
         // Don't show the dialog if all information is already available, 
         // just make the connection
-        //new ConnectionDialogDisplayer().showDialog(model, false);
+        new ConnectionDialogDisplayer().showDialog(node, false);
     }
 
-/*    
+   
     public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
@@ -97,12 +129,18 @@ public class ConnectAction extends BaseAction {
         // change listener when the status changes to "failed".          
         boolean failed = false;
         
-        public void showDialog(final ConnectionNodeModel model, boolean showDialog) {
-            final DatabaseConnection dbcon = model.getDataObject();
+        public void showDialog(final ConnectionNode model, boolean showDialog) {
+            DatabaseConnection dbcon = model.getLookup().lookup(DatabaseConnection.class);
+            showDialog(dbcon, showDialog);
+        }
+
+        public void showDialog(final DatabaseConnection dbcon, boolean showDialog) {
+            final DatabaseConnector connector = dbcon.getConnector();
+
             String user = dbcon.getUser();
             String pwd = dbcon.getPassword();
            
-            boolean remember = false; // WHERE IS THIS STORED? ((rpwd != null) ? rpwd.booleanValue() : false);
+            boolean remember = connector.getRememberPassword();
 
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
@@ -187,7 +225,7 @@ public class ConnectAction extends BaseAction {
                             }
                             
                             try {
-                                nfo.finishConnect(null, dbcon, dbcon.getConnection());
+                                connector.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
                                 Logger.getLogger("global").log(Level.INFO, null, exc);
                                 DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
@@ -200,15 +238,14 @@ public class ConnectAction extends BaseAction {
                                 realDbcon.setRememberPassword(dbcon.rememberPassword());
                             }
                             
-                            nfo.put(DatabaseNodeInfo.REMEMBER_PWD,
-                                    Boolean.valueOf(basePanel.rememberPassword()));
-                            if (basePanel.rememberPassword()) {
-                                nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
-                            }
+                            connector.setRememberPassword(basePanel.rememberPassword());
+
                             if (dlg != null) {
                                 dlg.close();
     //                        removeListeners(cinfo);
                             }
+
+                            dbcon.fireConnectionComplete();
                         } else
                             okPressed = false;
                     }
@@ -234,7 +271,7 @@ public class ConnectAction extends BaseAction {
                                     dbcon.setSchema(schemaPanel.getSchema());
 
                                     try {
-                                        nfo.finishConnect(null, dbcon, dbcon.getConnection());
+                                        connector.finishConnect(null, dbcon, dbcon.getConnection());
                                     } catch (DatabaseException exc) {
                                         Logger.getLogger("global").log(Level.INFO, null, exc);
                                         DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
@@ -247,10 +284,12 @@ public class ConnectAction extends BaseAction {
                                         realDbcon.setRememberPassword(
                                                 basePanel.rememberPassword());
                                     }
-                                    nfo.put(DatabaseNodeInfo.REMEMBER_PWD,
-                                            Boolean.valueOf(basePanel.rememberPassword()));
+                                    connector.setRememberPassword(basePanel.rememberPassword());
+                                    
                                     if (dlg != null)
                                         dlg.close();
+
+                                    dbcon.fireConnectionComplete();
                                 }
                             } catch (SQLException exc) {
                                 //isClosed() method failed, try to connect
@@ -266,7 +305,6 @@ public class ConnectAction extends BaseAction {
                         if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
                             advancedPanel = true;
                             dbcon.setUser(basePanel.getUser());
-                            dbcon.setPassword(basePanel.getPassword());
                             dbcon.setPassword(basePanel.getPassword());
                         } else
                             advancedPanel = false;
@@ -293,7 +331,7 @@ public class ConnectAction extends BaseAction {
                         public void propertyChange(PropertyChangeEvent event) {
                             if (event.getPropertyName().equals("connected")) { //NOI18N
                                 try {
-                                    nfo.finishConnect(null, dbcon, dbcon.getConnection());
+                                    connector.finishConnect(null, dbcon, dbcon.getConnection());
                                     if (dialog != null) {
                                         dialog.setVisible(false);
                                     }
@@ -337,7 +375,9 @@ public class ConnectAction extends BaseAction {
                         // display the full Connect dialog so the user can give it
                         // another shot after changing some values, like the username
                         // or password.
-                        showDialog(model, true);                        
+                        showDialog(dbcon, true);
+                    } else {
+                        dbcon.fireConnectionComplete();
                     }
                 } catch (Exception exc) {
                     String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), exc.getMessage()); // NOI18N
@@ -347,7 +387,7 @@ public class ConnectAction extends BaseAction {
                     // display the full Connect dialog so the user can give it
                     // another shot after changing some values, like the username
                     // or password.
-                    showDialog(model, true);
+                    showDialog(dbcon, true);
                 }
         }
 
@@ -375,5 +415,5 @@ public class ConnectAction extends BaseAction {
             return schemaPanel.setSchemas(schemas, defaultSchema);
         }
     }
-*/
+
 }
