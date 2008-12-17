@@ -239,7 +239,7 @@ public class DomainEditor {
     }
        
     public String[] getHttpProxyOptions(){
-        ArrayList<String> httpProxyOptions = new ArrayList<String>();
+        List<String> httpProxyOptions = new ArrayList<String>();
         Document domainDoc = getDomainDocument();
         NodeList javaConfigNodeList = domainDoc.getElementsByTagName("java-config");
         if (javaConfigNodeList == null || javaConfigNodeList.getLength() == 0) {
@@ -324,15 +324,7 @@ public class DomainEditor {
             dbFactory.setValidating(false);
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             
-            dBuilder.setEntityResolver(new EntityResolver() {
-                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    StringReader reader = new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
-                    InputSource source = new InputSource(reader);
-                    source.setPublicId(publicId);
-                    source.setSystemId(systemId);
-                    return source;
-                }
-            });
+            dBuilder.setEntityResolver(new InnerResolver()); // EntityResolver() { //sic
             
             return dBuilder.parse(new File(domainScriptFilePath));
         } catch (Exception e) {
@@ -340,7 +332,16 @@ public class DomainEditor {
             return null;
         }
     }
-    
+
+    static class InnerResolver implements EntityResolver {
+        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+            StringReader reader = new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
+            InputSource source = new InputSource(reader);
+            source.setPublicId(publicId);
+            source.setSystemId(systemId);
+            return source;
+        }
+    }
     private boolean saveDomainScriptFile(Document domainScriptDocument, String domainScriptFilePath) {
         return saveDomainScriptFile(domainScriptDocument, domainScriptFilePath, true);
     }
