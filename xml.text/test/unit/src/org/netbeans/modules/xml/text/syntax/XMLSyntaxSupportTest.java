@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.openide.explorer.view;
 
-import org.openide.nodes.Node;
+package org.netbeans.modules.xml.text.syntax;
 
-import java.awt.Point;
-import java.awt.dnd.*;
-
-import javax.swing.JTable;
-
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.xml.text.AbstractTestCase;
 
 /**
-*
-* @author Dafe Simonek, Jiri Rechtacek
-*/
-class TableViewDragSupport extends ExplorerDragSupport {
+ *
+ * @author Samaresh
+ */
+public class XMLSyntaxSupportTest extends AbstractTestCase {
 
-    /** The view that manages viewing the data in a table. */
-    protected TableView view;
-
-    /** The table which we are supporting (our client) */
-    protected JTable table;
-
-    // Operations
-
-    /** Creates new TreeViewDragSupport, initializes gesture */
-    public TableViewDragSupport(TableView view, JTable table) {
-        this.comp = table;
-        this.view = view;
-        this.table = table;
+    public XMLSyntaxSupportTest(String testName) {
+        super(testName);
     }
 
-    int getAllowedDropActions() {
-        return view.getAllowedDropActions();
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        //suite.addTest(new XMLSyntaxSupportTest("testParse1"));
+        suite.addTest(new XMLSyntaxSupportTest("testParse2"));
+        return suite;
     }
 
-    /** Initiating the drag */
-    @Override
-    public void dragGestureRecognized(DragGestureEvent dge) {
-        super.dragGestureRecognized(dge);
+    /**
+     * Parses a valid xml documents and reads one node at a time.
+     */
+    public void testParse1() throws Exception {
+        XMLSyntaxSupport support = getSyntaxSupport("syntax/test.xml");
+        SyntaxElement se = support.getElementChain(1);
+        while( se != null) {
+            System.out.println("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
+            se = se.getNext();
+        }
     }
 
-    /** Utility method. Returns either selected nodes in the list
-    * (if cursor hotspot is above some selected node) or the node
-    * the cursor points to.
-    * @return Node array or null if position of the cursor points
-    * to no node.
-    */
-    Node[] obtainNodes(DragGestureEvent dge) {
-        Point dragOrigin = dge.getDragOrigin();
-        int index = table.rowAtPoint(dge.getDragOrigin());
-        Node n = view.getNodeFromRow(index);
-
-        Node[] result = null;
-
-        result = new Node[] { n };
-
-        return result;
+    /**
+     * Parses an invalid xml documents and reads one node at a time.
+     */
+    public void testParse2() throws Exception {
+        XMLSyntaxSupport support = getSyntaxSupport("syntax/invalid.xml");
+        SyntaxElement se = support.getElementChain(1);
+        while( se != null) {
+            System.out.println("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
+            se = se.getNext();
+        }
     }
 }

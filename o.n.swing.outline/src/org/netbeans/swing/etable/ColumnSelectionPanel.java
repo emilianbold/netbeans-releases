@@ -109,9 +109,10 @@ class ColumnSelectionPanel extends JPanel {
         for (int col = 0; col < columns.size (); col++) {
             ETableColumn etc = (ETableColumn) columns.get (col);
             JCheckBox checkBox = new JCheckBox();
-            checkBoxes.put(etc, checkBox);
             String dName = table.transformValue (etc).toString ();
             checkBox.setText(dName);
+            checkBox = (JCheckBox) table.transformValue (checkBox);
+            checkBoxes.put(etc, checkBox);
             checkBox.setSelected(! columnModel.isColumnHidden(etc));
             checkBox.setEnabled(etc.isHidingAllowed());
             if (! displayNames.contains(dName)) {
@@ -227,14 +228,16 @@ class ColumnSelectionPanel extends JPanel {
         ArrayList<String> displayNames = new ArrayList<String>();
         for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
             final ETableColumn etc = (ETableColumn)it.next();
-            final JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
+            JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
             String dName = table.transformValue (etc).toString ();
             checkBox.setText(dName);
+            checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
             checkBox.setSelected(! etcm.isColumnHidden(etc));
             checkBox.setEnabled(etc.isHidingAllowed());
+            final JCheckBoxMenuItem finalChB = checkBox;
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    etcm.setColumnHidden(etc,! checkBox.isSelected());
+                    etcm.setColumnHidden(etc,! finalChB.isSelected());
                     table.updateColumnSelectionMouseListener();
                 }
             });

@@ -41,6 +41,7 @@ package org.netbeans.junit.internal;
 
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -52,10 +53,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Just verifies usage.
  */
+@ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes("org.netbeans.junit.RandomlyFails")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class RandomlyFailsProcessor extends AbstractProcessor {
