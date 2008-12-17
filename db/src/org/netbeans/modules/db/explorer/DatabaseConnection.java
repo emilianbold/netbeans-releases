@@ -56,7 +56,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -73,9 +72,6 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.action.ConnectAction;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
@@ -83,8 +79,6 @@ import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeNotFoundException;
-import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -808,9 +802,9 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void selectInExplorer() {
-        String nodeName = null;
+        ConnectionNode node = null;
         try {
-            nodeName = findConnectionNodeInfo(getName()).getName();
+            node = findConnectionNode(getName());
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
             return;
@@ -821,7 +815,6 @@ public class DatabaseConnection implements DBConnection {
 
         TopComponent runtimePanel = null;
         ExplorerManager runtimeExplorer = null;
-        Node runtimeNode = null;
 
         for (Iterator i = TopComponent.getRegistry().getOpened().iterator(); i.hasNext();) {
             TopComponent component = (TopComponent)i.next();
@@ -831,20 +824,12 @@ public class DatabaseConnection implements DBConnection {
                 if ("Runtime".equals(explorer.getRootContext().getName())) { // NOI18N
                     runtimePanel = component;
                     runtimeExplorer = explorer;
-                    runtimeNode = explorer.getRootContext();
+                    break;
                 }
             }
         }
 
         if (runtimePanel == null) {
-            return;
-        }
-
-        Node node = null;
-        try {
-            node = NodeOp.findPath(runtimeNode, new String[] { "Databases", nodeName }); // NOI18N
-        } catch (NodeNotFoundException e) {
-            Exceptions.printStackTrace(e);
             return;
         }
 
@@ -860,8 +845,8 @@ public class DatabaseConnection implements DBConnection {
 
     public void showConnectionDialog() {
         try {
-            final ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            if (cni != null && cni.getConnection() == null) {
+            final ConnectionNode cni = findConnectionNode(getName());
+            if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
                         new ConnectAction.ConnectionDialogDisplayer().showDialog(DatabaseConnection.this, false);
@@ -892,21 +877,6 @@ public class DatabaseConnection implements DBConnection {
     public void disconnect() throws DatabaseException {
         connector.performDisconnect();
         propertySupport.firePropertyChange("disconnected", null, null);
-    }
-
-    // Needed by unit tests as well as internally
-    public static ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
-        assert connection != null;
-
-        Vector<DatabaseNodeInfo> infos = RootNodeInfo.getInstance().getChildren();
-
-        for (DatabaseNodeInfo info : infos) {
-           if (info instanceof ConnectionNodeInfo && connection.equals(info.getName())) {
-               return (ConnectionNodeInfo)info;
-           }
-        }
-
-        return null;
     }
 
     // Needed by unit tests as well as internally
