@@ -1,3 +1,5 @@
+GLOBAL_CONSTANT = 'Global Constant'
+
 module Colors
 
   module Converter
@@ -17,3 +19,4 @@ end
 
 Colors::RED.byte
 Colors::Converter::VERSION
+puts GLOBAL_CONSTANT

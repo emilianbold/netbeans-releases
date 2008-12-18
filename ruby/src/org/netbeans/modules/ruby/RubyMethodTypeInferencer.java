@@ -95,6 +95,11 @@ final class RubyMethodTypeInferencer {
             Set<IndexedMethod> methods = index.getInheritedMethods(receiverName, name, NameKind.EXACT_NAME);
             if (!methods.isEmpty()) {
                 IndexedMethod targetMethod = methods.iterator().next();
+                Set<? extends String> types = targetMethod.getTypes();
+                if (!types.isEmpty()) {
+                    return types;
+                }
+                // fallback to the RDoc comment
                 IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, targetMethod);
                 if (match != null) {
                     List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
@@ -103,6 +108,10 @@ final class RubyMethodTypeInferencer {
             }
         }
         return RubyTypeAnalyzer.UNKNOWN_TYPE_SET;
+    }
+
+    static Set<? extends String> inferTypeFor(final List<String> comment) {
+        return RDocAnalyzer.collectTypesFromComment(comment);
     }
 
     /**

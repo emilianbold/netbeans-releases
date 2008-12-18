@@ -5,6 +5,7 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Python">
+                    <attr name="position" intvalue="617"/>
                 <file name="JyJavaProject.zip_hidden"/>
                     <file name="JySwingProject.zip" url="JySwingProject.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/samples/resources/py_25_16.png"/>

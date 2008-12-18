@@ -147,7 +147,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     private void updateLocation() {
-        databaseLocationTextField.setText(derbySystemHome.getAbsolutePath());
+        databaseLocationValueLabel.setText(derbySystemHome.getAbsolutePath());
     }
     
     private int getFirstUnsupportedCharacter(String databaseName) {
@@ -171,20 +171,18 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         databaseNameLabel = new javax.swing.JLabel();
         databaseNameTextField = new javax.swing.JTextField();
         databaseLocationLabel = new javax.swing.JLabel();
-        databaseLocationTextField = new javax.swing.JTextField();
         userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordTextField = new javax.swing.JTextField();
         propertiesButton = new javax.swing.JButton();
+        databaseLocationValueLabel = new javax.swing.JLabel();
 
         databaseNameLabel.setLabelFor(databaseNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName")); // NOI18N
 
-        databaseLocationLabel.setLabelFor(databaseLocationTextField);
+        databaseLocationLabel.setLabelFor(databaseLocationValueLabel);
         org.openide.awt.Mnemonics.setLocalizedText(databaseLocationLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseLocation")); // NOI18N
-
-        databaseLocationTextField.setEditable(false);
 
         userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_UserName")); // NOI18N
@@ -203,25 +201,25 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         });
 
+        databaseLocationValueLabel.setToolTipText(derbySystemHome.getAbsolutePath());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(databaseNameLabel)
+                    .add(passwordLabel)
+                    .add(userLabel)
+                    .add(databaseLocationLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(databaseNameLabel)
-                            .add(passwordLabel)
-                            .add(userLabel)
-                            .add(databaseLocationLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(databaseLocationValueLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 296, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(propertiesButton)
                 .addContainerGap())
@@ -244,31 +242,33 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(databaseLocationLabel)
-                    .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(propertiesButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(propertiesButton)
+                    .add(databaseLocationValueLabel))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {databaseLocationTextField, databaseNameTextField, passwordTextField, userTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {databaseNameTextField, passwordTextField, userTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         databaseNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_databaseNameTextField")); // NOI18N
-        databaseLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_databaseLocationTextField")); // NOI18N
         userTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_userTextField")); // NOI18N
         passwordTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_passwordTextField")); // NOI18N
         propertiesButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSN_CreateDatabasePanel_propertiesButton")); // NOI18N
         propertiesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_propertiesButton")); // NOI18N
+        databaseLocationValueLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSN_CreateDatabasePanel_databaseLocationValueLabel")); // NOI18N
+        databaseLocationValueLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_databaseLocationValueLabel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_propertiesButtonActionPerformed
         DerbyPropertiesPanel.showDerbyProperties();
-        databaseLocationTextField.setText(DerbyOptions.getDefault().getSystemHome());
+        String newLocation = DerbyOptions.getDefault().getSystemHome();
+        databaseLocationValueLabel.setText(newLocation);
+        databaseLocationValueLabel.setToolTipText(newLocation);
 }//GEN-LAST:event_propertiesButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel databaseLocationLabel;
-    public javax.swing.JTextField databaseLocationTextField;
+    public javax.swing.JLabel databaseLocationValueLabel;
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
     public javax.swing.JLabel passwordLabel;

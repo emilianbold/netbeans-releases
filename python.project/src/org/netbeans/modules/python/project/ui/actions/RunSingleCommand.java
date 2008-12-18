@@ -12,8 +12,8 @@ import org.netbeans.modules.python.api.PythonOptions;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
 
+import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
 import org.netbeans.modules.python.project.PythonProject;
-import org.netbeans.modules.python.project.PythonProjectUtil;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -55,7 +55,7 @@ public class RunSingleCommand extends Command {
             if(PythonOptions.getInstance().getPromptForArgs()){
                String args =  JOptionPane.showInputDialog("Enter the args for this script.", "");
                pyexec.setScriptArgs(args);
-               
+
             }
             final PythonProject pyProject = getProject();
             final PythonPlatform platform = checkProjectPythonPlatform(pyProject);
@@ -70,6 +70,12 @@ public class RunSingleCommand extends Command {
             pyexec.setShowInput(true);
             pyexec.setShowWindow(true);
             pyexec.addStandardRecognizers();
+
+            PythonCoverageProvider coverageProvider = PythonCoverageProvider.get(pyProject);
+            if (coverageProvider != null && coverageProvider.isEnabled()) {
+                pyexec = coverageProvider.wrapWithCoverage(pyexec);
+            }
+
             pyexec.run();
         }
     }

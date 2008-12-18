@@ -48,6 +48,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -79,6 +80,7 @@ public class CheckoutPanel extends JPanel {
         lblWorkingCopy = new JLabel();
         lblRepoRevision = new JLabel();
         lblLocalFolder = new JLabel();
+
         lblEmptyMeansHead = new JLabel();
         lblSpecifyLocalFolders = new JLabel();
 
@@ -105,11 +107,12 @@ public class CheckoutPanel extends JPanel {
         lblLocalFolder.setLabelFor(workdirTextField);
 
         workdirTextField.setColumns(30);
+        workingCopy.setHorizontalAlignment(SwingConstants.TRAILING);
 
         Mnemonics.setLocalizedText(lblSpecifyLocalFolders, getString("CTL_Checkout_LocalFolderHint")); // NOI18N
         Mnemonics.setLocalizedText(lblLocalFolder, getString("CTL_Checkout_LocalFolder")); // NOI18N
         Mnemonics.setLocalizedText(browseWorkdirButton, getString("CTL_Checkout_Browse2")); // NOI18N
-        Mnemonics.setLocalizedText(lblWorkingCopy, getString("CTL_Checkout_LocalHint")); // NOI18N
+        Mnemonics.setLocalizedText(lblWorkingCopy, getString("CTL_Checkout_WorkingCopy")); // NOI18N
 
         scanForProjectsCheckBox.setSelected(true);
         scanForProjectsCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -139,14 +142,16 @@ public class CheckoutPanel extends JPanel {
                         .add(atWorkingDirLevelCheckBox)
                         .add(lblSpecifyLocalFolders)
                         .add(layout.createSequentialGroup()
-                                .add(lblLocalFolder)
+                                .add(layout.createParallelGroup(LEADING)
+                                        .add(lblLocalFolder)
+                                        .add(lblWorkingCopy))
                                 .addPreferredGap(RELATED)
                                 .add(layout.createParallelGroup(LEADING)
                                         .add(layout.createSequentialGroup()
                                                 .add(workdirTextField)
                                                 .addPreferredGap(RELATED)
                                                 .add(browseWorkdirButton))
-                                        .add(lblWorkingCopy)))
+                                        .add(workingCopy)))
                         .add(scanForProjectsCheckBox)
         );
         layout.setVerticalGroup(
@@ -174,11 +179,13 @@ public class CheckoutPanel extends JPanel {
                                 .add(workdirTextField)
                                 .add(browseWorkdirButton))
                         .addPreferredGap(RELATED)
-                        .add(lblWorkingCopy)
+                        .add(layout.createParallelGroup(BASELINE)
+                                .add(lblWorkingCopy)
+                                .add(workingCopy))
                         .add(18)
                         .add(scanForProjectsCheckBox)
         );
-        layout.linkSize(new Component[] {lblRepoFolders, lblLocalFolder});
+        layout.linkSize(new Component[] {lblRepoFolders, lblRepoRevision, lblLocalFolder, lblWorkingCopy});
 
         browseRepositoryButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Repository_Foldres")); //NOI18N
         scanForProjectsCheckBox.getAccessibleContext().setAccessibleDescription(getString("ACSD_Scan_After_Checkout")); //NOI18N
@@ -208,5 +215,6 @@ public class CheckoutPanel extends JPanel {
     final JCheckBox scanForProjectsCheckBox = new JCheckBox();
     final JButton searchRevisionButton = new JButton();
     final JTextField workdirTextField = new JTextField();
+    final JLabel workingCopy = new JLabel();
     
 }
