@@ -50,9 +50,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -64,10 +67,22 @@ public class Feature2LayerMapping {
     private Feature2LayerMapping () {}
     
     private static Feature2LayerMapping INSTANCE = new Feature2LayerMapping ();
+    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
+
     
     public static Feature2LayerMapping getInstance () {
         return INSTANCE;
     }
+
+    static void logUI(String msg, Object... params) {
+        LogRecord rec = new LogRecord(Level.FINE, msg);
+        rec.setResourceBundleName("org.netbeans.modules.ide.ergonomics.fod.Bundle"); // NOI18N
+        rec.setResourceBundle(NbBundle.getBundle(ConfigurationPanel.class));
+        rec.setParameters(params);
+        rec.setLoggerName(UILOG.getName());
+        UILOG.log(rec);
+    }
+
 
     public static Map<String,String> nbprojectTypes() {
         Map<String,String> map = new HashMap<String, String>();
