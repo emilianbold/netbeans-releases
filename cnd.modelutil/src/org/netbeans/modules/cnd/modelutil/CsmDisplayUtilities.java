@@ -312,7 +312,7 @@ public class CsmDisplayUtilities {
                 }
                 if (settings != null) {
                     AttributeSet set = settings.getTokenFontColors(category);
-                    buf.append(color(htmlize(text), set));
+                    buf.append(addHTMLColor(htmlize(text), set));
                 } else {
                     buf.append(htmlize(text));
                 }
@@ -331,7 +331,7 @@ public class CsmDisplayUtilities {
         return temp;
     }
 
-    private static String color(String string, AttributeSet set) {
+    public static String addHTMLColor(String string, AttributeSet set) {
         if (set == null) {
             return string;
         }

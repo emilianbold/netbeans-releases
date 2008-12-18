@@ -54,6 +54,10 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="150"/>
                     </file>                    
                     
+                    <file name="org-netbeans-modules-cnd-completion-preprocessor-CsmPreprocessorDirectiveCompletionProvider.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
@@ -97,7 +101,11 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-cnd-completion-includes-CsmIncludeCompletionProvider.instance">
                         <attr name="position" intvalue="150"/>
                     </file>
-                    
+
+                    <file name="org-netbeans-modules-cnd-completion-preprocessor-CsmPreprocessorDirectiveCompletionProvider.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
