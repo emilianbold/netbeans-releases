@@ -63,7 +63,7 @@ public class FmtOptions {
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
-    public static final String openingBraceStyle = SimpleValueNames.TEXT_LIMIT_WIDTH;
+    public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
     
     private FmtOptions() {}
 
