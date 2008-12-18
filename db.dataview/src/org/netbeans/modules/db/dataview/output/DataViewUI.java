@@ -456,25 +456,31 @@ class DataViewUI extends JXPanel {
         matchBoxField.addKeyListener(new KeyListener() {
 
             public void keyTyped(KeyEvent e) {
+                processKeyEvents();
             }
 
             public void keyPressed(KeyEvent e) {
-                ResultSetJXTable table = getDataViewTableUI();
-                int[] rows = new int[table.getColumnCount()];
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    rows[i] = i;
-                }
-                {
-                    MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
-                    filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
-                    table.setFilters(new FilterPipeline(new Filter[]{filterP}));
-                }
+                processKeyEvents();
             }
 
             public void keyReleased(KeyEvent e) {
+                processKeyEvents();
             }
         });
         toolbar.add(matchBoxField);
+    }
+
+    private void processKeyEvents() {
+        ResultSetJXTable table = getDataViewTableUI();
+        int[] rows = new int[table.getColumnCount()];
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            rows[i] = i;
+        }
+        {
+            MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
+            filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
+            table.setFilters(new FilterPipeline(new Filter[]{filterP}));
+        }
     }
 
     private void initVerticalToolbar(ActionListener outputListener) {
