@@ -34,9 +34,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -58,12 +58,15 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.preproc.trace");
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
+        if (TRACE) {
+            System.err.println("typed text " + typedText);
+        }
         CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
             return 0;
         }
         if (typedText.equals("#")) { //NOI18N
-            int dot = component.getCaret().getDot();
+            int dot = component.getCaretPosition();
             if (TRACE) {
                 System.err.println("offset " + dot); // NOI18N
             }
@@ -115,21 +118,27 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
     }
 
     private static final String[] keywords = new String[] {
-        CppTokenId.PREPROCESSOR_DEFINE.fixedText(),
-        CppTokenId.PREPROCESSOR_ELIF.fixedText(),
-        CppTokenId.PREPROCESSOR_ELSE.fixedText(),
-        CppTokenId.PREPROCESSOR_ENDIF.fixedText(),
-        CppTokenId.PREPROCESSOR_ERROR.fixedText(),
-        CppTokenId.PREPROCESSOR_IDENT.fixedText(),
-        CppTokenId.PREPROCESSOR_IF.fixedText(),
-        CppTokenId.PREPROCESSOR_IFDEF.fixedText(),
-        CppTokenId.PREPROCESSOR_IFNDEF.fixedText(),
-        CppTokenId.PREPROCESSOR_INCLUDE.fixedText(),
-        CppTokenId.PREPROCESSOR_INCLUDE_NEXT.fixedText(),
-        CppTokenId.PREPROCESSOR_LINE.fixedText(),
-        CppTokenId.PREPROCESSOR_PRAGMA.fixedText(),
-        CppTokenId.PREPROCESSOR_UNDEF.fixedText(),
-        CppTokenId.PREPROCESSOR_WARNING.fixedText(),
+        "define", // NOI18N
+        "elif", // NOI18N
+        "else", // NOI18N
+        "endif", // NOI18N
+        "error", // NOI18N
+        "ident", // NOI18N
+        "if", // NOI18N
+        "ifdef", // NOI18N
+        "ifndef", // NOI18N
+        "include", // NOI18N
+        "include_next", // NOI18N
+        "line", // NOI18N
+        "pragma", // NOI18N
+        "undef", // NOI18N
+        "warning", // NOI18N
+        "#if\n#endif", // NOI18N
+        "#if\n#else\n#endif", // NOI18N
+        "#ifdef\n#endif", // NOI18N
+        "#ifdef\n#else\n#endif", // NOI18N
+        "#ifndef\n#endif", // NOI18N
+        "#ifndef\n#else\n#endif", // NOI18N
     };
     private static final class Query extends AsyncCompletionQuery {
 
@@ -166,6 +175,9 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
         @Override
         protected boolean canFilter(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
+            if (TRACE) {
+                System.err.println("canFilter on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N
+            }
             filterPrefix = null;
             if (queryAnchorOffset > -1 && caretOffset >= queryAnchorOffset) {
                 Document doc = component.getDocument();
@@ -178,27 +190,6 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
                 Completion.get().hideCompletion();
             }
             return filterPrefix != null;
-//            Document doc = component.getDocument();
-//            filterPrefix = null;
-//            String oldDir = dirPrefix;
-//            dirPrefix = "";
-//            if (queryAnchorOffset > -1 && caretOffset > queryAnchorOffset) {
-//                try {
-//                    String typedText = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-//                    if (isValidIncludeNamePart(typedText)) {
-//                        filterPrefix = typedText;
-//                    }
-//                } catch (BadLocationException e) {
-//                    // filterPrefix stays null -> no filtering
-//                }
-//            }
-//            fixFilter();
-//            if (TRACE) {
-//                System.err.println("canFilter INCINFO: usrInclude=" + usrInclude + // NOI18N
-//                        " anchorOffset=" + queryAnchorOffset + " oldDir=" + oldDir + // NOI18N
-//                        " dirPrefix=" + dirPrefix + " filterPrefix=" + filterPrefix); // NOI18N
-//            }
-//            return (filterPrefix != null) && oldDir.equals(dirPrefix);
         }
 
         @Override
@@ -234,8 +225,21 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
             if (doc != null) {
                 doc.readLock();
                 try {
-                    TokenItem<CppTokenId> tok = CndTokenUtilities.getToken(doc, caretOffset, true);
-                    queryAnchorOffset = tok.offset();
+                    TokenSequence<CppTokenId> ppTs = CndLexerUtilities.getCppTokenSequence(doc, caretOffset, true, true);
+                    if (ppTs == null || ppTs.token() == null) {
+                        return false;
+                    }
+                    switch (ppTs.token().id()) {
+                        case WHITESPACE:
+                        case PREPROCESSOR_START:
+                            // use caret offset
+                            queryAnchorOffset = caretOffset;
+                            break;
+                        default:
+                            // use start of token
+                            queryAnchorOffset = ppTs.offset();
+                            break;
+                    }
                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                 } catch (BadLocationException ex) {
                     // skip
@@ -247,7 +251,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
                 System.err.println(" anchorOffset=" + queryAnchorOffset + // NOI18N
                         " filterPrefix=" + filterPrefix); // NOI18N
             }
-            return this.queryAnchorOffset > 0;
+            return this.queryAnchorOffset >= 0;
         }
 
         private Collection<CsmPreprocessorDirectiveCompletionItem> getFilteredData(Collection<CsmPreprocessorDirectiveCompletionItem> data, String prefix) {

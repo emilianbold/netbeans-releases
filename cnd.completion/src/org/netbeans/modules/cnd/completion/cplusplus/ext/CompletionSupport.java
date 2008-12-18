@@ -104,7 +104,7 @@ public final class CompletionSupport {
     }
 
     public static boolean isPreprocCompletionEnabled(Document doc, int offset) {
-        return isIncludeCompletionEnabled(doc, offset);
+        return isIncludeCompletionEnabled(doc, offset) || isPreprocessorDirectiveCompletionEnabled(doc, offset);
     }
 
     public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
@@ -117,7 +117,10 @@ public final class CompletionSupport {
             TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) ts.embedded();
             embedded.moveStart();
             embedded.moveNext();
-            embedded.moveNext(); // skip starting #
+            // skip starting #
+            if (!embedded.moveNext()) {
+                return true; // the end of embedded token stream
+            }
             CndTokenUtilities.shiftToNonWhite(embedded, false);
             return embedded.offset() + embedded.token().length() >= offset;
         }

@@ -36,7 +36,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -49,24 +55,42 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
 
     private final int substitutionOffset;
     private final int priority;
-    private final String item;
+    private final String sortItemText;
     private final boolean supportInstantSubst;
     private static final int PRIORITY = 15;
+    private final String appendItemText;
+    private final String htmlItemText;
 
     private CsmPreprocessorDirectiveCompletionItem(int substitutionOffset, int priority,
-            String item, boolean supportInstantSubst) {
+            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst) {
         this.substitutionOffset = substitutionOffset;
         this.priority = priority;
         this.supportInstantSubst = supportInstantSubst;
-        this.item = item;
+        this.sortItemText = sortItemText;
+        this.appendItemText = appendItemText;
+        this.htmlItemText = htmlItemText;
     }
 
     public static CsmPreprocessorDirectiveCompletionItem createItem(int substitutionOffset, int priority, String item) {
-        return new CsmPreprocessorDirectiveCompletionItem(substitutionOffset, PRIORITY, item, true);
+        String appendItemText;
+        String coloredItemText;
+        String sortItemText;
+        int newLine = item.indexOf("\n");//NOI18N
+        if (newLine > 0) {
+            sortItemText = item.substring(0, newLine).replace("#", ""); // NOI18N
+            String noNewLine = item.replace("\n", "-").replace("#", ""); // NOI18N
+            appendItemText = item.substring(newLine);
+            coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+        } else {
+            appendItemText = "";
+            sortItemText = item;
+            coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+        }
+        return new CsmPreprocessorDirectiveCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true);
     }
 
     public String getItemText() {
-        return item;
+        return sortItemText + appendItemText;
     }
 
     public void defaultAction(JTextComponent component) {
@@ -128,11 +152,11 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
     }
 
     public CharSequence getSortText() {
-        return item;
+        return sortItemText;
     }
 
     public CharSequence getInsertPrefix() {
-        return item;
+        return sortItemText;
     }
 
     protected ImageIcon getIcon() {
@@ -140,7 +164,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
     }
 
     protected String getLeftHtmlText(boolean html) {
-        return getItemText();
+        return html ? htmlItemText : getItemText();
     }
 
     protected String getRightHtmlText(boolean html) {
@@ -149,24 +173,31 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
 
     protected void substituteText(final JTextComponent c, final int offset, final int origLen) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
-        final String itemText = getItemText();
-        if (itemText != null) {
-            doc.runAtomicAsUser(new Runnable() {
-
-                public void run() {
-                    try {
-                        if (origLen > 0) {
-                            doc.remove(offset, origLen);
-                        }
-                        doc.insertString(offset, itemText, null);
-                        if (c != null) {
-                            c.setCaretPosition(offset + itemText.length());
-                        }
-                    } catch (BadLocationException e) {
-                        // Can't update
+        doc.runAtomicAsUser(new Runnable() {
+            public void run() {
+                try {
+                    if (origLen > 0) {
+                        doc.remove(offset, origLen);
                     }
+                    String itemText = getItemText();
+                    doc.insertString(offset, itemText, null);
+                    if (c != null) {
+                        int setDot = offset + getInsertPrefix().length();
+                        c.setCaretPosition(setDot);
+                        if (appendItemText.length() > 0) {
+                            Indent indent = Indent.get(doc);
+                            indent.lock();
+                            try {
+                                indent.reindent(offset, offset + itemText.length());
+                            } finally {
+                                indent.unlock();
+                            }
+                        }
+                    }
+                } catch (BadLocationException e) {
+                    // Can't update
                 }
-            });
-        }
+            }
+        });
     }
 }
