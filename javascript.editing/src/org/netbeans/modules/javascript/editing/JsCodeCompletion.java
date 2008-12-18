@@ -67,6 +67,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -74,6 +75,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
@@ -791,91 +793,88 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private void addElementClasses(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-// XXX: parsingapi
-//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-//        if (result != null) {
-////HANZ!!!
-////            HtmlParserResult htmlResult = (HtmlParserResult)result;
-////            List<SyntaxElement> elementsList = htmlResult.elementsList();
-////            Set<String> classes = new HashSet<String>();
-////            for (SyntaxElement s : elementsList) {
-////                if (s.type() == SyntaxElement.TYPE_TAG) {
-////                    String element = s.text();
-////                    int classIdx = element.indexOf("class=\""); // NOI18N
-////                    if (classIdx != -1) {
-////                        int classIdxEnd = element.indexOf('"', classIdx+7);
-////                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
-////                            String clz = element.substring(classIdx+7, classIdxEnd);
-////                            classes.add(clz);
-////                        }
-////                    }
-////                }
-////            }
-////
-////            String filename = request.fileObject.getNameExt();
-////            for (String tag : classes) {
-////                if (startsWith(tag, prefix)) {
-////                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-////                    proposals.add(item);
-////                }
-////            }
-//        }
+        // XXX: parsingapi
+        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> classes = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int classIdx = element.indexOf("class=\""); // NOI18N
+                    if (classIdx != -1) {
+                        int classIdxEnd = element.indexOf('"', classIdx+7);
+                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
+                            String clz = element.substring(classIdx+7, classIdxEnd);
+                            classes.add(clz);
+                        }
+                    }
+                }
+            }
+
+            String filename = request.fileObject.getNameExt();
+            for (String tag : classes) {
+                if (startsWith(tag, prefix)) {
+                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
     }
     
     private void addTagNames(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-// XXX: parsingapi
-//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-//        if (result != null) {
-////HANZ!!!
-////            HtmlParserResult htmlResult = (HtmlParserResult)result;
-////            List<SyntaxElement> elementsList = htmlResult.elementsList();
-////            Set<String> tagNames = new HashSet<String>();
-////            for (SyntaxElement s : elementsList) {
-////                if (s.type() == SyntaxElement.TYPE_TAG) {
-////                    String element = s.text();
-////                    int start = 1;
-////                    int end = element.indexOf(' ');
-////                    if (end == -1) {
-////                        end = element.length()-1;
-////                    }
-////                    String tag = element.substring(start, end);
-////                    tagNames.add(tag);
-////                }
-////            }
-////
-////            String filename = request.fileObject.getNameExt();
-////
-////            for (String tag : tagNames) {
-////                if (startsWith(tag, prefix)) {
-////                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-////                    proposals.add(item);
-////                }
-////            }
-//        }
+        // XXX: parsingapi
+        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> tagNames = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int start = 1;
+                    int end = element.indexOf(' ');
+                    if (end == -1) {
+                        end = element.length()-1;
+                    }
+                    String tag = element.substring(start, end);
+                    tagNames.add(tag);
+                }
+            }
+
+            String filename = request.fileObject.getNameExt();
+
+            for (String tag : tagNames) {
+                if (startsWith(tag, prefix)) {
+                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
     }
     
     private void addElementIds(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-// XXX: parsingapi
-//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-//        if (result != null) {
-////HANZ!!!
-////            HtmlParserResult htmlResult = (HtmlParserResult)result;
-////            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
-////            String filename = request.fileObject.getNameExt();
-////            for (SyntaxElement.TagAttribute tag : elementIds) {
-////                String elementId = tag.getValue();
-////                // Strip "'s surrounding value, if any
-////                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-////                        elementId.endsWith("\"")) { // NOI18N
-////                    elementId = elementId.substring(1, elementId.length()-1);
-////                }
-////
-////                if (startsWith(elementId, prefix)) {
-////                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
-////                    proposals.add(item);
-////                }
-////            }
-//        }
+        // XXX: parsingapi
+        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
+            String filename = request.fileObject.getNameExt();
+            for (SyntaxElement.TagAttribute tag : elementIds) {
+                String elementId = tag.getValue();
+                // Strip "'s surrounding value, if any
+                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
+                        elementId.endsWith("\"")) { // NOI18N
+                    elementId = elementId.substring(1, elementId.length()-1);
+                }
+
+                if (startsWith(elementId, prefix)) {
+                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
     }
 
 
