@@ -56,9 +56,7 @@ import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
-import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -78,7 +76,7 @@ public final class Main extends Object {
   public static void setStatusText (String msg) {
         Splash.getInstance().print (msg);
         if (moduleSystemInitialized) {
-            org.netbeans.core.startup.CoreBridge.conditionallyPrintStatus (msg);
+            CoreBridge.getDefault().setStatusText(msg);
         }
   }
   
@@ -193,12 +191,6 @@ public final class Main extends Object {
     System.setProperty ("org.openide.specification.version", "6.2"); // NOI18N
     System.setProperty ("org.openide.version", "deprecated"); // NOI18N
     System.setProperty ("org.openide.major.version", "IDE/1"); // NOI18N
-
-    // Enforce JDK 1.5+ since we would not work without it.
-    if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) < 0) { // NOI18N
-        System.err.println("The IDE requires JDK 5 or higher to run."); // XXX I18N?
-        TopLogging.exit(1);
-    }
 
     // In the past we derived ${jdk.home} from ${java.home} by appending
     // "/.." to the end of ${java.home} assuming that JRE is under JDK
