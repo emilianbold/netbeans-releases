@@ -134,7 +134,7 @@ public final class FeatureInfo {
         return properties.getProperty("profilerAttachName");
     }
 
-    public Object getProjecdImporter() {
+    public Object getProjectImporter() {
         return properties.getProperty("projectImporter");
     }
 

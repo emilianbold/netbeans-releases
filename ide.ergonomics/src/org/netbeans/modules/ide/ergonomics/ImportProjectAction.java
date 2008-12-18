@@ -67,7 +67,7 @@ public class ImportProjectAction implements ActionListener {
             public void run() {
                 FeatureInfo featureInfo = null;
                 for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
-                    if ("Eclipse".equals(info.getProjecdImporter())) { // NOI18N
+                    if ("Eclipse".equals(info.getProjectImporter())) { // NOI18N
                         featureInfo = info;
                         break;
                     }
