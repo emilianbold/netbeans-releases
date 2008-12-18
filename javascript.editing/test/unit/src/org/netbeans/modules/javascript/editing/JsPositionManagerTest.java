@@ -45,6 +45,8 @@ import java.util.List;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -75,6 +77,8 @@ public class JsPositionManagerTest extends JsTestBase {
         FileObject f = getTestFile("testfiles/prototype-new.js");
         Source source = Source.create(f);
 
+        final ElementHandle [] handle = new ElementHandle[] { null };
+        final OffsetRange [] range = new OffsetRange[] { null };
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -92,7 +96,7 @@ public class JsPositionManagerTest extends JsTestBase {
                     if (element != null) {
                         int startOffset = element.getNode().getSourceStart();
                         assertTrue("Invalid start offset: " + startOffset + "; element: " + element,
-                                startOffset > 0 && startOffset < snapshotLength);
+                                startOffset >= 0 && startOffset < snapshotLength);
 
                         int endOffset = element.getNode().getSourceEnd();
                         assertTrue("Invalid end offset: " + endOffset + "; element: " + element,
@@ -117,12 +121,8 @@ public class JsPositionManagerTest extends JsTestBase {
                             assertTrue(expected != -1);
                             assertEquals(expected, element.getNode().getSourceStart());
 
-// XXX: parsingapi; umm, !@#$??
-//                            // Totally mismatched info (so resolving handles won't work)
-//                            // ...obtain a reasonable position anyway (from old info)
-//                            GsfTestCompilationInfo newInfo = getInfo("testfiles/rename.js");
-//                            OffsetRange newRange = pm.getOffsetRange(newInfo, element);
-//                            assertEquals(range, newRange);
+                            handle[0] = element;
+                            range[0] = element.getOffsetRange(jspr);
                         }
                         break;
                     }
@@ -131,71 +131,25 @@ public class JsPositionManagerTest extends JsTestBase {
 
             }
         });
+
+
+        assertNotNull(handle[0]);
+        assertNotNull(range[0]);
+
+        // Totally mismatched info (so resolving handles won't work)
+        // ...obtain a reasonable position anyway (from old info)
+        Source source2 = getTestSource(getTestFile("testfiles/rename.js"));
+        ParserManager.parse(Collections.singleton(source2), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = resultIterator.getParserResult();
+                JsParseResult jspr = AstUtilities.getParseResult(r);
+                assertNotNull("Expecting JsParseResult, but got " + r, jspr);
+
+                OffsetRange newRange = handle[0].getOffsetRange(jspr);
+                assertEquals(range[0], newRange);
+            }
+        });
+
     }
 
-// XXX: parsingapi; probably no longer applicable
-//    public void testGetPosition2() throws Exception {
-//        JsPositionManager jpm = new JsPositionManager();
-//        ElementHandle handle = new ElementHandle() {
-//
-//            public FileObject getFileObject() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public String getMimeType() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public String getName() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public String getIn() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public ElementKind getKind() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public Set<Modifier> getModifiers() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public boolean signatureEquals(ElementHandle handle) {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//        };
-//        OffsetRange r = jpm.getOffsetRange(null, handle);
-//        assertNotNull(r);
-//    }
-//
-//    public void testGetPosition3() throws Exception {
-//        JsPositionManager jpm = new JsPositionManager();
-//        OffsetRange r = jpm.getOffsetRange(null, null);
-//        assertNotNull(r);
-//    }
-//
-//    public void testGetPosition4() throws Exception {
-//        JsPositionManager jpm = new JsPositionManager();
-//        ElementHandle handle = new JsElement() {
-//
-//            @Override
-//            public String getName() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            @Override
-//            public ElementKind getKind() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            public String getFqn() {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//        };
-//        OffsetRange r = jpm.getOffsetRange(null, handle);
-//        assertNotNull(r);
-//    }
 }

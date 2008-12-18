@@ -318,7 +318,7 @@ public class AstElement extends JsElement {
 
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-        JsParseResult jspr = AstUtilities.getParseResult(info);
+        JsParseResult jspr = AstUtilities.getParseResult(result);
         Element object = JsParser.resolveHandle(jspr, this);
 
         if (object instanceof AstElement) {
