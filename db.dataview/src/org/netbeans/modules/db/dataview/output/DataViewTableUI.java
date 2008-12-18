@@ -63,8 +63,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractCellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -75,6 +77,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -122,6 +125,7 @@ class DataViewTableUI extends ExtendedJTable {
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
         setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
+        setDefaultEditor(Boolean.class, new BooleanTableCellEditor(new JCheckBox()));
 
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
@@ -564,6 +568,38 @@ class DataViewTableUI extends ExtendedJTable {
             setToolTipText(getText());
         }
     }
+    
+    private static class BooleanCellRenderer extends DefaultTableCellRenderer.UIResource {
+
+        public BooleanCellRenderer() {
+            super();
+            cb.setHorizontalAlignment(0);
+        }
+
+        public BooleanCellRenderer(Color color, Color color1) {
+            this();
+            background = color;
+            foreground = color1;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean flag, boolean flag1, int i, int j) {
+            if (flag) {
+                cb.setBackground(jtable.getSelectionBackground());
+                cb.setForeground(jtable.getSelectionForeground());
+            } else {
+                cb.setBackground(background != null ? background : jtable.getBackground());
+                cb.setForeground(foreground != null ? foreground : jtable.getForeground());
+            }
+
+            cb.setSelected(((Boolean) obj).booleanValue());
+            return cb;
+        }
+        private static JCheckBox cb = new JCheckBox();
+        private Color background;
+        private Color foreground;
+    }
+    
 
     private static class GeneratedResultSetCellRenderer extends ResultSetCellRenderer {
 
@@ -589,6 +625,7 @@ class DataViewTableUI extends ExtendedJTable {
         final TableCellRenderer DATE_RENDERER = new DateRenderer();
         final TableCellRenderer DATETIME_RENDERER = new DateTimeRenderer();
         final TableCellRenderer STRING_RENDERER = new StringRenderer();
+        final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -604,6 +641,8 @@ class DataViewTableUI extends ExtendedJTable {
                 return DATE_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Time) {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if (value instanceof Boolean) {
+                return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (c instanceof JComponent) {
@@ -834,4 +873,66 @@ class DataViewTableUI extends ExtendedJTable {
             }
         }
     }
+    
+    public class BooleanTableCellEditor extends AbstractCellEditor
+            implements ActionListener, TableCellEditor {
+
+        private int row, column;
+        private boolean editable = true;
+        private JTable table;
+        private JCheckBox cb;
+        
+        public BooleanTableCellEditor(JCheckBox cb) {
+            this.cb = cb;
+            cb.setHorizontalAlignment(0);
+        }
+
+        @Override
+        public void addCellEditorListener(CellEditorListener celleditorlistener) {
+            super.addCellEditorListener(celleditorlistener);
+            cb.addActionListener(this);
+        }
+
+        @Override
+        public void removeCellEditorListener(CellEditorListener celleditorlistener) {
+            super.removeCellEditorListener(celleditorlistener);
+            cb.removeActionListener(this);
+        }
+
+        public Object getCellEditorValue() {
+            return new Boolean(cb.isSelected());
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject eventobject) {
+            return true;
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            cb.setSelected(((Boolean) value).booleanValue());
+
+            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+            if (dbCol.isGenerated()) {
+                editable = false;
+            } else if (!tablePanel.isEditable()) {
+                editable = false;
+            } else {
+                editable = dbCol.isEditable();
+            }
+            cb.setEnabled(editable);
+            
+            this.table = table;
+            this.row = row;
+            this.column = column;
+            
+            return cb;
+        }
+
+        public void actionPerformed(ActionEvent actionevent) {
+            table.setValueAt(getCellEditorValue(), row, column);
+            setRowSelectionInterval(row, row);
+        }
+        
+    }
+
 }
