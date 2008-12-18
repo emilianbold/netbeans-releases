@@ -160,6 +160,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
         Node root = r.getRootNode();
         if (root == null && !r.getSnapshot().getSource().getFileObject().getExt().equals("sdoc")) { // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Indexable " + indexable.getRelativePath() + " has parser errors and is not sdoc"); //NOI18N
+            }
             return;
         }
 
@@ -171,6 +174,10 @@ public class JsIndexer extends EmbeddingIndexer {
             return;
         }
 
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Analyzing: " + indexable.getRelativePath()); //NOI18N
+        }
+        
         TreeAnalyzer analyzer = new TreeAnalyzer(r, support, indexable);
         analyzer.analyze();
         
@@ -910,7 +917,17 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
-            if (isIndexable(indexable, snapshot)) {
+            boolean b = isIndexable(indexable, snapshot);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                if (b) {
+                    LOG.fine("Creating indexer for: " + indexable.getRelativePath()); //NOI18N
+                } else {
+                    LOG.fine("Ignoring indexable: " + indexable.getRelativePath()); //NOI18N
+                }
+            }
+
+            if (b) {
                 return new JsIndexer();
             } else {
                 return null;

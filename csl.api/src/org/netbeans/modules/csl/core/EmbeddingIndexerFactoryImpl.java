@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -73,12 +74,14 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     // public implementation
 
     public static EmbeddingIndexerFactory create(FileObject fileObject) {
-        String mimeType = fileObject.getPath().substring("Editors/".length()); //NOI18N
+        String mimeType = fileObject.getParent().getPath().substring("Editors/".length()); //NOI18N
         return new EmbeddingIndexerFactoryImpl(mimeType);
     }
 
     // private implementation
 
+    private static final Logger LOG = Logger.getLogger(EmbeddingIndexerFactoryImpl.class.getName());
+    
     private static final EmbeddingIndexerFactory VOID_INDEXER_FACTORY = new EmbeddingIndexerFactory() {
         private final EmbeddingIndexer voidIndexer = new EmbeddingIndexer() {
             @Override
@@ -104,19 +107,29 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     };
 
     private final String mimeType;
+    private EmbeddingIndexerFactory realFactory;
 
     private EmbeddingIndexerFactoryImpl(String mimeType) {
         this.mimeType = mimeType;
     }
 
     private EmbeddingIndexerFactory getFactory() {
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (language != null) {
-            EmbeddingIndexerFactory factory = language.getIndexerFactory();
-            if (factory != null) {
-                return factory;
+        if (realFactory == null) {
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            if (language != null) {
+                EmbeddingIndexerFactory factory = language.getIndexerFactory();
+                if (factory != null) {
+                    realFactory = factory;
+                }
             }
+
+            if (realFactory == null) {
+                realFactory = VOID_INDEXER_FACTORY;
+            }
+
+            LOG.fine("EmbeddingIndexerFactory for '" + mimeType + "': " + realFactory); //NOI18N
         }
-        return VOID_INDEXER_FACTORY;
+
+        return realFactory;
     }
 }
