@@ -149,7 +149,11 @@ public:
         tag.addAttribute(name, value);
     }
 
-    void addHeader(tstring name, tstring value) {
+    void addHeader(const tstring name, const tstring value) {
+        XMLTag newHeaderTag = headersTag->addChildTag(name, value);
+    }
+
+    void addHeader(const tstring name, int value) {
         XMLTag newHeaderTag = headersTag->addChildTag(name, value);
     }
 
