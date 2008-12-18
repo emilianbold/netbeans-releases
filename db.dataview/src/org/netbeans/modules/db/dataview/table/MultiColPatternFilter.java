@@ -57,7 +57,11 @@ public class MultiColPatternFilter extends SuperPatternFilter {
     public boolean test(final int row) {
         for (int colIdx : cols) {
             if (adapter.isTestable(colIdx)) {
-                final String valueStr = getInputValue(row, colIdx).toString();
+                Object val = getInputValue(row, colIdx);
+                if(val == null) {
+                    return false;
+                }
+                final String valueStr = val.toString().trim();
                 final boolean ret = testValue(valueStr);
                 if (ret) {
                     return true;
