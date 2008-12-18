@@ -2269,7 +2269,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result r = resultIterator.getParserResult();
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
 
@@ -2389,7 +2389,7 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 };
 
-                String described = describeCompletion(caretLine, pr.getSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
+                String described = describeCompletion(caretLine, pr.getSnapshot().getSource().createSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".completion");
             }
         });
