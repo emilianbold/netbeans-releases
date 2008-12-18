@@ -88,16 +88,16 @@ import org.openide.util.Exceptions;
  *
  * @author gowri
  */
-public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantiatingIterator {
+public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private int index;
     private Project project;
     private WizardDescriptor wizardDescriptor;
-    private HibernateRevengWizardHelper helper;
-    private HibernateRevengNameLocationWizardDescriptor nameLocationDescriptor;
+    private HibernateCodeGenWizardHelper helper;
+    private HibernateCodGenNameLocationWizardDescriptor nameLocationDescriptor;
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
-    private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
+    private HibernateCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
     private final String CATALOG_NAME = "match-catalog"; // NOI18N
@@ -106,10 +106,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private final String MATCH_NAME = "match-name"; // NOI18N
     private final String resourceAttr = "resource"; // NOI18N
     private final String classAttr = "class"; // NOI18N
-    private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
+    private Logger logger = Logger.getLogger(HibernateCodeGenWizard.class.getName());
 
-    public static HibernateRevengWizard create() {
-        return new HibernateRevengWizard();
+    public static HibernateCodeGenWizard create() {
+        return new HibernateCodeGenWizard();
     }
 
     /**
@@ -171,12 +171,12 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
         return panels;
     }
 
-    static HibernateRevengWizardHelper getHelper(WizardDescriptor wizardDescriptor) {
-        return (HibernateRevengWizardHelper) wizardDescriptor.getProperty(PROP_HELPER);
+    static HibernateCodeGenWizardHelper getHelper(WizardDescriptor wizardDescriptor) {
+        return (HibernateCodeGenWizardHelper) wizardDescriptor.getProperty(PROP_HELPER);
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateRevengWizard.class, "LBL_RevEngWizardTitle"); // NOI18N
+        return NbBundle.getMessage(HibernateCodeGenWizard.class, "LBL_RevEngWizardTitle"); // NOI18N
 
     }
 
@@ -252,13 +252,13 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     public final void initialize(WizardDescriptor wiz) {
         wizardDescriptor = wiz;
         project = Templates.getProject(wiz);
-        helper = new HibernateRevengWizardHelper(project);
+        helper = new HibernateCodeGenWizardHelper(project);
 
         wiz.putProperty(PROP_HELPER, helper);
-        String wizardTitle = NbBundle.getMessage(HibernateRevengWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N   
-        nameLocationDescriptor = new HibernateRevengNameLocationWizardDescriptor(project, wizardTitle);
+        String wizardTitle = NbBundle.getMessage(HibernateCodeGenWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N
+        nameLocationDescriptor = new HibernateCodGenNameLocationWizardDescriptor(project, wizardTitle);
         dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project, wizardTitle);
-        codeGenDescriptor = new HibernateRevengCodeGenWizardDescriptor(project, wizardTitle);
+        codeGenDescriptor = new HibernateCodeGenWizardDescriptor(project, wizardTitle);
 
         if (Templates.getTargetFolder(wiz) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
@@ -338,7 +338,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             // Generating POJOs            
             try {
                 if (helper.getDomainGen()) {
-                    handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
+                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
                     POJOExporter exporter = new POJOExporter(cfg, outputDir);
                     exporter.getProperties().setProperty("jdk5", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
@@ -351,7 +351,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
-                    handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenMapping"), 3); // NOI18N
+                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenMapping"), 3); // NOI18N
                     HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
                     exporter.start();
                 }
@@ -418,7 +418,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
 
     public Set instantiate(ProgressHandle handle) throws IOException {
         handle.start(4);
-        handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_CreatingReveng"), 1); // NOI18N
+        handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_CreatingReveng"), 1); // NOI18N
         FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
         DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
         String targetName = Templates.getTargetName(wizardDescriptor);
@@ -457,7 +457,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             hro.save();
             if (list.size() > 0) {
                 generateClasses(hro.getPrimaryFile(), handle);
-                handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_UpdateConf"), 4); // NOI18N
+                handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_UpdateConf"), 4); // NOI18N
                 updateConfiguration();
             }
             return Collections.singleton(hro.getPrimaryFile());

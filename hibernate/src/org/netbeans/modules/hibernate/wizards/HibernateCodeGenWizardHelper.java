@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
  * used by the reverse engineering wizard.
  * @author gowri
  */
-public class HibernateRevengWizardHelper {
+public class HibernateCodeGenWizardHelper {
 
     private Project project;
     private TableClosure tableClosure;
@@ -64,7 +64,7 @@ public class HibernateRevengWizardHelper {
     private String schemaName;
     private String catalogName;
 
-    public HibernateRevengWizardHelper(Project project) {
+    public HibernateCodeGenWizardHelper(Project project) {
         this.project = project;
     }
     

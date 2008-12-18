@@ -55,23 +55,23 @@ import org.openide.util.NbBundle;
  *
  * @author gowri
  */
-public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.Panel, ChangeListener {
+public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private HibernateRevengCodeGenerationPanel component;
+    private HibernateCodeGenerationPanel component;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
     private Project project;
     private String title;
 
-    public HibernateRevengCodeGenWizardDescriptor(Project project, String title) {
+    public HibernateCodeGenWizardDescriptor(Project project, String title) {
         this.project = project;
         this.title = title;
     }
 
-    public HibernateRevengCodeGenerationPanel getComponent() {
+    public HibernateCodeGenerationPanel getComponent() {
         if (component == null) {
-            component = new HibernateRevengCodeGenerationPanel();
+            component = new HibernateCodeGenerationPanel();
             component.addChangeListener(this);
         }
         return component;
@@ -86,14 +86,14 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(HibernateRevengCodeGenWizardDescriptor.class);
+        return new HelpCtx(HibernateCodeGenWizardDescriptor.class);
     }
 
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         wizardDescriptor.putProperty("NewFileWizard_Title", title);
         
-        HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
+        HibernateCodeGenWizardHelper helper = HibernateCodeGenWizard.getHelper(wizardDescriptor);
 
         if (!componentInitialized) {
             componentInitialized = true;
@@ -108,21 +108,21 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
         SourceGroup sourceGroup = getComponent().getLocationValue();
         String packageName = getComponent().getPackageName();
         if (sourceGroup == null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
             return false;
         }
 
         if (packageName.trim().equals("")) { // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
             return false;
         }
         if (!JavaIdentifiers.isValidPackageName(packageName)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
             return false;
         }
 
         if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
             return false;
         }
 
@@ -135,7 +135,7 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
         if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
                 buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
 
-            HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
+            HibernateCodeGenWizardHelper helper = HibernateCodeGenWizard.getHelper(wizardDescriptor);
             helper.setSelectedTables(getComponent().getSelectedTables());
             helper.setLocation(getComponent().getLocationValue());
             helper.setPackageName(getComponent().getPackageName());

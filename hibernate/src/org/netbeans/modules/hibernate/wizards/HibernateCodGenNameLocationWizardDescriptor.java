@@ -49,12 +49,12 @@ import org.openide.util.HelpCtx;
  *
  * @author Dongmei Cao
  */
-public class HibernateRevengNameLocationWizardDescriptor implements WizardDescriptor.Panel<WizardDescriptor> {
+public class HibernateCodGenNameLocationWizardDescriptor implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private JPanel component;
     private String title;
 
-    public HibernateRevengNameLocationWizardDescriptor(Project project, String title) {
+    public HibernateCodGenNameLocationWizardDescriptor(Project project, String title) {
         this.title = title;
     }
 
@@ -67,7 +67,7 @@ public class HibernateRevengNameLocationWizardDescriptor implements WizardDescri
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(HibernateRevengNameLocationWizardDescriptor.class);
+        return new HelpCtx(HibernateCodGenNameLocationWizardDescriptor.class);
     }
 
     
