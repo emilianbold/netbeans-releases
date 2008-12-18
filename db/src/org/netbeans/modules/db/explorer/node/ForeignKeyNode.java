@@ -78,11 +78,10 @@ public class ForeignKeyNode extends BaseNode {
     private ForeignKeyNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        fkHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        fkHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {

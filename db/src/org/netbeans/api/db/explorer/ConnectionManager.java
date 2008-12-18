@@ -193,7 +193,7 @@ public final class ConnectionManager {
 
         dbconn.getDelegate().connectSync();
         dbconn.getDelegate().getConnector().finishConnect(null, dbconn.getDelegate(), dbconn.getDelegate().getConnection());
-
+        dbconn.getDelegate().fireConnectionComplete();
         return true;
     }
 
