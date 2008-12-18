@@ -116,8 +116,8 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         label = NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests");
         sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.TEST_SRC_DIR + "}", label, null, null); // NOI18N
 
-        List<String> labels = new ArrayList<String>();
-        List<String> roots = new ArrayList<String>();
+        List<String> labels = new ArrayList<String>(2);
+        List<String> roots = new ArrayList<String>(2);
         readSources(labels, roots);
         for (int i = 0; i < labels.size(); i++) {
             sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
@@ -144,28 +144,22 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                 for (Entry<String, String> entry : props.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
-                    if (key.equals("${" + PhpProjectProperties.SRC_DIR + "}")) { // NOI18N
+                    // XXX really needed?
+                    if (key.equals("${" + PhpProjectProperties.SRC_DIR + "}") // NOI18N
+                            || key.equals("${" + PhpProjectProperties.TEST_SRC_DIR + "}")) { // NOI18N
                         continue;
                     }
                     if (PhpProjectProperties.SRC_DIR.equals(key)) {
-                        labels.add(NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources"));
-                        roots.add(value);
-                    }
-                    continue;
-                }
-                // tests
-                // XXX really not sure how this should be done (in compatibility manner)
-                for (Entry<String, String> entry : props.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    if (key.equals("${" + PhpProjectProperties.TEST_SRC_DIR + "}")) { // NOI18N
-                        continue;
+                        labels.add(0, NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources"));
+                        roots.add(0, value);
                     }
                     if (PhpProjectProperties.TEST_SRC_DIR.equals(key)) {
-                        labels.add(NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests"));
-                        roots.add(value);
+                        labels.add(1, NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests"));
+                        roots.add(1, value);
                     }
-                    continue;
+                    if (roots.size() == 2) {
+                        break;
+                    }
                 }
             }
         });
