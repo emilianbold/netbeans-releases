@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import org.netbeans.modules.db.metadata.model.api.Column;
-
 /**
  *
  * @author Rob Englander
  */
-public interface ColumnProvider {
-    public Column getColumn();
+public interface SchemaNameProvider {
+    public String getSchemaName();
+    public String getCatalogName();
 }

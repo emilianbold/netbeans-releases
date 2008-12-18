@@ -42,8 +42,10 @@ package org.netbeans.modules.db.explorer.action;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -57,7 +59,12 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,13 +113,6 @@ public class GrabTableAction extends BaseAction {
         try {
             final Specification spec = node.getLookup().lookup(DatabaseConnection.class).getConnector().getDatabaseSpecification();
             String tablename = node.getName();
-
-            // Get command
-
-            CreateTable cmd = (CreateTable)spec.createCommandCreateTable(tablename);
-
-            GrabTableWorker run = new GrabTableWorker(node);
-            final Enumeration enu = run.execute();
 
             // Get filename
 
@@ -165,7 +165,7 @@ public class GrabTableAction extends BaseAction {
                     public void run() {
                         try {
                             new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
-                                spec, node.getTable(), enu, theFile);
+                                spec, node.getTableHandle(), theFile);
                         } catch (Exception exc) {
                             DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
                         }
@@ -184,16 +184,17 @@ public class GrabTableAction extends BaseAction {
         private Task task;
         private Dialog dialog;
         private ProgressHandle progressHandle;
+
         //private boolean finished;
 
-        private Enumeration<Column> enumeration;
+        private Enumeration<MetadataElementHandle<Column>> enumeration;
         private DatabaseException exception;
 
         public GrabTableWorker(TableNode nfo) {
             this.nfo = nfo;
         }
 
-        public Enumeration execute() throws DatabaseException {
+        public Enumeration<MetadataElementHandle<Column>> execute(final MetadataModel model) throws DatabaseException {
             progressHandle = ProgressHandleFactory.createHandle(null);
             GrabTableProgressPanel progressPanel = new GrabTableProgressPanel();
             progressPanel.setProgressComponent(ProgressHandleFactory.createProgressComponent(progressHandle));
@@ -208,8 +209,26 @@ public class GrabTableAction extends BaseAction {
 
             task = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Table table = nfo.getTable();
-                    enumeration = Collections.enumeration(table.getColumns());
+                    try {
+                        model.runReadAction(
+                            new Action<Metadata>() {
+                                public void run(Metadata metaData) {
+                                    MetadataElementHandle<Table> handle = nfo.getTableHandle();
+                                    Table table = handle.resolve(metaData);
+                                    List<MetadataElementHandle<Column>> list =
+                                            new ArrayList<MetadataElementHandle<Column>>();
+
+                                    for (Column column : table.getColumns()) {
+                                        list.add(MetadataElementHandle.create(column));
+                                    }
+
+                                    enumeration = Collections.enumeration(list);
+                                }
+                            }
+                        );
+                    } catch (MetadataModelException e) {
+                        // TODO report exception
+                    }
                 }
             });
 

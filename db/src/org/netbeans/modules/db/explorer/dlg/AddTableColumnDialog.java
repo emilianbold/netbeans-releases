@@ -118,17 +118,12 @@ public class AddTableColumnDialog {
     public AddTableColumnDialog(final Specification spe, final TableNode nfo) throws DatabaseException {
         spec = spe;
         try {
-            Table table = nfo.getTable();
-            String tableName = table.getName();
-
-            Schema schema = table.getParent();
-            Catalog catalog = schema.getParent();
-
-            String schemaName = schema.getName();
-            String catName = catalog.getName();
+            String tableName = nfo.getName();
+            String schemaName = nfo.getSchemaName();
+            String catName = nfo.getCatalogName();
 
             if (schemaName == null) {
-                schemaName = catalog.getName();
+                schemaName = catName;
             } else if (catName == null) {
                 catName = schemaName;
             }

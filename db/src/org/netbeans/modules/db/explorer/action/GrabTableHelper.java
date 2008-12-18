@@ -43,32 +43,55 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collection;
-import java.util.Enumeration;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 public class GrabTableHelper {
 
-    public void execute(DatabaseConnector connector,
-            Specification spec,
-            Table table,
-            Enumeration nodeChildren,
-            File file) throws Exception {
-        CreateTable cmd = spec.createCommandCreateTable(table.getName());
+    public void execute(final DatabaseConnector connector,
+            final Specification spec,
+            final MetadataElementHandle<Table> tableHandle,
+            final File file) throws Exception {
 
-        Collection<Column> columns = table.getColumns();
-        for (Column column : columns) {
-            cmd.getColumns().add(connector.getColumnSpecification(table, column));
+        MetadataModel model = connector.getDatabaseConnection().getMetadataModel();
+
+        final Exception[] array = new Exception[1];
+
+        model.runReadAction(
+            new Action<Metadata>() {
+                public void run(Metadata metaData) {
+                    Table table = tableHandle.resolve(metaData);
+
+                    try {
+                        CreateTable cmd = spec.createCommandCreateTable(table.getName());
+
+                        Collection<Column> columns = table.getColumns();
+                        for (Column column : columns) {
+                            cmd.getColumns().add(connector.getColumnSpecification(table, column));
+                        }
+
+                        FileOutputStream fstream = new FileOutputStream(file);
+                        ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+                        cmd.setSpecification(null);
+                        ostream.writeObject(cmd);
+                        ostream.flush();
+                        ostream.close();
+                    } catch (Exception e) {
+                        array[0] = e;
+                    }
+                }
+            }
+        );
+
+        if (array[0] != null) {
+            throw array[0];
         }
-
-        FileOutputStream fstream = new FileOutputStream(file);
-        ObjectOutputStream ostream = new ObjectOutputStream(fstream);
-        cmd.setSpecification(null);
-        ostream.writeObject(cmd);
-        ostream.flush();
-        ostream.close();
     }
 }

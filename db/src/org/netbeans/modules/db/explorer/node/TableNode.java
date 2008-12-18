@@ -51,13 +51,11 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -67,7 +65,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Rob Englander
  */
-public class TableNode extends BaseNode implements SchemaProvider {
+public class TableNode extends BaseNode implements SchemaNameProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif";
     private static final String FOLDER = "Table"; //NOI18N
 
@@ -97,29 +95,31 @@ public class TableNode extends BaseNode implements SchemaProvider {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Table table = getTable();
-            name = table.getName();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Table table = tableHandle.resolve(metaData);
+                            name = table.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
         }
     }
 
-    public Table getTable() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Table> wrapper = new DataWrapper<Table>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Table table = tableHandle.resolve(metaData);
-                    wrapper.setObject(table);
-                }
-            }
-        );
-
-        return wrapper.getObject();
+    public MetadataElementHandle<Table> getTableHandle() {
+        return tableHandle;
     }
 
-    public Schema getSchema() {
-        Table table = getTable();
-        return table.getParent();
+    public String getCatalogName() {
+        return getCatalogName(connection, tableHandle);
+    }
+
+    public String getSchemaName() {
+        return getSchemaName(connection, tableHandle);
     }
 
     @Override
@@ -129,7 +129,13 @@ public class TableNode extends BaseNode implements SchemaProvider {
 
         try {
             AbstractCommand command = spec.createCommandDropTable(getName());
-            command.setObjectOwner(MetadataUtils.getSchemaWorkingName(getSchema()));
+            String schemaName = getSchemaName();
+            String catalogName = getCatalogName();
+            if (schemaName == null) {
+                schemaName = catalogName;
+            }
+
+            command.setObjectOwner(schemaName);
             command.execute();
         } catch (Exception e) {
         }
@@ -178,5 +184,49 @@ public class TableNode extends BaseNode implements SchemaProvider {
             }
         });
         return result;
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Table table = handle.resolve(metaData);
+                        if (table != null) {
+                            array[0] = table.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Table table = handle.resolve(metaData);
+                        if (table != null) {
+                            array[0] = table.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }
