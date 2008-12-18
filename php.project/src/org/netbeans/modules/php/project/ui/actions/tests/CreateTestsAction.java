@@ -129,7 +129,6 @@ public final class CreateTestsAction extends NodeAction {
             return;
         }
 
-        // XXX check whether test directory exists
         RUNNABLES.add(new Runnable() {
             public void run() {
                 generateTests(activatedNodes, new PhpUnit(phpUnitPath), phpProject);
@@ -323,7 +322,6 @@ public final class CreateTestsAction extends NodeAction {
         return new File(parent, source.getName() + "Test.php"); // NOI18N
     }
 
-    // XXX cache the project
     private File getTestFile(FileObject source, File generatedFile, PhpProject phpProject) {
         FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
         String relativePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
