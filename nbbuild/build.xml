@@ -1672,7 +1672,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist list="${nb.clusters.list}" name="nb.clusters.validation.list">
-       <mapper type="regexp" from="(.*)" to="\1.validation"/>
+       <mapper type="regexp" from="(.*)" to="validation.\1"/>
     </resolvelist>
     
     <subant target="${test.type}" >
