@@ -61,7 +61,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -228,6 +230,17 @@ public final class Utils {
             return NbBundle.getMessage(Utils.class, "MSG_PhpUnitCannotRead");
         }
         return null;
+    }
+
+    public static void browseTestSources(JTextField textField, PhpProject phpProject) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setCurrentDirectory(FileUtil.toFile(phpProject.getProjectDirectory()));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(textField.getParent())) {
+            File testsDirectory = FileUtil.normalizeFile(chooser.getSelectedFile());
+            textField.setText(testsDirectory.getAbsolutePath());
+        }
     }
 
     public static List getAllItems(final JComboBox comboBox) {

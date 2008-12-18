@@ -43,16 +43,26 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 
 /**
  * Helper class for getting <b>all</b> the properties of a PHP project.
@@ -96,8 +106,22 @@ public final class ProjectPropertiesSupport {
     /**
      * @return test sources directory or <code>null</code> (if not set up yet e.g.)
      */
-    public static FileObject getTestDirectory(PhpProject project) {
-        return project.getTestsDirectory();
+    public static FileObject getTestDirectory(PhpProject project, boolean showFileChooser) {
+        FileObject testsDirectory = project.getTestsDirectory();
+        if (testsDirectory != null) {
+            return testsDirectory;
+        }
+        if (showFileChooser) {
+            BrowseTestSources panel = new BrowseTestSources(project);
+            if (panel.open()) {
+                File tests = new File(panel.getTestSources());
+                assert tests.isDirectory();
+                testsDirectory = FileUtil.toFileObject(tests);
+                assert testsDirectory != null && testsDirectory.isValid();
+                saveTestSources(project, tests);
+            }
+        }
+        return testsDirectory;
     }
 
     public static FileObject getWebRootDirectory(PhpProject project) {
@@ -272,5 +296,38 @@ public final class ProjectPropertiesSupport {
             return Boolean.parseBoolean(boolValue);
         }
         return defaultValue;
+    }
+
+    private static void saveTestSources(final PhpProject project, final File testDir) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    // store properties
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws IOException {
+                            AntProjectHelper helper = project.getHelper();
+
+                            // relativize path
+                            File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+                            String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
+                            if (testPath == null) {
+                                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                                testPath = testDir.getAbsolutePath();
+                            }
+
+                            EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            projectProperties.put(PhpProjectProperties.TEST_SRC_DIR, testPath);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                            return null;
+                        }
+                    });
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (MutexException e) {
+                    Exceptions.printStackTrace((IOException) e.getException());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 }

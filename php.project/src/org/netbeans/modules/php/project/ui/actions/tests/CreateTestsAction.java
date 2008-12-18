@@ -122,10 +122,17 @@ public final class CreateTestsAction extends NodeAction {
             OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
             return;
         }
+        // ensure that test sources directory exists
+        final PhpProject phpProject = getPhpProject(activatedNodes[0]);
+        assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
+        if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
+            return;
+        }
+
         // XXX check whether test directory exists
         RUNNABLES.add(new Runnable() {
             public void run() {
-                generateTests(activatedNodes, new PhpUnit(phpUnitPath));
+                generateTests(activatedNodes, new PhpUnit(phpUnitPath), phpProject);
             }
         });
         TASK.schedule(0);
@@ -137,7 +144,7 @@ public final class CreateTestsAction extends NodeAction {
             return false;
         }
 
-        Project onlyOneProjectAllowed = null;
+        PhpProject onlyOneProjectAllowed = null;
         for (Node node : activatedNodes) {
             FileObject fileObj = getFileObject(node);
             if (fileObj == null) {
@@ -150,20 +157,17 @@ public final class CreateTestsAction extends NodeAction {
                 return false;
             }
 
-            Project prj = FileOwnerQuery.getOwner(fileObj);
-            if (prj == null) {
-                return false;
-            }
-            if (onlyOneProjectAllowed == null) {
-                onlyOneProjectAllowed = prj;
-            } else if (!onlyOneProjectAllowed.equals(prj)) {
-                // tests can be generated only for one project at one time
-                return false;
-            }
-            PhpProject phpProject = prj.getLookup().lookup(PhpProject.class);
+            PhpProject phpProject = getPhpProject(fileObj);
             if (phpProject == null) {
                 return false;
             }
+            if (onlyOneProjectAllowed == null) {
+                onlyOneProjectAllowed = phpProject;
+            } else if (!onlyOneProjectAllowed.equals(phpProject)) {
+                // tests can be generated only for one project at one time
+                return false;
+            }
+
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
             assert sources != null : "No source directory for " + phpProject;
             if (!sources.equals(fileObj)
@@ -184,7 +188,25 @@ public final class CreateTestsAction extends NodeAction {
         return null;
     }
 
-    static FileObject getFileObject(Node node) {
+    /**
+     * @return a PHP project or <code>null</code>.
+     */
+    private static PhpProject getPhpProject(Node node) {
+        return getPhpProject(getFileObject(node));
+    }
+
+    /**
+     * @return a PHP project or <code>null</code>.
+     */
+    private static PhpProject getPhpProject(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        return project.getLookup().lookup(PhpProject.class);
+    }
+
+    private static FileObject getFileObject(Node node) {
         DataObject dataObj = node.getCookie(DataObject.class);
         if (dataObj == null) {
             return null;
@@ -196,7 +218,7 @@ public final class CreateTestsAction extends NodeAction {
         return fileObj;
     }
 
-    static List<FileObject> getFileObjects(final Node[] activatedNodes) {
+    private static List<FileObject> getFileObjects(final Node[] activatedNodes) {
         final List<FileObject> files = new ArrayList<FileObject>();
         for (Node node : activatedNodes) {
             FileObject fo = getFileObject(node);
@@ -206,7 +228,9 @@ public final class CreateTestsAction extends NodeAction {
         return files;
     }
 
-    void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit) {
+    void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
+        assert phpProject != null;
+
         List<FileObject> files = getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
@@ -215,10 +239,10 @@ public final class CreateTestsAction extends NodeAction {
         final Set<File> toOpen = new HashSet<File>();
         try {
             for (FileObject fo : files) {
-                generateTest(phpUnit, fo, proceeded, failed, toOpen);
+                generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
                 Enumeration<? extends FileObject> children = fo.getChildren(true);
                 while (children.hasMoreElements()) {
-                    generateTest(phpUnit, children.nextElement(), proceeded, failed, toOpen);
+                    generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
                 }
             }
         } catch (ExecutionException ex) {
@@ -257,7 +281,8 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private void generateTest(PhpUnit phpUnit, FileObject sourceFo, Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
+    private void generateTest(PhpUnit phpUnit, PhpProject phpProject, FileObject sourceFo,
+            Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !CommandUtils.isPhpFile(sourceFo)
                 || proceeded.contains(sourceFo)) {
@@ -267,7 +292,7 @@ public final class CreateTestsAction extends NodeAction {
 
         final File parent = FileUtil.toFile(sourceFo.getParent());
         final File generatedFile = getGeneratedFile(sourceFo, parent);
-        final File testFile = getTestFile(sourceFo, generatedFile);
+        final File testFile = getTestFile(sourceFo, generatedFile, phpProject);
         if (testFile.isFile()) {
             // already exists
             toOpen.add(testFile);
@@ -298,21 +323,14 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     // XXX cache the project
-    private File getTestFile(FileObject source, File generatedFile) {
-        Project project = FileOwnerQuery.getOwner(source);
-        assert project != null : "Project must be found";
-        final PhpProject phpProject = project.getLookup().lookup(PhpProject.class);
-        assert phpProject != null : "PHP project must be found for " + project;
-
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject);
+    private File getTestFile(FileObject source, File generatedFile, PhpProject phpProject) {
         FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-        FileObject targetDirectory = testDirectory != null ? testDirectory : sourcesDirectory;
-        assert targetDirectory != null && targetDirectory.isValid() : "Valid target folder for tests must be found for " + phpProject;
-
         String relativePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
         assert relativePath != null : String.format("Relative path must be found % and %s", sourcesDirectory, source.getParent());
 
-        return new File(new File(FileUtil.toFile(targetDirectory), relativePath), generatedFile.getName());
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+        assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
+        return new File(new File(FileUtil.toFile(testDirectory), relativePath), generatedFile.getName());
     }
 
     private File moveGeneratedFile(File generatedFile, File testFile) {
