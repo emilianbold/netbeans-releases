@@ -69,9 +69,9 @@ public:
         attributes.insert(pair<tstring, tstring>(name, buffer));
     }
 
-    XMLTag &addChildTag(tstring name);
-    XMLTag &addChildTag(tstring name, tstring value);
-    XMLTag &addChildTag(tstring name, int value);
+    XMLTag &addChildTag(const tstring name);
+    XMLTag &addChildTag(const tstring name, const tstring value);
+    XMLTag &addChildTag(const tstring name, int value);
 
     void setName(tstring name) {
         this->name = name;

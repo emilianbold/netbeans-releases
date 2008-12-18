@@ -124,7 +124,7 @@ tstring XMLTag::toString() {
     return (TCHAR *)(xmlBstrString);
 }
 
-XMLTag &XMLTag::addChildTag(tstring name) {
+XMLTag &XMLTag::addChildTag(const tstring name) {
     XMLTag *pXMLlTag = new XMLTag(name);
     childTags.push_back(pXMLlTag);
     return *pXMLlTag;
@@ -135,7 +135,7 @@ XMLTag &XMLTag::addChildTag(tstring name) {
  * eg: parameters name=bar, value=baz for existing element foo would result
  * in XML such as: <foo><bar>baz</bar></foo>
  */
-XMLTag &XMLTag::addChildTag(tstring name, tstring value) {
+XMLTag &XMLTag::addChildTag(const tstring name, const tstring value) {
     XMLTag *pXMLlTag = new XMLTag(name, value);
     childTags.push_back(pXMLlTag);
     return *pXMLlTag;
@@ -147,7 +147,7 @@ XMLTag &XMLTag::addChildTag(tstring name, tstring value) {
  * eg: parameters name=bar, value=12 for existing element foo would result
  * in XML such as: <foo><bar>12</bar></foo>
  */
-XMLTag &XMLTag::addChildTag(tstring name, int value) {
+XMLTag &XMLTag::addChildTag(const tstring name, int value) {
     TCHAR buffer[32];
     _itot_s(value, buffer, 32, 10);
     return addChildTag(name, buffer);
