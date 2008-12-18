@@ -158,6 +158,10 @@ public class DynamicVerifyTest extends NbTestCase {
             }
             sb.append('\n');
         }
+        if (all.isEmpty()) {
+            return;
+        }
+        sb.append("\nShould be empty: ").append(all).append("\n");
 
         for (Map.Entry<String, String> entry : all.entrySet()) {
             sb.append("\nNot processed: ").append(entry.getKey()).append(" = ").append(entry.getValue());
