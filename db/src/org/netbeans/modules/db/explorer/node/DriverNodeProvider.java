@@ -78,15 +78,13 @@ public class DriverNodeProvider extends NodeProvider {
         mgr.addDriverListener(
             new JDBCDriverListener() {
                 public void driversChanged() {
-                    update();
+                    initialize();
                 }
             }
         );
-
-        update();
     }
     
-    private void update() {
+    protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (JDBCDriver driver : drivers) {
@@ -96,7 +94,7 @@ public class DriverNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(driver);
-                newList.add(DriverNode.create(lookup));
+                newList.add(DriverNode.create(lookup, this));
             }
         }
 

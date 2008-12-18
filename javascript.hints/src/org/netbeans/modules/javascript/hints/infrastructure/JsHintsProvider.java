@@ -82,10 +82,15 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
-        for (Error error : errors) {
-            if (!applyErrorRules(manager, context, error, hints, result)) {
-                unhandled.add(error);
+        try {
+            context.doc.readLock();
+            for (Error error : errors) {
+                if (!applyErrorRules(manager, context, error, hints, result)) {
+                    unhandled.add(error);
+                }
             }
+        } finally {
+            context.doc.readUnlock();
         }
     }
 
@@ -112,7 +117,12 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
-        applySelectionRules(manager, context, hints, result);
+        try {
+            context.doc.readLock();
+            applySelectionRules(manager, context, hints, result);
+        } finally {
+            context.doc.readUnlock();
+        }
     }
     
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> result) {
@@ -142,9 +152,13 @@ public class JsHintsProvider implements HintsProvider {
         path.descend(root);
         
         //applyRules(manager, NodeTypes.ROOTNODE, root, path, info, hints, descriptions);
-        applyHints(manager, context, -1, root, path, hints, result);
-        
-        scan(manager, context, root, path, hints, result);
+        try {
+            context.doc.readLock();
+            applyHints(manager, context, -1, root, path, hints, result);
+            scan(manager, context, root, path, hints, result);
+        } finally {
+            context.doc.readUnlock();
+        }
         path.ascend();
     }
     
@@ -190,18 +204,23 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
-        CompilationInfo info = context.compilationInfo;
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        try {
+            context.doc.readLock();
+            CompilationInfo info = context.compilationInfo;
+            int astOffset = AstUtilities.getAstOffset(info, caretOffset);
 
-        AstPath path = new AstPath(root, astOffset);
-        Iterator<Node> it = path.leafToRoot();
-        while (it.hasNext()) {
-            if (isCancelled()) {
-                return;
+            AstPath path = new AstPath(root, astOffset);
+            Iterator<Node> it = path.leafToRoot();
+            while (it.hasNext()) {
+                if (isCancelled()) {
+                    return;
+                }
+
+                Node node = it.next();
+                applyHints(manager, context, node.getType(), node, path, suggestions, result);
             }
-
-            Node node = it.next();
-            applyHints(manager, context, node.getType(), node, path, suggestions, result);
+        } finally {
+            context.doc.readUnlock();
         }
         
         //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, caretOffset, result);
