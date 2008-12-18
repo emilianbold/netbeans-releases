@@ -65,14 +65,14 @@ import org.openide.util.Exceptions;
  *
  * @author  gowri
  */
-public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
+public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
 
     private Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private JTextComponent packageComboBoxEditor;
     private SelectedTables selectedTables;    
 
-    public HibernateRevengCodeGenerationPanel() {
+    public HibernateCodeGenerationPanel() {
         initComponents();
 
         packageComboBoxEditor = (JTextComponent) cmbPackage.getEditor().getEditorComponent();
@@ -93,7 +93,7 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         });
     }
 
-    /** Creates new form HibernateRevengCodeGenerationPanel */
+    /** Creates new form HibernateCodeGenerationPanel */
     public void initialize(Project project, FileObject targetFolder) {        
         this.project = project;
 
@@ -230,18 +230,18 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         chkJava = new javax.swing.JCheckBox();
         chkEjb = new javax.swing.JCheckBox();
 
-        setName(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "LBL_GenerateClasses")); // NOI18N
+        setName(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "LBL_GenerateClasses")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel1.text")); // NOI18N
 
         chkDomain.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(chkDomain, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkDomain.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkDomain, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkDomain.text")); // NOI18N
 
         chkHbm.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(chkHbm, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkHbm.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkHbm, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkHbm.text")); // NOI18N
 
         jLabel2.setLabelFor(txtProject);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel2.text")); // NOI18N
 
         txtProject.setEditable(false);
         txtProject.addActionListener(new java.awt.event.ActionListener() {
@@ -251,7 +251,7 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         });
 
         jLabel3.setLabelFor(cmbLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel3.text")); // NOI18N
 
         cmbLocation.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cmbLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -261,21 +261,21 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         });
 
         jLabel4.setLabelFor(cmbPackage);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel4.text")); // NOI18N
 
         cmbPackage.setEditable(true);
         cmbPackage.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel5.text")); // NOI18N
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel5.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(chkJava, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkJava.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkJava, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkJava.text")); // NOI18N
         chkJava.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chkJavaActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(chkEjb, org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkEjb.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkEjb, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkEjb.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
