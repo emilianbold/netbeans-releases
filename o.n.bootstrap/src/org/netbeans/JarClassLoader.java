@@ -198,6 +198,10 @@ public class JarClassLoader extends ProxyClassLoader {
             byte[] data = src.getClassData(path);
             if (data == null) continue;
             
+            // do the enhancing
+            byte[] d = PatchByteCode.patch (data, name);
+            data = d;
+            
             // Note that we assume that if we are defining a class in this package,
             // we should also define the package! Thus recurse==false.
             // However special packages might be defined in a parent and then we want
