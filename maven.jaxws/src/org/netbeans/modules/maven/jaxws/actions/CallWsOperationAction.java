@@ -75,16 +75,16 @@ public class CallWsOperationAction  implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            try {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                if (controller != null) {
+            if (controller != null) {
+                try {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     FileObject targetSource = controller.getFileObject();
                     if (targetSource != null && JAXWSLightSupport.getJAXWSLightSupport(targetSource) != null) {
                         ret.add(new CallWsOperationAction(targetSource, component));
                     }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
             return ret;
         }

@@ -68,6 +68,9 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         stmt.executeUpdate("CREATE TABLE FOO (" +
                 "ID INT NOT NULL PRIMARY KEY, " +
                 "FOO VARCHAR(16))");
+        stmt.executeUpdate("CREATE TABLE BAR (ID INT NOT NULL PRIMARY KEY, FOO_ID INT NOT NULL, FOREIGN KEY (FOO_ID) REFERENCES FOO)");
+        stmt.executeUpdate("CREATE INDEX FOO_INDEX ON FOO(FOO)");
+        stmt.executeUpdate("CREATE VIEW FOOVIEW AS SELECT * FROM FOO");
         stmt.close();
         metadata = new JDBCMetadata(conn, "APP").getMetadata();
     }
@@ -75,7 +78,7 @@ public class MetadataElementHandleTest extends MetadataTestBase {
     public void testResolve() {
         Catalog catalog = metadata.getDefaultCatalog();
         MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
-        Catalog resolvedCatalog = catalogHandle.resolve(metadata);
+            Catalog resolvedCatalog = catalogHandle.resolve(metadata);
         assertSame(catalog, resolvedCatalog);
 
         Schema schema = metadata.getDefaultSchema();
@@ -88,10 +91,39 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         Table resolvedTable = tableHandle.resolve(metadata);
         assertSame(table, resolvedTable);
 
+        PrimaryKey key = table.getPrimaryKey();
+        MetadataElementHandle<PrimaryKey> keyHandle = MetadataElementHandle.create(key);
+        PrimaryKey resolvedKey = keyHandle.resolve(metadata);
+        assertSame(key, resolvedKey);
+
         Column column = table.getColumn("FOO");
         MetadataElementHandle<Column> columnHandle = MetadataElementHandle.create(column);
         Column resolvedColumn = columnHandle.resolve(metadata);
         assertSame(column, resolvedColumn);
+
+        Index index = table.getIndex("FOO_INDEX");
+        MetadataElementHandle<Index> indexHandle = MetadataElementHandle.create(index);
+        Index resolvedIndex = indexHandle.resolve(metadata);
+        assertSame(index, resolvedIndex);
+
+        Table barTable = schema.getTable("BAR");
+        ForeignKey fkey = barTable.getForeignKeys().toArray(new ForeignKey[0])[0];
+        MetadataElementHandle<ForeignKey> fkeyHandle = MetadataElementHandle.create(fkey);
+        ForeignKey resolvedForeignKey = fkeyHandle.resolve(metadata);
+        assertSame(fkey, resolvedForeignKey);
+
+        View view = schema.getView("FOOVIEW");
+        MetadataElementHandle<View> viewHandle = MetadataElementHandle.create(view);
+        View resolvedView = viewHandle.resolve(metadata);
+        assertSame(view, resolvedView);
+
+        // Negative test - what happens if you create a handle for null
+        try {
+            MetadataElementHandle<Catalog> bogusHandle = MetadataElementHandle.create((Catalog)null);
+            fail("Should have thrown a NullPointerException");
+        } catch (NullPointerException npe) {
+            //expected
+        }
     }
 
     public void testEquals() {

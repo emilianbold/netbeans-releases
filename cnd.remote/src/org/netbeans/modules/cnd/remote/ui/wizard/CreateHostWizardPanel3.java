@@ -38,10 +38,11 @@
  */
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
 
@@ -90,6 +91,7 @@ public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDesc
     }
 
     public void storeSettings(WizardDescriptor settings) {
+        Lookup.getDefault().lookup(ServerList.class).addServer((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY), false, false);
     }
 }
 

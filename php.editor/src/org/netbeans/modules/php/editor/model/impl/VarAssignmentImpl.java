@@ -48,28 +48,29 @@ import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
-class VarAssignmentImpl extends ModelElementImpl implements VarAssignment {
+class VarAssignmentImpl extends ScopeImpl implements VarAssignment {
 
     private VariableNameImpl var;
     //TODO: typeName should be list or array to keep mixed types
     private Union2<String,List<? extends TypeScope>> typeName;
+    private OffsetRange scopeRange;
 
-    VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, Variable varNode, Assignment assignment,
+    VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, VariableNameImpl> allAssignments) {
-        this(var, scope, VariableNameImpl.toOffsetRange(varNode), VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
+        this(var, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
     }
 
-    VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, OffsetRange offsetRange, String typeName) {
-        super(scope, var.getName(), var.getFile(), offsetRange, var.getPhpKind());
+    VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+        super(scope, var.getName(), var.getFile(), nameRange, var.getPhpKind());
         this.var = var;
         this.typeName = Union2.<String,List<? extends TypeScope>>createFirst(typeName);
+        this.scopeRange = scopeRange;
     }
 
     @CheckForNull
@@ -109,7 +110,7 @@ class VarAssignmentImpl extends ModelElementImpl implements VarAssignment {
         return sb.toString();
     }
 
-    @Override
+    /*@Override
     StringBuilder golden(int indent) {
         String prefix = "";//NOI18N
         for (int i = 0; i < indent; i++) {
@@ -118,7 +119,7 @@ class VarAssignmentImpl extends ModelElementImpl implements VarAssignment {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix).append(toString()).append("\n");//NOI18N
         return sb;
-    }
+    }*/
 
     public List<? extends TypeScope> getTypes() {
         List<? extends TypeScope> empty = Collections.emptyList();
@@ -149,4 +150,8 @@ class VarAssignmentImpl extends ModelElementImpl implements VarAssignment {
         return var;
     }
 
+    @Override
+    public OffsetRange getBlockRange() {
+        return scopeRange;
+    }
 }

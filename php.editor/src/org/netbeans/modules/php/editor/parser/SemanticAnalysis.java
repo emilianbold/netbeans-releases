@@ -51,21 +51,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -174,6 +161,16 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 if (start > -1) {
                     int end = start + node.getEndOffset() - node.getStartOffset();
                     highlights.put(new OffsetRange(start, end), coloring);
+                }
+            }
+        }
+
+        @Override
+        public void visit(Program program) {
+            scan(program.getStatements());
+            for (Comment comment : program.getComments()) {
+                if (comment.getCommentType() == Comment.Type.TYPE_VARTYPE) {
+                    scan(comment);
                 }
             }
         }
@@ -332,6 +329,22 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 }
             }
             addOffsetRange(fnName, ColoringAttributes.STATIC_SET);
+        }
+
+        @Override
+        public void visit(PHPVarComment node) {
+            int start = node.getVariable().getStartOffset();
+            int end = start + 4;
+            if (translatedSource == null) {
+                highlights.put(new OffsetRange(start, end), ColoringAttributes.CUSTOM1_SET);
+            }
+            else {
+                int startTranslated = translatedSource.getLexicalOffset(start);
+                if (startTranslated > -1) {
+                    int endTranslated = startTranslated + end - start;
+                    highlights.put(new OffsetRange(startTranslated, endTranslated), ColoringAttributes.CUSTOM1_SET);
+                }
+            }
         }
 
         @Override

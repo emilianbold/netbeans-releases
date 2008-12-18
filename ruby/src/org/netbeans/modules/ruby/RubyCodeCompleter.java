@@ -2205,7 +2205,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean valid = false;
 
         if (selectionEnd != -1) {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return Collections.emptySet();
+            }
+
             try {
+                doc.readLock();
                 if (selectionBegin == selectionEnd) {
                     return Collections.emptySet();
                 } else if (selectionEnd < selectionBegin) {
@@ -2213,11 +2219,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     selectionBegin = selectionEnd;
                     selectionEnd = temp;
                 }
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                if (doc == null) {
-                    return Collections.emptySet();
-                }
-
                 boolean startLineIsEmpty = Utilities.isRowEmpty(doc, selectionBegin);
                 boolean endLineIsEmpty = Utilities.isRowEmpty(doc, selectionEnd);
 
@@ -2250,6 +2251,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
+            } finally {
+                doc.readUnlock();
             }
         } else {
             valid = true;

@@ -97,6 +97,14 @@ public class RetrieverTest {
         expResult = "777 ms";
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
+        time = 1100;
+        expResult = "1 second";
+        result = Retriever.getDurationString(time);
+        assertEquals(expResult, result);
+        time = 1600;
+        expResult = "2 seconds";
+        result = Retriever.getDurationString(time);
+        assertEquals(expResult, result);
         time = 7777;
         expResult = "8 seconds";
         result = Retriever.getDurationString(time);
@@ -106,6 +114,10 @@ public class RetrieverTest {
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
         time = 60000;
+        expResult = "1 minute";
+        result = Retriever.getDurationString(time);
+        assertEquals(expResult, result);
+        time = 60100;
         expResult = "1 minute";
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
