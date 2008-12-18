@@ -268,7 +268,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_History")); // NOI18N
 
         sqlLimitLabel.setLabelFor(sqlLimitTextField);
-        sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sqlLimitLabel, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
 
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
