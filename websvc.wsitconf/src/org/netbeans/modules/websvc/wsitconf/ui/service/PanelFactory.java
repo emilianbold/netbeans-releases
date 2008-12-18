@@ -52,7 +52,6 @@ import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
-import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.nodes.Node;
 
