@@ -50,16 +50,12 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.explorer.infos.DDLHelper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -100,52 +96,43 @@ public class IndexNode extends BaseNode {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Index index = getIndex();
-            name = index.getName();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Index index = indexHandle.resolve(metaData);
+                            name = index.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
         }
     }
 
-    public Index getIndex() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Index> wrapper = new DataWrapper<Index>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Index index = indexHandle.resolve(metaData);
-                    wrapper.setObject(index);
-                }
-            }
-        );
-
-        return wrapper.getObject();
+    public String getCatalogName() {
+        return getCatalogName(connection, indexHandle);
     }
 
-    public Schema getSchema() {
-        Index index = getIndex();
-        return (Schema)index.getParent().getParent();
+    public String getSchemaName() {
+        return getSchemaName(connection, indexHandle);
     }
 
-    public Table getTable() {
-        Index index = getIndex();
-        return (Table)index.getParent();
+    public String getTableName() {
+        return getTableName(connection, indexHandle);
     }
 
     @Override
     public void destroy() {
         DatabaseConnector connector = connection.getConnector();
-        Table table = getTable();
-        final String tablename = table.getName();
 
-        Schema schema = table.getParent();
-        Catalog catalog = schema.getParent();
-
-        String schemaName = schema.getName();
-        String catalogName = catalog.getName();
+        final String tablename = getTableName();
+        String schemaName = getSchemaName();
+        String catalogName = getCatalogName();
 
         if (schemaName == null) {
-            schemaName = catalog.getName();
-        } else if (catalogName == null) {
-            catalogName = schemaName;
+            schemaName = catalogName;
         }
 
         try {
@@ -191,5 +178,71 @@ public class IndexNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    public static String getTableName(DatabaseConnection connection, final MetadataElementHandle<Index> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = { null };
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Index index = handle.resolve(metaData);
+                        if (index != null) {
+                            array[0] = index.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Index> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Index index = handle.resolve(metaData);
+                        if (index != null) {
+                            array[0] = index.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Index> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                    Index index = handle.resolve(metaData);
+                    if (index != null) {
+                        array[0] = index.getParent().getParent().getParent().getName();
+                    }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }

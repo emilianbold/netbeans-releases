@@ -50,11 +50,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddIndexDialog;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.node.IndexListNode;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -100,14 +96,17 @@ public class AddIndexAction extends BaseAction {
             DatabaseConnection dbConn = node.getLookup().lookup(DatabaseConnection.class);
             DatabaseConnector connector = dbConn.getConnector();
 
-            Table table = node.getTable();
-            final String tablename = table.getName();
+            final String tablename = node.getTableName();
+            String schemaName = node.getSchemaName();
+            String catalogName = node.getCatalogName();
 
-            Schema schema = table.getParent();
-            Catalog catalog = schema.getParent();
+            if (schemaName == null) {
+                schemaName = catalogName;
+            }
 
-            String schemaName = MetadataUtils.getSchemaWorkingName(schema);
-            String catalogName = MetadataUtils.getCatalogWorkingName(schema, catalog);
+            if (catalogName == null) {
+                catalogName = schemaName;
+            }
 
             Specification spec = connector.getDatabaseSpecification();
 
