@@ -13,6 +13,7 @@ import java.io.File;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -46,14 +47,6 @@ public class CommitUiTest extends JellyTestCase{
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(CommitUiTest.class).addTest("testInvokeCloseCommit").enableModules(".*").clusters(".*"));
@@ -75,6 +68,9 @@ public class CommitUiTest extends JellyTestCase{
 //        }
         
         try {
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
+
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             new EventTool().waitNoEvent(3000);
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");

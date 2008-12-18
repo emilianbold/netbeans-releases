@@ -87,11 +87,11 @@ public abstract class IndexedElement extends RubyElement {
     private Document document;
     private FileObject fileObject;
     private final FileObject context;
-    private final String type;
+    protected Set<? extends String> types;
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
             String clz, String require, String attributes,
-            int flags, FileObject context, String type) {
+            int flags, FileObject context, Set<? extends String> types) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
@@ -101,7 +101,7 @@ public abstract class IndexedElement extends RubyElement {
         this.clz = clz;
         this.flags = flags;
         this.context = context;
-        this.type = type;
+        this.types = types;
     }
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
@@ -124,8 +124,8 @@ public abstract class IndexedElement extends RubyElement {
         return fqn;
     }
 
-    public String getType() {
-        return type;
+    public Set<? extends String> getTypes() {
+        return types;
     }
 
     @Override

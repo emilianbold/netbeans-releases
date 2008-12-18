@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -379,7 +379,35 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
     
     protected String getRepositoryString() {
-        return repositoryPathTextField.getText().trim();
+        String text = repositoryPathTextField.getText();
+        int length = text.length();
+
+        if (length == 0) {
+            return text;
+        }
+
+        char c;
+
+        int startIndex;
+        for (startIndex = 0; startIndex < length; startIndex++) {
+            c = text.charAt(startIndex);
+            if ((c != ',') && (c != ' ')) {
+                break;
+            }
+        }
+        if (startIndex == length) {         //just spaces and commas
+            return "";                                                  //NOI18N
+        }
+
+        int endIndex = length;
+        c = text.charAt(endIndex - 1);
+        while ((c == ',') || (c == ' ')) {
+            c = text.charAt(--endIndex - 1);
+        }
+
+        return ((startIndex == 0) && (endIndex == length))
+               ? text
+               : text.substring(startIndex, endIndex);
     }
     
     protected String getRevisionString() {

@@ -41,6 +41,8 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,11 +63,13 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -531,7 +535,7 @@ public class CompilerSetManager {
         return css;
     }
 
-    private static CompilerSet parseCompilerSetString(String hkey, int platform, String data) {
+    private CompilerSet parseCompilerSetString(String hkey, int platform, String data) {
         log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
         int i1 = data.indexOf(';');
         int i2 = data.indexOf(';', i1 + 1);
@@ -606,19 +610,25 @@ public class CompilerSetManager {
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
+        report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
         record.validate(connect);
         if (record.isOnline()) {
+            report("done.\n"); //NOI18N
             remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    provider.init(key);
+                    report("Configuring host.\n");//NOI18N
+                    provider.init(key); //NOI18N
                     platform = provider.getPlatform();
+                    report("Validating platform...found " + PlatformTypes.toString(platform) + ".\nLooking for tool collections:\n");//NOI18N
                     log.fine("CSM.initRemoteCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
-                        add(parseCompilerSetString(key, platform, data));
+                        CompilerSet cs = parseCompilerSetString(key, platform, data);
+                        report("  Found " + cs.getDisplayName() + " at " + cs.getDirectory() + ".\n");//NOI18N
+                        add(cs);
                     }
                     completeCompilerSets(platform);
                     List<CompilerSet> setsCopy;
@@ -630,8 +640,14 @@ public class CompilerSetManager {
                         setsCopy.addAll(sets);
                     }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                    if (sets.size() == 0) {
+                        report("Done. No tool collections were found in default locations. You can configure them manually later using Tools > Options dialog.\n"); //NOI18N
+                    } else {
+                        report("Done. Found " + sets.size() + " tool collection(s).\n");//NOI18N
+                    }
                     state = STATE_COMPLETE;
 
+                    report("Your host was successfully configured.\n");//NOI18N
                     provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
 
                         public void taskFinished(org.openide.util.Task task) {
@@ -642,10 +658,20 @@ public class CompilerSetManager {
                 }
             });
         } else {
+            report("...failed. Hostname is wrong or host is offline.\n");//NOI18N
             // create empty CSM
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
             state = STATE_UNINITIALIZED;
+        }
+    }
+
+    //TODO: temp test code
+    public static Writer writer = null;
+    private void report(String msg)  {
+        try {
+            writer.write(msg);
+        } catch (IOException ex) {
         }
     }
 

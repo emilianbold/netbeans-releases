@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -75,15 +74,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return false;
     }
 
-    protected Project getTestProject(String path) {
-        FileObject fo = getTestFile(path);
-        Project p = FileOwnerQuery.getOwner(fo);
-        assertNotNull(p);
-
-        return p;
-    }
-    
-    protected RubyProject getRubyProject(String path) {
+    protected RubyProject getRubyProject(String path) throws Exception {
         Project p = getTestProject(path);
         assertNotNull(p);
         assertTrue(p instanceof RubyProject);

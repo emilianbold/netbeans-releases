@@ -163,6 +163,7 @@
                 <file name="hints.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.python.editor.hints.PythonHintsProvider"/>
                 </file>
+                <file name="codecoverage"/>
             </folder>
         </folder>
     </folder>
