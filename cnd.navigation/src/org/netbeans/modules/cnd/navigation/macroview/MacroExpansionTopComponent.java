@@ -67,14 +67,14 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
     private static MacroExpansionTopComponent instance;
     /** path to the icon used by the component and its open action */
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.gif"; // NOI18N
-    private static final String PREFERRED_ID = "MacroExpansionTopComponent";
+    private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
 
     private JComponent last = null;
 
     private MacroExpansionTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionTopComponent"));
-        setToolTipText(NbBundle.getMessage(MacroExpansionTopComponent.class, "HINT_MacroExpansionTopComponent"));
+        setName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(MacroExpansionTopComponent.class, "HINT_MacroExpansionTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
 //        // Don't highlight caret row
