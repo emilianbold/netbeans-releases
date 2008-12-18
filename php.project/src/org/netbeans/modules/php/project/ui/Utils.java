@@ -60,10 +60,9 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -523,7 +522,7 @@ public final class Utils {
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
-    public static void browseSourceFile(Project project, JTextField textField) {
+    public static void browseSourceFile(PhpProject project, JTextField textField) {
         String selected = browseSource(project, textField.getText(), false);
         if (selected != null) {
             textField.setText(selected);
@@ -536,7 +535,7 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseSourceFile(Project project, String preselected) {
+    public static String browseSourceFile(PhpProject project, String preselected) {
         return browseSource(project, preselected, false);
     }
 
@@ -545,7 +544,7 @@ public final class Utils {
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
-    public static void browseSourceFolder(Project project, JTextField textField) {
+    public static void browseSourceFolder(PhpProject project, JTextField textField) {
         String selected = browseSource(project, textField.getText(), true);
         if (selected != null) {
             textField.setText(selected);
@@ -558,19 +557,16 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseSourceFolder(Project project, String preselected) {
+    public static String browseSourceFolder(PhpProject project, String preselected) {
         return browseSource(project, preselected, true);
     }
 
-    private static String browseSource(Project project, String preselected, boolean selectDirectory) {
-        SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
-        assert sourceGroups.length == 1;
-        assert sourceGroups[0] != null;
-        File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
-        FileObject selected = BrowseFolders.showDialog(sourceGroups,
+    private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
+        FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
-            return PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
+            return PropertyUtils.relativizeFile(FileUtil.toFile(rootFolder), FileUtil.toFile(selected));
         }
         return null;
     }
