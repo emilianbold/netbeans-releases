@@ -146,6 +146,8 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -274,7 +276,7 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
     
-    protected FileObject getTestFile(String relFilePath) {
+    public FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
             NbTestCase.fail("File " + wholeInputFile + " not found.");
@@ -391,7 +393,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return getDocument(s, mimeType, language.getLexerLanguage());
     }
     
-    protected BaseDocument getDocument(FileObject fo) {
+    public BaseDocument getDocument(FileObject fo) {
         try {
 //             DataObject dobj = DataObject.find(fo);
 //             assertNotNull(dobj);
@@ -414,6 +416,15 @@ public abstract class GsfTestBase extends NbTestCase {
             fail(ex.toString());
             return null;
         }
+    }
+
+    public Project getTestProject(String relativePath) throws Exception {
+        FileObject projectDir = getTestFile(relativePath);
+        assertNotNull(projectDir);
+        Project project = ProjectManager.getDefault().findProject(projectDir);
+        assertNotNull(project);
+
+        return project;
     }
 
     public static String readFile(File f) throws Exception {
@@ -469,12 +480,12 @@ public abstract class GsfTestBase extends NbTestCase {
         return true;
     }
 
-    protected void assertDescriptionMatches(String relFilePath,
+    public void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
         assertDescriptionMatches(relFilePath, description, includeTestName, ext, true);
     }
 
-    protected void assertDescriptionMatches(String relFilePath,
+    public void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext, boolean checkFileExistence) throws Exception {
         File rubyFile = getDataFile(relFilePath);
         if (checkFileExistence && !rubyFile.exists()) {
@@ -516,7 +527,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertEquals(expected.trim(), description.trim());
     }
 
-    protected void assertDescriptionMatches(FileObject fileObject, 
+    public void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext) throws Exception {
         File goldenFile = getDataFile("testfiles/" + fileObject.getName() + (includeTestName ? ("." + getName()) : "") + ext);
         if (!goldenFile.exists()) {
@@ -550,7 +561,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertEquals("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject), expected.trim(), description.trim());
     }
     
-    protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
+    public void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
         File rubyFile = getDataFile(relFilePath);
         if (!rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");

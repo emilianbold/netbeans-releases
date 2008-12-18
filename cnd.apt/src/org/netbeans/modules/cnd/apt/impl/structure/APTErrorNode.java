@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTUnknown;
+import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Kvashin
  */
 public class APTErrorNode extends APTStreamBaseNode 
-                                    implements APTUnknown, Serializable {
+                                    implements APTError, Serializable {
     
     private static final long serialVersionUID = -6159626009326550770L;
     

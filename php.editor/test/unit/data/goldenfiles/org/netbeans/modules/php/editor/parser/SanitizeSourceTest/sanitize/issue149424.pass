@@ -1,4 +1,6 @@
 <Program start='0' end='448'>
+    <Comments>
+    </Comments>
     <Statements>
         <ASTError start='0' end='448'/>
     </Statements>

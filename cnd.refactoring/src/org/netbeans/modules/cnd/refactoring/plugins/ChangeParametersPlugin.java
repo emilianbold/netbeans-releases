@@ -40,169 +40,95 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
- * and also all its references (callers).
+ * and also all its references (callers). Based on Java refactoring
  *
  * @author  Pavel Flaska
  * @author  Tomas Hurka
  * @author  Jan Becicka
+ * @author  Vladimir Voskresensky
  */
-public class ChangeParametersPlugin extends CsmRefactoringPlugin {
-    
+public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
+
     private ChangeParametersRefactoring refactoring;
-    private CsmObject startReferenceObject;
-    /**
-     * Creates a new instance of change parameters refactoring.
-     *
-     * @param method  refactored object, i.e. method or constructor
-     */
+    // objects affected by refactoring
+    private Collection<CsmObject> referencedObjects;
+
     public ChangeParametersPlugin(ChangeParametersRefactoring refactoring) {
+        super(refactoring);
         this.refactoring = refactoring;
-        this.startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
     }
-    
+
     @Override
-    public Problem checkParameters() {
-        //TODO:
-        return null;
+    protected Collection<CsmObject> getRefactoredObjects() {
+        return referencedObjects;
     }
 
     @Override
     public Problem fastCheckParameters() {
-//        javac.toPhase(JavaSource.Phase.RESOLVED);
         ParameterInfo paramTable[] = refactoring.getParameterInfo();
-        Problem p=null;
-        for (int i = 0; i< paramTable.length; i++) {
+        Problem p = null;
+        for (int i = 0; i < paramTable.length; i++) {
             int origIndex = paramTable[i].getOriginalIndex();
-     
-            if (origIndex==-1) {
-            // check parameter name
-            String s;
-            s = paramTable[i].getName();
-            if ((s == null || s.length() < 1))
-                p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
-            else {
-                if (!Utilities.isJavaIdentifier(s)) {
-                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N
+
+            if (origIndex == -1) {
+                // check parameter name
+                CharSequence s;
+                s = paramTable[i].getName();
+                if ((s == null || s.length() < 1)) {
+                    p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
+                } else {
+                    if (!Utilities.isJavaIdentifier(s.toString())) {
+                        p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", s)); // NOI18N
+                    }
                 }
-            }
 
-            // check parameter type
-            String t = paramTable[i].getType();
-            if (t == null)
-                p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
-
-            // check the default value
-            s = paramTable[i].getDefaultValue();
-            if ((s == null || s.length() < 1))
-                p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
-
+                // check parameter type
+                CharSequence t = paramTable[i].getType();
+                if (t == null) {
+                    p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
+                }
+                // check the default value
+                s = paramTable[i].getDefaultValue();
+                if ((s == null || s.length() < 1)) {
+                    p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
+                }
             }
             ParameterInfo in = paramTable[i];
 
-            if (in.getType() != null && in.getType().endsWith("...") && i!=paramTable.length-1) {//NOI18N
-                    p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {}));
-                }
+            if (in.getType() != null && in.getType().toString().endsWith("...") && i != paramTable.length - 1) {//NOI18N
+                p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[]{}));
+            }
         }
-        return p;    
+        return p;
     }
 
     private static String newParMessage(String par) {
-        return new MessageFormat(
-                getString("ERR_newpar")).format(new Object[] { getString(par) } // NOI18N
-            );
+        return new MessageFormat(getString("ERR_newpar")).format(new Object[]{getString(par)}); // NOI18N
     }
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(ChangeParametersPlugin.class, key);
     }
 
-//    private Set<ElementHandle<ExecutableElement>> allMethods;
-//
-    private Set<FileObject> getRelevantFiles() {
-//        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        final Set<FileObject> set = new HashSet<FileObject>();
-//        JavaSource source = JavaSource.create(cpInfo, refactoring.getRefactoringSource().lookup(CsmObject.class).getFileObject());
-//
-//        try {
-//            source.runUserActionTask(new CancellableTask<CompilationController>() {
-//
-//                public void cancel() {
-//                    throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-//                }
-//
-//                public void run(CompilationController info) throws Exception {
-//                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
-//                    info.toPhase(JavaSource.Phase.RESOLVED);
-//
-//                    //add all references of overriding methods
-//                        CsmObject treePathHandle = refactoring.getRefactoringSource().lookup(CsmObject.class);
-//                        Element el = treePathHandle.resolveElement(info);
-//                    ElementHandle<TypeElement>  enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
-//                        allMethods = new HashSet<ElementHandle<ExecutableElement>>();
-//                        allMethods.add(ElementHandle.create((ExecutableElement)el));
-//                        for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-//                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-//                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
-//                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                            allMethods.add(ElementHandle.create(e));
-//                        }
-//                        //add all references of overriden methods
-//                        for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-//                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-//                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
-//                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                            allMethods.add(ElementHandle.create(e));
-//                        }
-//                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                        set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
-//                }
-//            }, true);
-//        } catch (IOException ioe) {
-//            throw (RuntimeException) new RuntimeException().initCause(ioe);
-//        }
-        return set;
-    }
-    
-    
-    public Problem prepare(RefactoringElementsBag elements) {
-        Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-//            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), startReferenceObject);
-//            Problem p = createAndAddElements(a, transform, elements, refactoring);
-//            if (p != null) {
-//                fireProgressListenerStop();
-//                return p;
-//            }
-        }
-        fireProgressListenerStop();
-        return null;
-    }
-//
-//    protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
-//        switch(p) {
-//            case CHECKPARAMETERS:
-//            case FASTCHECKPARAMETERS:
-//            case PRECHECK:
-//                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-//                return JavaSource.create(cpInfo, startReferenceObject.getFileObject());
-//        }
-//        return null;
-//    }
     /**
      * Returns list of problems. For the change method signature, there are two
      * possible warnings - if the method is overriden or if it overrides
@@ -212,46 +138,52 @@ public class ChangeParametersPlugin extends CsmRefactoringPlugin {
      */
     @Override
     public Problem preCheck() {
-        fireProgressListenerStart(ChangeParametersRefactoring.PRE_CHECK, 4);
         Problem preCheckProblem = null;
-//        info.toPhase(JavaSource.Phase.RESOLVED);
-//        preCheckProblem = isElementAvail(startReferenceObject, info);
-//        if (preCheckProblem != null) {
-//            return preCheckProblem;
-//        }
-//        Element el = startReferenceObject.resolveElement(info);
-//        if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-//            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
-//            return preCheckProblem;
-//        }
-//
-//        FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
-//        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
-//            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
-//                    ChangeParametersPlugin.class, "ERR_CannotRefactorLibraryClass",
-//                    el.getEnclosingElement()
-//                    ));
-//            return preCheckProblem;
-//        }
-//
-//        if (!RetoucheUtils.isElementInOpenProject(fo)) {
-//            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ProjectNotOpened"));
-//            return preCheckProblem;
-//        }
-//
-//        if (SourceUtils.getEnclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
-//            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
-//            return preCheckProblem;
-//        }
-//
-//        for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
-//            if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) { //NOI18N
-//                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannnotRefactorLibrary", el));
-//            }
-//        }
-                    
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
+        // check if resolved element
+        preCheckProblem = isResovledElement(getStartReferenceObject());
+        fireProgressListenerStep();
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+        // check if valid element
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        // support only functions and not destructor
+        if (!CsmKindUtilities.isFunction(directReferencedObject) || CsmKindUtilities.isDestructor(directReferencedObject)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+            return preCheckProblem;
+        }
+        // create additional objects to resolve
+        if (this.referencedObjects == null) {
+            initReferencedObjects();
+            fireProgressListenerStep();
+        }
+        // check read-only elements
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
         fireProgressListenerStop();
         return preCheckProblem;
     }
-    
+
+    private void initReferencedObjects() {
+        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        if (referencedObject != null) {
+            this.referencedObjects = new LinkedHashSet<CsmObject>();
+            if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
+                CsmMethod method = (CsmMethod) referencedObject;
+                this.referencedObjects.add(method);
+                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
+                    assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+                }
+            } else {
+                this.referencedObjects.add(referencedObject);
+            }
+        }
+    }
+
+    @Override
+    protected void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
+        // not yet implemented
+    }
+
 }

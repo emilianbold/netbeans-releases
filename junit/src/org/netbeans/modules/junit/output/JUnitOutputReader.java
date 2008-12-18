@@ -320,6 +320,8 @@ final class JUnitOutputReader {
                     progressLogger.finest("test finished");             //NOI18N
                     updateProgress();
                 }
+
+                manager.displayReport(session, sessionType, report, true);
                 return;
             }
             if (shortMsg.equals(ADD_FAILURE_PREFIX)
@@ -676,7 +678,7 @@ final class JUnitOutputReader {
             return null;
         }
 
-        File resultsDir = (todirPath != ".") ? new File(todirPath)      //NOI18N
+        File resultsDir = (!todirPath.equals(".")) ? new File(todirPath)      //NOI18N
                                              : null;
         return findAbsolutePath(resultsDir, taskStruct, event);
     }
@@ -717,21 +719,6 @@ final class JUnitOutputReader {
         return new File(event.getProperty("basedir"));                  //NOI18N
     }
 
-    /**
-     */
-    private Report createReport(final String suiteName) {
-        Report report = new Report(suiteName);
-        report.antScript = antScript;
-        
-        report.classpath = classpath;
-        report.platformSources = platformSources;
-        
-        this.classpath = null;
-        this.platformSources = null;
-        
-        return report;
-    }
-    
     /**
      */
     private ClassPath findPlatformSources(final String javaExecutable) {
@@ -955,7 +942,14 @@ final class JUnitOutputReader {
      */
     private Report suiteStarted(final String suiteName) {
         closePreviousReport();
-        report = createReport(suiteName);
+        report = new Report(suiteName);
+        report.antScript = antScript;
+
+        report.classpath = classpath;
+        report.platformSources = platformSources;
+
+        this.classpath = null;
+        this.platformSources = null;
         
         String stepMessage = getProgressStepMessage(suiteName);
         expectedOneSuiteTests = 0;

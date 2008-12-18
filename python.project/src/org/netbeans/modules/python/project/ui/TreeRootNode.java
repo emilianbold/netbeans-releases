@@ -55,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.python.api.PythonMIMEResolver;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -195,6 +196,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                            if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
                                return childs[i];
                            }
+                           
                         }
                     }
                 } catch (NodeNotFoundException e) {
@@ -222,7 +224,10 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
-            return g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
+            if(fo.getExt().equalsIgnoreCase("pyc")||fo.getExt().equalsIgnoreCase("pyo"))
+                return false;
+            return g.contains(fo) &&
+                    VisibilityQuery.getDefault().isVisible(fo);
         }
         
         public void stateChanged(ChangeEvent e) {

@@ -41,15 +41,22 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/schema.png"; // NOI18N
     private static final String FOLDER = "Schema"; //NOI18N
 
     /**
@@ -58,42 +65,78 @@ public class SchemaNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the SchemaNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup) {
-        SchemaNode node = new SchemaNode(dataLookup);
+    public static SchemaNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        SchemaNode node = new SchemaNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Schema schema;
+    private String name = ""; // NOI18N
+    private String htmlName = null;
 
-    private SchemaNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private final MetadataElementHandle<Schema> schemaHandle;
+    private final DatabaseConnection connection;
+
+    private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            Schema schema = getSchema();
+            renderNames(schema);
+        }
+    }
+
+    public Schema getSchema() {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
+        MetadataUtils.readModel(metaDataModel, wrapper,
+            new MetadataReadListener() {
+                public void run(Metadata metaData, DataWrapper wrapper) {
+                    Schema schema = schemaHandle.resolve(metaData);
+                    wrapper.setObject(schema);
+                }
+            }
+        );
+
+        return wrapper.getObject();
     }
 
     @Override
     public String getName() {
-        return renderName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return renderName();
+        return name;
     }
 
-    private String renderName() {
-        String name = schema.getName();
+    private void renderNames(Schema schema) {
+        if (schema == null) {
+            name = "";
+        }
+
+        name = schema.getName();
         if (name == null) {
             name = schema.getParent().getName();
         }
 
-        return name;
+        if (schema != null) {
+            if (schema.isDefault()) {
+                htmlName = "<b>" + name + "</b>"; // NOI18N
+            }
+        }
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        return htmlName;
     }
 
     @Override

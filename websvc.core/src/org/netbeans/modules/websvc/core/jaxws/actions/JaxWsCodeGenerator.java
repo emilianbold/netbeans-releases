@@ -76,7 +76,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
@@ -333,13 +334,13 @@ public class JaxWsCodeGenerator {
             "    %>\n" + //NOI18N
             "    <%-- end web service invocation --%><hr/>\n"; //NOI18N
 
-    public static void insertMethodCall(int targetSourceType, DataObject dataObj, Node sourceNode, Node operationNode) {
-        EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
-        OperationNode opNode = operationNode.getLookup().lookup(OperationNode.class);
+    public static void insertMethodCall(int targetSourceType, DataObject dataObj, Lookup targetNodeLookup, Lookup sourceNodeLookup) {
+        EditorCookie cookie = targetNodeLookup.lookup(EditorCookie.class);
+        OperationNode opNode = sourceNodeLookup.lookup(OperationNode.class);
         boolean inJsp = InvokeOperationCookie.TARGET_SOURCE_JSP == targetSourceType;
-        Node portNode = operationNode.getParentNode();
+        Node portNode = opNode.getParentNode();
         Node serviceNode = portNode.getParentNode();
-        addProjectReference(serviceNode, sourceNode);
+        addProjectReference(serviceNode, targetNodeLookup);
         final Document document;
         int position = -1;
         if (inJsp) {
@@ -372,11 +373,11 @@ public class JaxWsCodeGenerator {
         insertMethod(document, pos, opNode);
     }
 
-    private static void addProjectReference(Node serviceNode, Node sourceNode) {
+    private static void addProjectReference(Node serviceNode, Lookup targetNodeLookup) {
         Node clientNode = serviceNode.getParentNode();
         FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
         Project clientProject = FileOwnerQuery.getOwner(srcRoot);
-        DataObject dObj = sourceNode.getCookie(DataObject.class);
+        DataObject dObj = targetNodeLookup.lookup(DataObject.class);
         if (dObj != null) {
             FileObject targetFo = dObj.getPrimaryFile();
             JaxWsUtils.addProjectReference(clientProject, targetFo);

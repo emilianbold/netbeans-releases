@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -262,21 +263,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void rootFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootFolderButtonActionPerformed
-        String seed = null;
-        if (rootFolder.getText().length() > 0) {
-            seed = rootFolder.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
-        
         JFileChooser fileChooser = new FileChooser(
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
-                JFileChooser.DIRECTORIES_ONLY, false,
+                JFileChooser.DIRECTORIES_ONLY,
                 null,
-                seed,
+                rootFolder.getText(),
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);

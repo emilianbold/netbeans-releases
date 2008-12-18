@@ -60,6 +60,7 @@ public class AddIndexAction extends DatabaseAction {
     private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class .getName());
 
     public void performAction (Node[] activatedNodes) {
+        /*
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];
@@ -114,5 +115,6 @@ public class AddIndexAction extends DatabaseAction {
             LOGGER.log(Level.INFO, exc.getMessage(), exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
+        */
     }
 }

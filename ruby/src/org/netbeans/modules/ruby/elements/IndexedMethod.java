@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
+    
     /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
     public static final int BLOCK = 1 << 6;
     /** This method takes an optional block */
@@ -77,25 +79,22 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private boolean smart;
     private boolean inherited; 
     private MethodType methodType = MethodType.METHOD;
-    
+
     private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags, FileObject context) {
+            String clz, String require, String attributes, int flags, FileObject context) {
         super(index, fileUrl, fqn, clz, require, attributes, flags, context);
         this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags, FileObject context) {
-        IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
-
-        return m;
+            String fileUrl, String require, String attributes, int flags, FileObject context) {
+        return new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
     }
     
     public MethodType getMethodType() {
         return methodType;
     }
-    
+
     public void setMethodType(MethodType methodType) {
         this.methodType = methodType;
     }
@@ -262,5 +261,34 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     
     public String getEncodedAttributes() {
         return attributes;
+    }
+
+    @Override
+    public RubyType getType() {
+        if (type == null) {
+            int lastSemiColon = attributes.lastIndexOf(';');
+            if (lastSemiColon != -1) {
+                int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon -1);
+                if (lastSemiColon != -1) {
+                    String typesS = attributes.substring(last2SemiColon + 1, lastSemiColon);
+                    type = parseTypes(typesS);
+                }
+            }
+        }
+        if (type == null) {
+            type = RubyType.createUnknown();
+        }
+        return type;
+    }
+
+    private RubyType parseTypes(final String types) {
+        if (types.length() == 0) {
+            return RubyType.createUnknown();
+        }
+        if (!types.contains("|")) { // just one type
+            return RubyType.create(types);
+        }
+        return new RubyType(types.split("\\|")); // NOI18N
+
     }
 }

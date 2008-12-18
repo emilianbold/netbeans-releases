@@ -234,7 +234,7 @@ public class StartTask extends BasicTask<OperationState> {
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
         }
-        return (String[]) envp.toArray(new String[envp.size()]);
+        return  envp.toArray(new String[envp.size()]);
     }
     
     private String getJdkHome() {
