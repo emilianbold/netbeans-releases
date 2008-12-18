@@ -117,7 +117,7 @@ public final class ProjectPropertiesSupport {
                 File tests = new File(panel.getTestSources());
                 assert tests.isDirectory();
                 testsDirectory = FileUtil.toFileObject(tests);
-                assert testsDirectory != null && testsDirectory.isValid();
+                project.setTestsDirectory(testsDirectory);
                 saveTestSources(project, tests);
             }
         }

@@ -179,6 +179,11 @@ public class PhpProject implements Project, AntProjectListener {
         return testsDirectory;
     }
 
+    synchronized void setTestsDirectory(FileObject testsDirectory) {
+        assert testsDirectory != null && testsDirectory.isValid();
+        this.testsDirectory = testsDirectory;
+    }
+
     private FileObject resolveTestsDirectory() {
         // get the second source root
         FileObject[] sourceObjects = Utils.getSourceObjects(this);

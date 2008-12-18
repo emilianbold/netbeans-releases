@@ -168,10 +168,11 @@ public final class CreateTestsAction extends NodeAction {
                 return false;
             }
 
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-            assert sources != null : "No source directory for " + phpProject;
-            if (!sources.equals(fileObj)
-                    && !FileUtil.isParentOf(sources, fileObj)) {
+            boolean inTests = tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
+            boolean inSources = sources.equals(fileObj) || FileUtil.isParentOf(sources, fileObj);
+            if (!inSources || inTests) {
                 return false;
             }
         }
