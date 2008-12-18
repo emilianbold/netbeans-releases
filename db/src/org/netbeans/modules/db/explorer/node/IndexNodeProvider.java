@@ -46,14 +46,13 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -87,45 +86,40 @@ public class IndexNodeProvider extends NodeProvider {
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    public Table getTable() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Table> wrapper = new DataWrapper<Table>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Table table = (Table)handle.resolve(metaData);
-                    wrapper.setObject(table);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
     @Override
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
 
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Table table = getTable();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Table table = (Table)handle.resolve(metaData);
+                            if (table != null) {
+                                Collection<Index> indexes = table.getIndexes();
 
-            if (table != null) {
-                Collection<Index> indexes = table.getIndexes();
+                                for (Index index : indexes) {
+                                    MetadataElementHandle<Index> h = MetadataElementHandle.create(index);
+                                    Collection<Node> matches = getNodes(h);
+                                    if (matches.size() > 0) {
+                                        newList.addAll(matches);
+                                    } else {
+                                        NodeDataLookup lookup = new NodeDataLookup();
+                                        lookup.add(connection);
+                                        lookup.add(h);
 
-                for (Index index : indexes) {
-                    MetadataElementHandle<Index> h = MetadataElementHandle.create(index);
-                    Collection<Node> matches = getNodes(h);
-                    if (matches.size() > 0) {
-                        newList.addAll(matches);
-                    } else {
-                        NodeDataLookup lookup = new NodeDataLookup();
-                        lookup.add(connection);
-                        lookup.add(h);
-
-                        newList.add(IndexNode.create(lookup, this));
+                                        newList.add(IndexNode.create(lookup, IndexNodeProvider.this));
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 

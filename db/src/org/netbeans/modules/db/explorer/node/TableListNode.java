@@ -43,19 +43,18 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNode extends BaseNode implements SchemaProvider {
+public class TableListNode extends BaseNode implements SchemaNameProvider {
     private static final String NAME = "Tables"; // NOI18N
     private static final String DISPLAYNAME = "Tables"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
@@ -100,18 +99,55 @@ public class TableListNode extends BaseNode implements SchemaProvider {
         return ICONBASE;
     }
 
-    public Schema getSchema() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Schema> wrapper = new DataWrapper<Schema>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Schema schema = schemaHandle.resolve(metaData);
-                    wrapper.setObject(schema);
-                }
-            }
-        );
+    public String getSchemaName() {
+        return getSchemaName(connection, schemaHandle);
+    }
 
-        return wrapper.getObject();
+    public String getCatalogName() {
+        return getCatalogName(connection, schemaHandle);
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Schema> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Schema schema = handle.resolve(metaData);
+                        if (schema != null) {
+                            array[0] = schema.getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Schema> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Schema schema = handle.resolve(metaData);
+                        if (schema != null) {
+                            array[0] = schema.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }

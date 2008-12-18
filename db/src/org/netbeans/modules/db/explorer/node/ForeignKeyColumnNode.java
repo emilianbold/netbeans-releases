@@ -42,13 +42,12 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
@@ -84,31 +83,41 @@ public class ForeignKeyColumnNode extends BaseNode {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-        ForeignKeyColumn column = getForeignKeyColumn();
-        name = column.getReferringColumn().getName()
-                + " -> " + column.getReferredColumn().getParent().getName() + "." // NOI18N
-                + column.getReferredColumn().getName(); // NOI18N
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
+                            name = column.getReferringColumn().getName()
+                                    + " -> " + column.getReferredColumn().getParent().getName() + "." // NOI18N
+                                    + column.getReferredColumn().getName(); // NOI18N
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
         }
     }
 
-    public ForeignKeyColumn getForeignKeyColumn() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<ForeignKeyColumn> wrapper = new DataWrapper<ForeignKeyColumn>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
-                    wrapper.setObject(column);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
     public int getPosition() {
-        ForeignKeyColumn column = getForeignKeyColumn();
-        return column.getPosition();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final int[] array = new int[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
+                        array[0] = column.getPosition();
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 
     @Override

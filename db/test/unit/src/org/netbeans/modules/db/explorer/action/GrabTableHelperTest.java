@@ -98,8 +98,7 @@ public class GrabTableHelperTest extends DDLTestBase {
 
 
             new GrabTableHelper().execute(tableNode.getLookup().lookup(DatabaseConnection.class).getConnector(),
-                    getSpecification(), tableNode.getTable(),
-                    tableNode.getChildren().nodes(), file);
+                    getSpecification(), tableNode.getTableHandle(), file);
 
             assertTrue(file.exists());
 
