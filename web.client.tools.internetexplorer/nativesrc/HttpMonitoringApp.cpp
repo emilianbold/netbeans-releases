@@ -19,6 +19,9 @@ STDMETHODIMP CTestSink::BeginningTransaction(
 {
     USES_CONVERSION;
 
+    HttpDbgpResponse msg;
+    msg.addChildTagWithValue(_T("type"), _T("request"));
+
     if (pszAdditionalHeaders)
     {
         *pszAdditionalHeaders = 0;
@@ -57,54 +60,84 @@ STDMETHODIMP CTestSink::BeginningTransaction(
 
     if (szHeaders)
     {
+        request += L"----szHeaders----\r\n";
         request += W2CT(szHeaders);
         EnsureCRLF(request);
+
+        tstring headerSet = _T("");
+        headerSet += W2CT(szHeaders);
+        EnsureCRLF(request);
+
+        size_t pos0 = 0;
+        size_t pos1 = 0;
+        size_t pos2 = 0;
+        int tempCounter = 0;
+
+        pos1 = headerSet.find(L":",pos0);
+        while (pos1 < headerSet.size() && pos1 != wstring::npos) {
+            pos2 = headerSet.find_first_of(L"\r\n",pos1);
+
+            tstring headerName = L"";
+            tstring headerValue = L"";
+            headerName += headerSet.substr(pos0, pos1-pos0); // substr(start,len)
+
+            int valStartPos = pos1+2; // skip past the ": " 
+
+            if (pos2 > headerSet.size()) {
+                headerValue += headerSet.substr(valStartPos); //substr(start)
+            } else {
+                headerValue += headerSet.substr(
+                    valStartPos, pos2-valStartPos); // substr(start,len)
+            }
+            msg.addHeader(headerName, headerValue);
+
+            if (pos2 == wstring::npos) break;
+
+            pos0 = pos2 + 2; // increment past "\r\n" of previous line
+            pos1 = headerSet.find(L":",pos0);
+        }
     }
 
     if (SUCCEEDED(hr) && pszAdditionalHeaders && *pszAdditionalHeaders)
     {
+        request += L"----pszAdditionalHeaders----\r\n";
         request += W2CT(*pszAdditionalHeaders);
         EnsureCRLF(request);
     }
     request += _T("\r\n");
-//    g_pMainWin->Log(request.c_str());
-
+ 
     // TEST: display the header stuff
     //MessageBox(0,request.c_str(),_T("Netbeans BHO - Request Received"),MB_OK);
 
-    HttpDbgpResponse msg;
-    //msg.setTagName(HTTP);
-    msg.addChildTagWithValue(_T("type"), _T("request"));
     msg.addChildTagWithValue(_T("url"), url);
-    msg.addChildTagWithValue(_T("test"), _T("foo"));
-    msg.addChildTagWithValue(_T("id"), 100);
 
-
-    // HTTP_QUERY_REQUEST_METHOD - Receives the HTTP verb that is
-    // being used in the request, typically GET or POST.
-    std::vector<char> vecBuf2(size);
-    LPSTR pbuf2 = &vecBuf2.front();
-    hrTemp = spWinInetHttpInfo->QueryInfo(
-        HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,
-        pbuf2, &size, &flags, 0);
+	std::vector<char> vecBuf2(size);
+    LPSTR buf = &vecBuf2.front();
+    hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_CONTENT_ID,
+        buf, &size, &flags, 0);
     ATLASSERT(SUCCEEDED(hrTemp));
-    msg.addChildTagWithValue(_T("method"),A2CT(pbuf2));
+ 
+    msg.addChildTagWithValue(_T("id"), 100); //TODO
+
+    // HTTP_QUERY_REQUEST_METHOD - "Receives the HTTP verb that is
+    // being used in the request, typically GET or POST."
+    std::vector<char> vecBuf3(size);
+    LPSTR getOrPostStrBuf = &vecBuf3.front();
+    hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_REQUEST_METHOD,
+        getOrPostStrBuf, &size, &flags, 0);
+    ATLASSERT(SUCCEEDED(hrTemp));
+
+    msg.addChildTagWithValue(_T("method"),A2CT(getOrPostStrBuf)); 
 
     msg.addChildTagWithValue(_T("urlParams"), _T("null"));
     msg.addChildTagWithValue(_T("postText"), _T("undefined"));
-    msg.addChildTagWithValue(_T("loadInit"), rand());
-
-
-
+    msg.addChildTagWithValue(_T("loadInit"), rand()); //TODO: what is this???
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
 
-    //msg.addHeader(_T("Host"), _T("www.example.com"));
-    //msg.addHeader(_T("Keep-Alive"), _T("300"));
     // TODO: this could crash if lastInstance isn't valid
     if (DbgpConnection::lastInstance != NULL) {
         DbgpConnection::lastInstance->sendResponse(msg.toString());
     }
-    //MessageBox(0,msg.toString().c_str(),_T("Netbeans BHO - Request Received"),MB_OK);
 
     return hr;
 }
@@ -165,7 +198,6 @@ STDMETHODIMP CTestSink::OnResponse(
     response += _T("\r\n");
 
     HttpDbgpResponse msg;
-    //msg.setTagName(HTTP);
     msg.addChildTagWithValue(_T("type"), _T("response"));
     msg.addChildTagWithValue(_T("url"), _T("http://www.google.com"));
     msg.addChildTagWithValue(_T("test"), _T("foo"));
@@ -182,11 +214,7 @@ STDMETHODIMP CTestSink::OnResponse(
         DbgpConnection::lastInstance->sendResponse(msg.toString());
     }
 
-//    g_pMainWin->Log(response.c_str());
-
-    // TEST: display the header stuff
-//    MessageBox(0,response.c_str(),_T("Netbeans BHO - Response Received"),MB_OK);
-
+    //MessageBox(0,response.c_str(),_T("Netbeans BHO - Response Received"),MB_OK);
     return hr;
 }
 
