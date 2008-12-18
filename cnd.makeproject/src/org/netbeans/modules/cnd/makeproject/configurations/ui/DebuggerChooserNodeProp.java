@@ -52,6 +52,7 @@ public class DebuggerChooserNodeProp extends Node.Property {
     private final String description;
     IntEditor intEditor = null;
 
+    @SuppressWarnings("unchecked")
     public DebuggerChooserNodeProp(DebuggerChooserConfiguration debuggerChooserConfiguration, String name, String description) {
         super(Integer.class);
         this.debuggerChooserConfiguration = debuggerChooserConfiguration;
