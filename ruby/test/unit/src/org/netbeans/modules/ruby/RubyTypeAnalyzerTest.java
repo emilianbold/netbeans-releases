@@ -69,7 +69,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         int caretOffset = -1;
         if (caretLine != null) {
             int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
+            assertTrue("No caret marker (^) in caretLine: " + caretLine, caretDelta != -1);
             caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
             int lineOffset = info.getText().indexOf(caretLine);
             assertTrue("unable to find offset for give carretLine: " + caretLine, lineOffset != -1);
@@ -236,6 +236,10 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     public void testCoreMethodType() throws Exception {
         assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
         assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
-        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum");
+        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum", "Numeric");
+    }
+
+    public void testMethodsChaining() throws Exception {
+        assertTypes("methods_chaining.rb", "puts gree^ting", "greeting", "String");
     }
 }

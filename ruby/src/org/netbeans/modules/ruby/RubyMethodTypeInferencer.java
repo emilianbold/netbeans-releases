@@ -90,23 +90,23 @@ final class RubyMethodTypeInferencer {
             }
         }
 
+        RubyType resultType = new RubyType();
         if (index != null) {
             Set<IndexedMethod> methods = index.getInheritedMethods(receiverType, name, NameKind.EXACT_NAME);
-            if (!methods.isEmpty()) {
-                IndexedMethod targetMethod = methods.iterator().next();
-                RubyType type = targetMethod.getType();
-                if (type.isKnown()) {
-                    return type;
+            for (IndexedMethod indexedMethod : methods) {
+                RubyType type = indexedMethod.getType();
+                if (!type.isKnown()) {
+                    // fallback to the RDoc comment
+                    IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
+                    if (match != null) {
+                        List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
+                        type = RDocAnalyzer.collectTypesFromComment(comment);
+                    }
                 }
-                // fallback to the RDoc comment
-                IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, targetMethod);
-                if (match != null) {
-                    List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
-                    return RDocAnalyzer.collectTypesFromComment(comment);
-                }
+                resultType.append(type);
             }
         }
-        return RubyType.createUnknown();
+        return resultType;
     }
 
     static RubyType inferTypeFor(final List<String> comment) {
@@ -150,9 +150,13 @@ final class RubyMethodTypeInferencer {
     }
 
     private RubyType getReceiverType(final Node receiver) {
-        if (receiver instanceof Colon2Node) {
-            return RubyType.create(AstUtilities.getFqn((Colon2Node) receiver));
-        } else if (receiver instanceof INameNode) {
+        switch (receiver.nodeId) {
+            case COLON2NODE:
+                return RubyType.create(AstUtilities.getFqn((Colon2Node) receiver));
+            case CALLNODE:
+                return RubyMethodTypeInferencer.inferTypeFor((CallNode) receiver, index);
+        }
+        if (receiver instanceof INameNode) {
             // TODO - compute fqn (packages etc.)
             return RubyType.create(((INameNode) receiver).getName());
         } else {
