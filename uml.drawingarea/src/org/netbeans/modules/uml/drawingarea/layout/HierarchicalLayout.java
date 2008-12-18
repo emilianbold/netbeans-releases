@@ -137,6 +137,8 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         public List<LayoutEdge> succs = new ArrayList<LayoutEdge>();
         public int pos = -1; // Position within layer
         public float crossingNumber;
+        private Rectangle sceneBounds;
+        private Widget widget;
     }
 
     private class LayoutEdge {
@@ -228,10 +230,12 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
                         r = w.getPreferredBounds();
                     }
                     Dimension size = r.getSize();
-                    //node.bounds=r;
+                    node.bounds=r;
+                    node.sceneBounds= w.convertLocalToScene(r);
                     node.width = (int) size.getWidth();
                     node.height = (int) size.getHeight();
                     node.vertex = v;
+                    node.widget = w;
                     nodes.add(node);
                     vertexToLayoutNode.put(v, node);
                 }
