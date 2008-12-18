@@ -94,6 +94,8 @@ public class GrailsActionProvider implements ActionProvider {
 
     private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
 
+    private static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
+
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
     private static final String[] supportedActions = {
@@ -170,6 +172,7 @@ public class GrailsActionProvider implements ActionProvider {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             URL url = serverState.getRunningUrl();
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             if (url != null) {
                 showURL(url, debug, project);
             }
@@ -223,15 +226,17 @@ public class GrailsActionProvider implements ActionProvider {
         Properties props = new Properties();
         props.setProperty("jline.WindowsTerminal.directConsole", "false"); // NOI18N
 
-        GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        command, directory, config.getEnvironment(), new String[] {}, props);
+        GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                        command, directory, config, new String[] {}, props);
         Callable<Process> callable = GrailsRuntime.getInstance().createCommand(descriptor);
 
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
 
+        InputProcessorFactory factory = new AnsiStrippingInputProcessorFactory();
+
         ExecutionDescriptor execDescriptor = RUN_DESCRIPTOR.postExecution(
-                new RefreshProjectRunnable(project));
+                new RefreshProjectRunnable(project)).outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
 
         ExecutionService service = ExecutionService.newService(callable, execDescriptor, displayName);
         service.run();
@@ -255,7 +260,9 @@ public class GrailsActionProvider implements ActionProvider {
         boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
         
         if (!debug || !debuggerAvailable) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            if (GrailsProjectConfig.forProject(project).getDisplayBrowser()) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
         } else {
             FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
@@ -346,5 +353,13 @@ public class GrailsActionProvider implements ActionProvider {
         public void close() {
             // noop
         }
+    }
+
+    private static class AnsiStrippingInputProcessorFactory implements InputProcessorFactory {
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.ansiStripping(defaultProcessor);
+        }
+
     }
 }

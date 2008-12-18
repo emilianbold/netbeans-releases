@@ -2257,7 +2257,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         int type = value.getType();
         if(type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY ||
-           type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD)
+           type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD ||
+           (type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN && value.getDesignValue() == FormDesignValue.IGNORED_VALUE)) // Issue 155654
         {    
             // makes sense only for PROPERTY, and METHOD type ...                    
             connectedProperties.put(property, value, beanName, propNode);        

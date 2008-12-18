@@ -289,15 +289,10 @@ public final class RubyTypeAnalyzer {
         if (typeForSymbol != null) {
             switch (node.nodeId) {
                 case LOCALVARNODE:
-                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case DVARNODE:
-                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case INSTVARNODE:
-                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case GLOBALVARNODE:
-                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case CLASSVARNODE:
-                    return getTypesForSymbol(typeForSymbol, getName(node));
                 case COLON2NODE:
                     return getTypesForSymbol(typeForSymbol, getName(node));
             }

@@ -383,7 +383,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc != null) {
-                addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                try {
+                    doc.readLock(); // For Utilities.getRowStart access
+                    addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                } finally {
+                    doc.readUnlock();
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);

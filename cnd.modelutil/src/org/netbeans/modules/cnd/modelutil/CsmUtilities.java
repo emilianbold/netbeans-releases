@@ -267,7 +267,10 @@ public class CsmUtilities {
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
         CsmFile csmFile = null;
         try {
-            csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+            csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
+            if (csmFile == null) {
+                csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+            }
         } catch (NullPointerException exc) {
             exc.printStackTrace();
         }

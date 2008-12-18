@@ -848,7 +848,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="QtProjectDataLoader.instance">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtProjectIcon.png"/>
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.resources.QtProjectDataObject"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.QtProjectDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-qtproject"/>
                     </file>
@@ -908,7 +908,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="QtResourceDataLoader.instance">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtResourceIcon.png"/>
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.resources.QtResourceDataObject"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.QtResourceDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/xml+qtresource"/>
                     </file>
@@ -968,7 +968,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="QtUiDataLoader.instance">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.resources.QtUiDataObject"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.QtUiDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/xml+qtui"/>
                     </file>

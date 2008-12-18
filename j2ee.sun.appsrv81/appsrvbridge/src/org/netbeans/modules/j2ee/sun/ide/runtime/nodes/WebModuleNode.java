@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.runtime.nodes;
 
-import java.util.List;
-import java.util.Arrays;
 import javax.management.ObjectName;
 import javax.swing.Action;
 

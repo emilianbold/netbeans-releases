@@ -87,17 +87,16 @@ public class IndexNode extends BaseNode {
     }
 
     private String name = ""; // NOI18N
-    private MetadataElementHandle<Index> indexHandle;
+    private final MetadataElementHandle<Index> indexHandle;
     private final DatabaseConnection connection;
 
     private IndexNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        indexHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        indexHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {

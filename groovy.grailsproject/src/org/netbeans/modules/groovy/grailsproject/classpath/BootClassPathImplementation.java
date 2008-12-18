@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -55,18 +55,30 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
-final class BootClassPathImplementation implements ClassPathImplementation {
+final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-    private JavaPlatformManager platformManager;
     private List<PathResourceImplementation> resourcesCache;
     private long eventId;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final GrailsProjectConfig config;
 
-    public BootClassPathImplementation() {
+    private BootClassPathImplementation(GrailsProjectConfig config) {
+        this.config = config;
+    }
+
+    public static BootClassPathImplementation forProject(Project project) {
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        BootClassPathImplementation impl = new BootClassPathImplementation(config);
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+        return impl;
     }
 
     public List<PathResourceImplementation> getResources() {
@@ -77,7 +89,7 @@ final class BootClassPathImplementation implements ClassPathImplementation {
             }
             currentId = eventId;
         }
-        
+
         JavaPlatform jp = findActivePlatform();
         final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         if (jp != null) {
@@ -88,9 +100,9 @@ final class BootClassPathImplementation implements ClassPathImplementation {
                 result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
-        
+
         result.addAll(findGroovyPlatform());
-        
+
         synchronized (this) {
             if (currentId == eventId) {
                 if (this.resourcesCache == null) {
@@ -102,24 +114,30 @@ final class BootClassPathImplementation implements ClassPathImplementation {
         }
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (GrailsProjectConfig.GRAILS_JAVA_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                this.resourcesCache = null;
+            }
+            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+        }
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        this.support.addPropertyChangeListener (listener);
+        this.support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        this.support.removePropertyChangeListener (listener);
+        this.support.removePropertyChangeListener(listener);
     }
 
-    private JavaPlatform findActivePlatform () {
-        if (this.platformManager == null) {
-            this.platformManager = JavaPlatformManager.getDefault();
-        }
-        return this.platformManager.getDefaultPlatform();
+    private JavaPlatform findActivePlatform() {
+        return config.getJavaPlatform();
     }
 
     private List<PathResourceImplementation> findGroovyPlatform() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-        
+
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
             return Collections.unmodifiableList(result);
@@ -128,21 +146,21 @@ final class BootClassPathImplementation implements ClassPathImplementation {
         if (!grailsHome.exists()) {
             return Collections.unmodifiableList(result);
         }
-        
+
         List<File> jars = new ArrayList<File>();
-        
+
         File distDir = new File(grailsHome, "dist"); // NOI18N
         File[] files = distDir.listFiles();
         if (files != null) {
             jars.addAll(Arrays.asList(files));
         }
-        
+
         File libDir = new File(grailsHome, "lib"); // NOI18N
         files = libDir.listFiles();
         if (files != null) {
             jars.addAll(Arrays.asList(files));
         }
-        
+
         for (File f : jars) {
             try {
                 if (f.isFile()) {
@@ -158,5 +176,5 @@ final class BootClassPathImplementation implements ClassPathImplementation {
         }
         return Collections.unmodifiableList(result);
     }
-    
+
 }

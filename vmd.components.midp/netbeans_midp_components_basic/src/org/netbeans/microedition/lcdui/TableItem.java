@@ -66,7 +66,9 @@ import org.netbeans.microedition.lcdui.laf.TableColorSchema;
  * @author breh
  */
 public class TableItem extends CustomItem implements TableModelListener {
-	
+
+    public static final int VERTICAL_SELECTION_MODE = 1;
+    public static final int HORIZONTAL_SELECTION_MODE = 2;
     
     private static final boolean DEBUG = false;
     
@@ -128,6 +130,8 @@ public class TableItem extends CustomItem implements TableModelListener {
     private int sizeWidth = 0;   // current size assigned to this item - some implementations (Nokia) still
     private int sizeHeight = 0;  // keeps calling sizeChanged() with the same size, so I keep these values
     // to not call repaint() when it is not neccessary
+
+    private int selectionMode = HORIZONTAL_SELECTION_MODE | VERTICAL_SELECTION_MODE;
     
     
     private ColorSchema colorSchema; // color schema in use
@@ -372,8 +376,23 @@ public class TableItem extends CustomItem implements TableModelListener {
     public int getSelectedCellColumn() {
         return cursorCellX;
     }
-    
-    
+
+    /**
+     * Gets the currunt selection mode.
+     * @return current selection mode
+     */
+    public int getSelectionMode(){
+        return selectionMode;
+    }
+
+    /**
+     * Sets selection mode.
+     * @param  selection mode.
+     */
+    public void setSelectionMode( int mode){
+        selectionMode = mode;
+        repaint();
+    }
         /*
         private static Font getSafeFont(Font font) {
                 return font == null ? Font.getDefaultFont() : font;
@@ -525,24 +544,39 @@ public class TableItem extends CustomItem implements TableModelListener {
             
             // paint cursor
             if (cursorOn) {
-                final int x = getCursorX();
+                int x = getCursorX();
                 int y = getCursorY();
                 
+                int yAddon = 0;
                 // add title height if to be drawn
                 if (title != null) {
-                    y += titleHeight + BORDER_LINE_WIDTH;
+                    yAddon+= titleHeight + BORDER_LINE_WIDTH;
                 }
                 // add headers height if to be drawn
                 if (usingHeaders) {
-                    y += headersHeight + BORDER_LINE_WIDTH;
+                    yAddon += headersHeight + BORDER_LINE_WIDTH;
                 }
                 
-                final int w = colWidths[cursorCellX];
-                final int h = defaultCellHeight;
+                y+=yAddon;
+                
+                int w = colWidths[cursorCellX];
+                int h = defaultCellHeight;
+                if ( selectionMode == VERTICAL_SELECTION_MODE ){
+                    x= BORDER_LINE_WIDTH;
+                    w = getCellX(model.getColumnCount()) -BORDER_LINE_WIDTH;
+                }
+                else if ( selectionMode == HORIZONTAL_SELECTION_MODE ){
+                    y = BORDER_LINE_WIDTH +yAddon;
+                    h = getCellY( model.getRowCount() )-BORDER_LINE_WIDTH;
+                }
                 //g.setColor(cursorColor);
                 // draw cursor ...
                 g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_BACKGROUND));
-                g.fillRect(x, y,  w, h);
+                
+                if ( (selectionMode & VERTICAL_SELECTION_MODE) != 0 || 
+                        (selectionMode & HORIZONTAL_SELECTION_MODE) != 0){
+                    g.fillRect(x, y,  w, h);
+                }
             }
             
             
@@ -627,12 +661,33 @@ public class TableItem extends CustomItem implements TableModelListener {
                             xCell = xCell - BORDER_LINE_WIDTH;
                             widthCell = widthCell + BORDER_LINE_WIDTH;
                         }
-                        if ( cursorOn && (j==cursorCellX) && (i == cursorCellY)) {
-                            //g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_FOREGROUND));
-                            g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
-                            g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
-                            //g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
-                        } else {
+                        boolean highlightBg = false;
+                        if ( cursorOn ) {
+                            if ( selectionMode == (VERTICAL_SELECTION_MODE |HORIZONTAL_SELECTION_MODE)
+                                    && i == cursorCellY && j == cursorCellX )
+                            {
+                                //g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                //g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
+                                highlightBg = true;
+                            }
+                            else if ( selectionMode == VERTICAL_SELECTION_MODE && 
+                                    i==cursorCellY )
+                            {
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                highlightBg = true;
+                            }
+                            else if ( selectionMode == HORIZONTAL_SELECTION_MODE && 
+                                    j==cursorCellX )
+                            {
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                highlightBg = true;
+                            }
+                        }
+                        if ( !highlightBg ) {
                             getPaintStrategy().drawCell( g, j, i , xCell, yCell , widthCell, 
                                     heightCell , Display.COLOR_BACKGROUND);
                             g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_FOREGROUND));
@@ -918,8 +973,12 @@ public class TableItem extends CustomItem implements TableModelListener {
      ******/
     
     private int getCursorX() {
+        return getCellX(cursorCellX);
+    }
+    
+    private int getCellX( int column) {
         int x = BORDER_LINE_WIDTH;
-        for (int i=viewCellX; i < cursorCellX; i++) {
+        for (int i=viewCellX; i < column; i++) {
             x += colWidths[i] + BORDER_LINE_WIDTH;
         }
         return x;
@@ -931,7 +990,11 @@ public class TableItem extends CustomItem implements TableModelListener {
     
     
     private int getCursorY() {
-        return cursorCellY * (defaultCellHeight + BORDER_LINE_WIDTH);
+        return getCellY(cursorCellY);
+    }
+    
+    private int getCellY( int row ) {
+        return row * (defaultCellHeight + BORDER_LINE_WIDTH);
     }
     
     /**
