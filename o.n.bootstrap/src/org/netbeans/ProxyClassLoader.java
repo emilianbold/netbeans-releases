@@ -235,7 +235,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             try {
                 cls = systemCL.loadClass(name);
             } catch (ClassNotFoundException e) {
-                cls = doLoadClassFromParents(del, path, pkg, name, cls);
+                cls = doLoadClassFromParents(null, path, pkg, name, cls);
                 if (cls == null) {
                     cls = selfLoadClass(pkg, name);
                     if (cls == null) {

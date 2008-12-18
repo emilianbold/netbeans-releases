@@ -69,7 +69,7 @@ import org.osgi.framework.SynchronousBundleListener;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
-    private static Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
+    static final Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
 
     private Set<Module> all = new CopyOnWriteArraySet<Module>();
 
