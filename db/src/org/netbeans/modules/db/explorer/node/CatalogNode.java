@@ -43,12 +43,12 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
@@ -84,14 +84,18 @@ public class CatalogNode extends BaseNode {
         MetadataModel metaDataModel = connection.getMetadataModel();
         boolean connected = !connection.getConnector().isDisconnected();
         if (connected && metaDataModel != null) {
-            MetadataUtils.readModel(metaDataModel, null,
-                new MetadataUtils.MetadataReadListener() {
-                    public void run(Metadata metaData, DataWrapper wrapper) {
-                        Catalog catalog = catalogHandle.resolve(metaData);
-                        renderNames(catalog);
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Catalog catalog = catalogHandle.resolve(metaData);
+                            renderNames(catalog);
+                        }
                     }
-                }
-            );
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
         }
     }
 

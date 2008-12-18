@@ -51,16 +51,14 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
@@ -73,7 +71,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Rob Englander
  */
-public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvider {
+public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNameProvider {
     private static final String COLUMN = "org/netbeans/modules/db/resources/column.gif";
     private static final String PRIMARY = "org/netbeans/modules/db/resources/columnPrimary.gif";
     private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
@@ -116,74 +114,90 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Column column = getColumn();
-            if (column != null) {
-                name = column.getName();
-                icon = COLUMN;
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Column column = columnHandle.resolve(metaData);
+                            if (column != null) {
+                                name = column.getName();
+                                icon = COLUMN;
 
-                Tuple tuple = column.getParent();
-                if (tuple instanceof Table) {
-                    Table table = (Table)tuple;
-                    PrimaryKey pkey = table.getPrimaryKey();
+                                Tuple tuple = column.getParent();
+                                if (tuple instanceof Table) {
+                                    Table table = (Table)tuple;
+                                    PrimaryKey pkey = table.getPrimaryKey();
 
-                    boolean found = false;
-                    if (pkey != null) {
-                        Collection<Column> columns = pkey.getColumns();
-                        for (Column c : columns) {
-                            if (c.getName().equals(column.getName())) {
-                                found = true;
-                                icon = PRIMARY;
-                                break;
-                            }
-                        }
-                    }
+                                    boolean found = false;
+                                    if (pkey != null) {
+                                        Collection<Column> columns = pkey.getColumns();
+                                        for (Column c : columns) {
+                                            if (c.getName().equals(column.getName())) {
+                                                found = true;
+                                                icon = PRIMARY;
+                                                break;
+                                            }
+                                        }
+                                    }
 
-                    if (!found) {
-                        Collection<Index> indexes = table.getIndexes();
-                        for (Index index : indexes) {
-                            Collection<IndexColumn> columns = index.getColumns();
-                            for (IndexColumn c : columns) {
-                                if (c.getName().equals(column.getName())) {
-                                    found = true;
-                                    icon = INDEX;
-                                    break;
+                                    if (!found) {
+                                        Collection<Index> indexes = table.getIndexes();
+                                        for (Index index : indexes) {
+                                            Collection<IndexColumn> columns = index.getColumns();
+                                            for (IndexColumn c : columns) {
+                                                if (c.getName().equals(column.getName())) {
+                                                    found = true;
+                                                    icon = INDEX;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
     }
 
-    public Column getColumn() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Column> wrapper = new DataWrapper<Column>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Column column = columnHandle.resolve(metaData);
-                    wrapper.setObject(column);
-                }
-            }
-        );
-
-        return wrapper.getObject();
+    public String getColumnName() {
+        return getColumnName(connection, columnHandle);
     }
 
-    public Schema getSchema() {
-        Column column = getColumn();
-        return (Schema)column.getParent().getParent();
+    public String getSchemaName() {
+        return getSchemaName(connection, columnHandle);
     }
 
-    public Tuple getTuple() {
-        Column column = getColumn();
-        return column.getParent();
+    public String getCatalogName() {
+        return getCatalogName(connection, columnHandle);
+    }
+
+    public String getParentName() {
+        return getParentName(connection, columnHandle);
     }
 
     public int getPosition() {
-        Column column = getColumn();
-        return column.getPosition();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final int[] array = new int[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Column column = columnHandle.resolve(metaData);
+                        array[0] = column.getPosition();
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 
     @Override
@@ -192,9 +206,12 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         Specification spec = connector.getDatabaseSpecification();
 
         try {
-            RemoveColumn command = spec.createCommandRemoveColumn(getTuple().getName());
+            RemoveColumn command = spec.createCommandRemoveColumn(getParentName());
 
-            String schema = MetadataUtils.getSchemaWorkingName(getSchema());
+            String schema = getSchemaName();
+            if (schema == null) {
+                schema = getCatalogName();
+            }
 
             command.setObjectOwner(schema);
             command.removeColumn(getName());
@@ -244,7 +261,7 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.COLUMN_FLAVOR) {
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createColumnData(connection.getDatabaseConnection(),
-                        connection.findJDBCDriver(), getTuple().getName(), getName());
+                        connection.findJDBCDriver(), getParentName(), getName());
             }
         });
         return result;
@@ -253,6 +270,93 @@ public class ColumnNode extends BaseNode implements SchemaProvider, ColumnProvid
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Column"); //NOI18N
+    }
+
+    public static String getColumnName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = { null };
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Column column = handle.resolve(metaData);
+                        if (column != null) {
+                            array[0] = column.getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getParentName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = { null };
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Column column = handle.resolve(metaData);
+                        if (column != null) {
+                            array[0] = column.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Column column = handle.resolve(metaData);
+                        if (column != null) {
+                            array[0] = column.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Column column = handle.resolve(metaData);
+                        if (column != null) {
+                            array[0] = column.getParent().getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 
 }
