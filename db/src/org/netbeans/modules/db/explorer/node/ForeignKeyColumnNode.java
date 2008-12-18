@@ -71,17 +71,16 @@ public class ForeignKeyColumnNode extends BaseNode {
     }
 
     private String name = ""; // NOI18N
-    private MetadataElementHandle<ForeignKeyColumn> keyColumnHandle;
+    private final MetadataElementHandle<ForeignKeyColumn> keyColumnHandle;
     private final DatabaseConnection connection;
 
     private ForeignKeyColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        keyColumnHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        keyColumnHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {

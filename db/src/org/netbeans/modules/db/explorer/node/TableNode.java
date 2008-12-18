@@ -84,17 +84,16 @@ public class TableNode extends BaseNode implements SchemaProvider {
     }
 
     private String name = ""; // NOI18N
-    private MetadataElementHandle<Table> tableHandle;
+    private final MetadataElementHandle<Table> tableHandle;
     private final DatabaseConnection connection;
 
     private TableNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        tableHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        tableHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
