@@ -40,6 +40,7 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -69,7 +70,18 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
     
     public void testJavaCanBeTurnedOn() throws Exception {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
-        assertNull("No edit menu", root.getFileObject("Edit"));
+        FileObject edit = root.getFileObject("Edit");
+        if (edit != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("There shall be no edit menu, but was: ").append(edit).append("\nProvides: ");
+            Enumeration<String> en;
+            en = edit.getAttributes();
+            while (en.hasMoreElements()) {
+                String attr = en.nextElement();
+                sb.append("\n  ").append(attr).append(" = ").append(edit.getAttribute(attr));
+            }
+            fail(sb.toString());
+        }
 
 
         UpdateUnit enable = null;

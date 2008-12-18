@@ -57,7 +57,8 @@ public class ErgonomicInfastructureTest extends Object {
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
-            enableModules("ide.*", ".*")
+            enableModules("ide[0-9]*", ".*").
+            enableModules("gsf.*", ".*")
         );
 
         all.addTest(ergonomics);
