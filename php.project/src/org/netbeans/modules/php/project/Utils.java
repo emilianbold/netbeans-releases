@@ -58,11 +58,7 @@ public final class Utils {
 
     public static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
-        //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        SourceGroup[] groups = sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
-        // #141200 - disabled due to problems while creating/deleting project etc.
-        //assert groups.length == 1 : "More or less than 1 source root found [" + groups.length + "]";
-        return groups;
+        return sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
     }
 
     public static FileObject[] getSourceObjects(Project phpProject) {
