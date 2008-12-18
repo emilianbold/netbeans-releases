@@ -283,6 +283,8 @@ made subject to such option by the copyright holder.
             <available file="${jnlp.signjar.keystore}"/>
         </condition>
         <property name="jnlp.sign.jars" value="false"/>
+        <property name="jnlp.indirect.jars" value="[NOTHING]"/>
+        <property name="jnlp.indirect.files" value="[NOTHING]"/>
     </target>
 
     <target name="jnlp" depends="init,netbeans,jnlp-master,-jnlp-init" description="Builds JNLP descriptor and signs JAR files" >
@@ -301,6 +303,7 @@ made subject to such option by the copyright holder.
                 <include name="${module.jar}" />
             </modules>
             <indirectjars dir="${cluster}" includes="${jnlp.indirect.jars}"/>
+            <indirectfiles dir="${cluster}" includes="${jnlp.indirect.files}"/>
         </makejnlp>
     </target>
 

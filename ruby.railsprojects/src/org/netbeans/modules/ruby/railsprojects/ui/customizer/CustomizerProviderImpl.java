@@ -41,146 +41,36 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.BaseRubyCustomizerProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
-import org.netbeans.spi.project.ui.CustomizerProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Customization of Ruby on Rails project.
  *
  * @author Petr Hrebejk
  */
-public class CustomizerProviderImpl implements CustomizerProvider {
-    
-    private final Project project;
-    private final UpdateHelper updateHelper;
-    private final PropertyEvaluator evaluator;
-    private final ReferenceHelper refHelper;
-    private final GeneratedFilesHelper genFileHelper;
+public class CustomizerProviderImpl extends BaseRubyCustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ruby-railsprojects/Customizer"; //NOI18N
-    
-    private static Map<Project, Dialog> project2Dialog = new HashMap<Project, Dialog>(); 
-    
+
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
-        this.project = project;
-        this.updateHelper = updateHelper;
-        this.evaluator = evaluator;
-        this.refHelper = refHelper;
-        this.genFileHelper = genFileHelper;
+        super(project, updateHelper, evaluator, refHelper, genFileHelper);
+    }
+
+    @Override
+    protected SharedRubyProjectProperties createUiProperties(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
+        return new RailsProjectProperties((RubyBaseProject) project, updateHelper, evaluator, refHelper, genFileHelper);
+    }
+
+    @Override
+    protected String getCustomizerFolderPath() {
+        return CUSTOMIZER_FOLDER_PATH;
     }
             
-    public void showCustomizer() {
-        showCustomizer( null );
-    }
-    
-    public void showCustomizer ( String preselectedCategory ) {
-        showCustomizer ( preselectedCategory, null );
-    }
-    
-    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
-        
-        Dialog dialog = project2Dialog.get(project);
-        if (dialog != null) {
-            dialog.setVisible(true);
-            return;
-        }
-        else {
-            RailsProjectProperties uiProperties = new RailsProjectProperties( (RailsProject)project, updateHelper, evaluator, refHelper, genFileHelper );
-            Lookup context = Lookups.fixed(new Object[] {
-                project,
-                uiProperties,
-                new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
-            });
-
-            OptionListener listener = new OptionListener( project, uiProperties );
-            dialog = ProjectCustomizer.createCustomizerDialog( CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, null );
-            dialog.addWindowListener( listener );
-            dialog.setTitle( MessageFormat.format(                 
-                    NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
-
-            project2Dialog.put(project, dialog);
-            dialog.setVisible(true);
-        }
-    }    
-    
-    /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
-    
-        private Project project;
-        private RailsProjectProperties uiProperties;
-        
-        OptionListener( Project project, RailsProjectProperties uiProperties ) {
-            this.project = project;
-            this.uiProperties = uiProperties;            
-        }
-        
-        // Listening to OK button ----------------------------------------------------------
-        
-        public void actionPerformed( ActionEvent e ) {
-            // Store the properties into project 
-            uiProperties.save();
-            
-            // Close & dispose the the dialog
-            Dialog dialog = project2Dialog.get(project);
-            if (dialog != null) {
-                dialog.setVisible(false);
-                dialog.dispose();
-            }
-        }        
-        
-        // Listening to window events ------------------------------------------------------
-                
-        public @Override void windowClosed( WindowEvent e) {
-            project2Dialog.remove(project);
-        }
-        
-        public @Override void windowClosing (WindowEvent e) {
-            //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
-            //may not be called
-            Dialog dialog = project2Dialog.get( project );
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
-            }
-        }
-    }
-    
-    static final class SubCategoryProvider {
-
-        private String subcategory;
-
-        private String category;
-
-        SubCategoryProvider(String category, String subcategory) {
-            this.category = category;
-            this.subcategory = subcategory;
-        }
-        public String getCategory() {
-            return category;
-        }
-        public String getSubcategory() {
-            return subcategory;
-        }
-    }
-   
-                            
 }

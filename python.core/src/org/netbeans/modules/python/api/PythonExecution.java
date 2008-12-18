@@ -241,7 +241,13 @@ public class PythonExecution {
     }
 
 
-    public void addStandardRecognizers() {
+    public synchronized void addLineConvertor(LineConvertor convertor) {
+        outConvertors.add(convertor);
+        descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
+    }
+
+    public synchronized void addStandardRecognizers() {
         this.addStandardConvertors = true;
         descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
         descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));

@@ -109,7 +109,7 @@ public class ConvertIfToUnless extends RubyAstRule {
         if (condition.nodeId == NodeType.NOTNODE ||
                 (condition.nodeId == NodeType.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
-                ((Node)condition.childNodes().get(0)).nodeId == NodeType.NOTNODE)) {
+                condition.childNodes().get(0).nodeId == NodeType.NOTNODE)) {
             try {
                 BaseDocument doc = context.doc;
                 int keywordOffset = findKeywordOffset(context, ifNode);
@@ -279,7 +279,7 @@ public class ConvertIfToUnless extends RubyAstRule {
                 if (notNode.nodeId != NodeType.NOTNODE) {
                     assert notNode.nodeId == NodeType.NEWLINENODE;
                     Node firstChild = notNode.childNodes().size() == 1 ?
-                        ((Node)notNode.childNodes().get(0)) : null;
+                        notNode.childNodes().get(0) : null;
                     if (firstChild != null && firstChild.nodeId == NodeType.NOTNODE) {
                         notNode = firstChild;
                     } else {

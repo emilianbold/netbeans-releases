@@ -134,7 +134,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String SOURCE_VOLUME = "src"; // NOI18N
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
-    private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
+    private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-v3"; // NOI18N
     private static final String EL_CORE_JAR_MATCHER = "eclipselink-wrapper" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
     private static final String PERSISTENCE_API_JAR_MATCHER_1 = "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
@@ -221,7 +221,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return eclipseLinkLib != null;
     }
  
-    private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
+    private static final String COMET_LIB = "Comet-GlassFish-v3"; // NOI18N
     private static final String COMET_JAR_MATCHER = "grizzly-module" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String GRIZZLY_OPTIONAL_JAR_MATCHER = "grizzly-optional" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     

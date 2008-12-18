@@ -42,20 +42,26 @@
 package org.netbeans.performance.j2se.actions;
 
 import java.io.IOException;
-import java.awt.event.KeyEvent;
+
+import org.netbeans.jellytools.Bundle;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 
 /**
  * Test of Find Usages
@@ -64,8 +70,8 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class SearchTest extends PerformanceTestCase {
     
-    private static Node testNode;
-    MainWindowOperator searchField;
+    private Node testNode;
+    private NbDialogOperator dlgSearch;
     
     /** Creates a new instance of RefactorFindUsagesDialog */
     public SearchTest(String testName) {
@@ -87,7 +93,8 @@ public class SearchTest extends PerformanceTestCase {
         return suite;
     }
 
-    public void testSetupjEditProject() {
+    public void testSetupProject() {
+
        CommonUtilities.jEditProjectOpen();
         try {
             this.openDataProjects("jEdit41");
@@ -95,23 +102,38 @@ public class SearchTest extends PerformanceTestCase {
         }
     }
 
-    public void testSearch(){
+    public void testFindInProjects_Text() {
         doMeasurement();
     }    
     
     @Override
     public void initialize() {
-        testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
+        testNode = new Node(new SourcePackagesNode("jEdit"), new SourcePackagesNode("jEdit").getChildren()[0]);
     }
     
+    
     public void prepare() {
-        testNode.performPopupAction("Open");
+        testNode.select();
+        MainWindowOperator.getDefault().menuBar().pushMenu(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_Action_FindInProjects"),"|");
+
+        dlgSearch = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_FindInProjects"));
+        dlgSearch.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60*1000);
+
+        JComboBoxOperator  searchPattern = new JComboBoxOperator(dlgSearch,  0);
+        searchPattern.typeText("100%NoSuchTextExists");
+
+        JButtonOperator btn_Find = new JButtonOperator(dlgSearch, Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","TEXT_BUTTON_SEARCH"));
+        btn_Find.push();
     }
     
     public ComponentOperator open() {
+        JComponentOperator srch_wnd = new JComponentOperator(MainWindowOperator.getDefault(), new NameComponentChooser(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","TITLE_SEARCH_RESULTS")));
+        JTreeOperator tree = new JTreeOperator(srch_wnd);
+        tree.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 5*60*1000);
 
-        new Action(null, null, new Shortcut(KeyEvent.VK_I, KeyEvent.CTRL_MASK)).perform();
-                // TODO enter text into Search
+        Node results = new Node(tree, tree.getPathForRow(0));
+        System.out.println("TEST RESULTS :" + results.getText().lastIndexOf(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_MSG_NO_NODE_FOUND")));
 
         return null;
     }

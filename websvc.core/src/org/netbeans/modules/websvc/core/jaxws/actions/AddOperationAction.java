@@ -72,7 +72,7 @@ public class AddOperationAction extends NodeAction  {
 
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
         AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
-        addOperationCookie.addOperation(implClassFo);
+        addOperationCookie.addOperation();
     }
 }
 

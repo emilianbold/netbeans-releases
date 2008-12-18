@@ -58,6 +58,7 @@ import org.netbeans.modules.python.editor.scopes.SymbolTable;
 import org.openide.util.NbBundle;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assign;
+import org.python.antlr.ast.For;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Tuple;
 
@@ -72,9 +73,8 @@ import org.python.antlr.ast.Tuple;
 public class UnusedDetector extends PythonAstRule {
     /** Default names ignored */
     private static final String DEFAULT_IGNORED_NAMES = "_, dummy";
-
     private static final String PARAMS_KEY = "params"; // NOI18N
-    private static final String RETURN_TUPLE_KEY = "returntuples"; // NOI18N
+    private static final String SKIP_TUPLE_ASSIGN_KEY = "skipTuples"; // NOI18N
     private static final String IGNORED_KEY = "ignorednames"; // NOI18N
 
     public UnusedDetector() {
@@ -104,11 +104,11 @@ public class UnusedDetector extends PythonAstRule {
             return;
         }
 
-        boolean skipReturnTuples = true;
+        boolean skipTupleAssigns = true;
         Set<String> ignoreNames = Collections.emptySet();
         if (pref != null) {
             skipParams = getSkipParameters(pref);
-            skipReturnTuples = getSkipReturnTuples(pref);
+            skipTupleAssigns = getSkipTupleAssignments(pref);
             String ignoreNamesStr = getIgnoreNames(pref);
             if (ignoreNamesStr.length() > 0) {
                 ignoreNames = new HashSet<String>();
@@ -119,7 +119,7 @@ public class UnusedDetector extends PythonAstRule {
         }
 
         for (PythonTree node : unusedNames) {
-            if (skipReturnTuples && isReturnTuple(node)) {
+            if (skipTupleAssigns && isTupleAssignment(node)) {
                 continue;
             }
             String name = PythonAstUtils.getName(node);
@@ -140,13 +140,24 @@ public class UnusedDetector extends PythonAstRule {
         }
     }
 
-    private boolean isReturnTuple(PythonTree node) {
+    private boolean isTupleAssignment(PythonTree node) {
         // This may not work right since the parent pointers often aren't set right;
         // find a more efficient way to do it correctly than a path search for each node
-        if (node.parent instanceof Tuple &&
-                node.parent.parent instanceof Assign &&
-                ((Assign)node.parent.parent).targets[0] == node.parent) {
-            return true;
+        if (node.parent instanceof Tuple) {
+            // Allow tuples in tuples
+            PythonTree parentParent = node.parent.parent;
+            while (parentParent instanceof Tuple) {
+                parentParent = parentParent.parent;
+                node = node.parent;
+            }
+            if (parentParent instanceof Assign &&
+                    ((Assign)parentParent).targets[0] == node.parent) {
+                return true;
+            }
+            if (parentParent instanceof For &&
+                    ((For)parentParent).target == node.parent) {
+                return true;
+            }
         }
 
         return false;
@@ -192,15 +203,15 @@ public class UnusedDetector extends PythonAstRule {
         }
     }
 
-    static boolean getSkipReturnTuples(Preferences prefs) {
-        return prefs.getBoolean(RETURN_TUPLE_KEY, true);
+    static boolean getSkipTupleAssignments(Preferences prefs) {
+        return prefs.getBoolean(SKIP_TUPLE_ASSIGN_KEY, true);
     }
 
-    static void setSkipReturnTuples(Preferences prefs, boolean skipReturnTuples) {
-        if (skipReturnTuples) {
-            prefs.remove(RETURN_TUPLE_KEY);
+    static void setSkipTupleAssignments(Preferences prefs, boolean skipTupleAssigns) {
+        if (skipTupleAssigns) {
+            prefs.remove(SKIP_TUPLE_ASSIGN_KEY);
         } else {
-            prefs.putBoolean(RETURN_TUPLE_KEY, false);
+            prefs.putBoolean(SKIP_TUPLE_ASSIGN_KEY, false);
         }
     }
 

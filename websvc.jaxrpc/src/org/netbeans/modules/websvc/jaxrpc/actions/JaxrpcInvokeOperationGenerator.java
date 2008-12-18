@@ -87,6 +87,7 @@ import org.openide.nodes.Node;
 import org.openide.text.IndentEngine;
 import org.openide.text.NbDocument;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
@@ -341,7 +342,7 @@ public class JaxrpcInvokeOperationGenerator {
         saxParser.parse(url.openConnection().getInputStream(), handler);
     }
 
-    public static void insertMethodCall(final DataObject dataObj, final Node sourceNode, final Node serviceOperationNode) {
+    public static void insertMethodCall(final DataObject dataObj, final Lookup targetNodeLookup, final Lookup serviceOperationNodeLookup) {
 
         // First, collect name of method, port, and service:
         Node serviceNode, servicePortNode;
@@ -353,6 +354,7 @@ public class JaxrpcInvokeOperationGenerator {
         DataObject wsdlObj = null;
 
         try {
+            Node serviceOperationNode = serviceOperationNodeLookup.lookup(Node.class);
             servicePortNode = serviceOperationNode.getParentNode();
             serviceNode = servicePortNode.getParentNode();
 
@@ -460,9 +462,9 @@ public class JaxrpcInvokeOperationGenerator {
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
         ClientStubDescriptor stubType = getStub(wsdlObj);
-        EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
+        EditorCookie cookie = targetNodeLookup.lookup(EditorCookie.class);
 
-        addProjectReference(wsdlObj, sourceNode);
+        addProjectReference(wsdlObj, targetNodeLookup);
 
         // including code to JSP
         if (cookie != null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
@@ -575,10 +577,10 @@ public class JaxrpcInvokeOperationGenerator {
 
     }
 
-    private static void addProjectReference(DataObject wsdlDobj, Node sourceNode) {
+    private static void addProjectReference(DataObject wsdlDobj, Lookup targetNodeLookup) {
         if (wsdlDobj != null) {
             Project clientProject = FileOwnerQuery.getOwner(wsdlDobj.getPrimaryFile());
-            DataObject dObj = sourceNode.getCookie(DataObject.class);
+            DataObject dObj = targetNodeLookup.lookup(DataObject.class);
             if (dObj != null) {
                 JaxWsUtils.addProjectReference(clientProject, dObj.getPrimaryFile());
             }

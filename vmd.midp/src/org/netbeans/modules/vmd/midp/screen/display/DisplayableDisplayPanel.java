@@ -55,7 +55,9 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
     public DisplayableDisplayPanel(DisplayableDisplayPresenter presenter) {
         this.presenter = presenter;
         initComponents();
+        //getContentPanel().setFocusCycleRoot(true);
     }
+
     
     /** This method is called from within the constructor to
      * initialize the form.

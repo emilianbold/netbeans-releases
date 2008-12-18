@@ -231,6 +231,8 @@ public interface Visitor {
 
     public void visit(PHPDocVarTypeTag node);
 
+    public void visit(PHPVarComment node);
+
 	//public void endVisit(ParenthesisExpression parenthesisExpression);
 	
 	public void visit(PostfixExpression postfixExpression);

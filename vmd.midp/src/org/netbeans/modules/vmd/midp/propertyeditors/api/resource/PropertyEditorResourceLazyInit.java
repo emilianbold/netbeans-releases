@@ -577,6 +577,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public void updateState(PropertyValue value) {
+        if (component == null || component.get() == null) {
+            return;
+        }
         final DesignComponent c = component.get();
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);
