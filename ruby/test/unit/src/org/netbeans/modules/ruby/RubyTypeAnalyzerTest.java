@@ -69,7 +69,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         int caretOffset = -1;
         if (caretLine != null) {
             int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
+            assertTrue("No caret marker (^) in caretLine: " + caretLine, caretDelta != -1);
             caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
             int lineOffset = info.getText().indexOf(caretLine);
             assertTrue("unable to find offset for give carretLine: " + caretLine, lineOffset != -1);
