@@ -236,6 +236,10 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     public void testCoreMethodType() throws Exception {
         assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
         assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
-        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum");
+        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum", "Numeric");
+    }
+
+    public void testMethodsChaining() throws Exception {
+        assertTypes("methods_chaining.rb", "puts gree^ting", "greeting", "String");
     }
 }
