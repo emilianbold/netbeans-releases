@@ -56,11 +56,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
@@ -136,12 +132,22 @@ public final class CreateTestsAction extends NodeAction {
             }
 
             if (!CommandUtils.isPhpFile(fileObj)
-                    /*|| (node.getCookie(DataFolder.class) != null)*/) {
+                    /*|| (node.getCookie(DataFolder.class) != null)*/) { // XXX allow for directories underneath sources
                 return false;
             }
 
             Project prj = FileOwnerQuery.getOwner(fileObj);
-            if ((prj == null) || (getSourceGroup(fileObj, prj) == null)) {
+            if (prj == null) {
+                return false;
+            }
+            PhpProject phpProject = prj.getLookup().lookup(PhpProject.class);
+            if (phpProject == null) {
+                return false;
+            }
+            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+            assert sources != null : "No source directory for " + phpProject;
+            if (!sources.equals(fileObj)
+                    && !FileUtil.isParentOf(sources, fileObj)) {
                 return false;
             }
         }
@@ -155,19 +161,6 @@ public final class CreateTestsAction extends NodeAction {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    static SourceGroup getSourceGroup(FileObject file, Project prj) {
-        Sources src = ProjectUtils.getSources(prj);
-        SourceGroup[] srcGrps = src.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
-        for (SourceGroup srcGrp : srcGrps) {
-            FileObject rootFolder = srcGrp.getRootFolder();
-            if (((file == rootFolder) || FileUtil.isParentOf(rootFolder, file))
-                    && srcGrp.contains(file)) {
-                return srcGrp;
-            }
-        }
         return null;
     }
 
