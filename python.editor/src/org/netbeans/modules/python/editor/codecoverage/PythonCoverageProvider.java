@@ -66,6 +66,7 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.python.api.PythonExecution;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
@@ -142,7 +143,23 @@ public final class PythonCoverageProvider implements CoverageProvider {
                 executed++;
             }
 
-            //int executed = lineCount - notExecuted;
+            // Attempt to make a more accurate percentage by using file details
+            if (file != null) {
+                BaseDocument doc = GsfUtilities.getDocument(file, true);
+                if (doc != null) {
+                    FileCoverageDetails details = getDetails(file, doc);
+                    if (details != null) {
+                        lineCount = details.getLineCount();
+                        int notExecuted = 0;
+                        for (int line = 0; line < lineCount; line++) {
+                            if (details.getType(line) == CoverageType.NOT_COVERED) {
+                                notExecuted++;
+                            }
+                        }
+                        executed = lineCount-notExecuted;
+                    }
+                }
+            }
 
             FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executed);
             results.add(result);
