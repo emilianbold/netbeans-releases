@@ -75,17 +75,16 @@ public class ProcedureNode extends BaseNode {
     }
 
     private String name = ""; // NOI18N
-    private MetadataElementHandle<Procedure> procedureHandle;
+    private final MetadataElementHandle<Procedure> procedureHandle;
     private final DatabaseConnection connection;
 
     private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
@@ -107,25 +106,6 @@ public class ProcedureNode extends BaseNode {
         );
 
         return wrapper.getObject();
-    }
-
-    @Override
-    public void destroy() {
-        DatabaseConnector connector = connection.getConnector();
-        Specification spec = connector.getDatabaseSpecification();
-
-        try {
-            AbstractCommand command = spec.createCommandDropProcedure(getName());
-            command.execute();
-            remove();
-        } catch (Exception e) {
-        }
-    }
-
-    @Override
-    public boolean canDestroy() {
-        DatabaseConnector connector = connection.getConnector();
-        return connector.supportsCommand(Specification.DROP_PROCEDURE);
     }
 
     @Override

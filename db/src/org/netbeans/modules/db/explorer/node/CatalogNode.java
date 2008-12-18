@@ -72,16 +72,16 @@ public class CatalogNode extends BaseNode {
 
     private String name = ""; // NOI18N
     private final DatabaseConnection connection;
+    private final MetadataElementHandle<Catalog> catalogHandle;
 
     private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        catalogHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        final MetadataElementHandle<Catalog> catalogHandle = getLookup().lookup(MetadataElementHandle.class);
         MetadataModel metaDataModel = connection.getMetadataModel();
-
         boolean connected = !connection.getConnector().isDisconnected();
         if (connected && metaDataModel != null) {
             MetadataUtils.readModel(metaDataModel, null,

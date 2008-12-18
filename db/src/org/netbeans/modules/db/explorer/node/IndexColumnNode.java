@@ -80,11 +80,10 @@ public class IndexColumnNode extends BaseNode {
     private IndexColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        indexColumnHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        indexColumnHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {

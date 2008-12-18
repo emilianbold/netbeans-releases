@@ -74,17 +74,16 @@ public class SchemaNode extends BaseNode {
     private String name = ""; // NOI18N
     private String htmlName = null;
 
-    private MetadataElementHandle<Schema> schemaHandle;
+    private final MetadataElementHandle<Schema> schemaHandle;
     private final DatabaseConnection connection;
 
     private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
-
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
