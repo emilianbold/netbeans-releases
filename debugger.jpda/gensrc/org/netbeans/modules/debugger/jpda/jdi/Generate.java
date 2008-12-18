@@ -141,6 +141,8 @@ public class Generate {
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.InterfaceType.class.getName(), InterfaceTypeExceptions);
 
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
+        // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
+        ThreadReferenceExceptions.put("*", Collections.singleton((Class) IllegalThreadStateException.class));
         ThreadReferenceExceptions.put("popFrames", new HashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.NativeMethodException.class,
                               com.sun.jdi.InvalidStackFrameException.class })));
@@ -192,14 +194,19 @@ public class Generate {
     private static String generateWrapperException(File dir, Class jdiException) throws IOException {
         String name = jdiException.getSimpleName();
         String cName = name + "Wrapper";
+        String eName = jdiException.getName();
         File cf = new File(dir, cName+".java");
         Writer w = new BufferedWriter(new FileWriter(cf));
         w.write(getLicense());
         w.write("\npackage "+PACKAGE+";\n\n");
-        w.write("/** Wrapper for "+name+" JDI exception. The calling code must count with this exception being thrown. */\n");
+        w.write("/**\n * Wrapper for "+name+" JDI exception.\n * The calling code must count with this exception being thrown.\n */\n");
         w.write("public final class "+cName+" extends Exception {\n");
-        w.write("\n    public "+cName+"("+jdiException.getName()+" ex) {\n");
+        w.write("\n    public "+cName+"("+eName+" ex) {\n");
         w.write("        super(ex);\n");
+        w.write("    }\n\n");
+        w.write("    @Override\n");
+        w.write("    public "+eName+" getCause() {\n");
+        w.write("        return ("+eName+") super.getCause();\n");
         w.write("    }\n\n");
         w.write("}\n");
         w.close();
