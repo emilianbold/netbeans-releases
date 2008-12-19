@@ -19,7 +19,7 @@
     <Component class="javax.swing.JLabel" name="jLblTreeView">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/jaxws/actions/Bundle.properties" key="LBL_AvailableWebServices" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/websvc/spi/support/Bundle.properties" key="LBL_AvailableWebServices" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
