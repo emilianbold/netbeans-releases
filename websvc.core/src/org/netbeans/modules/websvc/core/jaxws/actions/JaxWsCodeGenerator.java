@@ -334,13 +334,15 @@ public class JaxWsCodeGenerator {
             "    %>\n" + //NOI18N
             "    <%-- end web service invocation --%><hr/>\n"; //NOI18N
 
-    public static void insertMethodCall(int targetSourceType, DataObject dataObj, Lookup targetNodeLookup, Lookup sourceNodeLookup) {
-        EditorCookie cookie = targetNodeLookup.lookup(EditorCookie.class);
+    public static void insertMethodCall(InvokeOperationCookie.TargetSourceType targetSourceType,
+            DataObject dataObj, Lookup sourceNodeLookup) {
+
+        EditorCookie cookie = dataObj.getCookie(EditorCookie.class);
         OperationNode opNode = sourceNodeLookup.lookup(OperationNode.class);
-        boolean inJsp = InvokeOperationCookie.TARGET_SOURCE_JSP == targetSourceType;
+        boolean inJsp = InvokeOperationCookie.TargetSourceType.JSP == targetSourceType;
         Node portNode = opNode.getParentNode();
         Node serviceNode = portNode.getParentNode();
-        addProjectReference(serviceNode, targetNodeLookup);
+        addProjectReference(serviceNode, dataObj);
         final Document document;
         int position = -1;
         if (inJsp) {
@@ -373,11 +375,10 @@ public class JaxWsCodeGenerator {
         insertMethod(document, pos, opNode);
     }
 
-    private static void addProjectReference(Node serviceNode, Lookup targetNodeLookup) {
+    private static void addProjectReference(Node serviceNode, DataObject dObj) {
         Node clientNode = serviceNode.getParentNode();
         FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
         Project clientProject = FileOwnerQuery.getOwner(srcRoot);
-        DataObject dObj = targetNodeLookup.lookup(DataObject.class);
         if (dObj != null) {
             FileObject targetFo = dObj.getPrimaryFile();
             JaxWsUtils.addProjectReference(clientProject, targetFo);

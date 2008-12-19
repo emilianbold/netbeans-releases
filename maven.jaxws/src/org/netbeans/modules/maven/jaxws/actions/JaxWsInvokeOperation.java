@@ -39,41 +39,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.actions;
+package org.netbeans.modules.maven.jaxws.actions;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.maven.jaxws.nodes.OperationNode;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author mkuchtiak
  */
-public class JaxRpcInvokeOperation implements InvokeOperationCookie {
+public class JaxWsInvokeOperation implements InvokeOperationCookie {
 
     private FileObject targetSource;
+
     /** Creates a new instance of JaxWsAddOperation.
-     * @param project Project
-    */
-    public JaxRpcInvokeOperation(FileObject targetSource) {
+     * @param targetSource target source file
+     */
+    public JaxWsInvokeOperation(FileObject targetSource) {
         this.targetSource = targetSource;
     }
 
     @Override
     public void invokeOperation(Lookup sourceNodeLookup, JTextComponent targetComponent) {
-        try {
-        DataObject dObj = DataObject.find(targetSource);
-            JaxrpcInvokeOperationGenerator.insertMethodCall(dObj, sourceNodeLookup);
-        } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
-        }
+            JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(),
+                    targetComponent.getCaretPosition(),
+                    sourceNodeLookup.lookup(OperationNode.class));
     }
 
     @Override
     public InvokeOperationCookie.ClientSelectionPanel getDialogDescriptorPanel() {
         return new ClientExplorerPanel(targetSource);
     }
+
 }

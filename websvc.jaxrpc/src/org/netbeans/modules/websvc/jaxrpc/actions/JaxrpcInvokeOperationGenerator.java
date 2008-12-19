@@ -342,7 +342,7 @@ public class JaxrpcInvokeOperationGenerator {
         saxParser.parse(url.openConnection().getInputStream(), handler);
     }
 
-    public static void insertMethodCall(final DataObject dataObj, final Lookup targetNodeLookup, final Lookup serviceOperationNodeLookup) {
+    public static void insertMethodCall(final DataObject dataObj, final Lookup serviceOperationNodeLookup) {
 
         // First, collect name of method, port, and service:
         Node serviceNode, servicePortNode;
@@ -462,9 +462,9 @@ public class JaxrpcInvokeOperationGenerator {
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
         ClientStubDescriptor stubType = getStub(wsdlObj);
-        EditorCookie cookie = targetNodeLookup.lookup(EditorCookie.class);
+        EditorCookie cookie = dataObj.getCookie(EditorCookie.class);
 
-        addProjectReference(wsdlObj, targetNodeLookup);
+        addProjectReference(wsdlObj, dataObj);
 
         // including code to JSP
         if (cookie != null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
@@ -577,10 +577,9 @@ public class JaxrpcInvokeOperationGenerator {
 
     }
 
-    private static void addProjectReference(DataObject wsdlDobj, Lookup targetNodeLookup) {
+    private static void addProjectReference(DataObject wsdlDobj, DataObject dObj) {
         if (wsdlDobj != null) {
             Project clientProject = FileOwnerQuery.getOwner(wsdlDobj.getPrimaryFile());
-            DataObject dObj = targetNodeLookup.lookup(DataObject.class);
             if (dObj != null) {
                 JaxWsUtils.addProjectReference(clientProject, dObj.getPrimaryFile());
             }
