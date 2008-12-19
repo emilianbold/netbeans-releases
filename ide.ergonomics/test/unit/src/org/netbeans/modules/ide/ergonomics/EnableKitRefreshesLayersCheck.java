@@ -42,6 +42,7 @@ package org.netbeans.modules.ide.ergonomics;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -57,6 +58,8 @@ import org.openide.filesystems.Repository;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class EnableKitRefreshesLayersCheck extends NbTestCase {
+    private Logger LOG;
+
     public EnableKitRefreshesLayersCheck(String n) {
         super(n);
     }
@@ -66,9 +69,17 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
         return Level.FINER;
     }
 
+    private void logMsg(String msg) {
+        if (LOG == null) {
+            LOG = Logger.getLogger("test." + getName());
+        }
+        LOG.info(msg);
+    }
 
     
     public void testJavaCanBeTurnedOn() throws Exception {
+
+        
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
         FileObject edit = root.getFileObject("Edit");
         if (edit != null) {
@@ -99,11 +110,21 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
         if (info != null) {
             oc.add(info.getRequiredElements());
         }
+        logMsg("Ready to enable");
         oc.getSupport().doOperation(null);
+        logMsg("After enabled");
 
         assertTrue("Enabled now", enable.getInstalled().isEnabled());
 
         FoDFileSystem.getInstance().waitFinished();
-        assertNotNull("edit menu present", root.getFileObject("Edit"));
+        logMsg("After FodFS refresh");
+        if (root.getFileObject("Edit") == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Edit menu shall be present:\n");
+            for (FileObject fo : root.getChildren()) {
+                sb.append(fo.getPath()).append('\n');
+            }
+            fail(sb.toString());
+        }
     }
 }
