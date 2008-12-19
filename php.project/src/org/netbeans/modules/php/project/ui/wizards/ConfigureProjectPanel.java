@@ -159,8 +159,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     public void storeSettings(WizardDescriptor settings) {
         // project - we have to save it as it is because one can navigate back and forward
         //  => the project folder equals to sources
+        File projectDir = getProjectFolderFile();
+        if (projectDir != null) {
+            projectDir = FileUtil.normalizeFile(projectDir);
+        }
         settings.putProperty(IS_PROJECT_DIR_USED, configureProjectPanelVisual.isProjectFolderUsed());
-        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(getProjectFolderFile()));
+        settings.putProperty(PROJECT_DIR, projectDir);
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
