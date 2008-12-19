@@ -309,7 +309,7 @@ final class NbInstaller extends ModuleInstaller {
 	
         ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
-        CoreBridge.conditionallyLoaderPoolTransaction(true);
+        CoreBridge.getDefault().loaderPoolTransaction(true);
         try {
             for (Module m: modules) {
                 try {
@@ -322,7 +322,7 @@ final class NbInstaller extends ModuleInstaller {
                 ev.log(Events.PERF_TICK, "sections for " + m.getCodeName() + " loaded"); // NOI18N
             }
         } finally {
-            CoreBridge.conditionallyLoaderPoolTransaction(false);
+            CoreBridge.getDefault().loaderPoolTransaction(false);
         }
         ev.log(Events.PERF_END, "NbInstaller.load - sections"); // NOI18N
 
@@ -369,7 +369,7 @@ final class NbInstaller extends ModuleInstaller {
                 Util.err.log(Level.SEVERE, null, le);
             }
         }
-        CoreBridge.conditionallyLoaderPoolTransaction(true);
+        CoreBridge.getDefault().loaderPoolTransaction(true);
         try {
             for (Module m: modules) {
                 try {
@@ -382,7 +382,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         } finally {
             try {
-                CoreBridge.conditionallyLoaderPoolTransaction(false);
+                CoreBridge.getDefault().loaderPoolTransaction(false);
             } catch (RuntimeException e) {
                 Util.err.log(Level.SEVERE, null, e);
             }

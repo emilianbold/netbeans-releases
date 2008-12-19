@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -73,7 +74,7 @@ final class MainImpl extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
-        java.lang.reflect.Method[] m = new java.lang.reflect.Method[1];
+        AtomicReference<Method> m = new AtomicReference<Method>();
         int res = execute (args, System.in, System.out, System.err, m);
         if (res == -1) {
             // Connected to another running NB instance and succeeded in making a call.
@@ -83,7 +84,7 @@ final class MainImpl extends Object {
             System.exit(res);
         }
 
-        m[0].invoke (null, new Object[] { args });
+        m.get().invoke(null, new Object[] {args});
     }
 
     /** Returns string describing usage of the system. Does that by talking to
@@ -107,7 +108,7 @@ final class MainImpl extends Object {
      * @param args the arguments to pass to the handlers
      * @param reader the input stream reader for the handlers
      * @param writer the output stream for the handlers
-     * @param methodToCall null or array with one item that will be set to
+     * @param methodToCall null, or cell that will be set to
      *   a method that shall be executed as the main application
      */
     static int execute (
@@ -115,7 +116,7 @@ final class MainImpl extends Object {
         java.io.InputStream reader,
         java.io.OutputStream writer,
         java.io.OutputStream error,
-        java.lang.reflect.Method[] methodToCall
+        AtomicReference<Method> methodToCall
     ) throws Exception {
         // #42431: turn off jar: caches, they are evil
         // Note that setDefaultUseCaches changes a static field
@@ -208,15 +209,10 @@ final class MainImpl extends Object {
 
         }
 
-        String className = System.getProperty(
-            "netbeans.mainclass", "org.netbeans.core.startup.Main" // NOI18N
-        );
-
-        Class<?> c = loader.loadClass(className);
-        Method m = c.getMethod ("main", String[].class); // NOI18N
-
         if (methodToCall != null) {
-            methodToCall[0] = m;
+            String className = System.getProperty("netbeans.mainclass", "org.netbeans.core.startup.Main"); // NOI18N
+            Class<?> c = loader.loadClass(className);
+            methodToCall.set(c.getMethod("main", String[].class)); // NOI18N
         }
 
         return result.getExitCode ();
