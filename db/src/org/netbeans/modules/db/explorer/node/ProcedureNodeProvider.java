@@ -46,6 +46,11 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.openide.nodes.Node;
@@ -53,7 +58,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ProcedureNodeProvider extends NodeProvider {
 
@@ -67,39 +72,53 @@ public class ProcedureNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ProcedureNodeProvider createInstance(Lookup lookup) {
                 ProcedureNodeProvider provider = new ProcedureNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
 
     private ProcedureNodeProvider(Lookup lookup) {
         super(lookup, new ProcedureComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    private void setup() {
-        update();
-    }
+    protected synchronized void initialize() {
 
-    private synchronized void update() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
 
-        Collection<Procedure> procedures = schema.getProcedures();
-        for (Procedure procedure : procedures) {
-            Collection<Node> matches = getNodes(procedure);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(procedure);
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Schema schema = schemaHandle.resolve(metaData);
+                            if (schema != null) {
+                                Collection<Procedure> procedures = schema.getProcedures();
+                                for (Procedure procedure : procedures) {
+                                    MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
+                                    Collection<Node> matches = getNodes(handle);
+                                    if (matches.size() > 0) {
+                                        newList.addAll(matches);
+                                    } else {
+                                        NodeDataLookup lookup = new NodeDataLookup();
+                                        lookup.add(connection);
+                                        lookup.add(handle);
 
-                newList.add(ProcedureNode.create(lookup));
+                                        newList.add(ProcedureNode.create(lookup, ProcedureNodeProvider.this));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 

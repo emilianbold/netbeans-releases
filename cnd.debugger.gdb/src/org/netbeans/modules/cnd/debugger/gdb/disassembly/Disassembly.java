@@ -537,7 +537,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static class DisText {
         private int lineNo = 1;
         private int length = 0;
-        private final StringBuffer data = new StringBuffer();
+        private final StringBuilder data = new StringBuilder();
 
         public int getLineNo() {
             return lineNo;

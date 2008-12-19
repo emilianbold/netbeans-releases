@@ -110,14 +110,14 @@ public class RunScript extends Command implements Displayable {
                         descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
                 final Future<Integer> result = service.run();
                 // #155251
-                try {
+                /*try {
                     result.get();
                 } catch (ExecutionException exc) {
                     Throwable cause = exc.getCause();
                     assert cause != null;
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(
                             cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
-                }
+                }*/
                 return new Cancellable() {
                     public boolean cancel() {
                         return result.cancel(true);

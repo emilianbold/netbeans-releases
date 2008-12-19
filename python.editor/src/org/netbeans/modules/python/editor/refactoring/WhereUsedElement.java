@@ -136,8 +136,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         int en = start; // ! Same line as start
         String content = null;
 
+        BaseDocument bdoc = PythonRefUtils.getDocument(info, info.getFileObject());
         try {
-            BaseDocument bdoc = PythonRefUtils.getDocument(info, info.getFileObject());
+            bdoc.readLock();
+
             // I should be able to just call tree.getInfo().getText() to get cached
             // copy - but since I'm playing fast and loose with compilationinfos
             // for for example find subclasses (using a singly dummy FileInfo) I need
@@ -170,6 +172,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            bdoc.readUnlock();
         }
 
         StringBuilder sb = new StringBuilder();

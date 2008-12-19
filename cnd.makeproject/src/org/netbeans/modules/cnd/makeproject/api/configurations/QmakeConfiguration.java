@@ -50,6 +50,7 @@ import org.openide.util.NbBundle;
 public class QmakeConfiguration implements Cloneable {
 
     public static final String DEBUG_FLAG = "debug"; // NOI18N
+    public static final String RELEASE_FLAG = "release"; // NOI18N
 
     private static final String[] TEMPLATE_NAMES = new String[] {
         getString("QmakeTemplateApp"), // NOI18N

@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 
 import org.openide.util.NbBundle;
@@ -77,8 +78,7 @@ public class FunctionBreakpointType extends BreakpointType {
         // First, check for an open file. Is it one of ours?
 	String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
         if (mime.length() > 0) {
-            if (mime.equals("text/x-c++") || mime.equals("text/x-c") || // NOI18N
-                        mime.equals("text/x-fortran")) { // NOI18N
+            if (MIMENames.isFortranOrHeaderOrCppOrC(mime)) {
                 return true;
             } else {
                 return false;

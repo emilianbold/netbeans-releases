@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
@@ -85,6 +87,22 @@ import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
  * @author Vladimir Voskresensky
  */
 public class PersistentUtils {
+
+    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, DataInput input) throws IOException {
+        int size = input.readInt();
+        for (int i = 0; i < size; i++) {
+            ErrorDirectiveImpl offs = new ErrorDirectiveImpl(input);
+            errors.add(offs);
+        }
+    }
+
+    public static void writeErrorDirectives(Set<ErrorDirectiveImpl> errors, DataOutput output) throws IOException {
+        int size = errors.size();
+        output.writeInt(size);
+        for (ErrorDirectiveImpl error : errors) {
+            error.write(output);
+        }
+    }
 
     private PersistentUtils() {
     }

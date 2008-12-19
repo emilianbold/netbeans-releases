@@ -36,6 +36,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.Element;
@@ -110,16 +111,37 @@ public class JsElementCtx {
                 break;
             }
         }
-        Element element = AstElement.getElement(info, leaf);
 
-        initialize(root, leaf, element, info.getFileObject(), info);
+        BaseDocument doc = GsfUtilities.getDocument(info.getFileObject(), true);
+        try {
+            if (doc != null) {
+                doc.readLock();
+            }
+            Element element = AstElement.getElement(info, leaf);
+
+            initialize(root, leaf, element, info.getFileObject(), info);
+        } finally {
+            if (doc != null) {
+                doc.readUnlock();
+            }
+        }
     }
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
     public JsElementCtx(JsElementCtx ctx, Node node) {
-        Element element = AstElement.getElement(info, node);
+        BaseDocument doc = GsfUtilities.getDocument(info.getFileObject(), true);
+        try {
+            if (doc != null) {
+                doc.readLock();
+            }
+            Element element = AstElement.getElement(info, node);
 
-        initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
+            initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
+        } finally {
+            if (doc != null) {
+                doc.readUnlock();
+            }
+        }
     }
 
     private void initialize(Node root, Node node, Element element, FileObject fileObject,

@@ -41,38 +41,39 @@
 
 package org.netbeans.modules.websvc.jaxrpc.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author mkuchtiak
  */
 public class JaxRpcInvokeOperation implements InvokeOperationCookie {
-    
-    private Project project;
-    /** Creates a new instance of JaxWsAddOperation */
-    public JaxRpcInvokeOperation(Project project) {
-        this.project=project;
+
+    private FileObject targetSource;
+    /** Creates a new instance of JaxWsAddOperation.
+     * @param project Project
+    */
+    public JaxRpcInvokeOperation(FileObject targetSource) {
+        this.targetSource = targetSource;
     }
-    
-    /*
-     * Adds a WS invocation to the class
-     */
-    public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-            JaxrpcInvokeOperationGenerator.insertMethodCall(getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
+
+    @Override
+    public void invokeOperation(Lookup sourceNodeLookup, JTextComponent targetComponent) {
+        try {
+        DataObject dObj = DataObject.find(targetSource);
+            JaxrpcInvokeOperationGenerator.insertMethodCall(dObj, sourceNodeLookup);
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
     }
-    
-    private DataObject getCurrentDataObject(Node n) {
-        return (DataObject) n.getCookie(DataObject.class);
+
+    @Override
+    public InvokeOperationCookie.ClientSelectionPanel getDialogDescriptorPanel() {
+        return new ClientExplorerPanel(targetSource);
     }
-    
-    public boolean isWebServiceOperation(Node node) {
-        return node.getLookup().lookup(WebServiceMethod.class)!=null; 
-    }
-    
-    
 }

@@ -37,7 +37,7 @@ public class DeployDirectoryAction extends NodeAction {
     
     protected boolean enable(Node[] nodes) {
         for(Node node: nodes) {
-            DeployDirectoryCookie cookie = (DeployDirectoryCookie)node.getCookie(DeployDirectoryCookie.class);
+            DeployDirectoryCookie cookie = node.getCookie(DeployDirectoryCookie.class);
             if (cookie == null) {
                 return false;
             }
@@ -52,13 +52,13 @@ public class DeployDirectoryAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         if(nodes != null && nodes.length > 0) {
             DeployDirectoryCookie deployCookie = 
-                    (DeployDirectoryCookie) nodes[0].getCookie(DeployDirectoryCookie.class);
+                    nodes[0].getCookie(DeployDirectoryCookie.class);
             if(deployCookie != null) {
                 deployCookie.deployDirectory();
             }
             
             RefreshModulesCookie refreshCookie = 
-                    (RefreshModulesCookie) nodes[0].getCookie(RefreshModulesCookie.class);
+                    nodes[0].getCookie(RefreshModulesCookie.class);
             if(refreshCookie != null) {
                 refreshCookie.refresh();
             }
