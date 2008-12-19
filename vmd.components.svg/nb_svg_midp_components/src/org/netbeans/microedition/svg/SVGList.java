@@ -129,7 +129,9 @@ public class SVGList extends SVGComponent implements DataListener {
         
         myRenderedComponents = new Vector/*<SVGComponent>*/();
         setSelectionModel(  new DefaultSelectionModel() );
-        myHandler = new ListHandler();        
+        myHandler = new ListHandler();    
+        
+        setModel( new DefaultListModel( new Vector()));
     }
 
     public SVGList( SVGForm form, String elemId ){
@@ -152,6 +154,11 @@ public class SVGList extends SVGComponent implements DataListener {
         }
         myModel = model;
         myModel.addDataListener( this );
+        
+        if ( model.getSize() >0 ){
+            getSelectionModel().addSelectionInterval(0, 0);
+        }
+        
         renderList();
         
     }
