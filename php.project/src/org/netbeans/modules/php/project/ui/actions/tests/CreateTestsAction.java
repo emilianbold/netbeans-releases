@@ -210,6 +210,7 @@ public final class CreateTestsAction extends NodeAction {
      * @return a PHP project or <code>null</code>.
      */
     private static PhpProject getPhpProject(FileObject fo) {
+        assert fo != null;
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) {
             return null;
@@ -218,11 +219,15 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private static FileObject getFileObject(Node node) {
+        FileObject fileObj = node.getLookup().lookup(FileObject.class);
+        if (fileObj != null && fileObj.isValid()) {
+            return fileObj;
+        }
         DataObject dataObj = node.getCookie(DataObject.class);
         if (dataObj == null) {
             return null;
         }
-        FileObject fileObj = dataObj.getPrimaryFile();
+        fileObj = dataObj.getPrimaryFile();
         if ((fileObj == null) || !fileObj.isValid()) {
             return null;
         }
