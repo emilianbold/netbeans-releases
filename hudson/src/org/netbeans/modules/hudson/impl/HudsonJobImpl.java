@@ -211,7 +211,7 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
 
     @Override
     public String toString() {
-        return getUrl().toString();
+        return getUrl();
     }
     
     private class HudsonJobProperty extends PropertySupport<String> {
