@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.jar.Attributes;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -74,6 +75,24 @@ public class JarWithModuleAttributes extends Jar {
      */
     public void setStamp(File stamp) {
         this.stamp = stamp;
+    }
+
+
+    static String extractCodeName(Attributes attr) {
+        String codename = attr.getValue("OpenIDE-Module");
+        if (codename != null) {
+            return codename;
+        }
+        codename = attr.getValue("Bundle-SymbolicName");
+        if (codename == null) {
+            return null;
+        }
+        int params = codename.indexOf(';');
+        if (params >= 0) {
+            return codename.substring(0, params);
+        } else {
+            return codename;
+        }
     }
 
     @Override
