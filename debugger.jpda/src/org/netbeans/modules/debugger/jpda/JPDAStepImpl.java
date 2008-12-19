@@ -57,6 +57,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -77,12 +78,34 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
@@ -121,11 +144,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         // synchronize on debugger LOCK first so that it can not happen that we
         // take locks in the oposite order
         synchronized (tr) {
+        try {
             ((JPDAThreadImpl) tr).waitUntilMethodInvokeDone();
-            EventRequestManager erm = vm.eventRequestManager();
+            EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
             //Remove all step requests -- TODO: Do we want it?
-            List<StepRequest> stepRequests = erm.stepRequests();
-            erm.deleteEventRequests(stepRequests);
+            List<StepRequest> stepRequests = EventRequestManagerWrapper.stepRequests(erm);
+            EventRequestManagerWrapper.deleteEventRequests(erm, stepRequests);
             for (StepRequest stepRequest : stepRequests) {
                 //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                 debuggerImpl.getOperator().unregister(stepRequest);
@@ -145,7 +169,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
             }
             if (!stepAdded) {
-                StepRequest stepRequest = vm.eventRequestManager().createStepRequest(
+                StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm),
                     trImpl.getThreadReference(),
                     size,
                     getDepth()
@@ -153,14 +178,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 //stepRequest.addCountFilter(1); - works bad with exclusion filters!
                 String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                 for (int i = 0; i < exclusionPatterns.length; i++) {
-                    stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                    StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
                     logger.finer("   add pattern: "+exclusionPatterns[i]);
                 }
                 debuggerImpl.getOperator().register(stepRequest, this);
-                stepRequest.setSuspendPolicy(debugger.getSuspend());
+                EventRequestWrapper.setSuspendPolicy(stepRequest, debugger.getSuspend());
 
                 try {
-                    stepRequest.enable ();
+                    EventRequestWrapper.enable(stepRequest);
                     trImpl.setInStep(true, stepRequest);
                     requestsToCancel.add(stepRequest);
                 } catch (IllegalThreadStateException itsex) {
@@ -169,6 +194,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     stepRequest = null;
                 }
             }
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        }
         }
         }
         if (setStoppedStateNoContinue[0]) {
@@ -178,15 +207,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     
     private boolean addOperationStep(JPDAThreadImpl tr, boolean lineStepExec,
                                      SourcePath sourcePath,
-                                     boolean[] setStoppedStateNoContinue) {
+                                     boolean[] setStoppedStateNoContinue) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         ThreadReference trRef = tr.getThreadReference();
         StackFrame sf;
         try {
-            sf = trRef.frame(0);
+            sf = ThreadReferenceWrapper.frame(trRef, 0);
         } catch (IncompatibleThreadStateException itsex) {
             return false;
+        } catch (IllegalThreadStateExceptionWrapper itsex) {
+            return false;
         }
-        Location loc = sf.location();
+        Location loc = LocatableWrapper.location(sf);
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
         String url = sourcePath.getURL(loc, language);
@@ -199,7 +230,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         
         //Operation operation = null;
         int opIndex = -1;
-        int codeIndex = (int) loc.codeIndex();
+        int codeIndex = (int) LocationWrapper.codeIndex(loc);
         if (codeIndex <= ops[0].getBytecodeIndex()) {
             if (!lineStepExec) {
                 tr.clearLastOperations();
@@ -242,7 +273,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             }
         }
         this.lastOperation = currentOp;
-        VirtualMachine vm = loc.virtualMachine();
+        VirtualMachine vm = MirrorWrapper.virtualMachine(loc);
         if (lastOperation != null) {
              // Set the method exit breakpoint to get the return value
             String methodName = lastOperation.getMethodName();
@@ -306,13 +337,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     newOps[ops.length] = nextOperationLocations[ni].getOperation();
                     ops = newOps;
                 }
-                BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(nloc);
+                BreakpointRequest brReq = EventRequestManagerWrapper.createBreakpointRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        nloc);
                 operationBreakpoints.add(brReq);
                 ((JPDADebuggerImpl) debugger).getOperator().register(brReq, this);
-                brReq.setSuspendPolicy(debugger.getSuspend());
-                brReq.addThreadFilter(trRef);
-                brReq.putProperty("thread", trRef); // NOI18N
-                brReq.enable();
+                EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
+                BreakpointRequestWrapper.addThreadFilter(brReq, trRef);
+                EventRequestWrapper.putProperty(brReq, "thread", trRef); // NOI18N
+                EventRequestWrapper.enable(brReq);
                 tr.setInStep(true, brReq);
                 requestsToCancel.add(brReq);
             }
@@ -321,20 +354,21 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
-        boundaryStepRequest = vm.eventRequestManager().createStepRequest(
+        boundaryStepRequest = EventRequestManagerWrapper.createStepRequest(
+            VirtualMachineWrapper.eventRequestManager(vm),
             trRef,
             StepRequest.STEP_LINE,
             StepRequest.STEP_OVER
         );
         if (isNextOperationFromDifferentExpression) {
-            boundaryStepRequest.addCountFilter(2);
+            EventRequestWrapper.addCountFilter(boundaryStepRequest, 2);
         } else {
-            boundaryStepRequest.addCountFilter(1);
+            EventRequestWrapper.addCountFilter(boundaryStepRequest, 1);
         }
         ((JPDADebuggerImpl) debugger).getOperator().register(boundaryStepRequest, this);
-        boundaryStepRequest.setSuspendPolicy(debugger.getSuspend());
+        EventRequestWrapper.setSuspendPolicy(boundaryStepRequest, debugger.getSuspend());
         try {
-            boundaryStepRequest.enable ();
+            EventRequestWrapper.enable (boundaryStepRequest);
             requestsToCancel.add(boundaryStepRequest);
         } catch (IllegalThreadStateException itsex) {
             // the thread named in the request has died.
@@ -348,7 +382,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public boolean exec (Event event) {
-        stepDone(event.request());
+        try {
+            EventRequest er = EventWrapper.request(event);
+            stepDone(er);
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
+
         // TODO: Check the location, follow the smart-stepping logic!
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean stepAdded = false;
@@ -376,39 +418,56 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             Operation currentOperation = null;
             boolean addExprStep = false;
             if (currentOperations != null) {
-                if (event.request() instanceof BreakpointRequest) {
-                    long codeIndex = ((BreakpointRequest) event.request()).location().codeIndex();
-                    for (int i = 0; i < currentOperations.length; i++) {
-                        if (currentOperations[i].getBytecodeIndex() == codeIndex) {
-                            currentOperation = currentOperations[i];
-                            break;
+                try {
+                    if (EventWrapper.request(event) instanceof BreakpointRequest) {
+                        long codeIndex = LocationWrapper.codeIndex(
+                                BreakpointRequestWrapper.location((BreakpointRequest) EventWrapper.request(event)));
+                        for (int i = 0; i < currentOperations.length; i++) {
+                            if (currentOperations[i].getBytecodeIndex() == codeIndex) {
+                                currentOperation = currentOperations[i];
+                                break;
+                            }
                         }
+                    } else {
+                        // A line step was finished, the execution of current expression
+                        // has finished, we need to check the expression on this line.
+                        addExprStep = true;
                     }
-                } else {
-                    // A line step was finished, the execution of current expression
-                    // has finished, we need to check the expression on this line.
-                    addExprStep = true;
+                } catch (InternalExceptionWrapper ex) {
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return false;
                 }
                 this.currentOperations = null;
             }
             tr.setCurrentOperation(currentOperation);
-            EventRequestManager erm = vm.eventRequestManager();
-            EventRequest eventRequest = event.request();
-            erm.deleteEventRequest(eventRequest);
-            debuggerImpl.getOperator().unregister(eventRequest);
-            /*if (eventRequest instanceof StepRequest) {
-                SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
-            }*/
-            removed(eventRequest); // Clean-up
-            int suspendPolicy = debugger.getSuspend();
-            if (addExprStep) {
-                stepAdded = addOperationStep(tr, true, sourcePath,
-                                             setStoppedStateNoContinue);
-            }
-            if (!stepAdded) {
-                if ((event.request() instanceof StepRequest) && shouldNotStopHere(event)) {
-                    return true; // Resume
+            try {
+                EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+                EventRequest eventRequest = EventWrapper.request(event);
+                EventRequestManagerWrapper.deleteEventRequest(erm, eventRequest);
+                debuggerImpl.getOperator().unregister(eventRequest);
+                /*if (eventRequest instanceof StepRequest) {
+                    SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
+                }*/
+                removed(eventRequest); // Clean-up
+                int suspendPolicy = debugger.getSuspend();
+                if (addExprStep) {
+                    try {
+                        stepAdded = addOperationStep(tr, true, sourcePath,
+                                                     setStoppedStateNoContinue);
+                    } catch (InternalExceptionWrapper ex) {
+                        return false;
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        return false;
+                    }
                 }
+                if (!stepAdded) {
+                    if ((EventWrapper.request(event) instanceof StepRequest) && shouldNotStopHere(event)) {
+                        return true; // Resume
+                    }
+                }
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
             }
         }
         if (stepAdded) {
@@ -427,7 +486,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public void removed(EventRequest eventRequest) {
-        stepDone(eventRequest);
+        try {
+            stepDone(eventRequest);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ;
+        }
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -437,30 +501,34 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (vm == null) {
             return ; // The session has finished
         }
-        EventRequestManager erm = vm.eventRequestManager();
-        if (operationBreakpoints != null) {
-            for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
-                BreakpointRequest br = it.next();
-                erm.deleteEventRequest(br);
-                debuggerImpl.getOperator().unregister(br);
+        try {
+            EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+            if (operationBreakpoints != null) {
+                for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
+                    BreakpointRequest br = it.next();
+                    EventRequestManagerWrapper.deleteEventRequest(erm, br);
+                    debuggerImpl.getOperator().unregister(br);
+                }
+                this.operationBreakpoints = null;
             }
-            this.operationBreakpoints = null;
-        }
-        if (boundaryStepRequest != null) {
-            erm.deleteEventRequest(boundaryStepRequest);
-            //SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
-            debuggerImpl.getOperator().unregister(boundaryStepRequest);
+            if (boundaryStepRequest != null) {
+                EventRequestManagerWrapper.deleteEventRequest(erm, boundaryStepRequest);
+                //SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
+                debuggerImpl.getOperator().unregister(boundaryStepRequest);
+            }
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
         
     }
 
-    private void stepDone(EventRequest er) {
+    private void stepDone(EventRequest er) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         JPDAThreadImpl t;
         if (er instanceof StepRequest) {
             StepRequest sr = (StepRequest) er;
-            t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(sr.thread());
+            t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(StepRequestWrapper.thread(sr));
         } else {
-            ThreadReference tr = (ThreadReference) er.getProperty("thread"); // NOI18N
+            ThreadReference tr = (ThreadReference) EventRequestWrapper.getProperty(er, "thread"); // NOI18N
             if (tr != null) {
                 t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(tr);
             } else {
@@ -476,29 +544,38 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
      * Returns all class names, which are subclasses of <code>className</code>
      * and contain method <code>methodName</code>
      */
-    private static String[] createClassFilters(VirtualMachine vm, String className, String methodName) {
+    private static String[] createClassFilters(VirtualMachine vm, String className, String methodName) throws VMDisconnectedExceptionWrapper {
         return createClassFilters(vm, className, methodName, new ArrayList<String>()).toArray(new String[] {});
     }
     
-    private static List<String> createClassFilters(VirtualMachine vm, String className, String methodName, List<String> filters) {
-        List<ReferenceType> classTypes = vm.classesByName(className);
+    private static List<String> createClassFilters(VirtualMachine vm, String className, String methodName, List<String> filters) throws VMDisconnectedExceptionWrapper {
+        List<ReferenceType> classTypes = VirtualMachineWrapper.classesByName0(vm, className);
         for (ReferenceType type : classTypes) {
-            List<Method> methods = type.methodsByName(methodName);
-            boolean hasNonStatic = methods.isEmpty();
-            for (Method method : methods) {
-                if (!filters.contains(type.name())) {
-                    filters.add(type.name());
+            try {
+                List<Method> methods;
+                try {
+                    methods = ReferenceTypeWrapper.methodsByName0(type, methodName);
+                } catch (ClassNotPreparedExceptionWrapper ex) {
+                    continue;
                 }
-                if (!method.isStatic()) {
-                    hasNonStatic = true;
+                boolean hasNonStatic = methods.isEmpty();
+                for (Method method : methods) {
+                    if (!filters.contains(ReferenceTypeWrapper.name(type))) {
+                        filters.add(ReferenceTypeWrapper.name(type));
+                    }
+                    if (!TypeComponentWrapper.isStatic(method)) {
+                        hasNonStatic = true;
+                    }
                 }
-            }
-            if (hasNonStatic && type instanceof ClassType) {
-                ClassType clazz = (ClassType) type;
-                ClassType superClass = clazz.superclass();
-                if (superClass != null) {
-                    createClassFilters(vm, superClass.name(), methodName, filters);
+                if (hasNonStatic && type instanceof ClassType) {
+                    ClassType clazz = (ClassType) type;
+                    ClassType superClass;
+                    superClass = ClassTypeWrapper.superclass(clazz);
+                    if (superClass != null) {
+                        createClassFilters(vm, ReferenceTypeWrapper.name(superClass), methodName, filters);
+                    }
                 }
+            } catch (InternalExceptionWrapper ex) {
             }
         }
         return filters;
@@ -512,33 +589,34 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         synchronized (debuggerImpl.LOCK) {
             // 2) init info about current state
             LocatableEvent event = (LocatableEvent) ev;
-            String className = event.location ().declaringType ().name ();
-            ThreadReference tr = event.thread ();
+            //String className = event.location ().declaringType ().name ();
             //JPDAThreadImpl ct = (JPDAThreadImpl) debuggerImpl.getCurrentThread();
-            
-            // Synthetic method?
             try {
-                if (tr.frame(0).location().method().isSynthetic()) {
+            ThreadReference tr = LocatableEventWrapper.thread (event);
+            try {
+                // Synthetic method?
+                if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
                     //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
                     
                     VirtualMachine vm = debuggerImpl.getVirtualMachine ();
                     if (vm == null) {
                         return false; // The session has finished
                     }
-                    StepRequest stepRequest = vm.eventRequestManager ().createStepRequest (
+                    StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
                         tr,
                         StepRequest.STEP_LINE,
                         getDepth()
                     );
-                    stepRequest.addCountFilter(1);
+                    EventRequestWrapper.addCountFilter(stepRequest, 1);
                     String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                     for (int i = 0; i < exclusionPatterns.length; i++) {
-                        stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                        StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
                     }
                     debuggerImpl.getOperator ().register (stepRequest, this);
-                    stepRequest.setSuspendPolicy (debugger.getSuspend ());
+                    EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
                     try {
-                        stepRequest.enable ();
+                        EventRequestWrapper.enable (stepRequest);
                         requestsToCancel.add(stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
@@ -548,6 +626,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
             } catch (IncompatibleThreadStateException e) {
                 ErrorManager.getDefault().notify(e);
+                return false;
+            } catch (InvalidStackFrameExceptionWrapper e) {
+                ErrorManager.getDefault().notify(e);
+                return false;
+            } catch (IllegalThreadStateExceptionWrapper e) {
+                return false;
+            } catch (ObjectCollectedExceptionWrapper e) {
+                return false;
             }
             
             // Not synthetic
@@ -569,34 +655,48 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             } else {
                 depth = StepRequest.STEP_INTO;
             }
-            StepRequest stepRequest = vm.eventRequestManager ().createStepRequest (
+            StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
+                VirtualMachineWrapper.eventRequestManager(vm),
                 tr,
                 StepRequest.STEP_LINE,
                 depth
             );
             if (logger.isLoggable(Level.FINE)) {
                 try {
-                    logger.fine("Can not stop at "+tr.frame(0)+", smart-stepping. Submitting step = "+stepRequest+"; depth = "+depth);
+                    logger.fine("Can not stop at " + ThreadReferenceWrapper.frame(tr, 0) + ", smart-stepping. Submitting step = " + stepRequest + "; depth = " + depth);
+                } catch (InternalExceptionWrapper ex) {
+                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
                 } catch (IncompatibleThreadStateException ex) {
                     logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
                 }
             }
             String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
             for (int i = 0; i < exclusionPatterns.length; i++) {
-                stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
                 logger.finer("   add pattern: "+exclusionPatterns[i]);
             }
             
             debuggerImpl.getOperator ().register (stepRequest, this);
-            stepRequest.setSuspendPolicy (debugger.getSuspend ());
+            EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
             try {
-                stepRequest.enable ();
+                EventRequestWrapper.enable (stepRequest);
                 requestsToCancel.add(stepRequest);
             } catch (IllegalThreadStateException itsex) {
                 // the thread named in the request has died.
                 debuggerImpl.getOperator ().unregister (stepRequest);
             }
             return true; // resume
+            } catch (InternalExceptionWrapper e) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return false;
+            }
         }
     }
 
@@ -605,10 +705,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         VirtualMachine vm = debuggerImpl.getVirtualMachine();
         if (vm == null) return ;
-        EventRequestManager erm = vm.eventRequestManager();
-        for (EventRequest er : requestsToCancel) {
-            erm.deleteEventRequest(er);
-            debuggerImpl.getOperator ().unregister (er);
+        try {
+            EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+            for (EventRequest er : requestsToCancel) {
+                EventRequestManagerWrapper.deleteEventRequest(erm, er);
+                debuggerImpl.getOperator ().unregister (er);
+            }
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
     }
     

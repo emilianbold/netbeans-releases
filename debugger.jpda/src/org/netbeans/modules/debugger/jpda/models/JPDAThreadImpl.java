@@ -87,6 +87,27 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MonitorInfoWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.MonitorContendedEnteredRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -126,6 +147,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private List<ThreadReference> resumedBlockingThreads;
     private final Object        stepBreakpointLock = new Object();
     private JPDABreakpoint      stepSuspendedByBreakpoint;
+    private VirtualMachine      vm;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -136,14 +158,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         boolean initFailed = false;
         threadName = "";
         try {
-            threadName = threadReference.name();
-            suspended = threadReference.isSuspended();
-            suspendCount = threadReference.suspendCount();
-        } catch (IllegalThreadStateException itsex) {
+            vm = MirrorWrapper.virtualMachine(threadReference);
+            threadName = ThreadReferenceWrapper.name(threadReference);
+            suspended = ThreadReferenceWrapper.isSuspended(threadReference);
+            suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+        } catch (IllegalThreadStateExceptionWrapper itsex) {
             initFailed = true;
-        } catch (ObjectCollectedException ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
             initFailed = true;
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            initFailed = true;
+        } catch (InternalExceptionWrapper ex) {
             initFailed = true;
         }
         if (initFailed) {
@@ -168,14 +193,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public JPDAThreadGroup getParentThreadGroup () {
         try {
-            ThreadGroupReference tgr = threadReference.threadGroup ();
+            ThreadGroupReference tgr = ThreadReferenceWrapper.threadGroup (threadReference);
             if (tgr == null) return null;
             return debugger.getThreadGroup(tgr);
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             return null; // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
             return null;
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (InternalExceptionWrapper ex) {
             return null;
         }
     }
@@ -191,14 +218,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public int getLineNumber (String stratum) {
         try {
-            if (threadReference.frameCount () < 1) return -1;
-            return threadReference.frame (0).location ().lineNumber (stratum);
-        } catch (ObjectCollectedException ex) {
-        } catch (InvalidStackFrameException ex) {
+            if (ThreadReferenceWrapper.frameCount0(threadReference) < 1) return -1;
+            return LocationWrapper.lineNumber(StackFrameWrapper.location(
+                    ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
         }
         return -1;
     }
@@ -257,11 +286,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public int getState () {
         try {
-            return threadReference.status ();
-        } catch (IllegalThreadStateException ex) {
+            return ThreadReferenceWrapper.status (threadReference);
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-        } catch (VMDisconnectedException ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
         }
         return STATE_UNKNOWN;
     }
@@ -282,11 +312,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public boolean isThreadSuspended () {
         try {
-            return threadReference.isSuspended ();
-        } catch (IllegalThreadStateException ex) {
+            return ThreadReferenceWrapper.isSuspended (threadReference);
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-        } catch (VMDisconnectedException ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         }
         return false;
     }
@@ -298,14 +329,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public String getClassName () {
         try {
-            if (threadReference.frameCount () < 1) return "";
-            return threadReference.frame (0).location ().declaringType ().name ();
-        } catch (ObjectCollectedException ex) {
-        } catch (InvalidStackFrameException ex) {
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
+            return ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         }
         return "";
     }
@@ -317,14 +350,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public String getMethodName () {
         try {
-            if (threadReference.frameCount () < 1) return "";
-            return threadReference.frame (0).location ().method ().name ();
-        } catch (ObjectCollectedException ex) {
-        } catch (InvalidStackFrameException ex) {
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
+            return TypeComponentWrapper.name(LocationWrapper.method(
+                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         }
         return "";
     }
@@ -336,14 +371,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public String getSourceName (String stratum) throws AbsentInformationException {
         try {
-            if (threadReference.frameCount () < 1) return "";
-            return threadReference.frame (0).location ().sourceName (stratum);
-        } catch (ObjectCollectedException ex) {
-        } catch (InvalidStackFrameException ex) {
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
+            return LocationWrapper.sourceName(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
         }
         return "";
     }
@@ -356,14 +392,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public String getSourcePath (String stratum) 
     throws AbsentInformationException {
         try {
-            if (threadReference.frameCount () < 1) return "";
-            return threadReference.frame (0).location ().sourcePath (stratum);
-        } catch (ObjectCollectedException ex) {
-        } catch (InvalidStackFrameException ex) {
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
+            return LocationWrapper.sourcePath(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
         }
         return "";
     }
@@ -402,7 +439,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             List l;
             CallStackFrame[] theCachedFrames = null;
             synchronized (this) {
-                int max = threadReference.frameCount();
+                int max = ThreadReferenceWrapper.frameCount(threadReference);
                 from = Math.min(from, max);
                 to = Math.min(to, max);
                 if (to - from > 1) {  /*TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
@@ -442,9 +479,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     throw new IndexOutOfBoundsException("from = "+from+", to = "+to+", frame count = "+max);
                 }
                 try {
-                    l = threadReference.frames (from, length);
+                    l = ThreadReferenceWrapper.frames (threadReference, from, length);
                 } catch (IndexOutOfBoundsException ioobex) {
-                    ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+threadReference.frameCount());
+                    ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
                     throw ioobex;
                 }
             }
@@ -476,16 +513,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
             aiex.initCause(ex);
             throw aiex;
-        } catch (ObjectCollectedException ocex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
             AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
             aiex.initCause(ocex);
             throw aiex;
-        } catch (IllegalThreadStateException itsex) {
+        } catch (IllegalThreadStateExceptionWrapper itsex) {
             // Thrown when thread has exited
             AbsentInformationException aiex = new AbsentInformationException(itsex.getLocalizedMessage());
             aiex.initCause(itsex);
             throw aiex;
-        } catch (VMDisconnectedException ex) {
+        } catch (InternalExceptionWrapper ex) {
+            return new CallStackFrame [0];
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return new CallStackFrame [0];
         }
     }
@@ -516,12 +555,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public int getStackDepth () {
         try {
-            return threadReference.frameCount ();
-        } catch (IllegalThreadStateException ex) {
+            return ThreadReferenceWrapper.frameCount0 (threadReference);
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
-        } catch (VMDisconnectedException e) {
         }
         return 0;
     }
@@ -529,27 +566,31 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public void popFrames(StackFrame sf) throws IncompatibleThreadStateException {
         try {
             notifyToBeResumed();
-            threadReference.popFrames(sf);
+            ThreadReferenceWrapper.popFrames(threadReference, sf);
             cleanCachedFrames();
             setReturnVariable(null); // Clear the return var
-        } catch (IllegalThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             throw new IncompatibleThreadStateException("Thread exited.");
-        } catch (ObjectCollectedException ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ObjectCollectedExceptionWrapper ex) {
             throw new IncompatibleThreadStateException("Thread died.");
-        } catch (NativeMethodException nmex) {
+        } catch (NativeMethodExceptionWrapper nmex) {
             cleanCachedFrames();
             ErrorManager.getDefault().notify(
                     ErrorManager.getDefault().annotate(nmex,
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
-        } catch (InternalException iex) {
+        } catch (InternalExceptionWrapper iex) {
             cleanCachedFrames();
-            if (iex.errorCode() == 32) {
+            if (iex.getCause().errorCode() == 32) {
                 ErrorManager.getDefault().notify(
                         ErrorManager.getDefault().annotate(iex,
                             NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
             } else {
-                throw iex;
+                //throw iex;
             }
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignore
         } finally {
             notifySuspended();
         }
@@ -563,17 +604,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         synchronized (this) {
             try {
                 if (!isSuspended ()) {
-                    threadReference.suspend ();
+                    ThreadReferenceWrapper.suspend (threadReference);
                     suspendedToFire = Boolean.TRUE;
                     suspendCount++;
-                    threadName = threadReference.name();
+                    threadName = ThreadReferenceWrapper.name(threadReference);
                 }
                 //System.err.println("suspend("+getName()+") suspended = true");
                 suspended = true;
-            } catch (IllegalThreadStateException ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
-            } catch (ObjectCollectedException ex) {
-            } catch (VMDisconnectedException ex) {
+            } catch (InternalExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
         }
         if (suspendedToFire != null) {
@@ -602,9 +644,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             try {
                 if (isSuspended ()) {
-                    int count = threadReference.suspendCount ();
+                    int count = ThreadReferenceWrapper.suspendCount (threadReference);
                     while (count > 0) {
-                        threadReference.resume (); count--;
+                        ThreadReferenceWrapper.resume (threadReference); count--;
                     }
                     suspendedToFire = Boolean.FALSE;
                 }
@@ -612,10 +654,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("resume("+getName()+") suspended = false");
                 suspended = false;
                 methodInvokingDisabledUntilResumed = false;
-            } catch (IllegalThreadStateException ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
-            } catch (ObjectCollectedException ex) {
-            } catch (VMDisconnectedException ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+            } catch (InternalExceptionWrapper ex) {
             }
         }
         JPDABreakpoint brkp = null;
@@ -702,18 +745,28 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         Boolean suspendedToFire = null;
         synchronized (this) {
             try {
-                suspendCount = threadReference.suspendCount();
-            } catch (IllegalThreadStateException ex) {
+                suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 return ; // Thrown when thread has exited
-            } catch (ObjectCollectedException ocex) {
+            } catch (ObjectCollectedExceptionWrapper ocex) {
                 return ; // The thread is gone
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return ; // The VM is gone
+            } catch (InternalExceptionWrapper ex) {
+                return ; // Something is gone
             }
             //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
             if (!suspended && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
-                threadName = threadReference.name();
+                try {
+                    threadName = ThreadReferenceWrapper.name(threadReference);
+                } catch (InternalExceptionWrapper ex) {
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                }
             }
         }
         if (suspendedToFire != null && doFire) {
@@ -767,7 +820,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
             // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
             if (resumedToFinishMethodInvocation) {
-                threadReference.suspend();
+                try {
+                    ThreadReferenceWrapper.suspend(threadReference);
+                } catch (InternalExceptionWrapper ex) {
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                }
                 //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
                 resumedToFinishMethodInvocation = false;
             }
@@ -814,7 +873,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         synchronized (this) {
             this.inStep = inStep;
             if (inStep) {
-                if (stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
+                boolean suspendThread;
+                try {
+                    suspendThread = EventRequestWrapper.suspendPolicy(stepRequest) == StepRequest.SUSPEND_EVENT_THREAD;
+                } catch (InternalExceptionWrapper ex) {
+                    suspendThread = false;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    suspendThread = false;
+                }
+                if (suspendThread) {
                     watcher = new SingleThreadWatcher(this);
                 }
             } else if (watcher != null) {
@@ -834,11 +901,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public void interrupt() {
         try {
             if (isSuspended ()) return;
-            threadReference.interrupt();
-        } catch (IllegalThreadStateException ex) {
+            ThreadReferenceWrapper.interrupt(threadReference);
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-        } catch (VMDisconnectedException ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         }
     }
     
@@ -862,52 +930,39 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return monitor this thread is waiting on
      */
     public ObjectVariable getContendedMonitor () {
+        if (!VirtualMachineWrapper.canGetCurrentContendedMonitor0(vm)) {
+            return null;
+        }
         try {
-            if (!threadReference.virtualMachine().canGetCurrentContendedMonitor()) {
-                return null;
+            ObjectReference or;
+            synchronized (this) {
+                if (!isSuspended()) return null;
+                try {
+                    if ("DestroyJavaVM".equals(ThreadReferenceWrapper.name(threadReference))) {
+                        // See defect #6474293
+                        return null;
+                    }
+                    or = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    // Thrown when thread has exited
+                    return null;
+                } catch (IncompatibleThreadStateException e) {
+                    Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), e);
+                    return null;
+                } catch (com.sun.jdi.InternalException iex) {
+                    Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), iex);
+                    return null;
+                }
             }
-        } catch (IllegalThreadStateException ex) {
-            // Thrown when thread has exited
+            if (or == null) return null;
+            return new ThisVariable (debugger, or, "" + ObjectReferenceWrapper.uniqueID(or));
+        } catch (InternalExceptionWrapper e) {
             return null;
-        } catch (ObjectCollectedException ocex) {
+        } catch (ObjectCollectedExceptionWrapper e) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper e) {
             return null;
         }
-        ObjectReference or;
-        synchronized (this) {
-            if (!isSuspended()) return null;
-            if ("DestroyJavaVM".equals(threadReference.name())) {
-                // See defect #6474293
-                return null;
-            }
-            try {
-                or = threadReference.currentContendedMonitor ();
-            } catch (IllegalThreadStateException ex) {
-                // Thrown when thread has exited
-                return null;
-            } catch (ObjectCollectedException ex) {
-                return null;
-            } catch (IncompatibleThreadStateException e) {
-                String msg = "Thread '"+threadReference.name()+
-                             "': status = "+threadReference.status()+
-                             ", is suspended = "+threadReference.isSuspended()+
-                             ", suspend count = "+threadReference.suspendCount()+
-                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                             ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
-                return null;
-            } catch (com.sun.jdi.InternalException iex) {
-                String msg = "Thread '"+threadReference.name()+
-                             "': status = "+threadReference.status()+
-                             ", is suspended = "+threadReference.isSuspended()+
-                             ", suspend count = "+threadReference.suspendCount()+
-                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                             ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
-                return null;
-            }
-        }
-        if (or == null) return null;
-        return new ThisVariable (debugger, or, "" + or.uniqueID());
     }
     
     public MonitorInfo getContendedMonitorAndOwner() {
@@ -949,58 +1004,49 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return monitors owned by this thread
      */
     public ObjectVariable[] getOwnedMonitors () {
-        try {
-            if (!threadReference.virtualMachine().canGetOwnedMonitorInfo()) {
-                return new ObjectVariable[0];
-            }
-        } catch (IllegalThreadStateException ex) {
-            // Thrown when thread has exited
-            return new ObjectVariable [0];
-        } catch (ObjectCollectedException ocex) {
-            return new ObjectVariable [0];
+        if (!VirtualMachineWrapper.canGetOwnedMonitorInfo0(vm)) {
+            return new ObjectVariable[0];
         }
         List<ObjectReference> l;
         synchronized (this) {
             if (!isSuspended()) return new ObjectVariable [0];
-            if ("DestroyJavaVM".equals(threadReference.name())) {
+            if ("DestroyJavaVM".equals(threadName)) {
                 // See defect #6474293
                 return new ObjectVariable[0];
             }
             try {
-                l = threadReference.ownedMonitors ();
+                l = ThreadReferenceWrapper.ownedMonitors (threadReference);
                 if (l == null) l = Collections.emptyList();
-            } catch (IllegalThreadStateException ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
                 return new ObjectVariable [0];
-            } catch (ObjectCollectedException ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                return new ObjectVariable [0];
+            } catch (VMDisconnectedExceptionWrapper ex) {
                 return new ObjectVariable [0];
             } catch (IncompatibleThreadStateException e) {
-                String msg = "Thread '"+threadReference.name()+
-                             "': status = "+threadReference.status()+
-                             ", is suspended = "+threadReference.isSuspended()+
-                             ", suspend count = "+threadReference.suspendCount()+
-                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                             ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, e);
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), e);
                 return new ObjectVariable [0];
-            } catch (com.sun.jdi.InternalException iex) {
-                String msg = "Thread '"+threadReference.name()+
-                             "': status = "+threadReference.status()+
-                             ", is suspended = "+threadReference.isSuspended()+
-                             ", suspend count = "+threadReference.suspendCount()+
-                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                             ", internal suspend status = "+suspended;
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, iex);
+            } catch (InternalExceptionWrapper iex) {
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), iex);
                 return new ObjectVariable [0];
             }
         }
         int i, k = l.size ();
-        ObjectVariable[] vs = new ObjectVariable [k];
-        for (i = 0; i < k; i++) {
-            ObjectReference var = l.get (i);
-            vs [i] = new ThisVariable (debugger, var, ""+var.uniqueID());
+        try {
+            ObjectVariable[] vs = new ObjectVariable [k];
+            for (i = 0; i < k; i++) {
+                ObjectReference var = l.get (i);
+                vs[i] = new ThisVariable(debugger, var, "" + ObjectReferenceWrapper.uniqueID(var));
+            }
+            return vs;
+        } catch (InternalExceptionWrapper ex) {
+            return new ObjectVariable [0];
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return new ObjectVariable [0];
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return new ObjectVariable [0];
         }
-        return vs;
     }
     
     public ThreadReference getThreadReference () {
@@ -1035,18 +1081,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
         if (CallStackFrameImpl.IS_JDK_16) {
             try {
-                java.lang.reflect.Method canGetMonitorFrameInfoMethod =
-                        threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
-                canGetMonitorFrameInfoMethod.setAccessible(true);
                 synchronized(this) {
                     if (!isSuspended()) {
                         return Collections.emptyList();
                     }
-                    boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
-                    //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                    boolean canGetMonitorFrameInfo = VirtualMachineWrapper.canGetMonitorFrameInfo0(vm);
                     if (canGetMonitorFrameInfo) {
-                        java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
-                        List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                        List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
                         if (monitorInfos != null && monitorInfos.size() > 0) {
                             List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
                             for (Object monitorInfo : monitorInfos) {
@@ -1056,23 +1097,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         }
                     }
                 }
-            } catch (IllegalAccessException ex) {
+            } catch (IncompatibleThreadStateException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
-            } catch (InvocationTargetException ex) {
-                String msg = ""; // NOI18N
-                try {
-                    msg = "Thread '"+threadReference.name()+
-                                 "': status = "+threadReference.status()+
-                                 ", is suspended = "+threadReference.isSuspended()+
-                                 ", suspend count = "+threadReference.suspendCount()+
-                                 ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                                 ", internal suspend status = "+suspended;
-                } catch (VMDisconnectedException e) {
-                }
-                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
-            } catch (java.lang.NoSuchMethodException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
-            } catch (IllegalThreadStateException ex) {
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), ex);
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
             }
         }
@@ -1087,10 +1115,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private MonitorInfo createMonitorInfo(Object mi) {
         //com.sun.jdi.MonitorInfo _mi = (com.sun.jdi.MonitorInfo) mi;
         try {
-            java.lang.reflect.Method stackDepthMethod =
-                    mi.getClass().getMethod("stackDepth"); // NOTICES
-            int depth = (Integer) stackDepthMethod.invoke(mi);
-            //int depth = _mi.stackDepth();
+            int depth = MonitorInfoWrapper.stackDepth(mi);
             CallStackFrame frame = null;
             if (depth >= 0) {
                 try {
@@ -1104,38 +1129,33 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            java.lang.reflect.Method monitorMethod =
-                    mi.getClass().getMethod("monitor"); // NOTICES
-            ObjectReference or = (ObjectReference) monitorMethod.invoke(mi);
-            //ObjectReference or = _mi.monitor();
-            ObjectVariable monitor = new ThisVariable (debugger, or, "" + or.uniqueID());
+            ObjectReference or = MonitorInfoWrapper.monitor(mi);
+            ObjectVariable monitor = new ThisVariable (debugger, or, "" + ObjectReferenceWrapper.uniqueID(or));
             return new MonitorInfoImpl(this, frame, monitor);
-        } catch (IllegalAccessException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        } catch (InvocationTargetException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        } catch (java.lang.NoSuchMethodException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
         }
         return null;
     }
 
     public boolean checkForBlockingThreads() {
         try {
-            if (!threadReference.virtualMachine().canGetCurrentContendedMonitor() ||
-                !threadReference.virtualMachine().canGetMonitorInfo()) {
+            if (!VirtualMachineWrapper.canGetCurrentContendedMonitor0(vm) ||
+                !VirtualMachineWrapper.canGetMonitorInfo0(vm)) {
                 return false;
             }
             //System.err.println("\""+getName()+"\".checkForBlockingThreads()");
-            VirtualMachine vm = threadReference.virtualMachine();
             Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = null;
             //synchronized (t.getDebugger().LOCK) { - can not synchronize on that - method invocation uses this lock.
             // TODO: Need to be freed up and method invocation flag needs to be used instead.
                 List<JPDAThread> oldLockerThreadsList;
                 List<JPDAThread> newLockerThreadsList;
-                vm.suspend();
+                VirtualMachineWrapper.suspend(vm);
                 try {
-                    ObjectReference waitingMonitor = threadReference.currentContendedMonitor();
+                    ObjectReference waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
                     if (waitingMonitor != null) {
                         synchronized (lockerThreadsLock) {
                             if (waitingMonitor.equals(lockerThreadsMonitor)) {
@@ -1143,7 +1163,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                                 return true;
                             }
                         }
-                        lockedThreadsWithMonitors = findLockPath(threadReference, waitingMonitor);
+                        lockedThreadsWithMonitors = findLockPath(vm, threadReference, waitingMonitor);
                     }
                     synchronized (lockerThreadsLock) {
                         oldLockerThreadsList = lockerThreadsList;
@@ -1165,7 +1185,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 } catch (IncompatibleThreadStateException ex) {
                     return false;
                 } finally {
-                    vm.resume();
+                    VirtualMachineWrapper.resume(vm);
                 }
                 if (oldLockerThreadsList != newLockerThreadsList) { // Not fire when both null
                     //System.err.println("Fire lockerThreads: "+(oldLockerThreadsList == null || !oldLockerThreadsList.equals(newLockerThreadsList)));
@@ -1174,20 +1194,20 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             //}
             //setLockerThreads(lockedThreadsWithMonitors);
             return lockedThreadsWithMonitors != null;
-        } catch (VMDisconnectedException e) {
-        } catch (InternalException e) {
-        } catch (ObjectCollectedException e) {
-        } catch (IllegalThreadStateException ex) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
+        } catch (ObjectCollectedExceptionWrapper e) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         }
         return false;
     }
 
-    private static Map<ThreadReference, ObjectReference> findLockPath(ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException {
+    private static Map<ThreadReference, ObjectReference> findLockPath(VirtualMachine vm, ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {
         Map<ThreadReference, ObjectReference> threadsWithMonitors = new LinkedHashMap<ThreadReference, ObjectReference>();
         Map<ObjectReference, ThreadReference> monitorMap = new HashMap<ObjectReference, ThreadReference>();
-        for (ThreadReference t : tr.virtualMachine().allThreads()) {
-            List<ObjectReference> monitors = t.ownedMonitors();
+        for (ThreadReference t : VirtualMachineWrapper.allThreads(vm)) {
+            List<ObjectReference> monitors = ThreadReferenceWrapper.ownedMonitors(t);
             if (monitors != null) {
                 for (ObjectReference m : monitors) {
                     monitorMap.put(m, t);
@@ -1197,10 +1217,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         while (tr != null && waitingMonitor != null) {
             tr = monitorMap.get(waitingMonitor);
             if (tr != null) {
-                if (tr.suspendCount() > 1) { // Add it if it was suspended before
+                if (ThreadReferenceWrapper.suspendCount(tr) > 1) { // Add it if it was suspended before
                     threadsWithMonitors.put(tr, waitingMonitor);
                 }
-                waitingMonitor = tr.currentContendedMonitor();
+                waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(tr);
             }
         }
         if (threadsWithMonitors.size() > 0) {
@@ -1248,15 +1268,23 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return true;
     }
 
-    private void submitMonitorEnteredRequest(EventRequest monitorEnteredRequest) {
-        monitorEnteredRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-        monitorEnteredRequest.putProperty(Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
+    private void submitMonitorEnteredRequest(EventRequest monitorEnteredRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        EventRequestWrapper.setSuspendPolicy(monitorEnteredRequest, EventRequest.SUSPEND_ALL);
+        EventRequestWrapper.putProperty(monitorEnteredRequest, Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
         debugger.getOperator().register(monitorEnteredRequest, new Executor() {
 
             public boolean exec(Event event) {
-                //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
-                threadReference.virtualMachine().eventRequestManager().deleteEventRequest(event.request());
-                debugger.getOperator().unregister(event.request());
+                try {
+                    //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
+                    EventRequestManagerWrapper.deleteEventRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm),
+                            EventWrapper.request(event));
+                    debugger.getOperator().unregister(EventWrapper.request(event));
+                } catch (InternalExceptionWrapper ex) {
+                    return true;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return true;
+                }
                 List<JPDAThread> oldLockerThreadsList;
                 List<ThreadReference> threadsToSuspend;
                 synchronized (lockerThreadsLock) {
@@ -1270,7 +1298,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("Monitor freed, threadsToSuspend = "+threadsToSuspend);
                 if (threadsToSuspend != null) {
                     for (ThreadReference tr : threadsToSuspend) {
-                        tr.suspend(); // Increases the suspend count to 2 so that it's not resumed by EventSet.resume()
+                        try {
+                            ThreadReferenceWrapper.suspend(tr); // Increases the suspend count to 2 so that it's not resumed by EventSet.resume()
+                        } catch (Exception e) {}
                         JPDAThreadImpl t = (JPDAThreadImpl) debugger.getExistingThread(tr);
                         if (t != null) {
                             t.notifySuspended();
@@ -1286,7 +1316,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         public void run() {
                             synchronized (JPDAThreadImpl.this) {
                                 resumedToFinishMethodInvocation = true;
-                                threadReference.resume();
+                                try {
+                                    ThreadReferenceWrapper.resume(threadReference);
+                                } catch (VMDisconnectedExceptionWrapper e) {
+                                    // Ignored
+                                } catch (Exception e) {
+                                    Exceptions.printStackTrace(e);
+                                }
                                 //System.err.println("  Resuming "+getName()+" because of method invocation.");
                             }
                         }
@@ -1298,36 +1334,50 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             public void removed(EventRequest eventRequest) {
             }
         });
-        monitorEnteredRequest.enable();
+        try {
+            EventRequestWrapper.enable(monitorEnteredRequest);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        }
     }
 
     private boolean submitMonitorEnteredFor(ObjectReference waitingMonitor) {
-        if (!Java6Methods.isJDK6() || !Java6Methods.canRequestMonitorEvents(threadReference.virtualMachine())) {
+        if (!Java6Methods.isJDK6() || !VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
             return false;
         }
-        //MonitorContendedEnteredRequest monitorEnteredRequest = threadReference.virtualMachine().eventRequestManager().createMonitorContendedEnteredRequest();
-        EventRequest monitorEnteredRequest = Java6Methods.createMonitorContendedEnteredRequest(threadReference.virtualMachine().eventRequestManager());
-        //monitorEnteredRequest.addThreadFilter(threadReference);
-        Java6Methods.addThreadFilter2MonitorContendedEnteredRequest(monitorEnteredRequest, threadReference);
-        submitMonitorEnteredRequest(monitorEnteredRequest);
+        try {
+            EventRequest/*com.sun.jdi.request.MonitorContendedEnteredRequest*/ monitorEnteredRequest =
+                    (EventRequest) EventRequestManagerWrapper.createMonitorContendedEnteredRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm));
+
+            MonitorContendedEnteredRequestWrapper.addThreadFilter(monitorEnteredRequest, threadReference);
+            submitMonitorEnteredRequest(monitorEnteredRequest);
+        } catch (InternalExceptionWrapper e) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return false;
+        }
         return true;
     }
 
-    private void submitCheckForMonitorEntered(ObjectReference waitingMonitor) {
+    private void submitCheckForMonitorEntered(ObjectReference waitingMonitor) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {
         try {
-            threadReference.suspend();
-            ObjectReference monitor = threadReference.currentContendedMonitor();
+            ThreadReferenceWrapper.suspend(threadReference);
+            ObjectReference monitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
             if (monitor == null) return ;
-            Location loc = threadReference.frame(0).location();
-            loc = loc.method().locationOfCodeIndex(loc.codeIndex() + 1);
+            Location loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0));
+            loc = MethodWrapper.locationOfCodeIndex(LocationWrapper.method(loc), LocationWrapper.codeIndex(loc) + 1);
             if (loc == null) return;
-            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(loc);
-            br.addThreadFilter(threadReference);
+            BreakpointRequest br = EventRequestManagerWrapper.createBreakpointRequest(
+                    VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(threadReference)), loc);
+            BreakpointRequestWrapper.addThreadFilter(br, threadReference);
             submitMonitorEnteredRequest(br);
         } catch (IncompatibleThreadStateException itex) {
             Exceptions.printStackTrace(itex);
+        } catch (InvalidStackFrameExceptionWrapper isex) {
+            Exceptions.printStackTrace(isex);
         } finally {
-            threadReference.resume();
+            ThreadReferenceWrapper.resume(threadReference);
         }
     }
 
@@ -1336,6 +1386,30 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             this.stepSuspendedByBreakpoint = breakpoint;
         }
         pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, null, breakpoint);
+    }
+
+    private String getThreadStateLog() {
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended;
+    }
+
+    public static String getThreadStateLog(ThreadReference threadReference) {
+        String msg;
+        try {
+            msg = "Thread '"+ThreadReferenceWrapper.name(threadReference)+
+                         "': status = "+ThreadReferenceWrapper.status(threadReference)+
+                         ", is suspended = "+ThreadReferenceWrapper.isSuspended(threadReference)+
+                         ", suspend count = "+ThreadReferenceWrapper.suspendCount(threadReference)+
+                         ", is at breakpoint = "+ThreadReferenceWrapper.isAtBreakpoint(threadReference);
+        } catch (InternalExceptionWrapper ex) {
+            msg = ex.getCause().getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            msg = ex.getCause().getLocalizedMessage();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            msg = ex.getCause().getLocalizedMessage();
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            msg = ex.getCause().getLocalizedMessage();
+        }
+        return msg;
     }
 
     @Override

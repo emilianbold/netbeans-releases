@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassLoaderReference;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ObjectReference;
@@ -63,6 +65,16 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InterfaceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -97,16 +109,38 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
 
     public ClassVariable classObject() {
-        return new ClassVariableImpl(debugger, classType.classObject(), "");
+        ClassObjectReference co;
+        try {
+            co = ReferenceTypeWrapper.classObject(classType);
+        } catch (InternalExceptionWrapper ex) {
+            co = null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            co = null;
+        }
+        return new ClassVariableImpl(debugger, co, "");
     }
     
     public ObjectVariable getClassLoader() {
-        return new AbstractObjectVariable(debugger, classType.classLoader(), "Loader "+getName());
+        ClassLoaderReference cl;
+        try {
+            cl = ReferenceTypeWrapper.classLoader(classType);
+        } catch (InternalExceptionWrapper ex) {
+            cl = null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            cl = null;
+        }
+        return new AbstractObjectVariable(debugger, cl, "Loader "+getName());
     }
     
     public SuperVariable getSuperClass() {
         if (classType instanceof ClassType) {
-            return new SuperVariable(debugger, null, ((ClassType) classType).superclass(), getName());
+            try {
+                return new SuperVariable(debugger, null, ClassTypeWrapper.superclass((ClassType) classType), getName());
+            } catch (InternalExceptionWrapper ex) {
+                return null;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return null;
+            }
         } else {
             return null;
         }
@@ -114,7 +148,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     
     public List<JPDAClassType> getSubClasses() {
         if (classType instanceof ClassType) {
-            List<ClassType> subclasses = ((ClassType) classType).subclasses();
+            List<ClassType> subclasses = ClassTypeWrapper.subclasses0((ClassType) classType);
             if (subclasses.size() > 0) {
                 List<JPDAClassType> subClasses = new ArrayList(subclasses.size());
                 for (ClassType subclass : subclasses) {
@@ -124,8 +158,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             }
         }
         if (classType instanceof InterfaceType) {
-            List<InterfaceType> subinterfaces = ((InterfaceType) classType).subinterfaces();
-            List<ClassType> implementors = ((InterfaceType) classType).implementors();
+            List<InterfaceType> subinterfaces = InterfaceTypeWrapper.subinterfaces0((InterfaceType) classType);
+            List<ClassType> implementors = InterfaceTypeWrapper.implementors0((InterfaceType) classType);
             int ss = subinterfaces.size();
             int is = implementors.size();
             if (ss > 0 || is > 0) {
@@ -143,7 +177,14 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
 
     public boolean isInstanceOf(String className) {
-        List<ReferenceType> classTypes = classType.virtualMachine().classesByName(className);
+        List<ReferenceType> classTypes;
+        try {
+            classTypes = VirtualMachineWrapper.classesByName(MirrorWrapper.virtualMachine(classType), className);
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
         for (ReferenceType rt : classTypes) {
             if (EvaluatorVisitor.instanceOf(classType, rt)) {
                 return true;
@@ -153,24 +194,34 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
 
     public List<Field> staticFields() {
-        List<com.sun.jdi.Field> allFieldsOrig = classType.allFields();
+        List<com.sun.jdi.Field> allFieldsOrig;
+        try {
+            allFieldsOrig = ReferenceTypeWrapper.allFields0(classType);
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            return Collections.emptyList();
+        }
         List<Field> staticFields = new ArrayList<Field>();
         for (int i = 0; i < allFieldsOrig.size(); i++) {
             Value value = null;
             com.sun.jdi.Field origField = allFieldsOrig.get(i);
-            if (origField.isStatic()) {
-                if (loggerValue.isLoggable(Level.FINE)) {
-                    loggerValue.fine("STARTED : "+classType+".getValue("+origField+")");
+            try {
+                if (TypeComponentWrapper.isStatic(origField)) {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("STARTED : " + classType + ".getValue(" + origField + ")");
+                    }
+                    value = ReferenceTypeWrapper.getValue(classType, origField);
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("FINISHED: " + classType + ".getValue(" + origField + ") = " + value);
+                    }
+                    if (value instanceof PrimitiveValue) {
+                        staticFields.add(new FieldVariable(debugger, (PrimitiveValue) value, origField, "", (ObjectReference) null));
+                    } else {
+                        staticFields.add(new ObjectFieldVariable(debugger, (ObjectReference) value, origField, "", (ObjectReference) null));
+                    }
                 }
-                value = classType.getValue(origField);
-                if (loggerValue.isLoggable(Level.FINE)) {
-                    loggerValue.fine("FINISHED: "+classType+".getValue("+origField+") = "+value);
-                }
-                if (value instanceof PrimitiveValue) {
-                    staticFields.add(new FieldVariable(debugger, (PrimitiveValue) value, origField, "", (ObjectReference) null));
-                } else {
-                    staticFields.add(new ObjectFieldVariable(debugger, (ObjectReference) value, origField, "", (ObjectReference) null));
-                }
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
             }
         }
         return staticFields;
@@ -183,12 +234,17 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                     return cachedInstanceCount;
                 }
             }*/
-            long[] counts = Java6Methods.instanceCounts(classType.virtualMachine(),
-                                                        Collections.singletonList(classType));
+            try {
+                long[] counts = VirtualMachineWrapper.instanceCounts(MirrorWrapper.virtualMachine(classType), Collections.singletonList(classType));
+                return counts[0];
+            } catch (InternalExceptionWrapper ex) {
+                return 0L;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return 0L;
+            }
             /*synchronized (this) {
                 cachedInstanceCount = counts[0];
             }*/
-            return counts[0];
         } else {
             return 0L;
         }

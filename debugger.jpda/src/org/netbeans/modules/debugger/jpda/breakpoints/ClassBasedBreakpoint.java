@@ -62,6 +62,15 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ClassPrepareEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ClassUnloadEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -196,35 +205,38 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         try {
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
             ) {
-                ClassPrepareRequest cpr = getEventRequestManager().createClassPrepareRequest ();
+                ClassPrepareRequest cpr = EventRequestManagerWrapper.
+                        createClassPrepareRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
-                    cpr.addClassFilter (classFilters [i]);
+                    ClassPrepareRequestWrapper.addClassFilter (cpr, classFilters [i]);
                     logger.fine("Set class load request: " + classFilters [i]);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
-                    cpr.addClassExclusionFilter (classExclusionFilters [i]);
+                    ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, classExclusionFilters [i]);
                     logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
                 }
                 addEventRequest (cpr, ignoreHitCountOnClassLoad);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
             ) {
-                ClassUnloadRequest cur = getEventRequestManager().createClassUnloadRequest ();
+                ClassUnloadRequest cur = EventRequestManagerWrapper.
+                        createClassUnloadRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
-                    cur.addClassFilter (classFilters [i]);
+                    ClassUnloadRequestWrapper.addClassFilter (cur, classFilters [i]);
                     logger.fine("Set class unload request: " + classFilters [i]);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
-                    cur.addClassExclusionFilter (classExclusionFilters [i]);
+                    ClassUnloadRequestWrapper.addClassExclusionFilter (cur, classExclusionFilters [i]);
                     logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
                 }
                 addEventRequest (cur, false);
             }
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
     }
     
@@ -236,19 +248,19 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         boolean all = className.startsWith("*") || className.endsWith("*"); // NOI18N
         logger.fine("Check loaded classes: " + className + ", will load all classes: " + all); // NOI18N
         boolean matched = false;
-        try {
-            Iterator i = null;
-            if (all) {
-                i = vm.allClasses ().iterator ();
-            } else {
-                i = vm.classesByName (className).iterator ();
-            }
-            while (i.hasNext ()) {
-                ReferenceType referenceType = (ReferenceType) i.next ();
+        Iterator i = null;
+        if (all) {
+            i = VirtualMachineWrapper.allClasses0(vm).iterator ();
+        } else {
+            i = VirtualMachineWrapper.classesByName0(vm, className).iterator ();
+        }
+        while (i.hasNext ()) {
+            ReferenceType referenceType = (ReferenceType) i.next ();
 //                if (verbose)
 //                    System.out.println("B     cls: " + referenceType);
-                if (i != null) {
-                    String name = referenceType.name ();
+            if (i != null) {
+                try {
+                    String name = ReferenceTypeWrapper.name (referenceType);
                     if (match (name, className)) {
                         boolean excluded = false;
                         if (classExclusionFilters != null) {
@@ -265,20 +277,27 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                             matched = true;
                         }
                     }
+                } catch (InternalExceptionWrapper e) {
+                } catch (VMDisconnectedExceptionWrapper e) {
                 }
             }
-        } catch (VMDisconnectedException e) {
         }
         return matched;
     }
 
     public boolean exec (Event event) {
-        if (event instanceof ClassPrepareEvent) {
-            logger.fine(" Class loaded: " + ((ClassPrepareEvent) event).referenceType ());
-            classLoaded (((ClassPrepareEvent) event).referenceType ());
-        } else if (event instanceof ClassUnloadEvent) {
-            logger.fine(" Class unloaded: " + ((ClassPrepareEvent) event).referenceType ());
-            classUnloaded (((ClassUnloadEvent) event).className ());
+        try {
+            if (event instanceof ClassPrepareEvent) {
+                logger.fine(" Class loaded: " + ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
+                classLoaded(ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
+            } else if (event instanceof ClassUnloadEvent) {
+                logger.fine(" Class unloaded: " + ClassUnloadEventWrapper.className((ClassUnloadEvent) event));
+                classUnloaded(ClassUnloadEventWrapper.className((ClassUnloadEvent) event));
+            }
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
         }
         return true;
     }

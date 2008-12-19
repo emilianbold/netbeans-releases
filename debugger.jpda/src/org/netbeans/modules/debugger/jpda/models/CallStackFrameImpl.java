@@ -45,6 +45,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.InternalException;
+import com.sun.jdi.Location;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
@@ -68,11 +69,30 @@ import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -117,12 +137,14 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized int getLineNumber (String struts) {
         if (!valid) return 0;
         try {
-            return getStackFrame().location ().lineNumber (struts);
-        } catch (InvalidStackFrameException isfex) {
+            return LocationWrapper.lineNumber0(StackFrameWrapper.location(getStackFrame()), struts);
+        } catch (InvalidStackFrameExceptionWrapper isfex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return 0;
-        } catch (VMDisconnectedException ex) {
+        } catch (InternalExceptionWrapper ex) {
+            return 0;
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return 0;
         }
     }
@@ -143,12 +165,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized String getMethodName () {
         if (!valid) return "";
         try {
-            return getStackFrame().location ().method ().name ();
-        } catch (InvalidStackFrameException ex) {
+            return TypeComponentWrapper.name(
+                    LocationWrapper.method(StackFrameWrapper.location(getStackFrame())));
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        } catch (InternalExceptionWrapper ex) {
             return "";
         }
     }
@@ -161,12 +186,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized String getClassName () {
         if (!valid) return "";
         try {
-            return getStackFrame().location ().declaringType ().name ();
-        } catch (InvalidStackFrameException ex) {
+            return ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(getStackFrame())));
+        } catch (InternalExceptionWrapper ex) {
+            return "";
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
-            return "";
-        } catch (VMDisconnectedException ex) {
             return "";
         }
     }
@@ -179,12 +207,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized String getDefaultStratum () {
         if (!valid) return "";
         try {
-            return getStackFrame().location ().declaringType ().defaultStratum ();
-        } catch (InvalidStackFrameException ex) {
+            return ReferenceTypeWrapper.defaultStratum(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(getStackFrame())));
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        } catch (InternalExceptionWrapper ex) {
             return "";
         }
     }
@@ -197,12 +228,14 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized List<String> getAvailableStrata () {
         if (!valid) return Collections.emptyList();
         try {
-            return getStackFrame().location ().declaringType ().availableStrata ();
-        } catch (InvalidStackFrameException ex) {
+            return ReferenceTypeWrapper.availableStrata(LocationWrapper.declaringType(StackFrameWrapper.location(getStackFrame())));
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return Collections.emptyList();
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return Collections.emptyList();
+        } catch (InternalExceptionWrapper ex) {
             return Collections.emptyList();
         }
     }
@@ -217,12 +250,14 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized String getSourceName (String stratum) throws AbsentInformationException {
         if (!valid) return "";
         try {
-            return getStackFrame().location ().sourceName (stratum);
-        } catch (InvalidStackFrameException ex) {
+            return LocationWrapper.sourceName(StackFrameWrapper.location(getStackFrame()), stratum);
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
-        } catch (VMDisconnectedException ex) {
+        } catch (InternalExceptionWrapper ex) {
+            return "";
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return "";
         }
     }
@@ -235,12 +270,14 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized String getSourcePath (String stratum) throws AbsentInformationException {
         if (!valid) return "";
         try {
-            return getStackFrame().location ().sourcePath (stratum);
-        } catch (InvalidStackFrameException ex) {
+            return LocationWrapper.sourcePath(StackFrameWrapper.location(getStackFrame()), stratum);
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
-        } catch (VMDisconnectedException ex) {
+        } catch (InternalExceptionWrapper ex) {
+            return "";
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return "";
         }
     }
@@ -253,13 +290,14 @@ public class CallStackFrameImpl implements CallStackFrame {
     public org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables () 
     throws AbsentInformationException {
         try {
-            String className = getStackFrame ().location ().declaringType ().name ();
-            List l = getStackFrame ().visibleVariables ();
+            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(getStackFrame())));
+            List l = StackFrameWrapper.visibleVariables (getStackFrame());
             int n = l.size();
             LocalVariable[] locals = new LocalVariable [n];
             for (int i = 0; i < n; i++) {
                 com.sun.jdi.LocalVariable lv = (com.sun.jdi.LocalVariable) l.get (i);
-                Value v = getStackFrame ().getValue (lv);
+                Value v = StackFrameWrapper.getValue(getStackFrame(), lv);
                 LocalVariable local = (LocalVariable) debugger.getLocalVariable(lv, v);
                 if (local instanceof Local) {
                     Local localImpl = (Local) local;
@@ -275,12 +313,14 @@ public class CallStackFrameImpl implements CallStackFrame {
                 locals[i] = local;
             }
             return locals;
-        } catch (NativeMethodException ex) {
+        } catch (NativeMethodExceptionWrapper ex) {
             throw new AbsentInformationException ("native method");
-        } catch (InvalidStackFrameException ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             throw new AbsentInformationException ("thread is running");
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return new LocalVariable [0];
+        } catch (InternalExceptionWrapper ex) {
+            throw new AbsentInformationException (ex.getLocalizedMessage());
         }
     }
     
@@ -292,12 +332,18 @@ public class CallStackFrameImpl implements CallStackFrame {
     org.netbeans.api.debugger.jpda.LocalVariable getLocalVariable(String name) 
     throws AbsentInformationException {
         try {
-            String className = getStackFrame ().location ().declaringType ().name ();
-            com.sun.jdi.LocalVariable lv = getStackFrame ().visibleVariableByName(name);
+            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(getStackFrame())));
+            com.sun.jdi.LocalVariable lv;
+            try {
+                lv = StackFrameWrapper.visibleVariableByName(getStackFrame(), name);
+            } catch (NativeMethodExceptionWrapper ex) {
+                lv = null;
+            }
             if (lv == null) {
                 return null;
             }
-            Value v = getStackFrame ().getValue (lv);
+            Value v = StackFrameWrapper.getValue(getStackFrame(), lv);
             LocalVariable local = (LocalVariable) debugger.getLocalVariable(lv, v);
             if (local instanceof Local) {
                 Local localImpl = (Local) local;
@@ -313,10 +359,12 @@ public class CallStackFrameImpl implements CallStackFrame {
             return local;
         } catch (NativeMethodException ex) {
             throw new AbsentInformationException ("native method");
-        } catch (InvalidStackFrameException ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             throw new AbsentInformationException ("thread is running");
-        } catch (VMDisconnectedException ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
+        } catch (InternalExceptionWrapper ex) {
+            throw new AbsentInformationException (ex.getLocalizedMessage());
         }
     }
     
@@ -327,7 +375,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                             getDefaultStratum());
             List<Value> argValues = getArgumentValues(sf);
             if (argValues == null) return null;
-            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
+            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, LocationWrapper.lineNumber(StackFrameWrapper.location(sf)));
             if (argumentNames == null) return null;
             int n = Math.min(argValues.size(), argumentNames.length);
             LocalVariable[] arguments = new LocalVariable[n];
@@ -348,9 +396,11 @@ public class CallStackFrameImpl implements CallStackFrame {
                 }
             }
             return arguments;
-        } catch (InvalidStackFrameException e) {
+        } catch (InvalidStackFrameExceptionWrapper e) {
             return new LocalVariable[0];
-        } catch (VMDisconnectedException e) {
+        } catch (InternalExceptionWrapper e) {
+            return new LocalVariable[0];
+        } catch (VMDisconnectedExceptionWrapper e) {
             return new LocalVariable[0];
         }
     }
@@ -361,16 +411,18 @@ public class CallStackFrameImpl implements CallStackFrame {
         JPDAThreadImpl thread = (JPDAThreadImpl) getThread();
         synchronized (debuggerImpl.LOCK) {
             synchronized (thread) {
+                try {
                 ThreadReference tr = thread.getThreadReference();
-                com.sun.jdi.VirtualMachine vm = tr.virtualMachine();
-                com.sun.jdi.request.StepRequest step = vm.eventRequestManager().createStepRequest(
+                com.sun.jdi.VirtualMachine vm = MirrorWrapper.virtualMachine(tr);
+                com.sun.jdi.request.StepRequest step = EventRequestManagerWrapper.createStepRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
                         tr,
                         com.sun.jdi.request.StepRequest.STEP_MIN,
                         com.sun.jdi.request.StepRequest.STEP_INTO);
-                step.addCountFilter(1);
-                step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
-                step.enable();
-                step.putProperty(Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
+                EventRequestWrapper.addCountFilter(step, 1);
+                EventRequestWrapper.setSuspendPolicy(step, com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
+                EventRequestWrapper.enable(step);
+                EventRequestWrapper.putProperty(step, Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
                 final Boolean[] stepDone = new Boolean[] { null };
                 debugger.getOperator().register(step, new Executor() {
                     public boolean exec(com.sun.jdi.event.Event event) {
@@ -388,7 +440,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                         }
                     }
                 });
-                tr.resume();
+                ThreadReferenceWrapper.resume(tr);
                 synchronized (stepDone) {
                     if (stepDone[0] == null) {
                         try {
@@ -402,25 +454,27 @@ public class CallStackFrameImpl implements CallStackFrame {
                 StackFrame sf = null;
                 List<com.sun.jdi.Value> arguments = null;
                 try {
-                    sf = tr.frames(0, 1).get(0);
+                    sf = ThreadReferenceWrapper.frames(tr, 0, 1).get(0);
                     arguments = getArgumentValues(sf);
                 } catch (IncompatibleThreadStateException itsex) {
                     ErrorManager.getDefault().notify(itsex);
                     return null;
                 } finally {
-                    vm.eventRequestManager().deleteEventRequest(step);
+                    EventRequestManagerWrapper.deleteEventRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm),
+                            step);
                     debugger.getOperator().unregister(step);
                     try {
                         if (sf != null) {
-                            tr.popFrames(sf);
+                            ThreadReferenceWrapper.popFrames(tr, sf);
                         }
                     } catch (IncompatibleThreadStateException itsex) {
                         ErrorManager.getDefault().notify(itsex);
                         return null;
-                    } catch (NativeMethodException nmex) {
+                    } catch (NativeMethodExceptionWrapper nmex) {
                         return null;
-                    } catch (InternalException iex) {
-                        if (iex.errorCode() == 32) {
+                    } catch (InternalExceptionWrapper iex) {
+                        if (iex.getCause().errorCode() == 32) {
                             return null;
                         } else {
                             throw iex;
@@ -433,7 +487,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                         Session session = debugger.getSession();
                         argumentNames =
                             EditorContextBridge.getContext().getArguments(
-                                debuggerImpl.getEngineContext().getURL(tr.frames(0, 1).get(0),
+                                debuggerImpl.getEngineContext().getURL(ThreadReferenceWrapper.frames(tr, 0, 1).get(0),
                                                                        session.getCurrentLanguage()),
                                 operation);
                     } catch (IncompatibleThreadStateException itsex) {
@@ -450,19 +504,31 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                              (ObjectReference) value,
                                                              argumentNames[i].getName(),
                                                              //argumentNames[i].getType()));
-                                                             value.type().name()));
+                                                             TypeWrapper.name(ValueWrapper.type(value))));
                             } else {
                                 argumentList.add(
                                         new ArgumentVariable(debuggerImpl,
                                                              (PrimitiveValue) value,
                                                              argumentNames[i].getName(),
                                                              //argumentNames[i].getType()));
-                                                             (value != null) ? value.type().name() : null));
+                                                             (value != null) ? TypeWrapper.name(ValueWrapper.type(value)) : null));
                             }
                         }
                         return argumentList;
                     }
                 }
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return null;
+            } catch (ObjectCollectedExceptionWrapper e) {
+                return null;
+            } catch (InternalExceptionWrapper e) {
+                return null;
+            } catch (IllegalThreadStateExceptionWrapper e) {
+                return null;
+            } catch (InvalidStackFrameExceptionWrapper e) {
+                Exceptions.printStackTrace(e);
+                return null;
+            }
             }
         }
         return null;
@@ -471,29 +537,18 @@ public class CallStackFrameImpl implements CallStackFrame {
     private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
         if (!IS_JDK_16) return null;
         try {
-            if (sf.location().method().isNative()) {
-                throw new NativeMethodException(sf.location().method().name());
+            com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(sf));
+            if (MethodWrapper.isNative(m)) {
+                throw new NativeMethodException(TypeComponentWrapper.name(m));
             }
-            java.lang.reflect.Method getArgumentValuesMethod = sf.getClass().getMethod("getArgumentValues"); // NOI18N
-            Object values = getArgumentValuesMethod.invoke(sf, new java.lang.Object[]{});
-            return (List<com.sun.jdi.Value>) values;
+            return StackFrameWrapper.getArgumentValues0(sf);
+        } catch (InvalidStackFrameExceptionWrapper e) {
+            return java.util.Collections.emptyList();
+        } catch (InternalExceptionWrapper e) {
+            return java.util.Collections.emptyList();
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return java.util.Collections.emptyList();
         }
-        catch (IllegalAccessException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
-        catch (IllegalArgumentException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
-        catch (InvocationTargetException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
-        catch (java.lang.NoSuchMethodException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
-        catch (java.lang.SecurityException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
-        return java.util.Collections.emptyList();
     }
     
     /**
@@ -506,11 +561,13 @@ public class CallStackFrameImpl implements CallStackFrame {
         if (!valid) return null;
         ObjectReference thisR;
         try {
-            thisR = getStackFrame().thisObject ();
-        } catch (InvalidStackFrameException ex) {
+            thisR = StackFrameWrapper.thisObject (getStackFrame());
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             valid = false;
             return null;
-        } catch (VMDisconnectedException e) {
+        } catch (InternalExceptionWrapper e) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper e) {
             return null;
         }
         if (thisR == null) return null;
@@ -533,23 +590,41 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public synchronized boolean isObsolete () {
-        return getStackFrame ().location ().method ().isObsolete ();
+        try {
+            return MethodWrapper.isObsolete0(LocationWrapper.method(StackFrameWrapper.location(getStackFrame())));
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            throw ex.getCause();
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
     }
     
     public boolean canPop() {
         if (!debugger.canPopFrames()) return false;
-        ThreadReference t = getStackFrame().thread();
         try {
-            if (t.frameCount() <= 1) { // Nowhere to pop
+            ThreadReference t = StackFrameWrapper.thread(getStackFrame());
+            if (ThreadReferenceWrapper.frameCount(t) <= 1) { // Nowhere to pop
                 return false;
             }
-            List topFrames = t.frames(0, 2);
-            if (((StackFrame) topFrames.get(0)).location().method().isNative() ||
-                ((StackFrame) topFrames.get(1)).location().method().isNative()) {
+            List topFrames = ThreadReferenceWrapper.frames(t, 0, 2);
+            if (MethodWrapper.isNative(LocationWrapper.method(StackFrameWrapper.location((StackFrame) topFrames.get(0)))) ||
+                MethodWrapper.isNative(LocationWrapper.method(StackFrameWrapper.location((StackFrame) topFrames.get(1))))) {
                 // Have native methods on the stack - can not pop
                 return false;
             }
         } catch (IncompatibleThreadStateException itsex) {
+            return false;
+        } catch (IllegalThreadStateExceptionWrapper itsex) {
+            return false;
+        } catch (InvalidStackFrameExceptionWrapper isex) {
+            return false;
+        } catch (InternalExceptionWrapper iex) {
+            return false;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper dex) {
             return false;
         }
         // Looks like we should be able to pop...
@@ -564,8 +639,16 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public void popFrame () {
-        StackFrame frame = getStackFrame();
-        debugger.popFrames (frame.thread(), frame);
+        try {
+            StackFrame frame = getStackFrame();
+            debugger.popFrames(StackFrameWrapper.thread(frame), frame);
+        } catch (InternalExceptionWrapper ex) {
+            // Ignored
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignored
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            throw ex.getCause();
+        }
     }
     
     /**
@@ -583,23 +666,28 @@ public class CallStackFrameImpl implements CallStackFrame {
 
     /**
      * Get the JDI stack frame.
-     * @throws IllegalStateException when the associated thread is not suspended.
+     * @throws InvalidStackFrameExceptionWrapper when the associated thread is not suspended.
      */
-    public StackFrame getStackFrame () {
+    public StackFrame getStackFrame () throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper {
         try {
             // Just a validity test
-            sf.thread();
-        } catch (InvalidStackFrameException isfex) {
+            StackFrameWrapper.thread(sf);
+        } catch (InvalidStackFrameExceptionWrapper isfex) {
             // We're invalid! Try to retrieve the new stack frame.
             // We could be invalidated due to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6700889
             try {
                 ThreadReference ref = thread.getThreadReference();
-                if (depth >= ref.frameCount()) {
+                if (depth >= ThreadReferenceWrapper.frameCount(ref)) {
                     // The execution has moved elsewhere.
                     throw isfex;
                 }
-                sf = ref.frame(depth);
+                sf = ThreadReferenceWrapper.frame(ref, depth);
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                throw isfex;
             } catch (IncompatibleThreadStateException ex) {
+                // This was not successful. Throw the original exception.
+                throw isfex;
+            } catch (IllegalThreadStateExceptionWrapper ex) {
                 // This was not successful. Throw the original exception.
                 throw isfex;
             }
@@ -661,12 +749,21 @@ public class CallStackFrameImpl implements CallStackFrame {
         private long locationCodeIndex;
         
         public EqualsInfo(JPDADebuggerImpl debugger, StackFrame sf, int depth) {
-            thread = debugger.getThread(sf.thread());
-            this.depth = depth;
-            locationType = sf.location().declaringType();
-            locationMethodName = sf.location().method().name();
-            locationMethodSignature = sf.location().method().signature();
-            locationCodeIndex = sf.location().codeIndex();
+            try {
+                thread = debugger.getThread(StackFrameWrapper.thread(sf));
+                this.depth = depth;
+                Location l = StackFrameWrapper.location(sf);
+                locationType = LocationWrapper.declaringType(l);
+                locationMethodName = TypeComponentWrapper.name(LocationWrapper.method(l));
+                locationMethodSignature = TypeComponentWrapper.signature(LocationWrapper.method(l));
+                locationCodeIndex = LocationWrapper.codeIndex(l);
+            } catch (VMDisconnectedExceptionWrapper e) {
+                thread = null;
+            } catch (InternalExceptionWrapper e) {
+                thread = null;
+            } catch (InvalidStackFrameExceptionWrapper e) {
+                thread = null;
+            }
         }
 
         @Override
@@ -685,6 +782,7 @@ public class CallStackFrameImpl implements CallStackFrame {
 
         @Override
         public int hashCode() {
+            if (thread == null) return 0;
             return (thread.hashCode() << 8 + depth + locationType.hashCode() << 4 + locationCodeIndex);
         }
         

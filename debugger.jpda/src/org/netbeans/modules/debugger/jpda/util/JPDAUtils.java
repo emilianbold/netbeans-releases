@@ -51,10 +51,19 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.request.EventRequestManager;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -68,49 +77,76 @@ public class JPDAUtils {
     // testing methods .........................................................................
 
     public static void printFeatures (Logger logger, VirtualMachine virtualMachine) {
-        logger.fine ("canAddMethod " + virtualMachine.canAddMethod ());
-        logger.fine ("canBeModified " + virtualMachine.canBeModified ());
-        logger.fine ("canGetBytecodes " + virtualMachine.canGetBytecodes ());
-        logger.fine ("canGetCurrentContendedMonitor " + virtualMachine.canGetCurrentContendedMonitor ());
-        logger.fine ("canGetMonitorInfo " + virtualMachine.canGetMonitorInfo ());
-        logger.fine ("canGetOwnedMonitorInfo " + virtualMachine.canGetOwnedMonitorInfo ());
-        logger.fine ("canGetSourceDebugExtension " + virtualMachine.canGetSourceDebugExtension ());
-        logger.fine ("canGetSyntheticAttribute " + virtualMachine.canGetSyntheticAttribute ());
-        logger.fine ("canPopFrames " + virtualMachine.canPopFrames ());
-        logger.fine ("canRedefineClasses " + virtualMachine.canRedefineClasses ());
-        logger.fine ("canRequestVMDeathEvent " + virtualMachine.canRequestVMDeathEvent ());
-        logger.fine ("canUnrestrictedlyRedefineClasses " + virtualMachine.canUnrestrictedlyRedefineClasses ());
-        logger.fine ("canUseInstanceFilters " + virtualMachine.canUseInstanceFilters ());
-        logger.fine ("canWatchFieldAccess " + virtualMachine.canWatchFieldAccess ());
-        logger.fine ("canWatchFieldModification " + virtualMachine.canWatchFieldModification ());
+        try {
+            logger.fine ("canAddMethod " + VirtualMachineWrapper.canAddMethod (virtualMachine));
+            logger.fine ("canBeModified " + VirtualMachineWrapper.canBeModified (virtualMachine));
+            logger.fine ("canGetBytecodes " + VirtualMachineWrapper.canGetBytecodes (virtualMachine));
+            logger.fine ("canGetCurrentContendedMonitor " + VirtualMachineWrapper.canGetCurrentContendedMonitor (virtualMachine));
+            logger.fine ("canGetMonitorInfo " + VirtualMachineWrapper.canGetMonitorInfo (virtualMachine));
+            logger.fine ("canGetOwnedMonitorInfo " + VirtualMachineWrapper.canGetOwnedMonitorInfo (virtualMachine));
+            logger.fine ("canGetSourceDebugExtension " + VirtualMachineWrapper.canGetSourceDebugExtension (virtualMachine));
+            logger.fine ("canGetSyntheticAttribute " + VirtualMachineWrapper.canGetSyntheticAttribute (virtualMachine));
+            logger.fine ("canPopFrames " + VirtualMachineWrapper.canPopFrames (virtualMachine));
+            logger.fine ("canRedefineClasses " + VirtualMachineWrapper.canRedefineClasses (virtualMachine));
+            logger.fine ("canRequestVMDeathEvent " + VirtualMachineWrapper.canRequestVMDeathEvent (virtualMachine));
+            logger.fine ("canUnrestrictedlyRedefineClasses " + VirtualMachineWrapper.canUnrestrictedlyRedefineClasses (virtualMachine));
+            logger.fine ("canUseInstanceFilters " + VirtualMachineWrapper.canUseInstanceFilters (virtualMachine));
+            logger.fine ("canWatchFieldAccess " + VirtualMachineWrapper.canWatchFieldAccess (virtualMachine));
+            logger.fine ("canWatchFieldModification " + VirtualMachineWrapper.canWatchFieldModification (virtualMachine));
+        } catch (InternalExceptionWrapper e) {
+            logger.fine(e.getLocalizedMessage());
+        } catch (VMDisconnectedExceptionWrapper e) {
+            logger.fine(e.getLocalizedMessage());
+        }
     }
-   
+
+    /* Commented, not used for now...
     public static void showMethods (ReferenceType rt) {
         System.out.println ("  ============================================"); // NOI18N
         System.out.println ("  Methods for " + rt.name ()); // NOI18N
-        List l = rt.methods ();
+        List l;
+        try {
+            l = ReferenceTypeWrapper.methods0(rt);
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            System.out.println(ex.getLocalizedMessage());
+            l = Collections.emptyList();
+        }
         int i, k = l.size ();
         for (i = 0; i < k; i++)
-            System.out.println (((Method) l.get (i)).name () + " ; " + // NOI18N
-                                ((Method) l.get (i)).signature ());
+            try {
+                System.out.println(
+                        TypeComponentWrapper.name((Method) l.get (i)) + " ; " +
+                        TypeComponentWrapper.signature((Method) l.get (i)));
+            } catch (InternalExceptionWrapper ex) {
+                System.out.println(ex.getLocalizedMessage());
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                System.out.println(ex.getLocalizedMessage());
+            }
 
         System.out.println ("  ============================================"); // NOI18N
     }
 
     public static void showLinesForClass (ReferenceType rt) {
-        System.out.println ("  ============================================"); // NOI18N
-        System.out.println ("  Lines for " + rt.name ()); // NOI18N
-        List l = null;
         try {
-            l = rt.allLineLocations ();
-        } catch (AbsentInformationException e) {
+            System.out.println ("  ============================================"); // NOI18N
+            System.out.println ("  Lines for " + rt.name ()); // NOI18N
+            List l = null;
+            try {
+                l = ReferenceTypeWrapper.allLineLocations(rt);
+            } catch (AbsentInformationException e) {
+            }
+            int i, k = l.size ();
+            for (i = 0; i < k; i++)
+                System.out.println ("   " + LocationWrapper.lineNumber((Location) l.get (i)) + " : " + // NOI18N
+                                    LocationWrapper.codeIndex((Location) l.get (i))
+                                   );
+        } catch (VMDisconnectedExceptionWrapper e) {
+            System.out.println(e.getLocalizedMessage());
+        } catch (InternalExceptionWrapper e) {
+            System.out.println(e.getLocalizedMessage());
+        } catch (ClassNotPreparedExceptionWrapper e) {
+            System.out.println(e.getLocalizedMessage());
         }
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            System.out.println ("   " + ((Location) l.get (i)).lineNumber () + " : " + // NOI18N
-                                ((Location) l.get (i)).codeIndex ()
-                               );
-
         System.out.println ("  ============================================"); // NOI18N
     }
 
@@ -266,4 +302,5 @@ public class JPDAUtils {
         }
         System.out.println ("  ============================================"); // NOI18N
     }
+     */
 }

@@ -52,6 +52,17 @@ import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.FieldWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -75,11 +86,21 @@ implements org.netbeans.api.debugger.jpda.Field {
         super (
             debugger, 
             value, 
-            parentID + '.' + field.name () + "^"
+            getID(parentID, field)
         );
         this.field = field;
         //this.className = className;
         this.objectReference = objectReference;
+    }
+
+    private static String getID(String parentID, Field field) {
+        try {
+            return parentID + '.' + TypeComponentWrapper.name(field) + "^";
+        } catch (InternalExceptionWrapper ex) {
+            return parentID + '.' + ex.getCause().getLocalizedMessage() + "^";
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return parentID + ".0^";
+        }
     }
 
     ObjectFieldVariable (
@@ -107,7 +128,13 @@ implements org.netbeans.api.debugger.jpda.Field {
     * @return string representation of type of this variable.
     */
     public String getName () {
-        return field.name ();
+        try {
+            return TypeComponentWrapper.name(field);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getCause().getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        }
     }
 
     /**
@@ -116,15 +143,29 @@ implements org.netbeans.api.debugger.jpda.Field {
      * @return name of enclosing class
      */
     public String getClassName () {
-        return field.declaringType ().name (); //className;
+        try {
+            return ReferenceTypeWrapper.name(TypeComponentWrapper.declaringType(field)); //className;
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getCause().getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        }
     }
 
     public JPDAClassType getDeclaringClass() {
         ReferenceType type;
-        if (objectReference != null) {
-            type = (ReferenceType) objectReference.type();
-        } else {
-            type = field.declaringType();
+        try {
+            if (objectReference != null) {
+                type = (ReferenceType) ValueWrapper.type(objectReference);
+            } else {
+                type = TypeComponentWrapper.declaringType(field);
+            }
+        } catch (InternalExceptionWrapper ex) {
+            throw ex.getCause();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            throw ex.getCause();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw ex.getCause();
         }
         return new JPDAClassTypeImpl(getDebugger(), type);
     }
@@ -135,7 +176,13 @@ implements org.netbeans.api.debugger.jpda.Field {
     * @return string representation of type of this variable.
     */
     public String getDeclaredType () {
-        return field.typeName ();
+        try {
+            return FieldWrapper.typeName(field);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
+        }
     }
 
     public JPDAClassType getClassType() {
@@ -144,7 +191,14 @@ implements org.netbeans.api.debugger.jpda.Field {
             return super.getClassType();
         }
         try {
-            com.sun.jdi.Type type = field.type();
+            com.sun.jdi.Type type;
+            try {
+                type = FieldWrapper.type(field);
+            } catch (InternalExceptionWrapper ex) {
+                return null;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return null;
+            }
             if (type instanceof ReferenceType) {
                 return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
             } else {
@@ -161,20 +215,20 @@ implements org.netbeans.api.debugger.jpda.Field {
      * @return <code>true</code> for static fields
      */
     public boolean isStatic () {
-        return field.isStatic ();
+        return TypeComponentWrapper.isStatic0(field);
     }
     
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
             boolean set = false;
             if (objectReference != null) {
-                objectReference.setValue (field, value);
+                ObjectReferenceWrapper.setValue(objectReference, field, value);
                 set = true;
             } else {
-                ReferenceType rt = field.declaringType();
+                ReferenceType rt = TypeComponentWrapper.declaringType(field);
                 if (rt instanceof ClassType) {
                     ClassType ct = (ClassType) rt;
-                    ct.setValue(field, value);
+                    ClassTypeWrapper.setValue(ct, field, value);
                     set = true;
                 }
             }
@@ -185,19 +239,43 @@ implements org.netbeans.api.debugger.jpda.Field {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
             throw new InvalidExpressionException (ex);
+        } catch (InternalExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
         }
     }
 
+    @Override
     public ObjectFieldVariable clone() {
+        String name;
+        try {
+            name = TypeComponentWrapper.name(field);
+        } catch (InternalExceptionWrapper ex) {
+            name = ex.getCause().getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            name = "0";
+        }
         return new ObjectFieldVariable(getDebugger(), (ObjectReference) getJDIValue(), field,
-                getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
+                getID().substring(0, getID().length() - ("." + name + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
                 genericSignature, objectReference);
     }
 
     
     // other methods ...........................................................
 
+    @Override
     public String toString () {
-        return "ObjectFieldVariable " + field.name ();
+        try {
+            return "ObjectFieldVariable " + TypeComponentWrapper.name(field);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "Disconnected";
+        }
     }
 }

@@ -56,6 +56,18 @@ import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -155,7 +167,8 @@ ObjectVariable {
             getCurrentCallStackFrame ();
         if (frame == null)
             throw new InvalidExpressionException ("No curent frame.");
-        
+
+        try {
         // 2) try to set as a local variable value
         try {
             LocalVariable local = frame.getLocalVariable(getExpression ());
@@ -172,16 +185,17 @@ ObjectVariable {
         }
         
         // 3) try to set as a field
-        ReferenceType clazz = frame.getStackFrame().location().declaringType();
-        Field field = clazz.fieldByName(getExpression());
+        ReferenceType clazz = LocationWrapper.declaringType(
+                StackFrameWrapper.location(frame.getStackFrame()));
+        Field field = ReferenceTypeWrapper.fieldByName(clazz, getExpression());
         if (field == null) {
             throw new InvalidExpressionException (
                 NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
         }
-        if (field.isStatic()) {
+        if (TypeComponentWrapper.isStatic(field)) {
             if (clazz instanceof ClassType) {
                 try {
-                    ((ClassType) clazz).setValue(field, value);
+                    ClassTypeWrapper.setValue((ClassType) clazz, field, value);
                 } catch (InvalidTypeException ex) {
                     throw new InvalidExpressionException (ex);
                 } catch (ClassNotLoadedException ex) {
@@ -194,19 +208,31 @@ ObjectVariable {
                     NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
             }
         } else {
-            ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+            ObjectReference thisObject = StackFrameWrapper.thisObject(frame.getStackFrame());
             if (thisObject == null) {
                 throw new InvalidExpressionException ("no instance context.");
             }
             try {
-                thisObject.setValue (field, value);
+                ObjectReferenceWrapper.setValue(thisObject, field, value);
             } catch (InvalidTypeException ex) {
                 throw new InvalidExpressionException (ex);
             } catch (ClassNotLoadedException ex) {
                 throw new InvalidExpressionException (ex);
             } catch (IllegalArgumentException iaex) {
                 throw new InvalidExpressionException (iaex);
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                throw new InvalidExpressionException (ocex);
             }
+        }
+        } catch (InternalExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignore
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            throw new InvalidExpressionException (ex);
         }
     }
     
