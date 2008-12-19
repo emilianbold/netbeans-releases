@@ -195,7 +195,7 @@ public class DataView {
         dataViewUI.setEditable(editable);
     }
 
-    DataViewDBTable getDataViewDBTable() {
+    public DataViewDBTable getDataViewDBTable() {
         return tblMeta;
     }
 
@@ -223,7 +223,7 @@ public class DataView {
         return stmtGenerator;
     }
 
-    boolean isEditable() {
+    public boolean isEditable() {
         return dataViewUI.isEditable();
     }
 

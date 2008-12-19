@@ -207,12 +207,16 @@ public class Util {
      *
      * @return MBean attribute
      */
-    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {     
+    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {
+        Object retval = null;
         MBeanServerConnection server = dm.refreshRMIServer();
+        if ( server == null)
+            return retval;
+
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            return server.getAttribute(new ObjectName(targetObject), name);
+            retval = server.getAttribute(new ObjectName(targetObject), name);
         } catch (InstanceNotFoundException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
@@ -234,8 +238,7 @@ public class Util {
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
-        return null;
-
+        return retval;
     }
 
     /**

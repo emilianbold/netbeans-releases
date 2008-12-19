@@ -41,12 +41,18 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ProcedureNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/procedure.gif";
@@ -58,34 +64,49 @@ public class ProcedureNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureNode instance
      */
-    public static ProcedureNode create(NodeDataLookup dataLookup) {
-        ProcedureNode node = new ProcedureNode(dataLookup);
+    public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ProcedureNode node = new ProcedureNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Procedure procedure;
+    private String name = ""; // NOI18N
+    private final MetadataElementHandle<Procedure> procedureHandle;
+    private final DatabaseConnection connection;
 
-    private ProcedureNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
+        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        procedure = getLookup().lookup(Procedure.class);
-
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Procedure proc = procedureHandle.resolve(metaData);
+                            name = proc.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
+        }
     }
 
     @Override
     public String getName() {
-        return procedure.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return procedure.getName();
+        return getName();
     }
 
     @Override

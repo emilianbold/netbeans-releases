@@ -43,17 +43,15 @@ package org.netbeans.modules.websvc.core.webservices.ui.panels;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.core.ProjectClientView;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-
-import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -61,17 +59,17 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
-import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 
 /**
  *
  * @author Peter Williams, Milan Kuchtiak
  */
-public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
+public class ClientExplorerPanel extends InvokeOperationCookie.ClientSelectionPanel implements ExplorerManager.Provider, PropertyChangeListener {
     
-    private DialogDescriptor descriptor;
+    //private DialogDescriptor descriptor;
     private ExplorerManager manager;
     private BeanTreeView treeView;
     private FileObject srcFileObject;
@@ -81,7 +79,7 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
     private Node explorerClientRoot;
     private List<Node> projectNodeList;
     
-    public ClientExplorerPanel(FileObject srcFileObject) {
+    public ClientExplorerPanel( FileObject srcFileObject) {
         this.srcFileObject=srcFileObject;
         projects = OpenProjects.getDefault().getOpenProjects();
         rootChildren = new Children.Array();
@@ -142,6 +140,7 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         return manager;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         manager.addPropertyChangeListener(this);
@@ -176,18 +175,12 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         rootChildren.add(projectNodes);
         manager.setRootContext(explorerClientRoot);
         treeView.expandAll();
-        
-        // !PW If we preselect a node, this can go away.
-        descriptor.setValid(false);
     }
     
+    @Override
     public void removeNotify() {
         manager.removePropertyChangeListener(this);
         super.removeNotify();
-    }
-    
-    public void setDescriptor(DialogDescriptor descriptor) {
-        this.descriptor = descriptor;
     }
     
     public Node getSelectedMethod() {
@@ -200,24 +193,23 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject,node);
-                    if(invokeCookie != null){
-                        if(invokeCookie.isWebServiceOperation(node)) {
-                            // This is a method node.
-                            selectedMethod = node;
-                            descriptor.setValid(true);
-                        } else {
-                            // This is not a method node.
-                            selectedMethod = null;
-                            descriptor.setValid(false);
-                        }
-                    }else{
+                    if(node.getLookup().lookup(WsdlOperation.class) != null) {
+                        // This is a method node.
+                        selectedMethod = node;
+                        setSelectionValid(true);
+                    } else {
+                        // This is not a method node.
                         selectedMethod = null;
-                        descriptor.setValid(false);
+                        setSelectionValid(false);
                     }
                 }
             }
         }
+    }
+
+    @Override
+    public Lookup getSelectedClient() {
+        return getSelectedMethod().getLookup();
     }
     
     private class ProjectNode extends AbstractNode {
@@ -229,10 +221,12 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
             setName(rootNode.getDisplayName());
         }
         
+        @Override
         public Image getIcon(int type) {
             return rootNode.getIcon(type);
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             return rootNode.getOpenedIcon(type);
         }

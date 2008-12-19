@@ -142,7 +142,8 @@ public final class ConnectionManager {
         if (dbconn == null) {
             throw new NullPointerException();
         }
-        ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(dbconn.getDelegate());
+
+        ConnectionList.getDefault().add(dbconn.getDelegate());
     }
 
     /**
@@ -191,7 +192,8 @@ public final class ConnectionManager {
         }
 
         dbconn.getDelegate().connectSync();
-
+        dbconn.getDelegate().getConnector().finishConnect(null, dbconn.getDelegate(), dbconn.getDelegate().getConnection());
+        dbconn.getDelegate().fireConnectionComplete();
         return true;
     }
 

@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.project.api.WebService;
 import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -61,15 +62,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Peter Williams, Milan Kuchtiak
  */
-public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
+public class ClientExplorerPanel extends InvokeOperationCookie.ClientSelectionPanel implements ExplorerManager.Provider, PropertyChangeListener {
 
-    private DialogDescriptor descriptor;
     private ExplorerManager manager;
     private BeanTreeView treeView;
     private FileObject targetSource;
@@ -86,8 +87,6 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         explorerClientRoot = new AbstractNode(rootChildren);
         projectNodeList = new ArrayList<Node>();
         manager = new ExplorerManager();
-        selectedMethod = null;
-
         initComponents();
         initUserComponents();
     }
@@ -171,22 +170,11 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         rootChildren.add(projectNodes);
         manager.setRootContext(explorerClientRoot);
         treeView.expandAll();
-
-        // !PW If we preselect a node, this can go away.
-        descriptor.setValid(false);
     }
 
     public void removeNotify() {
         manager.removePropertyChangeListener(this);
         super.removeNotify();
-    }
-
-    public void setDescriptor(DialogDescriptor descriptor) {
-        this.descriptor = descriptor;
-    }
-
-    public Node getSelectedMethod() {
-        return selectedMethod;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -198,15 +186,20 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                     if (node.getLookup().lookup(WsdlOperation.class) != null) {
                         // This is a method node.
                         selectedMethod = node;
-                        descriptor.setValid(true);
+                        setSelectionValid(true);
                     } else {
                         // This is not a method node.
                         selectedMethod = null;
-                        descriptor.setValid(false);
+                        setSelectionValid(false);
                     }
                 }
             }
         }
+    }
+
+    @Override
+    public Lookup getSelectedClient() {
+        return selectedMethod.getLookup();
     }
 
     private class ProjectNode extends AbstractNode {
