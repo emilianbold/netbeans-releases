@@ -594,6 +594,9 @@ class SQLExecutionHelper {
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
+                } else {
+                    mLogger.log(Level.SEVERE, "Failed to execute SQL Statement" + sqlExc);
+                    throw sqlExc;
                 }
             }
         }
