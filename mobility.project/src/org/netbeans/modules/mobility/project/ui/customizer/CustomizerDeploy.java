@@ -71,6 +71,7 @@ import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySup
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -83,7 +84,7 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
     private final String[] propertyGroup;
     private final String[] methodNames;
     private final Map<String,DeploymentPlugin> plugins;
-    private MobilityDeploymentProperties mdp = new MobilityDeploymentProperties();
+    private MobilityDeploymentProperties mdp = new MobilityDeploymentProperties(new RequestProcessor());
     
     private String config;
     private ProjectProperties pp;

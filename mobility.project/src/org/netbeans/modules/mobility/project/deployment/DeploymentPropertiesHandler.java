@@ -51,6 +51,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -64,7 +65,7 @@ public class DeploymentPropertiesHandler {
                     new Mutex.ExceptionAction<Object>() {
 
                         public Object run() throws Exception {
-                            MobilityDeploymentProperties mp = new MobilityDeploymentProperties();
+                            MobilityDeploymentProperties mp = new MobilityDeploymentProperties(new RequestProcessor());
                             final EditableProperties props = PropertyUtils.getGlobalProperties();
                             final Iterator it = result.iterator();
                             while (it.hasNext()) {

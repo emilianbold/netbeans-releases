@@ -47,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,6 +55,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +75,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
@@ -122,6 +128,7 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -162,6 +169,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     private static final Map<FileObject, Boolean> folders = new WeakHashMap<FileObject, Boolean>();
     private final ReferenceHelper refHelper;
     private final PropertyChangeSupport pcs;
+    private final RequestProcessor rp;
     
     private TextSwitcher textSwitcher;
     
@@ -211,6 +219,10 @@ public final class J2MEProject implements Project, AntProjectListener {
         return result || breakableConfigProperties != null &&
                 breakableConfigProperties[1] != null && 
                 breakableConfigProperties[1].contains("${");
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return rp;
     }
 
     public boolean hasBrokenLinks() {
@@ -344,23 +356,50 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
     }
     
+    private static final String LOOK_FOR_PROJECT = ".*<type>org.netbeans.modules.kjava.j2meproject</type>";
+    private static final Pattern PROJECT_PATTERN = Pattern.compile(LOOK_FOR_PROJECT, Pattern.DOTALL);
+    private static final Charset UTF8 = Charset.forName("UTF-8");
     private static boolean isJ2MEProjectXML(final FileObject fo) {
-        BufferedReader in = null;
+        File file = FileUtil.toFile(fo);
+        if (file == null) return false;
+        boolean result;
+        FileInputStream in = null;
+        FileChannel channel = null;
         try {
-            try {
-                in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-                String s;
-                while ((s = in.readLine()) != null) {
-                    if (s.indexOf("<type>"+J2MEProjectType.TYPE+"</type>") >= 0) return true; //NOI18N
+            in = new FileInputStream(file);
+            channel = in.getChannel();
+            ByteBuffer buf = ByteBuffer.allocate((int) file.length());
+            channel.read(buf);
+            CharBuffer chars = UTF8.decode(buf);
+            result = PROJECT_PATTERN.matcher(chars).lookingAt();
+        } catch (IOException ioe) {
+            result = false;
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            if (channel != null) {
+                try {
+                    channel.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    result = false;
                 }
-            } finally {
-                if (in != null) in.close();
             }
-        } catch (IOException ioe) {}
-        return false;
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    result = false;
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return result;
     }
+
     
     J2MEProject(AntProjectHelper helper) {
+        rp = new RequestProcessor ("RP for " +
+                helper.getProjectDirectory().getPath(), 2, true);
         this.helper = helper;
         addRoots(helper);
         aux = helper.createAuxiliaryConfiguration();
@@ -398,6 +437,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         Object stdLookups[]=new Object[] {
             new Info(),
+            rp,
             aux,
             spp,
             configHelper,
@@ -408,7 +448,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             new J2MEActionProvider( this, helper ),
             new J2MEPhysicalViewProvider(this, helper, refHelper, configHelper),
             new J2MECustomizerProvider( this, helper, refHelper, configHelper),
-            new J2MEClassPathProvider(helper),
+            new J2MEClassPathProvider(helper, getRequestProcessor()),
             new CompiledSourceForBinaryQuery(this, helper),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
@@ -708,11 +748,16 @@ public final class J2MEProject implements Project, AntProjectListener {
             configHelper.addPropertyChangeListener(textSwitcher = new TextSwitcher(J2MEProject.this, helper));
 
             final J2MEPhysicalViewProvider phvp  = lookup.lookup(J2MEPhysicalViewProvider.class);
-            if (hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
-            }
+            //Don't block opening other projects with this - see issue 155808
+            getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    if (hasBrokenLinks()) {
+                        BrokenReferencesSupport.showAlert();
+                    }
+                    midletsCacheHelper.refresh();
+                }
+            });
             
-            midletsCacheHelper.refresh();
         }
         
         protected synchronized void projectClosed() {
