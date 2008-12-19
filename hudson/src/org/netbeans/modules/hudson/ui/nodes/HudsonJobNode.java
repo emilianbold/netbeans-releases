@@ -21,6 +21,7 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
@@ -87,15 +88,19 @@ public class HudsonJobNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action [] {
-            SystemAction.get(ShowJobDetailAction.class),
-            SystemAction.get(StartJobAction.class),
-            new ShowBuildConsole(job, job.getLastBuild()),
-            null,
-            SystemAction.get(OpenUrlAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(ShowJobDetailAction.class));
+        actions.add(SystemAction.get(StartJobAction.class));
+        actions.add(new ShowBuildConsole(job, job.getLastBuild()));
+        int lastFailed = job.getLastFailedBuild();
+        if (lastFailed > 0) {
+            actions.add(new ShowFailures(job, lastFailed));
+        }
+        actions.add(null);
+        actions.add(SystemAction.get(OpenUrlAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(PropertiesAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
     
     @Override
