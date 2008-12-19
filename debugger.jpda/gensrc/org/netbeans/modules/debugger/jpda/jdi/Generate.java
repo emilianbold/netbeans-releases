@@ -748,7 +748,11 @@ public class Generate {
         }
         w.write(");\n");
          use reflection: */
-        w.write("a.getClass().getMethod(\""+mName+"\"");
+        if (className.startsWith("Object/*") || className.startsWith("java.lang.Object/*")) {
+            w.write("a.getClass().getMethod(\""+mName+"\"");
+        } else {
+            w.write(className+".class.getMethod(\""+mName+"\"");
+        }
         for (int i = 0; i < paramNames.length; i++) {
             w.write(", ");
             String type = paramTypes.get(i);
