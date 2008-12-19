@@ -740,7 +740,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 
                 if (saveOption.equals(ret)) {
                     try {
-                        if (dObj.acceptEncoding()) {
+                        if (dObj.acceptEncoding() && dObj.verifyDocumentBeforeClose() ) {
                             support.saveDocument();
                         } else {
                             return false;
