@@ -52,8 +52,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import javax.net.ssl.*;
-import org.netbeans.modules.xml.retriever.*;
-import org.netbeans.modules.xml.retriever.impl.CertificationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;

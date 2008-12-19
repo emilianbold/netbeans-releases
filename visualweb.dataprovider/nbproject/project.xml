@@ -92,7 +92,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.kit</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors.api</friend>
                 <friend>org.netbeans.modules.visualweb.webui</friend>

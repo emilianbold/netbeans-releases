@@ -78,6 +78,10 @@ public final class CodeStyle {
         return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
     }
 
+    public String getOpeningBraceStyle(){
+        return preferences.get(openingBraceStyle, getDefaultAsString(openingBraceStyle));
+    }
+
     public int getContinuationIndentSize() {
         return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
     }

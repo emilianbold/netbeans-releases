@@ -52,6 +52,7 @@ import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.ruby.RubyType;
 
 /**
  * A Ruby element coming from a JRuby parse tree.
@@ -66,13 +67,13 @@ public abstract class AstElement extends RubyElement {
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
-    private Set<? extends String> types;
+    private RubyType type;
 
     public AstElement(CompilationInfo info, Node node) {
         super();
         this.info = info;
         this.node = node;
-        this.types = Collections.emptySet();
+        this.type = RubyType.createUnknown(); // by defaul unknown
     }
 
     public String getFqn() {
@@ -188,12 +189,12 @@ public abstract class AstElement extends RubyElement {
         return info;
     }
 
-    public void setTypes(final Set<? extends String> types) {
-        assert types != null : "Cannot pass null to AstElement#setTypes";
-        this.types = types;
+    public void setType(final RubyType type) {
+        assert type != null : "Cannot pass null to AstElement#setTypes";
+        this.type = type;
     }
 
-    public Set<? extends String> getTypes() {
-        return types;
+    public RubyType getType() {
+        return type;
     }
 }

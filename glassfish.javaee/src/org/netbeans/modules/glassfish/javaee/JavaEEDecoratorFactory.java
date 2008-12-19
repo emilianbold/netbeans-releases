@@ -88,44 +88,44 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     private static final String JDBC_RESOURCE_ICON = 
             "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
     
-    public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
+    public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_FOLDER); }
         @Override public Image getOpenedIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER); }
     };
     
-    public static Decorator J2EE_APPLICATION = new Decorator() {
+    public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
     };
     
-    public static Decorator WEB_APPLICATION = new Decorator() {
+    public static final Decorator WEB_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
     };
     
-    public static Decorator EJB_JAR = new Decorator() {
+    public static final Decorator EJB_JAR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
     
-    public static Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
+    public static final Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
         @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
     };
     
-    public static Decorator JDBC_NATIVE_DATASOURCES = new ResourceDecorator() {
+    public static final Decorator JDBC_NATIVE_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
         @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
     };
     
-    public static Decorator CONNECTION_POOLS = new ResourceDecorator() {
+    public static final Decorator CONNECTION_POOLS = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
         @Override public String getCmdPropertyName() { return "jdbc_connection_pool_id"; }

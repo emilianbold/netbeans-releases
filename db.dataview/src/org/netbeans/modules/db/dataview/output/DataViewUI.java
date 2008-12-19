@@ -50,6 +50,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
@@ -60,13 +62,20 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
+import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.JXPanel;
+import org.jdesktop.swingx.decorator.Filter;
+import org.jdesktop.swingx.decorator.FilterPipeline;
+import org.netbeans.modules.db.dataview.table.MultiColPatternFilter;
+import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
+import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.REGEX_FIND;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,24 +83,25 @@ import org.openide.util.NbBundle;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewUI extends JPanel {
+class DataViewUI extends JXPanel {
 
-    private JButton commit;
-    private JButton refreshButton;
-    private JButton truncateButton;
-    private JButton next;
-    private JButton last;
-    private JButton previous;
-    private JButton first;
-    private JButton deleteRow;
-    private JButton insert;
+    private JXButton commit;
+    private JXButton refreshButton;
+    private JXButton truncateButton;
+    private JXButton next;
+    private JXButton last;
+    private JXButton previous;
+    private JXButton first;
+    private JXButton deleteRow;
+    private JXButton insert;
     private FixedSizeTextField refreshField;
-    private JLabel totalRowsLabel;
-    private JLabel limitRow;
-    private JButton[] editButtons = new JButton[5];
+    private JTextField matchBoxField;
+    private JXLabel totalRowsLabel;
+    private JXLabel limitRow;
+    private JXButton[] editButtons = new JXButton[5];
     private DataViewTablePanel dataPanel;
     private final DataView dataView;
-    private JButton cancel;
+    private JXButton cancel;
     private DataViewActionHandler actionHandler;
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
     /** Shared mouse listener used for setting the border painting property
@@ -172,7 +182,7 @@ class DataViewUI extends JPanel {
             String NA = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
             totalRowsLabel.setText(totalRows < pageSize ? totalRows + "" : NA);
         } else {
-            totalRowsLabel.setText(count + " " + dataView.getDataViewPageContext().pageOf());
+            totalRowsLabel.setText(count + "   " + dataView.getDataViewPageContext().pageOf());
         }
     }
 
@@ -219,6 +229,7 @@ class DataViewUI extends JPanel {
         truncateButton.setEnabled(false);
         refreshButton.setEnabled(false);
         refreshField.setEnabled(false);
+        matchBoxField.setEditable(false);
 
         first.setEnabled(false);
         previous.setEnabled(false);
@@ -251,6 +262,7 @@ class DataViewUI extends JPanel {
     void resetToolbar(boolean wasError) {
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
+        matchBoxField.setEditable(true);
         deleteRow.setEnabled(false);
         DataViewPageContext dataPage = dataView.getDataViewPageContext();
         if (!wasError) {
@@ -281,7 +293,6 @@ class DataViewUI extends JPanel {
                 deleteRow.setEnabled(false);
                 insert.setEnabled(false);
                 truncateButton.setEnabled(false);
-                dataPanel.setEditable(false);
             } else {
                 if (dataPage.hasRows()) {
                     truncateButton.setEnabled(true);
@@ -363,7 +374,7 @@ class DataViewUI extends JPanel {
 
         //add refresh button
         URL url = getClass().getResource(imgPrefix + "refresh.png"); // NOI18N
-        refreshButton = new JButton(new ImageIcon(url));
+        refreshButton = new JXButton(new ImageIcon(url));
         refreshButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_refresh"));
         refreshButton.addActionListener(outputListener);
         processButton(refreshButton);
@@ -372,7 +383,7 @@ class DataViewUI extends JPanel {
 
         // add navigation buttons
         url = getClass().getResource(imgPrefix + "navigate_beginning.png"); // NOI18N
-        first = new JButton(new ImageIcon(url));
+        first = new JXButton(new ImageIcon(url));
         first.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_first"));
         first.addActionListener(outputListener);
         first.setEnabled(false);
@@ -380,7 +391,7 @@ class DataViewUI extends JPanel {
         toolbar.add(first);
 
         url = getClass().getResource(imgPrefix + "navigate_left.png"); // NOI18N
-        previous = new JButton(new ImageIcon(url));
+        previous = new JXButton(new ImageIcon(url));
         previous.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_previous"));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
@@ -388,7 +399,7 @@ class DataViewUI extends JPanel {
         toolbar.add(previous);
 
         url = getClass().getResource(imgPrefix + "navigate_right.png"); // NOI18N
-        next = new JButton(new ImageIcon(url));
+        next = new JXButton(new ImageIcon(url));
         next.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_next"));
         next.addActionListener(outputListener);
         next.setEnabled(false);
@@ -396,7 +407,7 @@ class DataViewUI extends JPanel {
         toolbar.add(next);
 
         url = getClass().getResource(imgPrefix + "navigate_end.png"); // NOI18N
-        last = new JButton(new ImageIcon(url));
+        last = new JXButton(new ImageIcon(url));
         last.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_last"));
         last.addActionListener(outputListener);
         last.setEnabled(false);
@@ -405,7 +416,7 @@ class DataViewUI extends JPanel {
         toolbar.addSeparator(new Dimension(10, 10));
 
         //add limit row label
-        limitRow = new JLabel(NbBundle.getMessage(DataViewUI.class, "LBL_max_rows"));
+        limitRow = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_max_rows"));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(limitRow);
 
@@ -419,22 +430,63 @@ class DataViewUI extends JPanel {
         toolbar.add(refreshField);
         toolbar.addSeparator(new Dimension(10, 10));
 
-        JLabel totalRowsNameLabel = new JLabel(NbBundle.getMessage(DataViewUI.class, "LBL_total_rows"));
+        JXLabel totalRowsNameLabel = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_total_rows"));
         totalRowsNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DataViewUI.class, "LBL_total_rows"));
-        totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
+        totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         toolbar.add(totalRowsNameLabel);
-        totalRowsLabel = new JLabel();
+        totalRowsLabel = new JXLabel();
         toolbar.add(totalRowsLabel);
 
-        Box.Filler filler = new Box.Filler(new Dimension(getWidth(), getHeight()), new Dimension(700, getHeight()), new Dimension(getWidth(), getHeight()));
+        toolbar.addSeparator(new Dimension(10, 10));
+
+        Box.Filler filler = new Box.Filler(new Dimension(getWidth(), getHeight()), new Dimension(800, getHeight()), new Dimension(getWidth(), getHeight()));
         toolbar.add(filler);
 
+        // match box labble 
+        JXLabel matchBoxRow = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_matchbox"));
+        matchBoxRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
+        toolbar.add(matchBoxRow);
+
+        //add matchbox text field
+        matchBoxField = new JTextField(10);
+        matchBoxField.setText(""); // NOI18N
+        matchBoxField.setMinimumSize(new Dimension(35, matchBoxField.getHeight()));
+        matchBoxField.setSize(35, matchBoxField.getHeight());
+
+        matchBoxField.addKeyListener(new KeyListener() {
+
+            public void keyTyped(KeyEvent e) {
+                processKeyEvents();
+            }
+
+            public void keyPressed(KeyEvent e) {
+                processKeyEvents();
+            }
+
+            public void keyReleased(KeyEvent e) {
+                processKeyEvents();
+            }
+        });
+        toolbar.add(matchBoxField);
+    }
+
+    private void processKeyEvents() {
+        ResultSetJXTable table = getDataViewTableUI();
+        int[] rows = new int[table.getColumnCount()];
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            rows[i] = i;
+        }
+        {
+            MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
+            filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
+            table.setFilters(new FilterPipeline(new Filter[]{filterP}));
+        }
     }
 
     private void initVerticalToolbar(ActionListener outputListener) {
 
         URL url = getClass().getResource(imgPrefix + "row_add.png"); // NOI18N
-        insert = new JButton(new ImageIcon(url));
+        insert = new JXButton(new ImageIcon(url));
         insert.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_insert"));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
@@ -442,7 +494,7 @@ class DataViewUI extends JPanel {
         editButtons[0] = insert;
 
         url = getClass().getResource(imgPrefix + "row_delete.png"); // NOI18N
-        deleteRow = new JButton(new ImageIcon(url));
+        deleteRow = new JXButton(new ImageIcon(url));
         deleteRow.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_deleterow"));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
@@ -450,7 +502,7 @@ class DataViewUI extends JPanel {
         editButtons[1] = deleteRow;
 
         url = getClass().getResource(imgPrefix + "row_commit.png"); // NOI18N
-        commit = new JButton(new ImageIcon(url));
+        commit = new JXButton(new ImageIcon(url));
         commit.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_commit_all"));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
@@ -458,7 +510,7 @@ class DataViewUI extends JPanel {
         editButtons[2] = commit;
 
         url = getClass().getResource(imgPrefix + "cancel_edits.png"); // NOI18N
-        cancel = new JButton(new ImageIcon(url));
+        cancel = new JXButton(new ImageIcon(url));
         cancel.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_cancel_edits"));
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
@@ -467,7 +519,7 @@ class DataViewUI extends JPanel {
 
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png"); // NOI18N
-        truncateButton = new JButton(new ImageIcon(url));
+        truncateButton = new JXButton(new ImageIcon(url));
         truncateButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_truncate_table"));
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
@@ -477,7 +529,7 @@ class DataViewUI extends JPanel {
 
     private JPanel initializeMainPanel(boolean nbOutputComponent) {
 
-        JPanel panel = new JPanel();
+        JXPanel panel = new JXPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
         GridBagLayout gl = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();

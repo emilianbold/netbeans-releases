@@ -71,7 +71,7 @@ public class DummyProgressObject implements ProgressObject {
     }
 
     public TargetModuleID [] getResultTargetModuleIDs() {
-        return moduleIDs;
+        return moduleIDs.clone();
     }
 
     public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {

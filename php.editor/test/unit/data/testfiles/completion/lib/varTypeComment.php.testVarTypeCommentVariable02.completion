@@ -1,0 +1,5 @@
+Code completion result for source line:
+/* @var $hell|o TestType */
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $hello2                                  varTypeComment.php
+VARIABLE   DOMAttr $hello                             varTypeComment.php

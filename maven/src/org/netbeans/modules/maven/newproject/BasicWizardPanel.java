@@ -59,14 +59,16 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     
     private WizardDescriptor wizardDescriptor;
     private BasicPanelVisual component;
+    private boolean webAppWizard;
     
     /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel() {
+    public BasicWizardPanel(boolean webAppWizard) {
+        this.webAppWizard = webAppWizard;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new BasicPanelVisual(this);
+            component = new BasicPanelVisual(this, webAppWizard);
             component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
         }
         return component;

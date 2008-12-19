@@ -82,8 +82,10 @@ import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -1299,6 +1301,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
+        if (element instanceof ModelElement) {
+            ModelElement mElem = (ModelElement) element;
+            ModelElement parentElem = mElem.getInScope();
+            String fName = mElem.getFileObject().getNameExt();
+            String tooltip = null;
+            if (parentElem instanceof TypeScope) {
+                 tooltip = mElem.getPhpKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            } else {
+                tooltip = mElem.getPhpKind()+":<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            }
+            return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
+        }
+            
         return (element instanceof MagicIndexedFunction) ? null :
             DocRenderer.document(info, element);
     }

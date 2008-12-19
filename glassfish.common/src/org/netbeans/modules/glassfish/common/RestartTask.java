@@ -96,7 +96,7 @@ public class RestartTask extends BasicTask<OperationState> {
         if(state == ServerState.STARTING) {
             // wait for start to finish, we are done.
             ServerState currentState = state;
-            int steps = (int) (START_TIMEOUT / DELAY);
+            int steps = (START_TIMEOUT / DELAY);
             int count = 0;
             while(currentState == ServerState.STARTING && count++ < steps) {
                 try {
@@ -129,7 +129,7 @@ public class RestartTask extends BasicTask<OperationState> {
             } else if(state == ServerState.STOPPING) {
                 // wait for server to stop.
                 ServerState currentState = state;
-                int steps = (int) (STOP_TIMEOUT / DELAY);
+                int steps = (STOP_TIMEOUT / DELAY);
                 int count = 0;
                 while(currentState == ServerState.STOPPING && count++ < steps) {
                     try {

@@ -53,17 +53,21 @@ public class BrokenXMLTest extends AbstractTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        //suite.addTest(new BrokenXMLTest("testParse1"));
+        suite.addTest(new BrokenXMLTest("testTokens"));
         return suite;
     }
     
     /**
-     * This test parses a particular schema that was earlier failing.
-     * See http://www.netbeans.org/issues/show_bug.cgi?id=124731
-     * See http://hg.netbeans.org/main?cmd=changeset;node=34612be91839
+     * This test validates all tokens obtained by parsing test.xml against
+     * an array of expected tokens.
      */
-    public void testParse1() throws Exception {
+    public void testTokens() throws Exception {
+        XMLTokenId[] expectedIds = {XMLTokenId.PI_START, XMLTokenId.PI_TARGET, XMLTokenId.WS, XMLTokenId.PI_CONTENT,
+            XMLTokenId.PI_END, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TEXT,
+            XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.WS, XMLTokenId.ERROR,
+            XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT};
         javax.swing.text.Document document = getDocument("resources/broken.xml");
-        parse(document);
-    }    
+        assertTokenSequence(document, expectedIds);
+    }
+
 }

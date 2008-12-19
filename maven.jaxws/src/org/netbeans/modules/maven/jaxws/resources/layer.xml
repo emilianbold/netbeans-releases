@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-maven-jaxws-actions-CallWsOperationAction$Factory.instance">
-                        <attr name="position" intvalue="3700"/>
+                        <attr name="position" intvalue="3710"/>
                     </file>
                 </folder>
             </folder>

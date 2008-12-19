@@ -112,4 +112,13 @@ public class PythonCoverageProviderTest extends PythonTestBase {
     public void testCoverage2() throws Exception {
         checkCoverage("testfiles/codecoverage/CoveragePrj", "src/md5driver.py");
     }
+
+    public void testCoverage3() throws Exception {
+        checkCoverage("testfiles/codecoverage/CoveragePrj", "src/coverageprj2.py");
+    }
+
+    public void testCoverage4() throws Exception {
+        checkCoverage("testfiles/codecoverage/CoveragePrj", "src/coverageprj3.py");
+    }
+
 }

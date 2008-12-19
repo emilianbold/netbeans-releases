@@ -111,7 +111,13 @@ public final class DBConnectionFactory {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
 
             public Void run() {
-                ConnectionManager.getDefault().showConnectionDialog(dbConn);
+                if(dbConn == null){
+                    return null;
+                }
+                Connection conn = dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
+                if(conn == null) {
+                    ConnectionManager.getDefault().showConnectionDialog(dbConn);
+                }
                 return null;
             }
         });

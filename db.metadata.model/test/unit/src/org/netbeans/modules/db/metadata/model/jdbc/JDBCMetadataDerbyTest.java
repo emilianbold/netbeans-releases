@@ -47,21 +47,27 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.View;
-import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCMetadataDerbyTest extends MetadataTestBase {
+public class JDBCMetadataDerbyTest extends JDBCMetadataTest {
 
     private Connection conn;
     private JDBCMetadata metadata;
+    private Statement stmt;
 
     public JDBCMetadataDerbyTest(String testName) {
         super(testName);
@@ -72,22 +78,39 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         clearWorkDir();
         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
-        Statement stmt = conn.createStatement();
+        stmt = conn.createStatement();
         stmt.executeUpdate("CREATE TABLE FOO (" +
-                "ID INT NOT NULL PRIMARY KEY, " +
-                "FOO_NAME VARCHAR(16))");
+                "ID INT NOT NULL, " +
+                "FOO_NAME VARCHAR(16), " +
+                "CONSTRAINT FOO_PK PRIMARY KEY (ID, FOO_NAME))");
         stmt.executeUpdate("CREATE TABLE BAR (" +
                 "\"i+d\" INT NOT NULL PRIMARY KEY, " +
                 "FOO_ID INT NOT NULL, " +
-                "BAR_NAME VARCHAR(16), " +
+                "FOO_NAME VARCHAR(16) NOT NULL, " +
+                "BAR_NAME VARCHAR(16) NOT NULL, " +
                 "DEC_COL DECIMAL(12,2), " +
-                "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
+                "FOREIGN KEY (FOO_ID, FOO_NAME) REFERENCES FOO(ID, FOO_NAME))");
         stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
-        stmt.close();
+
+        stmt.executeUpdate("CREATE INDEX BAR_INDEX ON BAR(FOO_ID ASC, FOO_NAME DESC)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX DEC_COL_INDEX ON BAR(DEC_COL)");
         metadata = new JDBCMetadata(conn, "APP");
     }
 
-    public void testRunReadAction() throws Exception {
+    public void testForeignKey() throws Exception {
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        Schema appSchema = defaultCatalog.getSchema("APP");
+
+        Table table = appSchema.getTable("BAR");
+        ForeignKey[] keys = table.getForeignKeys().toArray(new ForeignKey[0]);
+        assertEquals(1, keys.length);
+        ForeignKey key = keys[0];
+        Table referredTable = appSchema.getTable("FOO");
+        checkForeignKeyColumn(key, referredTable, "FOO_ID", "ID", 1);
+        checkForeignKeyColumn(key, referredTable, "FOO_NAME", "FOO_NAME", 2);
+    }
+
+    public void testBasic() throws Exception {
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(1, metadata.getCatalogs().size());
         assertTrue(metadata.getCatalogs().contains(defaultCatalog));
@@ -113,6 +136,75 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         Collection<Column> columns = barTable.getColumns();
 
         checkColumns(barTable, columns);
+        checkPrimaryKey(fooTable);
+    }
+    public void testIndexes() {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("BAR");
+        Collection<Index> indexes = table.getIndexes();
+        assertEquals(4, indexes.size());
+
+        Index index = table.getIndex("BAR_INDEX");
+        assertNotNull(index);
+        assertEquals(index.getParent(), table);
+        assertFalse(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        assertEquals("JDBCIndex[name='BAR_INDEX', type=OTHER, unique=false]", index.toString());
+        Collection<IndexColumn> columns = index.getColumns();
+        assertNames(new HashSet<String>(Arrays.asList("FOO_ID", "FOO_NAME")), columns);
+
+        IndexColumn col = index.getColumn("FOO_ID");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        col = index.getColumn("FOO_NAME");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.DESCENDING, col.getOrdering());
+        assertEquals(2, col.getPosition());
+        assertEquals("JDBCIndexColumn[name='FOO_NAME', ordering=DESCENDING, position=2, " +
+                "column=JDBCColumn[name=FOO_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, " +
+                "nullable=NOT_NULLABLE, ordinal_position=3]]", col.toString());
+
+        index = table.getIndex("DEC_COL_INDEX");
+        assertNotNull(index);
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        columns = index.getColumns();
+        assertEquals(1, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("DEC_COL")), columns);
+        col = index.getColumn("DEC_COL");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+    }
+
+    public void testRefreshCatalog() throws Exception {
+        Catalog catalog = metadata.getDefaultCatalog();
+        Collection<Schema> schemas = catalog.getSchemas();
+
+        int numSchemas = schemas.size();
+
+        stmt.executeUpdate("CREATE SCHEMA testRefreshCatalog");
+
+        catalog.refresh();
+        schemas = catalog.getSchemas();
+        assertEquals(numSchemas + 1, schemas.size());
+        Schema schema = catalog.getSchema("testRefreshCatalog");
+        assertNotNull(schema);
+        assertTrue(schemas.contains(schema));
+
+        stmt.executeUpdate("DROP SCHEMA testRefreshCatalog RESTRICT");
+
+        catalog.refresh();
+        schemas = catalog.getSchemas();
+        assertEquals(numSchemas, schemas.size());
+        schema = catalog.getSchema("testRefreshCatalog");
+        assertNull(schema);
     }
 
     public void testViews() throws Exception {
@@ -148,7 +240,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     }
 
     private void checkColumns(Tuple parent, Collection<Column> columns) {
-        assertEquals(4, columns.size());
+        assertEquals(5, columns.size());
         Column[] colarray = columns.toArray(new Column[4]);
 
         Column col = colarray[0];
@@ -160,15 +252,30 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertEquals(10, col.getRadix());
         assertEquals(10, col.getPrecision());
         assertEquals(0, col.getScale());
-        assertEquals(1, col.getOrdinalPosition());
+        assertEquals(1, col.getPosition());
+
 
         col = colarray[1];
         assertEquals("JDBCColumn[name=FOO_ID, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());
 
         col = colarray[2];
-        assertEquals("JDBCColumn[name=BAR_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NULLABLE, ordinal_position=3]", col.toString());
+        assertEquals("JDBCColumn[name=FOO_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NOT_NULLABLE, ordinal_position=3]", col.toString());
 
         col = colarray[3];
-        assertEquals("JDBCColumn[name=DEC_COL, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NULLABLE, ordinal_position=4]", col.toString());
+        assertEquals("JDBCColumn[name=BAR_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NOT_NULLABLE, ordinal_position=4]", col.toString());
+
+        col = colarray[4];
+        assertEquals("JDBCColumn[name=DEC_COL, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NULLABLE, ordinal_position=5]", col.toString());
+    }
+
+    private void checkPrimaryKey(Table fooTable) {
+        PrimaryKey key = fooTable.getPrimaryKey();
+        assertEquals("FOO_PK", key.getName());
+        Column[] pkcols = key.getColumns().toArray(new Column[0]);
+        Column col1 = fooTable.getColumn("ID");
+        Column col2 = fooTable.getColumn("FOO_NAME");
+        assertEquals(pkcols.length, 2);
+        assertEquals(col1, pkcols[1]);
+        assertEquals(col2, pkcols[0]);
     }
 }

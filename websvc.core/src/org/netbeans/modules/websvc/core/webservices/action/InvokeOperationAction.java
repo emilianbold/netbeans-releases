@@ -41,7 +41,7 @@
 package org.netbeans.modules.websvc.core.webservices.action;
 
 import java.awt.Dialog;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
 import org.openide.DialogDescriptor;
@@ -105,9 +105,9 @@ public class InvokeOperationAction extends NodeAction {
                 if(descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
-                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO,serviceExplorer.getSelectedMethod());
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);
                     if (invokeCookie!=null)
-                        invokeCookie.invokeOperation(getTargetSourceType(activatedNodes[0]), activatedNodes[0], serviceExplorer.getSelectedMethod());
+                        invokeCookie.invokeOperation(getTargetSourceType(activatedNodes[0]), activatedNodes[0].getLookup(), serviceExplorer.getSelectedMethod().getLookup());
                 }
             }
         }

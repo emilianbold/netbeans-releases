@@ -62,15 +62,19 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -89,16 +93,18 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Radek Matous
  */
-public final class ModelVisitor extends DefaultVisitor {
+public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScope fileScope;
     private Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
@@ -211,6 +217,20 @@ public final class ModelVisitor extends DefaultVisitor {
     @Override
     public void visit(InstanceOfExpression node) {
         occurencesBuilder.prepare(node.getClassName(), modelBuilder.getCurrentScope());
+        String clsName = CodeUtils.extractClassName(node.getClassName());
+        if (clsName != null) {
+            Expression expression = node.getExpression();
+            if (expression instanceof Variable) {
+                Variable var = (Variable) expression;
+                ScopeImpl currentScope = modelBuilder.getCurrentScope();
+                VariableNameImpl varN = findVariable(currentScope, var);
+                if (varN != null) {
+                    varN.addElement(new VarAssignmentImpl(varN, currentScope,
+                            getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(),clsName));
+                }
+            }
+
+        }
         super.visit(node);
     }
 
@@ -392,7 +412,8 @@ public final class ModelVisitor extends DefaultVisitor {
             //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
                 Map<String, VariableNameImpl> allAssignments = vars.get(scope);
-                varN.createElement(scope, (Variable) leftHandSide, node, allAssignments);
+                Variable var = ((Variable) leftHandSide);
+                varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node, allAssignments);
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
 
@@ -410,7 +431,7 @@ public final class ModelVisitor extends DefaultVisitor {
         FunctionScopeImpl scope = (FunctionScopeImpl) modelBuilder.getCurrentScope();
         if (typeName != null && parameterName instanceof Variable) {
             VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), (Variable) parameterName);
-            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope,
+            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, scope.getBlockRange(),
                     new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
         }
         if (parameterName instanceof Variable) {
@@ -427,10 +448,24 @@ public final class ModelVisitor extends DefaultVisitor {
         Variable variable = node.getVariable();
         //ScopeImpl scopeImpl = currentScope.peek();
         ScopeImpl scopeImpl = modelBuilder.getCurrentScope();
-        VariableContainerImpl scope = (VariableContainerImpl) scopeImpl;
-        VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), variable);
-        varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scopeImpl,
-                VariableNameImpl.toOffsetRange(variable), className.getName()));
+        VariableContainerImpl varContainer = (VariableContainerImpl) scopeImpl;
+        if (varContainer instanceof VariableContainerImpl) {
+            VariableContainerImpl ps = (VariableContainerImpl) varContainer;
+            Map<String, VariableNameImpl> map = vars.get(ps);
+            if (map == null) {
+                map = new HashMap<String, VariableNameImpl>();
+                vars.put(ps, map);
+            }
+            VariableNameImpl varNameImpl = varContainer.createElement(modelBuilder.getProgram(), variable);
+            String name = varNameImpl.getName();
+            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scopeImpl,new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                    VariableNameImpl.toOffsetRange(variable), className.getName()));
+            VariableName original = map.get(name);
+            if (original == null) {
+                map.put(name, varNameImpl);
+            }
+        }
+
         occurencesBuilder.prepare(Kind.CLASS, className, scopeImpl);
         occurencesBuilder.prepare(variable, scopeImpl);
 
@@ -564,6 +599,28 @@ public final class ModelVisitor extends DefaultVisitor {
         }
     }
 
+    @CheckForNull
+    private ASTNode findConditionalStatement(List<ASTNode> path) {
+        for (ASTNode aSTNode : path) {
+            if (aSTNode instanceof IfStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof WhileStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof DoStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof ForEachStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof ForStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof CatchClause) {
+                return aSTNode;
+            } else if (aSTNode instanceof SwitchStatement) {
+                return aSTNode;
+            }
+        }
+        return null;
+    }
+
     private CodeMarker findStrictCodeMarker(FileScope scope, int offset, CodeMarker atOffset) {
         buildCodeMarks();
         List<? extends CodeMarker> markers = scope.getMarkers();
@@ -680,5 +737,11 @@ public final class ModelVisitor extends DefaultVisitor {
             varnames = vars.get(scope);
         }
         return varN;
+    }
+
+    private OffsetRange getBlockRange(ScopeImpl currentScope) {
+        ASTNode conditionalNode = findConditionalStatement(getPath());
+        OffsetRange scopeRange = (conditionalNode != null) ? new OffsetRange(conditionalNode.getStartOffset(), conditionalNode.getEndOffset()) : currentScope.getBlockRange();
+        return scopeRange;
     }
 }
