@@ -114,8 +114,7 @@ abstract class BaseTestMethodNodeAction extends AbstractAction {
         if (location == null) {
             return;
         }
-//        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
-        FileObject testFile = null;
+        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
         if (testFile == null) {
             return;
         }

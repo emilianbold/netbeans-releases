@@ -59,7 +59,7 @@ import org.openide.xml.XMLUtil;
  *
  * @author Marian Petras, Erno Mononen
  */
-public abstract class TestMethodNode extends AbstractNode {
+public class TestMethodNode extends AbstractNode {
 
     /**
      * Specifies whether the failure message should be inlined in the test method node.

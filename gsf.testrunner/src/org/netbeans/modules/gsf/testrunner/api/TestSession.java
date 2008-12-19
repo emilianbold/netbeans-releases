@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
 import org.openide.util.Parameters;
 
 /**
@@ -82,6 +83,10 @@ public class TestSession {
     private String startingMsg;
 
     private final TestRunnerNodeFactory nodeFactory;
+
+    public TestSession(String name, Project project, SessionType sessionType) {
+        this(name, project, sessionType, new DefaultTestRunnerNodeFactory());
+    }
 
     public TestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
         Parameters.notNull("project", project);

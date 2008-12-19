@@ -74,6 +74,7 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
 
     }
 
+    @Override
     protected void doRspecRun(FileObject testFile, FileLocation location) {
         TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
         getTestRunner(type).runTest(testFile, debug);
