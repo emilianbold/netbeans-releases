@@ -407,10 +407,14 @@ public class ChildrenSupportTest extends NbTestCase {
         // remove and plug our File implementation
         NamingFactory.remove(fpiName, fpiName.getId());
         fpiName = NamingFactory.fromFile(new File150009(fbase));
-        ChildrenSupport fpi = new ChildrenSupport();
-        assertNotNull(fpi.getChild("removed1", fpiName, false));
-        assertNotNull(fpi.getChild("removed2", fpiName, false));
-        assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
+        try {
+            ChildrenSupport fpi = new ChildrenSupport();
+            assertNotNull(fpi.getChild("removed1", fpiName, false));
+            assertNotNull(fpi.getChild("removed2", fpiName, false));
+            assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
+        } finally {
+            NamingFactory.remove(fpiName, fpiName.getId());
+        }
     }
 
     /** Tests that children are re-scanned with refresh even though getChild
@@ -424,7 +428,6 @@ public class ChildrenSupportTest extends NbTestCase {
         Iterator it = changes.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
-            FileNaming pItem = (FileNaming)entry.getKey();
             Integer type = (Integer)entry.getValue();
             assertEquals(ChildrenCache.ADDED_CHILD, type);
         }
