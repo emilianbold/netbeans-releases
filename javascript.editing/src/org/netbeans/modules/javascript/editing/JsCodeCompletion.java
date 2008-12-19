@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -83,6 +85,11 @@ import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -126,6 +133,8 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class JsCodeCompletion implements CodeCompletionHandler {
+    private static final Logger LOG = Logger.getLogger(JsCodeCompletion.class.getName());
+
     static int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
@@ -792,87 +801,108 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         return true;
     }
 
-    private void addElementClasses(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        // XXX: parsingapi
-        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
-        if (result != null) {
-            HtmlParserResult htmlResult = (HtmlParserResult)result;
-            List<SyntaxElement> elementsList = htmlResult.elementsList();
-            Set<String> classes = new HashSet<String>();
-            for (SyntaxElement s : elementsList) {
-                if (s.type() == SyntaxElement.TYPE_TAG) {
-                    String element = s.text();
-                    int classIdx = element.indexOf("class=\""); // NOI18N
-                    if (classIdx != -1) {
-                        int classIdxEnd = element.indexOf('"', classIdx+7);
-                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
-                            String clz = element.substring(classIdx+7, classIdxEnd);
-                            classes.add(clz);
+    private void addElementClasses(final List<CompletionProposal> proposals, final CompletionRequest request, final String prefix) {
+        Source source = request.info.getSnapshot().getSource();
+        if (source.getMimeType().equals(JsUtils.HTML_MIME_TYPE)) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        HtmlParserResult htmlResult = (HtmlParserResult)resultIterator.getParserResult();
+                        List<SyntaxElement> elementsList = htmlResult.elementsList();
+                        Set<String> classes = new HashSet<String>();
+                        for (SyntaxElement s : elementsList) {
+                            if (s.type() == SyntaxElement.TYPE_TAG) {
+                                String element = s.text();
+                                int classIdx = element.indexOf("class=\""); // NOI18N
+                                if (classIdx != -1) {
+                                    int classIdxEnd = element.indexOf('"', classIdx+7);
+                                    if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
+                                        String clz = element.substring(classIdx+7, classIdxEnd);
+                                        classes.add(clz);
+                                    }
+                                }
+                            }
+                        }
+
+                        String filename = request.fileObject.getNameExt();
+                        for (String tag : classes) {
+                            if (startsWith(tag, prefix)) {
+                                GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+                                proposals.add(item);
+                            }
                         }
                     }
-                }
-            }
-
-            String filename = request.fileObject.getNameExt();
-            for (String tag : classes) {
-                if (startsWith(tag, prefix)) {
-                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-                    proposals.add(item);
-                }
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }
     }
     
-    private void addTagNames(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        // XXX: parsingapi
-        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
-        if (result != null) {
-            HtmlParserResult htmlResult = (HtmlParserResult)result;
-            List<SyntaxElement> elementsList = htmlResult.elementsList();
-            Set<String> tagNames = new HashSet<String>();
-            for (SyntaxElement s : elementsList) {
-                if (s.type() == SyntaxElement.TYPE_TAG) {
-                    String element = s.text();
-                    int start = 1;
-                    int end = element.indexOf(' ');
-                    if (end == -1) {
-                        end = element.length()-1;
+    private void addTagNames(final List<CompletionProposal> proposals, final CompletionRequest request, final String prefix) {
+        Source source = request.info.getSnapshot().getSource();
+        if (source.getMimeType().equals(JsUtils.HTML_MIME_TYPE)) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        HtmlParserResult htmlResult = (HtmlParserResult)resultIterator.getParserResult();
+                        List<SyntaxElement> elementsList = htmlResult.elementsList();
+                        Set<String> tagNames = new HashSet<String>();
+                        for (SyntaxElement s : elementsList) {
+                            if (s.type() == SyntaxElement.TYPE_TAG) {
+                                String element = s.text();
+                                int start = 1;
+                                int end = element.indexOf(' ');
+                                if (end == -1) {
+                                    end = element.length()-1;
+                                }
+                                String tag = element.substring(start, end);
+                                tagNames.add(tag);
+                            }
+                        }
+
+                        String filename = request.fileObject.getNameExt();
+
+                        for (String tag : tagNames) {
+                            if (startsWith(tag, prefix)) {
+                                GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+                                proposals.add(item);
+                            }
+                        }
                     }
-                    String tag = element.substring(start, end);
-                    tagNames.add(tag);
-                }
-            }
-
-            String filename = request.fileObject.getNameExt();
-
-            for (String tag : tagNames) {
-                if (startsWith(tag, prefix)) {
-                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-                    proposals.add(item);
-                }
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }
     }
     
-    private void addElementIds(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        // XXX: parsingapi
-        ParserResult result = null; /* request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0); */
-        if (result != null) {
-            HtmlParserResult htmlResult = (HtmlParserResult)result;
-            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
-            String filename = request.fileObject.getNameExt();
-            for (SyntaxElement.TagAttribute tag : elementIds) {
-                String elementId = tag.getValue();
-                // Strip "'s surrounding value, if any
-                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-                        elementId.endsWith("\"")) { // NOI18N
-                    elementId = elementId.substring(1, elementId.length()-1);
-                }
+    private void addElementIds(final List<CompletionProposal> proposals, final CompletionRequest request, final String prefix) {
+        Source source = request.info.getSnapshot().getSource();
+        if (source.getMimeType().equals(JsUtils.HTML_MIME_TYPE)) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        HtmlParserResult htmlResult = (HtmlParserResult)resultIterator.getParserResult();
+                        Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
+                        String filename = request.fileObject.getNameExt();
+                        for (SyntaxElement.TagAttribute tag : elementIds) {
+                            String elementId = tag.getValue();
+                            // Strip "'s surrounding value, if any
+                            if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
+                                    elementId.endsWith("\"")) { // NOI18N
+                                elementId = elementId.substring(1, elementId.length()-1);
+                            }
 
-                if (startsWith(elementId, prefix)) {
-                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
-                    proposals.add(item);
-                }
+                            if (startsWith(elementId, prefix)) {
+                                GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
+                                proposals.add(item);
+                            }
+                        }
+                    }
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }
     }
