@@ -37,20 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.websvc.core.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.websvc.api.support.AddOperationCookie;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -59,26 +60,31 @@ import org.openide.util.NbBundle;
  *
  * @author mkuchtiak
  */
-public class SetSoapVersionActionGenerator implements CodeGenerator {
-
+public class CallWsOperationGenerator implements CodeGenerator {
     private FileObject targetSource;
+    private JTextComponent targetComponent;
+    private InvokeOperationCookie invokeOperationCookie;
 
-    SetSoapVersionActionGenerator(FileObject targetSource) {
+    CallWsOperationGenerator(FileObject targetSource, JTextComponent targetComponent, InvokeOperationCookie invokeOperationCookie) {
         this.targetSource = targetSource;
+        this.targetComponent = targetComponent;
+        this.invokeOperationCookie = invokeOperationCookie;
     }
-    public static class Factory implements CodeGenerator.Factory {
 
+    public static class Factory implements CodeGenerator.Factory {
         public List<? extends CodeGenerator> create(Lookup context) {
             CompilationController controller = context.lookup(CompilationController.class);
+
             List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             if (controller != null) {
                 try {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     FileObject targetSource = controller.getFileObject();
                     if (targetSource != null) {
-                        AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(targetSource);
-                        if (addOperationCookie != null && isEnabledInEditor(context)) {
-                            ret.add(new SetSoapVersionActionGenerator(targetSource));
+                        JTextComponent targetComponent = context.lookup(JTextComponent.class);
+                        InvokeOperationCookie invokeOperationCookie = WebServiceActionProvider.getInvokeOperationAction(targetSource);
+                        if (invokeOperationCookie != null) {
+                            ret.add(new CallWsOperationGenerator(targetSource, targetComponent, invokeOperationCookie));
                         }
                     }
                 } catch (IOException ex) {
@@ -87,41 +93,29 @@ public class SetSoapVersionActionGenerator implements CodeGenerator {
             }
             return ret;
         }
-
-        private boolean isEnabledInEditor(Lookup nodeLookup) {
-            CompilationController controller = nodeLookup.lookup(CompilationController.class);
-            if (controller != null) {
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                return isJaxWsImplementationClass(classEl, controller);
-            }
-            return false;
-        }
-
-        private boolean isJaxWsImplementationClass(TypeElement classEl, CompilationController controller) {
-            TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-            if (wsElement != null) {
-                List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                for (AnnotationMirror anMirror : annotations) {
-                    if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
     }
+
     public String getDisplayName() {
-        String name = "LBL_SetSoap12"; // NOI18N
-        if (targetSource != null) {
-            if (JaxWsUtils.isSoap12(targetSource)) {
-                name = "LBL_SetSoap11"; // NOI18N
-            }
-        }
-        return NbBundle.getMessage(SetSoapVersionActionGenerator.class, name);
+        return NbBundle.getMessage(CallWsOperationGenerator.class, "LBL_CallWebServiceOperation");
     }
 
     public void invoke() {
-        JaxWsUtils.setSOAP12Binding(targetSource, !JaxWsUtils.isSoap12(targetSource));
-    }
+        InvokeOperationCookie.ClientSelectionPanel innerPanel = invokeOperationCookie.getDialogDescriptorPanel();
+        final DialogDescriptor descriptor = new DialogDescriptor(innerPanel,
+                NbBundle.getMessage(CallWsOperationGenerator.class, "TTL_SelectOperation"));
+        descriptor.setValid(false);
+        innerPanel.addPropertyChangeListener(
+                InvokeOperationCookie.ClientSelectionPanel.PROPERTY_SELECTION_VALID,
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        descriptor.setValid(((Boolean)evt.getNewValue()));
+                    }
 
+                });
+        DialogDisplayer.getDefault().notify(descriptor);
+        if (DialogDescriptor.OK_OPTION.equals(descriptor.getValue())) {
+            Lookup selectedClient = innerPanel.getSelectedClient();
+            invokeOperationCookie.invokeOperation(selectedClient, targetComponent);
+        }
+    }
 }

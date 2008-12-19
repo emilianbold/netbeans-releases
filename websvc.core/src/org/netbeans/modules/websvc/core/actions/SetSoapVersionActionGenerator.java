@@ -37,21 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.jaxws.actions;
+package org.netbeans.modules.websvc.core.actions;
 
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.JTextComponent;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.maven.jaxws.nodes.OperationNode;
-import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -60,27 +59,27 @@ import org.openide.util.NbBundle;
  *
  * @author mkuchtiak
  */
-public class CallWsOperationAction  implements CodeGenerator {
+public class SetSoapVersionActionGenerator implements CodeGenerator {
+
     private FileObject targetSource;
-    private JTextComponent component;
 
-    CallWsOperationAction(FileObject targetSource, JTextComponent component) {
+    SetSoapVersionActionGenerator(FileObject targetSource) {
         this.targetSource = targetSource;
-        this.component = component;
     }
-
     public static class Factory implements CodeGenerator.Factory {
+
         public List<? extends CodeGenerator> create(Lookup context) {
-            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-            JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
-            TreePath path = context.lookup(TreePath.class);
+            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             if (controller != null) {
                 try {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     FileObject targetSource = controller.getFileObject();
-                    if (targetSource != null && JAXWSLightSupport.getJAXWSLightSupport(targetSource) != null) {
-                        ret.add(new CallWsOperationAction(targetSource, component));
+                    if (targetSource != null) {
+                        AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(targetSource);
+                        if (addOperationCookie != null && isEnabledInEditor(context)) {
+                            ret.add(new SetSoapVersionActionGenerator(targetSource));
+                        }
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -88,24 +87,41 @@ public class CallWsOperationAction  implements CodeGenerator {
             }
             return ret;
         }
-    }
 
+        private boolean isEnabledInEditor(Lookup nodeLookup) {
+            CompilationController controller = nodeLookup.lookup(CompilationController.class);
+            if (controller != null) {
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                return isJaxWsImplementationClass(classEl, controller);
+            }
+            return false;
+        }
+
+        private boolean isJaxWsImplementationClass(TypeElement classEl, CompilationController controller) {
+            TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+            if (wsElement != null) {
+                List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+                for (AnnotationMirror anMirror : annotations) {
+                    if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
     public String getDisplayName() {
-        return NbBundle.getMessage(CallWsOperationAction.class, "LBL_CallWsOperation");
+        String name = "LBL_SetSoap12"; // NOI18N
+        if (targetSource != null) {
+            if (JaxWsUtils.isSoap12(targetSource)) {
+                name = "LBL_SetSoap11"; // NOI18N
+            }
+        }
+        return NbBundle.getMessage(SetSoapVersionActionGenerator.class, name);
     }
 
     public void invoke() {
-        ClientExplorerPanel serviceExplorer = new ClientExplorerPanel(targetSource);
-        DialogDescriptor descriptor = new DialogDescriptor(serviceExplorer,
-                NbBundle.getMessage(CallWsOperationAction.class, "TTL_SelectOperation"));
-        serviceExplorer.setDescriptor(descriptor);
-        DialogDisplayer.getDefault().notify(descriptor);
-
-        if (descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
-            JaxWsCodeGenerator.insertMethod(component.getDocument(),
-                    component.getCaretPosition(),
-                    serviceExplorer.getSelectedMethod().getLookup().lookup(OperationNode.class));
-        }
+        JaxWsUtils.setSOAP12Binding(targetSource, !JaxWsUtils.isSoap12(targetSource));
     }
 
 }

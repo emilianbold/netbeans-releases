@@ -38,16 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.webservices.action;
+package org.netbeans.modules.websvc.core.actions;
 
-import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -80,8 +80,7 @@ public class InvokeOperationAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
         if (activatedNodes != null && activatedNodes.length == 1 && activatedNodes[0] != null) {
-            if (InvokeOperationCookie.TARGET_SOURCE_UNKNOWN != getTargetSourceType(activatedNodes[0]))
-                return true;
+            return true;
         }
         return result;
     }
@@ -93,21 +92,31 @@ public class InvokeOperationAction extends NodeAction {
                 // !PW I wrote this code before I knew about NodeOperation.  Anyway, this
                 // behaves a bit nicer in that the root node is hidden and the tree opens
                 // up expanded.  Both improve usability for this use case I think.
-                ClientExplorerPanel serviceExplorer = new ClientExplorerPanel(currentFO);
-                DialogDescriptor descriptor = new DialogDescriptor(serviceExplorer, 
-                        NbBundle.getMessage(InvokeOperationAction.class,"TTL_SelectOperation"));
-                serviceExplorer.setDescriptor(descriptor);
+                InvokeOperationCookie.ClientSelectionPanel serviceExplorer = new ClientExplorerPanel(currentFO);
+                final DialogDescriptor descriptor = new DialogDescriptor(serviceExplorer,
+                        NbBundle.getMessage(InvokeOperationAction.class, "TTL_SelectOperation"));
+
                 // !PW FIXME put help context here when known to get a displayed help button on the panel.
 //                descriptor.setHelpCtx(new HelpCtx("HelpCtx_J2eePlatformInstallRootQuery"));
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
-                dlg.setVisible(true);
+//                Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+//                dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+//                dlg.setVisible(true);
+                serviceExplorer.addPropertyChangeListener(
+                        InvokeOperationCookie.ClientSelectionPanel.PROPERTY_SELECTION_VALID,
+                        new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                descriptor.setValid(((Boolean)evt.getNewValue()));
+                            }
+
+                        });
+                descriptor.setValid(false);
+                DialogDisplayer.getDefault().notify(descriptor);
                 if(descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
                     InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);
                     if (invokeCookie!=null)
-                        invokeCookie.invokeOperation(getTargetSourceType(activatedNodes[0]), activatedNodes[0].getLookup(), serviceExplorer.getSelectedMethod().getLookup());
+                        invokeCookie.invokeOperation(serviceExplorer.getSelectedClient(), null);
                 }
             }
         }
@@ -120,16 +129,6 @@ public class InvokeOperationAction extends NodeAction {
             result = dobj.getPrimaryFile();
         }
         return result;
-    }
-    
-    private int getTargetSourceType(Node node) {
-        EditorCookie cookie = (EditorCookie)node.getCookie(EditorCookie.class);
-        if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
-            return InvokeOperationCookie.TARGET_SOURCE_JSP;
-        } else if (cookie!=null && "text/x-java".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
-            return InvokeOperationCookie.TARGET_SOURCE_JAVA;
-        }
-        return InvokeOperationCookie.TARGET_SOURCE_UNKNOWN;
     }
     
 }

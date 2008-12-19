@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.webservices.ui.panels;
+package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import java.awt.Image;
 import java.util.ArrayList;
@@ -48,9 +48,9 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.core.ProjectClientView;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -62,6 +62,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
+import org.netbeans.modules.websvc.jaxrpc.PortInformation;
 
 /**
  *
@@ -191,12 +192,20 @@ public class ClientExplorerPanel extends InvokeOperationCookie.ClientSelectionPa
         if(evt.getSource() == manager) {
             if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node nodes[] = manager.getSelectedNodes();
-                if(nodes != null && nodes.length > 0 ) {
+                if (nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    if(node.getLookup().lookup(WsdlOperation.class) != null) {
-                        // This is a method node.
-                        selectedMethod = node;
-                        setSelectionValid(true);
+                    Node portNode = node.getParentNode();
+                    if (portNode != null) {
+                        Node serviceNode = portNode.getParentNode();
+                        if(serviceNode != null && serviceNode.getCookie(ServiceInformation.class) != null) {
+                            // This is a method node.
+                            selectedMethod = node;
+                            setSelectionValid(true);
+                        } else {
+                            // This is not a method node.
+                            selectedMethod = null;
+                            setSelectionValid(false);
+                        }
                     } else {
                         // This is not a method node.
                         selectedMethod = null;
