@@ -99,6 +99,9 @@ public class Generate {
             com.sun.jdi.ClassLoaderReference.class.getName(),
             com.sun.jdi.PathSearchingVirtualMachine.class.getName(),
             com.sun.jdi.VoidValue.class.getName(),
+            // Connectors are used in API and UI modules.
+            // Classes starting with "com.sun.jdi.connect" are not generated
+            com.sun.jdi.event.EventIterator.class.getName(),
     })));
     
     private static final String METHODS_BY_JDK = "MethodsByJDK";
@@ -351,7 +354,7 @@ public class Generate {
             });
             log.write(c.getName()+":"+cName+"\n");
             Writer w;
-            if (NOT_USED_CLASSES.contains(c.getName())) {
+            if (NOT_USED_CLASSES.contains(c.getName()) || c.getName().startsWith("com.sun.jdi.connect")) {
                 w = null;
             } else {
                 w = writeClassHeader(dir, name, classPackage, cName, null);
@@ -540,7 +543,7 @@ public class Generate {
                     String loggedName = loggedClassName.substring(loggedClassName.lastIndexOf('.') + 1);
                     System.err.println("Have class: "+loggedName+" from JDK "+version);
                     Writer w;
-                    if (NOT_USED_CLASSES.contains(loggedClassBinaryName)) {
+                    if (NOT_USED_CLASSES.contains(loggedClassBinaryName) || loggedClassBinaryName.startsWith("com.sun.jdi.connect")) {
                         w = null;
                     } else {
                         w = writeClassHeader(dir, loggedName, loggedClassPackage, loggedClass.substring(colonIndex + 1), version);
