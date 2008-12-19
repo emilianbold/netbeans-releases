@@ -39,8 +39,13 @@
 
 package org.netbeans.modules.maven.customizer;
 
+import java.awt.Component;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -48,12 +53,15 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
+import org.netbeans.modules.maven.classpath.BootClassPathImpl;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.options.MavenExecutionSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,6 +99,26 @@ public class CompilePanel extends javax.swing.JPanel {
         project = prj;
         ComboBoxModel mdl = new DefaultComboBoxModel(LABELS);
         comCompileOnSave.setModel(mdl);
+        ComboBoxModel platformModel = new DefaultComboBoxModel(
+                JavaPlatformManager.getDefault().getInstalledPlatforms());
+        comJavaPlatform.setModel(platformModel);
+
+        comJavaPlatform.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setText(((JavaPlatform)value).getDisplayName());
+                return this;
+            }
+
+        });
+
+        lblWarnPlatform.setVisible(false);
+
+        // TODO - Manage Java platforms button
+        btnMngPlatform.setEnabled(false);
+
         initValues();
     }
 
@@ -237,6 +265,44 @@ public class CompilePanel extends javax.swing.JPanel {
             }
         };
 
+        // java platform updater
+        new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
+
+            @Override
+            public JavaPlatform getValue() {
+                String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
+                        get(Constants.HINT_JDK_PLATFORM, true);
+                return BootClassPathImpl.getActivePlatform(platformId);
+            }
+
+            @Override
+            public JavaPlatform getDefaultValue() {
+                return JavaPlatformManager.getDefault().getDefaultPlatform();
+            }
+
+            @Override
+            public void setValue(JavaPlatform value) {
+                JavaPlatform platf = value == null ? getDefaultValue() : value;
+                String platformId = platf.getProperties().get("platform.ant.name");
+                System.out.println("platform ID: " + platformId);
+                project.getLookup().lookup(AuxiliaryProperties.class).
+                        put(Constants.HINT_JDK_PLATFORM, platformId, true);
+            }
+        };
+
+        checkPlatform();
+
+    }
+
+    private void checkPlatform () {
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String val = props.get(Constants.HINT_USE_EXTERNAL, true);
+        boolean useEmbedded = "false".equalsIgnoreCase(val);
+        if (useEmbedded || !MavenExecutionSettings.canFindExternalMaven()) {
+            comJavaPlatform.setEnabled(false);
+            lblWarnPlatform.setVisible(true);
+        }
+
     }
 
     /** This method is called from within the constructor to
@@ -254,6 +320,12 @@ public class CompilePanel extends javax.swing.JPanel {
         lblHint2 = new javax.swing.JLabel();
         cbDebug = new javax.swing.JCheckBox();
         cbDeprecate = new javax.swing.JCheckBox();
+        lblJavaPlatform = new javax.swing.JLabel();
+        comJavaPlatform = new javax.swing.JComboBox();
+        btnMngPlatform = new javax.swing.JButton();
+        lblWarnPlatform = new javax.swing.JLabel();
+
+        setPreferredSize(new java.awt.Dimension(576, 303));
 
         lblCompileOnSave.setLabelFor(comCompileOnSave);
         org.openide.awt.Mnemonics.setLocalizedText(lblCompileOnSave, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblCompileOnSave.text")); // NOI18N
@@ -266,25 +338,48 @@ public class CompilePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDeprecate, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDeprecate.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblJavaPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblJavaPlatform.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnMngPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.text")); // NOI18N
+        btnMngPlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMngPlatformActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblWarnPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblWarnPlatform.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(lblCompileOnSave)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comCompileOnSave, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
                     .add(cbDebug)
-                    .add(cbDeprecate))
+                    .add(cbDeprecate)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblCompileOnSave)
+                            .add(lblJavaPlatform))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(comJavaPlatform, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(comCompileOnSave, 0, 266, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnMngPlatform))
+                    .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 578, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblJavaPlatform)
+                    .add(comJavaPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnMngPlatform))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblCompileOnSave)
                     .add(comCompileOnSave, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -296,18 +391,28 @@ public class CompilePanel extends javax.swing.JPanel {
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addContainerGap(170, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 111, Short.MAX_VALUE)
+                .add(lblWarnPlatform)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_btnMngPlatformActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMngPlatform;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbDeprecate;
     private javax.swing.JComboBox comCompileOnSave;
+    private javax.swing.JComboBox comJavaPlatform;
     private javax.swing.JLabel lblCompileOnSave;
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
+    private javax.swing.JLabel lblJavaPlatform;
+    private javax.swing.JLabel lblWarnPlatform;
     // End of variables declaration//GEN-END:variables
 
     private static final String CONFIGURATION_EL = "configuration";//NOI18N
