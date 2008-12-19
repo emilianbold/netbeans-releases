@@ -115,6 +115,6 @@ public class ConfigActionTest extends ConfigAction {
         if (testDirectory == null) {
             return null;
         }
-        return Collections.singletonList(Pair.of(testDirectory, CWD)); // NOI18N
+        return Collections.singletonList(Pair.of(testDirectory, CWD));
     }
 }
