@@ -318,6 +318,9 @@ public class SVGList extends SVGComponent implements DataListener {
                 
                 ListModel model = getModel();
                 int size = model.getSize();
+                if ( size == 0 ){
+                    return;
+                }
                 SVGListCellRenderer renderer = getRenderer();
                 Vector vector = new Vector();
                 int i = top;

@@ -179,6 +179,8 @@ public class SVGComboBox extends SVGComponent implements
         myInputHandler = new ComboBoxInputHandler();
         
         initEditor();
+        
+        setModel( new DefaultModel( new Vector()) );
     }
 
     public void focusGained() {
@@ -404,11 +406,13 @@ public class SVGComboBox extends SVGComponent implements
         }
     }
     
-    private void setItem(){
+    private void setItem() {
         int index = getModel().getSelectedIndex();
-        Object selected = index <getModel().getSize() ? 
-                getModel().getElementAt(index) : null ;
-        checkedGetEditor().setItem( selected );
+        if (index >= 0) {
+            Object selected = index < getModel().getSize() ? getModel()
+                    .getElementAt(index) : null;
+            checkedGetEditor().setItem(selected);
+        }
     }
     
     private SVGList getList(){
@@ -698,7 +702,7 @@ public class SVGComboBox extends SVGComponent implements
                 setText( "null" );                           // NOI18N
             }
         }
-        
+
     }
     
     private ComboBoxModel myModel;
