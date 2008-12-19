@@ -46,6 +46,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
@@ -53,10 +54,6 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 public final class CndLexerUtilities {
 
-    public static final String C_MIME_TYPE = "text/x-c";// NOI18N
-    public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
-    public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
-    public static final String FORTRAN_MIME_TYPE = "text/x-fortran";// NOI18N
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
     public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
     public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
@@ -83,10 +80,12 @@ public final class CndLexerUtilities {
     }
 
     public static Language<CppTokenId> getLanguage(String mime) {
-        if (C_MIME_TYPE.equals(mime)) {
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageC();
-        } else if (CPLUSPLUS_MIME_TYPE.equals(mime)) {
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageCpp();
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            return CppTokenId.languageHeader();
         }
         return null;
     }

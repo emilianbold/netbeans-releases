@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -97,10 +98,9 @@ public class Reformatter implements ReformatTask {
     private void reformatImpl(Context.Region region) throws BadLocationException {
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
-        if ("text/x-c++".equals(context.mimePath())) { //NOI18N
-            reformatLanguage(CppTokenId.languageCpp(), startOffset, endOffset);
-        } else if ("text/x-c".equals(context.mimePath())) { //NOI18N
-            reformatLanguage(CppTokenId.languageC(), startOffset, endOffset);
+        Language<CppTokenId> language = CndLexerUtilities.getLanguage(context.mimePath());
+        if (language != null) {
+            reformatLanguage(language, startOffset, endOffset);
         }
     }
 
