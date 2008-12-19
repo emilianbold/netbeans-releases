@@ -67,6 +67,8 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -273,6 +275,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 }
                 public void initialize(WizardDescriptor wizard) {
                     tw = (TemplateWizard)wizard;
+                    try {
+                        tw.setTemplate(DataObject.find(tw.getTemplate().getPrimaryFile()));
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     it.initialize(tw);
                 }
 
