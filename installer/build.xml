@@ -19,7 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Clean all installer projects" default="clean" basedir=".">
+<project name="installer" default="clean" basedir=".">
 
   <target name="clean" description="clean all subprojects">
     <ant antfile="asbundle/build.xml" target="clean" inheritAll="false"/>

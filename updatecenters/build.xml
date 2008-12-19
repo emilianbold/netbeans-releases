@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="ide-updatecenters" default="netbeans" basedir=".">
+<project name="updatecenters" default="netbeans" basedir=".">
 
   <import file="../nbbuild/templates/projectized.xml"/>
 
