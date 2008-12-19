@@ -59,20 +59,23 @@ public class FlowCountingTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger(getName());
         LOG.setLevel(Level.FINE);
         MSG = Log.enable("", Level.WARNING);
     }
     
+    @Override
     protected void tearDown() throws Exception {
     }
+    @Override
     protected Level logLevel() {
         return Level.FINEST;
     }
 
     public void testFirstPrints5ThenSecond2AndThenFirst6() throws Exception {
-        org.netbeans.junit.Log.controlFlow(LOG, Logger.global,
+        org.netbeans.junit.Log.controlFlow(LOG, Logger.getLogger("global"),
             "THREAD: 1st MSG: cnt: 5" +
             "THREAD: 2nd MSG: cnt: 2" +
             "THREAD: 2nd MSG: cnt: 3" +

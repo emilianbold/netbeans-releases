@@ -70,6 +70,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.Test;
 import org.netbeans.core.startup.layers.LayerCacheManager;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.Log;

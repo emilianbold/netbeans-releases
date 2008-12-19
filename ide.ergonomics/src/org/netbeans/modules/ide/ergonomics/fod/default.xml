@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Menu">
+        <file name="BuildProject_hidden"/>
+        <file name="Refactoring_hidden"/>
+        <file name="Edit_hidden"/>
+        <file name="GoTo_hidden"/>
+
+        <folder name="File">
+            <file name="Separator3.instance_hidden"/>
+            <file name="Separator4.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-ExportHtmlAction.instance_hidden"/>
+            <file name="org-netbeans-modules-print-action-PageSetupAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-print-action-PrintAction.shadow_hidden"/>
+            <file name="org-openide-actions-SaveAction.instance_hidden"/>
+            <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
+            <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
+
+            <folder name ="Import">
+                <file name="org-netbeans-modules-ide-ergonomics-ImportProjectAction.instance">
+                    <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.ImportProjectAction"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.Bundle#CTL_ImportProject"/>
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="noIconInMenu" stringvalue="false"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="Help">
+            <file name="Separator1.instance_hidden"/>
+            <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-javadoc-search-SearchDocAction.shadow_hidden"/>
+        </folder>
+        <folder name="RunProject">
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="Separator11.instance_hidden"/>
+            <file name="Separator2.instance_hidden"/>
+            <file name="Separator3.instance_hidden"/>
+            <file name="Separator4.instance_hidden"/>
+            <file name="Separator6.instance_hidden"/>
+            <file name="Stack_hidden"/>
+            <file name="org-netbeans-modules-debugger-jpda-actions-CheckDeadlocksAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-EvaluateAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow_hidden"/>
+        </folder>
+
+        <!-- Profile menu -->
+        <folder name="Profile">
+            <attr name="position" intvalue="850"/>
+            <file name="org-netbeans-modules-prof-actions-AttachAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.AttachAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_AttachAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-CompareSnapshotsAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.CompareSnapshotsAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_CompareSnapshotsAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1650"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-LoadSnapshotAction-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1425"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-LoadSnapshotAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.LoadSnapshotAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_LoadSnapshotAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1450"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-OpenHeapWalkerAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.OpenHeapWalkerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_OpenHeapWalkerAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1475"/>
+            </file>
+        </folder>
+
+        <file name="Source_hidden"/>
+        <folder name="Tools">
+            <file name="JavaPlatformsCustomizerAction.instance_hidden"/>
+            <file name="LibrariesCustomizerAction.instance_hidden"/>
+            <file name="MobilityDeploymentManagerAction.instance_hidden"/>
+            <file name="PaletteManager_hidden"/>
+            <file name="SecurityManagerAction.instance_hidden"/>
+            <file name="Separator1.instance_hidden"/>
+            <file name="Separator2.instance_hidden"/>
+            <file name="ServerManagerAction3.instance_hidden"/>
+            <file name="VariablesCustomizerAction.instance_hidden"/>
+            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance_hidden"/>
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance_hidden"/>
+            <file name="org-netbeans-modules-ruby-platform-RubyPlatformAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-ruby-platform-gems-GemAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance_hidden"/>
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance_hidden"/>
+            <file name="org-openide-actions-ToolsAction.instance_hidden"/>
+        </folder>
+        <folder name="View">
+            <file name="Separator1.instance_hidden"/>
+            <file name="org-netbeans-core-multiview-EditorsAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-NbCodeFoldingAction.instance_hidden"/>
+            <file name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow_hidden"/>
+        </folder>
+        <folder name="Window">
+            <file name="Debug_hidden"/>
+            <file name="Navigator_hidden"/>
+            <file name="Other_hidden"/>
+            <file name="Output_hidden"/>
+            <file name="Profile_hidden"/>
+            <file name="ShowPaletteAction.shadow_hidden"/>
+            <file name="ViewRuntimeTabAction.shadow_hidden"/>
+            <file name="org-netbeans-core-actions-GlobalPropertiesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow_hidden"/>
+            <file name="org.netbeans.modules.cnd.classview-ClassViewAction.shadow_hidden"/>
+        </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="File">
+            <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
+        </folder>
+        <file name="Build_hidden"/>
+        <file name="Clipboard_hidden"/>
+        <file name="Debug_hidden"/>
+        <file name="Memory_hidden"/>
+        <file name="QuickSearch_hidden"/>
+        <file name="UndoRedo_hidden"/>
+    </folder>
+</filesystem>
