@@ -128,11 +128,6 @@ intf java.util.EventListener
 meth public abstract void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
 meth public abstract void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
 
-CLSS public org.netbeans.api.java.queries.AccessibilityQuery
-meth public static java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
-supr java.lang.Object
-hfds implementations
-
 CLSS public final org.netbeans.api.java.queries.BinaryForSourceQuery
 innr public abstract interface static Result
 meth public static org.netbeans.api.java.queries.BinaryForSourceQuery$Result findBinaryRoots(java.net.URL)
@@ -140,18 +135,6 @@ supr java.lang.Object
 hcls DefaultResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.BinaryForSourceQuery$Result
-meth public abstract java.net.URL[] getRoots()
-meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
-
-CLSS public org.netbeans.api.java.queries.JavadocForBinaryQuery
-innr public abstract interface static Result
-meth public static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result findJavadoc(java.net.URL)
-supr java.lang.Object
-hfds EMPTY_RESULT,ERR,implementations
-hcls EmptyResult
-
-CLSS public abstract interface static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result
 meth public abstract java.net.URL[] getRoots()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
@@ -178,19 +161,6 @@ meth public void addChangeListener(javax.swing.event.ChangeListener)
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 hfds changeSupport,delegate,spiListener
-
-CLSS public org.netbeans.api.java.queries.SourceLevelQuery
-meth public static java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
-supr java.lang.Object
-hfds LOGGER,SOURCE_LEVEL,implementations
-
-CLSS public org.netbeans.api.java.queries.UnitTestForSourceQuery
-meth public static java.net.URL findSource(org.openide.filesystems.FileObject)
-meth public static java.net.URL findUnitTest(org.openide.filesystems.FileObject)
-meth public static java.net.URL[] findSources(org.openide.filesystems.FileObject)
-meth public static java.net.URL[] findUnitTests(org.openide.filesystems.FileObject)
-supr java.lang.Object
-hfds implementations,mrImplementations
 
 CLSS public final org.netbeans.spi.java.classpath.ClassPathFactory
 meth public static org.netbeans.api.java.classpath.ClassPath createClassPath(org.netbeans.spi.java.classpath.ClassPathImplementation)
@@ -249,18 +219,8 @@ meth public final void removePropertyChangeListener(java.beans.PropertyChangeLis
 supr java.lang.Object
 hfds pListeners
 
-CLSS public abstract interface org.netbeans.spi.java.queries.AccessibilityQueryImplementation
-meth public abstract java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
-
 CLSS public abstract interface org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation
 meth public abstract org.netbeans.api.java.queries.BinaryForSourceQuery$Result findBinaryRoots(java.net.URL)
-
-CLSS public abstract interface org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation
-meth public abstract org.netbeans.api.java.queries.JavadocForBinaryQuery$Result findJavadoc(java.net.URL)
-
-CLSS public abstract interface org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation
-meth public abstract java.net.URL[] findSources(org.openide.filesystems.FileObject)
-meth public abstract java.net.URL[] findUnitTests(org.openide.filesystems.FileObject)
 
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
 meth public abstract org.netbeans.api.java.queries.SourceForBinaryQuery$Result findSourceRoots(java.net.URL)
@@ -273,13 +233,6 @@ meth public abstract org.netbeans.spi.java.queries.SourceForBinaryQueryImplement
 CLSS public abstract interface static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
 intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public abstract boolean preferSources()
-
-CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation
-meth public abstract java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
-
-CLSS public abstract interface org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation
-meth public abstract java.net.URL findSource(org.openide.filesystems.FileObject)
-meth public abstract java.net.URL findUnitTest(org.openide.filesystems.FileObject)
 
 CLSS public abstract org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base
 cons public SourceForBinaryQueryImpl2Base()
