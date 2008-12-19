@@ -46,6 +46,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -115,9 +116,6 @@ public class CompilePanel extends javax.swing.JPanel {
         });
 
         lblWarnPlatform.setVisible(false);
-
-        // TODO - Manage Java platforms button
-        btnMngPlatform.setEnabled(false);
 
         initValues();
     }
@@ -270,9 +268,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public JavaPlatform getValue() {
-                String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
-                        get(Constants.HINT_JDK_PLATFORM, true);
-                return BootClassPathImpl.getActivePlatform(platformId);
+                return getSelPlatform();
             }
 
             @Override
@@ -292,6 +288,12 @@ public class CompilePanel extends javax.swing.JPanel {
 
         checkPlatform();
 
+    }
+
+    private JavaPlatform getSelPlatform () {
+        String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
+                get(Constants.HINT_JDK_PLATFORM, true);
+        return BootClassPathImpl.getActivePlatform(platformId);
     }
 
     private void checkPlatform () {
@@ -399,6 +401,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
     private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
         // TODO add your handling code here:
+        PlatformsCustomizer.showCustomizer(getSelPlatform());
 }//GEN-LAST:event_btnMngPlatformActionPerformed
 
 
