@@ -46,6 +46,7 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
@@ -113,7 +114,8 @@ abstract class BaseTestMethodNodeAction extends AbstractAction {
         if (location == null) {
             return;
         }
-        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
+//        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
+        FileObject testFile = null;
         if (testFile == null) {
             return;
         }
