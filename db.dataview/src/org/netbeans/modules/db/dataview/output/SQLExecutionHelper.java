@@ -536,6 +536,17 @@ class SQLExecutionHelper {
         }
     }
 
+    private String appendLimitIfRequired(String sql) {
+        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
+            if (!isLimitUsedInSelect(sql)) {
+                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
+            }
+        }
+
+        return sql;
+    }
+
     private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt = null;
         boolean select = false;
@@ -570,22 +581,21 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
-            if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
-            }
-        }
-
         mLogger.log(Level.FINE, "Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
-        boolean isResultSet;
+        boolean isResultSet = false;
         if (stmt instanceof PreparedStatement) {
             isResultSet = ((PreparedStatement) stmt).execute();
         } else {
-            isResultSet = stmt.execute(sql);
+            try {
+                isResultSet = stmt.execute(appendLimitIfRequired(sql));
+            } catch (SQLException sqlExc) {
+                if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
+                    isResultSet = stmt.execute(sql);
+                }
+            }
         }
 
         long executionTime = System.currentTimeMillis() - startTime;
