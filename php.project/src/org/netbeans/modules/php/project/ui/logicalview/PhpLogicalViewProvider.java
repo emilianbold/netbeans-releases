@@ -194,6 +194,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(provider.getAction(ActionProvider.COMMAND_RUN));
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
+            actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
             actions.add(null);
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);

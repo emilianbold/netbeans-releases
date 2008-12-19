@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.ui.actions.MoveCommand;
 import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
+import org.netbeans.modules.php.project.ui.actions.TestProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -73,6 +74,7 @@ public class PhpActionProvider implements ActionProvider {
         Command[] commandArray = new Command[] {
             new RunProjectCommand(project),
             new DebugProjectCommand(project),
+            new TestProjectCommand(project),
             new RunFileCommand(project),
             new DebugFileCommand(project),
             new DeleteCommand(project),
