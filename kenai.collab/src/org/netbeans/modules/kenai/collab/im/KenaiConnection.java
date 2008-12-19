@@ -41,15 +41,19 @@
 
 package org.netbeans.modules.kenai.collab.im;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.MessageTypeFilter;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Message.Type;
+import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
@@ -105,7 +109,18 @@ public class KenaiConnection {
         connection = new XMPPConnection(XMPP_SERVER);
         connection.connect();
         login();
+        connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
+
+    private class PacketL implements PacketListener {
+
+        public void processPacket(Packet packet) {
+            notification.addMessage((Message)packet);
+            notification.add();
+        }
+    }
+
+    private static MessageNotification notification = new MessageNotification();
 
     private void login() throws XMPPException {
         connection.login(USER,PASSWORD);

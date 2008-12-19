@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,89 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.chat.ui;
+package org.netbeans.modules.kenai.collab.im;
 
+import java.util.LinkedList;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
+import org.netbeans.modules.notifications.spi.Notification;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
- * Participant representation.
- * Just id with icon
+ *
  * @author Jan Becicka
  */
-public class Buddy implements Comparable<Buddy> {
-    
-    private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(Buddy.class.getResource("/org/netbeans/modules/kenai/collab/resources/online.gif"));
+class MessageNotification extends Notification{
 
-    public Buddy(String jid) {
-        this.jid = jid;
-    }
+    private LinkedList<Message> messageQueue = new LinkedList<Message>();
 
-    Icon getIcon() {
-        return ONLINE_ICON;
-    }
-
-    String getLabel() {
-        return StringUtils.parseName(jid);
-    }
-
-    public String getJid() {
-        return jid;
+    @Override
+    public String getLinkTitle() {
+        return "read";
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Buddy other = (Buddy) obj;
-        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
-            return false;
-        }
-        return true;
+    public String getTitle() {
+        return "<b>New Private Message</b>";
     }
 
     @Override
-    public int hashCode() {
-        return jid.hashCode();
+    public String getDescription() {
+        final Message top = messageQueue.getFirst();
+        String from= StringUtils.parseName(top.getFrom());
+        return "<i>"+from + " says: </i>" + top.getBody();
     }
 
-    public int compareTo(Buddy o) {
-        return this.getLabel().compareTo(o.getLabel());
+    @Override
+    public void showDetails() {
+        JEditorPane pane = new JEditorPane();
+        pane.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(pane);
+        DialogDescriptor newMessages = new DialogDescriptor(scrollPane, "New Messages ");
+        StringBuffer b = new StringBuffer();
+        for (Message m : messageQueue) {
+            b.append(StringUtils.parseName(m.getFrom()) + " says: \n");
+            b.append(m.getBody() + "\n");
+        }
+        pane.setText(b.toString());
+        DialogDisplayer.getDefault().createDialog(newMessages).setVisible(true);
+        clear();
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
+
+    void addMessage(Message msg) {
+        messageQueue.add(msg);
+    }
+
+    Message removeMessage() {
+        return messageQueue.removeFirst();
+    }
+
+    boolean isEmpty() {
+        return messageQueue.isEmpty();
+    }
+
+    void clear() {
+        this.remove();
+        messageQueue.clear();
     }
 }

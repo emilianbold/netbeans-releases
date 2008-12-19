@@ -94,7 +94,12 @@ public abstract class Notification implements Comparable<Notification> {
 
     @Override
     public final int compareTo(Notification o) {
-        return getPriority().compareTo(o.getPriority());
+        final int priorityCompare = getPriority().compareTo(o.getPriority());
+        if (priorityCompare!=0) {
+            return priorityCompare;
+        } else {
+            return getTitle().compareTo(o.getTitle());
+        }
     }
 
     /**

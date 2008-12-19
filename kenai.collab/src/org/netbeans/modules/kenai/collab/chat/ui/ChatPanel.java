@@ -41,11 +41,15 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.DefaultListCellRenderer.UIResource;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.SwingConstants;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -59,6 +63,10 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.packet.MUCUser;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,7 +75,7 @@ import org.openide.util.Exceptions;
  */
 public class ChatPanel extends javax.swing.JPanel {
 
-    private KenaiConnection ctrl;
+    MultiUserChat muc;
     static final SimpleAttributeSet ITALIC_GRAY = new SimpleAttributeSet();
     static final SimpleAttributeSet BOLD_BLACK = new SimpleAttributeSet();
     static final SimpleAttributeSet BLACK = new SimpleAttributeSet();
@@ -91,8 +99,8 @@ public class ChatPanel extends javax.swing.JPanel {
 
 
     public ChatPanel(MultiUserChat chat) {
+        this.muc=chat;
         initComponents();
-        this.ctrl = KenaiConnection.getDefault();
         users.setCellRenderer(new BuddyListCellRenderer());
         users.setModel(new BuddyListModel(chat));
         //users.setModel(new BuddyListModel(ctrl.getRoster()));
@@ -101,6 +109,56 @@ public class ChatPanel extends javax.swing.JPanel {
         chat.addMessageListener(new ChatListener());
         inbox.setBackground(Color.WHITE);
         outbox.setBackground(Color.WHITE);
+        setUpPrivateMessages();
+    }
+
+    void setUpPrivateMessages() {
+
+        final JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.add(new SendPrivateMessage());
+
+        users.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+                processMouseEvent(me);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                processMouseEvent(e);
+            }
+
+            private void processMouseEvent(MouseEvent me) {
+                if (me.isPopupTrigger()) {
+                    users.setSelectedIndex(users.locationToIndex(me.getPoint()));
+                    popupMenu.show(users, me.getX(), me.getY());
+                }
+            }
+        });
+    }
+
+    private class SendPrivateMessage extends AbstractAction {
+
+        public SendPrivateMessage() {
+            super("Send Private Message");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Buddy b = (Buddy) users.getModel().getElementAt(users.getSelectedIndex());
+            try {
+                JEditorPane pane = new JEditorPane();
+                JScrollPane scrollPane = new JScrollPane(pane);
+                DialogDescriptor sendMessage = new DialogDescriptor(scrollPane, "Send private message to " + b.getLabel());
+                DialogDisplayer.getDefault().createDialog(sendMessage).setVisible(true);
+                if (sendMessage.getValue()==DialogDescriptor.OK_OPTION) {
+                    muc.createPrivateChat(b.getJid(), null).sendMessage(pane.getText());
+                }
+            } catch (XMPPException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
     }
 
     private class ChatListener implements PacketListener {
@@ -125,7 +183,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
             public void run() {
                 setEndSelection();
-                insertText(StringUtils.parseResource(presence.getFrom()) + " is now ", ChatPanel.ITALIC_GRAY);
+                insertText(presence.getFrom() + " is now ", ChatPanel.ITALIC_GRAY);
                 insertText(presence.getType() + "\n", ChatPanel.ITALIC_GRAY);
             }
         });
@@ -213,7 +271,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         try {
-            ctrl.getChats().first().sendMessage(outbox.getText().trim());
+            muc.sendMessage(outbox.getText().trim());
         } catch (XMPPException ex) {
             Exceptions.printStackTrace(ex);
         }

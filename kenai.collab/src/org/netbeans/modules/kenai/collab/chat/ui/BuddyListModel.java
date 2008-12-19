@@ -51,6 +51,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.packet.MUCUser;
 
 /**
  * List model, which listens on Presence
@@ -68,7 +69,7 @@ public class BuddyListModel extends AbstractListModel implements PacketListener 
         super();
         Iterator<String> string = chat.getOccupants();
         while (string.hasNext()) {
-            usrs.add(new Buddy(string.next()));
+            usrs.add(new Buddy(chat.getOccupant(string.next()).getJid()));
         }
         Collections.sort(usrs);
     }
@@ -92,7 +93,7 @@ public class BuddyListModel extends AbstractListModel implements PacketListener 
         final Presence presence = (Presence) packet;
         Buddy from = new Buddy(presence.getFrom());
         if (!usrs.contains(from) && presence.getType().equals(Type.available)) {
-            usrs.add(from);
+            usrs.add(new Buddy(((MUCUser) presence.getExtension("http://jabber.org/protocol/muc#user")).getItem().getJid()));
             Collections.sort(usrs);
         }
         if (presence.getType().equals(Type.unavailable)) {
