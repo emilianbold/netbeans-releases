@@ -146,9 +146,8 @@ public final class ChildrenSupport {
                     retVal.put(fnToCheck, ChildrenCache.ADDED_CHILD);
                 }
             }
-        } else {
+        } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retVal = rescanChildren(folderName);
-            setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         }
         return retVal;
     }

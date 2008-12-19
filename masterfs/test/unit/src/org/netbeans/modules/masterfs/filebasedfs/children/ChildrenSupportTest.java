@@ -407,30 +407,10 @@ public class ChildrenSupportTest extends NbTestCase {
         // remove and plug our File implementation
         NamingFactory.remove(fpiName, fpiName.getId());
         fpiName = NamingFactory.fromFile(new File150009(fbase));
-        try {
-            ChildrenSupport fpi = new ChildrenSupport();
-            assertNotNull(fpi.getChild("removed1", fpiName, false));
-            assertNotNull(fpi.getChild("removed2", fpiName, false));
-            assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
-        } finally {
-            NamingFactory.remove(fpiName, fpiName.getId());
-        }
-    }
-
-    /** Tests that children are re-scanned with refresh even though getChild
-     * or getChildren wasn't called before. */
-    public void testRefresh3() {
-        FileNaming fpiName = NamingFactory.fromFile(fbase);
         ChildrenSupport fpi = new ChildrenSupport();
-        Map changes = fpi.refresh(fpiName);
-        // assert 2 children added after refresh
-        assertEquals("Children not rescaned with refresh.", 2, changes.size());
-        Iterator it = changes.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Integer type = (Integer)entry.getValue();
-            assertEquals(ChildrenCache.ADDED_CHILD, type);
-        }
+        assertNotNull(fpi.getChild("removed1", fpiName, false));
+        assertNotNull(fpi.getChild("removed2", fpiName, false));
+        assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
     }
 
 }
