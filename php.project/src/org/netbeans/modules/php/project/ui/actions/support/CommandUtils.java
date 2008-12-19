@@ -49,7 +49,10 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -186,5 +189,19 @@ public class CommandUtils {
                 OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
             }
         });
+    }
+
+    /**
+     * Get a {@link PhpUnit} instance (path from IDE options used).
+     * @param showCustomizer if <code>true</code>, IDE options dialog is shown if the path of PHP Unit is not valid.
+     * @return a {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid.
+     */
+    public static PhpUnit getPhpUnit(boolean showCustomizer) {
+        final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
+        if (Utils.validatePhpUnit(phpUnitPath) != null) {
+            OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            return null;
+        }
+        return new PhpUnit(phpUnitPath);
     }
 }

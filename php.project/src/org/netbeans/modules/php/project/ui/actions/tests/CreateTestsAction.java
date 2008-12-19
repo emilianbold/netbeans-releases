@@ -39,11 +39,18 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -55,16 +62,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -73,7 +77,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -88,6 +91,15 @@ public final class CreateTestsAction extends NodeAction {
     private static final long serialVersionUID = 9523829206628824L;
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
+
+    // php unit related
+    private static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    private static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
+
+    private static final String TMP_FILE_SUFFIX = ".nb-tmp"; // NOI18N
+    private static final int OFFSET = 2;
+    private static final String INCLUDE_PATH_TPL = "ini_set(\"include_path\", %sini_get(\"include_path\"));"; // NOI18N
+    private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
 
     private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
             = new ExecutionDescriptor().controllable(false).frontWindow(false).inputOutput(InputOutput.NULL);
@@ -117,9 +129,8 @@ public final class CreateTestsAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return;
         }
-        final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
-        if (Utils.validatePhpUnit(phpUnitPath) != null) {
-            OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        if (phpUnit == null) {
             return;
         }
         // ensure that test sources directory exists
@@ -131,7 +142,7 @@ public final class CreateTestsAction extends NodeAction {
 
         RUNNABLES.add(new Runnable() {
             public void run() {
-                generateTests(activatedNodes, new PhpUnit(phpUnitPath), phpProject);
+                generateTests(activatedNodes, phpUnit, phpProject);
             }
         });
         TASK.schedule(0);
@@ -272,7 +283,7 @@ public final class CreateTestsAction extends NodeAction {
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 ec.open();
             } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
 
@@ -302,7 +313,7 @@ public final class CreateTestsAction extends NodeAction {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit());
         externalProcessBuilder = externalProcessBuilder.workingDirectory(parent);
-        externalProcessBuilder = externalProcessBuilder.addArgument("--skeleton-test"); // NOI18N
+        externalProcessBuilder = externalProcessBuilder.addArgument(PARAM_SKELETON);
         externalProcessBuilder = externalProcessBuilder.addArgument(sourceFo.getName());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
         Future<Integer> result = service.run();
@@ -312,27 +323,35 @@ public final class CreateTestsAction extends NodeAction {
                 failed.add(sourceFo);
                 return;
             }
-            toOpen.add(moveGeneratedFile(generatedFile, testFile));
+            File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, getTestDirectory(phpProject));
+            if (moved == null) {
+                failed.add(sourceFo);
+            } else {
+                toOpen.add(moved);
+            }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
     private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + "Test.php"); // NOI18N
+        return new File(parent, source.getName() + TEST_FILE_SUFFIX);
+    }
+
+    private File getTestDirectory(PhpProject phpProject) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+        assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
+        return FileUtil.toFile(testDirectory);
     }
 
     private File getTestFile(FileObject source, File generatedFile, PhpProject phpProject) {
         FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
         String relativePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
         assert relativePath != null : String.format("Relative path must be found % and %s", sourcesDirectory, source.getParent());
-
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
-        return new File(new File(FileUtil.toFile(testDirectory), relativePath), generatedFile.getName());
+        return new File(new File(getTestDirectory(phpProject), relativePath), generatedFile.getName());
     }
 
-    private File moveGeneratedFile(File generatedFile, File testFile) {
+    private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File testDirectory) {
         assert generatedFile.isFile() : "Generated files must exist: " + generatedFile;
         assert !testFile.exists() : "Test file cannot exist: " + testFile;
 
@@ -349,8 +368,79 @@ public final class CreateTestsAction extends NodeAction {
             // what to do now??
             return generatedFile;
         }
-        assert testFile.isFile() : "Test file must exist: " + testFile;
-        // XXX adjust 'require...' in the test file
+        assert testFile.isFile() : "(1) Test file must exist: " + testFile;
+        testFile = adjustFileContent(testFile, getIncludePaths(generatedFile, testFile, testDirectory));
+        if (testFile == null) {
+            return null;
+        }
+        assert testFile.isFile() : "(2) Test file must exist: " + testFile;
+        return testFile;
+    }
+
+    static List<String> getIncludePaths(File generatedFile, File testFile, File testDirectory) {
+        File toFile = generatedFile.getParentFile();
+        List<String> includePaths = new LinkedList<String>();
+        includePaths.add(PropertyUtils.relativizeFile(testDirectory, toFile));
+
+        File parent = testFile.getParentFile();
+        if (!testDirectory.equals(parent)) {
+            includePaths.add(PropertyUtils.relativizeFile(parent, toFile));
+        }
+        return includePaths;
+    }
+
+    private File adjustFileContent(File testFile, List<String> includePaths) {
+        File tmpFile = new File(testFile.getAbsolutePath() + TMP_FILE_SUFFIX);
+        assert !tmpFile.exists() : "TMP file should not exist: " + tmpFile;
+        try {
+            // input
+            FileInputStream fis = new FileInputStream(testFile);
+            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+
+            try {
+                // output
+                FileOutputStream fos = new FileOutputStream(tmpFile);
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos));
+
+                try {
+                    // data
+                    StringBuilder sb = new StringBuilder(200);
+                    for (String path : includePaths) {
+                        sb.append(String.format(INCLUDE_PATH_PART, path));
+                    }
+
+                    String line;
+                    int i = 0;
+                    while ((line = in.readLine()) != null) {
+                        ++i;
+                        if (i == OFFSET) {
+                            out.write(String.format(INCLUDE_PATH_TPL, sb.toString()));
+                            out.newLine();
+                        }
+                        out.write(line);
+                        out.newLine();
+                    }
+                } finally {
+                    out.flush();
+                    out.close();
+                }
+            } finally {
+                in.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
+        if (!testFile.delete()) {
+            LOGGER.info("Cannot delete file " + testFile);
+            return testFile;
+        }
+        if (!tmpFile.renameTo(testFile)) {
+            LOGGER.info(String.format("Cannot rename file %s to %s", tmpFile, testFile));
+            tmpFile.delete();
+            tmpFile.deleteOnExit();
+            return null;
+        }
         return testFile;
     }
 }
