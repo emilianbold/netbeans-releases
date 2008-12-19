@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
             <folder name="Root">
                 <folder name="NodeProviders">
                     <file name="ServerNodeProviderFactory.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLServerNodeProvider.getFactory"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.ServerNodeProvider.getFactory"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
                         <attr name="position" intvalue="50"/>
                     </file>
