@@ -127,9 +127,7 @@ public class Reformatter implements ReformatTask {
         }
         while (ts != null && (startOffset == 0 || ts.moveNext())) {
             ts.move(startOffset);
-            if (ts.language() == CppTokenId.languageC() ||
-                ts.language() == CppTokenId.languageCpp() ||
-                ts.language() == CppTokenId.languagePreproc()) {
+            if (CndLexerUtilities.isCppLanguage(ts.language(), true)) {
                 reformatImpl((TokenSequence<CppTokenId>) ts, startOffset, endOffset);
                 return;
             }
