@@ -46,6 +46,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
@@ -53,10 +54,6 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 public final class CndLexerUtilities {
 
-    public static final String C_MIME_TYPE = "text/x-c";// NOI18N
-    public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
-    public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
-    public static final String FORTRAN_MIME_TYPE = "text/x-fortran";// NOI18N
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
     public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
     public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
@@ -83,18 +80,20 @@ public final class CndLexerUtilities {
     }
 
     public static Language<CppTokenId> getLanguage(String mime) {
-        if (C_MIME_TYPE.equals(mime)) {
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageC();
-        } else if (CPLUSPLUS_MIME_TYPE.equals(mime)) {
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageCpp();
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            return CppTokenId.languageHeader();
         }
         return null;
     }
 
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
-        Language lang = (Language) doc.getProperty(Language.class);
-        if (lang == null || (lang != CppTokenId.languageC() && lang != CppTokenId.languageCpp() && lang != CppTokenId.languagePreproc())) {
+        Language<?> lang = (Language<?>) doc.getProperty(Language.class);
+        if (!isCppLanguage(lang, true)) {
             lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
         }
         @SuppressWarnings("unchecked")
@@ -125,7 +124,7 @@ public final class CndLexerUtilities {
         for (int i = tsList.size() - 1; i >= 0; i--) {
             TokenSequence<?> ts = tsList.get(i);
             final Language<?> lang = ts.languagePath().innerLanguage();
-            if (lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp() || (lexPP && lang == CppTokenId.languagePreproc())) {
+            if (isCppLanguage(lang, lexPP)) {
                 @SuppressWarnings("unchecked")
                 TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
                 return cppInnerTS;
@@ -134,6 +133,12 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
+        return lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp()
+                || lang == CppTokenId.languageHeader()
+                || (allowPrepoc && lang == CppTokenId.languagePreproc());
+    }
+    
     public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
         TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
         TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
