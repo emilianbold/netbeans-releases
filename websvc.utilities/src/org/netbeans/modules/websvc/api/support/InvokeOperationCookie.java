@@ -39,34 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.websvc.api.support;
-import org.openide.nodes.Node;
+import javax.swing.JPanel;
+import javax.swing.text.JTextComponent;
 import org.openide.util.Lookup;
 
 /**
- * Provides a facility for obtaining the addOperation feature.
+ * Provides a facility for obtaining the Invoke Operation feature.
  * for both JAX-WS and JAX-RPC web service.
  */
-public interface InvokeOperationCookie extends Node.Cookie {
-
-    /** UNKNOWN target file type. */
-    int TARGET_SOURCE_UNKNOWN = 0;
-    /** java file type. */
-    int TARGET_SOURCE_JAVA = 1;
-    /** JSP file type. */
-    int TARGET_SOURCE_JSP = 2;
+public interface InvokeOperationCookie {
 
     /** Adds a method definition to the the implementation class, possibly to SEI.
      *
-     * @param targetSourceType type of target source file (JSP or java)
-     * @param targetNodeLookup target node lookup
      * @param sourceNodeLookup source node lookup
+     * @param targetComponent target text component where the code should be generated
      */
-    void invokeOperation(int targetSourceType, Lookup targetNodeLookup, Lookup sourceNodeLookup);
+    void invokeOperation(Lookup sourceNodeLookup, JTextComponent targetComponent);
 
-
-    /** Determines if node represents a web service operation.
-     * @param sourceNodeLookup source node lookup
-     * @return true or false
+    /** provides JPanel for dialog descriptor to choose web service clients.
+     *
+     * @return ClientSelectionPanel panel
      */
-    boolean isWebServiceOperation(Lookup sourceNodeLookup);
+    ClientSelectionPanel getDialogDescriptorPanel();
+
+    /** Abstract JPanel for Client selection.
+     *
+     */
+    public abstract static class ClientSelectionPanel extends JPanel {
+        /** Property to fire when the selection is valid, invalid. */
+        public static final String PROPERTY_SELECTION_VALID =
+                ClientSelectionPanel.class.getName() + ".SELECTION_VALID"; //NOI18N
+
+        private boolean selectionValid;
+
+        /** Set Node selection valid or invalid.
+         *
+         * @param selectionValid true node selection is valid fasle if not
+         */
+        protected final void setSelectionValid(boolean selectionValid) {
+            boolean wasSelectionValid = this.selectionValid;
+            if (wasSelectionValid != selectionValid) {
+                this.selectionValid = selectionValid;
+                firePropertyChange(PROPERTY_SELECTION_VALID, wasSelectionValid, selectionValid);
+            }
+        }
+
+        /** Get lookup context of selected client node.
+         *
+         * @return lookup of selected client node
+         */
+        public abstract Lookup getSelectedClient();
+
+    }
+    /** Enumeration for target source type.
+     */
+    public enum TargetSourceType {
+        /** Target source is java class. */
+        JAVA,
+        /** Target source is JSP. */
+        JSP,
+        /** Target source is unknown. */
+        UNKNOWN;
+    }
 }

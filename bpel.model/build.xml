@@ -39,7 +39,7 @@
   Version 2 license, then the option applies only if the new code is
   made subject to such option by the copyright holder.
 -->
-<project name="model" default="netbeans" basedir=".">
+<project name="bpel.model" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="check">

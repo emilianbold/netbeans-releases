@@ -40,6 +40,12 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.Status;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.RspecRunner;
 
@@ -76,7 +82,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC);
+            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
@@ -85,9 +91,9 @@ public class RspecHandlerFactory implements TestHandlerFactory {
             testcase.setClassName(matcher.group(2));
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(false));
-            testcase.getTrouble().stackTrace = filterStackTrace(matcher.group(4), matcher.group(5));
+            testcase.getTrouble().setStackTrace(filterStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
-            for (String line : testcase.getTrouble().stackTrace) {
+            for (String line : testcase.getTrouble().getStackTrace()) {
                 manager.displayOutput(session, line, false);
             }
             testcase.addOutputLines(getRecognizedOutput());
@@ -132,7 +138,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC);
+            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
@@ -152,7 +158,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC);
+            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
@@ -161,7 +167,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
             }
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(false));
-            testcase.getTrouble().stackTrace = new String[]{matcher.group(4)};
+            testcase.getTrouble().setStackTrace(new String[]{matcher.group(4)});
             testcase.setStatus(Status.PENDING);
             session.addTestCase(testcase);
         }

@@ -66,7 +66,6 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
     public CCDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
         instance = this;
-        //createExtentions(cppExtensions);
     }
 
     public static CCDataLoader getInstance(){

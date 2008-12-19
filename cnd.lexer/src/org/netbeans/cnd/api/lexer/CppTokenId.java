@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.cnd.lexer.CppLexer;
 import org.netbeans.modules.cnd.lexer.PreprocLexer;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -179,6 +180,7 @@ public enum CppTokenId implements TokenId {
     __RESTRICT("__restrict", "keyword"), // g++ // NOI18N
     _STDCALL("_stdcall", "keyword"), // g++ // NOI18N
     __STDCALL("__stdcall", "keyword"), // g++ // NOI18N
+    __THREAD("__thread", "keyword"), // gcc // NOI18N
     __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
@@ -330,11 +332,13 @@ public enum CppTokenId implements TokenId {
         return primaryCategory;
     }
 
+    private static final Language<CppTokenId> languageHeader;
     private static final Language<CppTokenId> languageC;
     private static final Language<CppTokenId> languageCpp;
     private static final Language<CppTokenId> languagePreproc;
     
     static {
+        languageHeader = CppHierarchy.createHeaderLanguage();
         languageC = CppHierarchy.createCLanguage();
         languageCpp = CppHierarchy.createCppLanguage();
         languagePreproc = CppHierarchy.createPreprocLanguage();
@@ -352,33 +356,35 @@ public enum CppTokenId implements TokenId {
         return languagePreproc;
     }
 
+    public static Language<CppTokenId> languageHeader() {
+        return languageHeader;
+    }
+    
     private static final class CppHierarchy extends LanguageHierarchy<CppTokenId> {
-        private final boolean cpp;
-        private final boolean preproc;
-        private CppHierarchy(boolean cpp, boolean preproc) {
-            this.cpp = cpp;
-            this.preproc = preproc;
+        private final String mimeType;
+        private CppHierarchy(String mimeType) {
+            this.mimeType = mimeType;
+        }
+
+        private static Language<CppTokenId> createHeaderLanguage() {
+            return new CppHierarchy(MIMENames.HEADER_MIME_TYPE).language();
         }
         
         private static Language<CppTokenId> createCppLanguage() {
-            return new CppHierarchy(true, false).language();
+            return new CppHierarchy(MIMENames.CPLUSPLUS_MIME_TYPE).language();
         }
         
         private static Language<CppTokenId> createCLanguage() {
-            return new CppHierarchy(false, false).language();
+            return new CppHierarchy(MIMENames.C_MIME_TYPE).language();
         }
         
         private static Language<CppTokenId> createPreprocLanguage() {
-            return new CppHierarchy(false/*meaning less*/, true).language();
+            return new CppHierarchy(MIMENames.PREPROC_MIME_TYPE).language();
         }
         
         @Override
         protected String mimeType() {
-            if (this.preproc) {
-                return CndLexerUtilities.PREPROC_MIME_TYPE;
-            } else {
-                return this.cpp ? CndLexerUtilities.CPLUSPLUS_MIME_TYPE : CndLexerUtilities.C_MIME_TYPE;
-            }
+            return mimeType;
         }
 
         @Override
@@ -405,29 +411,18 @@ public enum CppTokenId implements TokenId {
                 CppTokenId.STRING_LITERAL
             );
             cats.put(LITERAL_CATEGORY, l);
-
-            // Preprocessor category
-//            EnumSet<CppTokenId> p = EnumSet.of(
-//                CppTokenId.PREPROCESSOR_DEFINE,
-//                CppTokenId.PREPROCESSOR_DEFINED,
-//                CppTokenId.PREPROCESSOR_DIRECTIVE,
-//                CppTokenId.LONG_LITERAL,
-//                CppTokenId.FLOAT_LITERAL,
-//                CppTokenId.DOUBLE_LITERAL,
-//                CppTokenId.UNSIGNED_LITERAL,
-//                CppTokenId.CHAR_LITERAL,
-//                CppTokenId.STRING_LITERAL
-//            );
-//            cats.put("preprocessor", p);            
+        
             return cats;
         }
 
         @Override
         protected Lexer<CppTokenId> createLexer(LexerRestartInfo<CppTokenId> info) {
-            if (this.preproc) {
+            if (MIMENames.PREPROC_MIME_TYPE.equals(this.mimeType)) {
                 return new PreprocLexer(CndLexerUtilities.getDefatultFilter(true), info);
-            } else {
-                return new CppLexer(CndLexerUtilities.getDefatultFilter(this.cpp), info);
+            } else if (MIMENames.C_MIME_TYPE.equals(this.mimeType)) {
+                return new CppLexer(CndLexerUtilities.getDefatultFilter(false), info);
+            } else { // for header and C++
+                return new CppLexer(CndLexerUtilities.getDefatultFilter(true), info);
             }
         }
 

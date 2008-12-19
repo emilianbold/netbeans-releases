@@ -1,310 +1,399 @@
-#API master signature file
-#Version 3.29.0
-CLSS public static abstract org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer
-cons public IntrospectedInfoSerializer()
-fld  public static org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer.instance
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract org.apache.tools.ant.module.api.IntrospectedInfo org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer.load(java.util.prefs.Preferences)
-meth public abstract void org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer.store(java.util.prefs.Preferences,org.apache.tools.ant.module.api.IntrospectedInfo)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+#Signature file v4.0
+#Version 3.32.1
+
+CLSS public java.beans.FeatureDescriptor
+cons public FeatureDescriptor()
+meth public boolean isExpert()
+meth public boolean isHidden()
+meth public boolean isPreferred()
+meth public java.lang.Object getValue(java.lang.String)
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getName()
+meth public java.lang.String getShortDescription()
+meth public java.util.Enumeration<java.lang.String> attributeNames()
+meth public void setDisplayName(java.lang.String)
+meth public void setExpert(boolean)
+meth public void setHidden(boolean)
+meth public void setName(java.lang.String)
+meth public void setPreferred(boolean)
+meth public void setShortDescription(java.lang.String)
+meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-CLSS public static abstract interface org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus
-innr public static abstract interface org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus
-intf org.apache.tools.ant.module.api.AntProjectCookie
-intf org.openide.nodes.Node$Cookie
-meth public abstract boolean org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus.isParsed()
-meth public abstract java.io.File org.apache.tools.ant.module.api.AntProjectCookie.getFile()
-meth public abstract java.lang.Throwable org.apache.tools.ant.module.api.AntProjectCookie.getParseException()
-meth public abstract org.openide.filesystems.FileObject org.apache.tools.ant.module.api.AntProjectCookie.getFileObject()
-meth public abstract org.w3c.dom.Document org.apache.tools.ant.module.api.AntProjectCookie.getDocument()
-meth public abstract org.w3c.dom.Element org.apache.tools.ant.module.api.AntProjectCookie.getProjectElement()
-meth public abstract void org.apache.tools.ant.module.api.AntProjectCookie.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.apache.tools.ant.module.api.AntProjectCookie.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static final org.apache.tools.ant.module.api.AntTargetExecutor$Env
-cons public Env()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.apache.tools.ant.module.api.AntTargetExecutor$Env.getVerbosity()
-meth public java.io.OutputStream org.apache.tools.ant.module.api.AntTargetExecutor$Env.getLogger()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public synchronized java.util.Properties org.apache.tools.ant.module.api.AntTargetExecutor$Env.getProperties()
-meth public synchronized void org.apache.tools.ant.module.api.AntTargetExecutor$Env.setProperties(java.util.Properties)
-meth public void org.apache.tools.ant.module.api.AntTargetExecutor$Env.setLogger(java.io.OutputStream)
-meth public void org.apache.tools.ant.module.api.AntTargetExecutor$Env.setVerbosity(int)
-supr java.lang.Object
-CLSS public static final org.apache.tools.ant.module.api.support.TargetLister$Target
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.apache.tools.ant.module.api.support.TargetLister$Target.isDefault()
-meth public boolean org.apache.tools.ant.module.api.support.TargetLister$Target.isDescribed()
-meth public boolean org.apache.tools.ant.module.api.support.TargetLister$Target.isInternal()
-meth public boolean org.apache.tools.ant.module.api.support.TargetLister$Target.isOverridden()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String org.apache.tools.ant.module.api.support.TargetLister$Target.getName()
-meth public java.lang.String org.apache.tools.ant.module.api.support.TargetLister$Target.getQualifiedName()
-meth public java.lang.String org.apache.tools.ant.module.api.support.TargetLister$Target.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.apache.tools.ant.module.api.AntProjectCookie org.apache.tools.ant.module.api.support.TargetLister$Target.getScript()
-meth public org.w3c.dom.Element org.apache.tools.ant.module.api.support.TargetLister$Target.getElement()
-supr java.lang.Object
-CLSS public static abstract interface org.apache.tools.ant.module.run.LoggerTrampoline$Creator
-meth public abstract org.apache.tools.ant.module.spi.AntEvent org.apache.tools.ant.module.run.LoggerTrampoline$Creator.makeAntEvent(org.apache.tools.ant.module.run.LoggerTrampoline$AntEventImpl)
-meth public abstract org.apache.tools.ant.module.spi.AntSession org.apache.tools.ant.module.run.LoggerTrampoline$Creator.makeAntSession(org.apache.tools.ant.module.run.LoggerTrampoline$AntSessionImpl)
-meth public abstract org.apache.tools.ant.module.spi.TaskStructure org.apache.tools.ant.module.run.LoggerTrampoline$Creator.makeTaskStructure(org.apache.tools.ant.module.run.LoggerTrampoline$TaskStructureImpl)
-supr null
-CLSS public static abstract interface org.openide.nodes.Node$Cookie
-supr null
-CLSS public abstract interface org.apache.tools.ant.module.api.AntProjectCookie
-innr public static abstract interface org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus
-intf org.openide.nodes.Node$Cookie
-meth public abstract java.io.File org.apache.tools.ant.module.api.AntProjectCookie.getFile()
-meth public abstract java.lang.Throwable org.apache.tools.ant.module.api.AntProjectCookie.getParseException()
-meth public abstract org.openide.filesystems.FileObject org.apache.tools.ant.module.api.AntProjectCookie.getFileObject()
-meth public abstract org.w3c.dom.Document org.apache.tools.ant.module.api.AntProjectCookie.getDocument()
-meth public abstract org.w3c.dom.Element org.apache.tools.ant.module.api.AntProjectCookie.getProjectElement()
-meth public abstract void org.apache.tools.ant.module.api.AntProjectCookie.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.apache.tools.ant.module.api.AntProjectCookie.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public final org.apache.tools.ant.module.api.AntTargetExecutor
-innr public static final org.apache.tools.ant.module.api.AntTargetExecutor$Env
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.execution.ExecutorTask org.apache.tools.ant.module.api.AntTargetExecutor.execute(org.apache.tools.ant.module.api.AntProjectCookie,[Ljava.lang.String;) throws java.io.IOException
-meth public static org.apache.tools.ant.module.api.AntTargetExecutor org.apache.tools.ant.module.api.AntTargetExecutor.createTargetExecutor(org.apache.tools.ant.module.api.AntTargetExecutor$Env)
-supr java.lang.Object
-CLSS public abstract interface org.apache.tools.ant.module.api.ElementCookie
-intf org.openide.nodes.Node$Cookie
-meth public abstract org.w3c.dom.Element org.apache.tools.ant.module.api.ElementCookie.getElement()
-supr null
-CLSS public final org.apache.tools.ant.module.api.IntrospectedInfo
-cons public IntrospectedInfo()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.lang.String; org.apache.tools.ant.module.api.IntrospectedInfo.getTags(java.lang.String) throws java.lang.IllegalArgumentException
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.apache.tools.ant.module.api.IntrospectedInfo.isKnown(java.lang.String)
-meth public boolean org.apache.tools.ant.module.api.IntrospectedInfo.supportsText(java.lang.String) throws java.lang.IllegalArgumentException
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String org.apache.tools.ant.module.api.IntrospectedInfo.toString()
-meth public java.util.Map org.apache.tools.ant.module.api.IntrospectedInfo.getAttributes(java.lang.String) throws java.lang.IllegalArgumentException
-meth public java.util.Map org.apache.tools.ant.module.api.IntrospectedInfo.getDefs(java.lang.String)
-meth public java.util.Map org.apache.tools.ant.module.api.IntrospectedInfo.getElements(java.lang.String) throws java.lang.IllegalArgumentException
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static synchronized org.apache.tools.ant.module.api.IntrospectedInfo org.apache.tools.ant.module.api.IntrospectedInfo.getDefaults()
-meth public static synchronized org.apache.tools.ant.module.api.IntrospectedInfo org.apache.tools.ant.module.api.IntrospectedInfo.getKnownInfo()
-meth public synchronized void org.apache.tools.ant.module.api.IntrospectedInfo.register(java.lang.String,java.lang.Class,java.lang.String)
-meth public synchronized void org.apache.tools.ant.module.api.IntrospectedInfo.unregister(java.lang.String,java.lang.String)
-meth public void org.apache.tools.ant.module.api.IntrospectedInfo.addChangeListener(javax.swing.event.ChangeListener)
-meth public void org.apache.tools.ant.module.api.IntrospectedInfo.removeChangeListener(javax.swing.event.ChangeListener)
-meth public void org.apache.tools.ant.module.api.IntrospectedInfo.scanProject(java.util.Map)
-supr java.lang.Object
-CLSS public abstract interface org.apache.tools.ant.module.api.IntrospectionCookie
-intf org.openide.nodes.Node$Cookie
-meth public abstract java.lang.String org.apache.tools.ant.module.api.IntrospectionCookie.getClassName()
-supr null
-CLSS public final org.apache.tools.ant.module.api.support.ActionUtils
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static [Lorg.openide.filesystems.FileObject; org.apache.tools.ant.module.api.support.ActionUtils.findSelectedFiles(org.openide.util.Lookup,org.openide.filesystems.FileObject,java.lang.String,boolean)
-meth public static [Lorg.openide.filesystems.FileObject; org.apache.tools.ant.module.api.support.ActionUtils.regexpMapFiles([Lorg.openide.filesystems.FileObject;,org.openide.filesystems.FileObject,java.util.regex.Pattern,org.openide.filesystems.FileObject,java.lang.String,boolean) throws java.lang.IllegalArgumentException
-meth public static java.lang.String org.apache.tools.ant.module.api.support.ActionUtils.antIncludesList([Lorg.openide.filesystems.FileObject;,org.openide.filesystems.FileObject) throws java.lang.IllegalArgumentException
-meth public static java.lang.String org.apache.tools.ant.module.api.support.ActionUtils.antIncludesList([Lorg.openide.filesystems.FileObject;,org.openide.filesystems.FileObject,boolean) throws java.lang.IllegalArgumentException
-meth public static org.openide.execution.ExecutorTask org.apache.tools.ant.module.api.support.ActionUtils.runTarget(org.openide.filesystems.FileObject,[Ljava.lang.String;,java.util.Properties) throws java.io.IOException,java.lang.IllegalArgumentException
-supr java.lang.Object
-CLSS public org.apache.tools.ant.module.api.support.TargetLister
-innr public static final org.apache.tools.ant.module.api.support.TargetLister$Target
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static java.util.Set org.apache.tools.ant.module.api.support.TargetLister.getTargets(org.apache.tools.ant.module.api.AntProjectCookie) throws java.io.IOException
-supr java.lang.Object
-CLSS public final org.apache.tools.ant.module.spi.AntEvent
-fld  constant public static final int org.apache.tools.ant.module.spi.AntEvent.LOG_DEBUG
-fld  constant public static final int org.apache.tools.ant.module.spi.AntEvent.LOG_ERR
-fld  constant public static final int org.apache.tools.ant.module.spi.AntEvent.LOG_INFO
-fld  constant public static final int org.apache.tools.ant.module.spi.AntEvent.LOG_VERBOSE
-fld  constant public static final int org.apache.tools.ant.module.spi.AntEvent.LOG_WARN
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.apache.tools.ant.module.spi.AntEvent.isConsumed()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.apache.tools.ant.module.spi.AntEvent.getLine()
-meth public int org.apache.tools.ant.module.spi.AntEvent.getLogLevel()
-meth public java.io.File org.apache.tools.ant.module.spi.AntEvent.getScriptLocation()
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.evaluate(java.lang.String)
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.getMessage()
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.getProperty(java.lang.String)
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.getTargetName()
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.getTaskName()
-meth public java.lang.String org.apache.tools.ant.module.spi.AntEvent.toString()
-meth public java.lang.Throwable org.apache.tools.ant.module.spi.AntEvent.getException()
-meth public java.util.Set org.apache.tools.ant.module.spi.AntEvent.getPropertyNames()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.apache.tools.ant.module.spi.AntSession org.apache.tools.ant.module.spi.AntEvent.getSession()
-meth public org.apache.tools.ant.module.spi.TaskStructure org.apache.tools.ant.module.spi.AntEvent.getTaskStructure()
-meth public void org.apache.tools.ant.module.spi.AntEvent.consume() throws java.lang.IllegalStateException
-supr java.lang.Object
-CLSS public abstract org.apache.tools.ant.module.spi.AntLogger
-cons protected AntLogger()
-fld  public static final [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.ALL_TARGETS
-fld  public static final [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.ALL_TASKS
-fld  public static final [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.NO_TARGETS
-fld  public static final [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.NO_TASKS
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [I org.apache.tools.ant.module.spi.AntLogger.interestedInLogLevels(org.apache.tools.ant.module.spi.AntSession)
-meth public [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.interestedInTargets(org.apache.tools.ant.module.spi.AntSession)
-meth public [Ljava.lang.String; org.apache.tools.ant.module.spi.AntLogger.interestedInTasks(org.apache.tools.ant.module.spi.AntSession)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.apache.tools.ant.module.spi.AntLogger.interestedInAllScripts(org.apache.tools.ant.module.spi.AntSession)
-meth public boolean org.apache.tools.ant.module.spi.AntLogger.interestedInScript(java.io.File,org.apache.tools.ant.module.spi.AntSession)
-meth public boolean org.apache.tools.ant.module.spi.AntLogger.interestedInSession(org.apache.tools.ant.module.spi.AntSession)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.apache.tools.ant.module.spi.AntLogger.buildFinished(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.buildInitializationFailed(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.buildStarted(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.messageLogged(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.targetFinished(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.targetStarted(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.taskFinished(org.apache.tools.ant.module.spi.AntEvent)
-meth public void org.apache.tools.ant.module.spi.AntLogger.taskStarted(org.apache.tools.ant.module.spi.AntEvent)
-supr java.lang.Object
-CLSS public abstract org.apache.tools.ant.module.spi.AntOutputStream
-cons public AntOutputStream()
+hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+
+CLSS public abstract interface java.io.Closeable
+meth public abstract void close() throws java.io.IOException
+
+CLSS public abstract interface java.io.Flushable
+meth public abstract void flush() throws java.io.IOException
+
+CLSS public abstract java.io.OutputStream
+cons public OutputStream()
 intf java.io.Closeable
 intf java.io.Flushable
-meth protected abstract void org.apache.tools.ant.module.spi.AntOutputStream.writeLine(java.lang.String) throws java.io.IOException
-meth protected boolean org.apache.tools.ant.module.spi.AntOutputStream.writeLine(java.lang.String,java.net.URL,int,int,int,int,java.lang.String) throws java.io.IOException
-meth protected java.lang.String org.apache.tools.ant.module.spi.AntOutputStream.formatMessage(java.lang.String,java.lang.String,int,int,int,int)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.apache.tools.ant.module.spi.AntOutputStream.handleClose() throws java.io.IOException
-meth protected void org.apache.tools.ant.module.spi.AntOutputStream.writeLine(java.lang.String,org.openide.filesystems.FileObject,int,int,int,int,java.lang.String) throws java.io.IOException
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.apache.tools.ant.module.spi.AntOutputStream.close() throws java.io.IOException
-meth public final void org.apache.tools.ant.module.spi.AntOutputStream.flush() throws java.io.IOException
-meth public final void org.apache.tools.ant.module.spi.AntOutputStream.write([B) throws java.io.IOException
-meth public final void org.apache.tools.ant.module.spi.AntOutputStream.write([B,int,int) throws java.io.IOException
-meth public final void org.apache.tools.ant.module.spi.AntOutputStream.write(int) throws java.io.IOException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public abstract void write(int) throws java.io.IOException
+meth public void close() throws java.io.IOException
+meth public void flush() throws java.io.IOException
+meth public void write(byte[]) throws java.io.IOException
+meth public void write(byte[],int,int) throws java.io.IOException
+supr java.lang.Object
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
+
+CLSS public java.lang.Object
+cons public Object()
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected void finalize() throws java.lang.Throwable
+meth public boolean equals(java.lang.Object)
+meth public final java.lang.Class<?> getClass()
+meth public final void notify()
+meth public final void notifyAll()
+meth public final void wait() throws java.lang.InterruptedException
+meth public final void wait(long) throws java.lang.InterruptedException
+meth public final void wait(long,int) throws java.lang.InterruptedException
+meth public int hashCode()
+meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public abstract interface org.apache.tools.ant.module.api.AntProjectCookie
+innr public abstract interface static ParseStatus
+intf org.openide.nodes.Node$Cookie
+meth public abstract java.io.File getFile()
+meth public abstract java.lang.Throwable getParseException()
+meth public abstract org.openide.filesystems.FileObject getFileObject()
+meth public abstract org.w3c.dom.Document getDocument()
+meth public abstract org.w3c.dom.Element getProjectElement()
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+
+CLSS public abstract interface static org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus
+intf org.apache.tools.ant.module.api.AntProjectCookie
+meth public abstract boolean isParsed()
+
+CLSS public final org.apache.tools.ant.module.api.AntTargetExecutor
+innr public final static Env
+meth public org.openide.execution.ExecutorTask execute(org.apache.tools.ant.module.api.AntProjectCookie,java.lang.String[]) throws java.io.IOException
+meth public static org.apache.tools.ant.module.api.AntTargetExecutor createTargetExecutor(org.apache.tools.ant.module.api.AntTargetExecutor$Env)
+supr java.lang.Object
+hfds env
+
+CLSS public final static org.apache.tools.ant.module.api.AntTargetExecutor$Env
+cons public Env()
+meth public int getVerbosity()
+meth public java.io.OutputStream getLogger()
+meth public java.util.Properties getProperties()
+meth public void setLogger(java.io.OutputStream)
+ anno 0 java.lang.Deprecated()
+meth public void setProperties(java.util.Properties)
+meth public void setVerbosity(int)
+supr java.lang.Object
+hfds outputStream,properties,verbosity
+
+CLSS public abstract interface org.apache.tools.ant.module.api.ElementCookie
+ anno 0 java.lang.Deprecated()
+intf org.openide.nodes.Node$Cookie
+meth public abstract org.w3c.dom.Element getElement()
+
+CLSS public final org.apache.tools.ant.module.api.IntrospectedInfo
+cons public IntrospectedInfo()
+meth public boolean isKnown(java.lang.String)
+meth public boolean supportsText(java.lang.String)
+meth public java.lang.String toString()
+meth public java.lang.String[] getTags(java.lang.String)
+meth public java.util.Map<java.lang.String,java.lang.String> getAttributes(java.lang.String)
+meth public java.util.Map<java.lang.String,java.lang.String> getDefs(java.lang.String)
+meth public java.util.Map<java.lang.String,java.lang.String> getElements(java.lang.String)
+meth public static org.apache.tools.ant.module.api.IntrospectedInfo getDefaults()
+meth public static org.apache.tools.ant.module.api.IntrospectedInfo getKnownInfo()
+meth public void addChangeListener(javax.swing.event.ChangeListener)
+meth public void register(java.lang.String,java.lang.Class,java.lang.String)
+meth public void removeChangeListener(javax.swing.event.ChangeListener)
+meth public void scanProject(java.util.Map<java.lang.String,java.util.Map<java.lang.String,java.lang.Class>>)
+meth public void unregister(java.lang.String,java.lang.String)
+supr java.lang.Object
+hfds LOG,antBridgeListener,clazzes,cs,defaults,defaultsEverInited,defaultsInited,holder,merged,namedefs
+hcls ChangeTask,IntrospectedClass
+
+CLSS public abstract interface org.apache.tools.ant.module.api.IntrospectionCookie
+ anno 0 java.lang.Deprecated()
+intf org.openide.nodes.Node$Cookie
+meth public abstract java.lang.String getClassName()
+
+CLSS public final org.apache.tools.ant.module.api.support.ActionUtils
+meth public static java.lang.String antIncludesList(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject)
+meth public static java.lang.String antIncludesList(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject,boolean)
+meth public static org.openide.execution.ExecutorTask runTarget(org.openide.filesystems.FileObject,java.lang.String[],java.util.Properties) throws java.io.IOException
+meth public static org.openide.filesystems.FileObject[] findSelectedFiles(org.openide.util.Lookup,org.openide.filesystems.FileObject,java.lang.String,boolean)
+meth public static org.openide.filesystems.FileObject[] regexpMapFiles(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject,java.util.regex.Pattern,org.openide.filesystems.FileObject,java.lang.String,boolean)
+supr java.lang.Object
+
+CLSS public org.apache.tools.ant.module.api.support.AntScriptUtils
+meth public static java.lang.String getAntScriptName(org.openide.filesystems.FileObject)
+meth public static java.util.List<java.lang.String> getCallableTargetNames(org.openide.filesystems.FileObject) throws java.io.IOException
+meth public static org.apache.tools.ant.module.api.AntProjectCookie antProjectCookieFor(org.openide.filesystems.FileObject)
+supr java.lang.Object
+hfds antProjectCookies
+
+CLSS public org.apache.tools.ant.module.api.support.TargetLister
+innr public final static Target
+meth public static java.util.Set<org.apache.tools.ant.module.api.support.TargetLister$Target> getTargets(org.apache.tools.ant.module.api.AntProjectCookie) throws java.io.IOException
+supr java.lang.Object
+hcls Script
+
+CLSS public final static org.apache.tools.ant.module.api.support.TargetLister$Target
+meth public boolean isDefault()
+meth public boolean isDescribed()
+meth public boolean isInternal()
+meth public boolean isOverridden()
+meth public java.lang.String getName()
+meth public java.lang.String getQualifiedName()
+meth public java.lang.String toString()
+meth public org.apache.tools.ant.module.api.AntProjectCookie getScript()
+meth public org.w3c.dom.Element getElement()
+supr java.lang.Object
+hfds el,name,script
+
+CLSS public final org.apache.tools.ant.module.spi.AntEvent
+fld public final static int LOG_DEBUG = 4
+fld public final static int LOG_ERR = 0
+fld public final static int LOG_INFO = 2
+fld public final static int LOG_VERBOSE = 3
+fld public final static int LOG_WARN = 1
+meth public boolean isConsumed()
+meth public int getLine()
+meth public int getLogLevel()
+meth public java.io.File getScriptLocation()
+meth public java.lang.String evaluate(java.lang.String)
+meth public java.lang.String getMessage()
+meth public java.lang.String getProperty(java.lang.String)
+meth public java.lang.String getTargetName()
+meth public java.lang.String getTaskName()
+meth public java.lang.String toString()
+meth public java.lang.Throwable getException()
+meth public java.util.Set<java.lang.String> getPropertyNames()
+meth public org.apache.tools.ant.module.spi.AntSession getSession()
+meth public org.apache.tools.ant.module.spi.TaskStructure getTaskStructure()
+meth public void consume()
+supr java.lang.Object
+hfds impl
+
+CLSS public abstract org.apache.tools.ant.module.spi.AntLogger
+cons protected AntLogger()
+fld public final static java.lang.String[] ALL_TARGETS
+fld public final static java.lang.String[] ALL_TASKS
+fld public final static java.lang.String[] NO_TARGETS
+fld public final static java.lang.String[] NO_TASKS
+meth public boolean interestedInAllScripts(org.apache.tools.ant.module.spi.AntSession)
+meth public boolean interestedInScript(java.io.File,org.apache.tools.ant.module.spi.AntSession)
+meth public boolean interestedInSession(org.apache.tools.ant.module.spi.AntSession)
+meth public int[] interestedInLogLevels(org.apache.tools.ant.module.spi.AntSession)
+meth public java.lang.String[] interestedInTargets(org.apache.tools.ant.module.spi.AntSession)
+meth public java.lang.String[] interestedInTasks(org.apache.tools.ant.module.spi.AntSession)
+meth public void buildFinished(org.apache.tools.ant.module.spi.AntEvent)
+meth public void buildInitializationFailed(org.apache.tools.ant.module.spi.AntEvent)
+meth public void buildStarted(org.apache.tools.ant.module.spi.AntEvent)
+meth public void messageLogged(org.apache.tools.ant.module.spi.AntEvent)
+meth public void targetFinished(org.apache.tools.ant.module.spi.AntEvent)
+meth public void targetStarted(org.apache.tools.ant.module.spi.AntEvent)
+meth public void taskFinished(org.apache.tools.ant.module.spi.AntEvent)
+meth public void taskStarted(org.apache.tools.ant.module.spi.AntEvent)
+supr java.lang.Object
+
+CLSS public abstract org.apache.tools.ant.module.spi.AntOutputStream
+ anno 0 java.lang.Deprecated()
+cons public AntOutputStream()
+meth protected abstract void writeLine(java.lang.String) throws java.io.IOException
+meth protected boolean writeLine(java.lang.String,java.net.URL,int,int,int,int,java.lang.String) throws java.io.IOException
+ anno 0 java.lang.Deprecated()
+meth protected java.lang.String formatMessage(java.lang.String,java.lang.String,int,int,int,int)
+ anno 0 java.lang.Deprecated()
+meth protected void handleClose() throws java.io.IOException
+meth protected void writeLine(java.lang.String,org.openide.filesystems.FileObject,int,int,int,int,java.lang.String) throws java.io.IOException
+ anno 0 java.lang.Deprecated()
+meth public final void close() throws java.io.IOException
+meth public final void flush() throws java.io.IOException
+meth public final void write(byte[]) throws java.io.IOException
+meth public final void write(byte[],int,int) throws java.io.IOException
+meth public final void write(int) throws java.io.IOException
 supr java.io.OutputStream
+hfds buffer,hadFirst
+
 CLSS public final org.apache.tools.ant.module.spi.AntSession
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.lang.String; org.apache.tools.ant.module.spi.AntSession.getOriginatingTargets()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.apache.tools.ant.module.spi.AntSession.isExceptionConsumed(java.lang.Throwable)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.apache.tools.ant.module.spi.AntSession.getVerbosity()
-meth public java.io.File org.apache.tools.ant.module.spi.AntSession.getOriginatingScript()
-meth public java.lang.Object org.apache.tools.ant.module.spi.AntSession.getCustomData(org.apache.tools.ant.module.spi.AntLogger)
-meth public java.lang.String org.apache.tools.ant.module.spi.AntSession.getDisplayName()
-meth public java.lang.String org.apache.tools.ant.module.spi.AntSession.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.windows.OutputListener org.apache.tools.ant.module.spi.AntSession.createStandardHyperlink(java.net.URL,java.lang.String,int,int,int,int)
-meth public void org.apache.tools.ant.module.spi.AntSession.consumeException(java.lang.Throwable) throws java.lang.IllegalStateException
-meth public void org.apache.tools.ant.module.spi.AntSession.deliverMessageLogged(org.apache.tools.ant.module.spi.AntEvent,java.lang.String,int)
-meth public void org.apache.tools.ant.module.spi.AntSession.println(java.lang.String,boolean,org.openide.windows.OutputListener)
-meth public void org.apache.tools.ant.module.spi.AntSession.putCustomData(org.apache.tools.ant.module.spi.AntLogger,java.lang.Object)
+meth public boolean isExceptionConsumed(java.lang.Throwable)
+meth public int getVerbosity()
+meth public java.io.File getOriginatingScript()
+meth public java.lang.Object getCustomData(org.apache.tools.ant.module.spi.AntLogger)
+meth public java.lang.String getDisplayName()
+meth public java.lang.String toString()
+meth public java.lang.String[] getOriginatingTargets()
+meth public org.openide.windows.OutputListener createStandardHyperlink(java.net.URL,java.lang.String,int,int,int,int)
+meth public void consumeException(java.lang.Throwable)
+meth public void deliverMessageLogged(org.apache.tools.ant.module.spi.AntEvent,java.lang.String,int)
+meth public void println(java.lang.String,boolean,org.openide.windows.OutputListener)
+meth public void putCustomData(org.apache.tools.ant.module.spi.AntLogger,java.lang.Object)
 supr java.lang.Object
+hfds impl
+
 CLSS public abstract interface org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider
-meth public abstract [Ljava.io.File; org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider.getClasspathItems()
-supr null
+meth public abstract java.io.File[] getClasspathItems()
+
 CLSS public final org.apache.tools.ant.module.spi.TaskStructure
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Lorg.apache.tools.ant.module.spi.TaskStructure; org.apache.tools.ant.module.spi.TaskStructure.getChildren()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String org.apache.tools.ant.module.spi.TaskStructure.getAttribute(java.lang.String)
-meth public java.lang.String org.apache.tools.ant.module.spi.TaskStructure.getName()
-meth public java.lang.String org.apache.tools.ant.module.spi.TaskStructure.getText()
-meth public java.lang.String org.apache.tools.ant.module.spi.TaskStructure.toString()
-meth public java.util.Set org.apache.tools.ant.module.spi.TaskStructure.getAttributeNames()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public java.lang.String getAttribute(java.lang.String)
+meth public java.lang.String getName()
+meth public java.lang.String getText()
+meth public java.lang.String toString()
+meth public java.util.Set<java.lang.String> getAttributeNames()
+meth public org.apache.tools.ant.module.spi.TaskStructure[] getChildren()
 supr java.lang.Object
+hfds impl
+
+CLSS public abstract org.openide.nodes.Node
+cons protected Node(org.openide.nodes.Children)
+cons protected Node(org.openide.nodes.Children,org.openide.util.Lookup)
+fld public final static java.lang.String PROP_COOKIE = "cookie"
+fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
+fld public final static java.lang.String PROP_ICON = "icon"
+fld public final static java.lang.String PROP_LEAF = "leaf"
+fld public final static java.lang.String PROP_NAME = "name"
+fld public final static java.lang.String PROP_OPENED_ICON = "openedIcon"
+fld public final static java.lang.String PROP_PARENT_NODE = "parentNode"
+fld public final static java.lang.String PROP_PROPERTY_SETS = "propertySets"
+fld public final static java.lang.String PROP_SHORT_DESCRIPTION = "shortDescription"
+fld public final static org.openide.nodes.Node EMPTY
+innr public abstract interface static Cookie
+innr public abstract interface static Handle
+innr public abstract static IndexedProperty
+innr public abstract static Property
+innr public abstract static PropertySet
+intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
+meth protected final boolean hasPropertyChangeListener()
+meth protected final void fireCookieChange()
+meth protected final void fireDisplayNameChange(java.lang.String,java.lang.String)
+meth protected final void fireIconChange()
+meth protected final void fireNameChange(java.lang.String,java.lang.String)
+meth protected final void fireNodeDestroyed()
+meth protected final void fireOpenedIconChange()
+meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected final void firePropertySetsChange(org.openide.nodes.Node$PropertySet[],org.openide.nodes.Node$PropertySet[])
+meth protected final void fireShortDescriptionChange(java.lang.String,java.lang.String)
+meth protected final void setChildren(org.openide.nodes.Children)
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
+meth public abstract boolean canCopy()
+meth public abstract boolean canCut()
+meth public abstract boolean canDestroy()
+meth public abstract boolean canRename()
+meth public abstract boolean hasCustomizer()
+meth public abstract java.awt.Component getCustomizer()
+meth public abstract java.awt.Image getIcon(int)
+meth public abstract java.awt.Image getOpenedIcon(int)
+meth public abstract java.awt.datatransfer.Transferable clipboardCopy() throws java.io.IOException
+meth public abstract java.awt.datatransfer.Transferable clipboardCut() throws java.io.IOException
+meth public abstract java.awt.datatransfer.Transferable drag() throws java.io.IOException
+meth public abstract org.openide.nodes.Node cloneNode()
+meth public abstract org.openide.nodes.Node$Handle getHandle()
+meth public abstract org.openide.nodes.Node$PropertySet[] getPropertySets()
+meth public abstract org.openide.util.HelpCtx getHelpCtx()
+meth public abstract org.openide.util.datatransfer.NewType[] getNewTypes()
+meth public abstract org.openide.util.datatransfer.PasteType getDropType(java.awt.datatransfer.Transferable,int,int)
+meth public abstract org.openide.util.datatransfer.PasteType[] getPasteTypes(java.awt.datatransfer.Transferable)
+meth public boolean equals(java.lang.Object)
+meth public final boolean isLeaf()
+meth public final javax.swing.JPopupMenu getContextMenu()
+meth public final org.openide.nodes.Children getChildren()
+meth public final org.openide.nodes.Node getParentNode()
+meth public final org.openide.util.Lookup getLookup()
+meth public final void addNodeListener(org.openide.nodes.NodeListener)
+meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void removeNodeListener(org.openide.nodes.NodeListener)
+meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public java.lang.String getHtmlDisplayName()
+meth public java.lang.String toString()
+meth public javax.swing.Action getPreferredAction()
+meth public javax.swing.Action[] getActions(boolean)
+meth public org.openide.util.actions.SystemAction getDefaultAction()
+ anno 0 java.lang.Deprecated()
+meth public org.openide.util.actions.SystemAction[] getActions()
+ anno 0 java.lang.Deprecated()
+meth public org.openide.util.actions.SystemAction[] getContextActions()
+ anno 0 java.lang.Deprecated()
+meth public void destroy() throws java.io.IOException
+meth public void setDisplayName(java.lang.String)
+meth public void setName(java.lang.String)
+meth public void setShortDescription(java.lang.String)
+supr java.beans.FeatureDescriptor
+hfds INIT_LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hcls LookupEventList
+
+CLSS public abstract interface static org.openide.nodes.Node$Cookie
+
+CLSS public final org.openide.util.HelpCtx
+cons public HelpCtx(java.lang.Class)
+cons public HelpCtx(java.lang.String)
+cons public HelpCtx(java.net.URL)
+ anno 0 java.lang.Deprecated()
+fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Provider
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String getHelpID()
+meth public java.lang.String toString()
+meth public java.net.URL getHelp()
+meth public static org.openide.util.HelpCtx findHelp(java.awt.Component)
+meth public static org.openide.util.HelpCtx findHelp(java.lang.Object)
+meth public static void setHelpIDString(javax.swing.JComponent,java.lang.String)
+supr java.lang.Object
+hfds err,helpCtx,helpID
+
+CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+meth public abstract org.openide.util.HelpCtx getHelpCtx()
+
+CLSS public abstract org.openide.util.Lookup
+cons public Lookup()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds defaultLookup
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup getLookup()
+

@@ -44,6 +44,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -55,6 +56,9 @@ public final class ImportProjectPanel extends JPanel {
     /** Creates new form ImportProjectVisualPanel1 */
     public ImportProjectPanel(ImportProjectDescriptorPanel controller) {
         initComponents();
+
+        HTMLEditorKit kit = new HTMLEditorKit();
+        todoPane.setEditorKit(kit);
 
         jLabel1.setVisible(false);
         projectFolder.setVisible(false);
@@ -144,6 +148,9 @@ public final class ImportProjectPanel extends JPanel {
             jSeparator1.setVisible(false);
         }
 
+        //HTMLEditorKit kit = (HTMLEditorKit) todoPane.getEditorKit();
+        //HTMLDocument doc = (HTMLDocument) kit.createDefaultDocument();
+        //todoPane.setDocument(doc);
         StringBuilder buf = new StringBuilder();
         if (configure == null) {
             if (make == null) {
@@ -156,31 +163,23 @@ public final class ImportProjectPanel extends JPanel {
             } else {
                 // rebuild project
                 buf.append(getString("Prompt_Intention")); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
             }
         } else {
             if (make == null) {
                 // configure and build project
                 buf.append(getString("Prompt_Intention")); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_ConfigureProject", "configure "+controller.getWizardStorage().getRealFlags())); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_BuildProject", "make")); // NOI18N
             } else {
                 // rebuild project
                 buf.append(getString("Prompt_Intention")); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_CreateProject", controller.getWizardStorage().getPath())); // NOI18N
-                buf.append("\n- "); // NOI18N
                 buf.append(getString("Prompt_RebuildProject", "make clean", "make")); // NOI18N
             }
         }
-        buf.append("\n- "); // NOI18N
         buf.append(getString("Prompt_ConfigureCodeAssistance")); // NOI18N
         todoPane.setText(buf.toString());
     }

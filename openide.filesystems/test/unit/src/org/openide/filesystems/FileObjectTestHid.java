@@ -1011,6 +1011,8 @@ public class FileObjectTestHid extends TestBaseHid {
         
         FileUtil.setMIMEType(fo.getExt(),mimeType);
         String actualMT = fo.getMIMEType();
+        // deregister
+        FileUtil.setMIMEType(fo.getExt(), null);
         fsAssert("mimeType for this fo was registered; was really " + actualMT, actualMT.equals(mimeType));
     }
 

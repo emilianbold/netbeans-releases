@@ -1,5076 +1,1689 @@
-#API master signature file
-#Version 2.10
-CLSS public static abstract interface org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
-meth public abstract boolean org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.isEditorVisible()
-meth public abstract boolean org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.openEditor(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.closeEditor(boolean)
-meth public abstract void org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.notifyEditorComponentBoundsChanged()
-supr null
-CLSS public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection
-fld  public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.BOTTOM
-fld  public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.LEFT
-fld  public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.RIGHT
-fld  public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.TOP
+#Signature file v4.0
+#Version 2.17.1
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected Enum(java.lang.String,int)
 intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection; org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.BOTTOM_CENTER
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.BOTTOM_LEFT
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.BOTTOM_RIGHT
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.CENTER_LEFT
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.CENTER_RIGHT
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.TOP_CENTER
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.TOP_LEFT
-fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.TOP_RIGHT
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.action.ResizeProvider$ControlPoint; org.netbeans.api.visual.action.ResizeProvider$ControlPoint.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeProvider$ControlPoint.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
+
+CLSS public java.lang.Object
+cons public Object()
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected void finalize() throws java.lang.Throwable
+meth public boolean equals(java.lang.Object)
+meth public final java.lang.Class<?> getClass()
+meth public final void notify()
+meth public final void notifyAll()
+meth public final void wait() throws java.lang.InterruptedException
+meth public final void wait(long) throws java.lang.InterruptedException
+meth public final void wait(long,int) throws java.lang.InterruptedException
+meth public int hashCode()
+meth public java.lang.String toString()
+
+CLSS public abstract interface javax.accessibility.Accessible
+meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
+
+CLSS public abstract interface org.netbeans.api.visual.action.AcceptProvider
+meth public abstract org.netbeans.api.visual.action.ConnectorState isAcceptable(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.datatransfer.Transferable)
+meth public abstract void accept(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.datatransfer.Transferable)
+
+CLSS public final org.netbeans.api.visual.action.ActionFactory
+meth public static <%0 extends javax.swing.JComponent> org.netbeans.api.visual.action.WidgetAction createInplaceEditorAction(org.netbeans.api.visual.action.InplaceEditorProvider<{%%0}>)
+meth public static org.netbeans.api.visual.action.AlignWithMoveDecorator createDefaultAlignWithMoveDecorator()
+meth public static org.netbeans.api.visual.action.ConnectDecorator createDefaultConnectDecorator()
+meth public static org.netbeans.api.visual.action.InplaceEditorProvider$EditorController getInplaceEditorController(org.netbeans.api.visual.action.WidgetAction)
+meth public static org.netbeans.api.visual.action.MoveControlPointProvider createFreeMoveControlPointProvider()
+meth public static org.netbeans.api.visual.action.MoveControlPointProvider createOrthogonalMoveControlPointProvider()
+meth public static org.netbeans.api.visual.action.MoveProvider createDefaultMoveProvider()
+meth public static org.netbeans.api.visual.action.MoveStrategy createFreeMoveStrategy()
+meth public static org.netbeans.api.visual.action.MoveStrategy createSnapToGridMoveStrategy(int,int)
+meth public static org.netbeans.api.visual.action.ReconnectDecorator createDefaultReconnectDecorator()
+meth public static org.netbeans.api.visual.action.RectangularSelectDecorator createDefaultRectangularSelectDecorator(org.netbeans.api.visual.widget.Scene)
+meth public static org.netbeans.api.visual.action.RectangularSelectProvider createObjectSceneRectangularSelectProvider(org.netbeans.api.visual.model.ObjectScene)
+meth public static org.netbeans.api.visual.action.ResizeControlPointResolver createDefaultResizeControlPointResolver()
+meth public static org.netbeans.api.visual.action.ResizeProvider createDefaultResizeProvider()
+meth public static org.netbeans.api.visual.action.ResizeStrategy createFreeResizeStategy()
+meth public static org.netbeans.api.visual.action.WidgetAction createAcceptAction(org.netbeans.api.visual.action.AcceptProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createActionMapAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createActionMapAction(javax.swing.InputMap,javax.swing.ActionMap)
+meth public static org.netbeans.api.visual.action.WidgetAction createAddRemoveControlPointAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createAddRemoveControlPointAction(double,double)
+meth public static org.netbeans.api.visual.action.WidgetAction createAddRemoveControlPointAction(double,double,org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithMoveAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithMoveAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithMoveAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithMoveAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithResizeAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithResizeAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithResizeAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
+meth public static org.netbeans.api.visual.action.WidgetAction createAlignWithResizeAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
+meth public static org.netbeans.api.visual.action.WidgetAction createCenteredZoomAction(double)
+meth public static org.netbeans.api.visual.action.WidgetAction createConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createConnectAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createContiguousSelectAction(org.netbeans.api.visual.action.ContiguousSelectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createCycleFocusAction(org.netbeans.api.visual.action.CycleFocusProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createCycleObjectSceneFocusAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createEditAction(org.netbeans.api.visual.action.EditProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createExtendedConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createExtendedConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider,int)
+meth public static org.netbeans.api.visual.action.WidgetAction createExtendedConnectAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createForwardKeyEventsAction(org.netbeans.api.visual.widget.Widget,java.lang.String)
+meth public static org.netbeans.api.visual.action.WidgetAction createFreeMoveControlPointAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createHoverAction(org.netbeans.api.visual.action.HoverProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createHoverAction(org.netbeans.api.visual.action.TwoStateHoverProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createInplaceEditorAction(org.netbeans.api.visual.action.TextFieldInplaceEditor)
+meth public static org.netbeans.api.visual.action.WidgetAction createInplaceEditorAction(org.netbeans.api.visual.action.TextFieldInplaceEditor,java.util.EnumSet<org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection>)
+meth public static org.netbeans.api.visual.action.WidgetAction createMouseCenteredZoomAction(double)
+meth public static org.netbeans.api.visual.action.WidgetAction createMoveAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createMoveAction(org.netbeans.api.visual.action.MoveStrategy,org.netbeans.api.visual.action.MoveProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createMoveControlPointAction(org.netbeans.api.visual.action.MoveControlPointProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createMoveControlPointAction(org.netbeans.api.visual.action.MoveControlPointProvider,org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
+meth public static org.netbeans.api.visual.action.WidgetAction createOrthogonalMoveControlPointAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createPanAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createPopupMenuAction(org.netbeans.api.visual.action.PopupMenuProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createReconnectAction(org.netbeans.api.visual.action.ReconnectDecorator,org.netbeans.api.visual.action.ReconnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createReconnectAction(org.netbeans.api.visual.action.ReconnectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createRectangularSelectAction(org.netbeans.api.visual.action.RectangularSelectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.RectangularSelectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createRectangularSelectAction(org.netbeans.api.visual.model.ObjectScene,org.netbeans.api.visual.widget.LayerWidget)
+meth public static org.netbeans.api.visual.action.WidgetAction createResizeAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createResizeAction(org.netbeans.api.visual.action.ResizeStrategy,org.netbeans.api.visual.action.ResizeControlPointResolver,org.netbeans.api.visual.action.ResizeProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createResizeAction(org.netbeans.api.visual.action.ResizeStrategy,org.netbeans.api.visual.action.ResizeProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createSelectAction(org.netbeans.api.visual.action.SelectProvider)
+meth public static org.netbeans.api.visual.action.WidgetAction createSelectAction(org.netbeans.api.visual.action.SelectProvider,boolean)
+meth public static org.netbeans.api.visual.action.WidgetAction createSwitchCardAction(org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.action.WidgetAction createWheelPanAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createZoomAction()
+meth public static org.netbeans.api.visual.action.WidgetAction createZoomAction(double,boolean)
+supr java.lang.Object
+hfds ACTION_MAP_ACTION,ALIGN_WITH_MOVE_DECORATOR_DEFAULT,CONNECT_DECORATOR_DEFAULT,CYCLE_FOCUS_OBJECT_SCENE,MOVE_ACTION,MOVE_CONTROL_POINT_ACTION_FREE,MOVE_CONTROL_POINT_ACTION_ORTHOGONAL,MOVE_CONTROL_POINT_PROVIDER_FREE,MOVE_CONTROL_POINT_PROVIDER_ORTHOGONAL,MOVE_PROVIDER_DEFAULT,MOVE_STRATEGY_FREE,PAN_ACTION,RECONNECT_DECORATOR_DEFAULT,RESIZE_ACTION,RESIZE_CONTROL_POINT_RESOLVER_DEFAULT,RESIZE_PROVIDER_DEFAULT,RESIZE_STRATEGY_FREE,STROKE,WHEEL_PAN_ACTION
+
+CLSS public abstract interface org.netbeans.api.visual.action.AlignWithMoveDecorator
+meth public abstract org.netbeans.api.visual.widget.ConnectionWidget createLineWidget(org.netbeans.api.visual.widget.Scene)
+
+CLSS public abstract interface org.netbeans.api.visual.action.AlignWithWidgetCollector
+meth public abstract java.util.Collection<java.awt.Rectangle> getRegions(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ConnectDecorator
+meth public abstract org.netbeans.api.visual.anchor.Anchor createFloatAnchor(java.awt.Point)
+meth public abstract org.netbeans.api.visual.anchor.Anchor createSourceAnchor(org.netbeans.api.visual.widget.Widget)
+meth public abstract org.netbeans.api.visual.anchor.Anchor createTargetAnchor(org.netbeans.api.visual.widget.Widget)
+meth public abstract org.netbeans.api.visual.widget.ConnectionWidget createConnectionWidget(org.netbeans.api.visual.widget.Scene)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ConnectProvider
+meth public abstract boolean hasCustomTargetWidgetResolver(org.netbeans.api.visual.widget.Scene)
+meth public abstract boolean isSourceWidget(org.netbeans.api.visual.widget.Widget)
+meth public abstract org.netbeans.api.visual.action.ConnectorState isTargetWidget(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
+meth public abstract org.netbeans.api.visual.widget.Widget resolveTargetWidget(org.netbeans.api.visual.widget.Scene,java.awt.Point)
+meth public abstract void createConnection(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
+
+CLSS public final !enum org.netbeans.api.visual.action.ConnectorState
+fld public final static org.netbeans.api.visual.action.ConnectorState ACCEPT
+fld public final static org.netbeans.api.visual.action.ConnectorState REJECT
+fld public final static org.netbeans.api.visual.action.ConnectorState REJECT_AND_STOP
+meth public static org.netbeans.api.visual.action.ConnectorState valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.action.ConnectorState[] values()
+supr java.lang.Enum<org.netbeans.api.visual.action.ConnectorState>
+
+CLSS public final org.netbeans.api.visual.action.ContiguousSelectEvent
+innr public final static !enum SelectionType
+meth public java.awt.Point getChoosenLocalLocation()
+meth public java.awt.Point getPreviouslyChoosenLocalLocation()
+meth public org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType getSelectionType()
+meth public org.netbeans.api.visual.widget.Widget getChoosenWidget()
+meth public org.netbeans.api.visual.widget.Widget getPreviouslyChoosenWidget()
+meth public static org.netbeans.api.visual.action.ContiguousSelectEvent create(org.netbeans.api.visual.widget.Widget,java.awt.Point,org.netbeans.api.visual.widget.Widget,java.awt.Point,org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType)
+supr java.lang.Object
+hfds choosenLocalLocation,choosenWidget,previouslyChoosenLocalLocation,previouslyChoosenWidget,selectionType
+
+CLSS public final static !enum org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType
+fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType ADDITIVE_CONTIGUOUS
+fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType ADDITIVE_NON_CONTIGUOUS
+fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType REPLACE_CONTIGUOUS
+fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType REPLACE_NON_CONTIGUOUS
+meth public static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType>
+
+CLSS public abstract interface org.netbeans.api.visual.action.ContiguousSelectProvider
+meth public abstract boolean isSelectionAllowed(org.netbeans.api.visual.action.ContiguousSelectEvent)
+meth public abstract void select(org.netbeans.api.visual.action.ContiguousSelectEvent)
+
+CLSS public abstract interface org.netbeans.api.visual.action.CycleFocusProvider
+meth public abstract boolean switchNextFocus(org.netbeans.api.visual.widget.Widget)
+meth public abstract boolean switchPreviousFocus(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.EditProvider
+meth public abstract void edit(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.HoverProvider
+meth public abstract void widgetHovered(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.InplaceEditorProvider<%0 extends javax.swing.JComponent>
+innr public abstract interface static EditorController
+innr public abstract interface static TypedEditorController
+innr public final static !enum EditorInvocationType
+innr public final static !enum ExpansionDirection
+meth public abstract java.awt.Rectangle getInitialEditorComponentBounds(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,{org.netbeans.api.visual.action.InplaceEditorProvider%0},java.awt.Rectangle)
+meth public abstract java.util.EnumSet<org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection> getExpansionDirections(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,{org.netbeans.api.visual.action.InplaceEditorProvider%0})
+meth public abstract void notifyClosing(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,{org.netbeans.api.visual.action.InplaceEditorProvider%0},boolean)
+meth public abstract void notifyOpened(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,{org.netbeans.api.visual.action.InplaceEditorProvider%0})
+meth public abstract {org.netbeans.api.visual.action.InplaceEditorProvider%0} createEditorComponent(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface static org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
+meth public abstract boolean isEditorVisible()
+meth public abstract boolean openEditor(org.netbeans.api.visual.widget.Widget)
+meth public abstract void closeEditor(boolean)
+meth public abstract void notifyEditorComponentBoundsChanged()
+
+CLSS public final static !enum org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType CODE
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType KEY
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType MOUSE
+meth public static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType>
+
+CLSS public final static !enum org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection BOTTOM
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection LEFT
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection RIGHT
+fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection TOP
+meth public static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection[] values()
+supr java.lang.Enum<org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection>
+
+CLSS public abstract interface static org.netbeans.api.visual.action.InplaceEditorProvider$TypedEditorController
+intf org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
+meth public abstract org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType getEditorInvocationType()
+
+CLSS public abstract interface org.netbeans.api.visual.action.MoveControlPointProvider
+meth public abstract java.util.List<java.awt.Point> locationSuggested(org.netbeans.api.visual.widget.ConnectionWidget,int,java.awt.Point)
+
+CLSS public abstract interface org.netbeans.api.visual.action.MoveProvider
+meth public abstract java.awt.Point getOriginalLocation(org.netbeans.api.visual.widget.Widget)
+meth public abstract void movementFinished(org.netbeans.api.visual.widget.Widget)
+meth public abstract void movementStarted(org.netbeans.api.visual.widget.Widget)
+meth public abstract void setNewLocation(org.netbeans.api.visual.widget.Widget,java.awt.Point)
+
+CLSS public abstract interface org.netbeans.api.visual.action.MoveStrategy
+meth public abstract java.awt.Point locationSuggested(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.Point)
+
+CLSS public abstract interface org.netbeans.api.visual.action.PopupMenuProvider
+meth public abstract javax.swing.JPopupMenu getPopupMenu(org.netbeans.api.visual.widget.Widget,java.awt.Point)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ReconnectDecorator
+meth public abstract org.netbeans.api.visual.anchor.Anchor createFloatAnchor(java.awt.Point)
+meth public abstract org.netbeans.api.visual.anchor.Anchor createReplacementWidgetAnchor(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ReconnectProvider
+meth public abstract boolean hasCustomReplacementWidgetResolver(org.netbeans.api.visual.widget.Scene)
+meth public abstract boolean isSourceReconnectable(org.netbeans.api.visual.widget.ConnectionWidget)
+meth public abstract boolean isTargetReconnectable(org.netbeans.api.visual.widget.ConnectionWidget)
+meth public abstract org.netbeans.api.visual.action.ConnectorState isReplacementWidget(org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.widget.Widget,boolean)
+meth public abstract org.netbeans.api.visual.widget.Widget resolveReplacementWidget(org.netbeans.api.visual.widget.Scene,java.awt.Point)
+meth public abstract void reconnect(org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.widget.Widget,boolean)
+meth public abstract void reconnectingFinished(org.netbeans.api.visual.widget.ConnectionWidget,boolean)
+meth public abstract void reconnectingStarted(org.netbeans.api.visual.widget.ConnectionWidget,boolean)
+
+CLSS public abstract interface org.netbeans.api.visual.action.RectangularSelectDecorator
+meth public abstract org.netbeans.api.visual.widget.Widget createSelectionWidget()
+
+CLSS public abstract interface org.netbeans.api.visual.action.RectangularSelectProvider
+meth public abstract void performSelection(java.awt.Rectangle)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ResizeControlPointResolver
+meth public abstract org.netbeans.api.visual.action.ResizeProvider$ControlPoint resolveControlPoint(org.netbeans.api.visual.widget.Widget,java.awt.Point)
+
+CLSS public abstract interface org.netbeans.api.visual.action.ResizeProvider
+innr public final static !enum ControlPoint
+meth public abstract void resizingFinished(org.netbeans.api.visual.widget.Widget)
+meth public abstract void resizingStarted(org.netbeans.api.visual.widget.Widget)
+
+CLSS public final static !enum org.netbeans.api.visual.action.ResizeProvider$ControlPoint
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_CENTER
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_LEFT
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_RIGHT
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint CENTER_LEFT
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint CENTER_RIGHT
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint TOP_CENTER
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint TOP_LEFT
+fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint TOP_RIGHT
+meth public static org.netbeans.api.visual.action.ResizeProvider$ControlPoint valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.action.ResizeProvider$ControlPoint[] values()
+supr java.lang.Enum<org.netbeans.api.visual.action.ResizeProvider$ControlPoint>
+
+CLSS public abstract interface org.netbeans.api.visual.action.ResizeStrategy
+meth public abstract java.awt.Rectangle boundsSuggested(org.netbeans.api.visual.widget.Widget,java.awt.Rectangle,java.awt.Rectangle,org.netbeans.api.visual.action.ResizeProvider$ControlPoint)
+
+CLSS public abstract interface org.netbeans.api.visual.action.SelectProvider
+meth public abstract boolean isAimingAllowed(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
+meth public abstract boolean isSelectionAllowed(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
+meth public abstract void select(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
+
+CLSS public abstract interface org.netbeans.api.visual.action.TextFieldInplaceEditor
+meth public abstract boolean isEnabled(org.netbeans.api.visual.widget.Widget)
+meth public abstract java.lang.String getText(org.netbeans.api.visual.widget.Widget)
+meth public abstract void setText(org.netbeans.api.visual.widget.Widget,java.lang.String)
+
+CLSS public abstract interface org.netbeans.api.visual.action.TwoStateHoverProvider
+meth public abstract void setHovering(org.netbeans.api.visual.widget.Widget)
+meth public abstract void unsetHovering(org.netbeans.api.visual.widget.Widget)
+
+CLSS public abstract interface org.netbeans.api.visual.action.WidgetAction
+innr public abstract interface static WidgetEvent
+innr public abstract interface static WidgetLocationEvent
+innr public abstract static LockedAdapter
+innr public abstract static State
+innr public final static Chain
+innr public final static WidgetDropTargetDragEvent
+innr public final static WidgetDropTargetDropEvent
+innr public final static WidgetDropTargetEvent
+innr public final static WidgetFocusEvent
+innr public final static WidgetKeyEvent
+innr public final static WidgetMouseEvent
+innr public final static WidgetMouseWheelEvent
+innr public static Adapter
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
+
 CLSS public static org.netbeans.api.visual.action.WidgetAction$Adapter
 cons public Adapter()
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$LockedAdapter
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$State
-innr public static final org.netbeans.api.visual.action.WidgetAction$Chain
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
-innr public static org.netbeans.api.visual.action.WidgetAction$Adapter
 intf org.netbeans.api.visual.action.WidgetAction
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Adapter.mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$Chain
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$Chain
 cons public Chain()
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$LockedAdapter
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$State
-innr public static final org.netbeans.api.visual.action.WidgetAction$Chain
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
-innr public static org.netbeans.api.visual.action.WidgetAction$Adapter
 intf org.netbeans.api.visual.action.WidgetAction
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.action.WidgetAction$Chain.getActions()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$Chain.mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
-meth public void org.netbeans.api.visual.action.WidgetAction$Chain.addAction(int,org.netbeans.api.visual.action.WidgetAction)
-meth public void org.netbeans.api.visual.action.WidgetAction$Chain.addAction(org.netbeans.api.visual.action.WidgetAction)
-meth public void org.netbeans.api.visual.action.WidgetAction$Chain.removeAction(int)
-meth public void org.netbeans.api.visual.action.WidgetAction$Chain.removeAction(org.netbeans.api.visual.action.WidgetAction)
+meth public java.util.List<org.netbeans.api.visual.action.WidgetAction> getActions()
+meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
+meth public void addAction(int,org.netbeans.api.visual.action.WidgetAction)
+meth public void addAction(org.netbeans.api.visual.action.WidgetAction)
+meth public void removeAction(int)
+meth public void removeAction(org.netbeans.api.visual.action.WidgetAction)
 supr java.lang.Object
-CLSS public static abstract org.netbeans.api.visual.action.WidgetAction$LockedAdapter
+hfds actions,actionsUm
+
+CLSS public abstract static org.netbeans.api.visual.action.WidgetAction$LockedAdapter
 cons public LockedAdapter()
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$LockedAdapter
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$State
-innr public static final org.netbeans.api.visual.action.WidgetAction$Chain
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
-innr public static org.netbeans.api.visual.action.WidgetAction$Adapter
 intf org.netbeans.api.visual.action.WidgetAction
-meth protected abstract boolean org.netbeans.api.visual.action.WidgetAction$LockedAdapter.isLocked()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$LockedAdapter.mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
+meth protected abstract boolean isLocked()
+meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
+meth public org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
 supr java.lang.Object
-CLSS public static abstract org.netbeans.api.visual.action.WidgetAction$State
-fld  public static final org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$State.CHAIN_ONLY
-fld  public static final org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$State.CONSUMED
-fld  public static final org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$State.REJECTED
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.netbeans.api.visual.action.WidgetAction$State.isConsumed()
-meth public abstract boolean org.netbeans.api.visual.action.WidgetAction$State.isLockedInChain()
-meth public abstract org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.WidgetAction$State.getLockedAction()
-meth public abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.action.WidgetAction$State.getLockedWidget()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction$State.createLocked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction)
+
+CLSS public abstract static org.netbeans.api.visual.action.WidgetAction$State
+fld public final static org.netbeans.api.visual.action.WidgetAction$State CHAIN_ONLY
+fld public final static org.netbeans.api.visual.action.WidgetAction$State CONSUMED
+fld public final static org.netbeans.api.visual.action.WidgetAction$State REJECTED
+meth public abstract boolean isConsumed()
+meth public abstract boolean isLockedInChain()
+meth public abstract org.netbeans.api.visual.action.WidgetAction getLockedAction()
+meth public abstract org.netbeans.api.visual.widget.Widget getLockedWidget()
+meth public static org.netbeans.api.visual.action.WidgetAction$State createLocked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
 cons public WidgetDropTargetDragEvent(long,java.awt.dnd.DropTargetDragEvent)
-intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.awt.datatransfer.DataFlavor; org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getCurrentDataFlavors()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getDropAction()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getSourceActions()
-meth public java.awt.Point org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getPoint()
-meth public java.awt.datatransfer.Transferable org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getTransferable()
-meth public java.awt.dnd.DropTargetContext org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getDropTargetContext()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getCurrentDataFlavorsAsList()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.getEventID()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.acceptDrag(int)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.rejectDrag()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.setPoint(java.awt.Point)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent.translatePoint(int,int)
+meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
+meth public int getDropAction()
+meth public int getSourceActions()
+meth public java.awt.Point getPoint()
+meth public java.awt.datatransfer.DataFlavor[] getCurrentDataFlavors()
+meth public java.awt.datatransfer.Transferable getTransferable()
+meth public java.awt.dnd.DropTargetContext getDropTargetContext()
+meth public java.util.List<java.awt.datatransfer.DataFlavor> getCurrentDataFlavorsAsList()
+meth public long getEventID()
+meth public void acceptDrag(int)
+meth public void rejectDrag()
+meth public void setPoint(java.awt.Point)
+meth public void translatePoint(int,int)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
+hfds event,id,x,y
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
 cons public WidgetDropTargetDropEvent(long,java.awt.dnd.DropTargetDropEvent)
-intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.awt.datatransfer.DataFlavor; org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getCurrentDataFlavors()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.isLocalTransfer()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getDropAction()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getSourceActions()
-meth public java.awt.Point org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getPoint()
-meth public java.awt.datatransfer.Transferable org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getTransferable()
-meth public java.awt.dnd.DropTargetContext org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getDropTargetContext()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getCurrentDataFlavorsAsList()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.getEventID()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.acceptDrop(int)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.rejectDrop()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.setPoint(java.awt.Point)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent.translatePoint(int,int)
+meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
+meth public boolean isLocalTransfer()
+meth public int getDropAction()
+meth public int getSourceActions()
+meth public java.awt.Point getPoint()
+meth public java.awt.datatransfer.DataFlavor[] getCurrentDataFlavors()
+meth public java.awt.datatransfer.Transferable getTransferable()
+meth public java.awt.dnd.DropTargetContext getDropTargetContext()
+meth public java.util.List<java.awt.datatransfer.DataFlavor> getCurrentDataFlavorsAsList()
+meth public long getEventID()
+meth public void acceptDrop(int)
+meth public void rejectDrop()
+meth public void setPoint(java.awt.Point)
+meth public void translatePoint(int,int)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
+hfds event,id,x,y
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
 cons public WidgetDropTargetEvent(long,java.awt.dnd.DropTargetEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.dnd.DropTargetContext org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent.getDropTargetContext()
-meth public java.lang.String java.lang.Object.toString()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent.getEventID()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public java.awt.dnd.DropTargetContext getDropTargetContext()
+meth public long getEventID()
 supr java.lang.Object
-CLSS public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-meth public abstract long org.netbeans.api.visual.action.WidgetAction$WidgetEvent.getEventID()
-supr null
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
+hfds event,id
+
+CLSS public abstract interface static org.netbeans.api.visual.action.WidgetAction$WidgetEvent
+meth public abstract long getEventID()
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
 cons public WidgetFocusEvent(long,java.awt.event.FocusEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent.isTemporary()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent.getOppositeComponent()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent.paramString()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent.getEventID()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public boolean isTemporary()
+meth public java.lang.Object getOppositeComponent()
+meth public java.lang.String paramString()
+meth public long getEventID()
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
+hfds event,id
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
 cons public WidgetKeyEvent(long,java.awt.event.KeyEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isActionKey()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isAltDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isAltGraphDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isControlDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isMetaDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.isShiftDown()
-meth public char org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getKeyChar()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getKeyCode()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getKeyLocation()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getModifiers()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getModifiersEx()
-meth public java.lang.String java.lang.Object.toString()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getEventID()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent.getWhen()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public boolean isActionKey()
+meth public boolean isAltDown()
+meth public boolean isAltGraphDown()
+meth public boolean isControlDown()
+meth public boolean isMetaDown()
+meth public boolean isShiftDown()
+meth public char getKeyChar()
+meth public int getKeyCode()
+meth public int getKeyLocation()
+meth public int getModifiers()
+meth public int getModifiersEx()
+meth public long getEventID()
+meth public long getWhen()
 supr java.lang.Object
-CLSS public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
+hfds event,id
+
+CLSS public abstract interface static org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-meth public abstract java.awt.Point org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent.getPoint()
-meth public abstract long org.netbeans.api.visual.action.WidgetAction$WidgetEvent.getEventID()
-meth public abstract void org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent.setPoint(java.awt.Point)
-meth public abstract void org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent.translatePoint(int,int)
-supr null
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
+meth public abstract java.awt.Point getPoint()
+meth public abstract void setPoint(java.awt.Point)
+meth public abstract void translatePoint(int,int)
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
 cons public WidgetMouseEvent(long,java.awt.event.MouseEvent)
-intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isAltDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isAltGraphDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isControlDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isMetaDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isPopupTrigger()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.isShiftDown()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getButton()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getClickCount()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getModifiers()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getModifiersEx()
-meth public java.awt.Point org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getPoint()
-meth public java.lang.String java.lang.Object.toString()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getEventID()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.getWhen()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.setPoint(java.awt.Point)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent.translatePoint(int,int)
+meth public boolean isAltDown()
+meth public boolean isAltGraphDown()
+meth public boolean isControlDown()
+meth public boolean isMetaDown()
+meth public boolean isPopupTrigger()
+meth public boolean isShiftDown()
+meth public int getButton()
+meth public int getClickCount()
+meth public int getModifiers()
+meth public int getModifiersEx()
+meth public java.awt.Point getPoint()
+meth public long getEventID()
+meth public long getWhen()
+meth public void setPoint(java.awt.Point)
+meth public void translatePoint(int,int)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
+hfds event,id,x,y
+
+CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
 cons public WidgetMouseWheelEvent(long,java.awt.event.MouseWheelEvent)
-intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isAltDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isAltGraphDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isControlDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isMetaDown()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isPopupTrigger()
-meth public boolean org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.isShiftDown()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getButton()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getClickCount()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getModifiers()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getModifiersEx()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getScrollAmount()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getScrollType()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getUnitsToScroll()
-meth public int org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getWheelRotation()
-meth public java.awt.Point org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getPoint()
-meth public java.lang.String java.lang.Object.toString()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getEventID()
-meth public long org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.getWhen()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.setPoint(java.awt.Point)
-meth public void org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent.translatePoint(int,int)
+meth public boolean isAltDown()
+meth public boolean isAltGraphDown()
+meth public boolean isControlDown()
+meth public boolean isMetaDown()
+meth public boolean isPopupTrigger()
+meth public boolean isShiftDown()
+meth public int getButton()
+meth public int getClickCount()
+meth public int getModifiers()
+meth public int getModifiersEx()
+meth public int getScrollAmount()
+meth public int getScrollType()
+meth public int getUnitsToScroll()
+meth public int getWheelRotation()
+meth public java.awt.Point getPoint()
+meth public long getEventID()
+meth public long getWhen()
+meth public void setPoint(java.awt.Point)
+meth public void translatePoint(int,int)
 supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.anchor.Anchor$Direction
-fld  public static final org.netbeans.api.visual.anchor.Anchor$Direction org.netbeans.api.visual.anchor.Anchor$Direction.BOTTOM
-fld  public static final org.netbeans.api.visual.anchor.Anchor$Direction org.netbeans.api.visual.anchor.Anchor$Direction.LEFT
-fld  public static final org.netbeans.api.visual.anchor.Anchor$Direction org.netbeans.api.visual.anchor.Anchor$Direction.RIGHT
-fld  public static final org.netbeans.api.visual.anchor.Anchor$Direction org.netbeans.api.visual.anchor.Anchor$Direction.TOP
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.anchor.Anchor$Direction; org.netbeans.api.visual.anchor.Anchor$Direction.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.anchor.Anchor$Direction org.netbeans.api.visual.anchor.Anchor$Direction.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface org.netbeans.api.visual.anchor.Anchor$Entry
-meth public abstract boolean org.netbeans.api.visual.anchor.Anchor$Entry.isAttachedToConnectionSource()
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.Anchor$Entry.getAttachedAnchor()
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.Anchor$Entry.getOppositeAnchor()
-meth public abstract org.netbeans.api.visual.widget.ConnectionWidget org.netbeans.api.visual.anchor.Anchor$Entry.getAttachedConnectionWidget()
-meth public abstract void org.netbeans.api.visual.anchor.Anchor$Entry.revalidateEntry()
-supr null
-CLSS public final org.netbeans.api.visual.anchor.Anchor$Result
-cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,java.util.EnumSet)
-cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,org.netbeans.api.visual.anchor.Anchor$Direction)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.Point org.netbeans.api.visual.anchor.Anchor$Result.getAnchorSceneLocation()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.EnumSet org.netbeans.api.visual.anchor.Anchor$Result.getDirections()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public static final org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind
-fld  public static final org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind.HORIZONTAL
-fld  public static final org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind.VERTICAL
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind; org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract org.netbeans.api.visual.graph.GraphPinScene$StringGraph
-cons public StringGraph()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static abstract org.netbeans.api.visual.graph.GraphPinScene$StringGraph
-intf javax.accessibility.Accessible
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachEdgeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachNodeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachPinWidget(java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphPinScene.attachEdgeSourceAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphPinScene.attachEdgeTargetAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachEdgeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachNodeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachPinWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyEdgeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyNodeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyPinAdded(java.lang.Object,java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isEdge(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isNode(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isPin(java.lang.Object)
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeSource(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeTarget(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getPinNode(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findEdgesBetween(java.lang.Object,java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findPinEdges(java.lang.Object,boolean,boolean)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getEdges()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodePins(java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodes()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getPins()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addEdge(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addNode(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addPin(java.lang.Object,java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeEdge(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNode(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNodeWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePin(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePinWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeSource(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeTarget(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
-supr org.netbeans.api.visual.graph.GraphPinScene
-CLSS public static abstract org.netbeans.api.visual.graph.GraphScene$StringGraph
-cons public StringGraph()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static abstract org.netbeans.api.visual.graph.GraphScene$StringGraph
-intf javax.accessibility.Accessible
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.attachEdgeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.attachNodeWidget(java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphScene.attachEdgeSourceAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphScene.attachEdgeTargetAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.GraphScene.detachEdgeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.detachNodeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.notifyEdgeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.notifyNodeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.graph.GraphScene.isEdge(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphScene.isNode(java.lang.Object)
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphScene.getEdgeSource(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphScene.getEdgeTarget(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.findEdgesBetween(java.lang.Object,java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.findNodeEdges(java.lang.Object,boolean,boolean)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.getEdges()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.getNodes()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.addEdge(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.addNode(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeEdge(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeNode(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeNodeWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.setEdgeSource(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.setEdgeTarget(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
-supr org.netbeans.api.visual.graph.GraphScene
-CLSS public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.BOTTOM_CENTER
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.BOTTOM_LEFT
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.CENTER
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.CENTER_LEFT
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.CENTER_RIGHT
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.NONE
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.TOP_CENTER
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.TOP_LEFT
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.TOP_RIGHT
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment; org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.CENTER
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.JUSTIFY
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.LEFT_TOP
-fld  public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.RIGHT_BOTTOM
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.layout.LayoutFactory$SerialAlignment; org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface org.netbeans.api.visual.model.StateModel$Listener
-meth public abstract void org.netbeans.api.visual.model.StateModel$Listener.stateChanged()
-supr null
-CLSS public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
-fld  public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.ALWAYS_ROUTE
-fld  public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.DISABLE_ROUTING
-fld  public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED
-fld  public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.UPDATE_END_POINTS_ONLY
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy; org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static final org.netbeans.api.visual.widget.LabelWidget$Alignment
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget$Alignment.BASELINE
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget$Alignment.CENTER
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget$Alignment.LEFT
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget$Alignment.RIGHT
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.LabelWidget$Alignment; org.netbeans.api.visual.widget.LabelWidget$Alignment.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget$Alignment.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static final org.netbeans.api.visual.widget.LabelWidget$Orientation
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Orientation org.netbeans.api.visual.widget.LabelWidget$Orientation.NORMAL
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$Orientation org.netbeans.api.visual.widget.LabelWidget$Orientation.ROTATE_90
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.LabelWidget$Orientation; org.netbeans.api.visual.widget.LabelWidget$Orientation.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.LabelWidget$Orientation org.netbeans.api.visual.widget.LabelWidget$Orientation.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.BASELINE
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.BOTTOM
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.CENTER
-fld  public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.TOP
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.LabelWidget$VerticalAlignment; org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-meth public abstract void org.netbeans.api.visual.widget.Scene$SceneListener.sceneRepaint()
-meth public abstract void org.netbeans.api.visual.widget.Scene$SceneListener.sceneValidated()
-meth public abstract void org.netbeans.api.visual.widget.Scene$SceneListener.sceneValidating()
-supr null
-CLSS public static final org.netbeans.api.visual.widget.SeparatorWidget$Orientation
-fld  public static final org.netbeans.api.visual.widget.SeparatorWidget$Orientation org.netbeans.api.visual.widget.SeparatorWidget$Orientation.HORIZONTAL
-fld  public static final org.netbeans.api.visual.widget.SeparatorWidget$Orientation org.netbeans.api.visual.widget.SeparatorWidget$Orientation.VERTICAL
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.SeparatorWidget$Orientation; org.netbeans.api.visual.widget.SeparatorWidget$Orientation.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.SeparatorWidget$Orientation org.netbeans.api.visual.widget.SeparatorWidget$Orientation.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-meth public abstract void org.netbeans.api.visual.widget.Widget$Dependency.revalidateDependency()
-supr null
-CLSS public static final org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation
-fld  public static final org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation.BOTTOM_CENTER
-fld  public static final org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation.RIGHT_CENTER
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation; org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public abstract interface org.netbeans.api.visual.action.AcceptProvider
-meth public abstract org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.AcceptProvider.isAcceptable(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.datatransfer.Transferable)
-meth public abstract void org.netbeans.api.visual.action.AcceptProvider.accept(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.datatransfer.Transferable)
-supr null
-CLSS public final org.netbeans.api.visual.action.ActionFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.action.AlignWithMoveDecorator org.netbeans.api.visual.action.ActionFactory.createDefaultAlignWithMoveDecorator()
-meth public static org.netbeans.api.visual.action.ConnectDecorator org.netbeans.api.visual.action.ActionFactory.createDefaultConnectDecorator()
-meth public static org.netbeans.api.visual.action.InplaceEditorProvider$EditorController org.netbeans.api.visual.action.ActionFactory.getInplaceEditorController(org.netbeans.api.visual.action.WidgetAction)
-meth public static org.netbeans.api.visual.action.MoveControlPointProvider org.netbeans.api.visual.action.ActionFactory.createFreeMoveControlPointProvider()
-meth public static org.netbeans.api.visual.action.MoveControlPointProvider org.netbeans.api.visual.action.ActionFactory.createOrthogonalMoveControlPointProvider()
-meth public static org.netbeans.api.visual.action.MoveProvider org.netbeans.api.visual.action.ActionFactory.createDefaultMoveProvider()
-meth public static org.netbeans.api.visual.action.MoveStrategy org.netbeans.api.visual.action.ActionFactory.createFreeMoveStrategy()
-meth public static org.netbeans.api.visual.action.MoveStrategy org.netbeans.api.visual.action.ActionFactory.createSnapToGridMoveStrategy(int,int)
-meth public static org.netbeans.api.visual.action.ReconnectDecorator org.netbeans.api.visual.action.ActionFactory.createDefaultReconnectDecorator()
-meth public static org.netbeans.api.visual.action.RectangularSelectDecorator org.netbeans.api.visual.action.ActionFactory.createDefaultRectangularSelectDecorator(org.netbeans.api.visual.widget.Scene)
-meth public static org.netbeans.api.visual.action.RectangularSelectProvider org.netbeans.api.visual.action.ActionFactory.createObjectSceneRectangularSelectProvider(org.netbeans.api.visual.model.ObjectScene)
-meth public static org.netbeans.api.visual.action.ResizeControlPointResolver org.netbeans.api.visual.action.ActionFactory.createDefaultResizeControlPointResolver()
-meth public static org.netbeans.api.visual.action.ResizeProvider org.netbeans.api.visual.action.ActionFactory.createDefaultResizeProvider()
-meth public static org.netbeans.api.visual.action.ResizeStrategy org.netbeans.api.visual.action.ActionFactory.createFreeResizeStategy()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAcceptAction(org.netbeans.api.visual.action.AcceptProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createActionMapAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createActionMapAction(javax.swing.InputMap,javax.swing.ActionMap)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAddRemoveControlPointAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAddRemoveControlPointAction(double,double)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAddRemoveControlPointAction(double,double,org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithMoveAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithMoveAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithMoveAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithMoveAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithResizeAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithResizeAction(org.netbeans.api.visual.action.AlignWithWidgetCollector,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithResizeAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createAlignWithResizeAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.AlignWithMoveDecorator,boolean)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createCenteredZoomAction(double)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createConnectAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createCycleFocusAction(org.netbeans.api.visual.action.CycleFocusProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createCycleObjectSceneFocusAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createEditAction(org.netbeans.api.visual.action.EditProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createExtendedConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createExtendedConnectAction(org.netbeans.api.visual.action.ConnectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider,int)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createExtendedConnectAction(org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.ConnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createForwardKeyEventsAction(org.netbeans.api.visual.widget.Widget,java.lang.String)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createFreeMoveControlPointAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createHoverAction(org.netbeans.api.visual.action.HoverProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createHoverAction(org.netbeans.api.visual.action.TwoStateHoverProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createInplaceEditorAction(org.netbeans.api.visual.action.InplaceEditorProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createInplaceEditorAction(org.netbeans.api.visual.action.TextFieldInplaceEditor)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createInplaceEditorAction(org.netbeans.api.visual.action.TextFieldInplaceEditor,java.util.EnumSet)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createMouseCenteredZoomAction(double)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createMoveAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createMoveAction(org.netbeans.api.visual.action.MoveStrategy,org.netbeans.api.visual.action.MoveProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createMoveControlPointAction(org.netbeans.api.visual.action.MoveControlPointProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createMoveControlPointAction(org.netbeans.api.visual.action.MoveControlPointProvider,org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createOrthogonalMoveControlPointAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createPanAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createPopupMenuAction(org.netbeans.api.visual.action.PopupMenuProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createReconnectAction(org.netbeans.api.visual.action.ReconnectDecorator,org.netbeans.api.visual.action.ReconnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createReconnectAction(org.netbeans.api.visual.action.ReconnectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createRectangularSelectAction(org.netbeans.api.visual.action.RectangularSelectDecorator,org.netbeans.api.visual.widget.LayerWidget,org.netbeans.api.visual.action.RectangularSelectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createRectangularSelectAction(org.netbeans.api.visual.model.ObjectScene,org.netbeans.api.visual.widget.LayerWidget)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createResizeAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createResizeAction(org.netbeans.api.visual.action.ResizeStrategy,org.netbeans.api.visual.action.ResizeControlPointResolver,org.netbeans.api.visual.action.ResizeProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createResizeAction(org.netbeans.api.visual.action.ResizeStrategy,org.netbeans.api.visual.action.ResizeProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createSelectAction(org.netbeans.api.visual.action.SelectProvider)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createSwitchCardAction(org.netbeans.api.visual.widget.Widget)
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createWheelPanAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createZoomAction()
-meth public static org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.action.ActionFactory.createZoomAction(double,boolean)
-supr java.lang.Object
-CLSS public abstract interface org.netbeans.api.visual.action.AlignWithMoveDecorator
-meth public abstract org.netbeans.api.visual.widget.ConnectionWidget org.netbeans.api.visual.action.AlignWithMoveDecorator.createLineWidget(org.netbeans.api.visual.widget.Scene)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.AlignWithWidgetCollector
-meth public abstract java.util.Collection org.netbeans.api.visual.action.AlignWithWidgetCollector.getRegions(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ConnectDecorator
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.action.ConnectDecorator.createFloatAnchor(java.awt.Point)
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.action.ConnectDecorator.createSourceAnchor(org.netbeans.api.visual.widget.Widget)
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.action.ConnectDecorator.createTargetAnchor(org.netbeans.api.visual.widget.Widget)
-meth public abstract org.netbeans.api.visual.widget.ConnectionWidget org.netbeans.api.visual.action.ConnectDecorator.createConnectionWidget(org.netbeans.api.visual.widget.Scene)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ConnectProvider
-meth public abstract boolean org.netbeans.api.visual.action.ConnectProvider.hasCustomTargetWidgetResolver(org.netbeans.api.visual.widget.Scene)
-meth public abstract boolean org.netbeans.api.visual.action.ConnectProvider.isSourceWidget(org.netbeans.api.visual.widget.Widget)
-meth public abstract org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ConnectProvider.isTargetWidget(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
-meth public abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.action.ConnectProvider.resolveTargetWidget(org.netbeans.api.visual.widget.Scene,java.awt.Point)
-meth public abstract void org.netbeans.api.visual.action.ConnectProvider.createConnection(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public final org.netbeans.api.visual.action.ConnectorState
-fld  public static final org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ConnectorState.ACCEPT
-fld  public static final org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ConnectorState.REJECT
-fld  public static final org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ConnectorState.REJECT_AND_STOP
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.action.ConnectorState; org.netbeans.api.visual.action.ConnectorState.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ConnectorState.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public abstract interface org.netbeans.api.visual.action.CycleFocusProvider
-meth public abstract boolean org.netbeans.api.visual.action.CycleFocusProvider.switchNextFocus(org.netbeans.api.visual.widget.Widget)
-meth public abstract boolean org.netbeans.api.visual.action.CycleFocusProvider.switchPreviousFocus(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.EditProvider
-meth public abstract void org.netbeans.api.visual.action.EditProvider.edit(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.HoverProvider
-meth public abstract void org.netbeans.api.visual.action.HoverProvider.widgetHovered(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.InplaceEditorProvider
-innr public static abstract interface org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
-innr public static final org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection
-meth public abstract java.awt.Rectangle org.netbeans.api.visual.action.InplaceEditorProvider.getInitialEditorComponentBounds(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,javax.swing.JComponent,java.awt.Rectangle)
-meth public abstract java.util.EnumSet org.netbeans.api.visual.action.InplaceEditorProvider.getExpansionDirections(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,javax.swing.JComponent)
-meth public abstract javax.swing.JComponent org.netbeans.api.visual.action.InplaceEditorProvider.createEditorComponent(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.InplaceEditorProvider.notifyClosing(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,javax.swing.JComponent,boolean)
-meth public abstract void org.netbeans.api.visual.action.InplaceEditorProvider.notifyOpened(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget,javax.swing.JComponent)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.MoveControlPointProvider
-meth public abstract java.util.List org.netbeans.api.visual.action.MoveControlPointProvider.locationSuggested(org.netbeans.api.visual.widget.ConnectionWidget,int,java.awt.Point)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.MoveProvider
-meth public abstract java.awt.Point org.netbeans.api.visual.action.MoveProvider.getOriginalLocation(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.MoveProvider.movementFinished(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.MoveProvider.movementStarted(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.MoveProvider.setNewLocation(org.netbeans.api.visual.widget.Widget,java.awt.Point)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.MoveStrategy
-meth public abstract java.awt.Point org.netbeans.api.visual.action.MoveStrategy.locationSuggested(org.netbeans.api.visual.widget.Widget,java.awt.Point,java.awt.Point)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.PopupMenuProvider
-meth public abstract javax.swing.JPopupMenu org.netbeans.api.visual.action.PopupMenuProvider.getPopupMenu(org.netbeans.api.visual.widget.Widget,java.awt.Point)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ReconnectDecorator
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.action.ReconnectDecorator.createFloatAnchor(java.awt.Point)
-meth public abstract org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.action.ReconnectDecorator.createReplacementWidgetAnchor(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ReconnectProvider
-meth public abstract boolean org.netbeans.api.visual.action.ReconnectProvider.hasCustomReplacementWidgetResolver(org.netbeans.api.visual.widget.Scene)
-meth public abstract boolean org.netbeans.api.visual.action.ReconnectProvider.isSourceReconnectable(org.netbeans.api.visual.widget.ConnectionWidget)
-meth public abstract boolean org.netbeans.api.visual.action.ReconnectProvider.isTargetReconnectable(org.netbeans.api.visual.widget.ConnectionWidget)
-meth public abstract org.netbeans.api.visual.action.ConnectorState org.netbeans.api.visual.action.ReconnectProvider.isReplacementWidget(org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.widget.Widget,boolean)
-meth public abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.action.ReconnectProvider.resolveReplacementWidget(org.netbeans.api.visual.widget.Scene,java.awt.Point)
-meth public abstract void org.netbeans.api.visual.action.ReconnectProvider.reconnect(org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.widget.Widget,boolean)
-meth public abstract void org.netbeans.api.visual.action.ReconnectProvider.reconnectingFinished(org.netbeans.api.visual.widget.ConnectionWidget,boolean)
-meth public abstract void org.netbeans.api.visual.action.ReconnectProvider.reconnectingStarted(org.netbeans.api.visual.widget.ConnectionWidget,boolean)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.RectangularSelectDecorator
-meth public abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.action.RectangularSelectDecorator.createSelectionWidget()
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.RectangularSelectProvider
-meth public abstract void org.netbeans.api.visual.action.RectangularSelectProvider.performSelection(java.awt.Rectangle)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ResizeControlPointResolver
-meth public abstract org.netbeans.api.visual.action.ResizeProvider$ControlPoint org.netbeans.api.visual.action.ResizeControlPointResolver.resolveControlPoint(org.netbeans.api.visual.widget.Widget,java.awt.Point)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ResizeProvider
-innr public static final org.netbeans.api.visual.action.ResizeProvider$ControlPoint
-meth public abstract void org.netbeans.api.visual.action.ResizeProvider.resizingFinished(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.ResizeProvider.resizingStarted(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.ResizeStrategy
-meth public abstract java.awt.Rectangle org.netbeans.api.visual.action.ResizeStrategy.boundsSuggested(org.netbeans.api.visual.widget.Widget,java.awt.Rectangle,java.awt.Rectangle,org.netbeans.api.visual.action.ResizeProvider$ControlPoint)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.SelectProvider
-meth public abstract boolean org.netbeans.api.visual.action.SelectProvider.isAimingAllowed(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
-meth public abstract boolean org.netbeans.api.visual.action.SelectProvider.isSelectionAllowed(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
-meth public abstract void org.netbeans.api.visual.action.SelectProvider.select(org.netbeans.api.visual.widget.Widget,java.awt.Point,boolean)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.TextFieldInplaceEditor
-meth public abstract boolean org.netbeans.api.visual.action.TextFieldInplaceEditor.isEnabled(org.netbeans.api.visual.widget.Widget)
-meth public abstract java.lang.String org.netbeans.api.visual.action.TextFieldInplaceEditor.getText(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.TextFieldInplaceEditor.setText(org.netbeans.api.visual.widget.Widget,java.lang.String)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.TwoStateHoverProvider
-meth public abstract void org.netbeans.api.visual.action.TwoStateHoverProvider.setHovering(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.action.TwoStateHoverProvider.unsetHovering(org.netbeans.api.visual.widget.Widget)
-supr null
-CLSS public abstract interface org.netbeans.api.visual.action.WidgetAction
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetEvent
-innr public static abstract interface org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$LockedAdapter
-innr public static abstract org.netbeans.api.visual.action.WidgetAction$State
-innr public static final org.netbeans.api.visual.action.WidgetAction$Chain
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
-innr public static final org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
-innr public static org.netbeans.api.visual.action.WidgetAction$Adapter
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.dragOver(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.drop(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.dropActionChanged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.focusGained(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.focusLost(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.keyPressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.keyReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.keyTyped(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseClicked(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseDragged(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseEntered(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseExited(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mousePressed(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseReleased(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent)
-meth public abstract org.netbeans.api.visual.action.WidgetAction$State org.netbeans.api.visual.action.WidgetAction.mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
-supr null
+hfds event,id,x,y
+
 CLSS public abstract org.netbeans.api.visual.anchor.Anchor
 cons protected Anchor(org.netbeans.api.visual.widget.Widget)
-fld  public static final java.util.EnumSet org.netbeans.api.visual.anchor.Anchor.DIRECTION_ANY
-innr public final org.netbeans.api.visual.anchor.Anchor$Result
-innr public static abstract interface org.netbeans.api.visual.anchor.Anchor$Entry
-innr public static final org.netbeans.api.visual.anchor.Anchor$Direction
+fld public final static java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction> DIRECTION_ANY
+innr public abstract interface static Entry
+innr public final Result
+innr public final static !enum Direction
 intf org.netbeans.api.visual.widget.Widget$Dependency
-meth protected final boolean org.netbeans.api.visual.anchor.Anchor.isUsed()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyEntryAdded(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyEntryRemoved(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyRevalidate()
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyUnused()
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyUsed()
-meth public abstract org.netbeans.api.visual.anchor.Anchor$Result org.netbeans.api.visual.anchor.Anchor.compute(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.anchor.Anchor.getEntries()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.anchor.Anchor.addEntries(java.util.List)
-meth public final void org.netbeans.api.visual.anchor.Anchor.addEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public final void org.netbeans.api.visual.anchor.Anchor.removeEntries(java.util.List)
-meth public final void org.netbeans.api.visual.anchor.Anchor.removeEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public final void org.netbeans.api.visual.anchor.Anchor.revalidateDependency()
-meth public java.awt.Point org.netbeans.api.visual.anchor.Anchor.getOppositeSceneLocation(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public java.awt.Point org.netbeans.api.visual.anchor.Anchor.getRelatedSceneLocation()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.anchor.Anchor.getRelatedWidget()
+meth protected final boolean isUsed()
+meth protected void notifyEntryAdded(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth protected void notifyEntryRemoved(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth protected void notifyRevalidate()
+meth protected void notifyUnused()
+meth protected void notifyUsed()
+meth public abstract org.netbeans.api.visual.anchor.Anchor$Result compute(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth public boolean allowsArbitraryConnectionPlacement()
+meth public final java.util.List<org.netbeans.api.visual.anchor.Anchor$Entry> getEntries()
+meth public final void addEntries(java.util.List<org.netbeans.api.visual.anchor.Anchor$Entry>)
+meth public final void addEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth public final void removeEntries(java.util.List<org.netbeans.api.visual.anchor.Anchor$Entry>)
+meth public final void removeEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth public final void revalidateDependency()
+meth public java.awt.Point getOppositeSceneLocation(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth public java.awt.Point getRelatedSceneLocation()
+meth public java.util.List<java.awt.Point> compute(java.util.List<java.awt.Point>)
+meth public org.netbeans.api.visual.widget.Widget getRelatedWidget()
 supr java.lang.Object
+hfds attachedToWidget,entries,relatedWidget
+
+CLSS public final static !enum org.netbeans.api.visual.anchor.Anchor$Direction
+fld public final static org.netbeans.api.visual.anchor.Anchor$Direction BOTTOM
+fld public final static org.netbeans.api.visual.anchor.Anchor$Direction LEFT
+fld public final static org.netbeans.api.visual.anchor.Anchor$Direction RIGHT
+fld public final static org.netbeans.api.visual.anchor.Anchor$Direction TOP
+meth public static org.netbeans.api.visual.anchor.Anchor$Direction valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.anchor.Anchor$Direction[] values()
+supr java.lang.Enum<org.netbeans.api.visual.anchor.Anchor$Direction>
+
+CLSS public abstract interface static org.netbeans.api.visual.anchor.Anchor$Entry
+meth public abstract boolean isAttachedToConnectionSource()
+meth public abstract org.netbeans.api.visual.anchor.Anchor getAttachedAnchor()
+meth public abstract org.netbeans.api.visual.anchor.Anchor getOppositeAnchor()
+meth public abstract org.netbeans.api.visual.widget.ConnectionWidget getAttachedConnectionWidget()
+meth public abstract void revalidateEntry()
+
+CLSS public final org.netbeans.api.visual.anchor.Anchor$Result
+cons public Result(java.awt.Point,java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction>)
+cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,org.netbeans.api.visual.anchor.Anchor$Direction)
+meth public java.awt.Point getAnchorSceneLocation()
+meth public java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction> getDirections()
+supr java.lang.Object
+hfds anchorSceneLocation,directions
+
 CLSS public final org.netbeans.api.visual.anchor.AnchorFactory
-innr public static final org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createCenterAnchor(org.netbeans.api.visual.widget.Widget)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createCircularAnchor(org.netbeans.api.visual.widget.Widget,int)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createDirectionalAnchor(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createDirectionalAnchor(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind,int)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createFixedAnchor(java.awt.Point)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createFreeRectangularAnchor(org.netbeans.api.visual.widget.Widget,boolean)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createRectangularAnchor(org.netbeans.api.visual.widget.Widget)
-meth public static org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createRectangularAnchor(org.netbeans.api.visual.widget.Widget,boolean)
-meth public static transient org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.anchor.AnchorFactory.createProxyAnchor(org.netbeans.api.visual.model.StateModel,[Lorg.netbeans.api.visual.anchor.Anchor;)
+innr public final static !enum DirectionalAnchorKind
+meth public !varargs static org.netbeans.api.visual.anchor.Anchor createProxyAnchor(org.netbeans.api.visual.model.StateModel,org.netbeans.api.visual.anchor.Anchor[])
+meth public static org.netbeans.api.visual.anchor.Anchor createCenterAnchor(org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.anchor.Anchor createCircularAnchor(org.netbeans.api.visual.widget.Widget,int)
+meth public static org.netbeans.api.visual.anchor.Anchor createDirectionalAnchor(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind)
+meth public static org.netbeans.api.visual.anchor.Anchor createDirectionalAnchor(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind,int)
+meth public static org.netbeans.api.visual.anchor.Anchor createFixedAnchor(java.awt.Point)
+meth public static org.netbeans.api.visual.anchor.Anchor createFreeRectangularAnchor(org.netbeans.api.visual.widget.Widget,boolean)
+meth public static org.netbeans.api.visual.anchor.Anchor createRectangularAnchor(org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.anchor.Anchor createRectangularAnchor(org.netbeans.api.visual.widget.Widget,boolean)
 supr java.lang.Object
+
+CLSS public final static !enum org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind
+fld public final static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind HORIZONTAL
+fld public final static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind VERTICAL
+meth public static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind[] values()
+supr java.lang.Enum<org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind>
+
 CLSS public abstract interface org.netbeans.api.visual.anchor.AnchorShape
-fld  public static final org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShape.NONE
-fld  public static final org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShape.TRIANGLE_FILLED
-fld  public static final org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShape.TRIANGLE_HOLLOW
-fld  public static final org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShape.TRIANGLE_OUT
-meth public abstract boolean org.netbeans.api.visual.anchor.AnchorShape.isLineOriented()
-meth public abstract double org.netbeans.api.visual.anchor.AnchorShape.getCutDistance()
-meth public abstract int org.netbeans.api.visual.anchor.AnchorShape.getRadius()
-meth public abstract void org.netbeans.api.visual.anchor.AnchorShape.paint(java.awt.Graphics2D,boolean)
-supr null
+fld public final static org.netbeans.api.visual.anchor.AnchorShape NONE
+fld public final static org.netbeans.api.visual.anchor.AnchorShape TRIANGLE_FILLED
+fld public final static org.netbeans.api.visual.anchor.AnchorShape TRIANGLE_HOLLOW
+fld public final static org.netbeans.api.visual.anchor.AnchorShape TRIANGLE_OUT
+meth public abstract boolean isLineOriented()
+meth public abstract double getCutDistance()
+meth public abstract int getRadius()
+meth public abstract void paint(java.awt.Graphics2D,boolean)
+
 CLSS public org.netbeans.api.visual.anchor.AnchorShapeFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShapeFactory.createArrowAnchorShape(int,int)
-meth public static org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShapeFactory.createImageAnchorShape(java.awt.Image)
-meth public static org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShapeFactory.createImageAnchorShape(java.awt.Image,boolean)
-meth public static org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShapeFactory.createTriangleAnchorShape(int,boolean,boolean)
-meth public static org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.anchor.AnchorShapeFactory.createTriangleAnchorShape(int,boolean,boolean,int)
+innr public final static !enum ConnectionEnd
+meth public static org.netbeans.api.visual.anchor.AnchorShape createAdjustableAnchorShape(org.netbeans.api.visual.anchor.AnchorShape,org.netbeans.api.visual.anchor.AnchorShapeLocationResolver)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createAdjustableAnchorShape(org.netbeans.api.visual.anchor.AnchorShape,org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createArrowAnchorShape(int,int)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createImageAnchorShape(java.awt.Image)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createImageAnchorShape(java.awt.Image,boolean)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createTriangleAnchorShape(int,boolean,boolean)
+meth public static org.netbeans.api.visual.anchor.AnchorShape createTriangleAnchorShape(int,boolean,boolean,int)
+meth public static org.netbeans.api.visual.anchor.AnchorShapeLocationResolver createWidgetResolver(org.netbeans.api.visual.widget.ConnectionWidget,org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd,org.netbeans.api.visual.widget.Widget)
 supr java.lang.Object
+
+CLSS public final static !enum org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd
+fld public final static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd SOURCE
+fld public final static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd TARGET
+meth public static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd[] values()
+supr java.lang.Enum<org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd>
+
+CLSS public abstract interface org.netbeans.api.visual.anchor.AnchorShapeLocationResolver
+meth public abstract int getEndLocation()
+
 CLSS public abstract interface org.netbeans.api.visual.anchor.PointShape
-fld  public static final org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.anchor.PointShape.NONE
-fld  public static final org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.anchor.PointShape.SQUARE_FILLED_BIG
-fld  public static final org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.anchor.PointShape.SQUARE_FILLED_SMALL
-meth public abstract int org.netbeans.api.visual.anchor.PointShape.getRadius()
-meth public abstract void org.netbeans.api.visual.anchor.PointShape.paint(java.awt.Graphics2D)
-supr null
+fld public final static org.netbeans.api.visual.anchor.PointShape NONE
+fld public final static org.netbeans.api.visual.anchor.PointShape SQUARE_FILLED_BIG
+fld public final static org.netbeans.api.visual.anchor.PointShape SQUARE_FILLED_SMALL
+meth public abstract int getRadius()
+meth public abstract void paint(java.awt.Graphics2D)
+
 CLSS public org.netbeans.api.visual.anchor.PointShapeFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.anchor.PointShapeFactory.createImagePointShape(java.awt.Image)
-meth public static org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.anchor.PointShapeFactory.createPointShape(int,boolean)
+meth public static org.netbeans.api.visual.anchor.PointShape createImagePointShape(java.awt.Image)
+meth public static org.netbeans.api.visual.anchor.PointShape createPointShape(int,boolean)
 supr java.lang.Object
+
 CLSS public abstract org.netbeans.api.visual.animator.Animator
 cons protected Animator(org.netbeans.api.visual.animator.SceneAnimator)
-meth protected abstract void org.netbeans.api.visual.animator.Animator.tick(double)
-meth protected final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.animator.Animator.getScene()
-meth protected final void org.netbeans.api.visual.animator.Animator.start()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.animator.Animator.isRunning()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.animator.Animator.addAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
-meth public void org.netbeans.api.visual.animator.Animator.removeAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
+meth protected abstract void tick(double)
+meth protected final org.netbeans.api.visual.widget.Scene getScene()
+meth protected final void start()
+meth public final boolean isRunning()
+meth public void addAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
+meth public void removeAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
 supr java.lang.Object
+hfds listeners,reset,sceneAnimator
+
 CLSS public final org.netbeans.api.visual.animator.AnimatorEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public double org.netbeans.api.visual.animator.AnimatorEvent.getProgress()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.animator.Animator org.netbeans.api.visual.animator.AnimatorEvent.getAnimator()
+meth public double getProgress()
+meth public org.netbeans.api.visual.animator.Animator getAnimator()
 supr java.lang.Object
+hfds animator,progress
+
 CLSS public abstract interface org.netbeans.api.visual.animator.AnimatorListener
-meth public abstract void org.netbeans.api.visual.animator.AnimatorListener.animatorFinished(org.netbeans.api.visual.animator.AnimatorEvent)
-meth public abstract void org.netbeans.api.visual.animator.AnimatorListener.animatorPostTick(org.netbeans.api.visual.animator.AnimatorEvent)
-meth public abstract void org.netbeans.api.visual.animator.AnimatorListener.animatorPreTick(org.netbeans.api.visual.animator.AnimatorEvent)
-meth public abstract void org.netbeans.api.visual.animator.AnimatorListener.animatorReset(org.netbeans.api.visual.animator.AnimatorEvent)
-meth public abstract void org.netbeans.api.visual.animator.AnimatorListener.animatorStarted(org.netbeans.api.visual.animator.AnimatorEvent)
-supr null
+meth public abstract void animatorFinished(org.netbeans.api.visual.animator.AnimatorEvent)
+meth public abstract void animatorPostTick(org.netbeans.api.visual.animator.AnimatorEvent)
+meth public abstract void animatorPreTick(org.netbeans.api.visual.animator.AnimatorEvent)
+meth public abstract void animatorReset(org.netbeans.api.visual.animator.AnimatorEvent)
+meth public abstract void animatorStarted(org.netbeans.api.visual.animator.AnimatorEvent)
+
 CLSS public final org.netbeans.api.visual.animator.SceneAnimator
 cons public SceneAnimator(org.netbeans.api.visual.widget.Scene)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.animator.SceneAnimator.isAnimatingBackgroundColor(org.netbeans.api.visual.widget.Widget)
-meth public boolean org.netbeans.api.visual.animator.SceneAnimator.isAnimatingForegroundColor(org.netbeans.api.visual.widget.Widget)
-meth public boolean org.netbeans.api.visual.animator.SceneAnimator.isAnimatingPreferredBounds(org.netbeans.api.visual.widget.Widget)
-meth public boolean org.netbeans.api.visual.animator.SceneAnimator.isAnimatingPreferredLocation(org.netbeans.api.visual.widget.Widget)
-meth public boolean org.netbeans.api.visual.animator.SceneAnimator.isAnimatingZoomFactor()
-meth public double org.netbeans.api.visual.animator.SceneAnimator.getTargetZoomFactor()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.animator.Animator org.netbeans.api.visual.animator.SceneAnimator.getColorAnimator()
-meth public org.netbeans.api.visual.animator.Animator org.netbeans.api.visual.animator.SceneAnimator.getPreferredBoundsAnimator()
-meth public org.netbeans.api.visual.animator.Animator org.netbeans.api.visual.animator.SceneAnimator.getPreferredLocationAnimator()
-meth public org.netbeans.api.visual.animator.Animator org.netbeans.api.visual.animator.SceneAnimator.getZoomAnimator()
-meth public org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.animator.SceneAnimator.getScene()
-meth public void org.netbeans.api.visual.animator.SceneAnimator.animateBackgroundColor(org.netbeans.api.visual.widget.Widget,java.awt.Color)
-meth public void org.netbeans.api.visual.animator.SceneAnimator.animateForegroundColor(org.netbeans.api.visual.widget.Widget,java.awt.Color)
-meth public void org.netbeans.api.visual.animator.SceneAnimator.animatePreferredBounds(org.netbeans.api.visual.widget.Widget,java.awt.Rectangle)
-meth public void org.netbeans.api.visual.animator.SceneAnimator.animatePreferredLocation(org.netbeans.api.visual.widget.Widget,java.awt.Point)
-meth public void org.netbeans.api.visual.animator.SceneAnimator.animateZoomFactor(double)
+meth public boolean isAnimatingBackgroundColor(org.netbeans.api.visual.widget.Widget)
+meth public boolean isAnimatingForegroundColor(org.netbeans.api.visual.widget.Widget)
+meth public boolean isAnimatingPreferredBounds(org.netbeans.api.visual.widget.Widget)
+meth public boolean isAnimatingPreferredLocation(org.netbeans.api.visual.widget.Widget)
+meth public boolean isAnimatingZoomFactor()
+meth public double getTargetZoomFactor()
+meth public org.netbeans.api.visual.animator.Animator getColorAnimator()
+meth public org.netbeans.api.visual.animator.Animator getPreferredBoundsAnimator()
+meth public org.netbeans.api.visual.animator.Animator getPreferredLocationAnimator()
+meth public org.netbeans.api.visual.animator.Animator getZoomAnimator()
+meth public org.netbeans.api.visual.widget.Scene getScene()
+meth public void animateBackgroundColor(org.netbeans.api.visual.widget.Widget,java.awt.Color)
+meth public void animateForegroundColor(org.netbeans.api.visual.widget.Widget,java.awt.Color)
+meth public void animatePreferredBounds(org.netbeans.api.visual.widget.Widget,java.awt.Rectangle)
+meth public void animatePreferredLocation(org.netbeans.api.visual.widget.Widget,java.awt.Point)
+meth public void animateZoomFactor(double)
 supr java.lang.Object
+hfds SLEEP,TIME_PERIOD,animators,cache,colorAnimator,preferredBoundsAnimator,preferredLocationAnimator,scene,task,taskAlive,zoomAnimator
+hcls UpdateTask
+
 CLSS public abstract interface org.netbeans.api.visual.border.Border
-meth public abstract boolean org.netbeans.api.visual.border.Border.isOpaque()
-meth public abstract java.awt.Insets org.netbeans.api.visual.border.Border.getInsets()
-meth public abstract void org.netbeans.api.visual.border.Border.paint(java.awt.Graphics2D,java.awt.Rectangle)
-supr null
+meth public abstract boolean isOpaque()
+meth public abstract java.awt.Insets getInsets()
+meth public abstract void paint(java.awt.Graphics2D,java.awt.Rectangle)
+
 CLSS public final org.netbeans.api.visual.border.BorderFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createBevelBorder(boolean)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createBevelBorder(boolean,java.awt.Color)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createDashedBorder(java.awt.Color,int,int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createDashedBorder(java.awt.Color,int,int,boolean)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createEmptyBorder()
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(int,int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(int,int,int,int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createFancyDashedBorder(java.awt.Color,int,int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createImageBorder(java.awt.Insets,java.awt.Image)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createImageBorder(java.awt.Insets,java.awt.Insets,java.awt.Image)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createLineBorder()
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createLineBorder(int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createLineBorder(int,int,int,int,java.awt.Color)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createLineBorder(int,java.awt.Color)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createOpaqueBorder(int,int,int,int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createResizeBorder(int)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createResizeBorder(int,java.awt.Color,boolean)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createRoundedBorder(int,int,int,int,java.awt.Color,java.awt.Color)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createRoundedBorder(int,int,java.awt.Color,java.awt.Color)
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createSwingBorder(org.netbeans.api.visual.widget.Scene,javax.swing.border.Border)
-meth public static transient org.netbeans.api.visual.border.Border org.netbeans.api.visual.border.BorderFactory.createCompositeBorder([Lorg.netbeans.api.visual.border.Border;)
+meth public !varargs static org.netbeans.api.visual.border.Border createCompositeBorder(org.netbeans.api.visual.border.Border[])
+meth public static org.netbeans.api.visual.border.Border createBevelBorder(boolean)
+meth public static org.netbeans.api.visual.border.Border createBevelBorder(boolean,java.awt.Color)
+meth public static org.netbeans.api.visual.border.Border createBevelBorder(boolean,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createBevelBorder(boolean,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.awt.Color,int,int)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.awt.Color,int,int,boolean)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.lang.String,org.netbeans.api.visual.widget.ResourceTable,int,int)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.lang.String,org.netbeans.api.visual.widget.ResourceTable,int,int,boolean)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.lang.String,org.netbeans.api.visual.widget.Widget,int,int)
+meth public static org.netbeans.api.visual.border.Border createDashedBorder(java.lang.String,org.netbeans.api.visual.widget.Widget,int,int,boolean)
+meth public static org.netbeans.api.visual.border.Border createEmptyBorder()
+meth public static org.netbeans.api.visual.border.Border createEmptyBorder(int)
+meth public static org.netbeans.api.visual.border.Border createEmptyBorder(int,int)
+meth public static org.netbeans.api.visual.border.Border createEmptyBorder(int,int,int,int)
+meth public static org.netbeans.api.visual.border.Border createFancyDashedBorder(java.awt.Color,int,int)
+meth public static org.netbeans.api.visual.border.Border createImageBorder(java.awt.Insets,java.awt.Image)
+meth public static org.netbeans.api.visual.border.Border createImageBorder(java.awt.Insets,java.awt.Insets,java.awt.Image)
+meth public static org.netbeans.api.visual.border.Border createLineBorder()
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,int,int,int,java.awt.Color)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,int,int,int,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,int,int,int,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,java.awt.Color)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(int,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createLineBorder(java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createOpaqueBorder(int,int,int,int)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int,java.awt.Color,boolean)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int,java.lang.String,org.netbeans.api.visual.widget.ResourceTable,boolean)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createResizeBorder(int,java.lang.String,org.netbeans.api.visual.widget.Widget,boolean)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,int,int,java.awt.Color,java.awt.Color)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,int,int,java.lang.String,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,int,int,java.lang.String,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,java.awt.Color,java.awt.Color)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,java.lang.String,java.lang.String,org.netbeans.api.visual.widget.ResourceTable)
+meth public static org.netbeans.api.visual.border.Border createRoundedBorder(int,int,java.lang.String,java.lang.String,org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.border.Border createSwingBorder(org.netbeans.api.visual.widget.Scene,javax.swing.border.Border)
 supr java.lang.Object
+hfds BORDER_EMPTY,BORDER_LINE
+
 CLSS public final org.netbeans.api.visual.border.BorderSupport
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean org.netbeans.api.visual.border.BorderSupport.isOuterResizeBorder(org.netbeans.api.visual.border.Border)
-meth public static javax.swing.border.Border org.netbeans.api.visual.border.BorderSupport.getSwingBorder(org.netbeans.api.visual.border.Border)
+meth public static boolean isOuterResizeBorder(org.netbeans.api.visual.border.Border)
+meth public static javax.swing.border.Border getSwingBorder(org.netbeans.api.visual.border.Border)
 supr java.lang.Object
-CLSS public abstract org.netbeans.api.visual.graph.GraphPinScene
+
+CLSS public final org.netbeans.api.visual.export.SceneExporter
+innr public final static !enum ImageType
+innr public final static !enum ZoomType
+meth public static java.awt.image.BufferedImage createImage(org.netbeans.api.visual.widget.Scene,java.io.File,org.netbeans.api.visual.export.SceneExporter$ImageType,org.netbeans.api.visual.export.SceneExporter$ZoomType,boolean,boolean,int,int,int) throws java.io.IOException
+meth public static java.util.ArrayList<org.netbeans.api.visual.export.WidgetPolygonalCoordinates> createImageMap(org.netbeans.api.visual.widget.Scene,java.io.File,org.netbeans.api.visual.export.SceneExporter$ImageType,org.netbeans.api.visual.export.SceneExporter$ZoomType,boolean,boolean,int,int,int,int) throws java.io.IOException
+supr java.lang.Object
+
+CLSS public final static !enum org.netbeans.api.visual.export.SceneExporter$ImageType
+fld public final static org.netbeans.api.visual.export.SceneExporter$ImageType JPG
+fld public final static org.netbeans.api.visual.export.SceneExporter$ImageType PNG
+meth public static org.netbeans.api.visual.export.SceneExporter$ImageType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.export.SceneExporter$ImageType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.export.SceneExporter$ImageType>
+
+CLSS public final static !enum org.netbeans.api.visual.export.SceneExporter$ZoomType
+fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType ACTUAL_SIZE
+fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType CURRENT_ZOOM_LEVEL
+fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType CUSTOM_SIZE
+fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType FIT_IN_WINDOW
+meth public static org.netbeans.api.visual.export.SceneExporter$ZoomType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.export.SceneExporter$ZoomType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.export.SceneExporter$ZoomType>
+
+CLSS public final org.netbeans.api.visual.export.WidgetPolygonalCoordinates
+cons public WidgetPolygonalCoordinates(org.netbeans.api.visual.widget.Widget,java.awt.Polygon)
+meth public java.awt.Polygon getPolygon()
+meth public org.netbeans.api.visual.widget.Widget getWidget()
+supr java.lang.Object
+hfds polygon,widget
+
+CLSS public abstract org.netbeans.api.visual.graph.GraphPinScene<%0 extends java.lang.Object, %1 extends java.lang.Object, %2 extends java.lang.Object>
 cons public GraphPinScene()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static abstract org.netbeans.api.visual.graph.GraphPinScene$StringGraph
-intf javax.accessibility.Accessible
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachEdgeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachNodeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.attachPinWidget(java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphPinScene.attachEdgeSourceAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphPinScene.attachEdgeTargetAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachEdgeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachNodeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachPinWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyEdgeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyNodeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyPinAdded(java.lang.Object,java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isEdge(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isNode(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isPin(java.lang.Object)
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeSource(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeTarget(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getPinNode(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findEdgesBetween(java.lang.Object,java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findPinEdges(java.lang.Object,boolean,boolean)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getEdges()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodePins(java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodes()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getPins()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addEdge(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addNode(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addPin(java.lang.Object,java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeEdge(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNode(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNodeWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePin(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePinWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeSource(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeTarget(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
+innr public abstract static StringGraph
+meth protected abstract org.netbeans.api.visual.widget.Widget attachEdgeWidget({org.netbeans.api.visual.graph.GraphPinScene%1})
+meth protected abstract org.netbeans.api.visual.widget.Widget attachNodeWidget({org.netbeans.api.visual.graph.GraphPinScene%0})
+meth protected abstract org.netbeans.api.visual.widget.Widget attachPinWidget({org.netbeans.api.visual.graph.GraphPinScene%0},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth protected abstract void attachEdgeSourceAnchor({org.netbeans.api.visual.graph.GraphPinScene%1},{org.netbeans.api.visual.graph.GraphPinScene%2},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth protected abstract void attachEdgeTargetAnchor({org.netbeans.api.visual.graph.GraphPinScene%1},{org.netbeans.api.visual.graph.GraphPinScene%2},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth protected void detachEdgeWidget({org.netbeans.api.visual.graph.GraphPinScene%1},org.netbeans.api.visual.widget.Widget)
+meth protected void detachNodeWidget({org.netbeans.api.visual.graph.GraphPinScene%0},org.netbeans.api.visual.widget.Widget)
+meth protected void detachPinWidget({org.netbeans.api.visual.graph.GraphPinScene%2},org.netbeans.api.visual.widget.Widget)
+meth protected void notifyEdgeAdded({org.netbeans.api.visual.graph.GraphPinScene%1},org.netbeans.api.visual.widget.Widget)
+meth protected void notifyNodeAdded({org.netbeans.api.visual.graph.GraphPinScene%0},org.netbeans.api.visual.widget.Widget)
+meth protected void notifyPinAdded({org.netbeans.api.visual.graph.GraphPinScene%0},{org.netbeans.api.visual.graph.GraphPinScene%2},org.netbeans.api.visual.widget.Widget)
+meth public boolean isEdge(java.lang.Object)
+meth public boolean isNode(java.lang.Object)
+meth public boolean isPin(java.lang.Object)
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%0}> getNodes()
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%1}> findEdgesBetween({org.netbeans.api.visual.graph.GraphPinScene%2},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%1}> findPinEdges({org.netbeans.api.visual.graph.GraphPinScene%2},boolean,boolean)
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%1}> getEdges()
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%2}> getNodePins({org.netbeans.api.visual.graph.GraphPinScene%0})
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphPinScene%2}> getPins()
+meth public final org.netbeans.api.visual.widget.Widget addEdge({org.netbeans.api.visual.graph.GraphPinScene%1})
+meth public final org.netbeans.api.visual.widget.Widget addNode({org.netbeans.api.visual.graph.GraphPinScene%0})
+meth public final org.netbeans.api.visual.widget.Widget addPin({org.netbeans.api.visual.graph.GraphPinScene%0},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final void removeEdge({org.netbeans.api.visual.graph.GraphPinScene%1})
+meth public final void removeNode({org.netbeans.api.visual.graph.GraphPinScene%0})
+meth public final void removeNodeWithEdges({org.netbeans.api.visual.graph.GraphPinScene%0})
+meth public final void removePin({org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final void removePinWithEdges({org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final void setEdgeSource({org.netbeans.api.visual.graph.GraphPinScene%1},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final void setEdgeTarget({org.netbeans.api.visual.graph.GraphPinScene%1},{org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final {org.netbeans.api.visual.graph.GraphPinScene%0} getPinNode({org.netbeans.api.visual.graph.GraphPinScene%2})
+meth public final {org.netbeans.api.visual.graph.GraphPinScene%2} getEdgeSource({org.netbeans.api.visual.graph.GraphPinScene%1})
+meth public final {org.netbeans.api.visual.graph.GraphPinScene%2} getEdgeTarget({org.netbeans.api.visual.graph.GraphPinScene%1})
 supr org.netbeans.api.visual.model.ObjectScene
-CLSS public abstract org.netbeans.api.visual.graph.GraphScene
+hfds edgeSourcePins,edgeTargetPins,edges,edgesUm,nodePins,nodes,nodesUm,pinInputEdges,pinNodes,pinOutputEdges,pins,pinsUm
+
+CLSS public abstract static org.netbeans.api.visual.graph.GraphPinScene$StringGraph
+cons public StringGraph()
+supr org.netbeans.api.visual.graph.GraphPinScene<java.lang.String,java.lang.String,java.lang.String>
+
+CLSS public abstract org.netbeans.api.visual.graph.GraphScene<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons public GraphScene()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static abstract org.netbeans.api.visual.graph.GraphScene$StringGraph
-intf javax.accessibility.Accessible
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.attachEdgeWidget(java.lang.Object)
-meth protected abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.attachNodeWidget(java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphScene.attachEdgeSourceAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected abstract void org.netbeans.api.visual.graph.GraphScene.attachEdgeTargetAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.GraphScene.detachEdgeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.detachNodeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.notifyEdgeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphScene.notifyNodeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.graph.GraphScene.isEdge(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphScene.isNode(java.lang.Object)
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphScene.getEdgeSource(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphScene.getEdgeTarget(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.findEdgesBetween(java.lang.Object,java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.findNodeEdges(java.lang.Object,boolean,boolean)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.getEdges()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphScene.getNodes()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.addEdge(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphScene.addNode(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeEdge(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeNode(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.removeNodeWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.setEdgeSource(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphScene.setEdgeTarget(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
+innr public abstract static StringGraph
+meth protected abstract org.netbeans.api.visual.widget.Widget attachEdgeWidget({org.netbeans.api.visual.graph.GraphScene%1})
+meth protected abstract org.netbeans.api.visual.widget.Widget attachNodeWidget({org.netbeans.api.visual.graph.GraphScene%0})
+meth protected abstract void attachEdgeSourceAnchor({org.netbeans.api.visual.graph.GraphScene%1},{org.netbeans.api.visual.graph.GraphScene%0},{org.netbeans.api.visual.graph.GraphScene%0})
+meth protected abstract void attachEdgeTargetAnchor({org.netbeans.api.visual.graph.GraphScene%1},{org.netbeans.api.visual.graph.GraphScene%0},{org.netbeans.api.visual.graph.GraphScene%0})
+meth protected void detachEdgeWidget({org.netbeans.api.visual.graph.GraphScene%1},org.netbeans.api.visual.widget.Widget)
+meth protected void detachNodeWidget({org.netbeans.api.visual.graph.GraphScene%0},org.netbeans.api.visual.widget.Widget)
+meth protected void notifyEdgeAdded({org.netbeans.api.visual.graph.GraphScene%1},org.netbeans.api.visual.widget.Widget)
+meth protected void notifyNodeAdded({org.netbeans.api.visual.graph.GraphScene%0},org.netbeans.api.visual.widget.Widget)
+meth public boolean isEdge(java.lang.Object)
+meth public boolean isNode(java.lang.Object)
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphScene%0}> getNodes()
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphScene%1}> findEdgesBetween({org.netbeans.api.visual.graph.GraphScene%0},{org.netbeans.api.visual.graph.GraphScene%0})
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphScene%1}> findNodeEdges({org.netbeans.api.visual.graph.GraphScene%0},boolean,boolean)
+meth public final java.util.Collection<{org.netbeans.api.visual.graph.GraphScene%1}> getEdges()
+meth public final org.netbeans.api.visual.widget.Widget addEdge({org.netbeans.api.visual.graph.GraphScene%1})
+meth public final org.netbeans.api.visual.widget.Widget addNode({org.netbeans.api.visual.graph.GraphScene%0})
+meth public final void removeEdge({org.netbeans.api.visual.graph.GraphScene%1})
+meth public final void removeNode({org.netbeans.api.visual.graph.GraphScene%0})
+meth public final void removeNodeWithEdges({org.netbeans.api.visual.graph.GraphScene%0})
+meth public final void setEdgeSource({org.netbeans.api.visual.graph.GraphScene%1},{org.netbeans.api.visual.graph.GraphScene%0})
+meth public final void setEdgeTarget({org.netbeans.api.visual.graph.GraphScene%1},{org.netbeans.api.visual.graph.GraphScene%0})
+meth public final {org.netbeans.api.visual.graph.GraphScene%0} getEdgeSource({org.netbeans.api.visual.graph.GraphScene%1})
+meth public final {org.netbeans.api.visual.graph.GraphScene%0} getEdgeTarget({org.netbeans.api.visual.graph.GraphScene%1})
 supr org.netbeans.api.visual.model.ObjectScene
-CLSS public abstract org.netbeans.api.visual.graph.layout.GraphLayout
+hfds edgeSourceNodes,edgeTargetNodes,edges,edgesUm,nodeInputEdges,nodeOutputEdges,nodes,nodesUm
+
+CLSS public abstract static org.netbeans.api.visual.graph.GraphScene$StringGraph
+cons public StringGraph()
+supr org.netbeans.api.visual.graph.GraphScene<java.lang.String,java.lang.String>
+
+CLSS public abstract org.netbeans.api.visual.graph.layout.GraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons public GraphLayout()
-meth protected abstract void org.netbeans.api.visual.graph.layout.GraphLayout.performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph)
-meth protected abstract void org.netbeans.api.visual.graph.layout.GraphLayout.performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph,java.util.Collection)
-meth protected final void org.netbeans.api.visual.graph.layout.GraphLayout.setResolvedNodeLocation(org.netbeans.api.visual.graph.layout.UniversalGraph,java.lang.Object,java.awt.Point)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.graph.layout.GraphLayout.isAnimated()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.addGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutGraph(org.netbeans.api.visual.graph.GraphPinScene)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutGraph(org.netbeans.api.visual.graph.GraphScene)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutNodes(org.netbeans.api.visual.graph.GraphPinScene,java.util.Collection)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutNodes(org.netbeans.api.visual.graph.GraphScene,java.util.Collection)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.removeGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.setAnimated(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth protected abstract void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>)
+meth protected abstract void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GraphLayout%0}>)
+meth protected final void setResolvedNodeLocation(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>,{org.netbeans.api.visual.graph.layout.GraphLayout%0},java.awt.Point)
+meth public final boolean isAnimated()
+meth public final void addGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>)
+meth public final void layoutGraph(org.netbeans.api.visual.graph.GraphPinScene<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1},?>)
+meth public final void layoutGraph(org.netbeans.api.visual.graph.GraphScene<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>)
+meth public final void layoutNodes(org.netbeans.api.visual.graph.GraphPinScene<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1},?>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GraphLayout%0}>)
+meth public final void layoutNodes(org.netbeans.api.visual.graph.GraphScene<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GraphLayout%0}>)
+meth public final void removeGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>)
+meth public final void setAnimated(boolean)
 supr java.lang.Object
+hfds animated,listeners
+
 CLSS public org.netbeans.api.visual.graph.layout.GraphLayoutFactory
 cons public GraphLayoutFactory()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.graph.layout.GraphLayout org.netbeans.api.visual.graph.layout.GraphLayoutFactory.createTreeGraphLayout(int,int,int,int,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean,boolean,int,int)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createOrthogonalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createTreeGraphLayout(int,int,int,int,boolean)
 supr java.lang.Object
-CLSS public abstract interface org.netbeans.api.visual.graph.layout.GraphLayoutListener
-meth public abstract void org.netbeans.api.visual.graph.layout.GraphLayoutListener.graphLayoutFinished(org.netbeans.api.visual.graph.layout.UniversalGraph)
-meth public abstract void org.netbeans.api.visual.graph.layout.GraphLayoutListener.graphLayoutStarted(org.netbeans.api.visual.graph.layout.UniversalGraph)
-meth public abstract void org.netbeans.api.visual.graph.layout.GraphLayoutListener.nodeLocationChanged(org.netbeans.api.visual.graph.layout.UniversalGraph,java.lang.Object,java.awt.Point,java.awt.Point)
-supr null
+
+CLSS public abstract interface org.netbeans.api.visual.graph.layout.GraphLayoutListener<%0 extends java.lang.Object, %1 extends java.lang.Object>
+meth public abstract void graphLayoutFinished(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},{org.netbeans.api.visual.graph.layout.GraphLayoutListener%1}>)
+meth public abstract void graphLayoutStarted(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},{org.netbeans.api.visual.graph.layout.GraphLayoutListener%1}>)
+meth public abstract void nodeLocationChanged(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},{org.netbeans.api.visual.graph.layout.GraphLayoutListener%1}>,{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},java.awt.Point,java.awt.Point)
+
 CLSS public org.netbeans.api.visual.graph.layout.GraphLayoutSupport
 cons public GraphLayoutSupport()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static void org.netbeans.api.visual.graph.layout.GraphLayoutSupport.setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout,int,int,int,int,boolean)
-meth public static void org.netbeans.api.visual.graph.layout.GraphLayoutSupport.setTreeGraphLayoutRootNode(org.netbeans.api.visual.graph.layout.GraphLayout,java.lang.Object)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,int,int,int,int,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutRootNode(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,{%%0})
 supr java.lang.Object
-CLSS public final org.netbeans.api.visual.graph.layout.GridGraphLayout
+
+CLSS public final org.netbeans.api.visual.graph.layout.GridGraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons public GridGraphLayout()
-meth protected final void org.netbeans.api.visual.graph.layout.GraphLayout.setResolvedNodeLocation(org.netbeans.api.visual.graph.layout.UniversalGraph,java.lang.Object,java.awt.Point)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.layout.GridGraphLayout.performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph)
-meth protected void org.netbeans.api.visual.graph.layout.GridGraphLayout.performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph,java.util.Collection)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.graph.layout.GraphLayout.isAnimated()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.addGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutGraph(org.netbeans.api.visual.graph.GraphPinScene)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutGraph(org.netbeans.api.visual.graph.GraphScene)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutNodes(org.netbeans.api.visual.graph.GraphPinScene,java.util.Collection)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.layoutNodes(org.netbeans.api.visual.graph.GraphScene,java.util.Collection)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.removeGraphLayoutListener(org.netbeans.api.visual.graph.layout.GraphLayoutListener)
-meth public final void org.netbeans.api.visual.graph.layout.GraphLayout.setAnimated(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.graph.layout.GridGraphLayout org.netbeans.api.visual.graph.layout.GridGraphLayout.setChecker(boolean)
-meth public org.netbeans.api.visual.graph.layout.GridGraphLayout org.netbeans.api.visual.graph.layout.GridGraphLayout.setGaps(int,int)
+meth protected void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}>)
+meth protected void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0}>)
+meth public org.netbeans.api.visual.graph.layout.GridGraphLayout<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}> setChecker(boolean)
+meth public org.netbeans.api.visual.graph.layout.GridGraphLayout<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}> setGaps(int,int)
+supr org.netbeans.api.visual.graph.layout.GraphLayout<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}>
+hfds checker,horizontalGap,verticalGap
+
+CLSS public org.netbeans.api.visual.graph.layout.TreeGraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
+cons public TreeGraphLayout(org.netbeans.api.visual.graph.GraphScene<{org.netbeans.api.visual.graph.layout.TreeGraphLayout%0},{org.netbeans.api.visual.graph.layout.TreeGraphLayout%1}>,int,int,int,int,boolean)
+meth protected java.util.Collection<{org.netbeans.api.visual.graph.layout.TreeGraphLayout%0}> resolveChildren({org.netbeans.api.visual.graph.layout.TreeGraphLayout%0})
+meth protected void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph)
+meth protected void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph,java.util.Collection)
+meth public final void layout({org.netbeans.api.visual.graph.layout.TreeGraphLayout%0})
 supr org.netbeans.api.visual.graph.layout.GraphLayout
-CLSS public org.netbeans.api.visual.graph.layout.TreeGraphLayout
-cons public TreeGraphLayout(org.netbeans.api.visual.graph.GraphScene,int,int,int,int,boolean)
-meth protected java.util.Collection org.netbeans.api.visual.graph.layout.TreeGraphLayout.resolveChildren(java.lang.Object)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.layout.TreeGraphLayout.layout(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public abstract org.netbeans.api.visual.graph.layout.UniversalGraph
+hfds horizontalGap,originX,originY,scene,vertical,verticalGap
+hcls Node
+
+CLSS public abstract org.netbeans.api.visual.graph.layout.UniversalGraph<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons public UniversalGraph()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract java.lang.Object org.netbeans.api.visual.graph.layout.UniversalGraph.getEdgeSource(java.lang.Object)
-meth public abstract java.lang.Object org.netbeans.api.visual.graph.layout.UniversalGraph.getEdgeTarget(java.lang.Object)
-meth public abstract java.util.Collection org.netbeans.api.visual.graph.layout.UniversalGraph.findNodeEdges(java.lang.Object,boolean,boolean)
-meth public abstract java.util.Collection org.netbeans.api.visual.graph.layout.UniversalGraph.getEdges()
-meth public abstract java.util.Collection org.netbeans.api.visual.graph.layout.UniversalGraph.getNodes()
-meth public abstract org.netbeans.api.visual.model.ObjectScene org.netbeans.api.visual.graph.layout.UniversalGraph.getScene()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%0}> getNodes()
+meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%1}> findNodeEdges({org.netbeans.api.visual.graph.layout.UniversalGraph%0},boolean,boolean)
+meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%1}> getEdges()
+meth public abstract org.netbeans.api.visual.model.ObjectScene getScene()
+meth public abstract {org.netbeans.api.visual.graph.layout.UniversalGraph%0} getEdgeSource({org.netbeans.api.visual.graph.layout.UniversalGraph%1})
+meth public abstract {org.netbeans.api.visual.graph.layout.UniversalGraph%0} getEdgeTarget({org.netbeans.api.visual.graph.layout.UniversalGraph%1})
 supr java.lang.Object
+
 CLSS public final org.netbeans.api.visual.laf.InputBindings
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.laf.InputBindings.getZoomActionModifiers()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.laf.InputBindings.create()
-meth public void org.netbeans.api.visual.laf.InputBindings.setZoomActionModifiers(int)
+meth public int getZoomActionModifiers()
+meth public static org.netbeans.api.visual.laf.InputBindings create()
+meth public void setZoomActionModifiers(int)
 supr java.lang.Object
+hfds zoomActionModifiers
+
 CLSS public abstract org.netbeans.api.visual.laf.LookFeel
 cons public LookFeel()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.netbeans.api.visual.laf.LookFeel.getOpaque(org.netbeans.api.visual.model.ObjectState)
-meth public abstract int org.netbeans.api.visual.laf.LookFeel.getMargin()
-meth public abstract java.awt.Color org.netbeans.api.visual.laf.LookFeel.getForeground()
-meth public abstract java.awt.Color org.netbeans.api.visual.laf.LookFeel.getForeground(org.netbeans.api.visual.model.ObjectState)
-meth public abstract java.awt.Color org.netbeans.api.visual.laf.LookFeel.getLineColor(org.netbeans.api.visual.model.ObjectState)
-meth public abstract java.awt.Paint org.netbeans.api.visual.laf.LookFeel.getBackground()
-meth public abstract java.awt.Paint org.netbeans.api.visual.laf.LookFeel.getBackground(org.netbeans.api.visual.model.ObjectState)
-meth public abstract org.netbeans.api.visual.border.Border org.netbeans.api.visual.laf.LookFeel.getBorder(org.netbeans.api.visual.model.ObjectState)
-meth public abstract org.netbeans.api.visual.border.Border org.netbeans.api.visual.laf.LookFeel.getMiniBorder(org.netbeans.api.visual.model.ObjectState)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.laf.LookFeel.createDefaultLookFeel()
+meth public abstract boolean getOpaque(org.netbeans.api.visual.model.ObjectState)
+meth public abstract int getMargin()
+meth public abstract java.awt.Color getForeground()
+meth public abstract java.awt.Color getForeground(org.netbeans.api.visual.model.ObjectState)
+meth public abstract java.awt.Color getLineColor(org.netbeans.api.visual.model.ObjectState)
+meth public abstract java.awt.Paint getBackground()
+meth public abstract java.awt.Paint getBackground(org.netbeans.api.visual.model.ObjectState)
+meth public abstract org.netbeans.api.visual.border.Border getBorder(org.netbeans.api.visual.model.ObjectState)
+meth public abstract org.netbeans.api.visual.border.Border getMiniBorder(org.netbeans.api.visual.model.ObjectState)
+meth public static org.netbeans.api.visual.laf.LookFeel createDefaultLookFeel()
 supr java.lang.Object
+hfds DEFAULT
+
 CLSS public abstract interface org.netbeans.api.visual.layout.Layout
-meth public abstract boolean org.netbeans.api.visual.layout.Layout.requiresJustification(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.layout.Layout.justify(org.netbeans.api.visual.widget.Widget)
-meth public abstract void org.netbeans.api.visual.layout.Layout.layout(org.netbeans.api.visual.widget.Widget)
-supr null
+meth public abstract boolean requiresJustification(org.netbeans.api.visual.widget.Widget)
+meth public abstract void justify(org.netbeans.api.visual.widget.Widget)
+meth public abstract void layout(org.netbeans.api.visual.widget.Widget)
+
 CLSS public final org.netbeans.api.visual.layout.LayoutFactory
-innr public static final org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment
-innr public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createAbsoluteLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createCardLayout(org.netbeans.api.visual.widget.Widget)
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createFillLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createHorizontalFlowLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createHorizontalFlowLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createHorizontalLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createHorizontalLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createOverlayLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createVerticalFlowLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createVerticalFlowLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout()
-meth public static org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
-meth public static org.netbeans.api.visual.layout.SceneLayout org.netbeans.api.visual.layout.LayoutFactory.createDevolveWidgetLayout(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.Layout,boolean)
-meth public static org.netbeans.api.visual.layout.SceneLayout org.netbeans.api.visual.layout.LayoutFactory.createSceneGraphLayout(org.netbeans.api.visual.graph.GraphPinScene,org.netbeans.api.visual.graph.layout.GraphLayout)
-meth public static org.netbeans.api.visual.layout.SceneLayout org.netbeans.api.visual.layout.LayoutFactory.createSceneGraphLayout(org.netbeans.api.visual.graph.GraphScene,org.netbeans.api.visual.graph.layout.GraphLayout)
-meth public static org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.layout.LayoutFactory.getActiveCard(org.netbeans.api.visual.widget.Widget)
-meth public static void org.netbeans.api.visual.layout.LayoutFactory.setActiveCard(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
+innr public final static !enum ConnectionWidgetLayoutAlignment
+innr public final static !enum SerialAlignment
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.layout.SceneLayout createSceneGraphLayout(org.netbeans.api.visual.graph.GraphPinScene<{%%0},{%%1},?>,org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.layout.SceneLayout createSceneGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>)
+meth public static org.netbeans.api.visual.layout.Layout createAbsoluteLayout()
+meth public static org.netbeans.api.visual.layout.Layout createCardLayout(org.netbeans.api.visual.widget.Widget)
+meth public static org.netbeans.api.visual.layout.Layout createFillLayout()
+meth public static org.netbeans.api.visual.layout.Layout createHorizontalFlowLayout()
+meth public static org.netbeans.api.visual.layout.Layout createHorizontalFlowLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
+meth public static org.netbeans.api.visual.layout.Layout createHorizontalLayout()
+meth public static org.netbeans.api.visual.layout.Layout createHorizontalLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
+meth public static org.netbeans.api.visual.layout.Layout createOverlayLayout()
+meth public static org.netbeans.api.visual.layout.Layout createVerticalFlowLayout()
+meth public static org.netbeans.api.visual.layout.Layout createVerticalFlowLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
+meth public static org.netbeans.api.visual.layout.Layout createVerticalLayout()
+meth public static org.netbeans.api.visual.layout.Layout createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment,int)
+meth public static org.netbeans.api.visual.layout.SceneLayout createDevolveWidgetLayout(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.Layout,boolean)
+meth public static org.netbeans.api.visual.widget.Widget getActiveCard(org.netbeans.api.visual.widget.Widget)
+meth public static void setActiveCard(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.widget.Widget)
 supr java.lang.Object
+hfds LAYOUT_ABSOLUTE,LAYOUT_OVERLAY
+
+CLSS public final static !enum org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_CENTER
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_LEFT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_RIGHT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_SOURCE
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_TARGET
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment CENTER
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment CENTER_LEFT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment CENTER_RIGHT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment CENTER_SOURCE
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment CENTER_TARGET
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment NONE
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment TOP_CENTER
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment TOP_LEFT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment TOP_RIGHT
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment TOP_SOURCE
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment TOP_TARGET
+meth public static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment[] values()
+supr java.lang.Enum<org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment>
+
+CLSS public final static !enum org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment CENTER
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment JUSTIFY
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment LEFT_TOP
+fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment RIGHT_BOTTOM
+meth public static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment[] values()
+supr java.lang.Enum<org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment>
+
 CLSS public abstract org.netbeans.api.visual.layout.SceneLayout
 cons protected SceneLayout(org.netbeans.api.visual.widget.Scene)
-meth protected abstract void org.netbeans.api.visual.layout.SceneLayout.performLayout()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.layout.SceneLayout.invokeLayout()
-meth public final void org.netbeans.api.visual.layout.SceneLayout.invokeLayoutImmediately()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth protected abstract void performLayout()
+meth public final void invokeLayout()
+meth public final void invokeLayoutImmediately()
 supr java.lang.Object
+hfds attached,listener,scene
+hcls LayoutSceneListener
+
 CLSS public org.netbeans.api.visual.model.ObjectScene
 cons public ObjectScene()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
+meth public !varargs final void addObject(java.lang.Object,org.netbeans.api.visual.widget.Widget[])
+meth public !varargs final void addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,org.netbeans.api.visual.model.ObjectSceneEventType[])
+meth public !varargs final void removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,org.netbeans.api.visual.model.ObjectSceneEventType[])
+meth public final boolean isObject(java.lang.Object)
+meth public final java.lang.Object findObject(org.netbeans.api.visual.widget.Widget)
+meth public final java.lang.Object findStoredObject(java.lang.Object)
+meth public final java.lang.Object getFocusedObject()
+meth public final java.lang.Object getHoveredObject()
+meth public final java.util.List<org.netbeans.api.visual.widget.Widget> findWidgets(java.lang.Object)
+meth public final java.util.Set<?> getHighlightedObjects()
+meth public final java.util.Set<?> getObjects()
+meth public final java.util.Set<?> getSelectedObjects()
+meth public final org.netbeans.api.visual.action.WidgetAction createObjectHoverAction()
+meth public final org.netbeans.api.visual.action.WidgetAction createSelectAction()
+meth public final org.netbeans.api.visual.model.ObjectState getObjectState(java.lang.Object)
+meth public final org.netbeans.api.visual.widget.Widget findWidget(java.lang.Object)
+meth public final void removeObject(java.lang.Object)
+meth public final void setFocusedObject(java.lang.Object)
+meth public final void setHighlightedObjects(java.util.Set<?>)
+meth public final void setHoveredObject(java.lang.Object)
+meth public final void setSelectedObjects(java.util.Set<?>)
+meth public java.lang.Comparable getIdentityCode(java.lang.Object)
+meth public void userSelectionSuggested(java.util.Set<?>,boolean)
 supr org.netbeans.api.visual.widget.Scene
+hfds EMPTY_LISTENERS,EMPTY_SET,EMPTY_WIDGETS_ARRAY,EMPTY_WIDGETS_LIST,event,focusedObject,highlightedObjects,highlightedObjectsUm,hoveredObject,listeners,object2widget,object2widgets,objectHoverAction,objectStates,objects,objectsUm,selectAction,selectedObjects,selectedObjectsUm,widget2object
+hcls ObjectHoverProvider,ObjectSelectProvider
+
 CLSS public org.netbeans.api.visual.model.ObjectSceneEvent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.model.ObjectScene org.netbeans.api.visual.model.ObjectSceneEvent.getObjectScene()
+meth public org.netbeans.api.visual.model.ObjectScene getObjectScene()
 supr java.lang.Object
-CLSS public final org.netbeans.api.visual.model.ObjectSceneEventType
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_ADDED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_FOCUS_CHANGED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_HIGHLIGHTING_CHANGED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_HOVER_CHANGED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_REMOVED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_SELECTION_CHANGED
-fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.OBJECT_STATE_CHANGED
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.model.ObjectSceneEventType; org.netbeans.api.visual.model.ObjectSceneEventType.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.model.ObjectSceneEventType org.netbeans.api.visual.model.ObjectSceneEventType.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
+hfds objectScene
+
+CLSS public final !enum org.netbeans.api.visual.model.ObjectSceneEventType
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_ADDED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_FOCUS_CHANGED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_HIGHLIGHTING_CHANGED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_HOVER_CHANGED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_REMOVED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_SELECTION_CHANGED
+fld public final static org.netbeans.api.visual.model.ObjectSceneEventType OBJECT_STATE_CHANGED
+meth public static org.netbeans.api.visual.model.ObjectSceneEventType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.model.ObjectSceneEventType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.model.ObjectSceneEventType>
+
 CLSS public abstract interface org.netbeans.api.visual.model.ObjectSceneListener
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.focusChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,java.lang.Object)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.highlightingChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.util.Set,java.util.Set)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.hoverChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,java.lang.Object)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.objectAdded(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.objectRemoved(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.objectStateChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public abstract void org.netbeans.api.visual.model.ObjectSceneListener.selectionChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.util.Set,java.util.Set)
-supr null
+meth public abstract void focusChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,java.lang.Object)
+meth public abstract void highlightingChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.util.Set<java.lang.Object>,java.util.Set<java.lang.Object>)
+meth public abstract void hoverChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,java.lang.Object)
+meth public abstract void objectAdded(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object)
+meth public abstract void objectRemoved(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object)
+meth public abstract void objectStateChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.lang.Object,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public abstract void selectionChanged(org.netbeans.api.visual.model.ObjectSceneEvent,java.util.Set<java.lang.Object>,java.util.Set<java.lang.Object>)
+
 CLSS public org.netbeans.api.visual.model.ObjectState
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.model.ObjectState.isFocused()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isHighlighted()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isHovered()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isObjectFocused()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isObjectHovered()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isSelected()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isWidgetAimed()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isWidgetFocused()
-meth public boolean org.netbeans.api.visual.model.ObjectState.isWidgetHovered()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveHighlighted(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveObjectFocused(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveObjectHovered(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveSelected(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveWidgetAimed(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveWidgetFocused(boolean)
-meth public org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.deriveWidgetHovered(boolean)
-meth public static org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectState.createNormal()
+meth public boolean isFocused()
+meth public boolean isHighlighted()
+meth public boolean isHovered()
+meth public boolean isObjectFocused()
+meth public boolean isObjectHovered()
+meth public boolean isSelected()
+meth public boolean isWidgetAimed()
+meth public boolean isWidgetFocused()
+meth public boolean isWidgetHovered()
+meth public org.netbeans.api.visual.model.ObjectState deriveHighlighted(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveObjectFocused(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveObjectHovered(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveSelected(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveWidgetAimed(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveWidgetFocused(boolean)
+meth public org.netbeans.api.visual.model.ObjectState deriveWidgetHovered(boolean)
+meth public static org.netbeans.api.visual.model.ObjectState createNormal()
 supr java.lang.Object
+hfds NORMAL,objectFocused,objectHighlighted,objectHovered,objectSelected,widgetAimed,widgetFocused,widgetHovered
+
 CLSS public final org.netbeans.api.visual.model.StateModel
 cons public StateModel()
 cons public StateModel(int)
-innr public static abstract interface org.netbeans.api.visual.model.StateModel$Listener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.netbeans.api.visual.model.StateModel.getBooleanState()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.api.visual.model.StateModel.getMaxStates()
-meth public int org.netbeans.api.visual.model.StateModel.getState()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.model.StateModel.addListener(org.netbeans.api.visual.model.StateModel$Listener)
-meth public void org.netbeans.api.visual.model.StateModel.decrease()
-meth public void org.netbeans.api.visual.model.StateModel.increase()
-meth public void org.netbeans.api.visual.model.StateModel.removeListener(org.netbeans.api.visual.model.StateModel$Listener)
-meth public void org.netbeans.api.visual.model.StateModel.setBooleanState(boolean)
-meth public void org.netbeans.api.visual.model.StateModel.setState(int)
-meth public void org.netbeans.api.visual.model.StateModel.toggleBooleanState()
+innr public abstract interface static Listener
+meth public boolean getBooleanState()
+meth public int getMaxStates()
+meth public int getState()
+meth public void addListener(org.netbeans.api.visual.model.StateModel$Listener)
+meth public void decrease()
+meth public void increase()
+meth public void removeListener(org.netbeans.api.visual.model.StateModel$Listener)
+meth public void setBooleanState(boolean)
+meth public void setState(int)
+meth public void toggleBooleanState()
 supr java.lang.Object
+hfds listeners,maxStates,state
+
+CLSS public abstract interface static org.netbeans.api.visual.model.StateModel$Listener
+meth public abstract void stateChanged()
+
+CLSS public final org.netbeans.api.visual.print.ScenePrinter
+innr public final static !enum ScaleStrategy
+meth public static void print(org.netbeans.api.visual.widget.Scene)
+meth public static void print(org.netbeans.api.visual.widget.Scene,double,double)
+meth public static void print(org.netbeans.api.visual.widget.Scene,java.awt.print.PageFormat)
+meth public static void print(org.netbeans.api.visual.widget.Scene,java.awt.print.PageFormat,java.awt.Rectangle)
+meth public static void print(org.netbeans.api.visual.widget.Scene,java.awt.print.PageFormat,org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy)
+meth public static void print(org.netbeans.api.visual.widget.Scene,java.awt.print.PageFormat,org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy,double,double,boolean,boolean,java.awt.Rectangle,java.util.List<org.netbeans.api.visual.widget.LayerWidget>)
+meth public static void print(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy)
+supr java.lang.Object
+
+CLSS public final static !enum org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy NO_SCALING
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_CURRENT_ZOOM
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_PERCENT
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_TO_FIT
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_TO_FIT_X
+fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_TO_FIT_Y
+meth public static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy[] values()
+supr java.lang.Enum<org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy>
+
 CLSS public abstract interface org.netbeans.api.visual.router.CollisionsCollector
-meth public abstract void org.netbeans.api.visual.router.CollisionsCollector.collectCollisions(java.util.List,java.util.List)
-supr null
+meth public abstract void collectCollisions(java.util.List<java.awt.Rectangle>,java.util.List<java.awt.Rectangle>)
+
 CLSS public abstract interface org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector
-meth public abstract void org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector.collectCollisions(org.netbeans.api.visual.widget.ConnectionWidget,java.util.List,java.util.List)
-supr null
+meth public abstract void collectCollisions(org.netbeans.api.visual.widget.ConnectionWidget,java.util.List<java.awt.Rectangle>,java.util.List<java.awt.Rectangle>)
+
 CLSS public abstract interface org.netbeans.api.visual.router.Router
-meth public abstract java.util.List org.netbeans.api.visual.router.Router.routeConnection(org.netbeans.api.visual.widget.ConnectionWidget)
-supr null
+meth public abstract java.util.List<java.awt.Point> routeConnection(org.netbeans.api.visual.widget.ConnectionWidget)
+
 CLSS public final org.netbeans.api.visual.router.RouterFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.router.Router org.netbeans.api.visual.router.RouterFactory.createDirectRouter()
-meth public static org.netbeans.api.visual.router.Router org.netbeans.api.visual.router.RouterFactory.createFreeRouter()
-meth public static org.netbeans.api.visual.router.Router org.netbeans.api.visual.router.RouterFactory.createOrthogonalSearchRouter(org.netbeans.api.visual.router.CollisionsCollector)
-meth public static org.netbeans.api.visual.router.Router org.netbeans.api.visual.router.RouterFactory.createOrthogonalSearchRouter(org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector)
-meth public static transient org.netbeans.api.visual.router.Router org.netbeans.api.visual.router.RouterFactory.createOrthogonalSearchRouter([Lorg.netbeans.api.visual.widget.LayerWidget;)
+meth public !varargs static org.netbeans.api.visual.router.Router createOrthogonalSearchRouter(org.netbeans.api.visual.widget.LayerWidget[])
+meth public static org.netbeans.api.visual.router.Router createDirectRouter()
+meth public static org.netbeans.api.visual.router.Router createFreeRouter()
+meth public static org.netbeans.api.visual.router.Router createOrthogonalSearchRouter(org.netbeans.api.visual.router.CollisionsCollector)
+meth public static org.netbeans.api.visual.router.Router createOrthogonalSearchRouter(org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector)
 supr java.lang.Object
+hfds ROUTER_DIRECT,ROUTER_FREE
+
 CLSS public abstract org.netbeans.api.visual.vmd.VMDColorScheme
 cons protected VMDColorScheme()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.netbeans.api.visual.vmd.VMDColorScheme.isNodeMinimizeButtonOnRight(org.netbeans.api.visual.vmd.VMDNodeWidget)
-meth public abstract int org.netbeans.api.visual.vmd.VMDColorScheme.getNodeAnchorGap(org.netbeans.api.visual.vmd.VMDNodeAnchor)
-meth public abstract java.awt.Image org.netbeans.api.visual.vmd.VMDColorScheme.getMinimizeWidgetImage(org.netbeans.api.visual.vmd.VMDNodeWidget)
-meth public abstract org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDColorScheme.createPinCategoryWidget(org.netbeans.api.visual.vmd.VMDNodeWidget,java.lang.String)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.installUI(org.netbeans.api.visual.vmd.VMDConnectionWidget)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.installUI(org.netbeans.api.visual.vmd.VMDNodeWidget)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.installUI(org.netbeans.api.visual.vmd.VMDPinWidget)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.updateUI(org.netbeans.api.visual.vmd.VMDConnectionWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.updateUI(org.netbeans.api.visual.vmd.VMDNodeWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public abstract void org.netbeans.api.visual.vmd.VMDColorScheme.updateUI(org.netbeans.api.visual.vmd.VMDPinWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public abstract boolean isNodeMinimizeButtonOnRight(org.netbeans.api.visual.vmd.VMDNodeWidget)
+meth public abstract int getNodeAnchorGap(org.netbeans.api.visual.vmd.VMDNodeAnchor)
+meth public abstract java.awt.Image getMinimizeWidgetImage(org.netbeans.api.visual.vmd.VMDNodeWidget)
+meth public abstract org.netbeans.api.visual.widget.Widget createPinCategoryWidget(org.netbeans.api.visual.vmd.VMDNodeWidget,java.lang.String)
+meth public abstract void installUI(org.netbeans.api.visual.vmd.VMDConnectionWidget)
+meth public abstract void installUI(org.netbeans.api.visual.vmd.VMDNodeWidget)
+meth public abstract void installUI(org.netbeans.api.visual.vmd.VMDPinWidget)
+meth public abstract void updateUI(org.netbeans.api.visual.vmd.VMDConnectionWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public abstract void updateUI(org.netbeans.api.visual.vmd.VMDNodeWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public abstract void updateUI(org.netbeans.api.visual.vmd.VMDPinWidget,org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr java.lang.Object
+
 CLSS public org.netbeans.api.visual.vmd.VMDConnectionWidget
 cons public VMDConnectionWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.router.Router)
 cons public VMDConnectionWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.ConnectionWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.ConnectionWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isValidated()
-meth public double org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShapeRotation()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isFirstControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isLastControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isPaintControlPoints()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isRouted()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointHitAt(java.awt.Point)
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.ConnectionWidget.getLineColor()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getControlPointsCursor()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getFirstControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getLastControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.awt.Stroke org.netbeans.api.visual.widget.ConnectionWidget.getStroke()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchor()
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchor()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.router.Router org.netbeans.api.visual.widget.ConnectionWidget.getRouter()
-meth public final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget.getRoutingPolicy()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.calculateRouting()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.reroute()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointsCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setLineColor(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setPaintControlPoints(boolean)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRouter(org.netbeans.api.visual.router.Router)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRoutingPolicy(org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setStroke(java.awt.Stroke)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointCutDistance()
-meth public java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getControlPoint(int)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.widget.ConnectionWidget.getControlPoints()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorEntry()
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorEntry()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorShape()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getControlPointShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getEndPointShape()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.vmd.VMDConnectionWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.removeConstraint(org.netbeans.api.visual.widget.Widget)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,float)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointCutDistance(int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPoints(java.util.Collection,boolean)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setEndPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
+meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.ConnectionWidget
+hfds scheme
+
 CLSS public final org.netbeans.api.visual.vmd.VMDFactory
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.vmd.VMDFactory.createVMDNodeBorder()
-meth public static org.netbeans.api.visual.border.Border org.netbeans.api.visual.vmd.VMDFactory.createVMDNodeBorder(java.awt.Color,int,java.awt.Color,java.awt.Color,java.awt.Color,java.awt.Color,java.awt.Color)
-meth public static org.netbeans.api.visual.vmd.VMDColorScheme org.netbeans.api.visual.vmd.VMDFactory.getNetBeans60Scheme()
-meth public static org.netbeans.api.visual.vmd.VMDColorScheme org.netbeans.api.visual.vmd.VMDFactory.getOriginalScheme()
+meth public static org.netbeans.api.visual.border.Border createVMDNodeBorder()
+meth public static org.netbeans.api.visual.border.Border createVMDNodeBorder(java.awt.Color,int,java.awt.Color,java.awt.Color,java.awt.Color,java.awt.Color,java.awt.Color)
+meth public static org.netbeans.api.visual.vmd.VMDColorScheme getNetBeans60Scheme()
+meth public static org.netbeans.api.visual.vmd.VMDColorScheme getOriginalScheme()
 supr java.lang.Object
+hfds SCHEME_NB60,SCHEME_ORIGINAL
+
 CLSS public org.netbeans.api.visual.vmd.VMDGlyphSetWidget
 cons public VMDGlyphSetWidget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.vmd.VMDGlyphSetWidget.setGlyphs(java.util.List)
+meth public void setGlyphs(java.util.List<java.awt.Image>)
 supr org.netbeans.api.visual.widget.Widget
+
 CLSS public org.netbeans.api.visual.vmd.VMDGraphScene
 cons public VMDGraphScene()
 cons public VMDGraphScene(org.netbeans.api.visual.vmd.VMDColorScheme)
-fld  constant public static final java.lang.String org.netbeans.api.visual.vmd.VMDGraphScene.PIN_ID_DEFAULT_SUFFIX
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static abstract org.netbeans.api.visual.graph.GraphPinScene$StringGraph
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeWidget(java.lang.String)
-meth protected org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachNodeWidget(java.lang.String)
-meth protected org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachPinWidget(java.lang.String,java.lang.String)
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachEdgeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachNodeWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.detachPinWidget(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyEdgeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyNodeAdded(java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.graph.GraphPinScene.notifyPinAdded(java.lang.Object,java.lang.Object,org.netbeans.api.visual.widget.Widget)
-meth protected void org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeSourceAnchor(java.lang.String,java.lang.String,java.lang.String)
-meth protected void org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeTargetAnchor(java.lang.String,java.lang.String,java.lang.String)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth protected volatile org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeWidget(java.lang.Object)
-meth protected volatile org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachNodeWidget(java.lang.Object)
-meth protected volatile org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDGraphScene.attachPinWidget(java.lang.Object,java.lang.Object)
-meth protected volatile void org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeSourceAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth protected volatile void org.netbeans.api.visual.vmd.VMDGraphScene.attachEdgeTargetAnchor(java.lang.Object,java.lang.Object,java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isEdge(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isNode(java.lang.Object)
-meth public boolean org.netbeans.api.visual.graph.GraphPinScene.isPin(java.lang.Object)
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.model.ObjectScene.isObject(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeSource(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getEdgeTarget(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.graph.GraphPinScene.getPinNode(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findObject(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.findStoredObject(java.lang.Object)
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getFocusedObject()
-meth public final java.lang.Object org.netbeans.api.visual.model.ObjectScene.getHoveredObject()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findEdgesBetween(java.lang.Object,java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.findPinEdges(java.lang.Object,boolean,boolean)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getEdges()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodePins(java.lang.Object)
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getNodes()
-meth public final java.util.Collection org.netbeans.api.visual.graph.GraphPinScene.getPins()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.model.ObjectScene.findWidgets(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getHighlightedObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getObjects()
-meth public final java.util.Set org.netbeans.api.visual.model.ObjectScene.getSelectedObjects()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createObjectHoverAction()
-meth public final org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.model.ObjectScene.createSelectAction()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.model.ObjectScene.getObjectState(java.lang.Object)
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addEdge(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addNode(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.graph.GraphPinScene.addPin(java.lang.Object,java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.model.ObjectScene.findWidget(java.lang.Object)
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeEdge(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNode(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removeNodeWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePin(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.removePinWithEdges(java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeSource(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.graph.GraphPinScene.setEdgeTarget(java.lang.Object,java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.removeObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setFocusedObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHighlightedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setHoveredObject(java.lang.Object)
-meth public final void org.netbeans.api.visual.model.ObjectScene.setSelectedObjects(java.util.Set)
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.Comparable org.netbeans.api.visual.model.ObjectScene.getIdentityCode(java.lang.Object)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObject(java.lang.Object,[Lorg.netbeans.api.visual.widget.Widget;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public transient final void org.netbeans.api.visual.model.ObjectScene.removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,[Lorg.netbeans.api.visual.model.ObjectSceneEventType;)
-meth public void org.netbeans.api.visual.model.ObjectScene.userSelectionSuggested(java.util.Set,boolean)
-meth public void org.netbeans.api.visual.vmd.VMDGraphScene.layoutScene()
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
-supr org.netbeans.api.visual.graph.GraphPinScene
+fld public final static java.lang.String PIN_ID_DEFAULT_SUFFIX = "#default"
+meth protected org.netbeans.api.visual.widget.Widget attachEdgeWidget(java.lang.String)
+meth protected org.netbeans.api.visual.widget.Widget attachNodeWidget(java.lang.String)
+meth protected org.netbeans.api.visual.widget.Widget attachPinWidget(java.lang.String,java.lang.String)
+meth protected void attachEdgeSourceAnchor(java.lang.String,java.lang.String,java.lang.String)
+meth protected void attachEdgeTargetAnchor(java.lang.String,java.lang.String,java.lang.String)
+meth public void layoutScene()
+supr org.netbeans.api.visual.graph.GraphPinScene<java.lang.String,java.lang.String,java.lang.String>
+hfds backgroundLayer,connectionLayer,mainLayer,moveAction,moveControlPointAction,router,sceneLayout,scheme,upperLayer
+
 CLSS public abstract interface org.netbeans.api.visual.vmd.VMDMinimizeAbility
-meth public abstract void org.netbeans.api.visual.vmd.VMDMinimizeAbility.collapseWidget()
-meth public abstract void org.netbeans.api.visual.vmd.VMDMinimizeAbility.expandWidget()
-supr null
+meth public abstract void collapseWidget()
+meth public abstract void expandWidget()
+
 CLSS public org.netbeans.api.visual.vmd.VMDNodeAnchor
 cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget)
 cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget,boolean)
 cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget,boolean,org.netbeans.api.visual.vmd.VMDColorScheme)
-fld  public static final java.util.EnumSet org.netbeans.api.visual.anchor.Anchor.DIRECTION_ANY
-innr public final org.netbeans.api.visual.anchor.Anchor$Result
-innr public static abstract interface org.netbeans.api.visual.anchor.Anchor$Entry
-innr public static final org.netbeans.api.visual.anchor.Anchor$Direction
-intf org.netbeans.api.visual.widget.Widget$Dependency
-meth protected final boolean org.netbeans.api.visual.anchor.Anchor.isUsed()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyUnused()
-meth protected void org.netbeans.api.visual.anchor.Anchor.notifyUsed()
-meth protected void org.netbeans.api.visual.vmd.VMDNodeAnchor.notifyEntryAdded(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth protected void org.netbeans.api.visual.vmd.VMDNodeAnchor.notifyEntryRemoved(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth protected void org.netbeans.api.visual.vmd.VMDNodeAnchor.notifyRevalidate()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final java.util.List org.netbeans.api.visual.anchor.Anchor.getEntries()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.anchor.Anchor.addEntries(java.util.List)
-meth public final void org.netbeans.api.visual.anchor.Anchor.addEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public final void org.netbeans.api.visual.anchor.Anchor.removeEntries(java.util.List)
-meth public final void org.netbeans.api.visual.anchor.Anchor.removeEntry(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public final void org.netbeans.api.visual.anchor.Anchor.revalidateDependency()
-meth public java.awt.Point org.netbeans.api.visual.anchor.Anchor.getOppositeSceneLocation(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public java.awt.Point org.netbeans.api.visual.anchor.Anchor.getRelatedSceneLocation()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.netbeans.api.visual.anchor.Anchor$Result org.netbeans.api.visual.vmd.VMDNodeAnchor.compute(org.netbeans.api.visual.anchor.Anchor$Entry)
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.anchor.Anchor.getRelatedWidget()
+meth protected void notifyEntryAdded(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth protected void notifyEntryRemoved(org.netbeans.api.visual.anchor.Anchor$Entry)
+meth protected void notifyRevalidate()
+meth public org.netbeans.api.visual.anchor.Anchor$Result compute(org.netbeans.api.visual.anchor.Anchor$Entry)
 supr org.netbeans.api.visual.anchor.Anchor
+hfds requiresRecalculation,results,scheme,vertical
+
 CLSS public org.netbeans.api.visual.vmd.VMDNodeWidget
 cons public VMDNodeWidget(org.netbeans.api.visual.widget.Scene)
 cons public VMDNodeWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
 intf org.netbeans.api.visual.model.StateModel$Listener
 intf org.netbeans.api.visual.vmd.VMDMinimizeAbility
-meth protected boolean org.netbeans.api.visual.vmd.VMDNodeWidget.isMinimizableWidget(org.netbeans.api.visual.widget.Widget)
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.vmd.VMDNodeWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.vmd.VMDNodeWidget.isMinimized()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.api.visual.vmd.VMDNodeWidget.getNodeName()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.vmd.VMDNodeWidget.createAnchorPin(org.netbeans.api.visual.anchor.Anchor)
-meth public org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.vmd.VMDNodeWidget.getNodeAnchor()
-meth public org.netbeans.api.visual.widget.LabelWidget org.netbeans.api.visual.vmd.VMDNodeWidget.getNodeNameWidget()
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDNodeWidget.getHeader()
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDNodeWidget.getMinimizeButton()
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDNodeWidget.getPinsSeparator()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.attachPinWidget(org.netbeans.api.visual.widget.Widget)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.collapseWidget()
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.expandWidget()
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setGlyphs(java.util.List)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setMinimized(boolean)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setNodeImage(java.awt.Image)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setNodeName(java.lang.String)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setNodeProperties(java.awt.Image,java.lang.String,java.lang.String,java.util.List)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.setNodeType(java.lang.String)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.sortPins(java.util.HashMap)
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.stateChanged()
-meth public void org.netbeans.api.visual.vmd.VMDNodeWidget.toggleMinimized()
+meth protected boolean isMinimizableWidget(org.netbeans.api.visual.widget.Widget)
+meth protected void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public boolean isMinimized()
+meth public java.lang.String getNodeName()
+meth public org.netbeans.api.visual.anchor.Anchor createAnchorPin(org.netbeans.api.visual.anchor.Anchor)
+meth public org.netbeans.api.visual.anchor.Anchor getNodeAnchor()
+meth public org.netbeans.api.visual.widget.LabelWidget getNodeNameWidget()
+meth public org.netbeans.api.visual.widget.Widget getHeader()
+meth public org.netbeans.api.visual.widget.Widget getMinimizeButton()
+meth public org.netbeans.api.visual.widget.Widget getPinsSeparator()
+meth public void attachPinWidget(org.netbeans.api.visual.widget.Widget)
+meth public void collapseWidget()
+meth public void expandWidget()
+meth public void setGlyphs(java.util.List<java.awt.Image>)
+meth public void setMinimized(boolean)
+meth public void setNodeImage(java.awt.Image)
+meth public void setNodeName(java.lang.String)
+meth public void setNodeProperties(java.awt.Image,java.lang.String,java.lang.String,java.util.List<java.awt.Image>)
+meth public void setNodeType(java.lang.String)
+meth public void sortPins(java.util.HashMap<java.lang.String,java.util.List<org.netbeans.api.visual.widget.Widget>>)
+meth public void stateChanged()
+meth public void toggleMinimized()
 supr org.netbeans.api.visual.widget.Widget
+hfds glyphSetWidget,header,imageWidget,minimizeWidget,nameWidget,nodeAnchor,pinCategoryWidgets,pinsSeparator,proxyAnchorCache,scheme,stateModel,typeWidget
+hcls ToggleMinimizedAction
+
 CLSS public org.netbeans.api.visual.vmd.VMDPinWidget
 cons public VMDPinWidget(org.netbeans.api.visual.widget.Scene)
 cons public VMDPinWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.vmd.VMDPinWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.api.visual.vmd.VMDPinWidget.getPinName()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.vmd.VMDPinWidget.createAnchor()
-meth public org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.vmd.VMDPinWidget.getPinNameWidget()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.vmd.VMDPinWidget.setGlyphs(java.util.List)
-meth public void org.netbeans.api.visual.vmd.VMDPinWidget.setPinName(java.lang.String)
-meth public void org.netbeans.api.visual.vmd.VMDPinWidget.setProperties(java.lang.String,java.util.List)
+meth protected void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public java.lang.String getPinName()
+meth public org.netbeans.api.visual.anchor.Anchor createAnchor()
+meth public org.netbeans.api.visual.widget.Widget getPinNameWidget()
+meth public void setGlyphs(java.util.List<java.awt.Image>)
+meth public void setPinName(java.lang.String)
+meth public void setProperties(java.lang.String,java.util.List<java.awt.Image>)
 supr org.netbeans.api.visual.widget.Widget
+hfds anchor,glyphsWidget,nameWidget,scheme
+
 CLSS public final org.netbeans.api.visual.widget.BirdViewController
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.api.visual.widget.BirdViewController.hide()
-meth public void org.netbeans.api.visual.widget.BirdViewController.setWindowSize(java.awt.Dimension)
-meth public void org.netbeans.api.visual.widget.BirdViewController.setZoomFactor(double)
-meth public void org.netbeans.api.visual.widget.BirdViewController.show()
+meth public void hide()
+meth public void setWindowSize(java.awt.Dimension)
+meth public void setZoomFactor(double)
+meth public void show()
 supr java.lang.Object
+hfds birdView
+
 CLSS public org.netbeans.api.visual.widget.ComponentWidget
 cons public ComponentWidget(org.netbeans.api.visual.widget.Scene,java.awt.Component)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected final java.awt.Rectangle org.netbeans.api.visual.widget.ComponentWidget.calculateClientArea()
-meth protected final void org.netbeans.api.visual.widget.ComponentWidget.notifyAdded()
-meth protected final void org.netbeans.api.visual.widget.ComponentWidget.notifyRemoved()
-meth protected final void org.netbeans.api.visual.widget.ComponentWidget.paintWidget()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.ComponentWidget.isComponentVisible()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Component org.netbeans.api.visual.widget.ComponentWidget.getComponent()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.ComponentWidget.setComponentVisible(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
+meth protected final java.awt.Rectangle calculateClientArea()
+meth protected final void notifyAdded()
+meth protected final void notifyRemoved()
+meth protected final void paintWidget()
+meth public final boolean isComponentVisible()
+meth public final java.awt.Component getComponent()
+meth public final void setComponentVisible(boolean)
 supr org.netbeans.api.visual.widget.Widget
+hfds component,componentAdded,componentListener,componentVisible,validateListener,widgetAdded,zoomFactor
+hcls ComponentComponentListener,ComponentSceneListener
+
 CLSS public org.netbeans.api.visual.widget.ConnectionWidget
 cons public ConnectionWidget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.ConnectionWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.ConnectionWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isValidated()
-meth public double org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShapeRotation()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isFirstControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isLastControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isPaintControlPoints()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isRouted()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointHitAt(java.awt.Point)
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.ConnectionWidget.getLineColor()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getControlPointsCursor()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getFirstControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getLastControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.awt.Stroke org.netbeans.api.visual.widget.ConnectionWidget.getStroke()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchor()
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchor()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.router.Router org.netbeans.api.visual.widget.ConnectionWidget.getRouter()
-meth public final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget.getRoutingPolicy()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.calculateRouting()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.reroute()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointsCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setLineColor(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setPaintControlPoints(boolean)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRouter(org.netbeans.api.visual.router.Router)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRoutingPolicy(org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setStroke(java.awt.Stroke)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointCutDistance()
-meth public java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getControlPoint(int)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.widget.ConnectionWidget.getControlPoints()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorEntry()
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorEntry()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorShape()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getControlPointShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getEndPointShape()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.removeConstraint(org.netbeans.api.visual.widget.Widget)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,float)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointCutDistance(int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPoints(java.util.Collection,boolean)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setEndPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
+innr public final static !enum RoutingPolicy
+meth protected java.awt.Cursor getCursorAt(java.awt.Point)
+meth protected java.awt.Rectangle calculateClientArea()
+meth protected void paintWidget()
+meth public boolean isHitAt(java.awt.Point)
+meth public boolean isValidated()
+meth public double getTargetAnchorShapeRotation()
+meth public final boolean isFirstControlPointHitAt(java.awt.Point)
+meth public final boolean isLastControlPointHitAt(java.awt.Point)
+meth public final boolean isPaintControlPoints()
+meth public final boolean isRouted()
+meth public final int getControlPointHitAt(java.awt.Point)
+meth public final java.awt.Color getLineColor()
+meth public final java.awt.Cursor getControlPointsCursor()
+meth public final java.awt.Point getFirstControlPoint()
+meth public final java.awt.Point getLastControlPoint()
+meth public final java.awt.Stroke getStroke()
+meth public final org.netbeans.api.visual.anchor.Anchor getSourceAnchor()
+meth public final org.netbeans.api.visual.anchor.Anchor getTargetAnchor()
+meth public final org.netbeans.api.visual.router.Router getRouter()
+meth public final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy getRoutingPolicy()
+meth public final void calculateRouting()
+meth public final void reroute()
+meth public final void setControlPointsCursor(java.awt.Cursor)
+meth public final void setLineColor(java.awt.Color)
+meth public final void setPaintControlPoints(boolean)
+meth public final void setRouter(org.netbeans.api.visual.router.Router)
+meth public final void setRoutingPolicy(org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
+meth public final void setSourceAnchor(org.netbeans.api.visual.anchor.Anchor)
+meth public final void setStroke(java.awt.Stroke)
+meth public final void setTargetAnchor(org.netbeans.api.visual.anchor.Anchor)
+meth public int getControlPointCutDistance()
+meth public java.awt.Point getControlPoint(int)
+meth public java.util.List<java.awt.Point> getControlPoints()
+meth public org.netbeans.api.visual.anchor.Anchor$Entry getSourceAnchorEntry()
+meth public org.netbeans.api.visual.anchor.Anchor$Entry getTargetAnchorEntry()
+meth public org.netbeans.api.visual.anchor.AnchorShape getSourceAnchorShape()
+meth public org.netbeans.api.visual.anchor.AnchorShape getTargetAnchorShape()
+meth public org.netbeans.api.visual.anchor.PointShape getControlPointShape()
+meth public org.netbeans.api.visual.anchor.PointShape getEndPointShape()
+meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public void removeConstraint(org.netbeans.api.visual.widget.Widget)
+meth public void setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,float)
+meth public void setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,int)
+meth public void setControlPointCutDistance(int)
+meth public void setControlPointShape(org.netbeans.api.visual.anchor.PointShape)
+meth public void setControlPoints(java.util.Collection<java.awt.Point>,boolean)
+meth public void setEndPointShape(org.netbeans.api.visual.anchor.PointShape)
+meth public void setSourceAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
+meth public void setTargetAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
 supr org.netbeans.api.visual.widget.Widget
+hfds HIT_DISTANCE_SQUARE,STROKE_DEFAULT,connectionWidgetLayout,controlPointCutDistance,controlPointShape,controlPoints,controlPointsCursor,controlPointsUm,endPointShape,lineColor,paintControlPoints,router,routingPolicy,routingRequired,sourceAnchor,sourceAnchorShape,sourceEntry,stroke,targetAnchor,targetAnchorShape,targetEntry
+hcls ConnectionEntry
+
+CLSS public final static !enum org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
+fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy ALWAYS_ROUTE
+fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy DISABLE_ROUTING
+fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED
+fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy UPDATE_END_POINTS_ONLY
+meth public static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy>
+
 CLSS public org.netbeans.api.visual.widget.ConvolveWidget
 cons public ConvolveWidget(org.netbeans.api.visual.widget.Scene,java.awt.image.ConvolveOp)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.ConvolveWidget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.image.ConvolveOp org.netbeans.api.visual.widget.ConvolveWidget.getConvolveOp()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.ConvolveWidget.clearCache()
-meth public void org.netbeans.api.visual.widget.ConvolveWidget.setConvolveOp(java.awt.image.ConvolveOp)
+meth protected void paintChildren()
+meth public java.awt.image.ConvolveOp getConvolveOp()
+meth public void clearCache()
+meth public void setConvolveOp(java.awt.image.ConvolveOp)
 supr org.netbeans.api.visual.widget.Widget
-CLSS public final org.netbeans.api.visual.widget.EventProcessingType
-fld  public static final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.EventProcessingType.ALL_WIDGETS
-fld  public static final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN
-fld  public static final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS
-fld  public static final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Lorg.netbeans.api.visual.widget.EventProcessingType; org.netbeans.api.visual.widget.EventProcessingType.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.EventProcessingType.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
+hfds TRANSPARENT,convolveOp,image,imageGraphics
+
+CLSS public final !enum org.netbeans.api.visual.widget.EventProcessingType
+fld public final static org.netbeans.api.visual.widget.EventProcessingType ALL_WIDGETS
+fld public final static org.netbeans.api.visual.widget.EventProcessingType FOCUSED_WIDGET_AND_ITS_CHILDREN
+fld public final static org.netbeans.api.visual.widget.EventProcessingType FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS
+fld public final static org.netbeans.api.visual.widget.EventProcessingType FOCUSED_WIDGET_AND_ITS_PARENTS
+meth public static org.netbeans.api.visual.widget.EventProcessingType valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.EventProcessingType[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.EventProcessingType>
+
 CLSS public org.netbeans.api.visual.widget.FreeConnectionWidget
 cons public FreeConnectionWidget(org.netbeans.api.visual.widget.Scene)
 cons public FreeConnectionWidget(org.netbeans.api.visual.widget.Scene,double,double)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.ConnectionWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.ConnectionWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.ConnectionWidget.isValidated()
-meth public double org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShapeRotation()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isFirstControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isLastControlPointHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isPaintControlPoints()
-meth public final boolean org.netbeans.api.visual.widget.ConnectionWidget.isRouted()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointHitAt(java.awt.Point)
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.ConnectionWidget.getLineColor()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.ConnectionWidget.getControlPointsCursor()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getFirstControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getLastControlPoint()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.awt.Stroke org.netbeans.api.visual.widget.ConnectionWidget.getStroke()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchor()
-meth public final org.netbeans.api.visual.anchor.Anchor org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchor()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.router.Router org.netbeans.api.visual.widget.ConnectionWidget.getRouter()
-meth public final org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy org.netbeans.api.visual.widget.ConnectionWidget.getRoutingPolicy()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.calculateRouting()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.reroute()
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointsCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setLineColor(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setPaintControlPoints(boolean)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRouter(org.netbeans.api.visual.router.Router)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setRoutingPolicy(org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setStroke(java.awt.Stroke)
-meth public final void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchor(org.netbeans.api.visual.anchor.Anchor)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public int org.netbeans.api.visual.widget.ConnectionWidget.getControlPointCutDistance()
-meth public java.awt.Point org.netbeans.api.visual.widget.ConnectionWidget.getControlPoint(int)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.List org.netbeans.api.visual.widget.ConnectionWidget.getControlPoints()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorEntry()
-meth public org.netbeans.api.visual.anchor.Anchor$Entry org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorEntry()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getSourceAnchorShape()
-meth public org.netbeans.api.visual.anchor.AnchorShape org.netbeans.api.visual.widget.ConnectionWidget.getTargetAnchorShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getControlPointShape()
-meth public org.netbeans.api.visual.anchor.PointShape org.netbeans.api.visual.widget.ConnectionWidget.getEndPointShape()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.removeConstraint(org.netbeans.api.visual.widget.Widget)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,float)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setConstraint(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment,int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointCutDistance(int)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setControlPoints(java.util.Collection,boolean)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setEndPointShape(org.netbeans.api.visual.anchor.PointShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setSourceAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
-meth public void org.netbeans.api.visual.widget.ConnectionWidget.setTargetAnchorShape(org.netbeans.api.visual.anchor.AnchorShape)
-meth public void org.netbeans.api.visual.widget.FreeConnectionWidget.addRemoveControlPoint(java.awt.Point)
-meth public void org.netbeans.api.visual.widget.FreeConnectionWidget.setSensitivity(double,double)
+meth public void addRemoveControlPoint(java.awt.Point)
+meth public void setSensitivity(double,double)
 supr org.netbeans.api.visual.widget.ConnectionWidget
+hfds createSensitivity,deleteSensitivity
+
 CLSS public org.netbeans.api.visual.widget.ImageWidget
 cons public ImageWidget(org.netbeans.api.visual.widget.Scene)
 cons public ImageWidget(org.netbeans.api.visual.widget.Scene,java.awt.Image)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.ImageWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.ImageWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.ImageWidget.isPaintAsDisabled()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Image org.netbeans.api.visual.widget.ImageWidget.getImage()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.ImageWidget.setImage(java.awt.Image)
-meth public void org.netbeans.api.visual.widget.ImageWidget.setPaintAsDisabled(boolean)
+meth protected java.awt.Rectangle calculateClientArea()
+meth protected void paintWidget()
+meth public boolean isPaintAsDisabled()
+meth public java.awt.Image getImage()
+meth public void setImage(java.awt.Image)
+meth public void setPaintAsDisabled(boolean)
 supr org.netbeans.api.visual.widget.Widget
+hfds disabledImage,height,image,observer,paintAsDisabled,width
+
 CLSS public org.netbeans.api.visual.widget.LabelWidget
 cons public LabelWidget(org.netbeans.api.visual.widget.Scene)
 cons public LabelWidget(org.netbeans.api.visual.widget.Scene,java.lang.String)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.LabelWidget$Alignment
-innr public static final org.netbeans.api.visual.widget.LabelWidget$Orientation
-innr public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.LabelWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.LabelWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.LabelWidget.isPaintAsDisabled()
-meth public boolean org.netbeans.api.visual.widget.LabelWidget.isUseGlyphVector()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.api.visual.widget.LabelWidget.getLabel()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget.getAlignment()
-meth public org.netbeans.api.visual.widget.LabelWidget$Orientation org.netbeans.api.visual.widget.LabelWidget.getOrientation()
-meth public org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget.getVerticalAlignment()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.LabelWidget.setAlignment(org.netbeans.api.visual.widget.LabelWidget$Alignment)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setLabel(java.lang.String)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setOrientation(org.netbeans.api.visual.widget.LabelWidget$Orientation)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setPaintAsDisabled(boolean)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setUseGlyphVector(boolean)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setVerticalAlignment(org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment)
+innr public final static !enum Alignment
+innr public final static !enum Orientation
+innr public final static !enum VerticalAlignment
+meth protected java.awt.Rectangle calculateClientArea()
+meth protected void paintWidget()
+meth public boolean isPaintAsDisabled()
+meth public boolean isUseGlyphVector()
+meth public java.lang.String getLabel()
+meth public org.netbeans.api.visual.widget.LabelWidget$Alignment getAlignment()
+meth public org.netbeans.api.visual.widget.LabelWidget$Orientation getOrientation()
+meth public org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment getVerticalAlignment()
+meth public void setAlignment(org.netbeans.api.visual.widget.LabelWidget$Alignment)
+meth public void setLabel(java.lang.String)
+meth public void setOrientation(org.netbeans.api.visual.widget.LabelWidget$Orientation)
+meth public void setPaintAsDisabled(boolean)
+meth public void setUseGlyphVector(boolean)
+meth public void setVerticalAlignment(org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment)
 supr org.netbeans.api.visual.widget.Widget
+hfds alignment,cacheFont,cacheGlyphVector,cacheLabel,label,orientation,paintAsDisabled,useGlyphVector,verticalAlignment
+
+CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$Alignment
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment BASELINE
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment CENTER
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment LEFT
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment RIGHT
+meth public static org.netbeans.api.visual.widget.LabelWidget$Alignment valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.LabelWidget$Alignment[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$Alignment>
+
+CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$Orientation
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Orientation NORMAL
+fld public final static org.netbeans.api.visual.widget.LabelWidget$Orientation ROTATE_90
+meth public static org.netbeans.api.visual.widget.LabelWidget$Orientation valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.LabelWidget$Orientation[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$Orientation>
+
+CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment
+fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment BASELINE
+fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment BOTTOM
+fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment CENTER
+fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment TOP
+meth public static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment>
+
 CLSS public org.netbeans.api.visual.widget.LayerWidget
 cons public LayerWidget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.LayerWidget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.LayerWidget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
+meth protected boolean isRepaintRequiredForRevalidating()
+meth public boolean isHitAt(java.awt.Point)
 supr org.netbeans.api.visual.widget.Widget
+
 CLSS public org.netbeans.api.visual.widget.LevelOfDetailsWidget
 cons public LevelOfDetailsWidget(org.netbeans.api.visual.widget.Scene,double,double,double,double)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.LevelOfDetailsWidget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.LevelOfDetailsWidget.paintChildren()
+meth public boolean isHitAt(java.awt.Point)
+meth public void paintChildren()
 supr org.netbeans.api.visual.widget.Widget
+hfds hardMaximalZoom,hardMinimalZoom,softMaximalZoom,softMinimalZoom
+
+CLSS public org.netbeans.api.visual.widget.ResourceTable
+cons public ResourceTable()
+cons public ResourceTable(org.netbeans.api.visual.widget.ResourceTable)
+fld public final static java.lang.String PARENT_RESOURCE_TABLE = "ParentResourceTable"
+meth public java.lang.Object getProperty(java.lang.String)
+meth public java.util.Set<java.lang.String> getLocalPropertyNames()
+meth public org.netbeans.api.visual.widget.ResourceTable getParentTable()
+meth public void addProperty(java.lang.String,java.lang.Object)
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void clear()
+meth public void removeParent()
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void setParentTable(org.netbeans.api.visual.widget.ResourceTable)
+supr java.lang.Object
+hfds childrenTables,listeners,parentTable,properties,propertyListeners
+
 CLSS public org.netbeans.api.visual.widget.Scene
 cons public Scene()
-innr public static abstract interface org.netbeans.api.visual.widget.Scene$SceneListener
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Scene.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Scene.isValidated()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final double org.netbeans.api.visual.widget.Scene.getZoomFactor()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Graphics2D org.netbeans.api.visual.widget.Scene.getGraphics()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.convertSceneToView(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Scene.getMaximumBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Scene.getActiveTool()
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Scene.getPriorActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.animator.SceneAnimator org.netbeans.api.visual.widget.Scene.getSceneAnimator()
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.laf.InputBindings org.netbeans.api.visual.widget.Scene.getInputBindings()
-meth public final org.netbeans.api.visual.laf.LookFeel org.netbeans.api.visual.widget.Scene.getLookFeel()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.EventProcessingType org.netbeans.api.visual.widget.Scene.getKeyEventProcessingType()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Scene.getFocusedWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Scene.addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.paint(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Scene.removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
-meth public final void org.netbeans.api.visual.widget.Scene.setFocusedWidget(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Scene.setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
-meth public final void org.netbeans.api.visual.widget.Scene.setLookFeel(org.netbeans.api.visual.laf.LookFeel)
-meth public final void org.netbeans.api.visual.widget.Scene.setMaximumBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Scene.setZoomFactor(double)
-meth public final void org.netbeans.api.visual.widget.Scene.validate()
-meth public final void org.netbeans.api.visual.widget.Scene.validate(java.awt.Graphics2D)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.awt.Font org.netbeans.api.visual.widget.Scene.getDefaultFont()
-meth public java.awt.Point org.netbeans.api.visual.widget.Scene.convertViewToScene(java.awt.Point)
-meth public java.lang.String java.lang.Object.toString()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createSatelliteView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.createView()
-meth public javax.swing.JComponent org.netbeans.api.visual.widget.Scene.getView()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.action.WidgetAction org.netbeans.api.visual.widget.Scene.createWidgetHoverAction()
-meth public org.netbeans.api.visual.widget.BirdViewController org.netbeans.api.visual.widget.Scene.createBirdView()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.Scene.setActiveTool(java.lang.String)
+innr public abstract interface static SceneListener
+meth protected boolean isRepaintRequiredForRevalidating()
+meth public boolean isValidated()
+meth public final double getZoomFactor()
+meth public final java.awt.Graphics2D getGraphics()
+meth public final java.awt.Point convertSceneToView(java.awt.Point)
+meth public final java.awt.Rectangle convertSceneToView(java.awt.Rectangle)
+meth public final java.awt.Rectangle getMaximumBounds()
+meth public final java.lang.String getActiveTool()
+meth public final org.netbeans.api.visual.action.WidgetAction$Chain getPriorActions()
+meth public final org.netbeans.api.visual.animator.SceneAnimator getSceneAnimator()
+meth public final org.netbeans.api.visual.laf.InputBindings getInputBindings()
+meth public final org.netbeans.api.visual.laf.LookFeel getLookFeel()
+meth public final org.netbeans.api.visual.widget.EventProcessingType getKeyEventProcessingType()
+meth public final org.netbeans.api.visual.widget.Widget getFocusedWidget()
+meth public final void addSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
+meth public final void paint(java.awt.Graphics2D)
+meth public final void removeSceneListener(org.netbeans.api.visual.widget.Scene$SceneListener)
+meth public final void setFocusedWidget(org.netbeans.api.visual.widget.Widget)
+meth public final void setKeyEventProcessingType(org.netbeans.api.visual.widget.EventProcessingType)
+meth public final void setLookFeel(org.netbeans.api.visual.laf.LookFeel)
+meth public final void setMaximumBounds(java.awt.Rectangle)
+meth public final void setZoomFactor(double)
+meth public final void validate()
+meth public final void validate(java.awt.Graphics2D)
+meth public java.awt.Font getDefaultFont()
+meth public java.awt.Point convertViewToScene(java.awt.Point)
+meth public javax.swing.JComponent createSatelliteView()
+meth public javax.swing.JComponent createView()
+meth public javax.swing.JComponent getView()
+meth public org.netbeans.api.visual.action.WidgetAction createWidgetHoverAction()
+meth public org.netbeans.api.visual.widget.BirdViewController createBirdView()
+meth public org.netbeans.api.visual.widget.ResourceTable getResourceTable()
+meth public void setActiveTool(java.lang.String)
+meth public void setResourceTable(org.netbeans.api.visual.widget.ResourceTable)
 supr org.netbeans.api.visual.widget.Widget
+hfds activeTool,component,defaultFont,extendSceneOnly,focusedWidget,graphics,inputBindings,keyEventProcessingType,lookFeel,maximumBounds,paintEverything,priorActions,repaintRegion,repaintWidgets,resourceTable,sceneAnimator,sceneListeners,viewShowing,widgetHoverAction,zoomFactor
+hcls WidgetHoverAction
+
+CLSS public abstract interface static org.netbeans.api.visual.widget.Scene$SceneListener
+meth public abstract void sceneRepaint()
+meth public abstract void sceneValidated()
+meth public abstract void sceneValidating()
+
 CLSS public org.netbeans.api.visual.widget.ScrollWidget
 cons public ScrollWidget(org.netbeans.api.visual.widget.Scene)
 cons public ScrollWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.ScrollWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.ScrollWidget.getView()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.ScrollWidget.setView(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
+meth protected java.awt.Rectangle calculateClientArea()
+meth public final org.netbeans.api.visual.widget.Widget getView()
+meth public final void setView(org.netbeans.api.visual.widget.Widget)
 supr org.netbeans.api.visual.widget.Widget
+hfds BAR_HORIZONTAL_SIZE,BAR_VERTICAL_SIZE,BORDER_LOWERED,BORDER_RAISED,POINT_EMPTY,RECTANGLE_EMPTY,downArrow,horizontalSlider,leftArrow,rightArrow,upArrow,verticalSlider,view,viewport
+hcls BlockScrollAction,ButtonWidget,ScrollLayout,SliderAction,SliderWidget,UnitScrollProvider
+
 CLSS public org.netbeans.api.visual.widget.SeparatorWidget
 cons public SeparatorWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.SeparatorWidget$Orientation)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.SeparatorWidget$Orientation
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.SeparatorWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.SeparatorWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public int org.netbeans.api.visual.widget.SeparatorWidget.getThickness()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.widget.SeparatorWidget$Orientation org.netbeans.api.visual.widget.SeparatorWidget.getOrientation()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.SeparatorWidget.setOrientation(org.netbeans.api.visual.widget.SeparatorWidget$Orientation)
-meth public void org.netbeans.api.visual.widget.SeparatorWidget.setThickness(int)
+innr public final static !enum Orientation
+meth protected java.awt.Rectangle calculateClientArea()
+meth protected void paintWidget()
+meth public int getThickness()
+meth public org.netbeans.api.visual.widget.SeparatorWidget$Orientation getOrientation()
+meth public void setOrientation(org.netbeans.api.visual.widget.SeparatorWidget$Orientation)
+meth public void setThickness(int)
 supr org.netbeans.api.visual.widget.Widget
+hfds orientation,thickness
+
+CLSS public final static !enum org.netbeans.api.visual.widget.SeparatorWidget$Orientation
+fld public final static org.netbeans.api.visual.widget.SeparatorWidget$Orientation HORIZONTAL
+fld public final static org.netbeans.api.visual.widget.SeparatorWidget$Orientation VERTICAL
+meth public static org.netbeans.api.visual.widget.SeparatorWidget$Orientation valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.SeparatorWidget$Orientation[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.SeparatorWidget$Orientation>
+
 CLSS public org.netbeans.api.visual.widget.SwingScrollWidget
 cons public SwingScrollWidget(org.netbeans.api.visual.widget.Scene)
 cons public SwingScrollWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.SwingScrollWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.SwingScrollWidget.getView()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.SwingScrollWidget.setView(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
+meth protected java.awt.Rectangle calculateClientArea()
+meth public final org.netbeans.api.visual.widget.Widget getView()
+meth public final void setView(org.netbeans.api.visual.widget.Widget)
 supr org.netbeans.api.visual.widget.Widget
+hfds BAR_HORIZONTAL_SIZE,BAR_VERTICAL_SIZE,horizontalListener,horizontalScroll,horizontalWidget,verticalListener,verticalScroll,verticalWidget,view,viewport
+hcls MyAdjustmentListener,ScrollLayout
+
 CLSS public org.netbeans.api.visual.widget.Widget
 cons public Widget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
+innr public abstract interface static Dependency
 intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
+meth protected boolean isRepaintRequiredForRevalidating()
+meth protected final void updateResources(org.netbeans.api.visual.widget.Widget,boolean)
+meth protected java.awt.Cursor getCursorAt(java.awt.Point)
+meth protected java.awt.Graphics2D getGraphics()
+meth protected java.awt.Rectangle calculateClientArea()
+meth protected void notifyAdded()
+meth protected void notifyBackgroundChanged(java.awt.Paint)
+meth protected void notifyFontChanged(java.awt.Font)
+meth protected void notifyForegroundChanged(java.awt.Color)
+meth protected void notifyRemoved()
+meth protected void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth protected void paintBackground()
+meth protected void paintBorder()
+meth protected void paintChildren()
+meth protected void paintWidget()
+meth public boolean isHitAt(java.awt.Point)
+meth public boolean isValidated()
+meth public final boolean equals(java.lang.Object)
+meth public final boolean isCheckClipping()
+meth public final boolean isEnabled()
+meth public final boolean isOpaque()
+meth public final boolean isPreferredBoundsSet()
+meth public final boolean isVisible()
+meth public final int hashCode()
+meth public final java.awt.Color getForeground()
+meth public final java.awt.Cursor getCursor()
+meth public final java.awt.Dimension getMaximumSize()
+meth public final java.awt.Dimension getMinimumSize()
+meth public final java.awt.Dimension getPreferredSize()
+meth public final java.awt.Font getFont()
+meth public final java.awt.Paint getBackground()
+meth public final java.awt.Point convertLocalToScene(java.awt.Point)
+meth public final java.awt.Point convertSceneToLocal(java.awt.Point)
+meth public final java.awt.Point getLocation()
+meth public final java.awt.Point getPreferredLocation()
+meth public final java.awt.Rectangle convertLocalToScene(java.awt.Rectangle)
+meth public final java.awt.Rectangle convertSceneToLocal(java.awt.Rectangle)
+meth public final java.awt.Rectangle getBounds()
+meth public final java.awt.Rectangle getClientArea()
+meth public final java.awt.Rectangle getPreferredBounds()
+meth public final java.lang.Object getChildConstraint(org.netbeans.api.visual.widget.Widget)
+meth public final java.lang.String getToolTipText()
+meth public final java.util.Collection<org.netbeans.api.visual.widget.Widget$Dependency> getDependencies()
+meth public final java.util.List<org.netbeans.api.visual.widget.Widget> getChildren()
+meth public final javax.accessibility.AccessibleContext getAccessibleContext()
+meth public final org.netbeans.api.visual.action.WidgetAction$Chain createActions(java.lang.String)
+meth public final org.netbeans.api.visual.action.WidgetAction$Chain getActions()
+meth public final org.netbeans.api.visual.action.WidgetAction$Chain getActions(java.lang.String)
+meth public final org.netbeans.api.visual.border.Border getBorder()
+meth public final org.netbeans.api.visual.layout.Layout getLayout()
+meth public final org.netbeans.api.visual.model.ObjectState getState()
+meth public final org.netbeans.api.visual.widget.Scene getScene()
+meth public final org.netbeans.api.visual.widget.Widget getParentWidget()
+meth public final void addChild(int,org.netbeans.api.visual.widget.Widget)
+meth public final void addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
+meth public final void addChild(org.netbeans.api.visual.widget.Widget)
+meth public final void addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
+meth public final void addChildren(java.util.List<? extends org.netbeans.api.visual.widget.Widget>)
+meth public final void addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
+meth public final void bringToBack()
+meth public final void bringToFront()
+meth public final void paint()
+meth public final void removeChild(org.netbeans.api.visual.widget.Widget)
+meth public final void removeChildren()
+meth public final void removeChildren(java.util.List<org.netbeans.api.visual.widget.Widget>)
+meth public final void removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
+meth public final void removeFromParent()
+meth public final void repaint()
+meth public final void resolveBounds(java.awt.Point,java.awt.Rectangle)
+meth public final void revalidate()
+meth public final void revalidate(boolean)
+meth public final void setAccessibleContext(javax.accessibility.AccessibleContext)
+meth public final void setBackground(java.awt.Paint)
+meth public final void setBackgroundFromResource(java.lang.String)
+meth public final void setBorder(javax.swing.border.Border)
+meth public final void setBorder(org.netbeans.api.visual.border.Border)
+meth public final void setCheckClipping(boolean)
+meth public final void setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
+meth public final void setCursor(java.awt.Cursor)
+meth public final void setEnabled(boolean)
+meth public final void setFont(java.awt.Font)
+meth public final void setFontFromResource(java.lang.String)
+meth public final void setForeground(java.awt.Color)
+meth public final void setForegroundFromResource(java.lang.String)
+meth public final void setLayout(org.netbeans.api.visual.layout.Layout)
+meth public final void setMaximumSize(java.awt.Dimension)
+meth public final void setMinimumSize(java.awt.Dimension)
+meth public final void setOpaque(boolean)
+meth public final void setPreferredBounds(java.awt.Rectangle)
+meth public final void setPreferredLocation(java.awt.Point)
+meth public final void setPreferredSize(java.awt.Dimension)
+meth public final void setState(org.netbeans.api.visual.model.ObjectState)
+meth public final void setToolTipText(java.lang.String)
+meth public final void setVisible(boolean)
+meth public org.netbeans.api.visual.widget.ResourceTable getResourceTable()
+meth public org.openide.util.Lookup getLookup()
+meth public void setResourceTable(org.netbeans.api.visual.widget.ResourceTable)
 supr java.lang.Object
+hfds EMPTY_HASH_MAP,MESSAGE_NULL_BOUNDS,accessibleContext,actionsChain,background,backgroundListener,backgroundProperty,border,bounds,calculatedPreferredBounds,checkClipping,children,childrenUm,constraints,cursor,dependencies,enabled,font,fontListener,fontProperties,foreground,foregroundListener,foregroundProperty,layout,location,maximumSize,minimumSize,opaque,parentWidget,preferredBounds,preferredLocation,preferredSize,requiresFullJustification,requiresFullValidation,requiresPartJustification,requiresPartValidation,resourceTable,scene,state,toolTipText,toolsActions,visible
+
+CLSS public abstract interface static org.netbeans.api.visual.widget.Widget$Dependency
+meth public abstract void revalidateDependency()
+
 CLSS public org.netbeans.api.visual.widget.general.IconNodeWidget
 cons public IconNodeWidget(org.netbeans.api.visual.widget.Scene)
 cons public IconNodeWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.ImageWidget org.netbeans.api.visual.widget.general.IconNodeWidget.getImageWidget()
-meth public final org.netbeans.api.visual.widget.LabelWidget org.netbeans.api.visual.widget.general.IconNodeWidget.getLabelWidget()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public final void org.netbeans.api.visual.widget.general.IconNodeWidget.setImage(java.awt.Image)
-meth public final void org.netbeans.api.visual.widget.general.IconNodeWidget.setLabel(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.general.IconNodeWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+innr public final static !enum TextOrientation
+meth public final org.netbeans.api.visual.widget.ImageWidget getImageWidget()
+meth public final org.netbeans.api.visual.widget.LabelWidget getLabelWidget()
+meth public final void setImage(java.awt.Image)
+meth public final void setLabel(java.lang.String)
+meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.Widget
+hfds imageWidget,labelWidget
+
+CLSS public final static !enum org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation
+fld public final static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation BOTTOM_CENTER
+fld public final static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation RIGHT_CENTER
+meth public static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation[] values()
+supr java.lang.Enum<org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation>
+
 CLSS public org.netbeans.api.visual.widget.general.ListItemWidget
 cons public ListItemWidget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-innr public static final org.netbeans.api.visual.widget.LabelWidget$Alignment
-innr public static final org.netbeans.api.visual.widget.LabelWidget$Orientation
-innr public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.LabelWidget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.LabelWidget.paintWidget()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth public boolean org.netbeans.api.visual.widget.LabelWidget.isPaintAsDisabled()
-meth public boolean org.netbeans.api.visual.widget.LabelWidget.isUseGlyphVector()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.api.visual.widget.LabelWidget.getLabel()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.netbeans.api.visual.widget.LabelWidget$Alignment org.netbeans.api.visual.widget.LabelWidget.getAlignment()
-meth public org.netbeans.api.visual.widget.LabelWidget$Orientation org.netbeans.api.visual.widget.LabelWidget.getOrientation()
-meth public org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment org.netbeans.api.visual.widget.LabelWidget.getVerticalAlignment()
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.LabelWidget.setAlignment(org.netbeans.api.visual.widget.LabelWidget$Alignment)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setLabel(java.lang.String)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setOrientation(org.netbeans.api.visual.widget.LabelWidget$Orientation)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setPaintAsDisabled(boolean)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setUseGlyphVector(boolean)
-meth public void org.netbeans.api.visual.widget.LabelWidget.setVerticalAlignment(org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment)
-meth public void org.netbeans.api.visual.widget.general.ListItemWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.LabelWidget
+
 CLSS public org.netbeans.api.visual.widget.general.ListWidget
 cons public ListWidget(org.netbeans.api.visual.widget.Scene)
-innr public static abstract interface org.netbeans.api.visual.widget.Widget$Dependency
-intf javax.accessibility.Accessible
-meth protected boolean org.netbeans.api.visual.widget.Widget.isRepaintRequiredForRevalidating()
-meth protected java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursorAt(java.awt.Point)
-meth protected java.awt.Graphics2D org.netbeans.api.visual.widget.Widget.getGraphics()
-meth protected java.awt.Rectangle org.netbeans.api.visual.widget.Widget.calculateClientArea()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.netbeans.api.visual.widget.Widget.notifyAdded()
-meth protected void org.netbeans.api.visual.widget.Widget.notifyRemoved()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBackground()
-meth protected void org.netbeans.api.visual.widget.Widget.paintBorder()
-meth protected void org.netbeans.api.visual.widget.Widget.paintChildren()
-meth protected void org.netbeans.api.visual.widget.Widget.paintWidget()
-meth public boolean org.netbeans.api.visual.widget.Widget.isHitAt(java.awt.Point)
-meth public boolean org.netbeans.api.visual.widget.Widget.isValidated()
-meth public final boolean org.netbeans.api.visual.widget.Widget.equals(java.lang.Object)
-meth public final boolean org.netbeans.api.visual.widget.Widget.isCheckClipping()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isEnabled()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isOpaque()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isPreferredBoundsSet()
-meth public final boolean org.netbeans.api.visual.widget.Widget.isVisible()
-meth public final int org.netbeans.api.visual.widget.Widget.hashCode()
-meth public final java.awt.Color org.netbeans.api.visual.widget.Widget.getForeground()
-meth public final java.awt.Cursor org.netbeans.api.visual.widget.Widget.getCursor()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMaximumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getMinimumSize()
-meth public final java.awt.Dimension org.netbeans.api.visual.widget.Widget.getPreferredSize()
-meth public final java.awt.Font org.netbeans.api.visual.widget.Widget.getFont()
-meth public final java.awt.Paint org.netbeans.api.visual.widget.Widget.getBackground()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Point)
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getLocation()
-meth public final java.awt.Point org.netbeans.api.visual.widget.Widget.getPreferredLocation()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertLocalToScene(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.convertSceneToLocal(java.awt.Rectangle)
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getBounds()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getClientArea()
-meth public final java.awt.Rectangle org.netbeans.api.visual.widget.Widget.getPreferredBounds()
-meth public final java.lang.Object org.netbeans.api.visual.widget.Widget.getChildConstraint(org.netbeans.api.visual.widget.Widget)
-meth public final java.lang.String org.netbeans.api.visual.widget.Widget.getToolTipText()
-meth public final java.util.Collection org.netbeans.api.visual.widget.Widget.getDependencies()
-meth public final java.util.List org.netbeans.api.visual.widget.Widget.getChildren()
-meth public final javax.accessibility.AccessibleContext org.netbeans.api.visual.widget.Widget.getAccessibleContext()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.createActions(java.lang.String)
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions()
-meth public final org.netbeans.api.visual.action.WidgetAction$Chain org.netbeans.api.visual.widget.Widget.getActions(java.lang.String)
-meth public final org.netbeans.api.visual.border.Border org.netbeans.api.visual.widget.Widget.getBorder()
-meth public final org.netbeans.api.visual.layout.Layout org.netbeans.api.visual.widget.Widget.getLayout()
-meth public final org.netbeans.api.visual.model.ObjectState org.netbeans.api.visual.widget.Widget.getState()
-meth public final org.netbeans.api.visual.widget.ImageWidget org.netbeans.api.visual.widget.general.ListWidget.getImageWidget()
-meth public final org.netbeans.api.visual.widget.LabelWidget org.netbeans.api.visual.widget.general.ListWidget.getLabelWidget()
-meth public final org.netbeans.api.visual.widget.Scene org.netbeans.api.visual.widget.Widget.getScene()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.Widget.getParentWidget()
-meth public final org.netbeans.api.visual.widget.Widget org.netbeans.api.visual.widget.general.ListWidget.getHeader()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(int,org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.addChild(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.addChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.addDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.bringToBack()
-meth public final void org.netbeans.api.visual.widget.Widget.bringToFront()
-meth public final void org.netbeans.api.visual.widget.Widget.paint()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChild(org.netbeans.api.visual.widget.Widget)
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren()
-meth public final void org.netbeans.api.visual.widget.Widget.removeChildren(java.util.List)
-meth public final void org.netbeans.api.visual.widget.Widget.removeDependency(org.netbeans.api.visual.widget.Widget$Dependency)
-meth public final void org.netbeans.api.visual.widget.Widget.removeFromParent()
-meth public final void org.netbeans.api.visual.widget.Widget.repaint()
-meth public final void org.netbeans.api.visual.widget.Widget.resolveBounds(java.awt.Point,java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate()
-meth public final void org.netbeans.api.visual.widget.Widget.revalidate(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setAccessibleContext(javax.accessibility.AccessibleContext)
-meth public final void org.netbeans.api.visual.widget.Widget.setBackground(java.awt.Paint)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(javax.swing.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setBorder(org.netbeans.api.visual.border.Border)
-meth public final void org.netbeans.api.visual.widget.Widget.setCheckClipping(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setChildConstraint(org.netbeans.api.visual.widget.Widget,java.lang.Object)
-meth public final void org.netbeans.api.visual.widget.Widget.setCursor(java.awt.Cursor)
-meth public final void org.netbeans.api.visual.widget.Widget.setEnabled(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setFont(java.awt.Font)
-meth public final void org.netbeans.api.visual.widget.Widget.setForeground(java.awt.Color)
-meth public final void org.netbeans.api.visual.widget.Widget.setLayout(org.netbeans.api.visual.layout.Layout)
-meth public final void org.netbeans.api.visual.widget.Widget.setMaximumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setMinimumSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setOpaque(boolean)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredBounds(java.awt.Rectangle)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredLocation(java.awt.Point)
-meth public final void org.netbeans.api.visual.widget.Widget.setPreferredSize(java.awt.Dimension)
-meth public final void org.netbeans.api.visual.widget.Widget.setState(org.netbeans.api.visual.model.ObjectState)
-meth public final void org.netbeans.api.visual.widget.Widget.setToolTipText(java.lang.String)
-meth public final void org.netbeans.api.visual.widget.Widget.setVisible(boolean)
-meth public final void org.netbeans.api.visual.widget.general.ListWidget.setImage(java.awt.Image)
-meth public final void org.netbeans.api.visual.widget.general.ListWidget.setLabel(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public org.openide.util.Lookup org.netbeans.api.visual.widget.Widget.getLookup()
-meth public void org.netbeans.api.visual.widget.general.ListWidget.notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
+meth public final org.netbeans.api.visual.widget.ImageWidget getImageWidget()
+meth public final org.netbeans.api.visual.widget.LabelWidget getLabelWidget()
+meth public final org.netbeans.api.visual.widget.Widget getHeader()
+meth public final void setImage(java.awt.Image)
+meth public final void setLabel(java.lang.String)
+meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.Widget
+hfds header,imageWidget,labelWidget
+

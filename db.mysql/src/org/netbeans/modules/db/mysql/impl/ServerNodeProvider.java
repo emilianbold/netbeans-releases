@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.mysql.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -49,14 +48,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
 import org.netbeans.modules.db.mysql.nodes.ServerNode;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -64,32 +64,62 @@ import org.openide.util.RequestProcessor;
  * 
  * @author David Van Couvering
  */
-public final class ServerNodeProvider implements NodeProvider {
-    private static final Logger LOGGER = Logger.getLogger(NodeProvider.class.getName());
+public final class ServerNodeProvider extends NodeProvider {
+    private static final Logger LOGGER = Logger.getLogger(ServerNodeProvider.class.getName());
+    private static ServerNodeProvider DEFAULT = null;
 
-    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
     private static final MySQLOptions options = MySQLOptions.getDefault();
-    private final List<Node> nodes = new ArrayList<Node>();
-    private final List<Node> unmodifiableNodes = Collections.unmodifiableList(nodes);
-    private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
-    private final CopyOnWriteArrayList<ChangeListener> listeners = 
+    private final CopyOnWriteArrayList<ChangeListener> listeners =
             new CopyOnWriteArrayList<ChangeListener>();
 
-    private ServerNodeProvider() {
-        // Issue 134577 - getDefault() is called by Lookup. If we try to
-        // get the DatabaseServer or Installation implementations here, we cause
-        // deadlocks, as this lookup will wait until the lookup calling
-        // getDefault() completes, which will never happen.
-        //
-        // So we lazily look up the DatabaseServer as part of the call
-        // to getNodes(), which happens from application code and *not*
-        // as part of lookup.
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
     }
-    
+
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public ServerNodeProvider createInstance(Lookup lookup) {
+                DEFAULT = new ServerNodeProvider(lookup);
+                return DEFAULT;
+            }
+        };
+    }
+
     public static ServerNodeProvider getDefault() {
         return DEFAULT;
     }
-    
+
+    private ServerNodeProvider(Lookup lookup) {
+        super(lookup);
+    }
+
+    @Override
+    protected void initialize() {
+
+        if (! options.isProviderRegistered() && ! options.isProviderRemoved()) {
+            findAndRegisterMySQL();
+        }
+
+        if ( !options.isProviderRegistered() ) {
+            DatabaseServerManager.getDatabaseServer().disconnect();
+        }
+
+        update();
+
+    }
+
+    private void update() {
+        List<Node> newList = new ArrayList<Node>();
+        if (isRegistered()) {
+            Node node = ServerNode.create(DatabaseServerManager.getDatabaseServer());
+            newList.add(node);
+        }
+
+        setNodes(newList);
+    }
+
     /**
      * Try to find MySQL on the local machine, and if it can be found,
      * register a connection and the MySQL server node in the Database
@@ -149,36 +179,6 @@ public final class ServerNodeProvider implements NodeProvider {
         setRegistered(true);
     }
     
-    public List<Node> getNodes() {
-        if (! options.isProviderRegistered() && ! options.isProviderRemoved()) {
-            findAndRegisterMySQL();
-        }
-        
-        checkNodeArray();
-        
-        if ( options.isProviderRegistered() ) {
-            return unmodifiableNodes;
-        } else {
-            DatabaseServerManager.getDatabaseServer().disconnect();
-            return emptyNodeList;
-        }
-    }
-
-    /**
-     * Check to see if the nodes list has been initialized, and if not,
-     * initialize it.
-     */
-    private void checkNodeArray() {
-        if ( nodes.size() == 0 ) {
-            Node node = ServerNode.create(DatabaseServerManager.getDatabaseServer());
-            
-            synchronized(this) {
-                if ( nodes.size() == 0 ) {
-                    nodes.add(node);
-                }
-            }
-        }        
-    }
     public void setRegistered(boolean registered) {
         boolean old = isRegistered();
         if ( registered != old ) {
@@ -198,6 +198,8 @@ public final class ServerNodeProvider implements NodeProvider {
                     }
                 });
             }
+
+            update();
             notifyChange();
         }
     }
@@ -213,10 +215,12 @@ public final class ServerNodeProvider implements NodeProvider {
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         listeners.remove(listener);
     }

@@ -41,6 +41,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 
 /**

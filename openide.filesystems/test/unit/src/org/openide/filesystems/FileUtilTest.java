@@ -44,6 +44,8 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Handler;
@@ -74,6 +76,12 @@ public class FileUtilTest extends NbTestCase {
             suite = new NbTestSuite(FileUtilTest.class);
         }
         return suite;
+    }
+
+    @Override
+    public void setUp() throws IOException {
+        // folder of declarative resolvers must exist before MIME resolvers tests
+        FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver");
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
@@ -182,7 +190,6 @@ public class FileUtilTest extends NbTestCase {
     
     /** Tests normalizeFile() method. */
     public void testNormalizeFile() throws IOException {
-        System.out.println("java.version="+System.getProperty("java.version"));
         // pairs of path before and after normalization
         Map<String, String> paths = new HashMap<String, String>();
         if (Utilities.isWindows()) {
@@ -251,33 +258,43 @@ public class FileUtilTest extends NbTestCase {
         
         fo = FileUtil.createData(testFolder, "fo2.mime1");
         withinMIMETypes = new String[0];
-        assertTrue("Resolver should be queried if array of desired MIME types is empty.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+        FileUtil.getMIMEType(fo, withinMIMETypes);
+        assertTrue("Resolver should be queried if array of desired MIME types is empty.", MyResolver.wasQueried());
         
         fo = FileUtil.createData(testFolder, "fo3.mime1");
         withinMIMETypes = new String[]{"mime3", "mime4"};
-        assertFalse("Resolver should not be queried if array of desired MIME types doesn't match MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+        FileUtil.getMIMEType(fo, withinMIMETypes);
+        assertFalse("Resolver should not be queried if array of desired MIME types doesn't match MIMEResolver.getMIMETypes.", MyResolver.wasQueried());
 
         fo = FileUtil.createData(testFolder, "fo4.mime1");
         withinMIMETypes = new String[]{"mime1", "mime4"};
-        assertTrue("Resolver should be queried if one item in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+        FileUtil.getMIMEType(fo, withinMIMETypes);
+        assertTrue("Resolver should be queried if one item in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.wasQueried());
 
         fo = FileUtil.createData(testFolder, "fo5.mime1");
         withinMIMETypes = new String[]{"mime1", "mime2"};
-        assertTrue("Resolver should be queried if both items in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+        FileUtil.getMIMEType(fo, withinMIMETypes);
+        assertTrue("Resolver should be queried if both items in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.wasQueried());
     }
 
     /** MIMEResolver used in testGetMIMETypeConstrained. */
     public static final class MyResolver extends MIMEResolver {
 
-        public static final String QUERIED = "QUERIED";
-        
         public MyResolver() {
             super("mime1", "mime2");
         }
-        
-        /** Always returns the same just to signal it's been queried. */
+
+        /** Always returns null and change value to signal it's been queried. */
         public String findMIMEType(FileObject fo) {
-            return QUERIED;
+            queried = true;
+            return null;
+        }
+        private static boolean queried = false;
+
+        public static boolean wasQueried() {
+            boolean wasQueried = queried;
+            queried = false;
+            return wasQueried;
         }
     }
 
@@ -318,5 +335,42 @@ public class FileUtilTest extends NbTestCase {
         } finally {
             logger.removeHandler(handler);
         }
+    }
+
+    /** Tests FileUtil.setMIMEType method (see #153202). */
+    public void testSetMIMEType() throws IOException {
+        FileObject testRoot = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject g1FO = testRoot.createData("a", "g1");
+        FileObject g2FO = testRoot.createData("a", "g2");
+        FileObject xmlFO = testRoot.createData("a", "xml");
+        String gifMIMEType = "image/gif";
+        String bmpMIMEType = "image/bmp";
+        String xmlMIMEType = "text/xml";
+        String unknownMIMEType = "content/unknown";
+
+        assertEquals("Wrong MIME type.", unknownMIMEType, g1FO.getMIMEType());
+        assertEquals("Wrong list of extensions.", Collections.EMPTY_LIST, FileUtil.getMIMETypeExtensions(bmpMIMEType));
+        assertEquals("Wrong list of extensions.", Collections.EMPTY_LIST, FileUtil.getMIMETypeExtensions(gifMIMEType));
+        // xml registered to text/xml as fallback
+        assertEquals("Wrong MIME type.", xmlMIMEType, xmlFO.getMIMEType());
+
+         // {image/bmp=[g1]}
+        FileUtil.setMIMEType("g1", bmpMIMEType);
+        assertEquals("Wrong list of extensions.", Collections.singletonList("g1"), FileUtil.getMIMETypeExtensions(bmpMIMEType));
+         // {image/bmp=[g1, g2]}
+        FileUtil.setMIMEType("g2", bmpMIMEType);
+        assertEquals("Wrong MIME type.", bmpMIMEType, g1FO.getMIMEType());
+        assertEquals("Wrong MIME type.", bmpMIMEType, g2FO.getMIMEType());
+        assertEquals("Wrong list of extensions.", Arrays.asList("g1", "g2"), FileUtil.getMIMETypeExtensions(bmpMIMEType));
+         // {image/bmp=[g2], image/gif=[g1]}
+        FileUtil.setMIMEType("g1", gifMIMEType);
+        assertEquals("Wrong MIME type.", gifMIMEType, g1FO.getMIMEType());
+        assertEquals("Wrong list of extensions.", Arrays.asList("g1"), FileUtil.getMIMETypeExtensions(gifMIMEType));
+        assertEquals("Wrong list of extensions.", Arrays.asList("g2"), FileUtil.getMIMETypeExtensions(bmpMIMEType));
+         // {image/gif=[g1]}
+        FileUtil.setMIMEType("g2", null);
+        assertEquals("Wrong MIME type.", unknownMIMEType, g2FO.getMIMEType());
+        assertEquals("Wrong list of extensions.", Arrays.asList("g1"), FileUtil.getMIMETypeExtensions(gifMIMEType));
+        assertEquals("Wrong list of extensions.", Collections.EMPTY_LIST, FileUtil.getMIMETypeExtensions(bmpMIMEType));
     }
 }

@@ -39,8 +39,13 @@
 
 package org.openide;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,6 +58,7 @@ import static org.junit.Assert.*;
 public class NotificationLineSupportTest {
     private JButton closeButton = new JButton ("Close action");
     private JButton [] options = new JButton [] {closeButton};
+    private static String NOTIFICATION_LABEL_NAME = "FixedHeightLabel";
 
     public NotificationLineSupportTest() {
     }
@@ -75,11 +81,61 @@ public class NotificationLineSupportTest {
 
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);
+
+        JLabel notificationLabel = findNotificationLabel (d);
+        assertNotNull (notificationLabel);
+
         assertNotNull ("NotificationLineSupport not null", supp);
         testSetInformationMessage (supp, "Hello");
+        assertEquals ("Hello", notificationLabel.getText ());
         testSetWarningMessage (supp, "Hello");
+        assertEquals ("Hello", notificationLabel.getText ());
         testSetErrorMessage (supp, "Hello");
+        assertEquals ("Hello", notificationLabel.getText ());
         testEmpty (supp);
+        assertEquals (null, notificationLabel.getText ());
+        closeButton.doClick ();
+    }
+
+    @Test
+    public void testSetMessageBeforeCreateDialog () {
+        DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
+                closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        assertNull ("No NotificationLineSupport created.", dd.getNotificationLineSupport ());
+        NotificationLineSupport supp = dd.createNotificationLineSupport ();
+        assertNotNull ("NotificationLineSupport is created.", dd.getNotificationLineSupport ());
+
+        assertNotNull ("NotificationLineSupport not null", supp);
+        testSetInformationMessage (supp, "Hello");
+
+        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+        d.setVisible (true);
+
+        JLabel notificationLabel = findNotificationLabel (d);
+        assertNotNull (notificationLabel);
+
+        assertEquals ("Hello", notificationLabel.getText ());
+        closeButton.doClick ();
+    }
+
+    @Test
+    public void testSetMessageAfterCreateDialog () {
+        DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
+                closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        assertNull ("No NotificationLineSupport created.", dd.getNotificationLineSupport ());
+        NotificationLineSupport supp = dd.createNotificationLineSupport ();
+        assertNotNull ("NotificationLineSupport is created.", dd.getNotificationLineSupport ());
+
+        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+        d.setVisible (true);
+
+        assertNotNull ("NotificationLineSupport not null", supp);
+        testSetInformationMessage (supp, "Hello");
+
+        JLabel notificationLabel = findNotificationLabel (d);
+        assertNotNull (notificationLabel);
+
+        assertEquals ("Hello", notificationLabel.getText ());
         closeButton.doClick ();
     }
 
@@ -117,4 +173,20 @@ public class NotificationLineSupportTest {
         closeButton.doClick ();
     }
 
+    private static JLabel findNotificationLabel (Container container) {
+        for (Component component : container.getComponents ()) {
+            if (component.getClass ().getName ().indexOf (NOTIFICATION_LABEL_NAME) != -1) {
+                return (JLabel) component;
+            }
+            if (component instanceof JRootPane) {
+                JRootPane rp = (JRootPane) component;
+                return findNotificationLabel (rp.getContentPane ());
+            }
+            if (component instanceof JPanel) {
+                JPanel p = (JPanel) component;
+                return findNotificationLabel (p);
+            }
+        }
+        return null;
+    }
 }

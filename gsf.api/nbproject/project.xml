@@ -144,6 +144,7 @@
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.gsf</friend>
+                <friend>org.netbeans.modules.gsf.testrunner</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>

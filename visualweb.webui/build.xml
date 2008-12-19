@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 
-<project name="org.netbeans.modules.visualweb.webui" default="netbeans" basedir=".">
+<project name="visualweb.webui" default="netbeans" basedir=".">
 
     <description>Builds and tests the project org.netbeans.modules.visualweb.webui.</description>
     <import file="../nbbuild/templates/projectized.xml"/>

@@ -39,7 +39,7 @@
   Version 2 license, then the option applies only if the new code is
   made subject to such option by the copyright holder.
 -->
-<project name="samples" default="netbeans" basedir=".">
+<project name="iep.samples" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
     <property name="zip.folder" value="build/classes/org/netbeans/modules/iep/samples/resources/zip"/>
 

@@ -44,6 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 
 /**
@@ -64,7 +66,7 @@ public final class TestRunnerLineConvertor implements LineConvertor {
     }
 
     public synchronized void refreshSession() {
-        this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType());
+        this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType(), session.getNodeFactory());
     }
 
     public synchronized List<ConvertedLine> convert(String line) {
