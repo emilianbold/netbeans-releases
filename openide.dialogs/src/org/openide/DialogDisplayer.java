@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -341,6 +341,14 @@ public abstract class DialogDisplayer {
                     }
 
                     notificationLine = new FixedHeightLabel ();
+                    NotificationLineSupport nls = nd.getNotificationLineSupport ();
+                    if (nls.getInformationMessage () != null) {
+                        updateNotificationLine (this, MSG_TYPE_INFO, nls.getInformationMessage ());
+                    } else if (nls.getWarningMessage () != null) {
+                        updateNotificationLine (this, MSG_TYPE_WARNING, nls.getWarningMessage ());
+                    } else if (nls.getErrorMessage () != null) {
+                        updateNotificationLine (this, MSG_TYPE_ERROR, nls.getErrorMessage ());
+                    }
                     toAdd.add (notificationLine, BorderLayout.SOUTH);
                     messageComponent = toAdd;
                 }
@@ -491,46 +499,47 @@ public abstract class DialogDisplayer {
                             dialog.validate();
                             dialog.repaint();
                     } else if (NotifyDescriptor.PROP_INFO_NOTIFICATION.equals (ev.getPropertyName ())) {
-                        updateNotificationLine (StandardDialog.MSG_TYPE_INFO, ev.getNewValue ());
+                        updateNotificationLine (dialog, StandardDialog.MSG_TYPE_INFO, ev.getNewValue ());
                     } else if (NotifyDescriptor.PROP_WARNING_NOTIFICATION.equals (ev.getPropertyName ())) {
-                        updateNotificationLine (StandardDialog.MSG_TYPE_WARNING, ev.getNewValue ());
+                        updateNotificationLine (dialog, StandardDialog.MSG_TYPE_WARNING, ev.getNewValue ());
                     } else if (NotifyDescriptor.PROP_ERROR_NOTIFICATION.equals (ev.getPropertyName ())) {
-                        updateNotificationLine (StandardDialog.MSG_TYPE_ERROR, ev.getNewValue ());
+                        updateNotificationLine (dialog, StandardDialog.MSG_TYPE_ERROR, ev.getNewValue ());
                     }
             }
-            private void updateNotificationLine (int msgType, Object o) {
-                String msg = o == null ? null : o.toString ();
-                if (msg != null && msg.trim().length() > 0) {
-                    switch (msgType) {
-                        case StandardDialog.MSG_TYPE_ERROR:
-                            prepareMessage(dialog.notificationLine,
-                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
-                                dialog.nbErrorForeground);
-                            break;
-                        case StandardDialog.MSG_TYPE_WARNING:
-                            prepareMessage(dialog.notificationLine,
-                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
-                                dialog.nbWarningForeground);
-                            break;
-                        case StandardDialog.MSG_TYPE_INFO:
-                            prepareMessage(dialog.notificationLine,
-                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
-                                dialog.nbInfoForeground);
-                            break;
-                        default:
-                    }
-                    dialog.notificationLine.setToolTipText (msg);
-                } else {
-                    prepareMessage(dialog.notificationLine, null, null);
-                    dialog.notificationLine.setToolTipText (null);
-                }
-                dialog.notificationLine.setText(msg);
-            }
+        }
 
-            private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
-                label.setIcon(icon);
-                label.setForeground(fgColor);
+        private static void updateNotificationLine (StandardDialog dialog, int msgType, Object o) {
+            String msg = o == null ? null : o.toString ();
+            if (msg != null && msg.trim().length() > 0) {
+                switch (msgType) {
+                    case StandardDialog.MSG_TYPE_ERROR:
+                        prepareMessage(dialog.notificationLine,
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                            dialog.nbErrorForeground);
+                        break;
+                    case StandardDialog.MSG_TYPE_WARNING:
+                        prepareMessage(dialog.notificationLine,
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                            dialog.nbWarningForeground);
+                        break;
+                    case StandardDialog.MSG_TYPE_INFO:
+                        prepareMessage(dialog.notificationLine,
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                            dialog.nbInfoForeground);
+                        break;
+                    default:
+                }
+                dialog.notificationLine.setToolTipText (msg);
+            } else {
+                prepareMessage(dialog.notificationLine, null, null);
+                dialog.notificationLine.setToolTipText (null);
             }
+            dialog.notificationLine.setText(msg);
+        }
+
+        private static void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
+            label.setIcon(icon);
+            label.setForeground(fgColor);
         }
 
         private static final class FixedHeightLabel extends JLabel {
