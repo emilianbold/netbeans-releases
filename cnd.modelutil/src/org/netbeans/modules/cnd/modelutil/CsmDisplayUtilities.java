@@ -191,10 +191,10 @@ public class CsmDisplayUtilities {
             tooltipText = getHtmlizedString("DSC_FieldTooltip", fieldName, displayClassName, ((CsmField) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isParamVariable(item)) {
             CharSequence varName = ((CsmParameter) item).getName();
-            tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, htmlize(((CsmParameter) item).getText())); // NOI18N
+            tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, ((CsmParameter) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isVariable(item)) {
             CharSequence varName = ((CsmVariable) item).getName();
-            tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, htmlize(((CsmVariable) item).getText())); // NOI18N
+            tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, ((CsmVariable) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isFile(item)) {
             CharSequence fileName = ((CsmFile) item).getName();
             tooltipText = getHtmlizedString("DSC_FileTooltip", fileName); // NOI18N
@@ -208,7 +208,7 @@ public class CsmDisplayUtilities {
             CsmInclude incl = (CsmInclude)item;
             CsmFile target = incl.getIncludeFile();
             if (target == null) {
-                tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", htmlize(incl.getText()));  // NOI18N
+                tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", incl.getText());  // NOI18N
             } else {
                 if (target.getProject().isArtificial()) {
                     tooltipText = getHtmlizedString("DSC_IncludeLibraryTooltip", target.getAbsolutePath());// NOI18N
