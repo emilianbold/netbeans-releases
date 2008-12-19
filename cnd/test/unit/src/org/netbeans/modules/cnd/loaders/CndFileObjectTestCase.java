@@ -91,7 +91,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
-        assertEquals("Not text/x-c++ mime type", MIMENames.CPLUSPLUS_MIME_TYPE, fo.getMIMEType());
+        assertEquals("Not text/x-c++ mime type", MIMENames.HEADER_MIME_TYPE, fo.getMIMEType());
     }
     
 }
