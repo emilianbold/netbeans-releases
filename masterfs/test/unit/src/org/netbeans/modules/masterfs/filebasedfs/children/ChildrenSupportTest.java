@@ -413,4 +413,21 @@ public class ChildrenSupportTest extends NbTestCase {
         assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
     }
 
+    /** Tests that children are re-scanned with refresh even though getChild
+     * or getChildren wasn't called before. */
+    public void testRefresh3() {
+        FileNaming fpiName = NamingFactory.fromFile(fbase);
+        ChildrenSupport fpi = new ChildrenSupport();
+        Map changes = fpi.refresh(fpiName);
+        // assert 2 children added after refresh
+        assertEquals("Children not rescaned with refresh.", 2, changes.size());
+        Iterator it = changes.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            FileNaming pItem = (FileNaming)entry.getKey();
+            Integer type = (Integer)entry.getValue();
+            assertEquals(ChildrenCache.ADDED_CHILD, type);
+        }
+    }
+
 }
