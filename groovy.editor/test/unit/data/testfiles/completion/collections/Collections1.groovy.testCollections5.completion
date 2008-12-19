@@ -1,6 +1,6 @@
 Code completion result for source line:
 (1..10).|a
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     add(E)                          [PUBLIC]   boolean
 METHOD     add(int, E)                     [PUBLIC]   void

@@ -65,25 +65,17 @@ public class LuceneIndexManager {
         return instance;
     }
 
-    public synchronized LuceneIndex getIndex (final URL root) {
+    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
         assert root != null;
         if (invalid) {
             return null;
         }
-        return indexes.get(root);
-    }
-
-    public synchronized LuceneIndex createUsagesQuery (final URL root) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
+        LuceneIndex li = indexes.get(root);
+        if (create && li == null) {
+            li = new LuceneIndex(root);
+            indexes.put(root,li);
         }
-        LuceneIndex qi = indexes.get (root);
-        if (qi == null) {
-            qi = new LuceneIndex(root);
-            indexes.put(root,qi);
-        }
-        return qi;
-    }
+        return li;
+    }   
 
 }

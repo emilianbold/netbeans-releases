@@ -49,20 +49,19 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,16 +70,17 @@ import org.openide.util.Exceptions;
  */
 public class CSSStructureScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(final CompilationInfo info) {
-         //so far the css parser always parses the whole css content
-        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
-        if(!presultIterator.hasNext()) {
-            return Collections.emptyList();
-        }
-        
-        ParserResult presult = presultIterator.next();
-        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CSSParserResult) presult).root();
+    public List<? extends StructureItem> scan(final ParserResult info) {
+//         //so far the css parser always parses the whole css content
+//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+//        if(!presultIterator.hasNext()) {
+//            return Collections.emptyList();
+//        }
+//
+//        ParserResult presult = presultIterator.next();
+//        final TranslatedSource source = presult.getTranslatedSource();
+        SimpleNode root = ((CSSGSFParserResult) info).root();
+        final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {
             //serious error in the source, no results
@@ -96,8 +96,8 @@ public class CSSStructureScanner implements StructureScanner {
                     //get parent - style rule
                     SimpleNode ruleNode = (SimpleNode) node.jjtGetParent();
                     assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
-                    int so = AstUtils.documentPosition(ruleNode.startOffset(), source);
-                    int eo = AstUtils.documentPosition(ruleNode.endOffset(), source);
+                    int so = snapshot.getOriginalOffset(ruleNode.startOffset());
+                    int eo = snapshot.getOriginalOffset(ruleNode.endOffset());
                     if (eo != so) {
 
                         StringBuffer selectorsListText = new StringBuffer();
@@ -112,7 +112,10 @@ public class CSSStructureScanner implements StructureScanner {
                                     if (n2.kind() == CSSParserTreeConstants.JJTSIMPLESELECTOR ||
                                             n2.kind() == CSSParserTreeConstants.JJTCOMBINATOR) {
                                         if(n2.image().trim().length() > 0) {
-                                            String nodeText = extractDocumentText(n2, info, source).trim();
+//                                            String nodeText = extractDocumentText(n2, info, source).trim();
+                                            CharSequence nodeText = snapshot.getText().subSequence(
+                                                    snapshot.getOriginalOffset(n2.startOffset()),
+                                                    snapshot.getOriginalOffset(n2.endOffset()));
                                             content.append(nodeText);
                                             content.append(' ');
                                         }
@@ -135,7 +138,7 @@ public class CSSStructureScanner implements StructureScanner {
                                 selectorsListText.deleteCharAt(selectorsListText.length() - 2);
                             }
 
-                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), source));
+                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), snapshot));
                         }
 
                     }
@@ -146,27 +149,28 @@ public class CSSStructureScanner implements StructureScanner {
         return items;
     }
 
-    private String extractDocumentText(SimpleNode node, CompilationInfo ci, TranslatedSource source) {
-        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
-        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
-        return ci.getText().substring(documentSO, documentEO);
-    }
+//    private String extractDocumentText(SimpleNode node, CompilationInfo ci, TranslatedSource source) {
+//        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+//        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+//        return ci.getText().substring(documentSO, documentEO);
+//    }
     
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        final BaseDocument doc = (BaseDocument) info.getDocument();
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
         if (doc == null) {
             return Collections.emptyMap();
         }
 
-        //so far the css parser always parses the whole css content
-        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
-        if (!presultIterator.hasNext()) {
-            return Collections.emptyMap();
-        }
-
-        ParserResult presult = presultIterator.next();
-        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CSSParserResult) presult).root();
+//        //so far the css parser always parses the whole css content
+//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+//        if (!presultIterator.hasNext()) {
+//            return Collections.emptyMap();
+//        }
+//
+//        ParserResult presult = presultIterator.next();
+//        final TranslatedSource source = presult.getTranslatedSource();
+        SimpleNode root = ((CSSGSFParserResult) info).root();
+        final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {
             //serious error in the source, no results
@@ -180,13 +184,13 @@ public class CSSStructureScanner implements StructureScanner {
 
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
-                    int so = AstUtils.documentPosition(node.startOffset(), source);
-                    int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    int so = snapshot.getOriginalOffset(node.startOffset());
+                    int eo = snapshot.getOriginalOffset(node.endOffset());
                     for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                         SimpleNode n = (SimpleNode) node.jjtGetChild(i);
                         if (n.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
                             // shift fold start to the end of rule name:
-                            so = AstUtils.documentPosition(n.endOffset(), source);
+                            so = snapshot.getOriginalOffset(n.endOffset());
                             break;
                         }
                     }
@@ -226,11 +230,11 @@ public class CSSStructureScanner implements StructureScanner {
             return s;
         }
         
-        private CssRuleStructureItem(String name, CssAstElement element, TranslatedSource source) {
+        private CssRuleStructureItem(String name, CssAstElement element, Snapshot source) {
             this.name = name;
             this.element = element;
-            this.from = AstUtils.documentPosition(element.node().startOffset(), source);
-            this.to = AstUtils.documentPosition(element.node().endOffset(), source);
+            this.from = source.getOriginalOffset(element.node().startOffset());
+            this.to = source.getOriginalOffset(element.node().endOffset());
         }
 
         public String getName() {

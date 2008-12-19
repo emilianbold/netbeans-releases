@@ -46,18 +46,18 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Context;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
@@ -87,7 +87,7 @@ public class OldLanguageRule extends JsErrorRule {
     @Override
     public void run(JsRuleContext context, Error error, List<Hint> result) {
         int astOffset = error.getStartPosition();
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         int offset = LexUtilities.getLexerOffset(info, astOffset);
         if (offset == -1) {
             return;
@@ -110,7 +110,7 @@ public class OldLanguageRule extends JsErrorRule {
                     if (lexRange == OffsetRange.NONE) {
                         lexRange = new OffsetRange(rowStart, rowEnd);
                     }
-                    Hint desc = new Hint(this, error.getDisplayName(), info.getFileObject(), lexRange, Collections.<HintFix>emptyList(), 500);
+                    Hint desc = new Hint(this, error.getDisplayName(), info.getSnapshot().getSource().getFileObject(), lexRange, Collections.<HintFix>emptyList(), 500);
                     result.add(desc);
 
                     OffsetRange range = new OffsetRange(rowStart, rowEnd);
@@ -121,7 +121,7 @@ public class OldLanguageRule extends JsErrorRule {
                     //String oldVer = SupportedBrowsers.getLanguageVersionString(browsers.getLanguageVersion());
                     String keyword = isYield ? "yield" : "let"; // NOI18N
                     String msg = NbBundle.getMessage(OldLanguageRule.class, "OldLanguageRuleMsg", NEW_LANGUAGE_DESC, keyword);
-                    desc = new Hint(this, msg, info.getFileObject(), range, fixList, 500);
+                    desc = new Hint(this, msg, info.getSnapshot().getSource().getFileObject(), range, fixList, 500);
                     result.add(desc);
 
                 }

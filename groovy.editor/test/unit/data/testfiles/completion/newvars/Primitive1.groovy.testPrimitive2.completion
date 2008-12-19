@@ -1,5 +1,5 @@
 Code completion result for source line:
 byte |
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   b                                          null

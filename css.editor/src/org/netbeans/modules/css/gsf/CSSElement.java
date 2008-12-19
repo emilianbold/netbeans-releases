@@ -40,10 +40,12 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.filesystems.FileObject;
 
 
@@ -84,6 +86,10 @@ public class CSSElement implements ElementHandle {
     public boolean signatureEquals(ElementHandle handle) {
         //TODO implement
         return false;
+    }
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null; //XXX: fix!!!!!!!!!!
     }
 
 }

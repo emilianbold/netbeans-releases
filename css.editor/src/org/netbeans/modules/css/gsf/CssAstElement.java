@@ -39,7 +39,6 @@
 package org.netbeans.modules.css.gsf;
 
 import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  *

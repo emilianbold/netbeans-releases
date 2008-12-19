@@ -36,17 +36,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.Rule;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.hints.StrictWarning;
 
 /**
@@ -67,7 +67,7 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
 
-        List<Error> errors = parserResult.getDiagnostics();
+        List<? extends Error> errors = parserResult.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return;
         }
@@ -100,9 +100,9 @@ public class JsHintsProvider implements HintsProvider {
         if (context.parserResult == null) {
             return;
         }
-        Node root = AstUtilities.getRoot(context.parserResult);
-
-        if (root == null) {
+        
+        JsParseResult jspr = AstUtilities.getParseResult(context.parserResult);
+        if (jspr.getRootNode() == null) {
             return;
         }
 
@@ -131,9 +131,9 @@ public class JsHintsProvider implements HintsProvider {
         if (context.parserResult == null) {
             return;
         }
-        Node root = AstUtilities.getRoot(context.parserResult);
 
-        if (root == null) {
+        JsParseResult jspr = AstUtilities.getParseResult(context.parserResult);
+        if (jspr.getRootNode() == null) {
             return;
         }
 
@@ -149,13 +149,13 @@ public class JsHintsProvider implements HintsProvider {
         }
         
         AstPath path = new AstPath();
-        path.descend(root);
+        path.descend(jspr.getRootNode());
         
         //applyRules(manager, NodeTypes.ROOTNODE, root, path, info, hints, descriptions);
+        context.doc.readLock();
         try {
-            context.doc.readLock();
-            applyHints(manager, context, -1, root, path, hints, result);
-            scan(manager, context, root, path, hints, result);
+            applyHints(manager, context, -1, jspr.getRootNode(), path, hints, result);
+            scan(manager, context, jspr.getRootNode(), path, hints, result);
         } finally {
             context.doc.readUnlock();
         }
@@ -169,9 +169,8 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
-        Node root = AstUtilities.getRoot(context.parserResult);
-
-        if (root == null) {
+        JsParseResult jspr = AstUtilities.getParseResult(context.parserResult);
+        if (jspr.getRootNode() == null) {
             return;
         }
 
@@ -204,12 +203,11 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
+        context.doc.readLock();
         try {
-            context.doc.readLock();
-            CompilationInfo info = context.compilationInfo;
-            int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+            int astOffset = AstUtilities.getAstOffset(jspr, caretOffset);
 
-            AstPath path = new AstPath(root, astOffset);
+            AstPath path = new AstPath(jspr.getRootNode(), astOffset);
             Iterator<Node> it = path.leafToRoot();
             while (it.hasNext()) {
                 if (isCancelled()) {

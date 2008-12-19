@@ -1,6 +1,6 @@
 Code completion result for source line:
 $('|search-text').value = '';
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 TAG        about                                      <i>rails-index.html</i>
 TAG        about-content                              <i>rails-index.html</i>
 TAG        content                                    <i>rails-index.html</i>

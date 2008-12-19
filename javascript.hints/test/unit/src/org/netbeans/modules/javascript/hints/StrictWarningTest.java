@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.hints;
 
-import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *

@@ -1,4 +1,4 @@
 Code completion result for source line:
 x = toggleClass('|');
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 TAG        links                                      <i>rails-index.html</i>

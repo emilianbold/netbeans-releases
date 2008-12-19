@@ -48,10 +48,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,11 +62,10 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -72,12 +74,14 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class PathRegistry {
+public class PathRegistry implements Runnable {
     private static PathRegistry instance;
-    private static final RequestProcessor firer = new RequestProcessor ();
+    private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor");
+    private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
 
+    private final RequestProcessor.Task firerTask;
     private final GlobalPathRegistry regs;
-    private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
+    private final List<PathRegistryEvent.Change> changes = new LinkedList<PathRegistryEvent.Change>();
 
     private Set<ClassPath> activeCps;
     private Map<URL, SourceForBinaryQuery.Result2> sourceResults;
@@ -96,10 +100,9 @@ public class PathRegistry {
     private final List<PathRegistryListener> listeners;
 
     private  PathRegistry () {
+        firerTask = firer.create(this, true);
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
-        pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
-        assert pathRecognizers != null;
         this.listener = new Listener ();
         this.timeStamp = -1;
         this.activeCps = Collections.emptySet();
@@ -129,6 +132,36 @@ public class PathRegistry {
     public void removePathRegistryListener (final PathRegistryListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
+    }
+
+    public URL[] sourceForBinaryQuery (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
+        URL[] result = this.translatedRoots.get(binaryRoot);
+        if (result != null) {
+            if (result.length > 0) {
+                return result;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            List<URL> cacheRoots = new ArrayList<URL> ();
+            Collection<? extends URL> unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            if (unknownRes.isEmpty()) {
+                return null;
+            }
+            else {
+                synchronized (this) {
+                    for (URL u : unknownRes) {
+                        unknownRoots.put(u,new WeakValue(definingClassPath,u));
+                    }
+                }
+                if (fire) {
+                    this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, null, Collections.singleton(definingClassPath));
+                }
+                return result;
+            }
+        }
     }
 
     public Collection<? extends URL> getSources () {
@@ -248,6 +281,26 @@ public class PathRegistry {
         }
     }
 
+    public void run () {
+        assert firer.isRequestProcessorThread();
+        long now = System.currentTimeMillis();
+        try {
+            LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
+            OpenProjects.getDefault().openProjects().get();
+            LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
+        }
+
+        Iterable<? extends PathRegistryEvent.Change> changes;
+        synchronized (this) {
+            changes = new ArrayList<PathRegistryEvent.Change>(this.changes);
+            this.changes.clear();
+        }
+        fire(changes);
+        LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
+    }
+
     private static Result createResources (final Request request) {
         assert request != null;
         final Set<URL> sourceResult = new HashSet<URL> ();
@@ -345,26 +398,22 @@ public class PathRegistry {
     }
 
     private void resetCacheAndFire (final EventKind eventKind,
-            final PathKind pathKind,
+            final PathKind pathKind, final String pathId,
             final Set<? extends ClassPath> paths) {
         synchronized (this) {
             this.sourcePaths = null;
             this.binaryPath = null;
             this.unknownSourcePath = null;
             this.timeStamp++;
+            this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, pathId, paths));
         }
 
-        firer.post(new Runnable () {
-            public void run() {
-                fire (eventKind, pathKind, paths);
-            }
-        });
+        LOGGER.log(Level.FINE, "resetCacheAndFire"); // NOI18N
+        firerTask.schedule(0);
     }
 
-    private void fire (final EventKind eventKind,
-            final PathKind pathKind,
-            final Set<? extends ClassPath> paths) {
-        final PathRegistryEvent event = new PathRegistryEvent(this, eventKind, pathKind, paths);
+    private void fire (final Iterable<? extends PathRegistryEvent.Change> changes) {
+        final PathRegistryEvent event = new PathRegistryEvent(this, changes);
         for (PathRegistryListener l : listeners) {
             l.pathsChanged(event);
         }
@@ -394,7 +443,7 @@ public class PathRegistry {
         }
         final Set<String> sIds = new HashSet<String>();
         final Set<String> bIds = new HashSet<String>();
-        lookup (sIds, bIds);
+        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
         synchronized (this) {
             if (this.sourceIds == null) {
                 this.sourceIds = sIds;
@@ -411,7 +460,7 @@ public class PathRegistry {
         }
         final Set<String> sIds = new HashSet<String>();
         final Set<String> bIds = new HashSet<String>();
-        lookup (sIds, bIds);
+        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
         synchronized (this) {
             if (this.binaryIds == null) {
                 this.binaryIds = bIds;
@@ -419,20 +468,7 @@ public class PathRegistry {
             return this.binaryIds;
         }
     }
-
-    private void lookup (final Set<String> sourceIds,
-            final Set<String> binaryIds) {
-        for (PathRecognizer f : pathRecognizers.allInstances()) {
-            Set<String> ids = f.getSourcePathIds();
-            assert ids != null;
-            sourceIds.addAll(ids);
-            ids = f.getBinaryPathIds();
-            assert ids != null;
-            binaryIds.addAll(ids);
-        }
-    }
-
-
+    
     private Set<ClassPath> getSourcePaths () {
         return getPaths(PathKind.SOURCE);
     }
@@ -539,7 +575,7 @@ public class PathRegistry {
                 fire = (unknownRoots.remove (key) != null);
             }
             if (fire) {
-                resetCacheAndFire(EventKind.PATHS_REMOVED, PathKind.UNKNOWN_SOURCE,null);
+                resetCacheAndFire(EventKind.PATHS_REMOVED, PathKind.UNKNOWN_SOURCE, null, null);
             }
         }
     }
@@ -549,23 +585,25 @@ public class PathRegistry {
             private WeakReference<Object> lastPropagationId;
 
             public void pathsAdded(GlobalPathRegistryEvent event) {
-                final PathKind pk = getPathKind (event.getId());
+                final String pathId = event.getId();
+                final PathKind pk = getPathKind (pathId);
                 if (pk != null) {
-                    resetCacheAndFire (EventKind.PATHS_ADDED, pk, event.getChangedPaths());
+                    resetCacheAndFire (EventKind.PATHS_ADDED, pk, pathId, event.getChangedPaths());
                 }
             }
 
             public void pathsRemoved(GlobalPathRegistryEvent event) {
-                final PathKind pk = getPathKind (event.getId());
+                final String pathId = event.getId();
+                final PathKind pk = getPathKind (pathId);
                 if (pk != null) {
-                    resetCacheAndFire (EventKind.PATHS_REMOVED, pk, event.getChangedPaths());
+                    resetCacheAndFire (EventKind.PATHS_REMOVED, pk, pathId, event.getChangedPaths());
                 }
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
-                    resetCacheAndFire (EventKind.PATHS_CHANGED,null, Collections.singleton((ClassPath)evt.getSource()));
+                    resetCacheAndFire (EventKind.PATHS_CHANGED,null, null, Collections.singleton((ClassPath)evt.getSource()));
                 }
                 else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     final Object newPropagationId = evt.getPropagationId();
@@ -575,13 +613,13 @@ public class PathRegistry {
                         lastPropagationId = new WeakReference<Object>(newPropagationId);
                     }
                     if (fire) {
-                        resetCacheAndFire (EventKind.PATHS_CHANGED, PathKind.SOURCE,null);
+                        resetCacheAndFire (EventKind.PATHS_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
                     }
                 }
             }
 
             public void stateChanged (final ChangeEvent event) {
-                resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY,null);
+                resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY,null, null);
             }
     }
 }
