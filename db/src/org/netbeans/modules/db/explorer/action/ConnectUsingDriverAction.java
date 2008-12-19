@@ -223,7 +223,6 @@ public class ConnectUsingDriverAction extends BaseAction {
 
                         setConnected(true);
                         boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
-                        fireConnectionFinished();
 
                         if (result)
                         {
@@ -236,6 +235,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                                 try
                                 {
                                     ConnectionList.getDefault().add(cinfo);
+                                    fireConnectionFinished();
                                 }
                                 catch (DatabaseException dbe)
                                 {
@@ -308,6 +308,8 @@ public class ConnectUsingDriverAction extends BaseAction {
                                     cancelActiveTask();
                                     dlg.close();
                                 }
+
+                                fireConnectionFinished();
                             }
                         } catch (SQLException exc) {
                             //isClosed() method failed, try to connect
