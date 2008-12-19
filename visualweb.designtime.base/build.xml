@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="org.netbeans.modules.visualweb.designtime.base" default="netbeans" basedir=".">
+<project name="visualweb.designtime.base" default="netbeans" basedir=".">
 
     <description>Builds ant tests the project com.sun.rave.designtime.base.</description>
     <import file="../nbbuild/templates/projectized.xml"/>

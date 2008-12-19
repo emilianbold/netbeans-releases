@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="org.netbeans.modules.visualweb.libs.jtidy" default="netbeans" basedir=".">
+<project name="visualweb.libs.jtidy" default="netbeans" basedir=".">
 
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.libs.jtidy.</description>
 

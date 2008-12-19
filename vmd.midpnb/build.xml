@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="mobility/designer2/nball">
+<project basedir="." default="netbeans" name="vmd.midpnb">
     <description>Builds, tests, and runs the project org.nball.l</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

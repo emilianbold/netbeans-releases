@@ -884,6 +884,8 @@ public final class LoaderPoolNode extends AbstractNode {
         private transient RequestProcessor.Task fireTask;
 
         private transient Lookup.Result mimeResolvers;
+        // holds reference to not loose FileChangeListener
+        private transient FileObject declarativeResolvers;
         private static RequestProcessor rp = new RequestProcessor("Refresh Loader Pool"); // NOI18N
         
         public NbLoaderPool() {
@@ -901,9 +903,9 @@ public final class LoaderPoolNode extends AbstractNode {
             }
         };
         private void listenToDeclarativeResolvers() {
-            FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
-            if (resolvers != null) { // might be inside test which overrides SFS?
-                resolvers.addFileChangeListener(listener);
+            declarativeResolvers = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+            if (declarativeResolvers != null) { // might be inside test which overrides SFS?
+                declarativeResolvers.addFileChangeListener(listener);
             }
         }
 
