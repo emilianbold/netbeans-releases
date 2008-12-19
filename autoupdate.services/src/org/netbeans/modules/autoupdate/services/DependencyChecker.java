@@ -198,7 +198,7 @@ class DependencyChecker extends Object {
     }
     
     public static boolean matchPackageDependency (Dependency dep) {
-        return Util.checkPackageDependency (dep, ClassLoader.getSystemClassLoader ());
+        return Util.checkPackageDependency (dep, Util.class.getClassLoader());
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {

@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import test.pkg.not.in.junit.NbModuleSuiteClusters;
 import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
 
 /**
@@ -205,6 +206,28 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.two", "OK");
         assertProperty("ins.three", "No");
     }
+    public void testCumulativeUseOfModules() throws Exception {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+        System.setProperty("ins.java", "No");
+        System.setProperty("en.one", "No");
+
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(
+            AskForOrgOpenideUtilEnumClass.class
+        )
+        .enableModules("ide.*", "org.netbeans.modules.java.platform.*")
+        .enableModules("platf.*", "org.openide.util.enumerations")
+        .enableModules("ide.*", "org.openide.loaders.*")
+        .gui(false)
+        .addTest(NbModuleSuiteIns.class);
+        Test instance = NbModuleSuite.create(config);
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("en.one", "OK");
+        assertProperty("ins.java", "No"); // no Windows as it is not in ide cluster
+        assertProperty("ins.two", "OK");
+    }
 
     public void testAccessExtraDefinedAutoload() {
         System.setProperty("en.one", "No");
@@ -216,6 +239,37 @@ public class NbModuleSuiteTest extends TestCase {
 
         assertEquals("OK", System.getProperty("en.one"));
     }
+
+    public void testClustersCanBeCumulated() {
+        System.setProperty("clusters", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            gui(false).
+            clusters("ide[0-9]*").
+            clusters("java.*").
+            addTest(NbModuleSuiteClusters.class)
+        );
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("clusters", "ide:java");
+    }
+
+    public void testClustersCanBeCumulatedInReverseOrder() {
+        System.setProperty("clusters", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            gui(false).
+            clusters("java.*").
+            clusters("ide[0-9]*").
+            addTest(NbModuleSuiteClusters.class)
+        );
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("clusters", "java:ide");
+    }
+
     /*
     public void testAccessClassPathDefinedAutoload() {
 
