@@ -42,7 +42,7 @@
 package org.netbeans.modules.groovy.grailsproject;
 
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
-import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
+import org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
@@ -97,7 +97,7 @@ public final class GrailsProject implements Project {
         this.projectDir = projectDir;
         this.projectState = projectState;
         this.logicalView = new GrailsLogicalViewProvider(this);
-        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir));
+        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
     }
 
     public FileObject getProjectDirectory() {

@@ -38,12 +38,43 @@ public class PythonExecution {
     private String scriptArgs;
     private String displayName;    
     private boolean redirect;
-    private final List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private String wrapperCommand;
+    private String[] wrapperArgs;
+    private String[] wrapperEnv;
+    private List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
     private boolean addStandardConvertors;
     private FileLocator fileLocator;
+    
+    public PythonExecution() {
 
-    
-    
+    }
+
+    public PythonExecution(PythonExecution from) {
+        command = from.command;
+        workingDirectory = from.workingDirectory;
+        commandArgs = from.commandArgs;
+        path = from.path;
+        javapath = from.javapath;
+        script = from.script;
+        scriptArgs = from.scriptArgs;
+        displayName = from.displayName;
+        redirect = from.redirect;
+        wrapperCommand = from.wrapperCommand;
+        if (from.wrapperArgs != null) {
+            wrapperArgs = new String[from.wrapperArgs.length];
+            System.arraycopy(from.wrapperArgs, 0, wrapperArgs, 0, from.wrapperArgs.length);
+        }
+        if (from.wrapperEnv != null) {
+            wrapperEnv = new String[from.wrapperEnv.length];
+            System.arraycopy(from.wrapperEnv, 0, wrapperEnv, 0, from.wrapperEnv.length);
+        }
+        outConvertors = new ArrayList<LineConvertor>(from.outConvertors);
+        fileLocator = from.fileLocator;
+        if (from.addStandardConvertors) {
+            addStandardRecognizers();
+        }
+    }
+
     //internal process control    
     private ExecutionDescriptor descriptor = new ExecutionDescriptor()
             .frontWindow(true).controllable(true).inputVisible(true)
@@ -87,6 +118,23 @@ public class PythonExecution {
             // @@@Jean-Yves check for empty arguments as well as null
             if ( (commandArgs != null) && ( commandArgs.trim().length() > 0 )  )
                processBuilder = processBuilder.addArgument(commandArgs);
+
+            if (wrapperCommand != null) {
+                processBuilder = processBuilder.addArgument(wrapperCommand);
+                if (wrapperArgs != null && wrapperArgs.length > 0) {
+                    for (String arg : wrapperArgs) {
+                        processBuilder = processBuilder.addArgument(arg);
+                    }
+                }
+                if (wrapperEnv != null && wrapperEnv.length > 0) {
+                    for (String env : wrapperEnv) {
+                        int index = env.indexOf('=');
+                        assert index != -1;
+                        processBuilder = processBuilder.addEnvironmentVariable(env.substring(0, index), env.substring(index+1));
+                    }
+                }
+            }
+
             if(script != null)
                 processBuilder = processBuilder.addArgument(script);
             if(scriptArgs != null) {
@@ -181,14 +229,25 @@ public class PythonExecution {
     public synchronized void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    
+
+    public synchronized void setWrapperCommand(String wrapperCommand, String[] wrapperArgs, String[] wrapperEnv) {
+        this.wrapperCommand = wrapperCommand;
+        this.wrapperArgs = wrapperArgs;
+        this.wrapperEnv = wrapperEnv;
+    }
 
     public synchronized void setShowControls(boolean showControls) {
        descriptor = descriptor.controllable(showControls);
     }
 
 
-    public void addStandardRecognizers() {
+    public synchronized void addLineConvertor(LineConvertor convertor) {
+        outConvertors.add(convertor);
+        descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
+    }
+
+    public synchronized void addStandardRecognizers() {
         this.addStandardConvertors = true;
         descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
         descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
@@ -245,6 +304,11 @@ public class PythonExecution {
             }
         });
     }
+
+    public void setPostExecutionHook(Runnable runnable) {
+        descriptor = descriptor.postExecution(runnable);
+    }
+
     /**
      * Retive the output form the running process
      * @return a string reader for the process

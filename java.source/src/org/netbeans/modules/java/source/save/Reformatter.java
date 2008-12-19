@@ -678,6 +678,8 @@ public class Reformatter implements ReformatTask {
                                     semiRead = false;
                                     continue;
                                 }
+                                if (!first)
+                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 int index = tokens.index();
                                 int c = col;
                                 Diff d = diffs.isEmpty() ? null : diffs.getFirst();
@@ -686,8 +688,6 @@ public class Reformatter implements ReformatTask {
                                 } else {
                                     rollback(index, col, d);
                                 }
-                                if (!first)
-                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
                                 break;
@@ -1285,7 +1285,7 @@ public class Reformatter implements ReformatTask {
                 }
                 CodeStyle.WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
                 if(exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                    wrapToken(wrapStyle, -1, 0, IDENTIFIER);
+                    wrapToken(wrapStyle, -1, 0, IDENTIFIER, THIS, SUPER);
                 } else {
                     int index = tokens.index();
                     int c = col;

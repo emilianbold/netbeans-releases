@@ -41,6 +41,7 @@ package org.netbeans.api.xml.lexer;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.api.lexer.Language;
@@ -55,6 +56,8 @@ import org.netbeans.editor.BaseDocument;
  * @author Samaresh (samaresh.panda@sun.com)
  */
 public class AbstractTestCase extends TestCase {
+    
+    static final boolean DEBUG = true;
     
     public AbstractTestCase(String testName) {
         super(testName);
@@ -75,15 +78,22 @@ public class AbstractTestCase extends TestCase {
      * @throws java.lang.Exception
      */
     protected void parse(javax.swing.text.Document document) throws Exception {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        assert(true);
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            assert(token.id() != null);
-//            System.out.println("Id :["+ token.id().name() +
-//                    "] [Text :["+ token.text()+"]");            
-        }        
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            assert(true);
+            while(ts.moveNext()) {
+                Token token = ts.token();
+                assert(token.id() != null);
+                if(DEBUG) {
+//                    System.out.println("Id :["+ token.id().name() +
+//                            "] [Text :["+ token.text()+"]");
+                }
+            }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
     }
         
     protected javax.swing.text.Document getDocument(String path) throws Exception {
@@ -110,4 +120,30 @@ public class AbstractTestCase extends TestCase {
         sd.insertString(0,sbuf.toString(),null);
         return sd;
     }
+
+    /**
+     * This test validates all tokens obtained by parsing test.xml against
+     * an array of expected tokens.
+     */
+    public void assertTokenSequence(javax.swing.text.Document document, XMLTokenId[] expectedIds) throws Exception {
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            assert(ts.tokenCount() == expectedIds.length);
+            int index = 0;
+            while(ts.moveNext()) {
+                Token token = ts.token();
+                if(DEBUG) {
+                    System.out.println("Id :["+ token.id().name() +
+                            "] [Text :["+ token.text()+"]");
+                }
+                assert(token.id() == expectedIds[index]);
+                index++;
+            }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
+    }
+
 }

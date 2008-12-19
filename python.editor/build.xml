@@ -24,7 +24,7 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- Python module additions -->
             <include name="pythonstubs/"/>
-            <include name="jython1/jython-2.5/**/netbeans-index-*.zip"/>
+            <include name="jython-2.5/**/netbeans-index-*.zip"/>
         </patternset>
     </target>   
 
@@ -36,5 +36,7 @@
         </chmod>
         <copy todir="${cluster}/pythonstubs" file="external/pythonstubs-2_6.egg" overwrite="true"/>
         <unzip dest="${cluster}" src="external/preindexed.zip"/>
+        <copy todir="${cluster}/coverage" file="scripts/coverage.py" overwrite="true"/>
+        <copy todir="${cluster}/coverage" file="scripts/coverage_wrapper.py" overwrite="true"/>
     </target>
 </project>

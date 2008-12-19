@@ -555,21 +555,33 @@ function update() {
         }        
     }
 	
-    full_size = Math.ceil(full_size / 1024.0);
+    full_size   = Math.ceil(full_size / 1024.0);
     javase_size = Math.ceil(javase_size / 1024.0);
-    java_size = Math.ceil(java_size / 1024.0);
-    ruby_size = Math.ceil(ruby_size / 1024.0);
-    cnd_size = Math.ceil(cnd_size / 1024.0);
-    php_size = Math.ceil(php_size / 1024.0);
+    java_size   = Math.ceil(java_size / 1024.0);
+    ruby_size   = Math.ceil(ruby_size / 1024.0);
+    cnd_size    = Math.ceil(cnd_size / 1024.0);
+    php_size    = Math.ceil(php_size / 1024.0);
 
     if( platform == "zip") {       
-       full_size   = get_file_size_mb(get_file_name(platform, "all"),     174);
-       javase_size = get_file_size_mb(get_file_name(platform, "javase"),   67);
-       java_size   = get_file_size_mb(get_file_name(platform, "java"),  122);
-       ruby_size   = get_file_size_mb(get_file_name(platform, "ruby"),     55);
-       cnd_size    = get_file_size_mb(get_file_name(platform, "cpp"),      41);
-       php_size    = get_file_size_mb(get_file_name(platform, "php"),      38);
+       full_size   = 191;
+       javase_size =  71;
+       java_size   = 149;
+       ruby_size   =  60;
+       cnd_size    =  36;
+       php_size    =  37;
     } 
+
+    if(platform.indexOf("macosx")!=-1) {
+	platform = "macosx";
+    }
+
+
+    full_size   = get_file_size_mb(get_file_name(platform, "all"),    full_size);
+    javase_size = get_file_size_mb(get_file_name(platform, "javase"), javase_size);
+    java_size   = get_file_size_mb(get_file_name(platform, "java"),   java_size);
+    ruby_size   = get_file_size_mb(get_file_name(platform, "ruby"),   ruby_size);
+    cnd_size    = get_file_size_mb(get_file_name(platform, "cpp"),    cnd_size);
+    php_size    = get_file_size_mb(get_file_name(platform, "php"),    php_size);
 
     document.getElementById("full_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', full_size  );
     document.getElementById("java_size").innerHTML = FREE_SIZE_MESSAGE.replace('{0}', java_size);    

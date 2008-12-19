@@ -119,7 +119,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         myPrintProviders = providers;
 
         if (withPreview) {
-            show(false);
+            show(true);
         } else {
             print(true);
         }
@@ -807,7 +807,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     }
 
     private void option() {
-        new Attribute(this).show();
+        new Attribute(this).show(false);
     }
 
     private int getPaperNumber(String text) {

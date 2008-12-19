@@ -7,6 +7,6 @@ and open the template in the editor.
 <MIME-resolver>
     <file>
         <ext name="sun-resource"/>
-        <resolver mime="xml/sun-resource"/>
+        <resolver mime="text/x-sun-resource+xml"/>
     </file>
 </MIME-resolver>

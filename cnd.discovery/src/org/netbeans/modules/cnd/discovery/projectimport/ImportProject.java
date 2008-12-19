@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -72,7 +73,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.projectimport.ImportProjectWizardPanel1.WizardStorage;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -116,17 +117,19 @@ public class ImportProject {
     private boolean runConfigure;
     private boolean setAsMain;
     private String workingDir;
-    private String buildCommand = "${MAKE} all";  // NOI18N
-    private String cleanCommand = "${MAKE} clean";  // NOI18N
+    private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
+    private String cleanCommand = "$(MAKE) -f Makefile clean";  // NOI18N
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
     private boolean postponeModel;
+    private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
+    private List<SourceFolderInfo> sources;
+    private Map<Step,State> importResult = new HashMap<Step,State>();
 
-
-    public ImportProject(WizardStorage wizardStorage) {
+    public ImportProject(WizardDescriptor wizard) {
         if (TRACE) {logger.setLevel(Level.ALL);}
-        String path = wizardStorage.getPath().trim();
+        String path = (String) wizard.getProperty("path");  // NOI18N
         dirF = new File(path);
         name = dirF.getName();
         makefileName = "Makefile-"+name+".mk"; // NOI18N
@@ -141,14 +144,14 @@ public class ImportProject {
             } else {
                 file = new File(path + "/configure"); // NOI18N
                 configurePath = file.getAbsolutePath();
-                configureArguments = wizardStorage.getRealFlags();
+                configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
                 runConfigure = true;
                 file = new File(path + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         }
-        runMake = wizardStorage.isBuildProject();
-        setAsMain = wizardStorage.isSetMain();
+        runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
+        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
@@ -178,70 +181,34 @@ public class ImportProject {
             configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
             configurePath = FilePathAdaptor.normalize(configurePath);
             importantItems.add(configurePath);
-
-            try {
-                FileObject configureFileObject = FileUtil.toFileObject(configureFile);
-                DataObject dObj = DataObject.find(configureFileObject);
-                Node node = dObj.getNodeDelegate();
-
-                // Add arguments to configure script?
-                if (configureArguments != null) {
-                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                    // Keep user arguments as is in args[0]
-                    ses.setArguments(new String[]{configureArguments});
-                }
-                // Possibly run the configure script
-                if (runConfigure) {
-                    // If no makefile, create empty one so it shows up in Interesting Files
-                    //if (!makefileFile.exists()) {
-                    //    makefileFile.createNewFile();
-                    //}
-                    final boolean userRunMake = runMake;
-                    //final File configureLog = createTempFile("configure");
-                    ExecutionListener listener = new ExecutionListener() {
-                        public void executionStarted() {
-                        }
-                        public void executionFinished(int rc) {
-                            if (userRunMake && rc == 0) {
-                                //parseConfigureLog(configureLog);
-                                makeProject(false);
-                            }
-                        }
-                    };
-                    if (runMake) {
-                        runMake = false;
-                        postponeModel = true;
-                    }
-                    if (TRACE) {logger.log(Level.INFO, "#configure "+configureArguments);} // NOI18N
-                    ShellRunAction.performAction(node, listener, null);//, new BufferedWriter(new FileWriter(configureLog)));
-                }
-            } catch (DataObjectNotFoundException e) {
-            }
+            postConfigure(configureFile);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
 
-        SourceFolderInfo info = new SourceFolderInfo() {
-            public File getFile() {
-                return dirF;
-            }
-            public String getFolderName() {
-                return dirF.getName();
-            }
-            public boolean isAddSubfoldersSelected() {
-                return true;
-            }
+        if (sources == null) {
+            sources = new ArrayList<SourceFolderInfo>();
+            sources.add(new SourceFolderInfo() {
+                public File getFile() {
+                    return dirF;
+                }
+                public String getFolderName() {
+                    return dirF.getName();
+                }
+                public boolean isAddSubfoldersSelected() {
+                    return true;
+                }
 
-            public FileFilter getFileFilter() {
-                return AllSourceFileFilter.getInstance();
-            }
-        };
-        List<SourceFolderInfo> sources = new ArrayList<SourceFolderInfo>();
-        sources.add(info);
+                public FileFilter getFileFilter() {
+                    return AllSourceFileFilter.getInstance();
+                }
+            });
+        }
         makeProject = ProjectGenerator.createProject(dirF, name, makefileName, 
                 new MakeConfiguration[]{extConf}, sources.iterator(), importantItemsIterator);
+        importResult.put(Step.Project, State.Successful);
         FileObject dir = FileUtil.toFileObject(dirF);
         resultSet.add(dir);
         switchModel(false);
@@ -260,6 +227,7 @@ public class ImportProject {
 
         return resultSet;
     }
+
 
 //    private void parseConfigureLog(File configureLog){
 //        try {
@@ -286,6 +254,51 @@ public class ImportProject {
             return file;
         } catch (IOException ex) {
             return null;
+        }
+    }
+
+    private void postConfigure(File configureFile) throws IOException {
+        try {
+            FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+            DataObject dObj = DataObject.find(configureFileObject);
+            Node node = dObj.getNodeDelegate();
+            // Add arguments to configure script?
+            if (configureArguments != null) {
+                ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                // Keep user arguments as is in args[0]
+                ses.setArguments(new String[]{configureArguments});
+            }
+            // Possibly run the configure script
+            if (runConfigure) {
+                // If no makefile, create empty one so it shows up in Interesting Files
+                //if (!makefileFile.exists()) {
+                //    makefileFile.createNewFile();
+                //}
+                final boolean userRunMake = runMake;
+                //final File configureLog = createTempFile("configure");
+                ExecutionListener listener = new ExecutionListener() {
+                    public void executionStarted() {
+                    }
+                    public void executionFinished(int rc) {
+                        if (rc == 0) {
+                            importResult.put(Step.Configure, State.Successful);
+                        } else {
+                            importResult.put(Step.Configure, State.Fail);
+                        }
+                        if (userRunMake && rc == 0) {
+                            //parseConfigureLog(configureLog);
+                            makeProject(false);
+                        }
+                    }
+                };
+                if (runMake) {
+                    runMake = false;
+                    postponeModel = true;
+                }
+                if (TRACE) {logger.log(Level.INFO, "#configure " + configureArguments); } // NOI18N
+                ShellRunAction.performAction(node, listener, null); //, new BufferedWriter(new FileWriter(configureLog)));
+            }
+        } catch (DataObjectNotFoundException e) {
         }
     }
 
@@ -326,6 +339,11 @@ public class ImportProject {
             public void executionStarted() {
             }
             public void executionFinished(int rc) {
+                if (rc == 0) {
+                    importResult.put(Step.MakeClean, State.Successful);
+                } else {
+                    importResult.put(Step.MakeClean, State.Fail);
+                }
                 postMake(node);
             }
         };
@@ -339,6 +357,11 @@ public class ImportProject {
             public void executionStarted() {
             }
             public void executionFinished(int rc) {
+                if (rc == 0) {
+                    importResult.put(Step.Make, State.Successful);
+                } else {
+                    importResult.put(Step.Make, State.Fail);
+                }
                 discovery(rc, makeLog);
             }
         };
@@ -365,19 +388,29 @@ public class ImportProject {
         return null;
     }
 
+    private void waitConfigurationDescriptor() {
+        // Discovery require a fully completed project
+        // Make sure that descriptor was stored and readed
+        ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        provider.getConfigurationDescriptor(true);
+    }
+
+
     private void discovery(int rc, File makeLog) {
+        waitConfigurationDescriptor();
         boolean done = false;
         final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (rc == 0) {
             if (extension != null) {
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
                     try {
                         done = true;
                         extension.apply(map, makeProject);
+                        importResult.put(Step.DiscoveryDwarf, State.Successful);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -391,12 +424,13 @@ public class ImportProject {
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
                     try {
                         done = true;
                         extension.apply(map, makeProject);
+                        importResult.put(Step.DiscoveryLog, State.Successful);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -409,12 +443,13 @@ public class ImportProject {
                 final Map<String, Object> map = new HashMap<String, Object>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {logger.log(Level.INFO, "#start fix macros by log file "+makeLog.getAbsolutePath());} // NOI18N
                     @SuppressWarnings("unchecked")
                     List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
                     fixMacros(confs);
+                    importResult.put(Step.FixMacros, State.Successful);
                 } else {
                     if (TRACE) {logger.log(Level.INFO, "#fix macros cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
                 }
@@ -443,15 +478,25 @@ public class ImportProject {
                 }
             }
         }
+        saveMakeConfigurationDescriptor();
+    }
+
+    private void saveMakeConfigurationDescriptor(){
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        makeConfigurationDescriptor.setModified();
         makeConfigurationDescriptor.save();
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
+           }
+        });
     }
 
     private void postModelDiscovery(final boolean isFull) {
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl && makeProject != null) {
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             final CsmProject p = model.getProject(np);
             if (p == null) {
                 if (TRACE) {logger.log(Level.INFO, "#discovery cannot be done by model");} // NOI18N
@@ -469,12 +514,21 @@ public class ImportProject {
                         } else {
                             fixExcludedHeaderFiles();
                         }
+                        showFollwUp(np);
                     }
                 }
             };
             CsmListeners.getDefault().addProgressListener(listener);
             ImportProject.listeners.put(p, listener);
         }
+    }
+
+    private void showFollwUp(NativeProject project){
+        FollowUp.showFollowUp(this, project);
+    }
+
+    Map<Step,State> getImportResult(){
+        return importResult;
     }
 
     // remove wrong "exclude from project" flags
@@ -500,9 +554,8 @@ public class ImportProject {
                         }
                     }
                 }
-                ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-                makeConfigurationDescriptor.save();
+                saveMakeConfigurationDescriptor();
+                importResult.put(Step.FixExcluded, State.Successful);
             }
         }
     }
@@ -511,7 +564,7 @@ public class ImportProject {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, dirF.getAbsolutePath());
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
-        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategyPanel.FILE_LEVEL);
+        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         boolean does = false;
         IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
@@ -519,6 +572,7 @@ public class ImportProject {
                 if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
                 try {
                     extension.apply(map, makeProject);
+                    importResult.put(Step.DiscoveryDwarf, State.Successful);
                     does = true;
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -540,6 +594,7 @@ public class ImportProject {
             try {
                 DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
                 generator.makeProject();
+                importResult.put(Step.DiscoveryModel, State.Successful);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -561,4 +616,7 @@ public class ImportProject {
     }
 
     private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
+
+    static enum State {Successful, Fail, Skiped}
+    static enum Step {Project, Configure, MakeClean, Make, DiscoveryDwarf, DiscoveryLog, FixMacros, DiscoveryModel, FixExcluded}
 }

@@ -170,6 +170,7 @@ public class AstUtilities {
         }
 
         try {
+            baseDoc.readLock();
             if (elementBegin >= baseDoc.getLength()) {
                 return null;
             }
@@ -250,6 +251,8 @@ public class AstUtilities {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
+        } finally {
+            baseDoc.readUnlock();
         }
 
         return comments;

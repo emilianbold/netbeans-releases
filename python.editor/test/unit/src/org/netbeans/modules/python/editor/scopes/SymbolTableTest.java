@@ -154,6 +154,10 @@ public class SymbolTableTest extends PythonTestBase {
         checkScopes("testfiles/unittest.py");
     }
 
+    public void testScopes17() throws Exception {
+        checkScopes("testfiles/delete2.py");
+    }
+
     // Unstable
     //public void testScopes17() throws Exception {
     //    checkScopes("testfiles/attributes.py");

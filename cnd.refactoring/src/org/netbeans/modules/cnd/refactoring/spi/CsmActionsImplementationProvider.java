@@ -85,7 +85,7 @@ public class CsmActionsImplementationProvider {
      * @param lookup 
      */
     public void doEncapsulateFields(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        //new UnsupportedOperationException("Not implemented"); // NOI18N
     }
 
     /**
@@ -101,6 +101,6 @@ public class CsmActionsImplementationProvider {
      * @param lookup 
      */
     public void doChangeParameters(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        //new UnsupportedOperationException("Not implemented"); // NOI18N
     }
 }

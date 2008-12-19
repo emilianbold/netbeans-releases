@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.spi.DefaultError;
-import org.netbeans.modules.python.editor.AstPath;
 import org.netbeans.modules.python.editor.PythonAstUtils;
 import org.netbeans.modules.python.editor.PythonIndex;
 import org.netbeans.modules.python.editor.PythonIndexer;
@@ -78,7 +77,6 @@ import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Interactive;
 import org.python.antlr.ast.Lambda;
-import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Str;
 import org.python.antlr.ast.aliasType;
@@ -93,6 +91,10 @@ import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
  * @author Tor Norbye
  */
 public class SymbolTable {
+    private final static int YES = 1;
+    private final static int NO = 0;
+    private final static int CIRCULAR = -1;
+
     private Map<PythonTree, ScopeInfo> scopes = new HashMap<PythonTree, ScopeInfo>();
     private PythonTree root;
     private FileObject fileObject;
@@ -112,8 +114,20 @@ public class SymbolTable {
             put("__name__", "__bases");
         }
     };
+    private HashMap<String, ClassDef> classes = new HashMap<String, ClassDef>();
     // TODO - use WeakHashMap?
     static Map<String, Set<IndexedElement>> importedElements = new HashMap<String, Set<IndexedElement>>();
+
+    private HashMap<String, ClassDef> buildLocalClasses() {
+        HashMap<String, ClassDef> localClasses = new HashMap<String, ClassDef>();
+        for (PythonTree cur : scopes.keySet()) {
+            if (cur instanceof ClassDef) {
+                ClassDef curClass = (ClassDef)cur;
+                localClasses.put(curClass.name, curClass);
+            }
+        }
+        return localClasses;
+    }
 
     public SymbolTable(PythonTree root, FileObject fileObject) {
         this.root = root;
@@ -124,6 +138,7 @@ public class SymbolTable {
                 ScopesCompiler compiler = new ScopesCompiler(this, scopes, root, imports, importsFrom, mainImports, topLevelImports);
                 compiler.parse();
                 publicSymbols = compiler.getPublicSymbols();
+                classes = buildLocalClasses();
                 if (publicSymbols != null) {
                     // Mark all other symbols private!
                     Set<String> names = new HashSet<String>(publicSymbols.size() + 1);
@@ -431,7 +446,6 @@ public class SymbolTable {
                         signature = PythonIndexer.computeClassSig((ClassDef)node, sym);
                     } else if (sym.isFunction() && node instanceof FunctionDef) {
                         assert sym.isFunction() && node instanceof FunctionDef : name + ";" + sym + " in " + module;
-                        ;
                         signature = PythonIndexer.computeFunctionSig(name, (FunctionDef)node, sym);
                     } else {
                         // Probably a generator expression
@@ -785,6 +799,210 @@ public class SymbolTable {
         return notInInitAttribs;
     }
 
+    private ScopeInfo getClassScope(String className) {
+        for (ScopeInfo scopeInfo : scopes.values()) {
+            if (scopeInfo.scope_node instanceof ClassDef) {
+                ClassDef curClass = (ClassDef)scopeInfo.scope_node;
+                if (curClass.name.equals(className)) {
+                    return scopeInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    private int belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling) {
+        if (cls.bases == null) {
+            return NO; // no parents
+        }
+        for (int ii = 0; ii < cls.bases.length; ii++) {
+            String className = null;
+            if (cls.bases[ii] instanceof Name) {
+                className = ((Name)cls.bases[ii]).id;
+            } else {
+                // should be Attribute here( module.className form )
+                // which imply imported from external scope
+                // So we give up on scope returning optimistaically True
+                return YES;
+            }
+            assert (className != null);
+            if (cycling.get(className) != null) {
+                cycling.clear();
+                // put parent child conficting back in cycling
+                cycling.put(className, cls.name);
+                return CIRCULAR ;
+            }
+            cycling.put(className, className);
+            ScopeInfo localClassScope = getClassScope(className);
+            if (localClassScope == null) {
+                // return true (success) when at least one parent is outside module scope
+                // just to notify caller to be optimistic and assume that
+                // name is resolved by imported classes inheritance
+                // scanning imported classed from here is discouraged for
+                // performances reasons
+                return YES;
+            } else {
+                if ((name != null) &&
+                        (localClassScope.attributes.get(name) != null)) {
+                    return YES;
+                }
+                // try recurse parentage to resolve attribute
+                ClassDef parentClass = (ClassDef)localClassScope.scope_node;
+                int recResult = belongsToParents(parentClass, name, cycling ) ;
+                if ( recResult != NO ) // stop on FOUND(YES) or CIRCULAR error
+                    return recResult ;
+            }
+        }
+        return NO;
+    }
+
+    private boolean isImported(String moduleName) {
+        for (Import imported : imports) {
+            for (int ii = 0; ii < imported.names.length; ii++) {
+                aliasType cur = imported.names[ii];
+                if (((cur.name != null) && (cur.name.equals(moduleName))) ||
+                        ((cur.asname != null) && (cur.asname.equals(moduleName)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isImportedFrom(String className) {
+        for (ImportFrom importedFrom : importsFrom) {
+            for (int ii = 0; ii < importedFrom.names.length; ii++) {
+                aliasType cur = importedFrom.names[ii];
+                if (((cur.name != null) && (cur.name.equals(className))) ||
+                        ((cur.asname != null) && (cur.asname.equals(className)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<PythonTree> getUnresolvedParents(CompilationInfo info) {
+        // deal with unresolved parents in inherit trees
+        List<PythonTree> unresolvedParents = new ArrayList<PythonTree>();
+        Index gsfIndex = info.getIndex(PythonTokenId.PYTHON_MIME_TYPE);
+        PythonIndex index = PythonIndex.get(gsfIndex, info.getFileObject());
+
+        for (String cur : classes.keySet()) {
+            ClassDef cls = classes.get(cur);
+            if (cls.bases != null) {
+                // has parents
+                for (int ii = 0; ii < cls.bases.length; ii++) {
+                    if (cls.bases[ii] instanceof Name) {
+                        String className = ((Name)cls.bases[ii]).id;
+                        Set<String> builtin = getBuiltin(info);
+                        if ((!classes.containsKey(className)) &&
+                                (!builtin.contains(className))) {
+                            // check in from imports
+                            if (!isImportedFrom(className)) {
+                                unresolvedParents.add(cls.bases[ii]);
+                            }
+                        }
+                    } else {
+                        // should be Attribute here( module.className form )
+                        // which imply imported from external scope
+                        Attribute attr = (Attribute)cls.bases[ii];
+                        String clsName = attr.attr;
+                        if (attr.value instanceof Name) {
+                            String moduleName = ((Name)(attr.value)).id;
+                            // check that import is resolved first
+                            if (!isImported(moduleName)) {
+                                unresolvedParents.add(cls.bases[ii]);
+                            } else {
+                                Set<IndexedElement> found = index.getImportedElements(clsName, NameKind.EXACT_NAME, PythonIndex.ALL_SCOPE, Collections.<String>singleton(moduleName), null);
+                                if (found.size() == 0) {
+                                    unresolvedParents.add(cls.bases[ii]);
+                                }
+                            }
+                        } else {
+                            unresolvedParents.add(cls.bases[ii]);
+                        }
+                    }
+                }
+            }
+        }
+        return unresolvedParents;
+    }
+
+    public HashMap<ClassDef, String> getClassesCyclingRedundancies(CompilationInfo info) {
+        HashMap<ClassDef, String> cyclingRedundancies = new HashMap<ClassDef, String>();
+        for (String cur : classes.keySet()) {
+            HashMap<String, String> returned = new HashMap<String, String>();
+            ClassDef curClass = classes.get(cur);
+            if (!cyclingRedundancies.containsKey(curClass)) {
+                if (  belongsToParents(curClass, null, returned) == CIRCULAR ) {
+                    // store hashMap returned
+                    Map.Entry<String, String> cycling = returned.entrySet().iterator().next();
+                    cyclingRedundancies.put(curClass, cycling.getKey());
+                }
+            }
+        }
+        return cyclingRedundancies;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PythonTree> getUnresolvedAttributes(CompilationInfo info) {
+        List<PythonTree> unresolvedNodes = new ArrayList<PythonTree>();
+        for (ScopeInfo scopeInfo : scopes.values()) {
+            Set<String> unresolved = new HashSet<String>();
+            Map<String, SymInfo> tbl = scopeInfo.tbl;
+            // unresolved attributes in local classes
+            Map<String, SymInfo> attribs = scopeInfo.attributes;
+            for (Map.Entry<String, SymInfo> curAttr : attribs.entrySet()) {
+                SymInfo symInfo = curAttr.getValue();
+                if (symInfo.isRead()) {
+                    // check for builtin attribs first
+                    if (classAttributes.get(curAttr.getKey()) == null) {
+                        // not a builtin attribute
+                        ScopeInfo parentScope = scopeInfo.getClassScope();
+                        if (parentScope != null) {
+                            // limit scope to Classes for self and inherited
+                            Map<String, SymInfo> parentattribs = parentScope.attributes;
+                            SymInfo classAttr = parentattribs.get(curAttr.getKey());
+                            tbl = parentScope.tbl;
+                            if (classAttr == null) {
+                                // may be  also a reference to a method
+                                classAttr = tbl.get(curAttr.getKey());
+                            }
+                            if (classAttr == null) {
+                                // do not bother with method since they are
+                                // managed by completion
+                                ClassDef curClass = (ClassDef)parentScope.scope_node;
+                                if (belongsToParents(curClass, curAttr.getKey(), new HashMap()) == NO) {
+                                    if (!symInfo.isCalled()) {
+                                        // no corresponding attributes
+                                        //PythonTree tree = symInfo.node ;
+                                        Attribute attr = (Attribute)symInfo.node;
+                                        // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
+                                        unresolvedNodes.add(attr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (unresolved.size() > 0) {
+                NameFinder finder = new NameFinder(unresolved);
+                List<Name> nodes = finder.run(scopeInfo.scope_node);
+                unresolvedNodes.addAll(nodes);
+            }
+
+        }
+
+        if (unresolvedNodes.size() > 1) {
+            Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+        }
+
+        return unresolvedNodes;
+    }
+
     @SuppressWarnings("unchecked")
     public List<PythonTree> getUnresolved(CompilationInfo info) {
         List<PythonTree> unresolvedNodes = new ArrayList<PythonTree>();
@@ -822,39 +1040,6 @@ public class SymbolTable {
                 }
             }
 
-            // unresolved attributes in local classes
-            Map<String, SymInfo> attribs = scopeInfo.attributes;
-            for (Map.Entry<String, SymInfo> curAttr : attribs.entrySet()) {
-                SymInfo symInfo = curAttr.getValue();
-                if (symInfo.isRead()) {
-                    // check for builtin attribs first
-                    if (classAttributes.get(curAttr.getKey()) == null) {
-                        // not a builtin attribute
-                        ScopeInfo parentScope = scopeInfo.getClassScope();
-                        if (parentScope != null) {
-                            // limit scope to Classes for self and inherited
-                            Map<String, SymInfo> parentattribs = parentScope.attributes;
-                            SymInfo classAttr = parentattribs.get(curAttr.getKey());
-                            tbl = parentScope.tbl;
-                            if (classAttr == null) {
-                                // may be  also a reference to a method
-                                classAttr = tbl.get(curAttr.getKey());
-                            }
-                            if (classAttr == null) {
-                                // do not bother with method since they are
-                                // managed by completion
-                                if (!symInfo.isCalled()) {
-                                    // no corresponding attributes
-                                    //PythonTree tree = symInfo.node ;
-                                    Attribute attr = (Attribute)symInfo.node;
-                                    // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
-                                    unresolvedNodes.add(attr);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             if (unresolved.size() > 0) {
                 // Check imports and see if it's resolved by existing imports
@@ -879,7 +1064,7 @@ public class SymbolTable {
 
         if (unresolvedNodes.size() > 1) {
             Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unresolvedNodes;
@@ -915,7 +1100,7 @@ public class SymbolTable {
 
         if (unusedNodes.size() > 1) {
             Collections.sort(unusedNodes, PythonUtils.NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unusedNodes;

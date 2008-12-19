@@ -100,7 +100,8 @@ import java_cup.runtime.*;
     private char yy_old_buffer[] = new char[ZZ_BUFFERSIZE];
     private int yy_old_pushbackPos;
     protected int commentStartPosition;
-    private PHPDocCommentParser docParser = new PHPDocCommentParser();
+    private final PHPDocCommentParser docParser = new PHPDocCommentParser();
+    private final PHPVarCommentParser varParser = new PHPVarCommentParser();
 
     public ASTPHP5Scanner(java.io.Reader in, boolean short_tags_allowed, boolean asp_tags_allowed) {
         this(in);
@@ -158,17 +159,24 @@ import java_cup.runtime.*;
 	
 	protected void addComment(Comment.Type type) {
 		int leftPosition = getTokenStartPosition();
-                //System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
-                Comment comm;
-                if (type == Comment.Type.TYPE_PHPDOC) {
-                    comm = docParser.parse(commentStartPosition, leftPosition + getTokenLength(),  comment);
-                    comment = null;
-                }
-                else {
-                    comm = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
-                }
+        //System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
+        Comment comm;
+        if (type == Comment.Type.TYPE_PHPDOC) {
+            comm = docParser.parse(commentStartPosition, leftPosition + getTokenLength(),  comment);
+            comment = null;
+        }
+        else if(type == Comment.Type.TYPE_VARTYPE) {
+            comm = varParser.parse(commentStartPosition, leftPosition + getTokenLength(),  comment);
+            comment = null;
+            if (comm == null) {
+                comm = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
+            }
+        }
+        else {
+            comm = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
+        }
 		commentList.add(comm);
-	}	
+	}
 	
 	public void setUseAspTagsAsPhp(boolean useAspTagsAsPhp) {
 		asp_tags = useAspTagsAsPhp;
@@ -217,7 +225,7 @@ import java_cup.runtime.*;
     
     private void handleVarComment() {
     	commentStartPosition = zzStartRead;
-    	addComment(Comment.Type.TYPE_MULTILINE);
+    	addComment(Comment.Type.TYPE_VARTYPE);
     }
         
     private Symbol createFullSymbol(int symbolNumber) {
@@ -934,7 +942,8 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	} 
 }
 
-<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{LABEL}{WHITESPACE}?"*/" {
+<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{LABEL}([|]{LABEL})*{WHITESPACE}?"*/" {
+    comment = yytext();
     handleVarComment();
     return createFullSymbol(ASTPHP5Symbols.T_VAR_COMMENT);
 }

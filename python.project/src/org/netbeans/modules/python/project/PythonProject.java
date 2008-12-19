@@ -17,7 +17,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -109,6 +109,7 @@ public PythonProject()
                 new PythonSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),   //Sharabilit info - used by VCS
                 helper.createCacheDirectoryProvider(),  //Cache provider
                 helper.createAuxiliaryProperties(),     // AuxiliaryConfiguraion provider - used by bookmarks, project Preferences, etc
+                new PythonCoverageProvider(this)
             });
     }
     
@@ -216,6 +217,12 @@ public PythonProject()
             assert cpProvider != null;
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
+            // Ensure that code coverage is initialized in case it's enabled...
+            PythonCoverageProvider codeCoverage = getLookup().lookup(PythonCoverageProvider.class);
+            if (codeCoverage.isEnabled()) {
+                codeCoverage.notifyProjectOpened();
+            }
         }
 
         protected void projectClosed() {            
@@ -260,9 +267,11 @@ public PythonProject()
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Python/pythonPackage", // NOI18N
-            "Templates/Python/Module.py", //NOI18N
-            "Templates/Python/ExecutableModule.py", // NOI18N     
+            "Templates/Python/_package", // NOI18N
+            "Templates/Python/_module.py", //NOI18N
+            "Templates/Python/_main.py", // NOI18N
+            "Templates/Python/_empty_module.py", // NOI18N
+            "Templates/Python/_test.py", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

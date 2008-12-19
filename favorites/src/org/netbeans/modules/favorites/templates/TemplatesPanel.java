@@ -1029,7 +1029,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         
         @Override
         protected boolean asynchronous () {
-            return true;
+            return false;
         }
     }
     

@@ -55,7 +55,6 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
-import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
@@ -83,7 +82,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -886,7 +884,7 @@ class OccurenceBuilder {
     private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScopeImpl indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
+        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
         List<MethodScopeImpl> methods = Collections.emptyList();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();

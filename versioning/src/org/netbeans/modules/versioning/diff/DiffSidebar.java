@@ -228,15 +228,25 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return -1;
     }
 
+    private int computeEndOffset(Difference diff) {
+        int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+        if (end == -1) {
+            Element lineRoot = document.getParagraphElement(0).getParentElement();
+            for (end = lineRoot.getElement(diff.getSecondEnd() - 1).getEndOffset(); end > document.getLength(); end--) {
+            }
+        }
+        return end;
+    }
+
     void onRollback(Difference diff) {
         try {
             if (diff.getType() == Difference.ADD) {
                 int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                int end = computeEndOffset(diff);
                 document.remove(start, end - start);
             } else if (diff.getType() == Difference.CHANGE) {
                 int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                int end = computeEndOffset(diff);
                 document.replace(start, end - start, diff.getFirstText(), null);
             } else {
                 int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());

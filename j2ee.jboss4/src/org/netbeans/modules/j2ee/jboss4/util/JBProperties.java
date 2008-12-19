@@ -123,6 +123,15 @@ public class JBProperties {
         return supportsJavaEE5ejb3() && supportsJavaEE5web()
                 && version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0; // NOI18N
     }
+
+    public Version getServerVersion() {
+        return version;
+    }
+
+    public boolean isVersion(Version targetVersion) {
+        return (version != null && version.compareToIgnoreUpdate(targetVersion) >= 0); // NOI18N
+    }
+    
     public File getServerDir() {
         return new File(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
     }
@@ -199,7 +208,8 @@ public class JBProperties {
             }
 
             addFiles(new File(rootDir, "lib"), list); // NOI18N
-            addFiles(new File(serverDir, "/lib"), list); // NOI18N
+            addFiles(new File(serverDir, "lib"), list); // NOI18N
+            
             if (supportsJavaEE5ejb3()) {
                 File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
                 if (ejb3deployer.exists()) {

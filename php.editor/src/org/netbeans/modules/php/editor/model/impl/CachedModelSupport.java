@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -162,6 +163,18 @@ class CachedModelSupport {
         return retval;
     }
 
+    static List<? extends InterfaceScope> getInterfaces(String ifaceName, ModelElement elem) {
+        List<? extends InterfaceScope> retval;
+        ModelScopeImpl top = (ModelScopeImpl) ModelUtils.getModelScope(elem);
+        CachedModelSupport modelSupport = top.getCachedModelSupport();
+        if (modelSupport != null) {
+            retval = modelSupport.getMergedIfaces(ifaceName);
+        } else {
+            retval = top.getInterfaces(ifaceName);
+        }
+        return retval;
+    }
+
     static List<? extends ConstantElement> getConstants(String constantName, Scope scope) {
         List<? extends ConstantElement> retval;
         ModelScopeImpl top = (ModelScopeImpl) ModelUtils.getModelScope(scope);
@@ -263,9 +276,29 @@ class CachedModelSupport {
                 }
             }
         }
-        return methods;
-
+        return methods;   
     }
+
+    private List<? extends InterfaceScope> getMergedIfaces(String ifaceName) {
+        List<? extends InterfaceScopeImpl> ifaces = getCachedInterfaces(ifaceName);
+        if (ifaces.isEmpty()) {
+            ifaces = (ifaceName != null ? fileScope.getInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
+            if (ifaces.isEmpty()) {
+                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                ifaces = (ifaceName != null ? indexScope.getInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
+                //TODO: ModelUtils.getFirst
+                InterfaceScopeImpl ifce = ModelUtils.getFirst(ifaces);
+                if (ifce != null) {
+                    ifaceScopes.add(ifce);
+                    methodScopes.put(ifce, new ArrayList<MethodScopeImpl>());
+                    fldElems.put(ifce, new ArrayList<FieldElementImpl>());
+                    clzConstantElems.put(ifce, new ArrayList<ClzConstantElementImpl>());
+                }
+            }
+        }
+        return ifaces;
+    }
+
     private List<? extends ClassScope> getMergedClasses(String clzName) {
         List<? extends ClassScopeImpl> classes = getCachedClasses(clzName);
         if (classes.isEmpty()) {            
@@ -331,6 +364,19 @@ class CachedModelSupport {
         return functions;
     }
 
+
+    private List<? extends InterfaceScopeImpl> getCachedInterfaces(final String... queryName) {
+        return getCachedInterfaces(NameKind.EXACT_NAME, queryName);
+    }
+
+    private List<? extends InterfaceScopeImpl> getCachedInterfaces(final NameKind nameKind, final String... queryName) {
+        return ScopeImpl.filter(ifaceScopes, new ScopeImpl.ElementFilter() {
+            public boolean isAccepted(ModelElementImpl element) {
+                return element.getPhpKind().equals(PhpKind.IFACE) &&
+                        (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
+            }
+        });
+    }
 
     private List<? extends ClassScopeImpl> getCachedClasses(final String... queryName) {
         return getCachedClasses(NameKind.EXACT_NAME, queryName);
