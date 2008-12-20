@@ -42,11 +42,9 @@ package org.netbeans.modules.php.project.ui.actions.tests;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -396,16 +394,15 @@ public final class CreateTestsAction extends NodeAction {
 
     private File adjustFileContent(File testFile, List<String> includePaths) {
         File tmpFile = new File(testFile.getAbsolutePath() + TMP_FILE_SUFFIX);
+        tmpFile.deleteOnExit();
         assert !tmpFile.exists() : "TMP file should not exist: " + tmpFile;
         try {
             // input
-            FileInputStream fis = new FileInputStream(testFile);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+            BufferedReader in = new BufferedReader(new FileReader(testFile));
 
             try {
                 // output
-                FileOutputStream fos = new FileOutputStream(tmpFile);
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos));
+                BufferedWriter out = new BufferedWriter(new FileWriter(tmpFile));
 
                 try {
                     // data
@@ -434,6 +431,7 @@ public final class CreateTestsAction extends NodeAction {
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
+            return testFile;
         }
 
         if (!testFile.delete()) {
@@ -443,7 +441,6 @@ public final class CreateTestsAction extends NodeAction {
         if (!tmpFile.renameTo(testFile)) {
             LOGGER.info(String.format("Cannot rename file %s to %s", tmpFile, testFile));
             tmpFile.delete();
-            tmpFile.deleteOnExit();
             return null;
         }
         return testFile;
