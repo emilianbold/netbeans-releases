@@ -55,124 +55,124 @@ public final class EventRequestWrapper {
 
     private EventRequestWrapper() {}
 
-    public static void addCountFilter(com.sun.jdi.request.EventRequest a, int b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void addCountFilter(com.sun.jdi.request.EventRequest a, int b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.addCountFilter(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void disable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void disable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.disable();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void enable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void enable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.enable();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static java.lang.Object getProperty(com.sun.jdi.request.EventRequest a, java.lang.Object b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.Object getProperty(com.sun.jdi.request.EventRequest a, java.lang.Object b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.getProperty(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isEnabled0(com.sun.jdi.request.EventRequest a) {
         try {
             return a.isEnabled();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isEnabled(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isEnabled(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isEnabled();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void putProperty(com.sun.jdi.request.EventRequest a, java.lang.Object b, java.lang.Object c) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void putProperty(com.sun.jdi.request.EventRequest a, java.lang.Object b, java.lang.Object c) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.putProperty(b, c);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void setEnabled(com.sun.jdi.request.EventRequest a, boolean b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void setEnabled(com.sun.jdi.request.EventRequest a, boolean b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.setEnabled(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void setSuspendPolicy(com.sun.jdi.request.EventRequest a, int b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void setSuspendPolicy(com.sun.jdi.request.EventRequest a, int b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.setSuspendPolicy(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static int suspendPolicy0(com.sun.jdi.request.EventRequest a) {
         try {
             return a.suspendPolicy();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return 0;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return 0;
         }
     }
 
-    public static int suspendPolicy(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static int suspendPolicy(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.suspendPolicy();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 

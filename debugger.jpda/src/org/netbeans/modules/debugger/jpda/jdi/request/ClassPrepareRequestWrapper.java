@@ -55,41 +55,41 @@ public final class ClassPrepareRequestWrapper {
 
     private ClassPrepareRequestWrapper() {}
 
-    public static void addClassExclusionFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void addClassExclusionFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.addClassExclusionFilter(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void addClassFilter(com.sun.jdi.request.ClassPrepareRequest a, com.sun.jdi.ReferenceType b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void addClassFilter(com.sun.jdi.request.ClassPrepareRequest a, com.sun.jdi.ReferenceType b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.addClassFilter(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static void addClassFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void addClassFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             a.addClassFilter(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     /** Wrapper for method addSourceNameFilter from JDK 1.6. */
-    public static void addSourceNameFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static void addSourceNameFilter(com.sun.jdi.request.ClassPrepareRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             com.sun.jdi.request.ClassPrepareRequest.class.getMethod("addSourceNameFilter", java.lang.String.class).invoke(a, b);
         } catch (NoSuchMethodException ex) {
@@ -102,12 +102,12 @@ public final class ClassPrepareRequestWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }

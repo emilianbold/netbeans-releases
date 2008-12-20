@@ -58,24 +58,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Field> allFields0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allFields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Field> allFields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Field> allFields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allFields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -84,24 +84,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Location> allLineLocations0(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allLineLocations();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Location> allLineLocations(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Location> allLineLocations(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allLineLocations();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -110,24 +110,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Location> allLineLocations0(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allLineLocations(b, c);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Location> allLineLocations(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Location> allLineLocations(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allLineLocations(b, c);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -136,24 +136,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Method> allMethods0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allMethods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Method> allMethods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Method> allMethods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.allMethods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -162,49 +162,49 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<java.lang.String> availableStrata0(com.sun.jdi.ReferenceType a) {
         try {
             return a.availableStrata();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         }
     }
 
-    public static java.util.List<java.lang.String> availableStrata(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.List<java.lang.String> availableStrata(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.availableStrata();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static com.sun.jdi.ClassLoaderReference classLoader(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static com.sun.jdi.ClassLoaderReference classLoader(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.classLoader();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static com.sun.jdi.ClassObjectReference classObject(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static com.sun.jdi.ClassObjectReference classObject(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.classObject();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     /** Wrapper for method constantPool from JDK 1.6. */
-    public static byte[] constantPool(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static byte[] constantPool(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return (byte[]) com.sun.jdi.ReferenceType.class.getMethod("constantPool").invoke(a);
         } catch (NoSuchMethodException ex) {
@@ -217,19 +217,19 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
     }
 
     /** Wrapper for method constantPoolCount from JDK 1.6. */
-    public static int constantPoolCount(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static int constantPoolCount(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return (Integer) com.sun.jdi.ReferenceType.class.getMethod("constantPoolCount").invoke(a);
         } catch (NoSuchMethodException ex) {
@@ -242,12 +242,12 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
@@ -267,80 +267,80 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                return 0;
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
                 return 0;
             }
             throw new IllegalStateException(t);
         }
     }
 
-    public static java.lang.String defaultStratum(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.String defaultStratum(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.defaultStratum();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean equals0(com.sun.jdi.ReferenceType a, java.lang.Object b) {
         try {
             return a.equals(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean equals(com.sun.jdi.ReferenceType a, java.lang.Object b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean equals(com.sun.jdi.ReferenceType a, java.lang.Object b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.equals(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean failedToInitialize0(com.sun.jdi.ReferenceType a) {
         try {
             return a.failedToInitialize();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean failedToInitialize(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean failedToInitialize(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.failedToInitialize();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static com.sun.jdi.Field fieldByName(com.sun.jdi.ReferenceType a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static com.sun.jdi.Field fieldByName(com.sun.jdi.ReferenceType a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.fieldByName(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -349,97 +349,97 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Field> fields0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.fields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Field> fields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Field> fields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.fields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.lang.String genericSignature(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.String genericSignature(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.genericSignature();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static com.sun.jdi.Value getValue(com.sun.jdi.ReferenceType a, com.sun.jdi.Field b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static com.sun.jdi.Value getValue(com.sun.jdi.ReferenceType a, com.sun.jdi.Field b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.getValue(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.Map<com.sun.jdi.Field, com.sun.jdi.Value> getValues0(com.sun.jdi.ReferenceType a, java.util.List<? extends com.sun.jdi.Field> b) {
         try {
             return a.getValues(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyMap();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyMap();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyMap();
         }
     }
 
-    public static java.util.Map<com.sun.jdi.Field, com.sun.jdi.Value> getValues(com.sun.jdi.ReferenceType a, java.util.List<? extends com.sun.jdi.Field> b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.Map<com.sun.jdi.Field, com.sun.jdi.Value> getValues(com.sun.jdi.ReferenceType a, java.util.List<? extends com.sun.jdi.Field> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.getValues(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static int hashCode0(com.sun.jdi.ReferenceType a) {
         try {
             return a.hashCode();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return 0;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return 0;
         }
     }
 
-    public static int hashCode(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static int hashCode(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.hashCode();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     /** Wrapper for method instances from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.ObjectReference> instances(com.sun.jdi.ReferenceType a, long b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.List<com.sun.jdi.ObjectReference> instances(com.sun.jdi.ReferenceType a, long b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return (java.util.List<com.sun.jdi.ObjectReference>) com.sun.jdi.ReferenceType.class.getMethod("instances", long.class).invoke(a, b);
         } catch (NoSuchMethodException ex) {
@@ -452,12 +452,12 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
@@ -477,11 +477,11 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                return java.util.Collections.emptyList();
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
                 return java.util.Collections.emptyList();
             }
             throw new IllegalStateException(t);
@@ -491,156 +491,156 @@ public final class ReferenceTypeWrapper {
     public static boolean isAbstract0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isAbstract();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isAbstract(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isAbstract(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isAbstract();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isFinal0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isFinal();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isFinal(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isFinal(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isFinal();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isInitialized0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isInitialized();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isInitialized(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isInitialized(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isInitialized();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isPrepared0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isPrepared();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isPrepared(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isPrepared(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isPrepared();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isStatic0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isStatic();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isStatic(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isStatic(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isStatic();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static boolean isVerified0(com.sun.jdi.ReferenceType a) {
         try {
             return a.isVerified();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return false;
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return false;
         }
     }
 
-    public static boolean isVerified(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static boolean isVerified(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.isVerified();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.List<com.sun.jdi.Location> locationsOfLine0(com.sun.jdi.ReferenceType a, int b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.locationsOfLine(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Location> locationsOfLine(com.sun.jdi.ReferenceType a, int b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Location> locationsOfLine(com.sun.jdi.ReferenceType a, int b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.locationsOfLine(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -649,31 +649,31 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Location> locationsOfLine0(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c, int d) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.locationsOfLine(b, c, d);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Location> locationsOfLine(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c, int d) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Location> locationsOfLine(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c, int d) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.locationsOfLine(b, c, d);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
     /** Wrapper for method majorVersion from JDK 1.6. */
-    public static int majorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static int majorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return (Integer) com.sun.jdi.ReferenceType.class.getMethod("majorVersion").invoke(a);
         } catch (NoSuchMethodException ex) {
@@ -686,12 +686,12 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
@@ -711,11 +711,11 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                return 0;
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
                 return 0;
             }
             throw new IllegalStateException(t);
@@ -725,24 +725,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Method> methods0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Method> methods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Method> methods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -751,24 +751,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Method> methodsByName0(com.sun.jdi.ReferenceType a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methodsByName(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Method> methodsByName(com.sun.jdi.ReferenceType a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Method> methodsByName(com.sun.jdi.ReferenceType a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methodsByName(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -777,31 +777,31 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Method> methodsByName0(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methodsByName(b, c);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Method> methodsByName(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Method> methodsByName(com.sun.jdi.ReferenceType a, java.lang.String b, java.lang.String c) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.methodsByName(b, c);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
     /** Wrapper for method minorVersion from JDK 1.6. */
-    public static int minorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static int minorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return (Integer) com.sun.jdi.ReferenceType.class.getMethod("minorVersion").invoke(a);
         } catch (NoSuchMethodException ex) {
@@ -814,12 +814,12 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
@@ -839,137 +839,137 @@ public final class ReferenceTypeWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                return 0;
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
                 return 0;
             }
             throw new IllegalStateException(t);
         }
     }
 
-    public static java.lang.String name(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.String name(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.name();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.List<com.sun.jdi.ReferenceType> nestedTypes0(com.sun.jdi.ReferenceType a) {
         try {
             return a.nestedTypes();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         }
     }
 
-    public static java.util.List<com.sun.jdi.ReferenceType> nestedTypes(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.List<com.sun.jdi.ReferenceType> nestedTypes(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.nestedTypes();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static java.lang.String sourceDebugExtension(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.String sourceDebugExtension(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.sourceDebugExtension();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
-    public static java.lang.String sourceName(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.lang.String sourceName(com.sun.jdi.ReferenceType a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.sourceName();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.List<java.lang.String> sourceNames0(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException {
         try {
             return a.sourceNames(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         }
     }
 
-    public static java.util.List<java.lang.String> sourceNames(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.List<java.lang.String> sourceNames(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.sourceNames(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.List<java.lang.String> sourcePaths0(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException {
         try {
             return a.sourcePaths(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         }
     }
 
-    public static java.util.List<java.lang.String> sourcePaths(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static java.util.List<java.lang.String> sourcePaths(com.sun.jdi.ReferenceType a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
             return a.sourcePaths(b);
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     public static java.util.List<com.sun.jdi.Field> visibleFields0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.visibleFields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Field> visibleFields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Field> visibleFields(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.visibleFields();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
@@ -978,24 +978,24 @@ public final class ReferenceTypeWrapper {
     public static java.util.List<com.sun.jdi.Method> visibleMethods0(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.visibleMethods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }
     }
 
-    public static java.util.List<com.sun.jdi.Method> visibleMethods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Method> visibleMethods(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper {
         try {
             return a.visibleMethods();
-        } catch (com.sun.jdi.VMDisconnectedException ex) {
-            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ClassNotPreparedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper(ex);
         }

@@ -73,6 +73,10 @@ import org.openide.util.Exceptions;
 */
 public class JPDAUtils {
 
+    public static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
+    public static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
+                                                             !System.getProperty("java.version").equals("1.6.0_01");
+
 
     // testing methods .........................................................................
 

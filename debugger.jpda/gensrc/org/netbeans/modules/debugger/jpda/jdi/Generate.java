@@ -91,7 +91,7 @@ public class Generate {
     private static final Map<String/*class name*/, Map<String/*method*/, Set<Class/*exception*/>>> EXCEPTIONS_BY_METHODS = new LinkedHashMap<String, Map<String, Set<Class>>>();
 
     // Fake values can be returned if these exceptions are thrown:
-    private static final Set<Class> SILENT_EXCEPTIONS = Collections.unmodifiableSet(new HashSet<Class>(Arrays.asList(new Class[] {
+    private static final Set<Class> SILENT_EXCEPTIONS = Collections.unmodifiableSet(new LinkedHashSet<Class>(Arrays.asList(new Class[] {
            com.sun.jdi.InternalException.class, com.sun.jdi.ObjectCollectedException.class, com.sun.jdi.VMDisconnectedException.class })));
 
     private static final Set<String> NOT_USED_CLASSES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] {
@@ -116,7 +116,7 @@ public class Generate {
 
     static {
         Map<String, Set<Class>> AllClassExceptions = new LinkedHashMap<String, Set<Class>>();
-        AllClassExceptions.put("*", new HashSet<Class>(Arrays.asList(
+        AllClassExceptions.put("*", new LinkedHashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.InternalException.class,
                               com.sun.jdi.VMDisconnectedException.class })));
         EXCEPTIONS_BY_METHODS.put("*", AllClassExceptions);
@@ -146,10 +146,10 @@ public class Generate {
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
         ThreadReferenceExceptions.put("*", Collections.singleton((Class) IllegalThreadStateException.class));
-        ThreadReferenceExceptions.put("popFrames", new HashSet<Class>(Arrays.asList(
+        ThreadReferenceExceptions.put("popFrames", new LinkedHashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.NativeMethodException.class,
                               com.sun.jdi.InvalidStackFrameException.class })));
-        ThreadReferenceExceptions.put("forceEarlyReturn", new HashSet<Class>(Arrays.asList(
+        ThreadReferenceExceptions.put("forceEarlyReturn", new LinkedHashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.NativeMethodException.class,
                               com.sun.jdi.InvalidStackFrameException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ThreadReference.class.getName(), ThreadReferenceExceptions);
@@ -728,6 +728,23 @@ public class Generate {
             }
         }
         w.write(" {\n");
+        String higherVersionClass;
+        int higherVersionClassIndex = className.indexOf("/*");
+        if (higherVersionClassIndex > 0) {
+            higherVersionClassIndex += 2;
+            String higherVersionClassName = className.substring(higherVersionClassIndex, className.indexOf("*/"));
+            higherVersionClass = higherVersionClassName.substring(higherVersionClassName.lastIndexOf('.') + 1);
+            higherVersionClass = Character.toLowerCase(higherVersionClass.charAt(0)) + higherVersionClass.substring(1) + "Class";
+            w.write("        Class "+higherVersionClass+";\n"+
+                    "        try {\n"+
+                    "            "+higherVersionClass+" = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass(\""+higherVersionClassName+"\");\n"+
+                    "        } catch (ClassNotFoundException ex) {\n"+
+                    "            throw new IllegalStateException(ex);\n"+
+                    "        }\n");
+
+        } else {
+            higherVersionClass = null;
+        }
         w.write("        try {\n");
         if (!"void".equals(rType)) {
             if ("boolean".equals(rType)) rType = "Boolean";
@@ -748,8 +765,8 @@ public class Generate {
         }
         w.write(");\n");
          use reflection: */
-        if (className.startsWith("Object/*") || className.startsWith("java.lang.Object/*")) {
-            w.write("a.getClass().getMethod(\""+mName+"\"");
+        if (higherVersionClass != null) {
+            w.write(higherVersionClass+".getMethod(\""+mName+"\"");
         } else {
             w.write(className+".class.getMethod(\""+mName+"\"");
         }

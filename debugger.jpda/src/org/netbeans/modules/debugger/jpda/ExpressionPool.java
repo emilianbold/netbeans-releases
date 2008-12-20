@@ -72,6 +72,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.util.Exceptions;
@@ -83,7 +84,6 @@ import org.openide.util.Exceptions;
  */
 public class ExpressionPool {
     
-    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
     
     private Map<ExpressionLocation, Expression> expressions = new HashMap<ExpressionLocation, Expression>();
@@ -162,7 +162,7 @@ public class ExpressionPool {
         final Method method = LocationWrapper.method(loc);
         final byte[] bytecodes = MethodWrapper.bytecodes(method);
         byte[] constantPool = null;
-        if (IS_JDK_16) {
+        if (JPDAUtils.IS_JDK_16) {
             constantPool = ReferenceTypeWrapper.constantPool(clazzType);
         }
         final byte[] theConstantPool = constantPool;

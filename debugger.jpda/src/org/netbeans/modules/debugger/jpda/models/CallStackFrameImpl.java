@@ -88,6 +88,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -100,10 +101,6 @@ import org.openide.util.Exceptions;
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
-    static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
-    static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
-                                                      !System.getProperty("java.version").equals("1.6.0_01");
-
     private JPDAThreadImpl      thread;
     private StackFrame          sf;
     private int                 depth;
@@ -406,7 +403,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     List<LocalVariable> findOperationArguments(Operation operation) {
-        if (!IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
+        if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         JPDAThreadImpl thread = (JPDAThreadImpl) getThread();
         synchronized (debuggerImpl.LOCK) {
@@ -535,7 +532,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
-        if (!IS_JDK_16) return null;
+        if (!JPDAUtils.IS_JDK_16) return null;
         try {
             com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(sf));
             if (MethodWrapper.isNative(m)) {

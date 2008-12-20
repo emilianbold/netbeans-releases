@@ -64,7 +64,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +84,6 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -109,8 +107,10 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MonitorContendedEnteredRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -1079,7 +1079,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
-        if (CallStackFrameImpl.IS_JDK_16) {
+        if (JPDAUtils.IS_JDK_16) {
             try {
                 synchronized(this) {
                     if (!isSuspended()) {
@@ -1342,7 +1342,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private boolean submitMonitorEnteredFor(ObjectReference waitingMonitor) {
-        if (!Java6Methods.isJDK6() || !VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
+        if (!JPDAUtils.IS_JDK_16 || !VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
             return false;
         }
         try {

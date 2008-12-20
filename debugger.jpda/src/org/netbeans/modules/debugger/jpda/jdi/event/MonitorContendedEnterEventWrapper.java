@@ -56,9 +56,15 @@ public final class MonitorContendedEnterEventWrapper {
     private MonitorContendedEnterEventWrapper() {}
 
     /** Wrapper for method monitor from JDK 1.6. */
-    public static com.sun.jdi.ObjectReference monitor(Object/*com.sun.jdi.event.MonitorContendedEnterEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static com.sun.jdi.ObjectReference monitor(Object/*com.sun.jdi.event.MonitorContendedEnterEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        Class monitorContendedEnterEventClass;
         try {
-            return (com.sun.jdi.ObjectReference) a.getClass().getMethod("monitor").invoke(a);
+            monitorContendedEnterEventClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.event.MonitorContendedEnterEvent");
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException(ex);
+        }
+        try {
+            return (com.sun.jdi.ObjectReference) monitorContendedEnterEventClass.getMethod("monitor").invoke(a);
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException(ex);
         } catch (SecurityException ex) {
@@ -69,21 +75,27 @@ public final class MonitorContendedEnterEventWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }
     }
 
     /** Wrapper for method thread from JDK 1.6. */
-    public static com.sun.jdi.ThreadReference thread(Object/*com.sun.jdi.event.MonitorContendedEnterEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper {
+    public static com.sun.jdi.ThreadReference thread(Object/*com.sun.jdi.event.MonitorContendedEnterEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        Class monitorContendedEnterEventClass;
         try {
-            return (com.sun.jdi.ThreadReference) a.getClass().getMethod("thread").invoke(a);
+            monitorContendedEnterEventClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.event.MonitorContendedEnterEvent");
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException(ex);
+        }
+        try {
+            return (com.sun.jdi.ThreadReference) monitorContendedEnterEventClass.getMethod("thread").invoke(a);
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException(ex);
         } catch (SecurityException ex) {
@@ -94,12 +106,12 @@ public final class MonitorContendedEnterEventWrapper {
             throw new IllegalStateException(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
             if (t instanceof com.sun.jdi.InternalException) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
                 throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
             }
             throw new IllegalStateException(t);
         }

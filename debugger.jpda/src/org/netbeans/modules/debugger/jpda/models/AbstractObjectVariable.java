@@ -78,7 +78,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -93,6 +92,7 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -774,9 +774,16 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     public List<ObjectVariable> getReferringObjects(long maxReferrers) {
         Value v = getJDIValue();
         if (v instanceof ObjectReference) {
-            if (Java6Methods.isJDK6()) {
+            if (JPDAUtils.IS_JDK_16) {
                 final String name = Long.toString(getUniqueID());
-                final List<ObjectReference> referrers = Java6Methods.referringObjects((ObjectReference) v, maxReferrers);
+                final List<ObjectReference> referrers;
+                try {
+                    referrers = ObjectReferenceWrapper.referringObjects((ObjectReference) v, maxReferrers);
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return Collections.emptyList();
+                } catch (InternalExceptionWrapper ex) {
+                    return Collections.emptyList();
+                }
                 return new AbstractList<ObjectVariable>() {
                     public ObjectVariable get(int i) {
                         ObjectReference obj = referrers.get(i);

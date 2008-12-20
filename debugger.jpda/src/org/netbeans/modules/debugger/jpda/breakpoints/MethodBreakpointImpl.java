@@ -89,6 +89,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodEntryRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodExitRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -98,9 +99,6 @@ import org.openide.util.NbBundle;
 * @author   Jan Jancura
 */
 public class MethodBreakpointImpl extends ClassBasedBreakpoint {
-    
-    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
-
     
     private MethodBreakpoint breakpoint;
     
@@ -112,7 +110,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     public static boolean canGetMethodReturnValues(VirtualMachine vm) {
-        if (!IS_JDK_16) return false;
+        if (!JPDAUtils.IS_JDK_16) return false;
         boolean canGetMethodReturnValues = false;
         java.lang.reflect.Method m = null;
         try {
@@ -217,7 +215,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 if (methodNames == null || methodNames.contains(methodName)) {
                     Value returnValue = null;
                     /* JDK 1.6.0 code */
-                    if (IS_JDK_16) { // Retrieval of the return value
+                    if (JPDAUtils.IS_JDK_16) { // Retrieval of the return value
                         VirtualMachine vm = MirrorWrapper.virtualMachine(event);
                         // vm.canGetMethodReturnValues();
                         if (canGetMethodReturnValues(vm)) {

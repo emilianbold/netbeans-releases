@@ -63,7 +63,6 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -74,7 +73,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 
 /**
  *
@@ -228,7 +227,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
     
     public long getInstanceCount() {//boolean refresh) {
-        if (Java6Methods.isJDK6()) {
+        if (JPDAUtils.IS_JDK_16) {
             /*synchronized (this) {
                 if (!refresh && cachedInstanceCount > -1L) {
                     return cachedInstanceCount;
@@ -251,8 +250,15 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
     
     public List<ObjectVariable> getInstances(long maxInstances) {
-        if (Java6Methods.isJDK6()) {
-            final List<ObjectReference> instances = Java6Methods.instances(classType, maxInstances);
+        if (JPDAUtils.IS_JDK_16) {
+            final List<ObjectReference> instances;
+            try {
+                instances = ReferenceTypeWrapper.instances(classType, maxInstances);
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            } catch (InternalExceptionWrapper ex) {
+                return Collections.emptyList();
+            }
             return new AbstractList<ObjectVariable>() {
                 public ObjectVariable get(int i) {
                     ObjectReference obj = instances.get(i);

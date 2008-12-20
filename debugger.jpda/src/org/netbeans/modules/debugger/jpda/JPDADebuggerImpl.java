@@ -1894,8 +1894,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return new ClassTypeList(this, classes);
     }
 
+    @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
-        if (Java6Methods.isJDK6()) {
+        if (JPDAUtils.IS_JDK_16) {
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
@@ -1903,22 +1904,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm == null) {
                 return new long[classTypes.size()];
             }
+            List<ReferenceType> types;
+            if (classTypes instanceof ClassTypeList) {
+                ClassTypeList cl = (ClassTypeList) classTypes;
+                types = cl.getTypes();
+            } else {
+                types = new ArrayList<ReferenceType>(classTypes.size());
+                for (JPDAClassType clazz : classTypes) {
+                    types.add(((JPDAClassTypeImpl) clazz).getType());
+                }
+            }
             try {
-                VirtualMachineWrapper.version(vm); // check whether we are still connected to VM
+                return VirtualMachineWrapper.instanceCounts(vm, types);
             } catch (InternalExceptionWrapper e) {
                 return new long[classTypes.size()];
             } catch (VMDisconnectedExceptionWrapper e) {
                 return new long[classTypes.size()];
-            }
-            if (classTypes instanceof ClassTypeList) {
-                ClassTypeList cl = (ClassTypeList) classTypes;
-                return Java6Methods.instanceCounts(vm, cl.getTypes());
-            } else {
-                List<ReferenceType> types = new ArrayList<ReferenceType>(classTypes.size());
-                for (JPDAClassType clazz : classTypes) {
-                    types.add(((JPDAClassTypeImpl) clazz).getType());
-                }
-                return Java6Methods.instanceCounts(vm, types);
             }
         } else {
             throw new UnsupportedOperationException("Not supported.");
@@ -1932,7 +1933,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private static boolean canGetInstanceInfo(VirtualMachine vm) {
-        if (Java6Methods.isJDK6()) {
+        if (JPDAUtils.IS_JDK_16) {
             try {
                 java.lang.reflect.Method canGetInstanceInfoMethod = VirtualMachine.class.getMethod("canGetInstanceInfo", new Class[] {});
                 Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
