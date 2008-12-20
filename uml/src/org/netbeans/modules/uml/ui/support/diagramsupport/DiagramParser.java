@@ -172,6 +172,7 @@ public class DiagramParser implements IDiagramParser
             diagInfo.setDiagramXMIID(reader.getAttributeValue(null, "xmi.id"));
             diagInfo.setDiagramName(reader.getAttributeValue(null, "name"));
             diagInfo.setZoom(reader.getAttributeValue(null, "zoom"));
+            diagInfo.setDocumentation(reader.getAttributeValue(null, "documentation"));
         }
         while (reader.hasNext()) {
             if (XMLStreamConstants.START_ELEMENT == reader.next()) { //we are only intersted in data of particular start elements

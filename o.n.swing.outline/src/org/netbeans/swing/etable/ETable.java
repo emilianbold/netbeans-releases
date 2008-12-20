@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -921,14 +921,14 @@ public class ETable extends JTable {
                     b.getAccessibleContext().setAccessibleDescription(selectVisibleColumnsLabel);
                     b.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent evt) {
-                            ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
+                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
                         }
                     });
                     b.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent me) {
                             if (me.getButton() == MouseEvent.BUTTON3) {
-                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                                ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
                             }
                         }
                     });
@@ -1383,6 +1383,7 @@ public class ETable extends JTable {
             }
         }
 
+        @SuppressWarnings("unchecked")
         private int doCompare(Object obj1, Object obj2) {
             if (obj1 == null && obj2 == null) {
                 return 0;
@@ -1527,6 +1528,7 @@ public class ETable extends JTable {
     /** searchTextField manages focus because it handles VK_TAB key */
     private class SearchTextField extends JTextField {
         @Override
+        @SuppressWarnings("deprecation")
         public boolean isManagingFocus() {
             return true;
         }
@@ -1618,7 +1620,7 @@ public class ETable extends JTable {
      */
     private void setupSearch() {
         // Remove the default key listeners
-        KeyListener keyListeners[] = (KeyListener[]) (getListeners(KeyListener.class));
+        KeyListener keyListeners[] = (getListeners (KeyListener.class));
         for (int i = 0; i < keyListeners.length; i++) {
             removeKeyListener(keyListeners[i]);
         }

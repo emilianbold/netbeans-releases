@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
                 <file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/modules/openide/filesystems/declmime/resolver.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
                 </file>
-                <file name="DTD_MIME_Resolver_1_1" url="nbres:/org/netbeans/modules/openide/filesystems/declmime/resolver.dtd">
+                <file name="DTD_MIME_Resolver_1_1" url="nbres:/org/netbeans/modules/openide/filesystems/declmime/resolver1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.1//EN"/>
                 </file>
 

@@ -52,8 +52,10 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
+import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  * IMPORTANT NOTE:
@@ -102,11 +104,13 @@ public abstract class BaseTestCase extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
         MockServices.setServices(MockMimeLookup.class);
-        MimePath mimePath = MimePath.parse("text/x-c++"); // NOI18N
+        MimePath mimePath = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE); 
         MockMimeLookup.setInstances(mimePath, new CCKit());
-        mimePath = MimePath.parse("text/x-c"); // NOI18N
+        mimePath = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath, new HKit());
+        mimePath = MimePath.parse(MIMENames.C_MIME_TYPE); 
         MockMimeLookup.setInstances(mimePath, new CKit());
-        mimePath = MimePath.parse("text/x-fortran"); // NOI18N
+        mimePath = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE); 
         MockMimeLookup.setInstances(mimePath, new FKit());
     }
 

@@ -96,16 +96,11 @@ final class MIMESupport extends Object {
 
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
      * @param fo is FileObject, whose MIME should be resolved
-     * @param def the default value to return or null
      * @param withinMIMETypes an array of MIME types which only should be considered
      * @return  MIME type or null if not resolved*/
-    static String findMIMEType(FileObject fo, String def, String... withinMIMETypes) {
+    static String findMIMEType(FileObject fo, String... withinMIMETypes) {
         if (!fo.isValid() || fo.isFolder()) {
             return null;
-        }
-
-        if ((def != null) && !CachedFileObject.isAnyResolver()) {
-            return def;
         }
 
         CachedFileObject cfo = null;
@@ -122,7 +117,7 @@ final class MIMESupport extends Object {
                 lastCfo = EMPTY;
             }
 
-            return cfo.getMIMEType(def, withinMIMETypes);
+            return cfo.getMIMEType(withinMIMETypes);
         } finally {
             synchronized (lock) {
                 lastFo = new WeakReference<FileObject>(fo);
@@ -241,9 +236,14 @@ final class MIMESupport extends Object {
         };
         private static final FileChangeListener weakDeclarativeFolderListener = FileUtil.weakFileChangeListener(declarativeFolderListener, null);
         private static final Map<FileObject,MIMEResolver> declarativeResolverCache = new WeakHashMap<FileObject,MIMEResolver>();
+        // holds reference to not loose FileChangeListener
+        private static FileObject declarativeFolder = null;
+
         private static synchronized List<MIMEResolver> declarativeResolvers() {
             List<MIMEResolver> declmimes = new ArrayList<MIMEResolver>();
-            FileObject declarativeFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+            if (declarativeFolder == null) {
+                declarativeFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+            }
             if (declarativeFolder != null) {
                 for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {
                     if (f.hasExt("xml")) { // NOI18N
@@ -275,12 +275,12 @@ final class MIMESupport extends Object {
 
         @Override
         public String getMIMEType() {
-            return getMIMEType(null);
+            return getMIMEType((String[]) null);
         }
 
-        public String getMIMEType(String def, String... withinMIMETypes) {
+        public String getMIMEType(String... withinMIMETypes) {
             if (mimeType == null) {
-                mimeType = resolveMIME(def, withinMIMETypes);
+                mimeType = resolveMIME(withinMIMETypes);
             }
 
             return mimeType;
@@ -320,7 +320,7 @@ final class MIMESupport extends Object {
             return false;
         }
         
-        private String resolveMIME(String def, String... withinMIMETypes) {
+        private String resolveMIME(String... withinMIMETypes) {
             String retVal = null;
             MIMEResolver[] local = getResolvers();
 
@@ -334,12 +334,6 @@ final class MIMESupport extends Object {
                         return retVal;
                     }
                 }
-
-                if (def != null) {
-                    return def;
-                }
-
-                return "content/unknown"; // NOI18N
             } finally {
                 if (fixIt != null) {
                     fixIt.internalClose();
@@ -347,6 +341,11 @@ final class MIMESupport extends Object {
 
                 fixIt = null;
             }
+            // fallback for xml files to be recognized e.g. in platform without any MIME resolver registered
+            if (getExt().toLowerCase().equals("xml")) {
+                return "text/xml"; // NOI18N
+            }
+            return "content/unknown"; // NOI18N
         }
 
         public java.util.Date lastModified() {

@@ -278,12 +278,17 @@ public class DiscoveryUtils {
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){
+                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){ // NOI18N
                         value = value.substring(1,value.length()-1);  // NOI18N
                     } else {
-                        if (isScriptOutput && !isQuote && value.length() >= 2 &&
-                           (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
-                            value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                        if (!isQuote && value.length() >= 6 &&
+                           (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
+                            value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
+                            value = value.substring(2,value.length()-3)+"\"";  // NOI18N
+                        } else if (!isQuote && value.length() >= 4 &&
+                           (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
+                            value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                            value = value.substring(1,value.length()-2)+"\"";  // NOI18N
                         }
                     }
                     userMacros.put(macro.substring(0,i), value);

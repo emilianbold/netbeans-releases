@@ -80,8 +80,6 @@ public class TSDiagramParser implements IDiagramParser
         
         initialize();
         readXMLPres();
-//        readXMLData();
-//        extractCrossFileDiagramInfo();
         releaseResources();
 
         return diagramDetails;
@@ -168,8 +166,6 @@ public class TSDiagramParser implements IDiagramParser
                         break;
                     
                     case XMLStreamConstants.CHARACTERS:
-                        // if (reader.isWhiteSpace())
-                        //     break;
                         break;
                     
                     case XMLStreamConstants.END_ELEMENT:
@@ -202,12 +198,6 @@ public class TSDiagramParser implements IDiagramParser
         {
             handlePresDiagramInfo();
         }
-        
-//        else if (readerPres != null && 
-//            readerPres.getName().getLocalPart().startsWith("DCE."))
-//        {
-//            handlePresModelElementInfo();
-//        }
     }
 
     // get diagram info from "header" of etlp file
@@ -243,180 +233,8 @@ public class TSDiagramParser implements IDiagramParser
 
             diagramDetails.setZoom(
                 readerPres.getAttributeValue(null, "zoom"));
+
+            diagramDetails.setDocumentation(readerPres.getAttributeValue(null, "docs"));
         }
     }
-    
-//    // PEID->MEID - maps element's pres id (etlp) to it's model id (etld)
-//    private Map<String, String> crossFileIDMap = new HashMap<String, String>();
-//    
-//    private void handlePresModelElementInfo()
-//    {
-//        if (readerPres == null)
-//            return;
-//
-//        try
-//        {
-//            String localPart = null;
-//
-//            if (readerPres.getAttributeCount() > 0)
-//            {
-//                diagramDetails.setDiagramXMIID(
-//                    readerPres.getAttributeValue(null, "diagramXMIID"));
-//
-//                diagramDetails.setDiagramName(
-//                    readerPres.getAttributeValue(null, "name"));
-//                
-//                diagramDetails.setZoom(
-//                    readerPres.getAttributeValue(null, "zoom"));
-//            }
-//            
-//            while (readerData.hasNext())
-//            {
-//                if (XMLStreamConstants.START_ELEMENT == readerPres.next())
-//                { 
-//                    //we are only intersted in data of particular start elements
-//                    
-//                    localPart = readerPres.getName().getLocalPart();
-//                    
-//                    if (localPart.equalsIgnoreCase("DiagramElement.property"))
-//                        processProperties(diagramDetails);
-//                    
-//                    else if (localPart.equalsIgnoreCase(
-//                        "SimpleSemanticModelElement"))
-//                    {
-//                        diagramDetails.setDiagramTypeName(
-//                            readerPres.getAttributeValue(null, "typeinfo"));
-//                    }
-//                    
-//                    // if we encounter contained.. we should exit 
-//                    // this method and let others handle the rest
-//                    else if (localPart.equalsIgnoreCase(
-//                        "GraphElement.contained"))
-//                    {
-//                        jumpToEnd = true;
-//                        return;
-//                    }
-//                }
-//            }
-//        }
-//        
-//        catch (XMLStreamException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
-//    
-//    
-//    
-//    private void readXMLData()
-//    {
-//        if (readerData == null)
-//            return;
-//
-//        try
-//        {
-//            int event = readerData.getEventType();
-//
-//            while (true)
-//            {
-//                switch (event)
-//                {
-//                    case XMLStreamConstants.START_DOCUMENT:
-//                        break;
-//            
-//                    case XMLStreamConstants.START_ELEMENT:
-//                        handleDataStartElement();
-//                        break;
-//                    
-//                    case XMLStreamConstants.CHARACTERS:
-//                        // if (reader.isWhiteSpace())
-//                        //     break;
-//                        break;
-//                    
-//                    case XMLStreamConstants.END_ELEMENT:
-//                        break;
-//                        
-//                    case XMLStreamConstants.END_DOCUMENT:
-//                        readerData.close();
-//                        break;
-//                }
-//
-//                if (!readerData.hasNext() || jumpToEnd)
-//                    break;
-//
-//                else
-//                    event = readerData.next();
-//            }
-//        }
-//
-//        catch (XMLStreamException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
-//
-//    
-//    private void handleDataStartElement()
-//    {
-//        if (readerData != null && 
-//            readerData.getName().getLocalPart().equalsIgnoreCase("diagramInfo"))
-//        {
-//            // handlePresXxx();
-//        }
-//        
-//        else if (readerData != null && 
-//            readerData.getName().getLocalPart().startsWith("DCE."))
-//        {
-//            // handlePresXxx();
-//        }
-//    }
-//
-//
-//
-//    private void processProperties(DiagramDetails diagInfo)
-//    {
-//        if (readerData == null)
-//        {
-//            return;
-//        }
-//
-//        try
-//        {
-//            while (readerData.hasNext())
-//            {
-//                if (XMLStreamConstants.START_ELEMENT == readerData.next() && 
-//                    readerData.getName().getLocalPart().equalsIgnoreCase("Property"))
-//                {
-//                    if (readerData.getAttributeCount() > 0)
-//                    {
-//                        if (readerData.getAttributeValue(null, "key")
-//                            .equalsIgnoreCase("netbeans-diagram-projectID"))
-//                        {
-//                            diagInfo.setDiagramProjectXMIID(
-//                                readerData.getAttributeValue(null, "value"));
-//                        }
-//                        
-//                        else if (readerData.getAttributeValue(null, "key")
-//                            .equalsIgnoreCase("netbeans-diagram-namespace"))
-//                        {
-//                            diagInfo.setDiagramNamespaceXMIID(
-//                                readerData.getAttributeValue(null, "value"));
-//                        }
-//                    }
-//                }
-//                
-//                else if (readerData.isEndElement() && 
-//                    readerData.getName().getLocalPart()
-//                        .equalsIgnoreCase("DiagramElement.property"))
-//                {
-//                    return;
-//                }
-//            }
-//        }
-//        
-//        catch (XMLStreamException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
 }

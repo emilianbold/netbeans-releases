@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
@@ -103,15 +105,33 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         
     }
 
+    private static class ErrorDirectiveInfo extends OffsetableErrorInfo implements CsmErrorInfo {
+
+        private String message;
+
+        public ErrorDirectiveInfo(CsmErrorDirective error) {
+            super(error, Severity.ERROR);
+            this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_ErrorDirective");
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        for( CsmInclude incl : request.getFile().getIncludes() ) {
+        CsmFile file = request.getFile();
+        for( CsmInclude incl : file.getIncludes() ) {
             if (request.isCancelled()) {
                 break;
             }
             if (incl.getIncludeFile() == null) {
                 response.addError(new IncludeErrorInfo(incl));
             }
+        }
+        for (CsmErrorDirective error : file.getErrors()) {
+            response.addError(new ErrorDirectiveInfo(error));
         }
     }
 }

@@ -141,31 +141,30 @@ class SQLExecutionHelper {
         }
     }
 
-    void executeInsertRow(final String[] insertSQL, final Object[] insertedRow) {
+    void executeInsertRow(final String insertSQL, final Object[] insertedRow) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                PreparedStatement pstmt = conn.prepareStatement(insertSQL[0]);
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
                 try {
                     int pos = 1;
                     for (int i = 0; i < insertedRow.length; i++) {
                         Object val = insertedRow[i];
 
                         // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                        boolean isSQLConstant = false;
-                        if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
-                            isSQLConstant = true;
+                        if (DataViewUtils.isSQLConstantString(val)) {
+                            continue;
                         }
 
-                        if (!isSQLConstant) { // literals
-                            DBReadWriteHelper.setAttributeValue(pstmt, pos++, dataView.getDataViewDBTable().getColumnType(i), val);
-                        }
+                        // literals
+                        int colType = dataView.getDataViewDBTable().getColumnType(i);
+                        DBReadWriteHelper.setAttributeValue(pstmt, pos++, colType, val);
                     }
 
-                    executeSQLStatement(pstmt, insertSQL[1]);
+                    executePreparedStatement(pstmt);
                     int rows = dataView.getUpdateCount();
                     if (rows != 1) {
                         error = true;
@@ -225,8 +224,8 @@ class SQLExecutionHelper {
                 final List<Integer> types = new ArrayList<Integer>();
 
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                final String[] deleteStmt = generator.generateDeleteStatement(types, values, rowNum, tblModel);
-                PreparedStatement pstmt = conn.prepareStatement(deleteStmt[0]);
+                final String deleteStmt = generator.generateDeleteStatement(types, values, rowNum, tblModel);
+                PreparedStatement pstmt = conn.prepareStatement(deleteStmt);
                 try {
                     int pos = 1;
                     for (Object val : values) {
@@ -234,7 +233,7 @@ class SQLExecutionHelper {
                         pos++;
                     }
 
-                    executeSQLStatement(pstmt, deleteStmt[1]);
+                    executePreparedStatement(pstmt);
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
@@ -271,7 +270,7 @@ class SQLExecutionHelper {
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             private PreparedStatement pstmt;
-            Set<String> keysToRemove = new HashSet<String>();
+            Set<Integer> keysToRemove = new HashSet<Integer>();
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -279,7 +278,7 @@ class SQLExecutionHelper {
                 if (selectedOnly) {
                     updateSelected();
                 } else {
-                    for (String key : dataView.getUpdatedRowContext().getUpdateKeys()) {
+                    for (Integer key : dataView.getUpdatedRowContext().getUpdateKeys()) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         } else {
@@ -294,11 +293,11 @@ class SQLExecutionHelper {
                 int[] rows = rsTable.getSelectedRows();
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (int j = 0; j < rows.length && !error; j++) {
-                    Set<String> keys = tblContext.getUpdateKeys();
-                    for (String key : keys) {
+                    Set<Integer> keys = tblContext.getUpdateKeys();
+                    for (Integer key : keys) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
-                        } else if (key.startsWith((rows[j] + 1) + ";")) {
+                        } else if (key == rows[j]) {
                             updateARow(key);
                             keysToRemove.add(key);
                         }
@@ -306,22 +305,28 @@ class SQLExecutionHelper {
                 }
             }
 
-            private void updateARow(String key) throws SQLException, DBException {
-                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
-                final String updateStmt = tblContext.getUpdateStmt(key);
-                final String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
-                final List<Object> values = tblContext.getValueList(key);
-                final List<Integer> types = tblContext.getTypeList(key);
+            private void updateARow(Integer key) throws SQLException, DBException {
+                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
+
+                List<Object> values = new ArrayList<Object>();
+                List<Integer> types = new ArrayList<Integer>();
+                String updateStmt = generator.generateUpdateStatement(key, updatedRowCtx.getChangedData(key), values, types, rsTable.getModel());
 
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
                 for (Object val : values) {
+                    // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+                    if (DataViewUtils.isSQLConstantString(val)) {
+                        continue;
+                    }
+
                     DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
                     pos++;
                 }
 
                 try {
-                    executeSQLStatement(pstmt, rawUpdateStmt);
+                    executePreparedStatement(pstmt);
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
@@ -344,8 +349,8 @@ class SQLExecutionHelper {
             @Override
             protected void executeOnSucess() {
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
-                for (String key : keysToRemove) {
-                    tblContext.removeUpdateStmt(key);
+                for (Integer key : keysToRemove) {
+                    tblContext.removeUpdateForSelectedRow(key);
                 }
                 dataView.syncPageWithTableModel();
                 reinstateToolbar();
@@ -362,22 +367,23 @@ class SQLExecutionHelper {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_truncate");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg) {
 
-            private Statement stmt = null;
+            private PreparedStatement stmt = null;
 
             @Override
             public void execute() throws SQLException, DBException {
-                stmt = conn.createStatement();
+
 
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
-                String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(); // NOI18N
+                String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(true); // NOI18N
 
                 try {
-                    executeSQLStatement(stmt, truncateSql);
+                    stmt = conn.prepareStatement(truncateSql);
+                    executePreparedStatement(stmt);
                 } catch (SQLException sqe) {
                     mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n"); // NOI18N
-                    truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
-
-                    executeSQLStatement(stmt, truncateSql);
+                    truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(true); // NOI18N
+                    stmt = conn.prepareStatement(truncateSql);
+                    executePreparedStatement(stmt);
                 } finally {
                     DataViewUtils.closeResources(stmt);
                 }
@@ -453,7 +459,7 @@ class SQLExecutionHelper {
                     if (error) {
                         dataView.setErrorStatusText(ex);
                     }
-                    dataView.getUpdatedRowContext().resetUpdateState();
+                    dataView.getUpdatedRowContext().removeAllUpdates();
                     dataView.resetToolbar(error);
                     dataView.setRowsInTableModel();
                 }
@@ -530,6 +536,17 @@ class SQLExecutionHelper {
         }
     }
 
+    private String appendLimitIfRequired(String sql) {
+        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
+            if (!isLimitUsedInSelect(sql)) {
+                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
+            }
+        }
+
+        return sql;
+    }
+
     private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt = null;
         boolean select = false;
@@ -564,27 +581,40 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
-            if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
-            }
-        }
-
-        mLogger.log(Level.FINE, "Executing Statement: " + sql); // NOI18N
+        mLogger.log(Level.FINE, "Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
-        boolean isResultSet;
+        boolean isResultSet = false;
         if (stmt instanceof PreparedStatement) {
             isResultSet = ((PreparedStatement) stmt).execute();
         } else {
-            isResultSet = stmt.execute(sql);
+            try {
+                isResultSet = stmt.execute(appendLimitIfRequired(sql));
+            } catch (SQLException sqlExc) {
+                if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
+                    isResultSet = stmt.execute(sql);
+                } else {
+                    mLogger.log(Level.SEVERE, "Failed to execute SQL Statement" + sqlExc);
+                    throw sqlExc;
+                }
+            }
         }
-        long executionTime = System.currentTimeMillis() - startTime;
 
+        long executionTime = System.currentTimeMillis() - startTime;
+        synchronized (dataView) {
+            dataView.setHasResultSet(isResultSet);
+            dataView.setUpdateCount(stmt.getUpdateCount());
+            dataView.setExecutionTime(executionTime);
+        }
+    }
+
+    private void executePreparedStatement(PreparedStatement stmt) throws SQLException {
+        long startTime = System.currentTimeMillis();
+        boolean isResultSet = stmt.execute();
+
+        long executionTime = System.currentTimeMillis() - startTime;
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
-        mLogger.log(Level.FINE, "Executed Successfully in" + execTimeStr + " seconds"); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
 
         synchronized (dataView) {

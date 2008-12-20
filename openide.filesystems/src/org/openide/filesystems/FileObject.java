@@ -486,7 +486,8 @@ public abstract class FileObject extends Object implements Serializable {
     * @return the MIME type textual representation, e.g. <code>"text/plain"</code>; never <code>null</code>
     */
     public String getMIMEType() {
-        return FileUtil.getMIMETypeOrDefault(this);
+        String mimeType = FileUtil.getMIMEType(this);
+        return  mimeType == null ? "content/unknown" : mimeType;  //NOI18N
     }
 
     /** Get the size of the file.

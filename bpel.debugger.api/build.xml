@@ -17,6 +17,6 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-<project name="debugger.api" default="netbeans" basedir=".">
+<project name="bpel.debugger.api" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

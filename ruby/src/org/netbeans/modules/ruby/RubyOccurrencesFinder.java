@@ -496,43 +496,48 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
     private void highlightExits(MethodDefNode node,
         Map<OffsetRange, ColoringAttributes> highlights, CompilationInfo info) {
-        List<Node> list = node.childNodes();
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            highlightExitPoints(child, highlights, info);
+        BaseDocument doc = (BaseDocument)info.getDocument();
+        if (doc == null) {
+            return;
         }
+        try {
+            doc.readLock();
+            List<Node> list = node.childNodes();
 
-        // TODO: Find the last statement, and highlight it.
-        // Be careful not to highlight the entire statement (which could be a giant if
-        // statement spanning the whole screen); just pick the first line.
-        Node last = null;
-
-        for (int i = list.size() - 1; i >= 0; i--) {
-            last = list.get(i);
-
-            if (last instanceof ArgsNode || last instanceof ArgumentNode) {
-                // Done - no valid statement
-                return;
+            for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
+                highlightExitPoints(child, highlights, info);
             }
 
-            if (last instanceof ListNode) {
-                last = last.childNodes().get(last.childNodes().size() - 1);
-            }
+            // TODO: Find the last statement, and highlight it.
+            // Be careful not to highlight the entire statement (which could be a giant if
+            // statement spanning the whole screen); just pick the first line.
+            Node last = null;
 
-            if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
-                last = last.childNodes().get(last.childNodes().size() - 1);
+            for (int i = list.size() - 1; i >= 0; i--) {
+                last = list.get(i);
+
+                if (last instanceof ArgsNode || last instanceof ArgumentNode) {
+                    // Done - no valid statement
+                    return;
+                }
+
+                if (last instanceof ListNode) {
+                    last = last.childNodes().get(last.childNodes().size() - 1);
+                }
+
+                if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
+                    last = last.childNodes().get(last.childNodes().size() - 1);
+                    break;
+                }
+
                 break;
             }
 
-            break;
-        }
-
-        if (last != null) {
-            BaseDocument doc = (BaseDocument)info.getDocument();
-            if (doc != null) {
+            if (last != null) {
                 try {
                     ISourcePosition pos = last.getPosition();
 
@@ -557,6 +562,8 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
                     Exceptions.printStackTrace(ble);
                 }
             }
+        } finally {
+            doc.readUnlock();
         }
     }
 

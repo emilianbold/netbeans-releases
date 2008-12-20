@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -599,6 +599,7 @@ public class NodeTableModel extends AbstractTableModel {
      * @param column table column index
      * @return true if cell contains non null value
      */
+    @Override
     public boolean isCellEditable(int row, int column) {
         return getValueAt(row, column) != null;
     }
@@ -607,6 +608,7 @@ public class NodeTableModel extends AbstractTableModel {
      * @param column table column index
      * @return  <code>Node.Property.class</code>
      */
+    @Override
     public Class getColumnClass(int column) {
         return Node.Property.class;
     }
@@ -615,6 +617,7 @@ public class NodeTableModel extends AbstractTableModel {
      * @param column table column index
      * @return display name of property which represents column
      */
+    @Override
     public String getColumnName(int column) {
         return getColumnNameEx(propertyColumns[column]);
     }

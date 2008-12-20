@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
 public abstract class ConnectedNodeProvider  extends NodeProvider {
 
     private final DatabaseConnection connection;
+    private boolean setup = false;
 
     protected ConnectedNodeProvider(Lookup lookup) {
         super(lookup);
@@ -71,47 +72,28 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
      * @return the created baseNode
      */
     protected abstract BaseNode createNode(NodeDataLookup lookup);
-    
-    protected void setup() {
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("connected") ||
-                            evt.getPropertyName().equals("failed")) {
-                        updateState();
-                    }
-                }
-            }
-        );
 
-        updateState();
-    }
-    
-    private void updateState() {
-        Connection conn = connection.getConnection();
-        boolean disconnected = true;
-
-        if (conn != null) {
-            try {
-                disconnected = conn.isClosed();
-            } catch (SQLException e) {
-
-            }
-        }
-
-        if (disconnected) {
+    protected synchronized void initialize() {
+        if (connection.getConnector().isDisconnected()) {
             removeAllNodes();
+            setup = false;
         } else {
-            removeAllNodes();
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
+            if (!setup) {
+                NodeDataLookup lookup = new NodeDataLookup();
+                lookup.add(connection);
 
-            Schema schema = getLookup().lookup(Schema.class);
-            if (schema != null) {
-                lookup.add(schema);
+                MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+                if (schemaHandle != null) {
+                    lookup.add(schemaHandle);
+                }
+
+                List<Node> newList = new ArrayList<Node>();
+
+                newList.add(createNode(lookup));
+
+                setNodes(newList);
+                setup = true;
             }
-            
-            addNode(createNode(lookup));
         }
     }
 }

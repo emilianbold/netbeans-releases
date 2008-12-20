@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="org.netbeans.performance" default="netbeans" basedir=".">
+<project name="performance" default="netbeans" basedir=".">
 
     <import file="../nbbuild/templates/projectized.xml"/>
 

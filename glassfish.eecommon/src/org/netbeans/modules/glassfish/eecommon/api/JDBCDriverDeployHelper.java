@@ -85,15 +85,15 @@ public class JDBCDriverDeployHelper {
     }
 
     /** Returns a list of jdbc drivers that need to be deployed. */
-    static public List getMissingDrivers(File[] driverLocs, Set<Datasource> datasources) {
-        List drivers = new ArrayList();
+    static public List<URL> getMissingDrivers(File[] driverLocs, Set<Datasource> datasources) {
+        List<URL> drivers = new ArrayList<URL>();
         for (Datasource datasource : datasources) {
             String className = datasource.getDriverClassName();
             boolean exists = false;
             for (int j = 0; j < driverLocs.length; j++) {
                 File driverLoc = driverLocs[j];
                 if (driverLoc != null && driverLoc.exists()) {
-                    Collection driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
+                    Collection<File> driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
                     try {
                         exists = Util.containsClass(driversLocation, className);
                     } catch (IOException e) {
@@ -167,10 +167,20 @@ public class JDBCDriverDeployHelper {
                                 try {
                                     FileUtil.copy(is, os);
                                 } finally {
-                                    os.close();
+                                    if (null != os)
+                                        try {
+                                            os.close();
+                                        } catch (IOException ioe) {
+
+                                        }
                                 }
                             } finally {
-                                is.close();
+                                if (null != is)
+                                    try {
+                                        is.close();
+                                    } catch (IOException ioe) {
+                                        
+                                    }
                             }
                         } catch (IOException e) {
                             Logger.getLogger(this.getClass().getName()).log(Level.FINER,"",e);

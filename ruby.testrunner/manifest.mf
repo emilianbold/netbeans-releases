@@ -2,6 +2,5 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.ruby.testrunner
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/testrunner/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/ruby/testrunner/layer.xml
 OpenIDE-Module-Specification-Version: 1.2
 

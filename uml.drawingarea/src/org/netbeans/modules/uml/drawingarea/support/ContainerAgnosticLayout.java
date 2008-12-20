@@ -136,7 +136,7 @@ public class ContainerAgnosticLayout<N, E> implements GraphLayoutListener {
 
                     //it is possible that the parent is not the base widget. Find the
                     //base widget and connect source/target to it.
-                    while (!(parentWidget.getParentWidget() instanceof LayerWidget)) {
+                    while (parentWidget!=null && parentWidget.getParentWidget()!=null && !(parentWidget.getParentWidget().getParentWidget() instanceof DesignerScene)) {
                         parentWidget = parentWidget.getParentWidget();
                     }
 
@@ -156,7 +156,7 @@ public class ContainerAgnosticLayout<N, E> implements GraphLayoutListener {
                 Widget parentWidget = w.getParentWidget();
                 if (parentWidget != source.getParentWidget()) {
 
-                    while (!(parentWidget.getParentWidget() instanceof LayerWidget)) {
+                    while (parentWidget!=null && parentWidget.getParentWidget()!=null && !(parentWidget.getParentWidget().getParentWidget() instanceof DesignerScene)) {
                         parentWidget = parentWidget.getParentWidget();
                     }
 

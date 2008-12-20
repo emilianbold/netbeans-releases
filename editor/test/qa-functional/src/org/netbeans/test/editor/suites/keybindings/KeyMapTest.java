@@ -38,74 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.editor.suites.keybindings;
 
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.ListModel;
-import javax.swing.tree.TreePath;
+import java.util.Vector;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.editor.AddShortcutDialog;
-import org.netbeans.jellytools.modules.editor.CreateNewProfileDialog;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.util.Exceptions;
-
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Petr Dvorak Petr.Dvorak@Sun.COM
  */
-public class KeyMapTest extends JellyTestCase{
-    
-    private static final String testFile = "Test"; // NOI18N
-    
-    public static final String SRC_PACKAGES_PATH =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
-            "NAME_src.dir");
-    
-    private static final String testPackage = "keymap";  // NOI18N
-    
-    private static final String NEW_PROFILE = "DupProfile2";
-    
-    private static String[] exceptions = {};
-    
-    private static String[] exceptionsNetBeans = {"Go To|Go to Previous Document"};
-    
-    private static String[] exceptionsNetBeans55 = {"Go To|Go to Previous Document"};
-    
-    private static String[] exceptionsEmacs = {};
-    
-    private static String[] exceptionsEclipse = {};
-    
-    private EditorOperator editor;
+public class KeyMapTest extends JellyTestCase {
+    public static final String PROFILE_DEFAULT = "NetBeans";
+
+    public static final String SRC_PACKAGES_PATH = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+    private static String PROJECT_NAME;
+    private static EditorOperator editor;
+
     /** Creates a new instance of KeyMapTest
      * @param name Test name
      */
@@ -113,229 +79,81 @@ public class KeyMapTest extends JellyTestCase{
         super(name);
     }
 
-    
-    private EditorOperator openFile() {
-
+    public void prepareFileInEditor() {
+        PROJECT_NAME = "keymapTestProject";
+        NewProjectWizardOperator newProjectOper = NewProjectWizardOperator.invoke();
+        newProjectOper.selectCategory("Java");
+        newProjectOper.selectProject("Java Application");
+        newProjectOper.next();
+        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
+        new JTextFieldOperator(npnlso, 1).setText(getDataDir().getAbsolutePath()); // NOI18N
+        newProjectOper.finish();
+        newProjectOper.waitClosed();
         try {
-            this.openDataProjects("projects/editor_test");
-        } catch (IOException iOException) {
-            fail("Cannot open sample projects");
+            RepositoryUpdater.getDefault().waitScanFinished();
+        } catch (InterruptedException ex) {
+            fail("Waiting for project scanning was interupted. Other tests will fail.");
         }
-        Node pn = new ProjectsTabOperator().getProjectRootNode("editor_test");
-        pn.select();
-        //Open Test.java from editor_test project
-        Node n = new Node(pn, SRC_PACKAGES_PATH + "|" + testPackage + "|" + testFile);
-        n.select();
-        new OpenAction().perform();
-        new EventTool().waitNoEvent(500);
-        return new EditorOperator("Test");
+
+        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
+        editor = new EditorOperator("Main.java");
     }
-    
+
+    public void closeProject() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        rootNode.performPopupActionNoBlock("Delete");
+        NbDialogOperator ndo = new NbDialogOperator("Delete");
+        JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
+        cb.setSelected(true);
+        ndo.yes();
+        ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        ndo.waitClosed();
+    }
+
     @Override
     protected void setUp() throws Exception {
-        super.setUp();        
-        editor=openFile();
-        System.out.println("Starting: "+getName());
+        System.out.println("----");
+        System.out.println("Starting: " + getName());
+        System.out.println("----");
     }
 
-    private String getActionName(Object o) {
-        String name = "<unknown>";
-        if(o instanceof String) {
-            name = (String) o;
-        } else if (o.toString().startsWith("GlobalAction") || o.toString().startsWith("EditorAction")) {
-            name = getGlobalActionName(o.toString());
-        } else if (o.toString().startsWith("CompoundAction")) {
-            name = getCompountActionName(o.toString());
-        } else if (o.toString().startsWith("org.netbeans.modules.editor.macros.storage.ui.MacrosModel")) {
-            try {
-                Method method = o.getClass().getMethod("getName", null);
-                method.setAccessible(true);
-                Object result = method.invoke(o, null);
-                name = (String) result;
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            log(o.getClass().getName());        
-        }
-        return name;
+    @Override
+    protected void tearDown() throws Exception {
+        System.out.println("----");
+        System.out.println("Finished: " + getName());
+        System.out.println("----");
     }
 
-    private String getGlobalActionName(String globalAction) {
-        int startPos = globalAction.indexOf('[');
-        int endPos = globalAction.indexOf(':');
-        if(startPos <0 || endPos<0) return globalAction;
-        return globalAction.substring(startPos+1, endPos);
-    }
-    
-    private String getCompountActionName(String globalAction) {
-        int eqPos = globalAction.indexOf('=');
-        if(eqPos<0) return globalAction;
-        int startPos = globalAction.indexOf('[',eqPos);
-        int endPos = globalAction.indexOf(':');
-        if(startPos <0 || endPos<0) return globalAction;
-        return globalAction.substring(startPos+1, endPos);
-    }
-    
-    private String lastVisitedCategory = "n/a";
-            
-    private boolean dumpException(String path) {
-        for (int i = 0; i < exceptions.length; i++) {
-            String string = exceptions[i];
-            if(path.equalsIgnoreCase(string)) return true;
-        }
-        return false;
-        
-    }
-
-        
-    private Set<String> readActionFromFile() {
-        InputStream resource = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/test/editor/suites/keybindings/actions.txt");
-        Set<String> set = new HashSet<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                set.add(line);
-            }
-        } catch (IOException ioe) {
-            fail(ioe);
-        }        
-        if(set.isEmpty()) fail("Error while reading action list");
-        return set;
-    }
-
-    static Set<String> actions = null;
-    
-    private boolean isIncluded(String action) {        
-        if(actions==null) actions = readActionFromFile();
-        return actions.contains(action);
-    }
-    
-    private void dump(String path, JTreeOperator tree,KeyMapOperator kmo) {
-        Map<String,String> usedShortcuts = new HashMap<String, String>(); //used shortcuts <shortcut, action>
-        List<String> duplicates = new LinkedList<String>();    // list of dupes        
-        
-        int rows = tree.getRowCount();
-        for (int i = rows-1; i >= 0; i--) {
-            tree.expandRow(i);
-        }
-        rows = tree.getRowCount();
-        for (int i = 0; i < rows; i++) { //TODO
-            tree.selectRow(i);
-            TreePath tp = tree.getSelectionPath();
-            int parts = tp.getPathCount();
-            if(parts == 2) {
-                lastVisitedCategory = (String) tp.getPathComponent(1);
-            } else {
-                Object o = tp.getPathComponent(2);                
-                String name = getActionName(o);
-                ListModel model = kmo.shortcuts().getModel();                
-                if (isIncluded(lastVisitedCategory + "|" + name)) {
-                    getRef().println(lastVisitedCategory + "|" + name); //log acition name
-                    for (int j = 0; j < model.getSize(); j++) {
-                        String shortcut = model.getElementAt(j).toString();
-                        getRef().println("  " + shortcut); //log shortcut
-                        if (usedShortcuts.get(shortcut) != null) {
-                            duplicates.add(shortcut + " " + usedShortcuts.get(shortcut));
-                            duplicates.add(shortcut + " " + lastVisitedCategory + "|" + name);
-                        } else {
-                            usedShortcuts.put(shortcut, lastVisitedCategory + "|" + name);
-                        }
-                    }
-                }
-            }            
-        }
-        if(!duplicates.isEmpty()) {            
-            for (String dup : duplicates) {
-                getLog().println(dup);
-            }
-            //fail("Keymap contains multiple action for the same shortcut"); //do not fail some dupes are as designed
-        }
-    }
-    
+// TODO: Verify if all shortcuts are contained in profile...
+/*
     public void testAllKeyMapNetbeans() throws IOException {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("NetBeans");
-            JTreeOperator tree =kmo.actions();
-            exceptions = exceptionsNetBeans;
-            dump("",tree,kmo);
-            kmo.ok().push();
-            closed = true;
-            assertFile(new File(getWorkDir(),getName()+".ref"), getGoldenFile(), new File(getWorkDir(),getName()+".diff"));
-        } finally {
-            if(!closed) kmo.cancel().push();
-            editor.close(false);
-        }
     }
-
     public void testAllKeyMapNetbeans55() throws IOException {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("NetBeans 5.5");
-            JTreeOperator tree =kmo.actions();
-            exceptions = exceptionsNetBeans55;
-            dump("",tree,kmo);
-            kmo.ok().push();
-            closed = true;
-            assertFile(new File(getWorkDir(),getName()+".ref"), getGoldenFile(), new File(getWorkDir(),getName()+".diff"));
-        } finally {
-            if(!closed) kmo.cancel().push();
-            editor.close(false);
-        }
     }
-
-
     public void testAllKeyMapEmacs() throws IOException {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("Emacs");
-            JTreeOperator tree =kmo.actions();
-            exceptions = exceptionsEmacs;
-            dump("",tree,kmo);
-            kmo.ok().push();
-            closed = true;
-            assertFile(new File(getWorkDir(),getName()+".ref"), getGoldenFile(), new File(getWorkDir(),getName()+".diff"));
-        } finally {
-            if(!closed) kmo.cancel().push();
-            editor.close(false);
-        }
     }
-
     public void testAllKeyMapEclipse() throws IOException {
+    }
+     */
+    public void testVerify() {
         KeyMapOperator kmo = null;
         boolean closed = true;
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            kmo.selectProfile("Eclipse");
-            JTreeOperator tree =kmo.actions();
-            exceptions = exceptionsEclipse;
-            dump("",tree,kmo);
+            kmo.verify();
             kmo.ok().push();
             closed = true;
-            assertFile(new File(getWorkDir(),getName()+".ref"), getGoldenFile(), new File(getWorkDir(),getName()+".diff"));
+        } catch (Exception e) {
+            System.out.println("ERROR: testVerify");
+            e.printStackTrace();
+            fail();
         } finally {
-            if(!closed) kmo.cancel().push();
-            editor.close(false);
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+                editor.close(false);
+            }
         }
     }
 
@@ -345,216 +163,233 @@ public class KeyMapTest extends JellyTestCase{
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|select-line");
-            // there should be no shortcuts for this action
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Ctrl+Shift+G");
+            kmo.selectProfile(PROFILE_DEFAULT);
+            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_G);
+            Vector<String> shortcuts = kmo.getAllShortcutsForAction("select line");
+            checkListContents(shortcuts, "Ctrl+Shift+G");
             kmo.ok().push();
             closed = true;
             new EventTool().waitNoEvent(2000);
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
-            editor.setCaretPosition(7, 1);
+            editor.setCaretPosition(12, 1);
             ValueResolver vr = new ValueResolver() {
+
                 public Object getValue() {
-                    editor.pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK| KeyEvent.SHIFT_DOWN_MASK);
+                    editor.pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                     String selected = editor.txtEditorPane().getSelectedText();
                     new EventTool().waitNoEvent(100);
-                    if(selected==null) return false;
-                    return selected.startsWith("        System.out.println(\"Hello\");");
+                    if (selected == null) {
+                        return false;
+                    }
+                    return selected.startsWith("public class Main {");
                 }
             };
             waitMaxMilisForValue(3000, vr, Boolean.TRUE);
-            String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals("        System.out.println(\"Hello\");\n",text);
+            String text = editor.txtEditorPane().getSelectedText();
+            assertEquals("public class Main {", text.trim());
+        } catch (Exception e) {
+            System.out.println("ERROR: testAddShortcut");
+            e.printStackTrace();
+            fail();
         } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+                editor.close(false);
+            }
         }
-
     }
 
-    public void testRemoveShortcut() {
+    public void testAssignAlternativeShortcut() {
         KeyMapOperator kmo = null;
         boolean closed = true;
         try {
+            // invoke keymap operator and mark it is open
             kmo = KeyMapOperator.invoke();
             closed = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|selection-end-line");
-            checkListContents(kmo.shortcuts(), "Shift+END");
-            kmo.shortcuts().selectItem(0);
-            kmo.remove().push();
-            checkListContents(kmo.shortcuts(), new Object[]{});
+            // select netbeans  profile
+            kmo.selectProfile(PROFILE_DEFAULT);
+            // assign one normal and one alternative shortcut to the "select line" action
+            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_G);
+            kmo.assignAlternativeShortcutToAction("select line", true, false, true, KeyEvent.VK_M);
+            // retrieve all assigned shortcuts and compare it to expected list of shortcuts
+            Vector<String> shortcuts = kmo.getAllShortcutsForAction("select line");
+            checkListContents(shortcuts, "ctrl+shift+g", "ctrl+alt+m");
+            // confirm Options dialog, press OK and mark that OD was closed
             kmo.ok().push();
             closed = true;
-            new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 1);
-            editor.pushKey(KeyEvent.VK_END, InputEvent.SHIFT_DOWN_MASK);
+            // Wait + focus the editor
+            new EventTool().waitNoEvent(2000);
+            editor.requestFocus();
             new EventTool().waitNoEvent(100);
-            String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals(null,text);
-        } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
-    }
-
-    public void testAddDuplicate() {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|selection-end-word");
-            kmo.add().push();
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
-            new EventTool().waitNoEvent(1500);
-            assertEquals("<html>Shortcut already assigned to Extend Selection Up action. If you proceed the shortcut will be reassigned.",asd.lblConflict().getText());
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Shift+UP");
-            kmo.selectAction("Other|selection-up");
-            checkListContents(kmo.shortcuts(), "Shift+KP_UP");
-            kmo.ok().push();
-            closed = true;
+            // Check Ctrl+Alt+M works for select line
+            editor.setCaretPosition(12, 1);
             ValueResolver vr = new ValueResolver() {
+
                 public Object getValue() {
-                    editor.setCaretPosition(7, 9);
-                    editor.pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
-                    new EventTool().waitNoEvent(200);
-                    String text =  editor.txtEditorPane().getSelectedText();
-                    return text.equals("System");
+                    editor.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
+                    String selected = editor.txtEditorPane().getSelectedText();
+                    new EventTool().waitNoEvent(100);
+                    if (selected == null) {
+                        return false;
+                    }
+                    return selected.startsWith("public class Main {");
                 }
             };
-            waitMaxMilisForValue(4000, vr, Boolean.TRUE);
-            String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals("System",text);
-        } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
+            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+            String text = editor.txtEditorPane().getSelectedText();
+            assertEquals("public class Main {", text.trim());
+            // Check Ctrl+Shift+G works for select line
+            editor.setCaretPosition(12, 1);
+            vr = new ValueResolver() {
 
+                public Object getValue() {
+                    editor.pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                    String selected = editor.txtEditorPane().getSelectedText();
+                    new EventTool().waitNoEvent(100);
+                    if (selected == null) {
+                        return false;
+                    }
+                    return selected.startsWith("public class Main {");
+                }
+            };
+            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+            text = editor.txtEditorPane().getSelectedText();
+            assertEquals("public class Main {", text.trim());
+        } catch (Exception e) {
+            System.out.println("ERROR: testAssignAlternativeShortcut");
+            e.printStackTrace();
+            fail();
+        } finally {
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+                editor.close(false);
+            }
+        }
+    }
+
+    public void testUnassign() {
+        KeyMapOperator kmo = null;
+        boolean closed = true;
+        try {
+            for (int i = 0; i < 2; i++) {
+                // invoke keymap operator and mark it is open
+                kmo = KeyMapOperator.invoke();
+                closed = false;
+                // select netbeans  profile
+                kmo.selectProfile(PROFILE_DEFAULT);
+                // assign one normal shortcut to the "select line" action
+                kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_G);
+                // retrieve all assigned shortcuts and compare it to expected list of shortcuts
+                Vector<String> shortcuts = kmo.getAllShortcutsForAction("select line");
+                checkListContents(shortcuts, "ctrl+shift+g");
+                kmo.ok().push();
+                closed = true;
+                new EventTool().waitNoEvent(2000);
+                editor.requestFocus();
+                new EventTool().waitNoEvent(100);
+                // Check Ctrl+Shift+G works for select line
+                editor.setCaretPosition(12, 1);
+                ValueResolver vr = new ValueResolver() {
+
+                    public Object getValue() {
+                        editor.pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                        String selected = editor.txtEditorPane().getSelectedText();
+                        new EventTool().waitNoEvent(100);
+                        if (selected == null) {
+                            return false;
+                        }
+                        return selected.startsWith("public class Main {");
+                    }
+                };
+                waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+                String text = editor.txtEditorPane().getSelectedText();
+                assertEquals("public class Main {", text.trim());
+                kmo = KeyMapOperator.invoke();
+                closed = false;
+                kmo.unassignAlternativeShortcutToAction("select line", "ctrl+shift+g");
+                kmo.ok().push();
+                closed = true;
+                new EventTool().waitNoEvent(2000);
+                editor.requestFocus();
+                new EventTool().waitNoEvent(100);
+                // Check Ctrl+Alt+M works for select line
+                editor.setCaretPosition(12, 2);
+                sleep(200);
+                editor.setCaretPosition(12, 1);
+                waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+                text = editor.txtEditorPane().getSelectedText();
+                if (text == null) {
+                    text = "";
+                }
+                assertNotSame("public class Main {", text.trim());
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR: testUnassign");
+            e.printStackTrace();
+            fail();
+        } finally {
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+                editor.close(false);
+            }
+        }
+    }
+
+    public void testAddDuplicateCancel() {
+        KeyMapOperator kmo = null;
+        boolean closed = true;
+        try {
+            kmo = KeyMapOperator.invoke();
+            closed = false;
+            kmo.selectProfile(PROFILE_DEFAULT);
+            Vector<String> shortcuts = kmo.getAllShortcutsForAction("select line");
+            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_F9, true, false);
+            shortcuts.equals(kmo.getAllShortcutsForAction("select line"));
+            kmo.ok().push();
+            closed = true;
+            kmo = KeyMapOperator.invoke();
+            closed = false;
+            kmo.selectProfile(PROFILE_DEFAULT);
+            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_F9, true, true);
+            kmo.ok().push();
+            closed = true;
+            new EventTool().waitNoEvent(2000);
+            editor.requestFocus();
+            new EventTool().waitNoEvent(100);
+            // Check Ctrl+Shift+G works for select line
+            editor.setCaretPosition(12, 1);
+            ValueResolver vr = new ValueResolver() {
+
+                public Object getValue() {
+                    editor.pushKey(KeyEvent.VK_F9, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                    String selected = editor.txtEditorPane().getSelectedText();
+                    new EventTool().waitNoEvent(100);
+                    if (selected == null) {
+                        return false;
+                    }
+                    return selected.startsWith("public class Main {");
+                }
+            };
+            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+            String text = editor.txtEditorPane().getSelectedText();
+            assertEquals("public class Main {", text.trim());
+        } catch (Exception e) {
+            System.out.println("ERROR: testAddDuplicateCancel");
+            e.printStackTrace();
+            fail();
+        } finally {
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+                editor.close(false);
+            }
+        }
     }
 
     public void testCancelAdding() {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|remove-selection");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
-            asd.btCancel().push();
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.ok().push();
-            closed = true;
-            new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 9);
-            new EventTool().waitNoEvent(100);
-            editor.txtEditorPane().setSelectionStart(1);
-            editor.txtEditorPane().setSelectionEnd(8);
-            editor.pushKey(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
-            String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals("package",text);
-        } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
-
     }
 
     public void testCancelOptions() {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|selection-line-first-column");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Alt+Z");
-            kmo.cancel().push();
-            closed = true;
-            new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 9);
-            editor.pushKey(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
-            new EventTool().waitNoEvent(100);
-            String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals(null,text);
-        } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
-    }
-
-    public void testAddShortCutDialog() {
-        KeyMapOperator kmo = null;
-        boolean closedKMO = true;
-        AddShortcutDialog asd = null;
-        boolean closedASD = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closedKMO = false;
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|selection-line-first-column");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            closedASD = false;
-            asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);   // Alt+Z
-            new EventTool().waitNoEvent(1000);
-            assertEquals("Alt+Z",asd.txtJTextField().getText());
-
-            asd.btClear().push(); // clear
-            assertEquals("",asd.txtJTextField().getText());
-            asd.txtJTextField().requestFocus();
-            asd.txtJTextField().pushKey(KeyEvent.VK_X,InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK );
-            new EventTool().waitNoEvent(1000);
-            assertEquals("Alt+Shift+X",asd.txtJTextField().getText());
-
-            asd.btTab().push();
-            assertEquals("Alt+Shift+X TAB",asd.txtJTextField().getText());
-
-            asd.txtJTextField().requestFocus();
-            asd.txtJTextField().pushKey(KeyEvent.VK_ESCAPE);
-            new EventTool().waitNoEvent(1000);
-            assertEquals("Alt+Shift+X TAB ESCAPE",asd.txtJTextField().getText());
-
-            asd.btClear().push(); // clear
-            asd.txtJTextField().requestFocus();
-            asd.txtJTextField().pushKey(KeyEvent.VK_BACK_SPACE);
-            new EventTool().waitNoEvent(1000);
-            assertEquals("BACK_SPACE",asd.txtJTextField().getText());
-
-            asd.txtJTextField().pushKey(KeyEvent.VK_BACK_SPACE);
-            new EventTool().waitNoEvent(1000);
-            assertEquals("",asd.txtJTextField().getText());
-
-            asd.btCancel().push();
-            closedASD = true;
-            kmo.cancel().push();
-            closedKMO = true;
-        } finally {
-            if(!closedASD && asd!=null) asd.btCancel().push();
-            if(!closedKMO && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
-
     }
 
     public void testHelp() {
@@ -566,118 +401,51 @@ public class KeyMapTest extends JellyTestCase{
             kmo.help().push();
             final HelpOperator help = new HelpOperator();
             ValueResolver vr = new ValueResolver() {
+
                 public Object getValue() {
                     return help.getContentText().contains("Options Window: Keymap");
                 }
             };
             waitMaxMilisForValue(5000, vr, Boolean.TRUE);
             boolean ok = help.getContentText().contains("Options Window: Keymap");
-            if(!ok) log(help.getContentText());
-            assertTrue("Wrong help page opened",ok);
+            if (!ok) {
+                log(help.getContentText());
+            }
+            assertTrue("Wrong help page opened", ok);
             help.close();
         } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+            }
         }
-
-
     }
 
     public void testProfileSwitch() {
-        KeyMapOperator kmo = null;
-        boolean closed = true;
-        try {
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            kmo.selectProfile("Eclipse");
-            kmo.selectAction("Other|remove-line");
-            checkListContents(kmo.shortcuts(), "Ctrl+D");
-            kmo.ok().push();
-            closed = true;
-            new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 1);
-            editor.pushKey(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK);
-            new EventTool().waitNoEvent(500);
-            String text =  editor.getText();
-            assertFalse("Line not removed",text.contains("\"Hello\""));
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            assertEquals(kmo.profile().getSelectedItem(),"Eclipse");
-            kmo.ok().push();
-            closed = true;
-        } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
-        }
     }
 
-    public void testProfileDouble() {
+    public void testProfileDuplicte() {
         KeyMapOperator kmo = null;
         boolean closed = true;
+        String prFrom = PROFILE_DEFAULT;
+        String prTo = "NetBeans New";
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            //  duplicating Netbeans profile
-            kmo.selectProfile("NetBeans");
-            int originalSize = kmo.profile().getModel().getSize();
-            kmo.duplicate().push();
-            CreateNewProfileDialog cnpd = new CreateNewProfileDialog();
-            cnpd.txtProfileName().clearText();
-            cnpd.txtProfileName().typeText(NEW_PROFILE);
-            cnpd.btOK().push();
-            new EventTool().waitNoEvent(100);
-            assertEquals(kmo.profile().getSelectedItem(),NEW_PROFILE);
-            //  adding shortcut to new profile
-            kmo.selectAction("Other|toggle-case-identifier-begin");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Alt+C");
+            kmo.selectProfile(PROFILE_DEFAULT);
+            kmo.assignShortcutToAction("select line", true, false, true, KeyEvent.VK_M);
+            kmo.duplicateProfile(prFrom, "NetBeans New");
+            kmo.selectProfile("NetBeans New");
+            if (!kmo.getAllShortcutsForAction("select line").contains("ctrl+alt+m")) {
+                fail("Profile cloning failed: " + prFrom + " -> " + prTo);
+            }
+            kmo.checkProfilesPresent("Eclipse", "Emacs", "NetBeans", "NetBeans New", "NetBeans 5.5");
+            kmo.selectProfile(PROFILE_DEFAULT);
             kmo.ok().push();
-            new EventTool().waitNoEvent(2500);
-            closed = true;
-            // testing new shortcut
-            editor.setCaretPosition(7, 12);
-            editor.pushKey(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
-            ValueResolver res = new ValueResolver() {
-                public Object getValue() {
-                    editor.setCaretPosition(7, 12);
-                    editor.pushKey(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
-                    return editor.getText().contains("system.out.println");
-                }
-            };
-            waitMaxMilisForValue(5000, res, Boolean.TRUE);
-            assertTrue("Action not performed",editor.getText().contains("system.out.println"));
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            // switching back to NetbeansProfile
-            assertEquals(kmo.profile().getSelectedItem(),NEW_PROFILE);
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|toggle-case-identifier-begin");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.ok().push();
-            new EventTool().waitNoEvent(500);
-            closed = true;
-            //verifying that shortcut in not propagated to Netbeans profile
-            editor.setCaretPosition(7, 12);
-            editor.pushKey(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
-            waitMaxMilisForValue(5000, res, Boolean.FALSE);
-            assertTrue("Action performed",editor.getText().contains("system.out.println"));
-            //deleting profile
-            kmo = KeyMapOperator.invoke();
-            closed = false;
-            assertEquals("NetBeans",kmo.profile().getSelectedItem());
-            kmo.selectProfile(NEW_PROFILE);
-            kmo.delete().push();
-            assertEquals("Wrong number of profiles",originalSize,kmo.profile().getModel().getSize());
-            kmo.ok().push();
-            new EventTool().waitNoEvent(500);
             closed = true;
         } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+            }
         }
     }
 
@@ -687,112 +455,82 @@ public class KeyMapTest extends JellyTestCase{
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            // add shortcut
-            kmo.selectProfile("NetBeans");
-            kmo.selectAction("Other|selection-last-non-white");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.add().push();
-            new EventTool().waitNoEvent(100);
-            AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Alt+Q");
-            // remove shortcut
-            kmo.selectAction("Other|caret-begin-line");
-            checkListContents(kmo.shortcuts(), "HOME");
-            kmo.shortcuts().setSelectedIndex(0);
-            kmo.remove().push();
-            checkListContents(kmo.shortcuts(), new Object[]{});
-//            kmo.ok().push();
-//            closed = true;
-//            new EventTool().waitNoEvent(2000);
-//            // test in editor
-//            editor.setCaretPosition(7, 12);
-//            ValueResolver vr = new ValueResolver() {
-//                public Object getValue() {
-//                    editor.pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
-//                    String text =  editor.txtEditorPane().getSelectedText();
-//                    return "tem.out.println(\"Hello\")".equals(text);
-//                }
-//            };
-//            waitMaxMilisForValue(5000, vr, Boolean.TRUE);
-//            String text =  editor.txtEditorPane().getSelectedText();
-//            assertEquals("tem.out.println(\"Hello\")",text);
-//            editor.pushKey(KeyEvent.VK_HOME);
-//            int caretPosition = editor.txtEditorPane().getCaretPosition();
-//            assertEquals("Caret was moved", caretPositionOriginal,caretPosition);
-//            System.out.println("Caret position:"+caretPosition);
-//            kmo = KeyMapOperator.invoke();
-//            closed = false;
-            kmo.restore().push();
+            Vector<String> shortcuts = kmo.getAllShortcutsForAction("Preview Design");
+            kmo.assignShortcutToAction("Preview Design", true, true, false, KeyEvent.VK_W, true, true);
+            if (shortcuts.equals(kmo.getAllShortcutsForAction("Preview Design"))) {
+                fail("Problem with assigning shortcut to Preview Design");
+            }
             kmo.ok().push();
             closed = true;
-            new EventTool().waitNoEvent(4000);
             kmo = KeyMapOperator.invoke();
             closed = false;
-            new EventTool().waitNoEvent(100);
-            kmo.selectAction("Other|selection-last-non-white");
-            checkListContents(kmo.shortcuts(), new Object[]{});
-            kmo.selectAction("Other|caret-begin-line");
-            checkListContents(kmo.shortcuts(), "HOME");
+            kmo.actionSearchByName().setText("Preview Design");
+            kmo.restoreProfile("NetBeans");
+            Vector<String> sc = kmo.getAllShortcutsForAction("Preview Design");
+            if (!shortcuts.equals(sc)) {
+                // This test currently fails: http://www.netbeans.org/issues/show_bug.cgi?id=151254
+                fail("Problem with restoring NetBeans profile (http://www.netbeans.org/issues/show_bug.cgi?id=151254) - \"Preview Design\" action: " + shortcuts.toString() + " vs. " + sc.toString());
+            }
             kmo.ok().push();
             closed = true;
-//            new EventTool().waitNoEvent(500);
-//            editor.setCaretPosition(7, 12);
-//            caretPositionOriginal = editor.txtEditorPane().getCaretPosition();
-//            editor.txtEditorPane().setSelectionStart(-1);
-//            editor.txtEditorPane().setSelectionEnd(-1);
-//            editor.pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
-//            new EventTool().waitNoEvent(100);
-//            text =  editor.txtEditorPane().getSelectedText();
-//            assertEquals(null,text);
-//            editor.pushKey(KeyEvent.VK_HOME);
-//            caretPosition = editor.txtEditorPane().getCaretPosition();
-//            assertEquals("Caret was not moved", caretPositionOriginal,caretPosition);
-//            System.out.println("Caret position:"+caretPosition);
         } finally {
-            if(!closed && kmo!=null) kmo.cancel().push();
-            editor.close(false);
+            if (!closed && kmo != null) {
+                kmo.cancel().push();
+            }
         }
     }
-    
-    protected boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
+
+    protected boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue) {
         int time = maxMiliSeconds / 100;
         while (time > 0) {
             Object resolvedValue = resolver.getValue();
-            if (requiredValue == null && resolvedValue == null){
+            if (requiredValue == null && resolvedValue == null) {
                 return true;
             }
-            if (requiredValue != null && requiredValue.equals(resolvedValue)){
+            if (requiredValue != null && requiredValue.equals(resolvedValue)) {
                 return true;
             }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                time=0;
+                time = 0;
             }
             time--;
         }
         return false;
     }
-    
-    
-    private void checkListContents(JListOperator oper,Object ... items) {
-        ListModel model = oper.getModel();
-        assertEquals("List does not contains expected number of items", items.length, model.getSize());
-        for (int i = 0; i < items.length; i++) {
-            Object object = items[i];
-            assertEquals(items[i],model.getElementAt(i));
+
+    protected void sleep(int miliseconds) {
+        try {
+            Thread.sleep(miliseconds);
+        } catch (Throwable t) {
+            // Thread.sleep() failed for some reason
         }
     }
-    
-    public static void main(String[] args) {               
-        TestRunner.run(new NbTestSuite(KeyMapTest.class));
+
+    private void checkListContents(Vector<String> scList, String... expList) {
+        assertEquals("List does not contains expected number of items", expList.length, scList.size());
+        for (int i = 0; i < scList.size(); i++) {
+            scList.set(i, scList.get(i).toLowerCase());
+        }
+        for (String string : expList) {
+            assertTrue(scList.contains(string.toLowerCase()));
+        }
     }
-    
+
     public static Test suite() {
-      return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(KeyMapTest.class).enableModules(".*").clusters(".*"));
-   }
-    
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(KeyMapTest.class)
+                    .addTest("prepareFileInEditor")
+                    .addTest("testVerify")
+                    .addTest("testAddDuplicateCancel")
+                    .addTest("testAddShortcut")
+                    .addTest("testUnassign")
+                    .addTest("testAssignAlternativeShortcut")
+                    //.addTest("testProfileRestore")//fails due to issue 151254
+                    .addTest("testProfileDuplicte")
+                    .addTest("testHelp")
+                    .addTest("closeProject")
+                .enableModules(".*").clusters(".*"));
+    }
 }

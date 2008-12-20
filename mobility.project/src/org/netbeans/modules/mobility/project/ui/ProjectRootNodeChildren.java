@@ -72,7 +72,7 @@ import org.openide.util.lookup.Lookups;
 final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> implements LookupListener, ChangeListener {
 
     private final J2MEProject project;
-    private Lookup.Result<NodeFactory> res;
+    private volatile Lookup.Result<NodeFactory> res;
     private static final String FOREIGN_NODES_PATH =
             "Projects/org-netbeans-modules-mobility-project/Nodes"; //NOI18N
     private Set<NodeList> lists = new HashSet<NodeList>();
@@ -84,15 +84,20 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
 
     @Override
     protected void addNotify() {
-        res = Lookups.forPath(FOREIGN_NODES_PATH).lookupResult(NodeFactory.class);
-        res.addLookupListener(this);
+        Lookup.Result result = Lookups.forPath(FOREIGN_NODES_PATH).lookupResult(NodeFactory.class);
+        synchronized (lock) {
+            res = result;
+            res.addLookupListener(this);
+        }
     }
 
     @Override
     protected void removeNotify() {
-        res = null;
         Set<NodeList> s;
         synchronized (lock) {
+            assert res != null : "removeNotify called twice or w/o addNotify()";
+            res.removeLookupListener(this);
+            res = null;
             s = new HashSet<NodeList>(lists);
             lists.clear();
         }
@@ -130,9 +135,18 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
     }
 
     private Node[] createForeignNodes() {
+        Lookup.Result<NodeFactory> lkpResult;
+        synchronized (lock) {
+            lkpResult = res;
+        }
+        if (lkpResult == null) {
+            //removeNotify called while background thread still fetching nodes,
+            //just exit, result won't be shown anyway
+            return new Node[0];
+        }
         List<Node> nodes = new LinkedList<Node>();
         Set<NodeList> found = new HashSet<NodeList>();
-        for (NodeFactory f : res.allInstances()) {
+        for (NodeFactory f : lkpResult.allInstances()) {
             NodeList list = f.createNodes(project);
             list.addNotify();
             list.addChangeListener(this);

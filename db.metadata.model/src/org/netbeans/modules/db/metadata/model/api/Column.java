@@ -63,9 +63,9 @@ public class Column extends Value {
     /**
      * Return the position of this column
      * 
-     * @return the positoin of this column in the result list, starting at 1
+     * @return the position of this column in the result list, starting at 1
      */
-    public int getOrdinalPosition() {
-        return impl.getOrdinalPosition();
+    public int getPosition() {
+        return impl.getPosition();
     }
 }

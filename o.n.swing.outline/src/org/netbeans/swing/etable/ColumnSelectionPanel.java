@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -69,6 +70,8 @@ import javax.swing.table.TableColumnModel;
  * @author David Strupl
  */
 class ColumnSelectionPanel extends JPanel {
+
+    private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
 
     /**
      * Map: ETableColumn --> JCheckBox
@@ -92,22 +95,24 @@ class ColumnSelectionPanel extends JPanel {
         List<TableColumn> columns = Collections.list(etcm.getColumns());
         columns.addAll(etcm.hiddenColumns);
         Collections.sort(columns, ETableColumnComparator.DEFAULT );
-        int width = columns.size() / 10 + 1;
+        int width = 1; // columns.size() / 10 + 1;
         layoutPanel(columns, width, table);
     }
     
     /**
      * Adds checkbox for each ETableColumn contained in the columns parameter.
      */
-    private void layoutPanel(List columns, int width, ETable table) {
+    @SuppressWarnings("unchecked")
+    private void layoutPanel(List<TableColumn> columns, int width, ETable table) {
         Map<String, Object> displayNameToCheckBox = new HashMap<String, Object>();
         ArrayList<String> displayNames = new ArrayList<String>();
-        for (Iterator it = columns.iterator(); it.hasNext(); ) {
-            ETableColumn etc = (ETableColumn)it.next();
+        for (int col = 0; col < columns.size (); col++) {
+            ETableColumn etc = (ETableColumn) columns.get (col);
             JCheckBox checkBox = new JCheckBox();
-            checkBoxes.put(etc, checkBox);
-            String dName = table.getColumnDisplayName(etc.getHeaderValue().toString());
+            String dName = table.transformValue (etc).toString ();
             checkBox.setText(dName);
+            checkBox = (JCheckBox) table.transformValue (checkBox);
+            checkBoxes.put(etc, checkBox);
             checkBox.setSelected(! columnModel.isColumnHidden(etc));
             checkBox.setEnabled(etc.isHidingAllowed());
             if (! displayNames.contains(dName)) {
@@ -134,11 +139,22 @@ class ColumnSelectionPanel extends JPanel {
             }
             displayNames.add(dName);
         }
+        String first = displayNames.remove (0);
         Collections.sort(displayNames, Collator.getInstance());
+        displayNames.add (0, first);
         int i = 0;
         int j = 0;
         int index = 0;
         int rows = columns.size() / width;
+        Object hint = table.transformValue (COLUMNS_SELECTOR_HINT);
+        if (hint != null) {
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 12);
+            gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+            add (new JLabel (hint.toString ()), gridBagConstraints);
+        }
         for (Iterator<String> it = displayNames.iterator(); it.hasNext(); i++) {
             if (i >= rows) {
                 i = 0;
@@ -164,8 +180,8 @@ class ColumnSelectionPanel extends JPanel {
             }
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = j;
-            gridBagConstraints.gridy = i;
-            gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
+            gridBagConstraints.gridy = i + (hint == null ? i : i + 1);
+            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.weightx = 1;
             add(checkBox, gridBagConstraints);
@@ -182,7 +198,7 @@ class ColumnSelectionPanel extends JPanel {
         }
         for (Iterator it = checkBoxes.keySet().iterator(); it.hasNext(); ) {
             ETableColumn etc = (ETableColumn) it.next();
-            JCheckBox checkBox = (JCheckBox)checkBoxes.get(etc);
+            JCheckBox checkBox = checkBoxes.get (etc);
             columnModel.setColumnHidden(etc,! checkBox.isSelected());
         }
     }
@@ -190,6 +206,7 @@ class ColumnSelectionPanel extends JPanel {
     /**
      * Shows the popup allowing to show/hide columns.
      */
+    @SuppressWarnings("unchecked")
     static void showColumnSelectionPopup(Component c, final ETable table) {
         if( !table.isColumnHidingAllowed() )
             return;
@@ -211,14 +228,16 @@ class ColumnSelectionPanel extends JPanel {
         ArrayList<String> displayNames = new ArrayList<String>();
         for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
             final ETableColumn etc = (ETableColumn)it.next();
-            final JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
-            String dName = table.getColumnDisplayName(etc.getHeaderValue().toString());
+            JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
+            String dName = table.transformValue (etc).toString ();
             checkBox.setText(dName);
+            checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
             checkBox.setSelected(! etcm.isColumnHidden(etc));
             checkBox.setEnabled(etc.isHidingAllowed());
+            final JCheckBoxMenuItem finalChB = checkBox;
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    etcm.setColumnHidden(etc,! checkBox.isSelected());
+                    etcm.setColumnHidden(etc,! finalChB.isSelected());
                     table.updateColumnSelectionMouseListener();
                 }
             });

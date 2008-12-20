@@ -58,9 +58,10 @@ import org.openide.util.NbBundle;
 public class DateType extends TimestampType {
 
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
-    private final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
+    public final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
+        DateFormat.getDateInstance(),
         new SimpleDateFormat("yyyy-MM-dd", LOCALE), // NOI18N
-        new SimpleDateFormat("MM-dd-yyyy", LOCALE), // NOI18N
+        new SimpleDateFormat("MM-dd-yyyy", LOCALE), // NOI18N        
         DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
     };
 
@@ -69,11 +70,7 @@ public class DateType extends TimestampType {
             DATE_PARSING_FORMATS[i].setLenient(false);
         }
     }
-
-    /* Increment to use in computing a successor value. */
-    // One day = 1 day x 24 hr/day x 60 min/hr x 60 sec/min x 1000 ms/sec
-    static final long INCREMENT_DAY = 1 * 24 * 60 * 60 * 1000;
-
+    
     private Date convertToDate(Object value) throws DBException {
         Calendar cal = Calendar.getInstance();
 
@@ -81,7 +78,9 @@ public class DateType extends TimestampType {
             return null;
         } else if (value instanceof Timestamp) {
             cal.setTimeInMillis(((Timestamp) value).getTime());
-        } else if (value instanceof String) {
+        } else if (value instanceof java.util.Date) {
+            cal.setTimeInMillis(((java.util.Date) value).getTime());
+        }else if (value instanceof String) {
             java.util.Date dVal = null;
             int i = 0;
             while (dVal == null && i < DATE_PARSING_FORMATS.length) {
@@ -114,7 +113,7 @@ public class DateType extends TimestampType {
             return convertToDate(value);
 
         } catch (DBException e) {
-            throw new DBException(NbBundle.getMessage(DateType.class,"MSG_failure_convert_date",value.getClass().getName(), value));
+            throw new DBException(NbBundle.getMessage(DateType.class,"MSG_failure_convert_date",value.getClass().getName(), value.toString()));
   
         }
     }

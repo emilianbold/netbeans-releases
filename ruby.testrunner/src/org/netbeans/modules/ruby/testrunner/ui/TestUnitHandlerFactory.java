@@ -44,6 +44,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
@@ -114,14 +119,14 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.toString(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4);
             String location = matcher.group(5);
-            testcase.getTrouble().stackTrace = getStackTrace(message, location);
+            testcase.getTrouble().setStackTrace(getStackTrace(message, location));
             session.addTestCase(testcase);
 
             String failureMsg = failureMsg(session.incrementFailuresCount());
@@ -130,13 +135,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             output.add("");
             output.add(failureMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().getStackTrace()));
             output.add("");
             
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, failureMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.getTrouble().stackTrace) {
+            for (String line : testcase.getTrouble().getStackTrace()) {
                 manager.displayOutput(session, line, false);
             }
             manager.displayOutput(session, "", false);
@@ -169,12 +174,12 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
@@ -183,13 +188,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             output.add("");
             output.add(errorMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().getStackTrace()));
             output.add("");
 
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, errorMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.getTrouble().stackTrace) {
+            for (String line : testcase.getTrouble().getStackTrace()) {
                 manager.displayOutput(session, line, true);
             }
             manager.displayOutput(session, "", false);
@@ -239,7 +244,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setName(matcher.group(2));

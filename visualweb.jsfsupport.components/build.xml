@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 
-<project name="org.netbeans.modules.visualweb.jsfsupport.components" default="netbeans" basedir=".">
+<project name="visualweb.jsfsupport.components" default="netbeans" basedir=".">
 
     <description>Builds and tests the project org.netbeans.modules.visualweb.jsfsupport.components.</description>
     <import file="../nbbuild/templates/projectized.xml"/>

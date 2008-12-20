@@ -59,6 +59,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -422,7 +424,19 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 return;
             }
             
-            Element element = AstElement.getElement(compiler, root);
+            BaseDocument doc = GsfUtilities.getDocument(compiler.getFileObject(), true);
+            Element element = null;
+            try {
+                if (doc != null) {
+                    doc.readLock();
+                }
+
+                element = AstElement.getElement(compiler, root);
+            } finally {
+                if (doc != null) {
+                    doc.readUnlock();
+                }
+            }
             Node node = searchCtx.getNode();
             JsElementCtx fileCtx = new JsElementCtx(root, node, element, compiler.getFileObject(), compiler);
 

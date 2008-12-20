@@ -46,6 +46,11 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
@@ -53,7 +58,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class TableNodeProvider extends NodeProvider {
 
@@ -67,39 +72,54 @@ public class TableNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public TableNodeProvider createInstance(Lookup lookup) {
                 TableNodeProvider provider = new TableNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
 
     private TableNodeProvider(Lookup lookup) {
         super(lookup, new TableComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    private void setup() {
-        update();
-    }
+    @Override
+    protected void initialize() {
+        
+        final List<Node> newList = new ArrayList<Node>();
 
-    private synchronized void update() {
-        List<Node> newList = new ArrayList<Node>();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Schema schema = schemaHandle.resolve(metaData);
+                            if (schema != null) {
+                                Collection<Table> tables = schema.getTables();
+                                for (Table table : tables) {
+                                    MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
+                                    Collection<Node> matches = getNodes(handle);
+                                    if (matches.size() > 0) {
+                                        newList.addAll(matches);
+                                    } else {
+                                        NodeDataLookup lookup = new NodeDataLookup();
+                                        lookup.add(connection);
+                                        lookup.add(handle);
 
-        Collection<Table> tables = schema.getTables();
-        for (Table table : tables) {
-            Collection<Node> matches = getNodes(table);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(table);
-                
-                newList.add(TableNode.create(lookup));
+                                        newList.add(TableNode.create(lookup, TableNodeProvider.this));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 
@@ -108,8 +128,8 @@ public class TableNodeProvider extends NodeProvider {
 
     static class TableComparator implements Comparator<Node> {
 
-        public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+        public int compare(Node node1, Node node2) {
+            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
 
     }

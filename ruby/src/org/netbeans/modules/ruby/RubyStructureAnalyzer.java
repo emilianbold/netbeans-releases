@@ -383,7 +383,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc != null) {
-                addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                try {
+                    doc.readLock(); // For Utilities.getRowStart access
+                    addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                } finally {
+                    doc.readUnlock();
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -557,7 +562,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
 
-            co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(constNode));
+            co.setType(RubyTypeAnalyzer.inferTypesOfRHS(constNode));
             co.setIn(in);
 
             if (parent != null) {
@@ -638,7 +643,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
                     assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
-                    co.setType(RubyTypeAnalyzer.expressionTypeOfRHS(node));
+                    co.setType(RubyTypeAnalyzer.inferTypesOfRHS(node));
                     co.setIn(in);
                     structure.add(co);
                 }
@@ -1029,9 +1034,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node.getType() != null) {
+            RubyType type = node.getType();
+            if (type.isKnown()) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(node.getType());
+                formatter.appendText(type.asIndexedString());
             }
 
             return formatter.getText();

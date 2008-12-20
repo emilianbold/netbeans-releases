@@ -66,7 +66,7 @@ public class ProgressEventSupport {
     /** Source object. */
     private Object obj;
     
-    private Vector listeners;
+    private Vector<ProgressListener> listeners;
     
     private DeploymentStatus status;
     
@@ -88,7 +88,7 @@ public class ProgressEventSupport {
     public synchronized void addProgressListener (ProgressListener lsnr) {
         boolean notify = false;
         if (listeners == null) {
-            listeners = new java.util.Vector();
+            listeners = new java.util.Vector<ProgressListener>();
         }
         listeners.addElement(lsnr);
         if (status != null && !status.isRunning ()) {
