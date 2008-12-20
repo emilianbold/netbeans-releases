@@ -61,6 +61,7 @@ import org.netbeans.modules.python.editor.elements.AstElement;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.imports.ImportEntry;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -547,6 +548,9 @@ public class SymbolTable {
                     unused.add(new ImportEntry(module, asName, true, imp, imp.getCharStartIndex() + (ordinal++)));
                 } else if (node instanceof ImportFrom) {
                     ImportFrom imp = (ImportFrom)node;
+                    if (ImportManager.isFutureImport(imp)) {
+                        continue;
+                    }
                     String module = imp.module;
                     String origName = null;
                     String asName = null;

@@ -104,6 +104,15 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         }
     }
 
+    public void testFutureImport1() throws Exception {
+        try {
+            skipJython = true;
+            checkCompletion("testfiles/futureimport.py", "import ^", true);
+        } finally {
+            skipJython = false;
+        }
+    }
+
     public void testDoc6() throws Exception {
         // Find documentation for a method that doesn't actually have a def - it's an alias
         checkCompletionDocumentation("testfiles/compl5.py", "self.assertA^lmostEquals(1,2)", true, "assertAlmostEquals");
