@@ -582,7 +582,7 @@ meth public abstract org.netbeans.api.visual.widget.ConnectionWidget getAttached
 meth public abstract void revalidateEntry()
 
 CLSS public final org.netbeans.api.visual.anchor.Anchor$Result
-cons public Result(java.awt.Point,java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction>)
+cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction>)
 cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,org.netbeans.api.visual.anchor.Anchor$Direction)
 meth public java.awt.Point getAnchorSceneLocation()
 meth public java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction> getDirections()
