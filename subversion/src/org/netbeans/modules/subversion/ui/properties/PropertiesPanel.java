@@ -44,9 +44,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -55,9 +58,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
@@ -75,9 +83,49 @@ import static org.jdesktop.layout.LayoutStyle.RELATED;
  * @author  Peter Pis
  * @author  Marian Petras
  */
-public class PropertiesPanel extends JPanel implements PreferenceChangeListener, TableModelListener {
+public class PropertiesPanel extends JPanel implements DocumentListener,
+                                                       ItemListener,
+                                                       PreferenceChangeListener,
+                                                       TableModelListener {
+    private enum AddButtonState {
+        ADD       ("PropertiesPanel.btnAdd.text"),                      //NOI18N
+        ADD_UPDATE("PropertiesPanel.btnAddUpdate.text"),                //NOI18N
+        UPDATE    ("PropertiesPanel.btnUpdate.text");                   //NOI18N
 
-    final JButton btnAdd = new JButton();
+        private final String btnLabel;
+        AddButtonState(String msgKey) {
+            btnLabel = NbBundle.getMessage(PropertiesPanel.class, msgKey);
+        }
+        String getLabel() {
+            return btnLabel;
+        }
+    }
+
+    final JButton btnAdd = new JButton() {
+        private Dimension prefSize;
+        @Override
+        public Dimension getPreferredSize() {
+            if (prefSize == null) {
+                int maxWidth;
+                int maxHeight;
+                Dimension d;
+                Mnemonics.setLocalizedText(this, AddButtonState.ADD.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = d.width;
+                maxHeight = d.height;
+                Mnemonics.setLocalizedText(this, AddButtonState.ADD_UPDATE.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = Math.max(maxWidth, d.width);
+                maxHeight = Math.max(maxHeight, d.height);
+                Mnemonics.setLocalizedText(this, AddButtonState.UPDATE.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = Math.max(maxWidth, d.width);
+                maxHeight = Math.max(maxHeight, d.height);
+                prefSize = new Dimension(maxWidth, maxHeight);
+            }
+            return prefSize;
+        }
+    };
     final JButton btnBrowse = new JButton();
     final JButton btnRefresh = new JButton();
     final JButton btnRemove = new JButton();
@@ -91,10 +139,31 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
     private PropertiesTable propertiesTable;
     private ListenersSupport listenerSupport = new ListenersSupport(this);
     private final JLabel lblErrMessage = new JLabel();
+    private final Document propNameDocument;
+    private final Document propValueDocument;
+    private String propertyName;
+    private String propertyValue;
+    private String illegalPropErrMsgKey;
+    private boolean recursive;
+    private String[] existingProperties;
+    private String[] illegalProperties;
+    private SvnProperties propValueChangeListener;
+    private boolean interactionInitialized;
 
     /** Creates new form PropertiesPanel */
     public PropertiesPanel() {
+        propNameDocument = ((JTextField) comboName.getEditor().getEditorComponent())
+                           .getDocument();
+        propValueDocument = txtAreaValue.getDocument();
         initComponents();
+    }
+
+    String getPropertyName() {
+        return propertyName;
+    }
+
+    String getPropertyValue() {
+        return propertyValue;
     }
     
     void setPropertiesTable(PropertiesTable propertiesTable){
@@ -124,10 +193,67 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
         }
     }
 
+    /**
+     * Adds the given list of property names to the combo-box's pop-up
+     * and clears the current combo-box value.
+     * If there were other property names present in the pop-up, they are
+     * removed first.
+     */
+    void setPredefinedPropertyNames(String[] propertyNames) {
+        comboName.setModel(new DefaultComboBoxModel(propertyNames));
+        comboName.getEditor().setItem("");                              //NOI18N
+    }
+
+    void setExistingPropertyNames(String[] propNames) {
+        existingProperties = propNames;
+        if (interactionInitialized) {
+            existingPropertiesChanged();
+        }
+    }
+
+    void setIllegalPropertyNames(String[] propNames, String errMsgKey) {
+        illegalProperties = propNames;
+        illegalPropErrMsgKey = errMsgKey;
+        if (interactionInitialized) {
+            illegalPropertiesChanged();
+        }
+    }
+
+    void setForDirectory(boolean forDirectory) {
+        if (forDirectory) {
+            cbxRecursively.setEnabled(true);
+        } else {
+            cbxRecursively.setEnabled(false);
+            cbxRecursively.setSelected(false);
+        }
+    }
+
+    void initInteraction() {
+        updatePropertyName();
+        updatePropertyValue();
+        updateIsRecursive();
+        propNameDocument.addDocumentListener(this);
+        propValueDocument.addDocumentListener(this);
+        cbxRecursively.addItemListener(this);
+
+        refreshAddButtonText();
+        refreshAddButtonState();
+
+        interactionInitialized = true;
+    }
+
+    void setPropertyValueChangeListener(SvnProperties l) {
+        propValueChangeListener = l;
+    }
+
+    void removePropertyValueChangeListener() {
+        propValueChangeListener = null;
+    }
+
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="UI Definition Code">
     private void initComponents() {
         JLabel lblPropertyName = new JLabel();
@@ -185,7 +311,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                                         .add(btnBrowse))
                                 .add(jSeparator1)
                                 .add(layout.createSequentialGroup()
-                                        .add(btnAdd)
+                                        .add(btnAdd, PREFERRED_SIZE, DEFAULT_SIZE, DEFAULT_SIZE)
                                         .addPreferredGap(RELATED)
                                         .add(cbxRecursively)
                                         .addPreferredGap(cbxRecursively, btnRemove, RELATED, true)
@@ -196,7 +322,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
                                 .add(propsPanel))
                         .addContainerGap()
         );
-        layout.linkSize(new Component[] {btnAdd, btnBrowse, btnRefresh, btnRemove}, HORIZONTAL);
+        layout.linkSize(new Component[] {btnBrowse, btnRefresh, btnRemove}, HORIZONTAL);
         layout.setHonorsVisibility(false);
 
         layout.setVerticalGroup(
@@ -247,7 +373,7 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
         labelForTable.getAccessibleContext().setAccessibleDescription(getString("labelForTable.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>
 
-    void setErrMessage(String message) {
+    private void setErrMessage(String message) {
         if (message == null) {
             lblErrMessage.setText(" ");                                 //NOI18N
             lblErrMessage.setVisible(false);
@@ -272,6 +398,137 @@ public class PropertiesPanel extends JPanel implements PreferenceChangeListener,
 
     private static String getString(String msgKey) {
         return NbBundle.getMessage(PropertiesPanel.class, msgKey);
+    }
+
+    private void refreshAddButtonText() {
+        AddButtonState buttonState;
+        if (recursive) {
+            buttonState = AddButtonState.ADD_UPDATE;
+        } else {
+            boolean isExistingProperty = false;
+            if (existingProperties != null) {
+                for (int i = 0; i < existingProperties.length; i++) {
+                    if (existingProperties[i].equals(propertyName)) {
+                        isExistingProperty = true;
+                        break;
+                    }
+                }
+            }
+            buttonState = isExistingProperty ? AddButtonState.UPDATE
+                                             : AddButtonState.ADD;
+        }
+        Mnemonics.setLocalizedText(btnAdd, buttonState.getLabel());
+    }
+
+    private void refreshAddButtonState() {
+        boolean enabled;
+        String errMsg;
+
+        if (propertyName.length() == 0) {
+            enabled = false;
+            errMsg = null;
+        } else if (!isPropertyNameLegal()) {
+            enabled = false;
+            errMsg = NbBundle.getMessage(PropertiesPanel.class,
+                                         illegalPropErrMsgKey,
+                                         propertyName);
+        } else if (propertyName.indexOf(' ') != -1) {
+            enabled = false;
+            errMsg = NbBundle.getMessage(PropertiesPanel.class,
+                                         "PropertiesPanel.errPropNameInvalid"); //NOI18N
+        } else {
+            enabled = propertyValue.length() != 0;
+            errMsg = null;
+        }
+
+        btnAdd.setEnabled(enabled);
+        setErrMessage(errMsg);
+    }
+
+    private boolean isPropertyNameLegal() {
+        for (int i = 0; i < illegalProperties.length; i++) {
+            if (propertyName.equals(illegalProperties[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void propNameChanged() {
+        /* update button's text: */
+        if (!recursive) {              //if recursive, it is always "Add/Update"
+            refreshAddButtonText();
+        }
+
+        /* update button's state (enabled/disabled): */
+        refreshAddButtonState();
+    }
+
+    private void propValueChanged() {
+        refreshAddButtonState();
+
+        if (propValueChangeListener != null) {
+            propValueChangeListener.propertyValueChanged();
+        }
+    }
+
+    private void recursiveToggled() {
+        refreshAddButtonText();
+    }
+
+    private void existingPropertiesChanged() {
+        refreshAddButtonText();
+    }
+
+    private void illegalPropertiesChanged() {
+        refreshAddButtonState();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        textChanged(e.getDocument());
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        textChanged(e.getDocument());
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        //document attribute changes - not interesting
+    }
+
+    /** Called when the Recursive check-box is toggled. */
+    public void itemStateChanged(ItemEvent e) {
+        assert e.getSource() == cbxRecursively;
+        updateIsRecursive();
+        recursiveToggled();
+    }
+
+    private void textChanged(Document document) {
+        if (document == propNameDocument) {
+            updatePropertyName();
+            propNameChanged();
+        } else {
+            assert document == propValueDocument;
+            updatePropertyValue();
+            propValueChanged();
+        }
+    }
+
+    private void updatePropertyName() {
+        try {
+            propertyName = propNameDocument.getText(0, propNameDocument.getLength()).trim();
+        } catch (BadLocationException ex) {
+            assert false;
+            propertyName = "";                                          //NOI18N
+        }
+    }
+
+    private void updatePropertyValue() {
+        propertyValue = txtAreaValue.getText().trim();
+    }
+
+    private void updateIsRecursive() {
+        recursive = cbxRecursively.isSelected();
     }
 
     /**
