@@ -149,7 +149,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
-                <friend>org.netbeans.modules.python.tests</friend>
+                <friend>org.netbeans.modules.python.project</friend>
                 <package>org.netbeans.spi.gototest</package>
             </friend-packages>
         </data>
