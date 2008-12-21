@@ -338,12 +338,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
                         if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
                             Location location = MethodWrapper.location(method);
-                            try {
-                                BreakpointRequest br = EventRequestManagerWrapper.
-                                    createBreakpointRequest (getEventRequestManager (), location);
-                                addEventRequest (br);
-                            } catch (VMDisconnectedException e) {
-                            }
+                            BreakpointRequest br = EventRequestManagerWrapper.
+                                createBreakpointRequest (getEventRequestManager (), location);
+                            addEventRequest (br);
                             locationEntry = true;
                         } else {
                             if (entryReq == null) {
@@ -393,16 +390,21 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         exitMethodNames.add(TypeComponentWrapper.name (method));
                     }
                 }
-                if (entryReq != null) {
-                    addEventRequest(entryReq);
-                }
-                if (exitReq != null) {
-                    addEventRequest(exitReq);
-                }
             } catch (InternalExceptionWrapper e) {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }
+        }
+        try {
+            if (entryReq != null) {
+                addEventRequest(entryReq);
+            }
+            if (exitReq != null) {
+                addEventRequest(exitReq);
+            }
+        } catch (InternalExceptionWrapper e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return ;
         }
         if (locationEntry || entryReq != null || exitReq != null) {
             setValidity(VALIDITY.VALID, null);
