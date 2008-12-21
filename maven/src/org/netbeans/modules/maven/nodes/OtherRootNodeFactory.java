@@ -117,7 +117,7 @@ public class OtherRootNodeFactory implements NodeFactory {
                 }
                 return null;
             } else if (KEY_OTHER_TEST.equals(key)) {
-                File[] fls = project.getOtherRoots(false);
+                File[] fls = project.getOtherRoots(true);
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
