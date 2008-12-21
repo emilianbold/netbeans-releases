@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -22,6 +23,7 @@ import org.openide.util.Exceptions;
  * @author Allan Davis
  */
 public final class PythonPlatform implements Serializable, Comparable<PythonPlatform> {
+
     private final String id;
     private String name;
     private List<String> pythonPath = new ArrayList<String>();
@@ -345,5 +347,14 @@ public final class PythonPlatform implements Serializable, Comparable<PythonPlat
             return false;
         }
         return l1.toString().equals(l2.toString());
+    }
+
+    /**
+     * Tries to find a {@link PythonPlatform platform} for a given project. Might
+     * return <tt>null</tt>.
+     */
+    public static PythonPlatform platformFor(final Project project) {
+        PythonPlatformProvider rpp = project.getLookup().lookup(PythonPlatformProvider.class);
+        return rpp == null ? null : rpp.getPlatform();
     }
 }

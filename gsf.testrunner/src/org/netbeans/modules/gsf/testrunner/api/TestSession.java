@@ -164,10 +164,12 @@ public class TestSession {
     public void addTestCase(Testcase testCase) {
         assert !testSuites.isEmpty() : "No suites running";
         //XXX: is this really needed?
-        for (Testcase each : getAllTestCases()) {
-            if (testCase.getClassName().equals(each.getClassName())
-                    && testCase.getName().equals(each.getName())) {
-                return;
+        if (testCase.getClassName() != null) {
+            for (Testcase each : getAllTestCases()) {
+                if (testCase.getClassName().equals(each.getClassName())
+                        && testCase.getName().equals(each.getName())) {
+                    return;
+                }
             }
         }
         // add pending output to the newly created testcase

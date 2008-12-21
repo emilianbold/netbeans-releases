@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
             <buildpath location="python.project"/>
             <buildpath location="python.help"/>
             <buildpath location="python.options"/>
-            <buildpath location="python.tests"/>
+            <buildpath location="python.testrunner"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>
@@ -106,13 +106,13 @@ made subject to such option by the copyright holder.
             <buildpath location="python.platform"/>
             <buildpath location="python.project"/>
             <buildpath location="python.options"/>
-            <buildpath location="python.tests"/>
+            <buildpath location="python.testrunner"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>
     
     <target name="runtests" description="Run Python tests">
-        <subant buildpath="python.editor:python.core:python.debugger"
+        <subant buildpath="python.editor:python.core:python.debugger:python.project:python.testrunner"
             target="test"
             inheritall="false"
             inheritrefs="false">

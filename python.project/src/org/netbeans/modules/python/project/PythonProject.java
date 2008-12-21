@@ -10,6 +10,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.python.api.PythonPlatformProvider;
 import org.netbeans.modules.python.project.gsf.ClassPathProviderImpl;
 import org.netbeans.modules.python.project.ui.customizer.PythonCustomizerProvider;
 import org.netbeans.api.project.Project;
@@ -109,6 +110,7 @@ public PythonProject()
                 new PythonSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),   //Sharabilit info - used by VCS
                 helper.createCacheDirectoryProvider(),  //Cache provider
                 helper.createAuxiliaryProperties(),     // AuxiliaryConfiguraion provider - used by bookmarks, project Preferences, etc
+                new PythonPlatformProvider(getEvaluator()),
                 new PythonCoverageProvider(this)
             });
     }
@@ -124,7 +126,15 @@ public PythonProject()
     public SourceRoots getTestRoots () {
         return this.testRoots;
     }
-    
+
+    public FileObject[] getSourceRootFiles() {
+        return getSourceRoots().getRoots();
+    }
+
+    public FileObject[] getTestSourceRootFiles() {
+        return getTestRoots().getRoots();
+    }
+
     public PropertyEvaluator getEvaluator () {
         return evaluator;
     }
