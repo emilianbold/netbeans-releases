@@ -1080,9 +1080,9 @@ public class AstUtilities {
 
             if (receiver instanceof Colon2Node) {
                 // TODO - check to see if we qualify
-                rn = getName(node);
+                rn = getName(receiver);
             } else if (receiver instanceof ConstNode) {
-                rn = getName(node);
+                rn = getName(receiver);
             } // else: some other type of singleton class definition, like class << foo
 
             if (rn != null) {
