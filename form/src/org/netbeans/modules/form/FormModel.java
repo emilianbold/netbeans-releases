@@ -452,7 +452,9 @@ public class FormModel
 
             parentContainer.add(metacomp, index);
 
-            layoutSupport.addComponents(compArray, constrArray, index);
+            if (parentContainer.isLayoutSubcomponent(metacomp)) {
+                layoutSupport.addComponents(compArray, constrArray, index);
+            }
 
             fireComponentAdded(metacomp, newlyAdded);
         }
