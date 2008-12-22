@@ -338,7 +338,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
             
     public Unit getUnitAtRow (int row) {
-        return getVisibleUnits ().size () <= row ? null : getVisibleUnits ().get (row);
+        return (row < 0 || getVisibleUnits ().size () <= row) ? null : getVisibleUnits ().get (row);
     }
     
     public boolean isExpansionControlAtRow (int row) {
