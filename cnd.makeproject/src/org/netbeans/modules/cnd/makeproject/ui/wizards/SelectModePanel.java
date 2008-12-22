@@ -46,6 +46,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -55,12 +56,14 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class SelectModePanel extends javax.swing.JPanel {
-    private SelectModeDescriptorPanel wizard;
+    private SelectModeDescriptorPanel controller;
     
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel wizard) {
-        this.wizard = wizard;
+        this.controller = wizard;
         initComponents();
+        instructions.setEditorKit(new HTMLEditorKit());
+        instructions.setBackground(instructionPanel.getBackground());
         addListeners();
     }
     
@@ -68,26 +71,26 @@ public class SelectModePanel extends javax.swing.JPanel {
         projectFolder.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
             public void changedUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
         });
         simpleMode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();
             }
         });
         advancedMode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();
             }
         });
@@ -96,13 +99,12 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
-            instructionsTextArea.setText(getString("SelectModeSimpleInstructionText")); // NOI18N
+            instructions.setText(getString("SelectModeSimpleInstructionText")); // NOI18N
         } else {
-            instructionsTextArea.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
+            instructions.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
-        wizard.stateChanged(null);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -114,7 +116,8 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         instructionPanel = new javax.swing.JPanel();
-        instructionsTextArea = new javax.swing.JTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        instructions = new javax.swing.JTextPane();
         simpleMode = new javax.swing.JRadioButton();
         advancedMode = new javax.swing.JRadioButton();
         modeLabel = new javax.swing.JLabel();
@@ -124,20 +127,16 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
+        instructionPanel.setLayout(new java.awt.BorderLayout());
 
-        instructionsTextArea.setBackground(instructionPanel.getBackground());
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setWrapStyleWord(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
+        jScrollPane1.setBorder(null);
+
+        instructions.setBorder(null);
+        instructions.setEditable(false);
+        instructions.setFocusable(false);
+        jScrollPane1.setViewportView(instructions);
+
+        instructionPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -192,11 +191,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 6);
         add(projectFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
@@ -207,19 +206,12 @@ public class SelectModePanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         add(browseButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String seed = null;
-        if (projectFolder.getText().length() > 0) {
-            seed = projectFolder.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
+        String seed = projectFolder.getText();
         JFileChooser fileChooser = new FileChooser(
                 getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
@@ -256,45 +248,70 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
     }
-    
-    boolean valid(WizardDescriptor wizardDescriptor) {
+
+    private static final byte noMessage = 0;
+    private static final byte notFolder = 1;
+    private static final byte cannotReadFolder = 2;
+    private static final byte cannotWriteFolder = 3;
+    private static final byte alreadyNbPoject = 4;
+    private static final byte notFoundMakeAndConfigure = 5;
+    private byte messageKind = noMessage;
+
+    boolean valid() {
+        messageKind = noMessage;
         String path = projectFolder.getText().trim();
-        if (path.length() == 0) {
-            return false;
-        }
-        File file = new File(path);
-        if (!(file.isDirectory() && file.canRead())) {
-            return false;
-        }
-        if (simpleMode.isSelected()) {
-            if (!file.canWrite()) {
+        try {
+            if (path.length() == 0) {
                 return false;
             }
-            File nbFile = new File(path+"/nbproject/project.xml"); // NOI18N
-            if (nbFile.exists()) {
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead())) {
+                if (file.isDirectory()) {
+                    messageKind = cannotReadFolder;
+                } else {
+                    messageKind = notFolder;
+                }
                 return false;
             }
-        }
-        file = new File(path+"/Makefile"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
+            if (simpleMode.isSelected()) {
+                if (!file.canWrite()) {
+                    messageKind = cannotWriteFolder;
+                    return false;
+                }
+                File nbFile = new File(path+"/nbproject/project.xml"); // NOI18N
+                if (nbFile.exists()) {
+                    messageKind = alreadyNbPoject;
+                    return false;
+                }
+            }
+            file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return true;
+            }
+            if (simpleMode.isSelected()) {
+                messageKind = notFoundMakeAndConfigure;
+                return false;
+            }
             return true;
+        } finally {
+            if (messageKind > 0) {
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path)); // NOI18N
+            } else {
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+            }
         }
-        file = new File(path+"/makefile"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
-            return true;
-        }
-        file = new File(path+"/configure"); // NOI18N
-        if (file.exists() && file.isFile() && file.canRead()) {
-            return true;
-        }
-        if (simpleMode.isSelected()) {
-            return false;
-        }
-        return true;
     }
     
-    private String getString(String key) {
-        return NbBundle.getBundle(SelectModePanel.class).getString(key);
+    private String getString(String key, String ... params){
+        return NbBundle.getMessage(SelectModePanel.class, key, params);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -302,8 +319,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel instructionPanel;
-    private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JTextPane instructions;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel modeLabel;
     private javax.swing.JTextField projectFolder;
     private javax.swing.JRadioButton simpleMode;

@@ -71,11 +71,11 @@ public class AddTest extends TestCase {
         System.setProperty("Env-CVSWRAPPERS", "*.wrap -k 'b'");
         System.out.println(protocolLog);
 
-        InputStream in = getClass().getResourceAsStream("protocol/iz36289.in");
-        final PseudoCvsServer cvss = new PseudoCvsServer(in);
+        final PseudoCvsServer cvss = new PseudoCvsServer("protocol/iz36289.in");
         File requestsLog = File.createTempFile("requests", null, tmpDir);
         cvss.logRequests(new FileOutputStream(requestsLog));
-        new Thread(cvss).start();
+        Thread cvssThread = new Thread(cvss);
+        cvssThread.start();
 
         String cvsRoot = cvss.getCvsRoot();
         CVSRoot root = CVSRoot.parse(cvsRoot);
@@ -118,6 +118,7 @@ public class AddTest extends TestCase {
 
         client.executeCommand(add, gtx);
         cvss.stop();
+        cvssThread.join();
 
         // check test matching golden file (here critical line from issue #36289)
 

@@ -41,11 +41,26 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.*;
+import com.sun.jdi.ArrayReference;
 
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.InternalException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -131,7 +146,18 @@ org.netbeans.api.debugger.jpda.Field {
     }
 
     public JPDAClassType getDeclaringClass() {
-        return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) array.type());
+        try {
+            return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) ValueWrapper.type(array));
+        } catch (InternalExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        }
     }
 
     /**
@@ -160,11 +186,17 @@ org.netbeans.api.debugger.jpda.Field {
      */ 
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
-            array.setValue(index, value);
+            ArrayReferenceWrapper.setValue(array, index, value);
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
             throw new InvalidExpressionException (ex);
+        } catch (InternalExceptionWrapper ex) {
+            // Ignore
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignore
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            // Ignore, it's gone.
         }
     }
 

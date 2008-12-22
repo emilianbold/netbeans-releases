@@ -52,6 +52,11 @@ import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocalVariableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 
 
 /**
@@ -75,8 +80,18 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         CallStackFrameImpl frame
     ) {
         this(debugger, value, className, local, genericSignature,
-             local.name () + local.hashCode() + (value instanceof ObjectReference ? "^" : ""),
+             getID(local),
              frame);
+    }
+
+    private static String getID(LocalVariable local) {
+        try {
+            return LocalVariableWrapper.name(local) + LocalVariableWrapper.hashCode(local) + "^";
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 
     private ObjectLocalVariable (
@@ -109,7 +124,13 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     * @return string representation of type of this variable.
     */
     public String getName () {
-        return local.name ();
+        try {
+            return LocalVariableWrapper.name(local);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 
     /**
@@ -131,13 +152,19 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     * @return string representation of type of this variable.
     */
     public String getDeclaredType () {
-        return local.typeName ();
+        try {
+            return LocalVariableWrapper.typeName(local);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
     
     protected final void setValue (Value value) throws InvalidExpressionException {
         try {
             StackFrame sf = ((CallStackFrameImpl) thread.getCallStack(depth, depth + 1)[0]).getStackFrame();
-            sf.setValue (local, value);
+            StackFrameWrapper.setValue (sf, local, value);
             setInnerValue(value);
         } catch (AbsentInformationException aiex) {
             throw new InvalidExpressionException(aiex);
@@ -145,8 +172,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
             throw new InvalidExpressionException (ex);
-        } catch (InvalidStackFrameException ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             throw new InvalidExpressionException (ex);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         }
     }
     
@@ -167,6 +196,12 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     }
 
     public String toString () {
-        return "ObjectLocalVariable " + local.name ();
+        try {
+            return "ObjectLocalVariable " + LocalVariableWrapper.name(local);
+        } catch (InternalExceptionWrapper ex) {
+            return "ObjectLocalVariable " + ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 }

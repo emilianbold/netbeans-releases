@@ -65,11 +65,13 @@ public abstract class ProjectClassPathImplementation implements ClassPathImpleme
     final private AntProjectHelper helper;
     private List<PathResourceImplementation> resources;
     private String path;
+    private final RequestProcessor requestProcessor;
     
     
-    public ProjectClassPathImplementation(AntProjectHelper helper) {
+    public ProjectClassPathImplementation(AntProjectHelper helper, RequestProcessor requestProcessor) {
         assert helper != null;
         this.helper = helper;
+        this.requestProcessor = requestProcessor;
         this.helper.addAntProjectListener(this);
     }
     
@@ -125,7 +127,7 @@ public abstract class ProjectClassPathImplementation implements ClassPathImpleme
     
     public void propertiesChanged(@SuppressWarnings("unused")
 	final AntProjectEvent ev) {
-        RequestProcessor.getDefault().post(this);
+        requestProcessor.post(this);
     }
     
     public void run() {

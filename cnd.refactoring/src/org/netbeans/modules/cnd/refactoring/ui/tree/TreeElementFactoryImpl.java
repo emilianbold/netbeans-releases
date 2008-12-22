@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
 import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -67,10 +66,6 @@ import org.openide.util.Lookup;
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
     public Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();
-    public static TreeElementFactoryImpl instance;
-    {
-        instance = this;
-    }
     
     public TreeElement getTreeElement(Object o) {
         TreeElement result = map.get(o);

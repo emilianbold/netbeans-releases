@@ -46,7 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
@@ -54,7 +59,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ColumnNodeProvider extends NodeProvider {
 
@@ -68,47 +73,63 @@ public class ColumnNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ColumnNodeProvider createInstance(Lookup lookup) {
                 ColumnNodeProvider provider = new ColumnNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
-    private final Table table;
-    private final View view;
+    private final MetadataElementHandle handle;
 
     private ColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        table = getLookup().lookup(Table.class);
-        view = getLookup().lookup(View.class);
+        handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    private void setup() {
-        update();
-    }
+    @Override
+    protected synchronized void initialize() {
+        final List<Node> newList = new ArrayList<Node>();
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            try { 
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Collection<Column> columns;
+                            try {
+                                Table table = (Table)handle.resolve(metaData);
+                                if (table == null) {
+                                    return;
+                                }
+                                columns = table.getColumns();
+                            } catch (ClassCastException e) {
+                                View view = (View)handle.resolve(metaData);
+                                if (view == null) {
+                                    return;
+                                }
+                                columns = view.getColumns();
+                            }
 
-    private synchronized void update() {
-        List<Node> newList = new ArrayList<Node>();
+                            for (Column column : columns) {
+                                MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
+                                Collection<Node> matches = getNodes(h);
+                                if (matches.size() > 0) {
+                                    newList.addAll(matches);
+                                } else {
+                                    NodeDataLookup lookup = new NodeDataLookup();
+                                    lookup.add(connection);
+                                    lookup.add(h);
 
-        Collection<Column> columns;
-        if (table != null) {
-            columns = table.getColumns();
-        } else {
-            columns = view.getColumns();
-        }
-        
-        for (Column column : columns) {
-            Collection<Node> matches = getNodes(column);
-            if (matches.size() > 0) {
-                newList.addAll(matches);
-            } else {
-                NodeDataLookup lookup = new NodeDataLookup();
-                lookup.add(connection);
-                lookup.add(column);
-
-                newList.add(ColumnNode.create(lookup));
+                                    newList.add(ColumnNode.create(lookup, ColumnNodeProvider.this));
+                                }
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 
@@ -117,8 +138,14 @@ public class ColumnNodeProvider extends NodeProvider {
 
     static class ColumnComparator implements Comparator<Node> {
 
-        public int compare(Node model1, Node model2) {
-            return 1;
+        public int compare(Node node1, Node node2) {
+            ColumnNode n1 = (ColumnNode)node1;
+            ColumnNode n2 = (ColumnNode)node2;
+            int result = 1;
+            if (n1.getPosition() < n2.getPosition()) {
+                result = -1;
+            }
+            return result;
         }
 
     }

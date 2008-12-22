@@ -56,7 +56,14 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -87,8 +94,8 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             if ( (breakpoint.getBreakpointType () & 
                   breakpoint.TYPE_THREAD_STARTED ) != 0
             ) {
-                ThreadStartRequest tsr = getEventRequestManager ().
-                    createThreadStartRequest ();
+                ThreadStartRequest tsr = EventRequestManagerWrapper.
+                    createThreadStartRequest(getEventRequestManager());
                 addEventRequest (tsr);
             }
             if ( (breakpoint.getBreakpointType () & 
@@ -96,21 +103,22 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             ) {
                 VirtualMachine vm = getVirtualMachine();
                 if (vm != null) {
-                    ThreadDeathRequest tdr = vm.eventRequestManager().
-                        createThreadDeathRequest();
+                    ThreadDeathRequest tdr = EventRequestManagerWrapper.
+                        createThreadDeathRequest(VirtualMachineWrapper.eventRequestManager(vm));
                     addEventRequest (tdr);
                 }
             }
-        } catch (VMDisconnectedException e) {
+        } catch (InternalExceptionWrapper e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
         }
     }
     
-    protected EventRequest createEventRequest(EventRequest oldRequest) {
+    protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof ThreadStartRequest) {
-            return getEventRequestManager ().createThreadStartRequest ();
+            return EventRequestManagerWrapper.createThreadStartRequest(getEventRequestManager());
         }
         if (oldRequest instanceof ThreadDeathRequest) {
-            return getEventRequestManager().createThreadDeathRequest();
+            return EventRequestManagerWrapper.createThreadDeathRequest(getEventRequestManager());
         }
         return null;
     }
@@ -121,11 +129,18 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
 
     public boolean exec (Event event) {
         ThreadReference thread = null;
-        if (event instanceof ThreadStartEvent)
-            thread = ((ThreadStartEvent) event).thread ();
-        else
-        if (event instanceof ThreadDeathEvent)
-            thread = ((ThreadDeathEvent) event).thread ();
+        try {
+            if (event instanceof ThreadStartEvent)
+                thread = ThreadStartEventWrapper.thread((ThreadStartEvent) event);
+            else
+            if (event instanceof ThreadDeathEvent) {
+                thread = ThreadDeathEventWrapper.thread((ThreadDeathEvent) event);
+            }
+        } catch (InternalExceptionWrapper ex) {
+            return true;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return true;
+        }
 
         return perform (
             event,

@@ -46,8 +46,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
-import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
  */
 public class SQLDataObject extends MultiDataObject {
 
-    public SQLDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
+    public SQLDataObject(FileObject primaryFile, MultiFileLoader loader) throws DataObjectExistsException {
         super(primaryFile, loader);
         CookieSet cookies = getCookieSet();
         final SQLEditorSupport sqlEditorSupport = new SQLEditorSupport(this);

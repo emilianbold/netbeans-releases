@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.RubyType;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.util.Exceptions;
 
@@ -59,27 +60,29 @@ import org.openide.util.Exceptions;
  */
 public class Call {
 
-    public static final Call LOCAL = new Call(null, null, false, false);
-    public static final Call NONE = new Call(null, null, false, false);
-    public static final Call UNKNOWN = new Call(null, null, false, false);
-    private final String type;
+    public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
+    public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
+    public static final Call UNKNOWN = new Call(RubyType.createUnknown(), null, false, false);
+
+    private final RubyType type;
     private final String lhs;
     private final boolean isStatic;
     private final boolean methodExpected;
     private final boolean constantExpected;
     private boolean isLHSConstant;
 
-    private Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
+    private Call(RubyType type, String lhs, boolean isStatic, boolean methodExpected) {
         this(type, lhs, isStatic, methodExpected, false);
     }
     
-    private Call(String type, String lhs, boolean isStatic, boolean methodExpected, boolean constantExpected) {
+    private Call(RubyType type, String lhs, boolean isStatic, boolean methodExpected, boolean constantExpected) {
         super();
         this.type = type;
         this.lhs = lhs;
         this.methodExpected = methodExpected;
-        if (lhs == null) {
-            lhs = type;
+        if (lhs == null && type.isKnown()) {
+            assert type.isSingleton() : "should be singleton, was: " + type;
+            lhs = type.first();
         }
         this.isStatic = isStatic;
         this.constantExpected = constantExpected;
@@ -89,7 +92,7 @@ public class Call {
         this.isLHSConstant = isLHSConstant;
     }
 
-    public String getType() {
+    public RubyType getType() {
         return type;
     }
 
@@ -281,7 +284,8 @@ public class Call {
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
             }
-            
+
+            int dots = 0;
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
             while (ts.movePrevious()) {
@@ -300,41 +304,26 @@ public class Call {
 
                 if (id == RubyTokenId.WHITESPACE) {
                     break;
-                } else if (id == RubyTokenId.RBRACKET) {
-                    // Looks like we're operating on an array, e.g.
-                    //  [1,2,3].each|
-                    return new Call("Array", null, false, methodExpected);
-                } else if (id == RubyTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
-                                                       // Looks like we're operating on a hash, e.g.
-                                                       //  {1=>foo,2=>bar}.each|
+                }
 
-                    return new Call("Hash", null, false, methodExpected);
-                } else if ((id == RubyTokenId.STRING_END) || (id == RubyTokenId.QUOTED_STRING_END)) {
-                    return new Call("String", null, false, methodExpected);
-                } else if (id == RubyTokenId.REGEXP_END) {
-                    return new Call("Regexp", null, false, methodExpected);
-                } else if (id == RubyTokenId.INT_LITERAL) {
-                    return new Call("Fixnum", null, false, methodExpected); // Or Bignum?
-                } else if (id == RubyTokenId.FLOAT_LITERAL) {
-                    return new Call("Float", null, false, methodExpected);
-                } else if (id == RubyTokenId.TYPE_SYMBOL) {
-                    return new Call("Symbol", null, false, methodExpected);
-                } else if (id == RubyTokenId.RANGE) {
-                    return new Call("Range", null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
-                    return new Call("NilClass", null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
-                    return new Call("TrueClass", null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
-                    return new Call("FalseClass", null, false, methodExpected);
-                } else if (((id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.INSTANCE_VAR) ||
+                // do not evaluate e.g. '1.even?.' expression to Fixnum type
+                if (dots < 2) {
+                    Call call = tryLiteral(id, methodExpected, tokenText);
+                    if (call != null) {
+                        return call;
+                    }
+                }
+
+                if (((id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.INSTANCE_VAR) ||
                         (id == RubyTokenId.CLASS_VAR) || (id == RubyTokenId.IDENTIFIER)) ||
                         id.primaryCategory().equals("keyword") || (id == RubyTokenId.DOT) ||
                         (id == RubyTokenId.COLON3) || (id == RubyTokenId.CONSTANT) ||
-                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF)) {
+                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF) ||
+                        (isLiteral(id))) {
                     
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();
+                    dots++;
 
                     continue;
                 } else if ((id == RubyTokenId.LPAREN) || (id == RubyTokenId.LBRACE) ||
@@ -356,8 +345,7 @@ public class Call {
                     String lhs = doc.getText(beginOffset, lastSeparatorOffset - beginOffset);
 
                     if (lhs.equals("super") || lhs.equals("self")) { // NOI18N
-
-                        return new Call(lhs, lhs, false, true);
+                        return new Call(RubyType.create(lhs), lhs, false, true);
                     } else if (Character.isUpperCase(lhs.charAt(0))) {
                         
                         // Detect constructor calls of the form String.new.^
@@ -365,7 +353,7 @@ public class Call {
                             // See if it looks like a type prior to that
                             String type = lhs.substring(0, lhs.length() - 4); // 4=".new".length()
                             if (RubyUtils.isValidConstantFQN(type)) {
-                                return new Call(type, lhs, false, methodExpected);
+                                return new Call(RubyType.create(type), lhs, false, methodExpected);
                             }
                         }
 
@@ -377,14 +365,16 @@ public class Call {
                             type = lhs;
                         }
 
-                        Call call = new Call(type, lhs, isStatic, methodExpected, constantExpected);
+                        RubyType rubyType = type == null ? RubyType.createUnknown() : RubyType.create(type);
+                        Call call = new Call(rubyType, lhs, isStatic, methodExpected, constantExpected);
                         call.setLHSConstant(isLHSConstant);
 
                         return call;
                     } else {
                         // try __FILE__ or __LINE__
-                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+                        String typeS = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
 
+                        RubyType type = typeS == null ? RubyType.createUnknown() : RubyType.create(typeS);
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {
@@ -396,5 +386,51 @@ public class Call {
         }
 
         return Call.LOCAL;
+    }
+
+    private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {
+        if (id == RubyTokenId.RBRACKET) {
+            // Looks like we're operating on an array, e.g.
+            //  [1,2,3].each|
+            return new Call(RubyType.ARRAY, null, false, methodExpected);
+        } else if (id == RubyTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
+            // Looks like we're operating on a hash, e.g.
+            //  {1=>foo,2=>bar}.each|
+            return new Call(RubyType.HASH, null, false, methodExpected);
+        } else if ((id == RubyTokenId.STRING_END) || (id == RubyTokenId.QUOTED_STRING_END)) {
+            return new Call(RubyType.STRING, null, false, methodExpected);
+        } else if (id == RubyTokenId.REGEXP_END) {
+            return new Call(RubyType.REGEXP, null, false, methodExpected);
+        } else if (id == RubyTokenId.INT_LITERAL) {
+            return new Call(RubyType.FIXNUM, null, false, methodExpected); // Or Bignum?
+        } else if (id == RubyTokenId.FLOAT_LITERAL) {
+            return new Call(RubyType.FLOAT, null, false, methodExpected);
+        } else if (id == RubyTokenId.TYPE_SYMBOL) {
+            return new Call(RubyType.SYMBOL, null, false, methodExpected);
+        } else if (id == RubyTokenId.RANGE) {
+            return new Call(RubyType.RANGE, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.NIL_CLASS, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.TRUE_CLASS, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.FALSE_CLASS, null, false, methodExpected);
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean isLiteral(final TokenId id) {
+        return id == RubyTokenId.RBRACKET ||
+                id == RubyTokenId.RBRACE ||
+                id == RubyTokenId.STRING_END ||
+                id == RubyTokenId.REGEXP_END ||
+                id == RubyTokenId.INT_LITERAL ||
+                id == RubyTokenId.FLOAT_LITERAL ||
+                id == RubyTokenId.TYPE_SYMBOL ||
+                id == RubyTokenId.RANGE ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD;
     }
 }

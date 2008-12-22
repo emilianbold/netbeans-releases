@@ -85,7 +85,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
 
     private final ExplorerManager manager = new ExplorerManager();
     private final BeanTreeView btw = new BeanTreeView();
-    private final MobilityDeploymentProperties props = new MobilityDeploymentProperties();
+    private final MobilityDeploymentProperties props = new MobilityDeploymentProperties(new RequestProcessor("Mobility Deployment Dialog")); //NOI18N
     private final VisualPropertySupport vps = VisualPropertySupport.getDefault(props);
     private final String initialTypeName;
 

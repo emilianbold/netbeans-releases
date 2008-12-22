@@ -99,7 +99,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
     private static final Config DEFAULT = new Config(null,
             NbBundle.getMessage(RubyConfigurationProvider.class, "RubyConfigurationProvider.default.label"));
 
-    private final RubyProject p;
+    private final RubyBaseProject p;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener fcl = new FileChangeAdapter() {
         public void fileFolderCreated(FileEvent fe) {
@@ -138,7 +138,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
     private FileObject configDir;
     private Map<String,Config> configs;
 
-    public RubyConfigurationProvider(RubyProject p) {
+    public RubyConfigurationProvider(RubyBaseProject p) {
         this.p = p;
         fclWeak = FileUtil.weakFileChangeListener(fcl, null);
         FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N

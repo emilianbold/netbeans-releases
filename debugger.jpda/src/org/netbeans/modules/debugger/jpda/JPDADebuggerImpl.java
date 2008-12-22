@@ -95,6 +95,10 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -122,13 +126,26 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException2;
+import org.netbeans.modules.debugger.jpda.expr.Evaluator;
 import org.netbeans.modules.debugger.jpda.expr.Expression2;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -347,7 +364,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public boolean canPopFrames () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
-        return vm.canPopFrames ();
+        return VirtualMachineWrapper.canPopFrames0(vm);
     }
 
     /**
@@ -359,7 +376,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public boolean canFixClasses () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
-        return vm.canRedefineClasses ();
+        return VirtualMachineWrapper.canRedefineClasses0(vm);
     }
 
     /**
@@ -378,17 +395,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm == null) {
                 return ; // The session has finished
             }
-            while (i.hasNext ()) {
-                String className = i.next ();
-                List<ReferenceType> classRefs = vm.classesByName (className);
-                int j, jj = classRefs.size ();
-                for (j = 0; j < jj; j++)
-                    map.put (
-                        classRefs.get (j),
-                        classes.get (className)
-                    );
+            try {
+                while (i.hasNext ()) {
+                    String className = i.next ();
+                    List<ReferenceType> classRefs = VirtualMachineWrapper.classesByName (vm, className);
+                    int j, jj = classRefs.size ();
+                    for (j = 0; j < jj; j++)
+                        map.put (
+                            classRefs.get (j),
+                            classes.get (className)
+                        );
+                }
+                VirtualMachineWrapper.redefineClasses (vm, map);
+            } catch (InternalExceptionWrapper e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
             }
-            vm.redefineClasses (map);
 
             // update breakpoints
             fixBreakpoints();
@@ -671,7 +692,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
-    public Value evaluateIn (Expression expression, CallStackFrame c) throws InvalidExpressionException {
+    private Value evaluateIn (Expression expression, CallStackFrame c) throws InvalidExpressionException {
         synchronized (LOCK) {
             CallStackFrameImpl csf;
             if (c instanceof CallStackFrameImpl) {
@@ -687,7 +708,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     try {
                         value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
                         passed = true;
-                    } catch (InvalidStackFrameException e) {
+                    } catch (InvalidStackFrameExceptionWrapper e) {
                     }
                     if (passed) {
                         try {
@@ -707,12 +728,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (com.sun.jdi.VMDisconnectedException e) {
                     // Causes kill action when something is being evaluated.
                     return null;
+                } catch (VMDisconnectedExceptionWrapper e) {
+                    // Causes kill action when something is being evaluated.
+                    return null;
+                } catch (InternalExceptionWrapper e) {
+                    return null;
                 }
             }
             //PATCH 48174
             if (altCSF != null) {
                 try {
-                    if (!altCSF.thread().isSuspended()) {
+                    boolean isSuspended = false;
+                    try {
+                        isSuspended = ThreadReferenceWrapper.isSuspended(StackFrameWrapper.thread(altCSF));
+                    } catch (InternalExceptionWrapper ex) {
+                    } catch (InvalidStackFrameExceptionWrapper ex) {
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                    }
+                    if (!isSuspended) {
                         altCSF = null; // Already invalid
                     } else {
                         // TODO XXX : Can be resumed in the mean time !!!!
@@ -752,7 +787,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 imports.addAll (Arrays.asList (EditorContextBridge.getContext().getImports (
                     getEngineContext ().getURL (frame, "Java")
                 )));
-                final ThreadReference tr = frame.thread();
+                final ThreadReference tr = StackFrameWrapper.thread(frame);
                 final List<EventRequest>[] disabledBreakpoints =
                         new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
@@ -779,8 +814,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                                 throw new RuntimeException(
                                                     new InvalidExpressionException (pvex.getMessage()));
                                             }
-                                            disabledBreakpoints[0] = disableAllBreakpoints ();
-                                            resumedThread[0] = theResumedThread;
+                                            try {
+                                                disabledBreakpoints[0] = disableAllBreakpoints();
+                                                resumedThread[0] = theResumedThread;
+                                            } catch (InternalExceptionWrapper ex) {
+                                            } catch (VMDisconnectedExceptionWrapper ex) {
+                                            }
                                         }
                                     }
                                 },
@@ -821,8 +860,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                                 throw new RuntimeException(
                                                     new InvalidExpressionException (pvex.getMessage()));
                                             }
-                                            disabledBreakpoints[0] = disableAllBreakpoints ();
-                                            resumedThread[0] = theResumedThread;
+                                            try {
+                                                disabledBreakpoints[0] = disableAllBreakpoints();
+                                                resumedThread[0] = theResumedThread;
+                                            } catch (InternalExceptionWrapper ex) {
+                                            } catch (VMDisconnectedExceptionWrapper ex) {
+                                            }
                                         }
                                     }
                                 },
@@ -844,6 +887,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                     }
                 }
+            } catch (InternalExceptionWrapper e) {
+                throw new InvalidExpressionException(e.getLocalizedMessage());
+            } catch (VMDisconnectedExceptionWrapper e) {
+                throw new InvalidExpressionException(NbBundle.getMessage(
+                    Evaluator.class, "CTL_EvalError_disconnected"));
+            } catch (InvalidStackFrameExceptionWrapper e) {
+                Exceptions.printStackTrace(e); // Should not occur
+                throw new InvalidExpressionException (NbBundle.getMessage(
+                        JPDAThreadImpl.class, "MSG_NoCurrentContext"));
             } catch (EvaluationException e) {
                 InvalidExpressionException iee = new InvalidExpressionException (e);
                 iee.initCause (e);
@@ -944,7 +996,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
-                l = disableAllBreakpoints ();
+                try {
+                    l = disableAllBreakpoints();
+                } catch (InternalExceptionWrapper ex) {
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return null;
+                }
                 try {
                     Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
                         invokeVirtual (
@@ -994,32 +1051,39 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private Value cutLength(StringReference sr, int maxLength, ThreadReference tr) throws InvalidExpressionException {
-        Method stringLengthMethod = ((ClassType) sr.type ()).
-            concreteMethodByName ("length", "()I");  // NOI18N
-        List<Value> emptyArgs = Collections.emptyList();
-        IntegerValue lengthValue = (IntegerValue) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-            invokeVirtual (
-                sr,
-                stringLengthMethod,
-                tr,
-                emptyArgs,
-                this
-            );
-            if (lengthValue.value() > maxLength) {
-                Method subStringMethod = ((ClassType) sr.type ()).
-                    concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
-                if (subStringMethod != null) {
-                    sr = (StringReference) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-                        invokeVirtual (
-                            sr,
-                            subStringMethod,
-                            tr,
-                            Arrays.asList(new Value [] { sr.virtualMachine().mirrorOf(0),
-                                           sr.virtualMachine().mirrorOf(maxLength) }),
-                            this
-                        );
+        try {
+            Method stringLengthMethod;
+                stringLengthMethod = ClassTypeWrapper.concreteMethodByName(
+                        (ClassType) ValueWrapper.type (sr), "length", "()I"); // NOI18N
+            List<Value> emptyArgs = Collections.emptyList();
+            IntegerValue lengthValue = (IntegerValue) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                invokeVirtual (
+                    sr,
+                    stringLengthMethod,
+                    tr,
+                    emptyArgs,
+                    this
+                );
+                if (IntegerValueWrapper.value(lengthValue) > maxLength) {
+                    Method subStringMethod = ClassTypeWrapper.concreteMethodByName(
+                            (ClassType) ValueWrapper.type (sr), "substring", "(II)Ljava/lang/String;");  // NOI18N
+                    if (subStringMethod != null) {
+                        sr = (StringReference) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                            invokeVirtual (
+                                sr,
+                                subStringMethod,
+                                tr,
+                                Arrays.asList(new Value [] { VirtualMachineWrapper.mirrorOf(MirrorWrapper.virtualMachine(sr), 0),
+                                               VirtualMachineWrapper.mirrorOf(MirrorWrapper.virtualMachine(sr), maxLength) }),
+                                this
+                            );
+                    }
                 }
-            }
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+        }
         return sr;
     }
 
@@ -1127,9 +1191,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             try {
                 notifyToBeResumedAll();
                 synchronized (LOCK) {
-                    vm.resume();
+                    VirtualMachineWrapper.resume(vm);
                 }
-            } catch (VMDisconnectedException e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
+            } catch (InternalExceptionWrapper e) {
             }
         }
 
@@ -1261,12 +1326,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 try {
                     if (di instanceof AttachingDICookie) {
                         logger.fine(" StartActionProvider.finish() VM dispose");
-                        vm.dispose ();
+                        VirtualMachineWrapper.dispose (vm);
                     } else {
                         logger.fine(" StartActionProvider.finish() VM exit");
-                        vm.exit (0);
+                        VirtualMachineWrapper.exit (vm, 0);
                     }
-                } catch (VMDisconnectedException e) {
+                } catch (InternalExceptionWrapper e) {
+                    logger.fine(" StartActionProvider.finish() VM exception " + e);
+                } catch (VMDisconnectedExceptionWrapper e) {
                     logger.fine(" StartActionProvider.finish() VM exception " + e);
                     // debugee VM is already disconnected (it finished normally)
                 }
@@ -1310,11 +1377,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             if (vm != null) {
                 logger.fine("VM suspend");
-                vm.suspend ();
-                // Check the suspended count
-                List<ThreadReference> threads = vm.allThreads();
-                for (ThreadReference t : threads) {
-                    while (t.suspendCount() > 1) t.resume();
+                try {
+                    VirtualMachineWrapper.suspend (vm);
+                    // Check the suspended count
+                    List<ThreadReference> threads = VirtualMachineWrapper.allThreads(vm);
+                    for (ThreadReference t : threads) {
+                        try {
+                            while (ThreadReferenceWrapper.suspendCount(t) > 1) {
+                                ThreadReferenceWrapper.resume(t);
+                            }
+                        } catch (IllegalThreadStateExceptionWrapper e) {
+                        } catch (ObjectCollectedExceptionWrapper e) {
+                        }
+                    }
+                } catch (VMDisconnectedExceptionWrapper e) {
+                    return ;
+                } catch (InternalExceptionWrapper e) {
+                    return ;
                 }
             }
             setState (STATE_STOPPED);
@@ -1368,7 +1447,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             if (vm != null) {
                 logger.fine("VM resume");
-                vm.resume ();
+                try {
+                    VirtualMachineWrapper.resume(vm);
+                } catch (VMDisconnectedExceptionWrapper e) {
+                } catch (InternalExceptionWrapper e) {
+                }
             }
         }
     }
@@ -1535,7 +1618,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             if (vm == null) return ;
             try {
-                java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
+                java.util.regex.Matcher m = jvmVersionPattern.matcher(VirtualMachineWrapper.version(vm));
                 if (m.matches ()) {
                     int minor = Integer.parseInt (m.group (2));
                     if (minor >= 5) {
@@ -1549,7 +1632,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                     }
                 }
-            } catch (VMDisconnectedException e) {
+            } catch (InternalExceptionWrapper e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
             }
         }
     }
@@ -1616,16 +1700,29 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine;
         }
         if (vm == null) return null;
-        List l = vm.allThreads ();
+        List l;
+        try {
+            l = VirtualMachineWrapper.allThreads(vm);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        }
         if (l.size () < 1) return null;
         int i, k = l.size ();
         ThreadReference thread = null;
         for (i = 0; i < k; i++) {
             ThreadReference t = (ThreadReference) l.get (i);
-            if (t.isSuspended ()) {
-                thread = t;
-                if (t.name ().equals ("Finalizer"))
-                    return t;
+            try {
+                if (ThreadReferenceWrapper.isSuspended (t)) {
+                    thread = t;
+                    if (ThreadReferenceWrapper.name (t).equals ("Finalizer"))
+                        return t;
+                }
+            } catch (InternalExceptionWrapper ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
         }
         return thread;
@@ -1664,29 +1761,29 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             old, callStackFrame);
     }
 
-    private List<EventRequest> disableAllBreakpoints () {
+    private List<EventRequest> disableAllBreakpoints () throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         logger.fine ("disableAllBreakpoints() start.");
         List<EventRequest> l = new ArrayList<EventRequest>();
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return l;
-        EventRequestManager erm = vm.eventRequestManager ();
-        l.addAll (erm.accessWatchpointRequests ());
-        l.addAll (erm.breakpointRequests ());
-        l.addAll (erm.classPrepareRequests ());
-        l.addAll (erm.classUnloadRequests ());
-        l.addAll (erm.exceptionRequests ());
-        l.addAll (erm.methodEntryRequests ());
-        l.addAll (erm.methodExitRequests ());
-        l.addAll (erm.modificationWatchpointRequests ());
+        EventRequestManager erm = VirtualMachineWrapper.eventRequestManager (vm);
+        l.addAll (EventRequestManagerWrapper.accessWatchpointRequests (erm));
+        l.addAll (EventRequestManagerWrapper.breakpointRequests (erm));
+        l.addAll (EventRequestManagerWrapper.classPrepareRequests (erm));
+        l.addAll (EventRequestManagerWrapper.classUnloadRequests (erm));
+        l.addAll (EventRequestManagerWrapper.exceptionRequests (erm));
+        l.addAll (EventRequestManagerWrapper.methodEntryRequests (erm));
+        l.addAll (EventRequestManagerWrapper.methodExitRequests (erm));
+        l.addAll (EventRequestManagerWrapper.modificationWatchpointRequests (erm));
 //        l.addAll (erm.stepRequests ());
-        l.addAll (erm.threadDeathRequests ());
-        l.addAll (erm.threadStartRequests ());
+        l.addAll (EventRequestManagerWrapper.threadDeathRequests (erm));
+        l.addAll (EventRequestManagerWrapper.threadStartRequests (erm));
         int i = l.size () - 1;
         for (; i >= 0; i--)
-            if (!l.get (i).isEnabled ())
+            if (!EventRequestWrapper.isEnabled (l.get (i)))
                 l.remove (i);
             else
-                l.get (i).disable ();
+                EventRequestWrapper.disable (l.get (i));
         operator.breakpointsDisabled();
         logger.fine ("disableAllBreakpoints() end.");
         return l;
@@ -1698,13 +1795,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             try {
-                l.get (i).enable ();
+                EventRequestWrapper.enable (l.get (i));
             } catch (IllegalThreadStateException ex) {
                 // see #53163
                 // this can occurre if there is some "old" StepRequest and
                 // thread named in the request has died
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return ;
             }
         logger.fine ("enableAllBreakpoints() end.");
     }
@@ -1776,11 +1876,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                try {
-                    classes = virtualMachine.allClasses();
-                } catch (VMDisconnectedException e) {
-                    classes = Collections.emptyList();
-                }
+                classes = VirtualMachineWrapper.allClasses0(virtualMachine);
             }
         }
         return new ClassTypeList(this, classes);
@@ -1792,18 +1888,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                try {
-                    classes = virtualMachine.classesByName(name);
-                } catch (VMDisconnectedException e) {
-                    classes = Collections.emptyList();
-                }
+                classes = VirtualMachineWrapper.classesByName0(virtualMachine, name);
             }
         }
         return new ClassTypeList(this, classes);
     }
 
+    @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
-        if (Java6Methods.isJDK6()) {
+        if (JPDAUtils.IS_JDK_16) {
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
@@ -1811,20 +1904,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm == null) {
                 return new long[classTypes.size()];
             }
-            try {
-                vm.version(); // check whether we are still connected to VM
-            } catch (VMDisconnectedException e) {
-                return new long[classTypes.size()];
-            }
+            List<ReferenceType> types;
             if (classTypes instanceof ClassTypeList) {
                 ClassTypeList cl = (ClassTypeList) classTypes;
-                return Java6Methods.instanceCounts(vm, cl.getTypes());
+                types = cl.getTypes();
             } else {
-                List<ReferenceType> types = new ArrayList<ReferenceType>(classTypes.size());
+                types = new ArrayList<ReferenceType>(classTypes.size());
                 for (JPDAClassType clazz : classTypes) {
                     types.add(((JPDAClassTypeImpl) clazz).getType());
                 }
-                return Java6Methods.instanceCounts(vm, types);
+            }
+            try {
+                return VirtualMachineWrapper.instanceCounts(vm, types);
+            } catch (InternalExceptionWrapper e) {
+                return new long[classTypes.size()];
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return new long[classTypes.size()];
             }
         } else {
             throw new UnsupportedOperationException("Not supported.");
@@ -1838,7 +1933,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private static boolean canGetInstanceInfo(VirtualMachine vm) {
-        if (Java6Methods.isJDK6()) {
+        if (JPDAUtils.IS_JDK_16) {
             try {
                 java.lang.reflect.Method canGetInstanceInfoMethod = VirtualMachine.class.getMethod("canGetInstanceInfo", new Class[] {});
                 Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});

@@ -47,11 +47,11 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -121,7 +121,8 @@ public class AutotestRunner implements TestRunner {
 
         TestSession session = new TestSession(displayName,
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
         TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
     

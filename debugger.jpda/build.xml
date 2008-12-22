@@ -42,4 +42,20 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="debugger.jpda">
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="gen-compile" depends="init">
+        <mkdir dir="build/genclasses"/>
+        <nb-javac srcdir="gensrc" destdir="build/genclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+                deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
+            <classpath refid="cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
+            <processorpath refid="processor.cp"/>
+        </nb-javac>
+    </target>
+
+    <target name="generate" depends="gen-compile">
+        <java classname="org.netbeans.modules.debugger.jpda.jdi.Generate" classpathref="cp" classpath="build/genclasses">
+        </java>
+    </target>
+    
 </project>

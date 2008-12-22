@@ -57,7 +57,8 @@ import org.openide.util.NbBundle;
 public class TimeType extends TimestampType {
 
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
-    private final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
+    public final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
+        DateFormat.getTimeInstance(),
         new SimpleDateFormat("HH:mm:ss", LOCALE), // NOI18N
         DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
     };
@@ -73,9 +74,14 @@ public class TimeType extends TimestampType {
         return TIME_ZONE;
     }
 
+    
+    /* Increment to use in computing a successor value. */
+    // One day = 1 day x 24 hr/day x 60 min/hr x 60 sec/min x 1000 ms/sec
+    static final long INCREMENT_DAY = 1 * 24 * 60 * 60 * 1000;
+    
     public static long normalizeTime(long rawTimeMillis) {
         int dstOffset = (TIME_ZONE.inDaylightTime(new java.util.Date(rawTimeMillis))) ? TIME_ZONE.getDSTSavings() : 0;
-        return (rawTimeMillis < DateType.INCREMENT_DAY) ? rawTimeMillis : (rawTimeMillis % DateType.INCREMENT_DAY) + dstOffset;
+        return (rawTimeMillis < INCREMENT_DAY) ? rawTimeMillis : (rawTimeMillis % INCREMENT_DAY) + dstOffset;
     }
 
     private Time getNormalizedTime(long time) {

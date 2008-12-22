@@ -46,7 +46,17 @@ package org.netbeans.modules.cnd.utils;
  * We need these both in the loaders code and in the editor code
  * so we have a common definition here.
 */
-public class MIMENames {
+public final class MIMENames {
+
+    private MIMENames() {
+        // do not instantiate
+    }
+
+    /** Header */
+    public static final String HEADER_MIME_TYPE = "text/x-h"; //NOI18N
+
+    /** Preprocessor */
+    public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
 
     /** C++ */
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++"; //NOI18N
@@ -99,4 +109,18 @@ public class MIMENames {
 
     /** Generic ELF files (shouldn't be recognized anymore) */
     public static final String ELF_GENERIC_MIME_TYPE = "application/x-elf"; //NOI18N
+
+    public static boolean isHeaderOrCppOrC(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE);
+    }
+
+    public static boolean isFortranOrHeaderOrCppOrC(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
+    }
 }

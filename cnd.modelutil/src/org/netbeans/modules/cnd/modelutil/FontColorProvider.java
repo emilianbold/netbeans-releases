@@ -50,6 +50,7 @@ public interface FontColorProvider {
 
     public enum Entity {
 
+        PREPROCESSOR_DIRECTIVE("preprocessor"), // NOI18N
         INACTIVE_CODE("cc-highlighting-inactive"), // NOI18N
         USER_MACRO("cc-highlighting-macros"), // NOI18N
         SYSTEM_MACRO("cc-highlighting-macros-system"), // NOI18N

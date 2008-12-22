@@ -13,8 +13,13 @@ import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
 
 import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
+import org.netbeans.modules.python.project.GotoTest;
+import org.netbeans.modules.python.project.PythonActionProvider;
 import org.netbeans.modules.python.project.PythonProject;
+import org.netbeans.modules.python.project.spi.TestRunner;
+import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -27,28 +32,65 @@ import org.openide.util.Lookup;
  */
 public class RunSingleCommand extends Command {
     PythonPlatformManager manager = PythonPlatformManager.getInstance();
-    public RunSingleCommand(PythonProject project) {
+    protected boolean isTest;
+
+    public RunSingleCommand(PythonProject project, boolean isTest) {
         super(project);
+        this.isTest = isTest;
     }
 
         
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_RUN_SINGLE;
+        return isTest ? ActionProvider.COMMAND_TEST_SINGLE : ActionProvider.COMMAND_RUN_SINGLE;
     }
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
         Node[] activatedNodes = getSelectedNodes();
         DataObject gdo = activatedNodes[0].getLookup().lookup(DataObject.class);
-        if (gdo.getPrimaryFile().getMIMEType().equals(PythonMIMEResolver.PYTHON_MIME_TYPE) ){
-            String path = FileUtil.toFile(gdo.getPrimaryFile().getParent()).getAbsolutePath();
+        FileObject file = gdo.getPrimaryFile();
+        if (file.getMIMEType().equals(PythonMIMEResolver.PYTHON_MIME_TYPE) ){
+            String path = FileUtil.toFile(file.getParent()).getAbsolutePath();
             // String workingdir = FileUtil.toFile(getProject().getSrcFolder()).getAbsolutePath();
             //int pos = path.lastIndexOf("/");
             //path = path.substring(0, pos);
-            String script = FileUtil.toFile(gdo.getPrimaryFile()).getAbsolutePath();
+            String script = FileUtil.toFile(file).getAbsolutePath();
             //System.out.println("Folder " + path);
             //System.out.println("File " + script);
+
+            final PythonProject pyProject = getProject();
+
+            //String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
+            if (isTest || file.getName().endsWith("_test")) { // NOI18N
+
+                // See if this looks like a test file; if not, see if we can find its corresponding
+                // test
+                boolean isTestFile = (file.getName().endsWith("_test"));
+                if (!isTestFile) {
+                    for (FileObject testRoot : pyProject.getTestSourceRootFiles()) {
+                        if (FileUtil.isParentOf(testRoot, file)) {
+                            isTestFile = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isTestFile) {
+                    // Try to find the matching test
+                    LocationResult result = new GotoTest().findTest(file, -1);
+                    if (result != null && result.getFileObject() != null) {
+                        file = result.getFileObject();
+                    }
+                }
+
+                // Run test normally - don't pop up browser
+                TestRunner testRunner = PythonActionProvider.getTestRunner(TestRunner.TestType.PY_UNIT);
+                if (testRunner != null) {
+                    testRunner.getInstance().runTest(file, false);
+                    return;
+                }
+            }
+
             PythonExecution pyexec = new PythonExecution();
             pyexec.setDisplayName(gdo.getName());
             pyexec.setWorkingDirectory(path);
@@ -57,15 +99,14 @@ public class RunSingleCommand extends Command {
                pyexec.setScriptArgs(args);
 
             }
-            final PythonProject pyProject = getProject();
             final PythonPlatform platform = checkProjectPythonPlatform(pyProject);
             if ( platform == null )
               return ; // invalid platform user has been warn in check so safe to return
             pyexec.setCommand(platform.getInterpreterCommand());
             pyexec.setScript(script);
             pyexec.setCommandArgs(platform.getInterpreterArgs());
-            pyexec.setPath(PythonPlatform.buildPath(super.buildPythonPath(platform,pyProject)));
-            pyexec.setJavaPath(PythonPlatform.buildPath(super.buildJavaPath(platform,pyProject)));
+            pyexec.setPath(PythonPlatform.buildPath(super.buildPythonPath(platform, pyProject)));
+            pyexec.setJavaPath(PythonPlatform.buildPath(super.buildJavaPath(platform, pyProject)));
             pyexec.setShowControls(true);
             pyexec.setShowInput(true);
             pyexec.setShowWindow(true);

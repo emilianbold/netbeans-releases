@@ -60,6 +60,12 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
 import org.openide.DialogDisplayer;
@@ -105,25 +111,33 @@ public class CheckDeadlocksAction extends AbstractAction
             return;
         }
         VirtualMachine vm = debugger.getVirtualMachine();
-        vm.suspend();
-        List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();
-        for (ThreadReference threadRef : vm.allThreads()) {
-            if (threadRef.suspendCount() == 1) {
-                JPDAThreadImpl jpdaThread = (JPDAThreadImpl)debugger.getThread(threadRef);
-                jpdaThread.notifySuspended();
-                threadsToNotify.add(jpdaThread);
+        try {
+            VirtualMachineWrapper.suspend(vm);
+            List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();
+            for (ThreadReference threadRef : VirtualMachineWrapper.allThreads(vm)) {
+                try {
+                    if (ThreadReferenceWrapper.suspendCount(threadRef) == 1) {
+                        JPDAThreadImpl jpdaThread = (JPDAThreadImpl)debugger.getThread(threadRef);
+                        jpdaThread.notifySuspended();
+                        threadsToNotify.add(jpdaThread);
+                    }
+                } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (IllegalThreadStateExceptionWrapper e) {
+                }
             }
-        }
-        DeadlockDetector detector = debugger.getThreadsCollector().getDeadlockDetector();
-        Set dealocks = detector.getDeadlocks();
-        if (dealocks == null || dealocks.size() == 0) {
-            String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-            for (JPDAThreadImpl thread : threadsToNotify) {
-                thread.notifyToBeResumed();
+            DeadlockDetector detector = debugger.getThreadsCollector().getDeadlockDetector();
+            Set dealocks = detector.getDeadlocks();
+            if (dealocks == null || dealocks.size() == 0) {
+                String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
+                NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+                for (JPDAThreadImpl thread : threadsToNotify) {
+                    thread.notifyToBeResumed();
+                }
+                VirtualMachineWrapper.resume(vm);
             }
-            vm.resume();
+        } catch (InternalExceptionWrapper e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
         }
     }
     

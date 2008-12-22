@@ -645,6 +645,22 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testMixedType03() throws Exception {
         checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
     }
+
+    public void testVarTypeCommentVariable01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $^", false);
+    }
+
+    public void testVarTypeCommentVariable02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hell^", false);
+    }
+
+    public void testVarTypeCommentType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello ^", false);
+    }
+
+    public void testVarTypeCommentType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello Te^", false);
+    }
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);

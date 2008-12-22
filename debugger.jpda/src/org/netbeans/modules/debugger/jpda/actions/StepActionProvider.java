@@ -67,11 +67,30 @@ import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListe
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -169,22 +188,27 @@ implements Executor {
                     // 2) create new step request
                     VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
                     if (vm == null) return ; // There's nothing to do without the VM.
-                    stepRequest = vm.eventRequestManager ().createStepRequest (
+                    stepRequest = EventRequestManagerWrapper.createStepRequest (
+                            VirtualMachineWrapper.eventRequestManager (vm),
                             tr,
                             StepRequest.STEP_LINE,
                             getJDIAction (action)
                         );
-                    stepRequest.addCountFilter (1);
+                    EventRequestWrapper.addCountFilter (stepRequest, 1);
                     getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
-                    stepRequest.setSuspendPolicy(suspendPolicy);
+                    EventRequestWrapper.setSuspendPolicy (stepRequest, suspendPolicy);
                     try {
-                        stepRequest.enable ();
+                        EventRequestWrapper.enable (stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
                         // Or suspend count > 1 !
                         //itsex.printStackTrace();
                         //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                        logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", status = "+tr.status());
+                        try {
+                            logger.warning(itsex.getLocalizedMessage()+"\nThread: "+ThreadReferenceWrapper.name(tr)+", suspended = "+ThreadReferenceWrapper.isSuspended(tr)+", status = "+ThreadReferenceWrapper.status(tr));
+                        } catch (Exception e) {
+                            logger.warning(e.getLocalizedMessage());
+                        }
                         getDebuggerImpl ().getOperator ().unregister(stepRequest);
                         return ;
                     }
@@ -204,25 +228,33 @@ implements Executor {
             } else {
                 getDebuggerImpl ().resume ();
             }
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
             // Debugger is disconnected => the action will be ignored.
+        } catch (InternalExceptionWrapper e) {
+            // Debugger is damaged => the action will be ignored.
+        } catch (InvalidStackFrameExceptionWrapper e) {
+            Exceptions.printStackTrace(e);
+        } catch (ObjectCollectedExceptionWrapper e) {
+            // Thread was collected - ignore the step
         }
         //S ystem.out.println("/nStepAction.doAction end");
     }
     
-    private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) {
-        if (!MethodBreakpointImpl.canGetMethodReturnValues(tr.virtualMachine())) {
+    private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
+        if (!MethodBreakpointImpl.canGetMethodReturnValues(MirrorWrapper.virtualMachine(tr))) {
             return ;
         }
         Location loc;
         try {
-            loc = tr.frame(0).location();
+            loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
         } catch (IncompatibleThreadStateException ex) {
             logger.fine("Incompatible Thread State: "+ex.getLocalizedMessage());
             return ;
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            return ;
         }
-        String classType = loc.declaringType().name();
-        String methodName = loc.method().name();
+        String classType = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
+        String methodName = TypeComponentWrapper.name(LocationWrapper.method(loc));
         MethodBreakpoint mb = MethodBreakpoint.create(classType, methodName);
         //mb.setMethodName(methodName);
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
@@ -260,18 +292,19 @@ implements Executor {
      * Should be called from Operator only.
      */
     public boolean exec (Event ev) {
+        try {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
-        StepRequest sr = (StepRequest) ev.request();
-        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
+        StepRequest sr = (StepRequest) EventWrapper.request(ev);
+        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
         st.setInStep(false, null);
         /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
         }*/
         LocatableEvent event = (LocatableEvent) ev;
-        String className = event.location ().declaringType ().name ();
-        ThreadReference tr = event.thread ();
+        String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(LocatableWrapper.location(event)));
+        ThreadReference tr = LocatableEventWrapper.thread(event);
         setLastOperation(tr);
         removeStepRequests (tr);
         synchronized (getDebuggerImpl ().LOCK) {
@@ -281,24 +314,24 @@ implements Executor {
             
             // Synthetic method?
             try {
-                if (tr.frame(0).location().method().isSynthetic()) {
+                if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
                     //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
                     
-                    int step = ((StepRequest)ev.request()).depth();
+                    int step = StepRequestWrapper.depth((StepRequest) EventWrapper.request(ev));
                     VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
                     if (vm == null) {
                         return false; // The session has finished
                     }
-                    stepRequest = vm.eventRequestManager ().createStepRequest (
+                    stepRequest = EventRequestManagerWrapper.createStepRequest(VirtualMachineWrapper.eventRequestManager(vm),
                         tr,
                         StepRequest.STEP_LINE,
                         step
                     );
-                    stepRequest.addCountFilter(1);
+                    EventRequestWrapper.addCountFilter(stepRequest, 1);
                     getDebuggerImpl ().getOperator ().register (stepRequest, this);
-                    stepRequest.setSuspendPolicy (suspendPolicy);
+                    EventRequestWrapper.setSuspendPolicy(stepRequest, suspendPolicy);
                     try {
-                        stepRequest.enable ();
+                        EventRequestWrapper.enable(stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
                         getDebuggerImpl ().getOperator ().unregister(stepRequest);
@@ -307,7 +340,12 @@ implements Executor {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
+                Exceptions.printStackTrace(e);
                 logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
+            } catch (IllegalThreadStateExceptionWrapper e) {
+                return false;
+            } catch (InvalidStackFrameExceptionWrapper e) {
+                Exceptions.printStackTrace(e);
             }
             
             // Stop execution here?
@@ -338,12 +376,23 @@ implements Executor {
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
         }
+        } catch (InternalExceptionWrapper e) {
+            return false; // Do not resume when something bad happened
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return false; // Do not resume when disconnected
+        } catch (ObjectCollectedExceptionWrapper e) {
+            return false; // Do not resume when collected
+        }
     }
 
     public void removed(EventRequest eventRequest) {
         StepRequest sr = (StepRequest) eventRequest;
-        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
-        st.setInStep(false, null);
+        try {
+            JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
+            st.setInStep(false, null);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        }
         /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
@@ -354,7 +403,7 @@ implements Executor {
         }
     }
     
-    private void setLastOperation(ThreadReference tr) {
+    private void setLastOperation(ThreadReference tr) throws VMDisconnectedExceptionWrapper {
         Variable returnValue = null;
         if (lastMethodExitBreakpointListener != null) {
             returnValue = lastMethodExitBreakpointListener.getReturnValue();
@@ -364,18 +413,32 @@ implements Executor {
         setLastOperation(tr, getDebuggerImpl(), returnValue);
     }
 
-    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) {
+    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) throws VMDisconnectedExceptionWrapper {
         Location loc;
         try {
-            loc = tr.frame(0).location();
+            loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
         } catch (IncompatibleThreadStateException itsex) {
+            Exceptions.printStackTrace(itsex);
             logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
+            return ;
+        } catch (IllegalThreadStateExceptionWrapper itsex) {
+            return ;
+        } catch (InternalExceptionWrapper iex) {
+            return ;
+        } catch (InvalidStackFrameExceptionWrapper iex) {
+            return ;
+        } catch (ObjectCollectedExceptionWrapper iex) {
             return ;
         }
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
         SourcePath sourcePath = debugger.getEngineContext();
-        String url = sourcePath.getURL(loc, language);
+        String url;
+        try {
+            url = sourcePath.getURL(loc, language);
+        } catch (InternalExceptionWrapper iex) {
+            return ;
+        }
         ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
         if (expr == null) {
@@ -383,8 +446,14 @@ implements Executor {
         }
         Operation[] ops = expr.getOperations();
         // code index right after the method call (step out)
-        int codeIndex = (int) loc.codeIndex();
-        byte[] bytecodes = loc.method().bytecodes();
+        int codeIndex;
+        byte[] bytecodes;
+        try {
+            codeIndex = (int) LocationWrapper.codeIndex(loc);
+            bytecodes = MethodWrapper.bytecodes(LocationWrapper.method(loc));
+        } catch (InternalExceptionWrapper iex) {
+            return ;
+        }
         if (codeIndex >= 5 && (bytecodes[codeIndex - 5] & 0xFF) == 185) { // invokeinterface
             codeIndex -= 5;
         } else {
