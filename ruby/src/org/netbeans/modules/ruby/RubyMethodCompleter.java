@@ -182,11 +182,8 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
             } else { // try method chaining
                 if (target.nodeId == NodeType.CALLNODE) {
-                    System.out.println("Du na to");
                     Node receiver = ((CallNode) target).getReceiverNode();
-                    System.out.println("node = " + receiver);
                     type = RubyTypeInferencer.inferTypes(receiver, request.createContextKnowledge());
-                    System.out.println("type = " + type);
                 }
             }
         }
