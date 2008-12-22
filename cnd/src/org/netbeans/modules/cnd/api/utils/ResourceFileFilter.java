@@ -38,38 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
 import org.openide.util.NbBundle;
 
 public class ResourceFileFilter extends SourceFileFilter {
+
     private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
     private static ResourceFileFilter instance = null;
 
     public static ResourceFileFilter getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new ResourceFileFilter();
+        }
         return instance;
     }
 
     public String getDescription() {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-    
+
     @Override
     public String getSuffixesAsString() {
         StringBuilder ret = new StringBuilder();
         for (int i = 0; i < getSuffixes().length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 ret.append(" "); // NOI18N
+            }
             if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
+            {
                 ret.append(".");  // NOI18N
+            }
             ret.append(getSuffixes()[i]); // NOI18N
         }
         return ret.toString();
     }
-    
+
     public String[] getSuffixes() {
         return suffixes;
     }
