@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.visualweb.webui.jsf.defaulttheme;
+package org.netbeans.modules.visualweb.project.jsf.themenodes;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -43,9 +43,9 @@ public class ThemeNodeServiceImpl implements ThemeNodeService{
         // find if project is of type j2ee 1.4 then return
         // Themes Folder Node else return null;
         if (JsfProjectUtils.isJavaEE5Project(project)){
-            return new ThemesFolderNode(project);
+            return new ThemesJ2ee5FolderNode(project);
         }else{
-            return null;
+            return new ThemesJ2ee14FolderNode(project);
         }
     }
 

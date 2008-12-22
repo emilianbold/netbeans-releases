@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.visualweb.webui.themes;
+package org.netbeans.modules.visualweb.project.jsf.themenodes;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.RefreshService;
@@ -84,9 +85,8 @@ import org.openide.util.Utilities;
  *
  * @author Po-Ting Wu, Mark Dey, Winston Prakash
  */
-final class ThemesFolderNode extends AbstractNode {
-
-    static final String BraveHeart_ThemeVersion = "1.0"; // NOI18N
+final class ThemesJ2ee5FolderNode extends AbstractNode {
+    static final String WoodStock_ThemeVersion = "4.2"; // NOI18N
     static final RequestProcessor rp = new RequestProcessor();
     private final String displayName;
     private final Action[] themesNodeActions;
@@ -97,9 +97,9 @@ final class ThemesFolderNode extends AbstractNode {
      * and optionaly Java platform.
      * @param project {@link Project} used for reading and updating project's metadata
      */
-    ThemesFolderNode(Project project) {
+    ThemesJ2ee5FolderNode(Project project) {
         super(new ThemesChildren(project));
-        this.displayName = NbBundle.getMessage(ThemesFolderNode.class, "CTL_ThemesNode");
+        this.displayName = NbBundle.getMessage(ThemesJ2ee5FolderNode.class, "CTL_Themes5Node");
         this.themesNodeActions = new Action[]{
             /* TODO: Themes folder actions */
         };
@@ -123,13 +123,13 @@ final class ThemesFolderNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-themesFolder.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
         // TODO: need graphic for opened folder icon
-        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-themesFolder.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
     @Override
@@ -143,7 +143,7 @@ final class ThemesFolderNode extends AbstractNode {
     }
 
     //Static inner classes
-   private static class ThemesChildren extends Children.Keys implements PropertyChangeListener {
+    private static class ThemesChildren extends Children.Keys implements PropertyChangeListener {
 
         private final Project project;
         private final LibraryManager projectLibraryManager;
@@ -156,7 +156,16 @@ final class ThemesFolderNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            this.setKeys(getKeys());
+            updateKeys();
+        }
+
+        private void updateKeys() {
+            // XXX #152956 To avoid acquiring Children.MUTEX together with ProjectManager.mutex().
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setKeys(getKeys());
+                }
+            });
         }
 
         @Override
@@ -176,7 +185,7 @@ final class ThemesFolderNode extends AbstractNode {
         protected Node[] createNodes(Object obj) {
             String version = getThemeLibraryVersion((Library) obj);
 
-            if (BraveHeart_ThemeVersion.equals(version)) {
+            if (WoodStock_ThemeVersion.equals(version)) {
                 Node n = new ThemeNode((Library) obj, project, version);
                 return new Node[]{n};
             } else {
@@ -252,24 +261,24 @@ final class ThemesFolderNode extends AbstractNode {
 
         public Action getAction() {
             if (setCurrentThemeAction == null) {
-                setCurrentThemeAction = ThemesFolderNode.createSetAsCurrentThemeAction(theme, project);
+                setCurrentThemeAction = ThemesJ2ee5FolderNode.createSetAsCurrentThemeAction(theme, project);
             }
             return setCurrentThemeAction;
         }
 
         @Override
         public Image getIcon(int type) {
-            Image baseImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-theme.png"); // NOI18N
+            Image baseImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-theme.png"); // NOI18N
             String currentTheme = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME);
             if (currentTheme != null && currentTheme.equals(theme.getName())) {
-                Image currentThemeBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-currentThemeBadge.png"); // NOI18N
+                Image currentThemeBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-currentThemeBadge.png"); // NOI18N
                 baseImage = ImageUtilities.mergeImages(baseImage, currentThemeBadge, baseImage.getWidth(null), baseImage.getHeight(null) - currentThemeBadge.getHeight(null) + 1);
                 getAction().setEnabled(false);
             } else {
                 if (version != null) {
                     getAction().setEnabled(true);
                 } else {
-                    Image errorBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-error-badge.gif"); // NOI18N
+                    Image errorBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-error-badge.gif"); // NOI18N
                     baseImage = ImageUtilities.mergeImages(baseImage, errorBadge, baseImage.getWidth(null), baseImage.getHeight(null) - errorBadge.getHeight(null) + 1);
 
                     getAction().setEnabled(false);
@@ -282,9 +291,9 @@ final class ThemesFolderNode extends AbstractNode {
         private void updateToolTip() {
             String toolTip;
             if (version != null) {
-                toolTip = NbBundle.getMessage(ThemesFolderNode.class, "LBL_ThemeLibraryDescription");
+                toolTip = NbBundle.getMessage(ThemesJ2ee5FolderNode.class, "LBL_Theme5LibraryDescription");
             } else {
-                toolTip = NbBundle.getMessage(ThemesFolderNode.class, "LBL_ThemeLibraryDescription_Invalid");
+                toolTip = NbBundle.getMessage(ThemesJ2ee5FolderNode.class, "LBL_Theme5LibraryDescription_Invalid");
             }
 
             setShortDescription(toolTip);
@@ -302,7 +311,7 @@ final class ThemesFolderNode extends AbstractNode {
         private final Library theme;
 
         public SetAsCurrentThemeAction(Library theme, Project project) {
-            super(NbBundle.getMessage(ThemesFolderNode.class, "LBL_SetAsCurrentTheme_Action"));
+            super(NbBundle.getMessage(ThemesJ2ee5FolderNode.class, "LBL_SetAsCurrentTheme5_Action"));
             this.project = project;
             this.theme = theme;
         }
@@ -335,7 +344,7 @@ final class ThemesFolderNode extends AbstractNode {
             try {
                 JsfProjectUtils.addLibraryReferences(project, new Library[]{theme});
                 JsfProjectUtils.addLocalizedTheme(project, theme.getName());
-                String msg = NbBundle.getMessage(ThemesFolderNode.class, Utilities.isWindows() ? "MSG_ThemeChangeRestartIDE" : "MSG_ThemeChangeRebuild");
+                String msg = NbBundle.getMessage(ThemesJ2ee5FolderNode.class, Utilities.isWindows() ? "MSG_Theme5ChangeRestartIDE" : "MSG_Theme5ChangeRebuild");
                 DialogDescriptor nderr = new DialogDescriptor(msg, NbBundle.getMessage(NotifyDescriptor.class, "NTF_InformationTitle"), true, new Object[]{NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("projrave_ui_elements_dialogs_theme_switch_info_db"), null);
                 DialogDisplayer.getDefault().notify(nderr);
             } catch (Exception ex) {
@@ -388,7 +397,7 @@ final class ThemesFolderNode extends AbstractNode {
                 while (iter.hasNext()) {
                     Attributes attrs = iter.next();
                     String version = attrs.getValue("X-SJWUIC-Theme-Version"); // NOI18N
-                    if (BraveHeart_ThemeVersion.equals(version)) {
+                    if (WoodStock_ThemeVersion.equals(version)) {
                         return version;
                     }
                 }
