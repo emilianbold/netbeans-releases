@@ -73,12 +73,6 @@ public class CheckoutTest extends TestCase {
         System.setProperty("cvsClientLog", protocolLog);
         System.out.println(protocolLog);
 
-        final InputStream in = getClass().getResourceAsStream("protocol/iz56552_21126.in");
-        if (in == null) {
-            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
-            in.markSupported();
-        }
-
         // command exception expected
         // infinite *1s) blocking is a failure
         // other exception is test failre
@@ -88,7 +82,7 @@ public class CheckoutTest extends TestCase {
         Runnable run = new Runnable() {
             public void run() {
                 try {
-                    PseudoCvsServer cvss = new PseudoCvsServer(in);
+                    PseudoCvsServer cvss = new PseudoCvsServer("protocol/iz56552_21126.in");
                     try {
                         cvss.simulateNetworkFailure(1000, -1);
                         new Thread(cvss).start();

@@ -120,6 +120,11 @@ public class WrapperUtils {
         {
             parseWrappers(new BufferedReader(new StringReader(propertyValue)), wrapperMap);
         }
+        propertyValue = System.getProperty("Env-CVSWRAPPERS");
+        if (propertyValue != null)
+        {
+            parseWrappers(new BufferedReader(new StringReader(propertyValue)), wrapperMap);
+        }
     }
 
     /**

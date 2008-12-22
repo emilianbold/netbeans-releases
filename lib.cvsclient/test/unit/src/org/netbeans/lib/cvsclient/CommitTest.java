@@ -101,16 +101,12 @@ public class CommitTest extends TestCase {
         Date date = Entry.getLastModifiedDateFormatter().parse(dateString);
         conflict_txt.setLastModified(date.getTime());
 
-        InputStream in = getClass().getResourceAsStream("protocol/iz36288.in");
-        if (in == null) {
-            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
-            in.markSupported();
-        }
-        PseudoCvsServer cvss = new PseudoCvsServer(in);
+        PseudoCvsServer cvss = new PseudoCvsServer("protocol/iz36288.in");
 
         File requestsLog = File.createTempFile("requests", null, tmpDir);
         cvss.logRequests(new FileOutputStream(requestsLog));
-        new Thread(cvss).start();
+        Thread cvssThread = new Thread(cvss);
+        cvssThread.start();
         String cvsRoot = cvss.getCvsRoot();
 
         File root = new File(CVSdir, "Root");
@@ -139,6 +135,7 @@ public class CommitTest extends TestCase {
 
         client.executeCommand(commit, gtx);
         cvss.stop();
+        cvssThread.join();
 
         // check test matching golden file (here critical line from iz36288.out)
 
