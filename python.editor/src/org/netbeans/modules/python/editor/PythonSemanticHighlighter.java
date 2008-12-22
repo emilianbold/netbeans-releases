@@ -139,7 +139,7 @@ public class PythonSemanticHighlighter implements SemanticAnalyzer {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            String name = node.id;
+            String name = node.getInternalId();
             if (scope != null) {
                 if (scope.isUnused(name)) {
                     OffsetRange r = PythonAstUtils.getNameRange(info, node);

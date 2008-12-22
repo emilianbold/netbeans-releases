@@ -65,6 +65,7 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Module;
+import org.python.antlr.ast.alias;
 
 /**
  * Detect unused imports
@@ -115,13 +116,15 @@ public class UnusedImports extends PythonAstRule {
             List<String> list = entry.getValue();
             if (node instanceof Import) {
                 Import imp = (Import)node;
-                if (imp.names.length == list.size()) {
+                List<alias> names = imp.getInternalNames();
+                if (names != null && names.size() == list.size()) {
                     list.clear();
                 }
             } else {
                 assert node instanceof ImportFrom;
                 ImportFrom imp = (ImportFrom)node;
-                if (imp.names.length == list.size()) {
+                List<alias> names = imp.getInternalNames();
+                if (names != null && names.size() == list.size()) {
                     list.clear();
                 }
             }

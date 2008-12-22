@@ -68,7 +68,7 @@ import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
 
 /**
  *
@@ -410,7 +410,7 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                     PythonTree scope = PythonAstUtils.getLocalScope(path);
                     SymbolTable symbolTable = parseResult.getSymbolTable();
 
-                    String name = ((Name)path.leaf()).id;
+                    String name = ((Name)path.leaf()).getInternalId();
 
                     SymInfo sym = symbolTable.findDeclaration(scope, name, true);
                     if (sym != null) {
@@ -433,11 +433,12 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                                 // follow through to the library
                                 if (declNode instanceof Import) {
                                     Import impNode = (Import)declNode;
-                                    if (impNode.names != null) {
-                                        for (aliasType at : impNode.names) {
-                                            if (at.asname != null && name.equals(at.asname)) {
+                                    List<alias> names = impNode.getInternalNames();
+                                    if (names != null) {
+                                        for (alias at : names) {
+                                            if (at.getInternalAsname() != null && name.equals(at.getInternalAsname())) {
                                                 break;
-                                            } else if (at.name.equals(name)) {
+                                            } else if (at.getInternalName().equals(name)) {
                                                 // We found our library - just show it
                                                 return findImport(info, name, null);
                                             }
@@ -446,13 +447,14 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                                 } else {
                                     assert declNode instanceof ImportFrom : declNode;
                                     ImportFrom impNode = (ImportFrom)declNode;
-                                    if (impNode.names != null) {
-                                        for (aliasType at : impNode.names) {
-                                            if (at.asname != null && name.equals(at.asname)) {
+                                    List<alias> names = impNode.getInternalNames();
+                                    if (names != null) {
+                                        for (alias at : names) {
+                                            if (at.getInternalAsname() != null && name.equals(at.getInternalAsname())) {
                                                 break;
-                                            } else if (at.name.equals(name)) {
+                                            } else if (at.getInternalName().equals(name)) {
                                                 // We found our library - just show it
-                                                return findImport(info, impNode.module, name);
+                                                return findImport(info, impNode.getInternalModule(), name);
                                             }
                                         }
                                     }
@@ -499,9 +501,9 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                 String name = null;
                 PythonTree leaf = path.leaf();
                 if (leaf instanceof Name) {
-                    name = ((Name)path.leaf()).id;
+                    name = ((Name)path.leaf()).getInternalId();
                 } else if (leaf instanceof Attribute) {
-                    name = ((Attribute)leaf).attr;
+                    name = ((Attribute)leaf).getInternalAttr();
                 }
 
                 if (name != null) {
@@ -702,15 +704,16 @@ public class PythonDeclarationFinder implements DeclarationFinder {
         SymbolTable table = PythonAstUtils.getParseResult(info).getSymbolTable();
         List<Import> imports = table.getImports();
         for (Import imp : imports) {
-            if (imp.names != null) {
-                for (aliasType at : imp.names) {
-                    included.add(at.name);
+            List<alias> names = imp.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    included.add(at.getInternalName());
                 }
             }
         }
         List<ImportFrom> importsFrom = table.getImportsFrom();
         for (ImportFrom imp : importsFrom) {
-            included.add(imp.module);
+            included.add(imp.getInternalModule());
         }
 
         if (included.size() > 0) {
@@ -781,14 +784,14 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                 String name = null;
                 boolean findClass = false; // false=function, true=class
                 if (leaf instanceof FunctionDef) {
-                    name = ((FunctionDef)leaf).name;
+                    name = ((FunctionDef)leaf).getInternalName();
                 } else if (leaf instanceof Name) {
-                    name = ((Name)leaf).id;
+                    name = ((Name)leaf).getInternalId();
                     if (path.leafParent() instanceof ClassDef) {
                         findClass = true;
                     }
                 } else if (leaf instanceof ClassDef) {
-                    name = ((ClassDef)leaf).name;
+                    name = ((ClassDef)leaf).getInternalName();
                     findClass = true;
                 }
 
@@ -799,7 +802,7 @@ public class PythonDeclarationFinder implements DeclarationFinder {
                 } else {
                     ClassDef clz = PythonAstUtils.getClassDef(path);
                     if (clz != null) {
-                        elements = index.getOverridingMethods(clz.name, name);
+                        elements = index.getOverridingMethods(clz.getInternalName(), name);
                     }
                 }
 
@@ -836,7 +839,7 @@ public class PythonDeclarationFinder implements DeclarationFinder {
             return null;
         }
 
-        if (call.func instanceof Attribute) {
+        if (call.getInternalFunc() instanceof Attribute) {
             // Method/member access
             functions = index.getAllMembers(callName, NameKind.EXACT_NAME, PythonIndex.ALL_SCOPE, parseResult, false);
         } else {

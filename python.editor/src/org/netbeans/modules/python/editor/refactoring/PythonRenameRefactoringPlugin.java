@@ -95,7 +95,7 @@ import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  * The actual Renaming refactoring work for Python.
@@ -671,7 +671,7 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
 
             @Override
             public Object visitFunctionDef(FunctionDef node) throws Exception {
-                if (name.equals(node.name)) {
+                if (name.equals(node.getInternalName())) {
                     rename(node, name, null, getString("UpdateMethodDef"));
                 }
 
@@ -693,12 +693,12 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
 
             @Override
             public Object visitClassDef(ClassDef node) throws Exception {
-                if (name.equals(node.name)) {
+                if (name.equals(node.getInternalName())) {
                     rename(node, name, null, getString("UpdateClassDef"));
                 }
-
-                if (node.bases != null) {
-                    for (exprType base : node.bases) {
+                List<expr> bases = node.getInternalBases();
+                if (bases != null) {
+                    for (expr base : bases) {
                         String extendsName = PythonAstUtils.getExprName(base);
                         if (extendsName != null && extendsName.equals(name)) {
                             //rename(node, name, null, null);
@@ -712,7 +712,7 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
 
             @Override
             public Object visitName(Name node) throws Exception {
-                if (name.equals(node.id)) {
+                if (name.equals(node.getInternalId())) {
                     rename(node, name, null, getString("UpdateRef"));
                 }
                 return super.visitName(node);

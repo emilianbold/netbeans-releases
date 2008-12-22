@@ -58,7 +58,6 @@ oracle.jar=C:/workspace/HEAD/for_development/bisdevsrv28/jboss/server/infra/lib/
 #build.compiler=modern
 #jdk.target.version=1.5
 #debug=false
-#optimize=off
 #deprecation=off
 
 # - the svn main directory to build from; only needed for full-build
@@ -123,7 +122,6 @@ svnant.jar.dir=${basedir}/../externals/svnant-jars
                 </uptodate>
             </and>
         </condition>
-
     </target>
 
     <target name="init" depends="version-init">
@@ -153,6 +151,7 @@ svnant.jar.dir=${basedir}/../externals/svnant-jars
         <property name="gensrc.dir" value="${output.dir}/gensrc" />
         <property name="dist.dir" value="${work.dir}/dist" />
         <property name="apidoc.dir" value="${dist.dir}/Doc/javadoc" />
+        <property name="junit.reports" value="${dist.dir}/testreports" />
 
         <!-- classpaths -->
         <path id="main.classpath">
@@ -165,7 +164,7 @@ svnant.jar.dir=${basedir}/../externals/svnant-jars
             <pathelement path="${extlibs.dir}/mysql-connector-java-5.1.6.jar" />
             <pathelement path="${extlibs.dir}/postgresql-8.3-603.jdbc4.jar" />
             <pathelement path="${extlibs.dir}/antlr-2.7.7.jar" />
-            <pathelement path="${extlibs.dir}/antlr-3.1.jar" />
+            <pathelement path="${extlibs.dir}/antlr-3.1.1.jar" />
             <pathelement path="${extlibs.dir}/stringtemplate-3.2.jar" />
         </path>
 
@@ -179,9 +178,9 @@ svnant.jar.dir=${basedir}/../externals/svnant-jars
             <pathelement path="${exposed.dir}" />
             <pathelement path="${compile.dir}" />
         </path>
-        <!-- 64 bit Java 6 needs about 96m for regrtest on most platforms, but Apple's needs
-         144m -->
-        <property name="regrtest.Xmx" value="-Xmx144m" />
+        <!-- 64 bit Java 6 needs roughly 96m for regrtest on most platforms, but Apple's needs
+         more -->
+        <property name="regrtest.Xmx" value="-Xmx160m" />
     </target>
 
     <target name="version-init">
@@ -418,7 +417,6 @@ The readme text for the next release will be like:
                 target="${jdk.target.version}"
                 source="${jdk.source.version}"
                 debug="${debug}"
-                optimize="${optimize}"
                 deprecation="${deprecation}"
                 nowarn="${nowarn}">
             <include name="org/python/util/TemplateAntTask.java" />
@@ -462,7 +460,9 @@ The readme text for the next release will be like:
                source="${jdk.source.version}"
                debug="${debug}"
                deprecation="${deprecation}"
-               nowarn="${nowarn}">
+               nowarn="${nowarn}"
+               memoryMaximumSize="192m"
+               fork="true">
             <src path="${source.dir}"/>
             <src path="${gensrc.dir}"/>
 
@@ -477,7 +477,6 @@ The readme text for the next release will be like:
                target="${jdk.target.version}"
                source="${jdk.source.version}"
                debug="${debug}"
-               optimize="${optimize}"
                deprecation="${deprecation}"
                nowarn="${nowarn}"/>
 
@@ -487,7 +486,6 @@ The readme text for the next release will be like:
                target="${jdk.target.version}"
                source="${jdk.source.version}"
                debug="${debug}"
-               optimize="${optimize}"
                deprecation="${deprecation}"
                nowarn="${nowarn}"> 
             <classpath refid="test.classpath" />
@@ -519,7 +517,7 @@ The readme text for the next release will be like:
     <target name="jarjar" depends="init,needed-check" unless="jarjar.notneeded">
         <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="extlibs/jarjar-0.7.jar"/>
         <jarjar destfile="${output.dir}/jarjar.jar">
-            <zipfileset src="extlibs/antlr-runtime-3.1.jar"/>
+            <zipfileset src="extlibs/antlr-3.1.1-runtime.jar"/>
             <zipfileset src="extlibs/asm-3.1.jar"/>
             <zipfileset src="extlibs/asm-commons-3.1.jar"/>
             <zipfileset src="extlibs/asm-util-3.1.jar"/>
@@ -528,6 +526,8 @@ The readme text for the next release will be like:
             <zipfileset src="extlibs/jna-posix.jar"/>
             <!-- <rule pattern="com.sun.jna.**" result="org.python.jna.@1"/> -->
             <rule pattern="org.jruby.ext.posix.**" result="org.python.posix.@1"/>
+            <zipfileset src="extlibs/constantine-0.4.jar"/>
+            <rule pattern="com.kenai.constantine.**" result="org.python.constantine.@1"/>
         </jarjar>
         <unjar src="${output.dir}/jarjar.jar" dest="${jarjar.dir}">
             <patternset>
@@ -554,7 +554,6 @@ The readme text for the next release will be like:
                   <attribute name="build-compiler" value="${build.compiler}" />
                   <attribute name="jdk-target-version" value="${jdk.target.version}" />
                   <attribute name="debug" value="${debug}" />
-                  <attribute name="optimize" value="${optimize}" />
               </section>
           </manifest>
         </jar>
@@ -587,7 +586,6 @@ The readme text for the next release will be like:
                   <attribute name="build-compiler" value="${build.compiler}" />
                   <attribute name="jdk-target-version" value="${jdk.target.version}" />
                   <attribute name="debug" value="${debug}" />
-                  <attribute name="optimize" value="${optimize}" />
               </section>
           </manifest>
         </jar>
@@ -717,7 +715,6 @@ The readme text for the next release will be like:
                target="${jdk.target.version}"
                source="${jdk.source.version}"
                debug="${debug}"
-               optimize="${optimize}"
                deprecation="${deprecation}"
                nowarn="${nowarn}"
         />
@@ -731,8 +728,12 @@ The readme text for the next release will be like:
         <copy file="${install.src.dir}/org/apache/LICENSE.txt" tofile="${dist.dir}/LICENSE_Apache.txt" preservelastmodified="true" />
         <echo>copy installer icon to ${dist.dir}</echo>
         <copy todir="${dist.dir}" preservelastmodified="true">
-            <!-- check no /bin directory -->
-            <fileset dir="${install.src.dir}" includes="**/*.png" excludes="bin/**" />
+            <fileset dir="${install.src.dir}">
+                <include name="**/*.png" />
+                <include name="**/*.template" />
+                <!-- check no /bin directory -->
+                <exclude name="bin/**" />
+            </fileset>
         </copy>
         <echo>building installer .jar file</echo>
         <jar destfile="${work.dir}/jython_installer-${jython.version.noplus}.jar" basedir="${dist.dir}" update="true">
@@ -752,20 +753,36 @@ The readme text for the next release will be like:
                     <attribute name="build-compiler" value="${build.compiler}" />
                     <attribute name="jdk-target-version" value="${jdk.target.version}" />
                     <attribute name="debug" value="${debug}" />
-                    <attribute name="optimize" value="${optimize}" />
                 </section>
             </manifest>
         </jar>
     </target>
 
-    <target name="test" depends="javatest,launchertest,regrtest"/>
-    <target name="javatest" depends="compile,expose">
-        <junit fork="true" printsummary="true">
+    <target name="test" depends="prepare-test,javatest,launchertest,regrtest"/>
+    <target name="singlejavatest" depends="compile,expose">
+        <junit haltonfailure="true" fork="true">
+            <formatter type="brief" usefile="false"/>
+            <sysproperty key="python.cachedir.skip" value="true"/>
             <classpath refid="test.classpath"/>
-            <batchtest todir="${dist.dir}/testreports">
+            <batchtest>
+                <fileset dir="${test.source.dir}" includes="**/${test}.java"/>
+            </batchtest>
+        </junit>
+    </target>
+    <target name="prepare-test" depends="init">
+        <!-- Clean any old test output -->
+        <delete dir="${junit.reports}"/>
+    </target>
+    <target name="javatest" depends="compile,expose">
+        <mkdir dir="${junit.reports}"/>
+        <junit fork="true" printsummary="true">
+            <formatter type="xml"/>
+            <classpath refid="test.classpath"/>
+            <batchtest todir="${junit.reports}">
                 <fileset dir="${test.source.dir}" includes="**/*Test*.java">
                     <exclude name="javatests/**/*" />
                     <exclude name="**/InterpTestCase.java" />
+                    <exclude name="org/python/antlr/**" />
                 </fileset>
             </batchtest>
         </junit>
@@ -783,6 +800,8 @@ The readme text for the next release will be like:
         <arg value="${dist.dir}/Lib/test/regrtest.py"/>
         <!-- Only run the tests that are expected to work on Jython -->
         <arg value="--expected"/>
+        <arg value="-j"/>
+        <arg value="${junit.reports}"/>
       </exec>
     </target>
     <target name="regrtest-windows" if="os.family.windows">
@@ -791,6 +810,8 @@ The readme text for the next release will be like:
         <arg value="${dist.dir}/Lib/test/regrtest.py"/>
         <!-- Only run the tests that are expected to work on Jython -->
         <arg value="--expected"/>
+        <arg value="-j"/>
+        <arg value="${junit.reports}"/>
       </exec>
     </target>
 

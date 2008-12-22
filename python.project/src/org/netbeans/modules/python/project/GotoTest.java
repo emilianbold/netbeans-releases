@@ -55,6 +55,10 @@ import org.openide.util.NbBundle;
 /**
  * Action for jumping from a testfile to its original file or vice versa.
  *
+ *
+ * @todo Look at this document: http://pycheesecake.org/wiki/PythonTestingToolsTaxonomy
+ *    and figure out what conventions are used for the various testing frameworks
+ *    and try to support as many as possible.
  * @author Tor Norbye
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.gototest.TestLocator.class)

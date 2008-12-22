@@ -72,7 +72,7 @@ public class AstElement extends Element {
             String name = PythonAstUtils.getCallName((Call)node);
             return new AstElement(scopes, node, name, ElementKind.METHOD);
         } else if (node instanceof Name) {
-            return new AstElement(scopes, node, ((Name)node).id, ElementKind.VARIABLE);
+            return new AstElement(scopes, node, ((Name)node).getInternalId(), ElementKind.VARIABLE);
         } else {
             return new AstElement(scopes, node, null, ElementKind.OTHER);
         }

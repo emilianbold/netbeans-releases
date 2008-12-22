@@ -83,7 +83,8 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
+import org.python.antlr.base.expr;
 
 /**
  * Code completion for Python.
@@ -512,7 +513,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             } finally {
                 doc.readUnlock();
             }
-        // Else: normal identifier: just return null and let the machinery do the rest
+            // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -658,7 +659,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
     private boolean completeOverrides(ClassDef classDef, List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
         PythonIndex index = request.index;
-        String className = classDef.name;
+        String className = classDef.getInternalName();
         String prefix = request.prefix;
         NameKind kind = request.kind;
         Set<IndexedElement> methods = index.getInheritedElements(className, prefix, kind);
@@ -1181,18 +1182,19 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     List<Import> imports = symbolTable.getImports();
                     if (imports != null && imports.size() > 0) {
                         for (Import imp : imports) {
-                            if (imp.names != null) {
-                                for (aliasType at : imp.names) {
-                                    if (at.asname != null && at.asname.equals(lhs)) {
+                            List<alias> names = imp.getInternalNames();
+                            if (names != null) {
+                                for (alias at : names) {
+                                    if (at.getInternalAsname() != null && at.getInternalAsname().equals(lhs)) {
                                         // Yes, imported symbol
-                                        moduleName = at.name;
+                                        moduleName = at.getInternalName();
                                         moduleCompletion = true;
                                         break;
-                                    } else if (at.name.equals(lhs)) {
-                                        if (at.asname != null) {
+                                    } else if (at.getInternalName().equals(lhs)) {
+                                        if (at.getInternalAsname() != null) {
                                             moduleCompletion = false;
                                         } else {
-                                            moduleName = at.name;
+                                            moduleName = at.getInternalName();
                                             moduleCompletion = true;
                                         }
                                         break;
@@ -1544,8 +1546,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             if (call != null && callMethod != null) {
                 // Try to set the anchor on the arg list instead of on the
                 // call itself
-                if (call.args != null && call.args.length > 0) {
-                    anchorOffset = PythonAstUtils.getRange(call.args[0]).getStart();
+                List<expr> args = call.getInternalArgs();
+                if (args != null && args.size() > 0) {
+                    anchorOffset = PythonAstUtils.getRange(args.get(0)).getStart();
                 }
             }
 
@@ -1757,8 +1760,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             this.request = request;
             this.anchorOffset = request.anchor;
 
-        // Should be a PythonMethodItem:
-        //assert this instanceof PythonMethodItem || (element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR) : element;
+            // Should be a PythonMethodItem:
+            //assert this instanceof PythonMethodItem || (element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR) : element;
         }
 
         private PythonCompletionItem(CompletionRequest request, IndexedElement element) {
