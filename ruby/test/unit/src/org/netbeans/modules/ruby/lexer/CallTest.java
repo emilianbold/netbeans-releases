@@ -64,6 +64,7 @@ public class CallTest extends RubyTestBase {
 
     private Call getCall(String source) {
         int caretPos = source.indexOf('^');
+        assertTrue("No ^ marker for the caret in the text", caretPos != -1);
 
         source = source.substring(0, caretPos) + source.substring(caretPos + 1);
 
