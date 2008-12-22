@@ -80,7 +80,9 @@ public class NestedLinkConnectProvider extends SceneConnectProvider
         {
             ObjectScene scene = (ObjectScene)sourceWidget.getScene();
             IPresentationElement source = (IPresentationElement) scene.findObject(sourceWidget);
-            IPresentationElement target = (IPresentationElement) scene.findObject(targetWidget);
+            Object targetO=scene.findObject(targetWidget);
+            IPresentationElement target = null;
+            if(targetO instanceof IPresentationElement)target=(IPresentationElement)targetO;
 
             if(target != null)
             {
