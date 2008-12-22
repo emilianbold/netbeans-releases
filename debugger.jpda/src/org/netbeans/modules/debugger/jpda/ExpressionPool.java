@@ -49,6 +49,7 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 
+import com.sun.jdi.VirtualMachine;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,7 +155,8 @@ public class ExpressionPool {
     }
 
     private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
-        if (!VirtualMachineWrapper.canGetBytecodes(MirrorWrapper.virtualMachine(loc))) {
+        VirtualMachine vm = MirrorWrapper.virtualMachine(loc);
+        if (!VirtualMachineWrapper.canGetBytecodes(vm)) {
             // Can not analyze expressions without bytecode
             return null;
         }
@@ -162,7 +164,7 @@ public class ExpressionPool {
         final Method method = LocationWrapper.method(loc);
         final byte[] bytecodes = MethodWrapper.bytecodes(method);
         byte[] constantPool = null;
-        if (JPDAUtils.IS_JDK_16) {
+        if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetConstantPool(vm)) {
             constantPool = ReferenceTypeWrapper.constantPool(clazzType);
         }
         final byte[] theConstantPool = constantPool;
