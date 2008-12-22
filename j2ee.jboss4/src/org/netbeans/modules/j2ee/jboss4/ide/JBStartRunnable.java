@@ -73,8 +73,8 @@ import org.openide.windows.InputOutput;
  */
 class JBStartRunnable implements Runnable {
 
-    private final static String STARTUP_SH = "/bin/run.sh";
-    private final static String STARTUP_BAT = "/bin/run.bat";
+    private final static String STARTUP_SH = File.separator + "bin" + File.separator + "run.sh";
+    private final static String STARTUP_BAT = File.separator + "bin" + File.separator + "run.bat";
 
     private JBDeploymentManager dm;
     private String instanceName;
@@ -114,42 +114,48 @@ class JBStartRunnable implements Runnable {
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
-        // use the IDE proxy settings if the 'use proxy' checkbox is selected
-        // do not override a property if it was set manually by the user
-        if (properties.getProxyEnabled()) {
-            final String[] PROXY_PROPS = {
+
+        boolean version5 = properties.isVersion(JBPluginUtils.JBOSS_5_0_0);
+
+        if (!version5) {   // if  JB version 4.x
+            // use the IDE proxy settings if the 'use proxy' checkbox is selected
+            // do not override a property if it was set manually by the user
+            if (properties.getProxyEnabled()) {
+                final String[] PROXY_PROPS = {
                 "http.proxyHost",       // NOI18N
                 "http.proxyPort",       // NOI18N
                 "http.nonProxyHosts",   // NOI18N
                 "https.proxyHost",      // NOI18N
                 "https.proxyPort",      // NOI18N
-            };
-            for (String prop : PROXY_PROPS) {
-                if (javaOpts.indexOf(prop) == -1) {
-                    String value = System.getProperty(prop);
-                    if (value != null) {
-                        if ("http.nonProxyHosts".equals(prop)) { // NOI18N
-                            try {
-                                // remove newline characters, as the value may contain them, see issue #81174
-                                BufferedReader br = new BufferedReader(new StringReader(value));
-                                String line = null;
-                                StringBuilder noNL = new StringBuilder();
-                                while ((line = br.readLine()) != null) {
-                                    noNL.append(line);
-                                }
-                                value = noNL.toString();
+                };
 
-                                // enclose the host list in double quotes because it may contain spaces
-                                value = "\"" + value + "\""; // NOI18N
+                for (String prop : PROXY_PROPS) {
+                    if (javaOpts.indexOf(prop) == -1) {
+                        String value = System.getProperty(prop);
+                        if (value != null) {
+                            if ("http.nonProxyHosts".equals(prop)) { // NOI18N
+                                try {
+                                    // remove newline characters, as the value may contain them, see issue #81174
+                                    BufferedReader br = new BufferedReader(new StringReader(value));
+                                    String line = null;
+                                    StringBuilder noNL = new StringBuilder();
+                                    while ((line = br.readLine()) != null) {
+                                        noNL.append(line);
+                                    }
+                                    value = noNL.toString();
+
+                                    // enclose the host list in double quotes because it may contain spaces
+                                    value = "\"" + value + "\""; // NOI18N
                             }
                             catch (IOException ioe) {
                                 Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(JBStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
-                                value = null;
+                                    value = null;
+                                }
                             }
-                        }
-                        if (value != null) {
+                            if (value != null) {
                             javaOptsBuilder.append(" -D").append(prop).append("=").append(value); // NOI18N
+                            }
                         }
                     }
                 }
@@ -174,13 +180,13 @@ class JBStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
-
+       // System.out.println("**** JBStartRunnable: javaOpts = "+ javaOpts);
         // get Java platform that will run the server
         JavaPlatform platform = (startServer.getMode() != JBStartServer.MODE.PROFILE ? properties.getJavaPlatform() : profilerSettings.getJavaPlatform());
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[] {
-            "JAVA=" + javaHome + "/bin/java",   // NOI18N
+            "JAVA=" + javaHome + File.separator +"bin" + File.separator + "java",   // NOI18N
             "JAVA_HOME=" + javaHome,            // NOI18N
             "JAVA_OPTS=" + javaOpts,            // NOI18N
         };
@@ -274,7 +280,7 @@ class JBStartRunnable implements Runnable {
         if (pd == null) {
             return null;
         }
-        
+
         String envp[] = createEnvironment(ip);
 
         try {

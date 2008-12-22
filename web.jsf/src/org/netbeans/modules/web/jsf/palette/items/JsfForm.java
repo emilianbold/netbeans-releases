@@ -44,13 +44,10 @@ package org.netbeans.modules.web.jsf.palette.items;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -60,24 +57,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -85,17 +72,7 @@ import org.openide.util.Exceptions;
  * @author Po-Ting Wu
  * @author mbohm
  */
-public final class JsfForm implements ActiveEditorDrop {
-        
-//                    columnClasses="list-column-left, list-column-left,
-//                    list-column-right, list-column-center"
-//                    rowClasses="list-row-even, list-row-odd"
-    
-    public static final int FORM_TYPE_EMPTY = 0;
-    public static final int FORM_TYPE_DETAIL = 1;
-    public static final int FORM_TYPE_NEW = 2;
-    public static final int FORM_TYPE_EDIT = 3;
-    
+public final class JsfForm extends EntityClass implements ActiveEditorDrop {
     private static String [] BEGIN = {
         "<h:form>\n",
         "<h2>Detail</h2>\n <h:form>\n<h:panelGrid columns=\"2\">\n",
@@ -109,42 +86,14 @@ public final class JsfForm implements ActiveEditorDrop {
         "</h:panelGrid>\n </h:form>\n",
     };
     
-    private String variable = "";
-    private String bean = "";
-    private int formType = 0;
-    
     public JsfForm() {
     }
     
-    public boolean handleTransfer(JTextComponent targetComponent) {
-        JsfFormCustomizer jsfFormCustomizer = new JsfFormCustomizer(this, targetComponent);
-        boolean accept = jsfFormCustomizer.showDialog();
-        if (accept) {
-            try {
-                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
-                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
-                
-                Caret caret = targetComponent.getCaret();
-                int position0 = Math.min(caret.getDot(), caret.getMark());
-                int position1 = Math.max(caret.getDot(), caret.getMark());
-                int len = targetComponent.getDocument().getLength() - position1;
-                boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
-                        && targetComponent.getText(position1, len).contains("</f:view>");
-                String body = createBody(targetComponent, !containsFView);
-                JSFPaletteUtilities.insert(body, targetComponent);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                accept = false;
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-                accept = false;
-            }
-        }
-        
-        return accept;
+    protected String getName() {
+        return "Form"; // NOI18N
     }
     
-    private String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
+    protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
             stringBuffer.append("<f:view>\n");
@@ -168,66 +117,6 @@ public final class JsfForm implements ActiveEditorDrop {
         return stringBuffer.toString();
     }
     
-    static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
-        if (element != null) {
-            if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.Id") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    static String getTemporal(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
-        if (element != null) {
-            AnnotationMirror annotationMirror = JpaControllerUtil.findAnnotation(element, "javax.persistence.Temporal"); // NOI18N
-            if (annotationMirror != null) {
-                Collection<? extends AnnotationValue> attributes = annotationMirror.getElementValues().values();
-                if (attributes.iterator().hasNext()) {
-                    AnnotationValue annotationValue = attributes.iterator().next();
-                    if (annotationValue != null) {
-                        return annotationValue.getValue().toString();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    static FileObject getFO(JTextComponent target) {
-        Document doc = target.getDocument();
-        if (doc != null) {
-            return NbEditorUtilities.getFileObject(doc);
-        }
-        return null;
-    }
-    
-    static ClasspathInfo createClasspathInfo(FileObject fileObject) {
-        return ClasspathInfo.create(
-                ClassPath.getClassPath(fileObject, ClassPath.BOOT),
-                ClassPath.getClassPath(fileObject, ClassPath.COMPILE),
-                ClassPath.getClassPath(fileObject, ClassPath.SOURCE)
-                );
-    }
-    
-    static boolean hasModuleJsf(JTextComponent target) {
-        FileObject fileObject = getFO(target);
-        if (fileObject != null) {
-            WebModule webModule = WebModule.getWebModule(fileObject);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
-            return configFiles != null && configFiles.length > 0;
-        }
-        return false;
-    }
-    
-    public static boolean isEntityClass(TypeElement typeElement) {
-        if (JpaControllerUtil.isAnnotatedWith(typeElement, "javax.persistence.Entity")) {
-            return true;
-        }
-        return false;
-    }
-
     /** Check if there is a setter corresponding with the getter */
     public static boolean isReadOnly(Types types, ExecutableElement getter) {
         String setterName = "set" + getter.getSimpleName().toString().substring(3); //NOI18N
@@ -246,16 +135,6 @@ public final class JsfForm implements ActiveEditorDrop {
         return true;
     }
 
-    static String getDateTimeFormat(String temporal) {
-        if ("DATE".equals(temporal)) {
-            return "MM/dd/yyyy";
-        } else if ("TIME".equals(temporal)) {
-            return "HH:mm:ss";
-        } else {
-            return "MM/dd/yyyy HH:mm:ss";
-        }
-    }
-    
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer) {
         createForm(controller, bean, formType, variable, stringBuffer, "", null, "", "");
     }
@@ -358,13 +237,13 @@ public final class JsfForm implements ActiveEditorDrop {
                 (entityClass.length() == 0 || controllerClass.length() == 0) ) {
             //this method was called from outside the jsfcrud generator feature
             String template = "<h:outputText value=\"{0}:\"/>\n" +
-                    "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n";
+                    "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n";
             Object[] args = new Object [] {name, variable, propName};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE) {
             String template = "<h:outputText value=\"{0}:\"/>\n" +
                 "<h:panelGroup>\n" + 
-                "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n" +
+                "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
                 "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
                 "<h:outputText value=\" (\"/>\n" +
                 "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
@@ -548,30 +427,4 @@ public final class JsfForm implements ActiveEditorDrop {
             }
         }
     }
-    
-    public String getVariable() {
-        return variable;
-    }
-    
-    public void setVariable(String variable) {
-        this.variable = variable;
-    }
-    
-    public String getBean() {
-        return bean;
-    }
-    
-    public void setBean(String collection) {
-        this.bean = collection;
-    }
-    
-    public int getFormType() {
-        return formType;
-    }
-    
-    public void setFormType(int formType) {
-        this.formType = formType;
-    }
-    
-
 }

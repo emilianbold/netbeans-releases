@@ -43,7 +43,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -52,6 +51,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -60,7 +60,7 @@ import org.openide.util.LookupListener;
  *
  * @author Sergey Grinev
  */
-public class CsmFontColorManager {
+public final class CsmFontColorManager {
 
     private final Map<String, FontColorProviderImpl> providers = new HashMap<String, FontColorProviderImpl>();
 
@@ -68,14 +68,18 @@ public class CsmFontColorManager {
         getCreateProvider(mimeType).addListener(listener);
     }
     
-    private static final String DEFAULT_MIME_TYPE = "text/x-c++"; //NOI18N
-    
     /* package */ Color getColor(FontColorProvider.Entity color) {
-        // completion is not aware of document type
-        AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
+        // completion is not aware of document type, use C++
+        AttributeSet as = getCreateProvider(MIMENames.CPLUSPLUS_MIME_TYPE).getColor(color);
         return isUnitTestsMode ? Color.red : (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
     }
-    
+
+    public AttributeSet getColorAttributes(String mimeType, FontColorProvider.Entity name) {
+        // completion is not aware of document type
+        AttributeSet as = getCreateProvider(mimeType).getColor(name);
+        return isUnitTestsMode ? null : as;
+    }
+
     private FontColorProviderImpl getCreateProvider(String mimeType) {
         synchronized (providers) {
             FontColorProviderImpl fcp = providers.get(mimeType);

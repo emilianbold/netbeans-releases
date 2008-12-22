@@ -71,10 +71,12 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -170,7 +172,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
             
-            if (allowInstantRename(ref)) {
+            if (allowInstantRename(ref, dobj.getPrimaryFile())) {
                 Collection<CsmReference> changePoints = computeChangePoints(ref);
                 //String ident = ref.getText();
                 doInstantRename(changePoints, target, caret);
@@ -179,6 +181,14 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
+        }
+    }
+
+    private static boolean allowInstantRename(CsmReference ref, FileObject fo) {
+        if (CsmRefactoringUtils.isRefactorable(fo)) {
+            return allowInstantRename(ref);
+        } else {
+            return false;
         }
     }
     

@@ -40,10 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.util;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
@@ -150,6 +153,13 @@ public class DataViewUtils {
             default:
                 return false;
         }
+    }
+
+    // NULL, DEFAULT, CURRENT_TIMESTAMP etc.
+    public static boolean isSQLConstantString(Object value) {
+        return value == null || (value instanceof String 
+                && ((String) value).startsWith("<") 
+                && ((String) value).endsWith(">"));
     }
 
     public static boolean isNullString(String str) {

@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.elements.IndexedMethod;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
@@ -859,6 +861,58 @@ public class PythonDeclarationFinder implements DeclarationFinder {
         }
 
         return null;
+    }
+
+    /**
+     * Compute the declaration location for a test string (such as MosModule::TestBaz/test_qux).
+     *
+     * @param fileInProject a file in the project where to perform the search
+     * @param testString a string represening a test class and method, such as TestFoo/test_bar
+     * @param classLocation if true, returns the location of the class rather then the method.
+     */
+    public static DeclarationLocation getTestDeclaration(FileObject fileInProject, String testString, boolean classLocation) {
+        int methodIndex = testString.indexOf('/'); //NOI18N
+        if (methodIndex == -1) {
+            return DeclarationLocation.NONE;
+        }
+
+        Index gsfIndex = SourceModelFactory.getInstance().getIndex(fileInProject, PythonTokenId.PYTHON_MIME_TYPE);
+        if (gsfIndex == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        String className = testString.substring(0, methodIndex);
+        String methodName = testString.substring(methodIndex+1);
+
+        PythonIndex index = PythonIndex.get(gsfIndex, fileInProject);
+        Set<IndexedElement> elements = index.getAllMembers(methodName, NameKind.EXACT_NAME, PythonIndex.SOURCE_SCOPE, null, true);
+        // Look for one that matches our class name
+        if (elements.size() > 0) {
+            IndexedElement candidate = null;
+            for (IndexedElement element : elements) {
+                if (element instanceof IndexedMethod) {
+                    IndexedMethod method = (IndexedMethod)element;
+                    if (className.startsWith(method.getModule()+".")) {
+                        // Close!
+                        candidate = method;
+                        if (className.equals(method.getModule()+ "." + method.getClz())) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (candidate != null) {
+                int offset = 0;
+                PythonTree node = candidate.getNode();
+                if (node != null) {
+                    offset = PythonAstUtils.getRange(node).getStart();
+                }
+                return new DeclarationLocation(candidate.getFileObject(), offset);
+            }
+        }
+
+        return DeclarationLocation.NONE;
     }
 
     private static class PythonAltLocation implements AlternativeLocation {

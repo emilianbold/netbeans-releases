@@ -55,6 +55,8 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -104,7 +106,12 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             Future<Integer> future = service.run();
             try {
                 // TODO handle return value
-                future.get();
+                Integer ret = future.get();
+                if (ret.intValue() != 0) {
+                    String msg = NbBundle.getMessage(NewArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {

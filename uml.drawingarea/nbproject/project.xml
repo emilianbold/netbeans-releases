@@ -269,6 +269,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.uml.drawingarea.border</package>
                 <package>org.netbeans.modules.uml.drawingarea.dataobject</package>
                 <package>org.netbeans.modules.uml.drawingarea.engines</package>
+                <package>org.netbeans.modules.uml.drawingarea.layout</package>
                 <package>org.netbeans.modules.uml.drawingarea.palette</package>
                 <package>org.netbeans.modules.uml.drawingarea.palette.context</package>
                 <package>org.netbeans.modules.uml.drawingarea.persistence</package>

@@ -45,8 +45,9 @@ public class RubyConstantDeclarationFinderTest extends RubyTestBase {
     }
 
     public void testConstantDeclaration() throws Exception {
-        checkDeclaration("testfiles/constants.rb", "return R^ED", "constants.rb", 86);
-        checkDeclaration("testfiles/constants.rb", "Colors::R^ED.byte", "constants.rb", 86);
-        checkDeclaration("testfiles/constants.rb", "Colors::Converter::VER^SION", "constants.rb", 38);
+        checkDeclaration("testfiles/constants.rb", "return R^ED", "constants.rb", 123);
+        checkDeclaration("testfiles/constants.rb", "Colors::R^ED.byte", "constants.rb", 123);
+        checkDeclaration("testfiles/constants.rb", "Colors::Converter::VER^SION", "constants.rb", 75);
+        checkDeclaration("testfiles/constants.rb", "puts GLO^BAL_CONSTANT", "constants.rb", 0);
     }
 }

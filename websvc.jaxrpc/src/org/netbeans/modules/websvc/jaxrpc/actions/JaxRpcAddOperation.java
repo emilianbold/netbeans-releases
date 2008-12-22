@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.openide.util.Lookup;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
@@ -83,12 +84,14 @@ import org.openide.util.NbBundle;
 public class JaxRpcAddOperation implements AddOperationCookie {
 
     private static final String Remote_Exception = "java.rmi.RemoteException"; //NOI18N
+    private FileObject implementationClass;
 
     /** Creates a new instance of JaxWsAddOperation */
-    public JaxRpcAddOperation() {
+    public JaxRpcAddOperation(FileObject implementationClass) {
+        this.implementationClass = implementationClass;
     }
 
-    public void addOperation(FileObject implementationClass) {
+    public void addOperation() {
         WebserviceDescription wsDesc = findWSDescriptionFromClass(implementationClass);
         if (wsDesc == null)
             return; //this will never happen
@@ -117,8 +120,9 @@ public class JaxRpcAddOperation implements AddOperationCookie {
         }
     }
 
-    public boolean isEnabled(FileObject implClass) {
-        return isWsImplBeanOrInterface(implClass);
+    @Override
+    public boolean isEnabledInEditor(Lookup nodeLookup) {
+        return isWsImplBeanOrInterface(implementationClass);
     }
 
     private boolean hasRemoteException(final List<String> exceptions) {

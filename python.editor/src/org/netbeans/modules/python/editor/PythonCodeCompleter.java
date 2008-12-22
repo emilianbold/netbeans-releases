@@ -849,7 +849,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 if (library != null) {
                     if (id == PythonTokenId.WHITESPACE &&
                             ts.movePrevious() && ts.token().id() == PythonTokenId.FROM) {
-                        if (prefix.length() == 0 || "*".equals(prefix)) {
+
+                        boolean isFutureImport = "__future__".equals(library); // NOI18N
+                        if ("*".equals(prefix) || (prefix.length() == 0 && !isFutureImport)) { // NOI18N
                             KeywordItem item = new KeywordItem("*", "Import All Exported Symbols", request, "*");
                             proposals.add(item);
                             item.sortPrioOverride = -10000;
@@ -870,6 +872,14 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                             }
                             if (!moduleName.startsWith(prefix)) {
                                 continue;
+                            }
+
+                            // The __future__ module imports some stuff we don't want to see in imports...
+                            if (isFutureImport) {
+                                char first = moduleName.charAt(0);
+                                if (first == '_' || Character.isUpperCase(first)) {
+                                    continue;
+                                }
                             }
 
                             PythonCompletionItem item = createItem(symbol, request);

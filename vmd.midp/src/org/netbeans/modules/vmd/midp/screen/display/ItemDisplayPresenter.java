@@ -57,6 +57,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,6 +83,9 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         };
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
+        
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
         
         label = new JLabel();
         Font bold = label.getFont().deriveFont(Font.BOLD);

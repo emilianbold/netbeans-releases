@@ -93,6 +93,11 @@ public class GenerateCodePanel extends javax.swing.JPanel {
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 4, 4, 4));
 
+        jList1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                listMouseMoved(evt);
+            }
+        });
         jList1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 listKeyReleased(evt);
@@ -122,6 +127,12 @@ public class GenerateCodePanel extends javax.swing.JPanel {
         if (ks.getKeyCode() == KeyEvent.VK_ENTER || ks.getKeyCode() == KeyEvent.VK_SPACE)
             invokeSelected();
     }//GEN-LAST:event_listKeyReleased
+
+    private void listMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseMoved
+        int idx = jList1.locationToIndex(evt.getPoint());
+        if (idx != jList1.getSelectedIndex())
+            jList1.setSelectedIndex(idx);
+    }//GEN-LAST:event_listMouseMoved
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

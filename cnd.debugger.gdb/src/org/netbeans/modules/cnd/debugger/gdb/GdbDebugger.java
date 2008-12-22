@@ -407,12 +407,17 @@ public class GdbDebugger implements PropertyChangeListener {
                             inFile = win2UnixPath(inFile);
                             outFile = win2UnixPath(outFile);
                         }
-                        // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                        String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
-                        if (shell != null && shell.endsWith("csh")) { // NOI18N
-                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
+                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
                         } else {
-                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+                            String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
+                            if (shell != null && shell.endsWith("csh")) { // NOI18N
+                                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                            } else {
+                                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                            }
                         }
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);

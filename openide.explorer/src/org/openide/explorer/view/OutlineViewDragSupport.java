@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import org.openide.nodes.Node;
 
 import java.awt.dnd.*;
 
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import java.util.ArrayList;
 import javax.swing.JComponent;
@@ -73,6 +72,7 @@ final class OutlineViewDragSupport extends ExplorerDragSupport {
         this.comp = table;
     }
 
+    @Override
     public int getAllowedDragActions() {
         return view.getAllowedDragActions();
     }
@@ -81,6 +81,7 @@ final class OutlineViewDragSupport extends ExplorerDragSupport {
         return view.getAllowedDropActions();
     }
 
+    @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
         super.dragGestureRecognized(dge);
 
@@ -96,6 +97,7 @@ final class OutlineViewDragSupport extends ExplorerDragSupport {
 //        }
     }
 
+    @Override
     public void dragDropEnd(DragSourceDropEvent dsde) {
         // get the droped nodes
         Node[] dropedNodes = exDnD.getDraggedNodes();
@@ -144,14 +146,14 @@ final class OutlineViewDragSupport extends ExplorerDragSupport {
     */
     Node[] obtainNodes(DragGestureEvent dge) {
         int[] selRows = view.getOutline().getSelectedRows();
-        ArrayList al = new ArrayList(selRows.length);
+        ArrayList<Node> al = new ArrayList<Node> (selRows.length);
         for (int i = 0; i < selRows.length; i++) {
             Node n = view.getNodeFromRow(selRows[i]);
             if (n != null) {
                 al.add(n);
             }
         }
-        Node[] result = (Node[])al.toArray(new Node[al.size()]);
+        Node[] result = al.toArray (new Node[al.size ()]);
         return result;
         // dge.getDragOrigin()
         

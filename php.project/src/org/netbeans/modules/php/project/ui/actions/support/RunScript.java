@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -51,6 +52,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -106,6 +109,15 @@ public class RunScript extends Command implements Displayable {
                 final ExecutionService service = ExecutionService.newService(getBuilder(phpInterpreter, scriptFile),
                         descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
                 final Future<Integer> result = service.run();
+                // #155251
+                /*try {
+                    result.get();
+                } catch (ExecutionException exc) {
+                    Throwable cause = exc.getCause();
+                    assert cause != null;
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(
+                            cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                }*/
                 return new Cancellable() {
                     public boolean cancel() {
                         return result.cancel(true);

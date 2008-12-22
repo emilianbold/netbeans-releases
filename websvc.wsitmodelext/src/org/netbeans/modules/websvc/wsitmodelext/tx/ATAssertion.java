@@ -42,11 +42,12 @@
 package org.netbeans.modules.websvc.wsitmodelext.tx;
 
 import org.netbeans.modules.websvc.wsitmodelext.policy.OptionalAttributeAllowed;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
  * @author Martin Grebac
  */
 public interface ATAssertion extends OptionalAttributeAllowed {
-
+    void setOptional(boolean optional, ConfigVersion version);
 }

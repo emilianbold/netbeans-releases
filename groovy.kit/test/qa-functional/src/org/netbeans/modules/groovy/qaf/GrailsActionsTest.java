@@ -41,7 +41,6 @@ package org.netbeans.modules.groovy.qaf;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
@@ -57,6 +56,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
@@ -70,6 +70,7 @@ import org.openide.windows.TopComponent;
 public class GrailsActionsTest extends GrailsTestCase {
 
     private static final String APP_PORT = "9998"; //NOI18N
+    private static final String DEFAULT_PORT = "8080"; //NOI18N
     private static final String PLUGIN_NAME = "testing"; //NOI18N
     private static boolean isPortSet = false;
     private OpenAction oa = new OpenAction();
@@ -82,7 +83,8 @@ public class GrailsActionsTest extends GrailsTestCase {
     public void setUp() throws Exception {
         super.setUp();
         if (!isPortSet) {
-            GrailsSettings.getInstance().setPortForProject(getProject(), APP_PORT);
+            setApplicationPort(APP_PORT);
+            assertEquals(APP_PORT, GrailsSettings.getInstance().getPortForProject(getProject()));
             isPortSet = true;
         }
     }
@@ -90,6 +92,17 @@ public class GrailsActionsTest extends GrailsTestCase {
     @Override
     protected String getProjectName() {
         return "GrailsActions"; //NOI18N
+    }
+
+    /**
+     * Test Generate all action on the domain class node
+     *
+     */
+    public void testGenerateAll() {
+        //Generate All
+        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
+        getDomainClassNode("Book").performPopupAction(label); //NOI18N
+        waitFor("generate-all", "Finished generation for domain class"); //NOI18N
     }
 
     /**
@@ -126,21 +139,10 @@ public class GrailsActionsTest extends GrailsTestCase {
     }
 
     /**
-     * Test Generate all action on the domain class node
-     *
-     */
-    public void testGenerateAll() {
-        //Generate All
-        String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateAllAction");
-        getDomainClassNode("Book").performPopupAction(label); //NOI18N
-        waitFor("generate-all", "Finished generation for domain class"); //NOI18N
-    }
-
-    /**
      * Test Create view action on the domain class node
      *
      */
-    public void testCreateView() {
+    public void testGenerateViews() {
         //Generate Views
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.actions.Bundle", "CTL_GenerateViewsAction");
         getDomainClassNode("Author").performPopupAction(label); //NOI18N
@@ -281,6 +283,15 @@ public class GrailsActionsTest extends GrailsTestCase {
         FilesTabOperator fto = FilesTabOperator.invoke();
         Node n = new Node(fto.getProjectNode(getProjectName()), getProjectName() + "-0.1.war"); //NOI18N
         assertNotNull(n);
+    }
+
+    private void setApplicationPort(String port) {
+        getProjectRootNode().properties();
+        NbDialogOperator ndo = new NbDialogOperator(getProjectName());
+        JTextFieldOperator jtfo = new JTextFieldOperator(ndo, DEFAULT_PORT);
+        jtfo.clearText();
+        jtfo.typeText(port);
+        ndo.ok();
     }
 
     private Node getDomainClassNode(String domainClass) {

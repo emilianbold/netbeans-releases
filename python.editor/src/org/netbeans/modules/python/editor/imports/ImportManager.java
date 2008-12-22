@@ -147,6 +147,10 @@ public final class ImportManager {
 
     }
 
+    public static boolean isFutureImport(ImportFrom fromStatement) {
+        return "__future__".equals(fromStatement.module); // NOI18N
+    }
+
     public void setCleanup(ImportCleanupStyle cleanup) {
         this.cleanup = cleanup;
     }

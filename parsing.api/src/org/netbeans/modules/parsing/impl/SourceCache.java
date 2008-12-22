@@ -266,8 +266,13 @@ public final class SourceCache {
         if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
             for (int i = 0; i < embeddings.size (); i++) {
                 SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
-                cache.setEmbedding (embeddings.get (i));
-                embeddingToCache.put (embeddings.get (i), cache);
+                if (cache != null) {
+                    cache.setEmbedding (embeddings.get (i));
+                    embeddingToCache.put (embeddings.get (i), cache);
+                } else {
+                    cache = getCache(embeddings.get(i));
+                }
+
                 if (updateTasks) {
                     //S ystem.out.println ("\nSchedule embedded tasks (" + embeddings.get (i) + "):");
                     cache.scheduleTasks (schedulerType);
@@ -277,7 +282,9 @@ public final class SourceCache {
             if (oldEmbeddings != null)
                 for (Embedding _embedding : oldEmbeddings) {
                     SourceCache cache = embeddingToCache.remove (_embedding);
-                    cache.removeTasks ();
+                    if (cache != null) {
+                        cache.removeTasks ();
+                    }
                 }
             if (updateTasks)
                 for (Embedding _embedding : embeddings) {

@@ -90,10 +90,19 @@ public class InstantRenameAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+        String ident = null;
+        final int caret = target.getCaretPosition();
+        BaseDocument doc = Utilities.getDocument(target);
         try {
-            final int caret = target.getCaretPosition();
-            String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
+            doc.readLock(); // For Utilities.getId
+            ident = Utilities.getIdentifier( doc, caret);
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        } finally {
+            doc.readUnlock();
+        }
 
+        try {
             if (ident == null) {
                 Utilities.setStatusBoldText(target, "Cannot perform rename here.");
 

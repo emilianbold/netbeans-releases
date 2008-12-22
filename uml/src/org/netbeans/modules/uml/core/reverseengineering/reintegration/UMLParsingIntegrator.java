@@ -103,11 +103,9 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Implementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Realization;
@@ -120,7 +118,6 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLPa
 import org.netbeans.modules.uml.core.reverseengineering.reframework.ClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IDependencyEvent;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.IPackageEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IPackageEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IParserData;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREClass;
@@ -139,7 +136,6 @@ import org.netbeans.modules.uml.core.scm.ISCMItemGroup;
 import org.netbeans.modules.uml.core.scm.ISCMMaskKind;
 import org.netbeans.modules.uml.core.scm.ISCMTool;
 import org.netbeans.modules.uml.core.scm.SCMObjectCreator;
-import org.netbeans.modules.uml.core.support.Debug;
 import org.netbeans.modules.uml.core.support.Debug;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.MsgCoreConstants;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
@@ -856,7 +852,7 @@ public class UMLParsingIntegrator
                         String name = XMLManip.getAttributeValue(searchNode, "name"); // NOI18N
                         if (name != null)
                         {
-                            if (name == value)
+                            if (name.equals(value))
                             {
                                 foundNode = searchNode;
                             }
@@ -1721,7 +1717,7 @@ public class UMLParsingIntegrator
 	String attrName;
 
 	public BySpecificAttributeNodeComparator(String attrNamem) {
-	    this.attrName = attrName;
+	    this.attrName = attrNamem;
 	}
 
 	public boolean compare(Node n1, Node n2) {
@@ -3177,7 +3173,6 @@ public class UMLParsingIntegrator
                     {
                         // Now lets see if the owning namespace is our owner
                         String ownerID = XMLManip.getAttributeValue(symNode, "owner");
-                        //Debug.assertFalse(ownerID.length() > 0);
                         
                         long numSyms = result.size();
                         
@@ -3218,14 +3213,6 @@ public class UMLParsingIntegrator
                                 spaceID = curID;
                             }
                         }
-                        //                  The C++ version incremented there iterator to check if
-                        //                  typeNameIsComplete == true.  Since I did not have to
-                        //                  increment the tokens to check if we where complete, I do not
-                        //                  have to back up the tokenizer.
-                        //                  if(tokens != null)
-                        //                  {
-                        //                     --iter;
-                        //                  }
                     }
                 }
             }
@@ -3358,10 +3345,6 @@ public class UMLParsingIntegrator
             
             if (value != null)
             {
-                //value.setXMIID(xmiID);
-                //value.setNumberOfTypes(1);
-                //value.setDataType(isDatatype);
-                
                 value.reset(xmiID, 1, isDatatype, needSearch, namedElement);
             }
             else
@@ -3485,13 +3468,11 @@ public class UMLParsingIntegrator
                                 // We have a direct match in terms of name. Now make sure we
                                 // don't have a Package name matching a type name
                                 
-                                //Node tDesc = dep.selectSingleNode( "./TokenDescriptors/TDescriptor[@type='Class Dependency']" );
                                 Node tDesc = dep.selectSingleNode("./TokenDescriptors[@type='Class Dependency']");
                                 if (tDesc == null)
                                 {
                                     tDesc = dep.selectSingleNode("./TokenDescriptors/TDescriptor[@type='Class Dependency']");
                                 }
-                                //Debug.assertNull(tDesc);
                                 
                                 if (tDesc != null)
                                 {
@@ -4610,13 +4591,12 @@ public class UMLParsingIntegrator
                 // We only want to remove attributes. It's possible to be in this
                 // routine with a Parameter node...
                 
-                if (nodeName == "UML:Attribute")
+                if (nodeName.equals("UML:Attribute"))
                 {
                     // Now remove the attribute, as we don't want to create an
                     // actual attribute now that it has been realized in an
                     // association
                     attr.detach();
-                    //         		XMLManip.removeNode( attr);
                 }
             }
         }
@@ -7035,7 +7015,7 @@ public class UMLParsingIntegrator
                 if (pCurNode != null)
                 {
                     String curNodeName = pCurNode.getName();
-                    if (curNodeName == wantedNodeName)
+                    if (curNodeName.equals(wantedNodeName))
                     {
                         pVal = pCurNode;
                         break;
@@ -8599,17 +8579,13 @@ public class UMLParsingIntegrator
          */
         public void setXMIID(String id)
         {
-            //         if((mXMIID.length() > 0) && (mXMIID.equals(string) == false))
-            //         {
-            //            ETSystem.out.println("I already have an XMIID");
-            //         }
             mXMIID = id;
             
             if (mElement != null)
             {
                 String curID = mElement.getXMIID();
                 
-                if (curID.length() != 0 && curID != id)
+                if (curID.length() != 0 && !curID.equals(id))
                 {
                     mElement = null;
                 }

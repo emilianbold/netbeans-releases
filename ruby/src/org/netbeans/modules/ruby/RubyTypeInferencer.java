@@ -1,0 +1,193 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.ruby;
+
+import java.util.List;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+
+public final class RubyTypeInferencer {
+
+    private final ContextKnowledge knowledge;
+    private RubyTypeAnalyzer analyzer;
+
+    RubyTypeInferencer() {
+        this.knowledge = new ContextKnowledge();
+    }
+
+    public RubyTypeInferencer(final ContextKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    private void initializeAnalyzer() {
+        if (analyzer == null) {
+            assert knowledge != null : "need ContextKnowledge for RubyTypeAnalyzer";
+            analyzer = new RubyTypeAnalyzer(knowledge);
+        }
+    }
+
+    /**
+     * Tries to infer the type(s) of the given <code>symbol</code> within the
+     * context, that is by walking and analyzing {@link #RubyTypeAnalyzer the
+     * given block}.
+     *
+     * @param symbol symbol for which to infer the type
+     * @return inferred {@link RubyType types}, never <code>null</code>;
+     */
+    public RubyType inferType(final String symbol) {
+        initializeAnalyzer();
+        analyzer.analyze();
+
+        RubyType type = knowledge.getType(symbol);
+        if (type == null) {
+            type = RubyType.createUnknown();
+        }
+
+        // Special cases
+        if (!type.isKnown()) {
+            // Handle migrations. This needs better flow analysis of block
+            // variables but do quickfix for 6.0 which will work in most
+            // migrations files.
+            if ("t".equals(symbol) && knowledge.getRoot().nodeId == NodeType.DEFSNODE) { // NOI18N
+                String n = AstUtilities.getName(knowledge.getRoot());
+                if ("up".equals(n) || ("down".equals(n))) { // NOI18N
+                    return RubyType.create("ActiveRecord::ConnectionAdapters::TableDefinition"); // NOI18N
+                }
+            }
+        }
+
+        // We keep track of the types contained within Arrays
+        // internally (and probably hashes as well, TODO)
+        // such that we can do the right thing when you operate
+        // on an Array. However, clients should only see the "raw" (and real)
+        // type.
+        if (type.isKnown()) {
+            for (String realType : type.getRealTypes()) {
+                if (realType.startsWith("Array<")) { // NOI18N
+                    return RubyType.ARRAY;
+                }
+            }
+        }
+
+        return type;
+    }
+
+    /** Called on AsgnNodes to compute RHS. */
+    static RubyType inferTypesOfRHS(final Node node, final ContextKnowledge knowledge) {
+        List<Node> children = node.childNodes();
+        if (children.size() != 1) {
+            return RubyType.createUnknown();
+        }
+        return inferTypes(children.get(0), knowledge);
+    }
+
+    static RubyType inferTypes(final Node node, final ContextKnowledge knowledge) {
+        if (knowledge != null) {
+            if (!knowledge.wasAnalyzed()) {
+                new RubyTypeAnalyzer(knowledge).analyze();
+            }
+            switch (node.nodeId) {
+                case LOCALVARNODE:
+                case DVARNODE:
+                case INSTVARNODE:
+                case GLOBALVARNODE:
+                case CLASSVARNODE:
+                case COLON2NODE:
+                    return knowledge.getType(AstUtilities.getName(node));
+            }
+        }
+        if (node.nodeId == NodeType.CALLNODE) {
+            return RubyMethodTypeInferencer.inferTypeFor((CallNode) node, knowledge);
+        }
+        return getTypeForLiteral(node);
+    }
+
+    /**
+     * Returns type for Ruby built-in literal, like String, Array, Hash, Regexp,
+     * etc.
+     *
+     * @param node node representing Ruby build-int literal, i.e. having {@link
+     *   Node#nodeId} e.g. {@link NodeType#STRNODE},  {@link
+     *   NodeType#ARRAYNODE}, {@link NodeType#HASHNODE},  {@link
+     *   NodeType#REGEXPNODE}, ...
+     * @return Ruby type as used in Ruby code, e.g. <code>String</code>,
+     *   <code>Array</code>,  <code>Hash</code>,  <code>Regexp</code>, ...
+     */
+    static RubyType getTypeForLiteral(final Node node) {
+        switch (node.nodeId) {
+            case ARRAYNODE:
+            case ZARRAYNODE:
+                return RubyType.ARRAY; // NOI18N
+            case STRNODE:
+            case DSTRNODE:
+            case XSTRNODE:
+            case DXSTRNODE:
+                return RubyType.STRING; // NOI18N
+            case FIXNUMNODE:
+                return RubyType.FIXNUM; // NOI18N
+            case BIGNUMNODE:
+                return RubyType.BIGNUM; // NOI18N
+            case HASHNODE:
+                return RubyType.HASH; // NOI18N
+            case REGEXPNODE:
+            case DREGEXPNODE:
+                return RubyType.REGEXP; // NOI18N
+            case SYMBOLNODE:
+            case DSYMBOLNODE:
+                return RubyType.SYMBOL; // NOI18N
+            case FLOATNODE:
+                return RubyType.FLOAT; // NOI18N
+            case NILNODE:
+                // NilImplicitNode - don't use it, the type is really unknown!
+                if (!node.isInvisible()) {
+                    return RubyType.NIL_CLASS; // NOI18N
+                }
+                break;
+            case TRUENODE:
+                return RubyType.TRUE_CLASS; // NOI18N
+            case FALSENODE:
+                return RubyType.FALSE_CLASS; // NOI18N
+            //} else if (child instanceof RangeNode) {
+            //    return RubyType.RANGE; // NOI18N
+        }
+        return RubyType.createUnknown();
+    }
+}
+

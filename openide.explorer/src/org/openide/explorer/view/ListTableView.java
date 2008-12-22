@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TableSheet.ControlledTableView;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
-import org.openide.util.WeakListeners;
 
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
@@ -74,7 +73,7 @@ public @Deprecated class ListTableView extends ListView {
     private ExplorerManager manager;
 
     /** listener on explorer manager */
-    private PropertyChangeListener wlpc;
+    private PropertyChangeListener pchl;
 
     /** table view that is controlled by list view */
     private ControlledTableView controlledTableView;
@@ -189,15 +188,18 @@ public @Deprecated class ListTableView extends ListView {
         return controlledTableView.getControllingViewWidth();
     }
 
+    @Override
     public void setPreferredSize(Dimension dim) {
         super.setPreferredSize(dim);
         prefSize = dim;
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return prefSize;
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -205,11 +207,11 @@ public @Deprecated class ListTableView extends ListView {
 
         if (newManager != manager) {
             if (manager != null) {
-                manager.removePropertyChangeListener(wlpc);
+                manager.removePropertyChangeListener(pchl);
             }
 
             manager = newManager;
-            manager.addPropertyChangeListener(wlpc = org.openide.util.WeakListeners.propertyChange(listener, manager));
+            manager.addPropertyChangeListener(pchl = org.openide.util.WeakListeners.propertyChange(listener, manager));
             controlledTableView.setHeaderText(manager.getExploredContext().getDisplayName());
         }
 
@@ -218,6 +220,7 @@ public @Deprecated class ListTableView extends ListView {
         delayedFireTableDataChanged();
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
         list.getModel().removeListDataListener(listener);

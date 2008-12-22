@@ -76,7 +76,7 @@ public final class PythonPackageWizardIterator implements WizardDescriptor.Insta
         final Set<FileObject> resultSet = new HashSet<FileObject>();
         FileObject template =
                 Repository.getDefault().getDefaultFileSystem().findResource(
-                "Templates/Python/init.py");
+                "Templates/Python/_init.py");
         FileObject dir = Templates.getTargetFolder(wizard);
         String targetName = Templates.getTargetName(wizard);
         File parent = FileUtil.toFile(dir);

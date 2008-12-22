@@ -124,6 +124,10 @@ public class CsmImageLoader implements CsmImageName {
         return getCachedImageIcon(iconPath);        
     }
 
+    public static ImageIcon getPreprocessorDirectiveIcon() {
+        return getCachedImageIcon(MACRO);
+    }
+    
     public static ImageIcon getTempleteParameterIcon() {
         return getCachedImageIcon(TEMPLATE_PARAMETER);        
     }

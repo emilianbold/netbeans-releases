@@ -1200,11 +1200,24 @@ public class JListOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private void checkIndex(int index) {
+    private void checkIndex(final int index) {
+      runMapping( new MapAction( "checkIndex( )" )
+      {
+        public Object map( ) throws Exception
+        {
+          if( index < 0 || index >= getModel( ).getSize( ) )
+          {
+            throw( new NoSuchItemException( index ) );
+          }
+          return null;
+        }
+      });
+/*
         if(index < 0 ||
            index >= getModel().getSize()) {
             throw(new NoSuchItemException(index));
         }
+*/
     }
     private void checkIndices(int[] indices) {
         for(int i = 0; i < indices.length; i++) {

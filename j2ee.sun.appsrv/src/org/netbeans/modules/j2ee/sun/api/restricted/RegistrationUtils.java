@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.ObjectName;
@@ -58,6 +60,8 @@ public class RegistrationUtils {
     private static String DELETE_CONNECTORPOOL = "deleteConnectorConnectionPool";
     private static String DELETE_ADMINOBJECT = "deleteAdminObjectResource";
     private static String DAS_SERVER_NAME = "server";
+    
+    private static final Logger LOG = Logger.getLogger(RegistrationUtils.class.getName());
     
     public RegistrationUtils() {
     }
@@ -163,27 +167,11 @@ public class RegistrationUtils {
                 pools.put(poolName, objName);
             } // for - each connection pool
         } catch (Exception ex) {
-            //Unable to get server connection pools
+            LOG.log(Level.SEVERE, "Unable to get server connection pools", ex);
         }
         return pools;
     }
     
-    public static HashMap getServerJdbcResources(ServerInterface mejb){
-        HashMap<String, ObjectName> datasources = new HashMap<String, ObjectName>();
-        try {
-            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
-            ObjectName[] resourceObjects = (ObjectName[]) mejb.invoke(configObjName, WizardConstants.__GetJdbcResource, null, null);
-            for(int i=0; i<resourceObjects.length; i++){
-                ObjectName objName = resourceObjects[i];
-                String jndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N
-                datasources.put(jndiName, objName);
-            } // for - each datasource
-        } catch (Exception ex) {
-            //Unable to get server datasourcess
-        }
-        return datasources;
-    }
-
     public static HashMap getReferringResources(String poolName, HashMap serverResources, ServerInterface mejb) {
         HashMap<String, ObjectName> referringResources = new HashMap<String, ObjectName>();
         try{
@@ -196,7 +184,9 @@ public class RegistrationUtils {
                     referringResources.put(resourceName, objName);
                 }
             }
-        }catch(Exception ex){}
+        }catch(Exception ex){
+            LOG.log(Level.SEVERE, "Unable to get referring resources", ex);
+        }
         return referringResources;
     }
 
@@ -278,8 +268,8 @@ public class RegistrationUtils {
                           
                 Properties props = new Properties();
                 AttributeList propsList = (AttributeList)mejb.invoke(serverPoolObj, WizardConstants.__GetProperties, null, null);             
-                for(int i=0; i<attrList.size(); i++){
-                    Attribute propAttr = (Attribute)attrList.get(i);
+                for(int i=0; i<propsList.size(); i++){
+                    Attribute propAttr = (Attribute)propsList.get(i);
                     String propName = propAttr.getName();
                     Object propValue = propAttr.getValue();
                     if(propValue != null){
@@ -302,8 +292,8 @@ public class RegistrationUtils {
             mejb.invoke(objName, operationName, new Object[]{newPoolName, DAS_SERVER_NAME},
                     new String[]{"java.lang.String", "java.lang.String"} );
         }catch(Exception ex){
-            //Unable to clean up existing duplicate pools
-        }
+            LOG.log(Level.SEVERE, "Unable to clean up existing duplicate pools", ex);
+         }
     }
     
     public static void deleteServerResources(HashMap serverResources, ServerInterface mejb, String operationName){
@@ -315,7 +305,7 @@ public class RegistrationUtils {
                         new String[]{"java.lang.String", "java.lang.String"} );
             }
         }catch(Exception ex){
-            //Unable to clean up existing duplicate datasources
+            LOG.log(Level.SEVERE, "Unable to clean up existing duplicate datasources", ex);
         }
     }
     
@@ -330,7 +320,7 @@ public class RegistrationUtils {
                 serverResources.put(jndiName, objName);
             } // for 
         } catch (Exception ex) {
-            //Unable to get server datasourcess
+            LOG.log(Level.SEVERE, "Unable to get server datasources", ex);
         }
         return serverResources;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -291,6 +291,7 @@ public class TreeTableView extends BeanTreeView {
         setViewportBorder(BorderFactory.createEmptyBorder()); //NOI18N
     }
 
+    @Override
     public void setRowHeader(JViewport rowHeader) {
         rowHeader.setBorder(BorderFactory.createEmptyBorder());
         super.setRowHeader(rowHeader);
@@ -298,6 +299,7 @@ public class TreeTableView extends BeanTreeView {
 
     /* Overriden to allow hide special horizontal scrollbar
      */
+    @Override
     public void setHorizontalScrollBarPolicy(int policy) {
         hideHScrollBar = (policy == JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -309,6 +311,7 @@ public class TreeTableView extends BeanTreeView {
 
     /* Overriden to delegate policy of vertical scrollbar to inner scrollPane
      */
+    @Override
     public void setVerticalScrollBarPolicy(int policy) {
         if (scrollPane == null) {
             return;
@@ -325,17 +328,20 @@ public class TreeTableView extends BeanTreeView {
         scrollPane.setVerticalScrollBarPolicy(policy);
     }
 
+    @Override
     protected NodeTreeModel createModel() {
         return getSortedNodeTreeModel();
     }
 
     /** Requests focus for the tree component. Overrides superclass method. */
+    @Override
     public void requestFocus() {
         if (treeTable != null) {
             treeTable.requestFocus();
         }
     }
 
+    @Override
     public boolean requestFocusInWindow() {
         boolean res = super.requestFocusInWindow();
 
@@ -353,6 +359,7 @@ public class TreeTableView extends BeanTreeView {
         if (allow && (allow != allowSortingByColumn)) {
             addMouseListener(
                 new MouseAdapter() {
+                    @Override
                     public void mouseClicked(MouseEvent evt) {
                         // Check whether it was really a click
                         if (evt.getClickCount() == 0) return ;
@@ -450,6 +457,7 @@ public class TreeTableView extends BeanTreeView {
      * is fully created (constructor finished) which is horrible but I don't
      * have enough knowledge about this code to change it.
      */
+    @Override
     void initializeTree() {
     }
 
@@ -500,6 +508,7 @@ public class TreeTableView extends BeanTreeView {
                     SwingUtilities.invokeLater( defaultActionListener );
                 }
 
+                @Override
                 public boolean isEnabled() {
                     return treeTable.isFocusOwner() || tree.isFocusOwner();
                 }
@@ -541,6 +550,7 @@ public class TreeTableView extends BeanTreeView {
         }
     }
 
+    @Override
     public void setSelectionMode(int mode) {
         super.setSelectionMode(mode);
 
@@ -555,6 +565,7 @@ public class TreeTableView extends BeanTreeView {
 
     /** Overrides JScrollPane's getAccessibleContext() method to use internal accessible context.
      */
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessContext == null) {
             accessContext = new AccessibleTreeTableView();
@@ -589,6 +600,7 @@ public class TreeTableView extends BeanTreeView {
 
     /* Overriden to work well with treeTable.
      */
+    @Override
     public void setPopupAllowed(boolean value) {
         if (tree == null) {
             return;
@@ -597,6 +609,7 @@ public class TreeTableView extends BeanTreeView {
         if ((popupListener == null) && value) {
             // on
             popupListener = new PopupAdapter() {
+                @Override
                         protected void showPopup(MouseEvent e) {
                             int selRow = tree.getClosestRowForLocation(e.getX(), e.getY());
 
@@ -622,6 +635,7 @@ public class TreeTableView extends BeanTreeView {
 
     /* Overriden to work well with treeTable.
      */
+    @Override
     public void setDefaultActionAllowed(boolean value) {
         if (tree == null) {
             return;
@@ -736,6 +750,7 @@ public class TreeTableView extends BeanTreeView {
         return treeTable.getColumnModel().getColumn(((TreeTable) treeTable).getTreeColumnIndex()).getPreferredWidth();
     }
 
+    @Override
     public void addNotify() {
         // to allow displaying popup also in blank area
         if (treeTable.getParent() != null) {
@@ -757,6 +772,7 @@ public class TreeTableView extends BeanTreeView {
         listener.revalidateScrollBar();
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
 
@@ -770,11 +786,13 @@ public class TreeTableView extends BeanTreeView {
         tableModel.setNodes(new Node[] {  });
     }
 
+    @Override
     public void addMouseListener(MouseListener l) {
         super.addMouseListener(l);
         treeTable.getTableHeader().addMouseListener(l);
     }
 
+    @Override
     public void removeMouseListener(MouseListener l) {
         super.removeMouseListener(l);
         treeTable.getTableHeader().removeMouseListener(l);
@@ -783,17 +801,20 @@ public class TreeTableView extends BeanTreeView {
     /**
      * Drag and drop is not supported in TreeTableView.
      */
+    @Override
     public void setDragSource(boolean state) {
     }
 
     /**
      * Drag and drop is not supported in TreeTableView.
      */
+    @Override
     public void setDropTarget(boolean state) {
     }
 
     /* Overriden to get position for popup invoked by keyboard
      */
+    @Override
     Point getPositionForPopup() {
         int row = treeTable.getSelectedRow();
 
@@ -828,6 +849,7 @@ public class TreeTableView extends BeanTreeView {
         e.consume();
     }
 
+    @Override
     void createPopup(int xpos, int ypos) {
         int treeXpos = xpos - ((TreeTable) treeTable).getPositionX();
 
@@ -1075,6 +1097,7 @@ public class TreeTableView extends BeanTreeView {
         AccessibleTreeTableView() {
         }
 
+        @Override
         public void setAccessibleName(String accessibleName) {
             super.setAccessibleName(accessibleName);
 
@@ -1083,6 +1106,7 @@ public class TreeTableView extends BeanTreeView {
             }
         }
 
+        @Override
         public void setAccessibleDescription(String accessibleDescription) {
             super.setAccessibleDescription(accessibleDescription);
 
@@ -1149,6 +1173,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         //Viewport height
+        @Override
         public void componentResized(ComponentEvent e) {
             revalidateScrollBar();
         }
@@ -1204,6 +1229,7 @@ public class TreeTableView extends BeanTreeView {
         CompoundScrollPane() {
         }
 
+        @Override
         public void setBorder(Border b) {
             //do nothing
         }
@@ -1368,6 +1394,7 @@ public class TreeTableView extends BeanTreeView {
             if (rowComparator == null) {
                 rowComparator = new Comparator<VisualizerNode>() {
 
+                    @SuppressWarnings("unchecked")
                     public int compare(VisualizerNode o1, VisualizerNode o2) {
                         if (o1 == o2) {
                             return 0;
@@ -1526,6 +1553,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         // overrided mothod from DefaultTreeModel
+        @Override
         public void nodesWereInserted(TreeNode node, int[] childIndices) {
             super.nodesWereInserted(node, childIndices);
 
@@ -1535,6 +1563,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         // overrided mothod from DefaultTreeModel
+        @Override
         public void nodesChanged(TreeNode node, int[] childIndices) {
             super.nodesChanged(node, childIndices);
 
@@ -1544,6 +1573,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         // overrided mothod from DefaultTreeModel
+        @Override
         public void setRoot(TreeNode root) {
             super.setRoot(root);
 
@@ -1587,6 +1617,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         /** Overrides superclass method. */
+        @Override
         public Component getTableCellRendererComponent(
             JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
         ) {

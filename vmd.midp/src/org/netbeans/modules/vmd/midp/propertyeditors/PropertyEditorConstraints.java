@@ -131,7 +131,13 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         if (superText != null) {
             return superText;
         }
-        customEditor.setBitmask(MidpTypes.getInteger((PropertyValue) super.getValue()));
+        //TODO Needs to be properly lazy init!!! This is fix for 7.0 M1!
+        if (customEditor != null) {
+            customEditor.setBitmask(MidpTypes.getInteger((PropertyValue) super.getValue()));
+        } else {
+            return ""; //NOI18N
+        }
+        //End 
         return customEditor.getBitmaskAsText();
     }
 

@@ -41,10 +41,8 @@ package org.netbeans.modules.db.mysql.impl;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.test.TestBase;
@@ -224,17 +222,26 @@ public class MySQLDatabaseServerTest extends TestBase {
      * Test of getDisplayName method, of class MySQLDatabaseServer.
      */
     public void testGetDisplayName() throws Exception {
-        ResourceBundle bundle = Utils.getBundle();
-        String disconnectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
-                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Disconnected"));
+        String displayNameLabel = "LBL_ServerDisplayName";
 
-        String connectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
-                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Connected"));
+        String hostPort = server.getPort();
+        String user = server.getUser();
+        String port = getPort();
+        if ( Utils.isEmpty(port)) {
+            port = "";
+        } else {
+            port = ":" + port;
+        }
+        hostPort = getHost() + port;
 
         server.disconnectSync();
+        String stateLabel = server.getState().name();
+        String disconnectedString = Utils.getMessage(displayNameLabel, hostPort, user, Utils.getMessage(stateLabel));
         assertEquals(disconnectedString, server.getDisplayName());
 
         server.reconnect();
+        stateLabel = server.getState().name();
+        String connectedString = Utils.getMessage(displayNameLabel, hostPort, user, Utils.getMessage(stateLabel));
         assertEquals(connectedString, server.getDisplayName());
     }
 

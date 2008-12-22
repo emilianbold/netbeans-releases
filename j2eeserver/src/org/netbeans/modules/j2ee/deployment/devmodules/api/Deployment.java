@@ -441,12 +441,8 @@ public final class Deployment {
         ServerInstance localInstance = ServerRegistry.getInstance().getServerInstance(instanceId);
         if (null != localInstance) {
             IncrementalDeployment incr = localInstance.getIncrementalDeployment();
-            try {
-                if (null != incr && null != mod.getContentDirectory()) {
-                    retVal = incr.canFileDeploy(null, mod);
-                }
-            } catch (IOException ioe) {
-                java.util.logging.Logger.getLogger("global").log(Level.FINER,"",ioe); // NOI18N                
+            if (null != incr) {
+                retVal = incr.canFileDeploy(null, mod);
             }
         }
         return retVal;

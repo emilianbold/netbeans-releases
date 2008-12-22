@@ -41,9 +41,7 @@
 package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.text.MessageFormat;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -76,16 +74,7 @@ public class ChangeParametersUI implements RefactoringUI {
     }
     
     public static ChangeParametersUI create(CsmObject refactoredObj) {
-        return null;
-//        TreePath path = refactoredObj.resolve(info);
-//        Kind kind;
-//        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION) {
-//            path = path.getParentPath();
-//        }
-//
-//        return path != null
-//                ? new ChangeParametersUI(CsmObject.create(path, info), info)
-//                : null;
+        return new ChangeParametersUI(refactoredObj);
     }
     
     public String getDescription() {
@@ -102,8 +91,6 @@ public class ChangeParametersUI implements RefactoringUI {
     
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
             panel = new ChangeParametersPanel(refactoredObj, parent);
         }
         return panel;
@@ -118,21 +105,21 @@ public class ChangeParametersUI implements RefactoringUI {
     }
     
     private Problem setParameters(boolean checkOnly) {
-        List data = (List) panel.getTableModel().getDataVector();
+        @SuppressWarnings("unchecked")
+        List<List<Object>> data = (List<List<Object>>) panel.getTableModel().getDataVector();
         ChangeParametersRefactoring.ParameterInfo[] paramList = new ChangeParametersRefactoring.ParameterInfo[data.size()];
         int counter = 0;
         Problem problem = null;
-        for (Iterator rowIt = data.iterator(); rowIt.hasNext(); ++counter) {
-            List row = (List) rowIt.next();
+        for (List<Object> row : data) {
             int origIndex = ((Integer) row.get(3)).intValue();
-            String name = (String) row.get(0);
-            String type = (String) row.get(1);
-            String defaultVal = (String) row.get(2);
-            paramList[counter] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
+            CharSequence name = (CharSequence) row.get(0);
+            CharSequence type = (CharSequence) row.get(1);
+            CharSequence defaultVal = (CharSequence) row.get(2);
+            paramList[counter++] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
         }
-        Set<CsmVisibility> modifier = panel.getModifier();
+        CsmVisibility visibility = panel.getModifier();
         refactoring.setParameterInfo(paramList);
-        refactoring.setModifiers(modifier);
+        refactoring.setVisibility(visibility);
         if (checkOnly) {
             problem = refactoring.fastCheckParameters();
         } else {

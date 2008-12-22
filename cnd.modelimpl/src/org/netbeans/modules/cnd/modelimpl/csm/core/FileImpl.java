@@ -163,6 +163,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
+    private final Set<ErrorDirectiveImpl> errors = createErrors();
+    private final ReadWriteLock errorsLock = new ReentrantReadWriteLock();
     private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
@@ -491,6 +493,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         _clearIncludes();
         _clearMacros();
+        _clearErrors();
         if (reportParse || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
@@ -543,6 +546,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (clearNonDisposable) {
             _clearIncludes();
             _clearMacros();
+            _clearErrors();
         }
         Collection<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
         Utils.disposeAll(arr);
@@ -569,8 +573,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    private void _clearErrors() {
+        try {
+            errorsLock.writeLock().lock();
+            errors.clear();
+        } finally {
+            errorsLock.writeLock().unlock();
+        }
+    }
+
     private Set<CsmUID<CsmInclude>> createIncludes() {
         return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
+    }
+
+    private Set<ErrorDirectiveImpl> createErrors() {
+        return new TreeSet<ErrorDirectiveImpl>(START_OFFSET_COMPARATOR);
     }
 
     /** for debugging/tracing purposes only */
@@ -725,9 +742,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     /** For text purposes only */
     public void getErrors(ErrorListener errorListener) {
-        Collection<RecognitionException> errors = new ArrayList<RecognitionException>();
-        getErrors(errors);
-        for (RecognitionException e : errors) {
+        Collection<RecognitionException> parserErrors = new ArrayList<RecognitionException>();
+        getErrors(parserErrors);
+        for (RecognitionException e : parserErrors) {
             errorListener.error(e.getMessage(), e.getLine(), e.getColumn());
         }
     }
@@ -1010,6 +1027,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    public Collection<CsmErrorDirective> getErrors() {
+        Collection<CsmErrorDirective> out = new ArrayList<CsmErrorDirective>(0);
+        try {
+            errorsLock.readLock().lock();
+            out.addAll(errors);
+        } finally {
+            errorsLock.readLock().unlock();
+        }
+        return out;
+    }
+
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
         Iterator<CsmInclude> out;
         try {
@@ -1102,6 +1130,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             macros.put(new NameSortedKey(macro), macroUID);
         } finally {
             macrosLock.writeLock().unlock();
+        }
+    }
+
+    public void addError(ErrorDirectiveImpl error) {
+        try {
+            errorsLock.writeLock().lock();
+            errors.add(error);
+        } finally {
+            errorsLock.writeLock().unlock();
         }
     }
 
@@ -1373,6 +1410,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // impl of persistent
     public void write(DataOutput output) throws IOException {
         PersistentUtils.writeBuffer(this.fileBuffer, output);
+
+        PersistentUtils.writeErrorDirectives(this.errors, output);
+
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {
             declarationsLock.readLock().lock();
@@ -1413,6 +1453,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     @SuppressWarnings("unchecked")
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
+
+        PersistentUtils.readErrorDirectives(this.errors, input);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readOffsetSortedToUIDMap(this.declarations, input, null);

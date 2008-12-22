@@ -3234,6 +3234,7 @@ org.netbeans.test.ide.PassThroughProxyHandler
 org.netbeans.test.ide.WatchProjects
 org.netbeans.test.ide.WatchProjects$1Wait
 org.netbeans.test.ide.WhitelistTest
+org.netbeans.test.ide.WhitelistTest$1R
 org.openide.DialogDescriptor
 org.openide.DialogDisplayer
 org.openide.ErrorManager

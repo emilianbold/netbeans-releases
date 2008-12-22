@@ -111,6 +111,7 @@ public class ImportAnalysisTest extends GeneratorTest {
         suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod4"));
         suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod5"));
         suite.addTest(new ImportAnalysisTest("testDefaultPackage1"));
+        suite.addTest(new ImportAnalysisTest("testDefaultPackage3"));
         suite.addTest(new ImportAnalysisTest("testImportAddedAfterThrows"));
         suite.addTest(new ImportAnalysisTest("testImportGetterSetter"));
         suite.addTest(new ImportAnalysisTest("testImportClashWithJavaLang"));
@@ -703,6 +704,31 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testDefaultPackage1.pass");
     }
 
+    public void testDefaultPackage3() throws IOException {
+        testFile = getFile(getSourceDir(), "ImportAnalysisDefaultPackage3.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = node.getBody();
+                List<StatementTree> stats = new ArrayList<StatementTree>();
+                for (StatementTree st : body.getStatements()) {
+                    stats.add(st);
+                }
+                TypeElement exc = workingCopy.getElements().getTypeElement("ImportAnalysisDefaultPackage3A.B");
+                stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "s", make.QualIdent(exc), null));
+                workingCopy.rewrite(body, make.Block(stats, false));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testDefaultPackage3.pass");
+    }
+
     public void testImportAddedAfterThrows() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest7.java");
         JavaSource src = getJavaSource(testFile);
@@ -974,7 +1000,7 @@ public class ImportAnalysisTest extends GeneratorTest {
     }
     
     String getSourcePckg() {
-        if ("testDefaultPackage1".equals(getName())) {
+        if (getName().contains("DefaultPackage")) {
             return "";
         } else {
             return "org/netbeans/test/codegen/";

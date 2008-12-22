@@ -272,7 +272,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public LibraryImplementation[] getLibraries() {
-        return libraries;
+        return libraries.clone();
     }
     
     /**

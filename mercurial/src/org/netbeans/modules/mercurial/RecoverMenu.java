@@ -85,12 +85,20 @@ public class RecoverMenu extends AbstractAction implements DynamicMenuContent {
 
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
-                    
-        menu.add(new StripAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"), ctx)); // NOI18N
-        menu.add(new BackoutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"), ctx)); // NOI18N
-        menu.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
-        menu.add(new VerifyAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Verify"), ctx)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
+        
+        JMenuItem item = menu.add(new StripAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"), ctx));
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Strip"));
+        
+        item = menu.add(new BackoutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Backout"));
+        
+        item = menu.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Rollback"));
+        
+        item = menu.add(new VerifyAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Verify"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Verify"));
+
         return menu;
     }
 }

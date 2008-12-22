@@ -46,22 +46,14 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-
 import javax.swing.text.*;
 import javax.swing.Icon;
 
 import org.netbeans.editor.*;
-//import org.netbeans.editor.ext.*;
-import org.netbeans.editor.Utilities;
 import javax.swing.JLabel;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
-
-import org.netbeans.editor.ext.CompletionQuery.ResultItem;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  * This class carries result information required by NetBeans Editor module.
@@ -69,7 +61,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author  Petr Kuzel
  * @author  Sandeep Randhawa
  */
-class XMLResultItem implements ResultItem, CompletionItem {
+class XMLResultItem implements CompletionItem {
     
     private static final int XML_ITEMS_SORT_PRIORITY = 20;
     // text to be diplayed to user

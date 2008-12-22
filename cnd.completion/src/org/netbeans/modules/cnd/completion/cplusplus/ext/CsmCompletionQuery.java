@@ -2222,6 +2222,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createTypedefResultItem((CsmTypedef) csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isStatement(csmObj)) {
                 return getCsmItemFactory().createLabelResultItem((CsmLabel) csmObj);
+            } else if (CsmKindUtilities.isNamespaceAlias(csmObj)) {
+                return getCsmItemFactory().createNamespaceAliasResultItem((CsmNamespaceAlias) csmObj, false);
             }
         }
         return null;

@@ -132,7 +132,7 @@ public class Hk2PluginProperties {
         JavaPlatform[] installedPlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
 
         for (int i = 0; i < installedPlatforms.length; i++) {
-            String platformName = (String) installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
+            String platformName = installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
             if (platformName != null && platformName.equals(currentJvm)) {
                 return installedPlatforms[i];
             }
@@ -188,7 +188,7 @@ public class Hk2PluginProperties {
                     list.add(fileToUrl(javaEEJar));
                 }
             } else {
-                // Prelude doesn't have the javax.javaee jar, since it is not a
+                // v3 (Prelude and Final) doesn't have the javax.javaee jar, since it is not a
                 // complete Java EE 5 implementation.
                 File modulesDir = new File(serverDir.getAbsolutePath() + File.separatorChar + ServerUtilities.GFV3_MODULES_DIR_NAME);
                 FileObject mDFO = FileUtil.toFileObject(FileUtil.normalizeFile(modulesDir));

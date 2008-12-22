@@ -214,17 +214,17 @@ public class WadlDataObject extends MultiDataObject {
 
         @Override
         public boolean canCopy() {
-            return false;
+            return true;
         }
         
         @Override
         public boolean canRename() {
-            return false;
+            return true;
         }
         
         @Override
         public boolean canCut() {
-            return false;
+            return true;
         }
     }
 }

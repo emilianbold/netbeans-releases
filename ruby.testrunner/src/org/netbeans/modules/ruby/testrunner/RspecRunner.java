@@ -51,6 +51,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
@@ -59,12 +63,9 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
-import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
@@ -93,6 +94,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     private static final String NETBEANS_SPEC_OPTS_SUFFIX = "netbeans"; //NOI18N
     private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + "." + NETBEANS_SPEC_OPTS_SUFFIX; // NOI18N
     public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
+
     /**
      * The name of the system property that specifies whether a warning message should
      * be displayed when using spec/spec.opts instead of spec/spec.opts.netbeans.
@@ -157,7 +159,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST, new RubyTestRunnerNodeFactory());
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -194,7 +196,8 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.addStandardRecognizers();
         TestSession session = new TestSession(name,
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
 
         addSpecOptsWarningIfNeeded(session, opts);
 
@@ -327,7 +330,8 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
         addSpecOptsWarningIfNeeded(session, specOpts);
         
         Manager manager = Manager.getInstance();

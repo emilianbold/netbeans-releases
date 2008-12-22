@@ -97,6 +97,9 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         view.add(label);
 
         view.add(Box.createHorizontalGlue());
+
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
     }
 
     public boolean isTopLevelDisplay() {

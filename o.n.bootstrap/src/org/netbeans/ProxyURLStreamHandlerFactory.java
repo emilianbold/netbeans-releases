@@ -50,7 +50,6 @@ import java.net.URLStreamHandlerFactory;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -105,16 +104,19 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
     private final URLStreamHandler originalJarHandler;
     private Lookup.Result<URLStreamHandlerFactory> r;
     private URLStreamHandlerFactory[] handlers;
+    private boolean isWindows;
 
     private ProxyURLStreamHandlerFactory(URLStreamHandlerFactory delegate, URLStreamHandler originalJarHandler) {
         this.delegate = delegate;
         this.originalJarHandler = originalJarHandler;
+        // #154032: call to Utilities.isWindows() in createURLStreamHandler caused infinite recursion in WebStart
+        isWindows = Utilities.isWindows();
     }
 
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals("jar")) {
             return new JarClassLoader.ResURLStreamHandler(originalJarHandler);
-        } else if (protocol.equals("file") && Utilities.isWindows() && System.getProperty("java.version").startsWith("1.5")) {  // NOI18N
+        } else if (protocol.equals("file") && isWindows && System.getProperty("java.version").startsWith("1.5")) {  // NOI18N
             LOG.fine("Registering UNCFileStreamHandler.");  // NOI18N
             return UNCFileURLStreamHandler.getInstance();
         } else if (protocol.equals("file") || protocol.equals("http") || protocol.equals("https") || protocol.equals("resource")) { // NOI18N

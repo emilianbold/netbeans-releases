@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -82,7 +83,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
-                    return null;//ChangeParametersUI.create(selectedElement);
+                    return ChangeParametersUI.create(selectedElement);
                 }
             };
         } else {
@@ -90,7 +91,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return null; //ChangeParametersUI.create(selectedElement);;
+                    return ChangeParametersUI.create(selectedElement);
                 }
             };
         }

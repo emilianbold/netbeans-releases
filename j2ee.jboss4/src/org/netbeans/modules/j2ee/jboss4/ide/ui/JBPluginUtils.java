@@ -46,7 +46,9 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -75,8 +77,11 @@ public class JBPluginUtils {
     public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator + // NOI18N
                 "jboss-web.deployer" + File.separator + "server.xml"; // NOI18N
 
-    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator + // NOI18N
-                "jbossweb.deployer" + File.separator + "server.xml"; // NOI18N
+//    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator + // NOI18N
+//                "jbossweb.deployer" + File.separator + "server.xml"; // NOI18N
+
+     public static final String SERVER_5_XML = File.separator + "deploy" + File.separator + // NOI18N
+                "jbossweb.sar" + File.separator + "server.xml"; // NOI18N
 
     public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
 
@@ -84,7 +89,42 @@ public class JBPluginUtils {
 
     private static final Version DOM4J_SERVER = new Version("4.0.4"); // NOI18N
 
-    
+    public static final String LIB = "lib" + File.separator;
+
+    public static final String CLIENT = "client" + File.separator;
+
+    public  static final String COMMON = "common" + File.separator;
+
+
+    // For JBoss 5.0 under JBOSS_ROOT_DIR/lib
+    public static final String[] JBOSS5_CLIENT_LIST = {
+        "jbossall-client.jar",
+        "jboss-deployment.jar",
+        "jnp-client.jar",
+        "jbosssx-client.jar",
+        "jboss-client.jar",
+        "jboss-common-core.jar",
+        "jboss-logging-log4j.jar",
+        "jboss-logging-spi.jar"
+    };
+
+    public static  List<URL> getJB5ClientClasspath(String serverRoot) throws
+            MalformedURLException {
+
+        List<URL> urlList = new ArrayList<URL>();
+
+        File clientDir = new File(serverRoot, JBPluginUtils.CLIENT);
+        if (clientDir.exists()) {
+
+            for (String jar : JBPluginUtils.JBOSS5_CLIENT_LIST) {
+                File jarFile = new File(clientDir, jar);
+                if (jarFile.exists()) {
+                    urlList.add(jarFile.toURI().toURL());
+                }
+            }
+        }
+        return urlList;
+    }
 
     //--------------- checking for possible domain directory -------------
     private static List<String> domainRequirements4x;
@@ -118,40 +158,21 @@ public class JBPluginUtils {
             Collections.addAll(domainRequirements5x,
                     "conf", // NOI18N
                     "deploy", // NOI18N
+                    "deployers", // NOI18N
                     "lib", // NOI18N
                     "conf/jboss-service.xml", // NOI18N
-                    "lib/jboss-javaee.jar", // NOI18N
-                    "lib/jboss.jar", // NOI18N
-                    "lib/jbosssx.jar", // NOI18N
-                    "lib/jmx-adaptor-plugin.jar", // NOI18N
-                    "lib/jnpserver.jar", // NOI18N
-                    "lib/log4j.jar", // NOI18N
-                    "deploy/jmx-invoker-service.xml"); // NOI18N
+                    "conf/bootstrap.xml", // NOI18N
+                   "deploy/jmx-invoker-service.xml"   // NOI18N
+// In JBoss 5.0, these commonn jar files have been moved  to <JBoss_home>/common/lib.
+//                    "lib/jboss-javaee.jar", // NOI18N
+//                    "lib/jboss.jar", // NOI18N
+//                    "lib/jbosssx.jar", // NOI18N
+//                    "lib/jmx-adaptor-plugin.jar", // NOI18N
+//                    "lib/jnpserver.jar", // NOI18N
+//                    "lib/log4j.jar", // NOI18N
+                    ); 
         }
         return domainRequirements5x;
-    }
-
-    private static List<String> domainAlterRequirements5x;
-
-    // TODO useful for beta1 and beta2 - probably could be removed
-    private static synchronized List<String> getDomainAlterRequirements5x() {
-        if (domainAlterRequirements5x == null) {
-            domainAlterRequirements5x = new ArrayList<String>(12);
-            Collections.addAll(domainAlterRequirements5x,
-                    "conf", // NOI18N
-                    "deploy", // NOI18N
-                    "lib", // NOI18N
-                    "conf/jboss-service.xml", // NOI18N
-                    "lib/jboss-j2ee.jar", // NOI18N
-                    "lib/jboss.jar", // NOI18N
-                    "lib/jbosssx.jar", // NOI18N
-                    "lib/jboss-transaction.jar", // NOI18N
-                    "lib/jmx-adaptor-plugin.jar", // NOI18N
-                    "lib/jnpserver.jar", // NOI18N
-                    "lib/log4j.jar", // NOI18N
-                    "deploy/jmx-invoker-service.xml"); // NOI18N
-        }
-        return domainAlterRequirements5x;
     }
 
     //--------------- checking for possible server directory -------------
@@ -199,6 +220,7 @@ public class JBPluginUtils {
                     "client", // NOI18N
                     "lib", // NOI18N
                     "server", // NOI18N
+                    "common/lib", // NOI18N
                     "lib/dom4j.jar", // NOI18N
                     "lib/jboss-common-core.jar", // NOI18N
                     "lib/endorsed/resolver.jar"); // NOI18N
@@ -269,8 +291,7 @@ public class JBPluginUtils {
     }
 
     private static boolean isGoodJBInstanceLocation5x(File serverDir, File candidate){
-        return isGoodJBInstanceLocation(candidate, getDomainRequirements5x())
-                || isGoodJBInstanceLocation(candidate, getDomainAlterRequirements5x());
+        return isGoodJBInstanceLocation(candidate, getDomainRequirements5x());
     }
 
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){

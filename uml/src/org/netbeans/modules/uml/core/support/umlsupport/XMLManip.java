@@ -43,17 +43,13 @@ package org.netbeans.modules.uml.core.support.umlsupport;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -80,7 +76,6 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultDocument;
 import org.w3c.dom.DOMException;
-import org.xml.sax.EntityResolver;
 
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.core.metamodel.structure.Project;

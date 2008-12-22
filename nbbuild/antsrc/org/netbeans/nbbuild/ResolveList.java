@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Mapper;
 
 /** Expand the comma-separated list of properties to 
  *  their values and assing it to single property
@@ -56,6 +57,7 @@ public class ResolveList extends Task {
     
     private List<String> properties;
     private String name;
+    private Mapper mapper;
 
     /** Comma-separated list of properties to expand */
     public void setList (String s) {
@@ -70,12 +72,33 @@ public class ResolveList extends Task {
         name = s;
     }
 
+    /** Mapper to be applied to each property in the list before its
+     * value is taken
+     */
+    public void addMapper(Mapper m) {
+        this.mapper = m;
+    }
+
+    @Override
     public void execute () throws BuildException {
         if (name == null) throw new BuildException("name property have to be set", getLocation());
         String value = "";
+        String prefix = "";
         for (String property: properties) {
-            String oneValue = getProject().getProperty( property );
-            if (oneValue != null) value += "," + oneValue;
+            String[] props;
+            if (mapper != null) {
+                props = mapper.getImplementation().mapFileName(property);
+            } else {
+                props = new String[] { property };
+            }
+
+            for (String p : props) {
+                String oneValue = getProject().getProperty( p );
+                if (oneValue != null && oneValue.length() > 0) {
+                    value += prefix + oneValue;
+                    prefix = ",";
+                }
+            }
         }
         
         getProject().setNewProperty(name,value);

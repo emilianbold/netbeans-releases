@@ -74,9 +74,10 @@ public class PythonParser implements Parser {
     /** For unit tests such that they can make sure we didn't have a parser abort */
     static Throwable runtimeException;
 
-//    static {
-//        org.python.core.PySystemState.initialize();
-//    }
+    static {
+        org.python.core.PySystemState.initialize();
+    }
+
     public PythonParserResult parse(final Context context, Sanitize sanitizing) throws Exception {
         boolean sanitizedSource = false;
         String sourceCode = context.source;

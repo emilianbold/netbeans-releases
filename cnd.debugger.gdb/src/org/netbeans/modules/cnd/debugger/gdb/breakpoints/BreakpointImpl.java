@@ -76,7 +76,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.breakpoint = breakpoint;
     }
 
-    public void completeValidation(Map<String, String> map) {
+    public final void completeValidation(Map<String, String> map) {
         if (getState().equals(BPSTATE_DELETION_PENDING)) {
             return;
         }
@@ -84,7 +84,9 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         String number = (map != null) ? map.get("number") : null; // NOI18N
         if (number != null) {
             String fullname = map.get("fullname"); // NOI18N
-            if (fullname != null) {
+            
+            //TODO: not good to check for child type here
+            if (fullname != null && !(this instanceof AddressBreakpointImpl)) {
                 // We set a valid breakpoint, but its not in the exact source file we meant it to
                 // be. This can happen when a source path has embedded spaces and we shorten the
                 // path to a possiby non-unique relative path and another project has a similar
@@ -119,6 +121,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             if (skipCount > 0) {
                 requestBreakAfter(skipCount);
             }
+
+            //TODO: not good to check for child type here
             if (this instanceof FunctionBreakpointImpl) {
                 try {
                     breakpoint.setURL(map.get("fullname")); // NOI18N

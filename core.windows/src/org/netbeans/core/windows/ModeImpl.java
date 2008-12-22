@@ -311,6 +311,10 @@ public final class ModeImpl implements Mode {
         getCentral().addModeOpenedTopComponent(this, tc);
     }
     
+    public void addOpenedTopComponentNoNotify(TopComponent tc) {
+        getCentral().addModeOpenedTopComponentNoNotify(this, tc);
+    }
+
     public void addOpenedTopComponent(TopComponent tc, int index) {
         getCentral().insertModeOpenedTopComponent( this, tc, index );
     }

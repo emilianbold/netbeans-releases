@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -110,8 +111,11 @@ public class InitializeTest extends JellyTestCase {
             long end;
             JTableOperator table;
             Node nodeFile;
-            
             TestKit.showStatusLabels();
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
+            
+            
             f = TestKit.prepareProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
             new EventTool().waitNoEvent(1000);
             String s = f.getAbsolutePath() + File.separator + TestKit.PROJECT_NAME;

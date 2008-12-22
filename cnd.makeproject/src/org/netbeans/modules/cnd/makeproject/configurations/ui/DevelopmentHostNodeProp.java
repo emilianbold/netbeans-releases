@@ -57,6 +57,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
     private String name;
     private String description;
 
+    @SuppressWarnings("unchecked")
     public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.configuration = configuration;

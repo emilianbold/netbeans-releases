@@ -13,6 +13,7 @@ Miscellaneous
     GUI Builder
     Java ME
     JavaScript
+    Maven
     Profiler
     Ruby
     SVG
