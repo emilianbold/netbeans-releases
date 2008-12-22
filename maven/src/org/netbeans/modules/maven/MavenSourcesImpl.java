@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.maven;
 
+import java.awt.Image;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -57,6 +59,7 @@ import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -66,11 +69,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -95,8 +100,8 @@ public class MavenSourcesImpl implements Sources {
     
     private Map<String, SourceGroup> javaGroup;
     private SourceGroup genSrcGroup;
-    private Map<File, SourceGroup> otherMainGroups;
-    private Map<File, SourceGroup> otherTestGroups;
+    private Map<File, OtherGroup> otherMainGroups;
+    private Map<File, OtherGroup> otherTestGroups;
     
     private final Object lock = new Object();
     
@@ -106,8 +111,8 @@ public class MavenSourcesImpl implements Sources {
         project = proj;
         listeners = new ArrayList<ChangeListener>();
         javaGroup = new TreeMap<String, SourceGroup>();
-        otherMainGroups = new TreeMap<File, SourceGroup>();
-        otherTestGroups = new TreeMap<File, SourceGroup>();
+        otherMainGroups = new TreeMap<File, OtherGroup>();
+        otherTestGroups = new TreeMap<File, OtherGroup>();
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
@@ -325,23 +330,29 @@ public class MavenSourcesImpl implements Sources {
         Set<File> toRemove = new HashSet<File>(test ? otherTestGroups.keySet() : otherMainGroups.keySet());
         toRemove.removeAll(Arrays.asList(roots));
 
+        URI[] res = project.getResources(test);
+        Set<File> resources = new HashSet<File>();
+        for (URI ur : res) {
+            resources.add(new File(ur));
+        }
+
         for (File f : roots) {
-            ch = ch | checkOtherGroup(f, test);
+            ch = ch | checkOtherGroup(f, resources, test);
         }
         for (File f : toRemove) {
             //now this shall remove the nonexisting ones and even mark the change..
-            ch = ch | checkOtherGroup(f, test);
+            ch = ch | checkOtherGroup(f, resources, test);
         }
         return ch;
     }
 
-    private boolean checkOtherGroup(File rootFile, boolean test) {
+    private boolean checkOtherGroup(File rootFile, Set<File> resourceRoots, boolean test) {
         FileObject root = FileUtil.toFileObject(rootFile);
         if (root != null && !root.isFolder()) {
             root = null;
         }
-        Map<File, SourceGroup> map = test ? otherTestGroups : otherMainGroups;
-        SourceGroup grp = map.get(rootFile);
+        Map<File, OtherGroup> map = test ? otherTestGroups : otherMainGroups;
+        OtherGroup grp = map.get(rootFile);
         if (root == null && grp != null) {
             map.remove(rootFile);
             return true;
@@ -350,8 +361,11 @@ public class MavenSourcesImpl implements Sources {
             return false;
         }
         boolean changed = false;
-        if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root)) {
-            grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName()); //NOI18N
+        boolean isResourceNow = resourceRoots.contains(rootFile);
+        boolean wasResourceBefore = grp != null && grp.getResource() != null;
+        if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root) ||
+                isResourceNow != wasResourceBefore) {
+            grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName(), test); //NOI18N
             map.put(rootFile, grp);
             changed = true;
         }
@@ -365,19 +379,33 @@ public class MavenSourcesImpl implements Sources {
         private File rootFile;
         private final String name;
         private final String displayName;
-        private final Icon icon = null;
-        private final Icon openedIcon = null;
+        private final Icon icon;
+        private final Icon openedIcon;
         private NbMavenProjectImpl project;
+        private Resource resource;
+        private PropertyChangeSupport support = new PropertyChangeSupport(this);
         
-        OtherGroup(NbMavenProjectImpl p, FileObject rootFold, String nm, String displayNm/*,
-                Icon icn, Icon opened*/) {
+        @SuppressWarnings("unchecked")
+        OtherGroup(NbMavenProjectImpl p, FileObject rootFold, String nm, String displayNm, boolean test) {
             project = p;
             rootFolder = rootFold;
             rootFile = FileUtil.toFile(rootFolder);
-            name = nm;
-            displayName = displayNm != null ? displayNm : NbBundle.getMessage(MavenSourcesImpl.class, "SG_Root_not_defined");
-//            icon = icn;
-//            openedIcon = opened;
+            resource = checkResource(rootFold, 
+                    test ? project.getOriginalMavenProject().getTestResources() :
+                           project.getOriginalMavenProject().getResources());
+            if (resource != null) {
+                Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/others-badge.png", true); //NOI18N
+//                ImageUtilities.addToolTipToImage(badge, "Resource root as defined in POM.");
+                icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(false), badge, 8, 8));
+                openedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(true), badge, 8, 8));
+                name = FileUtilities.getRelativePath(FileUtil.toFile(project.getProjectDirectory()), FileUtilities.convertStringToFile(resource.getDirectory()));
+                displayName = name;
+            } else {
+                icon = ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(false));
+                openedIcon = ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(true));
+                name = nm;
+                displayName = displayNm != null ? displayNm : NbBundle.getMessage(MavenSourcesImpl.class, "SG_Root_not_defined");
+            }
         }
         
         public FileObject getRootFolder() {
@@ -387,12 +415,19 @@ public class MavenSourcesImpl implements Sources {
         public File getRootFolderFile() {
             return rootFile;
         }
+
+        public Resource getResource() {
+            return resource;
+        }
         
         public String getName() {
             return name;
         }
         
         public String getDisplayName() {
+            if (resource != null && resource.getTargetPath() != null) {
+                return displayName + " -> " + resource.getTargetPath();
+            }
             return displayName;
         }
         
@@ -425,11 +460,22 @@ public class MavenSourcesImpl implements Sources {
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
-            // XXX should react to ProjectInformation changes
+            support.addPropertyChangeListener(l);
         }
         
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            // XXX
+            support.removePropertyChangeListener(l);
+        }
+
+        private Resource checkResource(FileObject rootFold, List<Resource> list) {
+            for (Resource elem : list) {
+                URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), elem.getDirectory());
+                FileObject fo = FileUtilities.convertURItoFileObject(uri);
+                if (fo != null && fo.equals(rootFold)) {
+                    return elem;
+                }
+            }
+            return null;
         }
         
     }

@@ -636,18 +636,26 @@ public final class NbMavenProjectImpl implements Project {
 
     public File[] getOtherRoots(boolean test) {
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "src/test" : "src/main"); //NOI18N
-
+        Set<File> toRet = new HashSet<File>();
         File fil = new File(uri);
         if (fil.exists()) {
-            return fil.listFiles(new FilenameFilter() {
-
+            toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && !("webapp".equalsIgnoreCase(name)) /*NOI18N*/ && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
-            });
+            })));
         }
-        return new File[0];
+        URI[] res = getResources(test);
+        for (URI rs : res) {
+            File fl = new File(rs);
+            //in node view we need only the existing ones, if anything else needs all,
+            // a new method is probably necessary..
+            if (fl.exists()) {
+                toRet.add(fl);
+            }
+        }
+        return toRet.toArray(new File[0]);
     }
 
 

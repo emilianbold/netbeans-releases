@@ -51,6 +51,7 @@ import org.netbeans.modules.maven.VisibilityQueryDataFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
@@ -116,8 +117,16 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
         DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
-        Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
-        toReturn[0] = new FilterNode(dobj.getNodeDelegate().cloneNode(), childs);
+        if (grp instanceof MavenSourcesImpl.OtherGroup) {
+            MavenSourcesImpl.OtherGroup resgrp = (MavenSourcesImpl.OtherGroup)grp;
+            if (resgrp.getResource() != null) {
+                toReturn[0] = PackageView.createPackageView(grp);
+            }
+        }
+        if (toReturn[0] == null) {
+            Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
+            toReturn[0] = new FilterNode(dobj.getNodeDelegate().cloneNode(), childs);
+        }
         return toReturn;
     }
     
