@@ -44,6 +44,11 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="sh"/>
+        <ext name="bash"/>
+        <ext name="csh"/>
+        <ext name="ksh"/>
+        <ext name="sh"/>
+        <ext name="zsh"/>  
         <resolver mime="text/sh"/>
     </file>
     <file>
