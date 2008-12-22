@@ -107,7 +107,9 @@ final class RubyMethodTypeInferencer {
                     IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
                     if (match != null) {
                         List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
-                        type = RDocAnalyzer.collectTypesFromComment(comment);
+                        if (comment != null) {
+                            type = RDocAnalyzer.collectTypesFromComment(comment);
+                        }
                     }
                 }
                 resultType.append(type);
