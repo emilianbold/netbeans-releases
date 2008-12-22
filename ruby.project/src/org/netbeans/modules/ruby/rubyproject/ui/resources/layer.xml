@@ -213,7 +213,7 @@ made subject to such option by the copyright holder.
             <file name="RubyOptions.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.RubyOptionsAdvancedPanel"/>
             </file>
-        </folder>        
+        </folder>
     </folder>
 
     <folder name="RubyOptionsDialog">
@@ -237,7 +237,7 @@ made subject to such option by the copyright holder.
     
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-ruby"> 
+            <folder name="x-ruby">
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <file name="org-netbeans-modules-ruby-project-keybindings.xml" url="DefaultKeyBindings.xml"/>
@@ -289,7 +289,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="805"/>
                     </file>
                     -->
-               </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

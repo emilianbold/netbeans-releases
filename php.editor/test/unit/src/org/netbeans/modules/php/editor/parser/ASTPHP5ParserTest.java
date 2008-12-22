@@ -118,6 +118,22 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("heredoc_014");
     }
 
+    public void testVarCommentSimple01() throws Exception {
+        performTest("varcomment/simple01");
+    }
+
+    public void testVarCommentSimple02() throws Exception {
+        performTest("varcomment/simple02");
+    }
+
+    public void testVarCommentMixedType01() throws Exception {
+        performTest("varcomment/mixed01");
+    }
+
+    public void testVarCommentMixedType02() throws Exception {
+        performTest("varcomment/mixed02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

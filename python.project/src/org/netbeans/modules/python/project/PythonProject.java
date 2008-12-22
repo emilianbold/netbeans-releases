@@ -10,6 +10,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.python.api.PythonPlatformProvider;
 import org.netbeans.modules.python.project.gsf.ClassPathProviderImpl;
 import org.netbeans.modules.python.project.ui.customizer.PythonCustomizerProvider;
 import org.netbeans.api.project.Project;
@@ -17,7 +18,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -109,6 +110,8 @@ public PythonProject()
                 new PythonSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),   //Sharabilit info - used by VCS
                 helper.createCacheDirectoryProvider(),  //Cache provider
                 helper.createAuxiliaryProperties(),     // AuxiliaryConfiguraion provider - used by bookmarks, project Preferences, etc
+                new PythonPlatformProvider(getEvaluator()),
+                new PythonCoverageProvider(this)
             });
     }
     
@@ -123,7 +126,15 @@ public PythonProject()
     public SourceRoots getTestRoots () {
         return this.testRoots;
     }
-    
+
+    public FileObject[] getSourceRootFiles() {
+        return getSourceRoots().getRoots();
+    }
+
+    public FileObject[] getTestSourceRootFiles() {
+        return getTestRoots().getRoots();
+    }
+
     public PropertyEvaluator getEvaluator () {
         return evaluator;
     }
@@ -216,6 +227,12 @@ public PythonProject()
             assert cpProvider != null;
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
+            // Ensure that code coverage is initialized in case it's enabled...
+            PythonCoverageProvider codeCoverage = getLookup().lookup(PythonCoverageProvider.class);
+            if (codeCoverage.isEnabled()) {
+                codeCoverage.notifyProjectOpened();
+            }
         }
 
         protected void projectClosed() {            
@@ -260,9 +277,11 @@ public PythonProject()
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Python/pythonPackage", // NOI18N
-            "Templates/Python/Module.py", //NOI18N
-            "Templates/Python/ExecutableModule.py", // NOI18N     
+            "Templates/Python/_package", // NOI18N
+            "Templates/Python/_module.py", //NOI18N
+            "Templates/Python/_main.py", // NOI18N
+            "Templates/Python/_empty_module.py", // NOI18N
+            "Templates/Python/_test.py", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

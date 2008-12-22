@@ -45,9 +45,6 @@ import java.io.PushbackInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -115,12 +112,8 @@ final class ButtonsParser {
         NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
             String action = forms.item(i).getAttributes().getNamedItem("action").getNodeValue();
-            if ((action == null) || ("".equals(action))) {// logging for issue #145167
-                Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
-                LogRecord rec = new LogRecord(Level.WARNING, "invalid action from doc:");
-                String[] params = new String[]{forms.item(i).toString(), doc.getTextContent(), doc.getDocumentURI()};
-                rec.setParameters(params);
-                logger.log(rec);
+            if ((action == null) || ("".equals(action))) {
+                throw new IllegalStateException("Action should not be empty");
             }
             url = action;
             NodeList inputs = doc.getElementsByTagName("input");

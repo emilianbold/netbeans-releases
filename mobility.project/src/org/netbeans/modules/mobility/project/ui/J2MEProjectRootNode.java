@@ -41,7 +41,7 @@ final class J2MEProjectRootNode extends AbstractNode implements AntProjectListen
         super(Children.create(childFactory, true), Lookups.fixed(project, bc));
         bc.node = this;
         this.broken = project.hasBrokenLinks();
-        this.nodeUpdateTask = RequestProcessor.getDefault().create(this);
+        this.nodeUpdateTask = project.getRequestProcessor().create(this);
         setName(ProjectUtils.getInformation(project).getDisplayName());
         AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
         assert helper != null;

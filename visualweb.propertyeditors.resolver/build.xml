@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="org.netbeans.modules.visualweb.propertyeditors.resolver" default="netbeans" basedir=".">
+<project name="visualweb.propertyeditors.resolver" default="netbeans" basedir=".">
     <description>Builds the project org.netbeans.modules.visualweb.propertyeditors.resolver.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
     

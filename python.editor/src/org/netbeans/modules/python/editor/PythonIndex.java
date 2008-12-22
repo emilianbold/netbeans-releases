@@ -50,6 +50,7 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
 import org.netbeans.modules.python.editor.elements.IndexedPackage;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -900,6 +901,9 @@ public class PythonIndex {
 
         // ImportsFrom require no index lookup
         for (ImportFrom from : importsFrom) {
+            if (ImportManager.isFutureImport(from)) {
+                continue;
+            }
             if (from.names != null) {
                 for (aliasType at : from.names) {
                     if ("*".equals(at.name)) { // NOI18N

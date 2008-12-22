@@ -85,7 +85,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     public boolean isValid() {
         boolean valid = ((SimpleConfigurationPanel)getComponent()).valid();
         if (valid) {
-            wizardDescriptor.setMessage(""); // NOI18N
+            wizardDescriptor.setMessage(null);
         }
         return valid;
     }

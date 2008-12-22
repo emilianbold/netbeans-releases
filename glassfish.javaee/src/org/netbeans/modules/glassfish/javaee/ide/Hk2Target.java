@@ -56,11 +56,11 @@ public class Hk2Target implements Target {
     }
     
     public String getName() {
-        return "GlassFish V3";
+        return "GlassFish v3";
     }
 
     public String getDescription() {
-        return "GlassFish V3 Application server, the hundred K kernel...";
+        return "GlassFish v3 Application server, the hundred K kernel...";
     }
     
     public String getServerUri () {

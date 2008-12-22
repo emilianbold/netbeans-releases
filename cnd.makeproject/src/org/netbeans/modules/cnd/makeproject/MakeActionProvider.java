@@ -500,7 +500,8 @@ public class MakeActionProvider implements ActionProvider {
                     return;
                 } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
                     RunProfile runProfile = null;
-                    if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                    int platform = conf.getPlatform().getValue();
+                    if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                         runProfile = conf.getProfile().clone();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -524,7 +525,7 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
-                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
+                    } else if (platform == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
                         StringBuffer path = new StringBuffer();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -558,9 +559,9 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
-                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_INTEL ||
-                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_SPARC ||
-                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_LINUX) {
+                    } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                            platform == Platform.PLATFORM_LINUX) {
                         // Add paths from -L option
                         StringBuffer path = new StringBuffer();
                         List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
@@ -583,6 +584,12 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                    }
+
+                    if (platform == Platform.PLATFORM_MACOSX ||
+                            platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                            platform == Platform.PLATFORM_LINUX) {
                         // Make sure DISPLAY variable has been set
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set

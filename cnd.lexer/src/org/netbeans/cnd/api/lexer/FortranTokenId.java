@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.cnd.lexer.FortranLexer;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -396,7 +397,7 @@ public enum FortranTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return CndLexerUtilities.FORTRAN_MIME_TYPE;
+            return MIMENames.FORTRAN_MIME_TYPE;
         }
 
         @Override

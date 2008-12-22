@@ -2,7 +2,7 @@
 <!-- You may freely edit this file. See harness/README in the NetBeans platform -->
 <!-- for some information on what you could do (e.g. targets to override). -->
 <!-- If you delete this file and reopen the project it will be recreated. -->
-<project name="org.jython.distro" default="netbeans" basedir=".">
+<project name="o.jython.distro" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.jython.distro</description>
     <import file="../nbbuild/templates/projectized.xml"/>
     <!--
@@ -33,6 +33,8 @@
                 <include name="jython-${jython_src_version}.zip"/>
             </fileset>
         </unzip>
+        <!-- Apply patched build.xml which handles non-clean builds; shouldn't be necessary after next Jython snapshot update -->
+        <copy tofile="${jython_build}/jython/build.xml" file="jython-build.xml" />
         <!-- Run target in Jython's own build.xml file to build distro -->
         <ant dir="${jython_build}/jython" target="developer-build" inheritall="false" inheritrefs="false">
             <property name="dist.dir" value="${cluster}/jython-${jython_src_version}"/>

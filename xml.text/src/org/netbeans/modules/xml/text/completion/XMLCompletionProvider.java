@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -102,36 +103,38 @@ public class XMLCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-        
-        protected boolean doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (ENABLED) {
-                XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-                if (support != null) {
-                    XMLCompletionQuery.XMLCompletionResult res = 
-                        (XMLCompletionQuery.XMLCompletionResult) QUERY.query(component, caretOffset, support);
-                    
-                    if(res != null) {
-                        List/*<CompletionItem>*/ results = res.getData();
-                        resultSet.addAllItems(results);
-                        resultSet.setTitle(res.getTitle());
-                        resultSet.setAnchorOffset(res.getSubstituteOffset());
-                        return results.size() == 0;
-                    }
-                }
+                
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
+            if (!ENABLED || support==null) {
+                resultSet.finish();
+                return;
             }
             
-            return true;
-        }
-        
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            boolean noResults = doQuery(resultSet, doc, caretOffset);
-//            //issue 128275: I'm not sure about this condition here
-//            if(doc != null && noResults) {
-//                checkHideCompletion((BaseDocument)doc, caretOffset);
-//            }
+            List<CompletionItem> items = QUERY.query(component, caretOffset, support);
+            if(items != null) resultSet.addAllItems(items);
             resultSet.finish();
         }
         
+//        protected boolean doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+//            if (ENABLED) {
+//                XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
+//                if (support != null) {
+//                    XMLCompletionQuery.XMLCompletionResult res =
+//                        (XMLCompletionQuery.XMLCompletionResult) QUERY.query(component, caretOffset, support);
+//
+//                    if(res != null) {
+//                        List/*<CompletionItem>*/ results = res.getData();
+//                        resultSet.addAllItems(results);
+//                        resultSet.setTitle(res.getTitle());
+//                        resultSet.setAnchorOffset(res.getSubstituteOffset());
+//                        return results.size() == 0;
+//                    }
+//                }
+//            }
+//
+//            return true;
+//        }
     }
     
 // XXX: remove dependency on the old org.netbeans.editor.ext.Completion & co.

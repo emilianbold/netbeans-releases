@@ -10,11 +10,17 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -33,8 +39,57 @@ public class PythonExecution {
     private String scriptArgs;
     private String displayName;    
     private boolean redirect;
+    private String wrapperCommand;
+    private String[] wrapperArgs;
+    private String[] wrapperEnv;
+    private List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private List<LineConvertor> errConvertors = new ArrayList<LineConvertor>();
+    private InputProcessorFactory outProcessorFactory;
+    private InputProcessorFactory errProcessorFactory;
+    private boolean addStandardConvertors;
+    private FileLocator fileLocator;
+    private boolean lineBased;
+    private Runnable postExecutionHook;
     
-    
+    public PythonExecution() {
+
+    }
+
+    public PythonExecution(PythonExecution from) {
+        command = from.command;
+        workingDirectory = from.workingDirectory;
+        commandArgs = from.commandArgs;
+        path = from.path;
+        javapath = from.javapath;
+        script = from.script;
+        scriptArgs = from.scriptArgs;
+        displayName = from.displayName;
+        redirect = from.redirect;
+        wrapperCommand = from.wrapperCommand;
+        if (from.wrapperArgs != null) {
+            wrapperArgs = new String[from.wrapperArgs.length];
+            System.arraycopy(from.wrapperArgs, 0, wrapperArgs, 0, from.wrapperArgs.length);
+        }
+        if (from.wrapperEnv != null) {
+            wrapperEnv = new String[from.wrapperEnv.length];
+            System.arraycopy(from.wrapperEnv, 0, wrapperEnv, 0, from.wrapperEnv.length);
+        }
+        fileLocator = from.fileLocator;
+        outConvertors = new ArrayList<LineConvertor>(from.outConvertors);
+        errConvertors = new ArrayList<LineConvertor>(from.errConvertors);
+        setOutProcessorFactory(from.outProcessorFactory);
+        setErrProcessorFactory(from.errProcessorFactory);
+        lineBased(from.lineBased);
+        if (from.addStandardConvertors) {
+            addStandardRecognizers();
+        }
+        postExecutionHook = from.postExecutionHook;
+    }
+
+    public ExecutionDescriptor toExecutionDescriptor() {
+        return descriptor;
+    }
+
     //internal process control    
     private ExecutionDescriptor descriptor = new ExecutionDescriptor()
             .frontWindow(true).controllable(true).inputVisible(true)
@@ -71,13 +126,30 @@ public class PythonExecution {
     }
 
 
-    private ExternalProcessBuilder buildProcess() throws IOException{
+    public ExternalProcessBuilder buildProcess() throws IOException{
         ExternalProcessBuilder processBuilder =
                     new ExternalProcessBuilder(command);
             processBuilder = processBuilder.workingDirectory(new File(workingDirectory));
             // @@@Jean-Yves check for empty arguments as well as null
             if ( (commandArgs != null) && ( commandArgs.trim().length() > 0 )  )
                processBuilder = processBuilder.addArgument(commandArgs);
+
+            if (wrapperCommand != null) {
+                processBuilder = processBuilder.addArgument(wrapperCommand);
+                if (wrapperArgs != null && wrapperArgs.length > 0) {
+                    for (String arg : wrapperArgs) {
+                        processBuilder = processBuilder.addArgument(arg);
+                    }
+                }
+                if (wrapperEnv != null && wrapperEnv.length > 0) {
+                    for (String env : wrapperEnv) {
+                        int index = env.indexOf('=');
+                        assert index != -1;
+                        processBuilder = processBuilder.addEnvironmentVariable(env.substring(0, index), env.substring(index+1));
+                    }
+                }
+            }
+
             if(script != null)
                 processBuilder = processBuilder.addArgument(script);
             if(scriptArgs != null) {
@@ -172,13 +244,62 @@ public class PythonExecution {
     public synchronized void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    
+
+    public synchronized void setWrapperCommand(String wrapperCommand, String[] wrapperArgs, String[] wrapperEnv) {
+        this.wrapperCommand = wrapperCommand;
+        this.wrapperArgs = wrapperArgs;
+        this.wrapperEnv = wrapperEnv;
+    }
 
     public synchronized void setShowControls(boolean showControls) {
        descriptor = descriptor.controllable(showControls);
     }
 
-    
+    public PythonExecution addOutConvertor(LineConvertor convertor) {
+        this.outConvertors.add(convertor);
+        descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
+        return this;
+    }
+
+    public PythonExecution addErrConvertor(LineConvertor convertor) {
+        this.errConvertors.add(convertor);
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(errConvertors));
+        return this;
+    }
+
+    public synchronized void addStandardRecognizers() {
+        this.addStandardConvertors = true;
+        descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(errConvertors));
+    }
+
+    public void setErrProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        this.errProcessorFactory = errProcessorFactory;
+        descriptor = descriptor.errProcessorFactory(errProcessorFactory);
+    }
+
+    public void setOutProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        this.outProcessorFactory = outProcessorFactory;
+        descriptor = descriptor.outProcessorFactory(outProcessorFactory);
+    }
+
+    public PythonExecution lineBased(boolean lineBased) {
+        this.lineBased = lineBased;
+        if (lineBased) {
+            descriptor = descriptor.errLineBased(lineBased).outLineBased(lineBased);
+        }
+
+        return this;
+    }
+
+    private LineConvertorFactory lineConvertorFactory(List<LineConvertor> convertors) {
+        LineConvertor[] convertorArray = convertors.toArray(new LineConvertor[convertors.size()]);
+        if (addStandardConvertors) {
+            return PythonLineConvertorFactory.withStandardConvertors(fileLocator, convertorArray);
+        }
+        return PythonLineConvertorFactory.create(fileLocator, convertorArray);
+    }
+
 
     public synchronized void setShowInput(boolean showInput) {
         descriptor = descriptor.inputVisible(showInput);
@@ -222,6 +343,16 @@ public class PythonExecution {
             }
         });
     }
+
+    public void setPostExecutionHook(Runnable runnable) {
+        postExecutionHook = runnable;
+        descriptor = descriptor.postExecution(runnable);
+    }
+
+    public Runnable getPostExecutionHook() {
+        return postExecutionHook;
+    }
+
     /**
      * Retive the output form the running process
      * @return a string reader for the process

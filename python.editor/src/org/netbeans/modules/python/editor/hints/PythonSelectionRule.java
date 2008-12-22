@@ -39,6 +39,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.openide.util.Exceptions;
 import org.python.antlr.PythonTree;
 
@@ -47,7 +48,7 @@ import org.python.antlr.PythonTree;
  *
  * @author Tor Norbye
  */
-public abstract class PythonSelectionRule implements SelectionRule {
+public abstract class PythonSelectionRule implements SelectionRule, UserConfigurableRule {
     protected abstract int getApplicability(PythonRuleContext context, PythonTree root, OffsetRange astRange);
 
     //public abstract void run(PythonRuleContext context, List<Hint> result);

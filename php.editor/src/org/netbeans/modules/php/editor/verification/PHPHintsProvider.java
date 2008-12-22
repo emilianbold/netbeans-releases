@@ -53,8 +53,11 @@ import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.Rule;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
@@ -65,6 +68,7 @@ import org.openide.filesystems.FileObject;
 public class PHPHintsProvider implements HintsProvider {
     public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
     public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
+    public static final String MODEL_HINTS = "model"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
 
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
@@ -76,6 +80,18 @@ public class PHPHintsProvider implements HintsProvider {
         
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
+        List<? extends AstRule> modelHints = allHints.get(MODEL_HINTS);
+        if (modelHints != null) {
+            ModelScope modelScope = ModelFactory.getModel(info).getModelScope();
+            for (AstRule astRule : modelHints) {
+                if (astRule instanceof ModelRule) {
+                    if (mgr.isEnabled(astRule)) {
+                        ModelRule modelRule = (ModelRule) astRule;
+                        modelRule.check(modelScope, context, hints);
+                    }
+                }
+            }
+        }
         
         Collection<PHPRule> firstPassHints = new ArrayList<PHPRule>();
         

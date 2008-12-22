@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -135,7 +135,7 @@ public class TableView extends JScrollPane {
         }
         setDragSource(true);
         setDropTarget(true);
-        TableColumnSelector tcs = (TableColumnSelector) Lookup.getDefault().lookup(TableColumnSelector.class);
+        TableColumnSelector tcs = Lookup.getDefault ().lookup (TableColumnSelector.class);
         if (tcs != null) {
             table.setColumnSelector(tcs);
         }
@@ -143,11 +143,13 @@ public class TableView extends JScrollPane {
     }
     
     /** Requests focus for the tree component. Overrides superclass method. */
+    @Override
     public void requestFocus () {
         table.requestFocus();
     }
     
     /** Requests focus for the tree component. Overrides superclass method. */
+    @Override
     public boolean requestFocusInWindow () {
         return table.requestFocusInWindow();
     }
@@ -189,6 +191,7 @@ public class TableView extends JScrollPane {
     
     /** Initializes the component and lookup explorer manager.
      */
+    @Override
     public void addNotify () {
         super.addNotify ();
         lookupExplorerManager ();
@@ -300,6 +303,7 @@ public class TableView extends JScrollPane {
     /**
      * Deinitializes listeners.
      */
+    @Override
     public void removeNotify () {
         super.removeNotify ();
         table.getSelectionModel().removeListSelectionListener(managerListener);
@@ -604,14 +608,18 @@ public class TableView extends JScrollPane {
         public TableViewETable() {
             super();
         }
+        @Override
         protected TableColumn createColumn(int modelIndex) {
             return new TableViewETableColumn(modelIndex);
         }
 
+        @Override
         public Object transformValue(Object value) {
             return PropertiesRowModel.getValueFromProperty(value);
         }
         
+        @Override
+        @SuppressWarnings("unchecked")
         public boolean editCellAt(int row, int column, EventObject e) {
             Object o = getValueAt(row, column);
             if (o instanceof Node.Property) { // && (e == null || e instanceof KeyEvent)) {
@@ -633,6 +641,7 @@ public class TableView extends JScrollPane {
             public TableViewETableColumn(int index) {
                 super(index, TableViewETable.this);
             }
+            @Override
             public boolean isSortingAllowed() {
                 TableModel model = getModel();
                 if (model instanceof NodeTableModel) {

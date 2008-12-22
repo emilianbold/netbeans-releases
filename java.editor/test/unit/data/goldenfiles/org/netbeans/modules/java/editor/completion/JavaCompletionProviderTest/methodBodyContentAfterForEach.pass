@@ -19,9 +19,11 @@ break
 byte
 char
 continue
+do
 double
 float
 for
+if
 int
 long
 new

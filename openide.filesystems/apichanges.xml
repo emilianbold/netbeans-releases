@@ -46,6 +46,27 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileUtil.setMIMEType">
+            <api name="filesystems"/>
+            <summary>Persisted registration of file extension to MIME type</summary>
+            <version major="7" minor="18"/>
+            <date day="19" month="12" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes" modification="yes"/>
+            <description>
+                <p>
+                    Method <a href="@TOP@/org/openide/filesystems/FileUtil.html#setMIMEType(java.lang.String,%20java.lang.String)">
+                    FileUtil.setMIMEType(String extension, String mimeType)</a>
+                    resurrected to register file extension for specified MIME type.
+                    It is persisted in userdir contrary to previous implementation.
+                    Added method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMETypeExtensions(java.lang.String)">
+                    FileUtil.getMIMETypeExtensions(String mimeType)</a>
+                    to get list of file extensions associated with specified MIME type.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="153202"/>
+        </change>
         <change id="FileChooserBuilder">
             <api name="filesystems"/>
             <summary>FileChooserBuilder added</summary>

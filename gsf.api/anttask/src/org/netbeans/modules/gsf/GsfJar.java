@@ -101,6 +101,7 @@ public class GsfJar extends JarWithModuleAttributes {
     // Keep in sync with LanguageRegistry
     private static final String STRUCTURE = "structure.instance"; // NOI18N
     private static final String LANGUAGE = "language.instance"; // NOI18N
+    private static final String CODE_COVERAGE = "codecoverage"; // NOI18N
 
     private Manifest mf;
     private String layer;
@@ -224,14 +225,16 @@ public class GsfJar extends JarWithModuleAttributes {
                 boolean customEditorKit = false;
                 String gsfLanguageClass = null;
                 boolean hasStructureScanner = false;
-
-                for (Element regFile : getElementChildren(innerMime)) {
+                boolean seenEditorStuff = false;
+                List<Element> elementChildren = getElementChildren(innerMime);
+                for (Element regFile : elementChildren) {
                     String tag = regFile.getTagName();
                     if (ATTR.equals(tag)) { // NOI18N
                         String name = regFile.getAttribute(FILENAME);
                         if (USECUSTOMEDITORKIT.equals(name) && TRUE.equals(regFile.getAttribute(BOOLVALUE))) {
                             // It's a custom editor
                             customEditorKit = true;
+                            seenEditorStuff = true;
                         }
                     } else {
                         if (!tag.equals(FILE)) {
@@ -244,12 +247,22 @@ public class GsfJar extends JarWithModuleAttributes {
                         // This language has a navigator; insert one
                         registerStructureScanner(doc, mimeType);
                         hasStructureScanner = true;
+                        seenEditorStuff = true;
                     } else if (LANGUAGE.equals(name)) {
                         List<Element> attributes = getAttributeElements(regFile);
                         for (Element attribute : attributes) {
                             if ("instanceClass".equals(attribute.getAttribute(FILENAME))) { // NOI18N
                                 gsfLanguageClass = attribute.getAttribute(STRINGVALUE);
                             }
+                        }
+                        seenEditorStuff = true;
+                    } else if (CODE_COVERAGE.equals(name)) {
+                        registerCodeCoverage(doc, mimeType);
+
+                        // Hack - avoid problems for people registering nothing having to do with
+                        // editing
+                        if (!seenEditorStuff) {
+                            return;
                         }
                     }
                 }
@@ -479,6 +492,11 @@ public class GsfJar extends JarWithModuleAttributes {
             String loaderDesc = displayName + " Files";
             setFileAttribute(doc, file, "displayName", "stringvalue", loaderDesc); // NOI18N
         }
+    }
+
+    private void registerCodeCoverage(Document doc, String mimeType) {
+        Element factoryFolder = mkdirs(doc, "Editors/" + mimeType + ""); // NOI18N
+        Element file = createFile(doc, factoryFolder, "org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance"); // NOI18N
     }
 
     private List<Element> getAttributeElements(Document doc, String path) {

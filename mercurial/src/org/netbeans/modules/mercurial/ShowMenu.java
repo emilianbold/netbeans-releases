@@ -87,17 +87,27 @@ public class ShowMenu extends AbstractAction implements DynamicMenuContent {
 
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
+
+        JMenuItem item;
         if(bShowAnnotationMenu){
             if (!bShowAnnotation) {
-                menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"), ctx)); // NOI18N
+                item = menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"), ctx)); // NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"));
             } else {
-                menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"), ctx)); // NOI18N
+                item = menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"), ctx)); // NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"));
             }
         }
-        menu.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
-        menu.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
-        menu.add(new ViewAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
+        item = menu.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx));
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"));
+
+        item = menu.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"));
+
+        item = menu.add(new ViewAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"));
+
         return menu;
     }
 }

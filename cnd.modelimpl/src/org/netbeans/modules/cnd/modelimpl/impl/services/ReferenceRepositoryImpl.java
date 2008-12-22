@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -229,15 +230,21 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     // Fast check of name.
     private boolean hasName(FileImpl file, String name){
         try {
-            String text = file.getBuffer().getText();
-            if (text.indexOf(name) < 0) {
-                return false;
+            if (file.isValid()) {
+                String text = file.getBuffer().getText();
+                if (text.indexOf(name) < 0) {
+                    return false;
+                }
+                // TODO use grep by line and detect whole word
+                return true;
             }
-            // TODO use grep by line and detect whole word
+        } catch (FileNotFoundException ex) {
+            // TODO FileBuffer should provide method isValid()
+            // Do nothing, it seems temporary file.
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return true;
+        return false;
     }
     
     private Collection<APTToken> getTokensToResolve(FileImpl file, String name, int startOffset, int endOffset) {
