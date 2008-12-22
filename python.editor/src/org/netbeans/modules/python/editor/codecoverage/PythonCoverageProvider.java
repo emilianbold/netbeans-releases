@@ -481,6 +481,9 @@ public final class PythonCoverageProvider implements CoverageProvider {
             boolean prevWasContinue = false;
             for (int lineno = 0; lineno < result.length; lineno++) {
                 // Update the line balance
+                if (currentOffset > doc.getLength()) {
+                    break;
+                }
                 int begin = Utilities.getRowStart(doc, currentOffset);
                 int end = Utilities.getRowEnd(doc, currentOffset);
                 int nonWhiteOffset = Utilities.getRowFirstNonWhite(doc, begin);

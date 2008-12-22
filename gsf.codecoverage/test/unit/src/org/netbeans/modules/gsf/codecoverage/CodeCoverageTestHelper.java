@@ -20,6 +20,7 @@ public class CodeCoverageTestHelper {
         sb.append("<style>\n");
         sb.append("div { white-space: pre; font-family: monospace; margin: 0px; padding: 0px }\n");
         sb.append(".covered { background-color: CCFFCC }\n");
+        sb.append(".partial { background-color: FFFFCC }\n");
         sb.append(".not_covered { background-color: FFCCCC }\n");
         sb.append(".inferred { background-color: E0FFE0 }\n");
         sb.append(".unknown { background-color: EEEEEE }\n");
@@ -44,6 +45,9 @@ public class CodeCoverageTestHelper {
                     break;
                 case INFERRED:
                     sb.append("inferred");
+                    break;
+                case PARTIAL:
+                    sb.append("partial");
                     break;
                 case NOT_COVERED:
                     sb.append("not_covered");

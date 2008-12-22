@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.gsf.codecoverage.api;
 
 /**
@@ -48,33 +47,31 @@ public enum CoverageType {
     /**
      * The line was touched 1 or more times.
      */
-    COVERED("annotation_complete", "Covered"),
+    COVERED("Covered"),
     /**
      * The line was never touched.
      */
-    NOT_COVERED("annotation_zero", "Not Covered"),
+    NOT_COVERED("Not Covered"),
     /**
      * The line may have been touched, not sure. Typically, comments and whitespace
      * between executed statements fall into this category.
      */
-    INFERRED("annotation_inferred", "Inferred"),
-
+    INFERRED("Inferred"),
+    /**
+     * Parts of the line were touched, and other parts were not. This happens
+     * for example when you have conditional statements or multiple statements
+     * on the line and not all parts were executed.
+     */
+    PARTIAL("Partial"),
     /**
      * We have no information about this line
      */
-    UNKNOWN(null, "Unknown");
-
-    private String type;
+    UNKNOWN("Unknown");
+    
     private String desc;
 
-    private CoverageType(String type, String desc) {
-        this.type = type;
+    private CoverageType(String desc) {
         this.desc = desc;
-    }
-
-    /** Annotation name */
-    public String getAnnotationName() {
-        return type;
     }
 
     public String getDescription() {
