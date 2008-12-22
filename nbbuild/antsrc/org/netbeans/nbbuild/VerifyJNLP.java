@@ -74,7 +74,7 @@ import org.xml.sax.SAXParseException;
  * Any other JNLP fragments referred to recursively from these files will be validated as well.
  * JNLP files must specify a document type, normally:
  * &lt;!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
- * (including the misspelling: see bug #6613630).
+ * (including the misspelling: see bug #6613630, corrected for the 6.0 version of the DTD).
  * The codebase specified in the file is used as is if a file: URL;
  * if $$codebase, it is taken to be the immediately containing directory, to match the behavior of JnlpDownloadServlet;
  * if a remote URL, it is also taken to be the immediately containing directory,
@@ -144,6 +144,8 @@ public class VerifyJNLP extends Task {
                 public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if ("-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN".equals(publicId)) {
                         return new InputSource(VerifyJNLP.class.getResource("JNLP-1.5.dtd").toString());
+                    } else if ("-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN".equals(publicId)) {
+                        return new InputSource(VerifyJNLP.class.getResource("JNLP-6.0.dtd").toString());
                     } else {
                         return null;
                     }
