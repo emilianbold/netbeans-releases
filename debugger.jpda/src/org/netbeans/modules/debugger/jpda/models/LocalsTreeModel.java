@@ -75,6 +75,11 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -442,15 +447,15 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 getCurrentCallStackFrame ();
             if (callStackFrame == null) 
                 return new String [] {"No current thread"};
-            StackFrame stackFrame = null;
             try {
-                stackFrame = callStackFrame.getStackFrame ();
-            } catch (InvalidStackFrameException e) {
-            }
-            if (stackFrame == null) 
-                return new String [] {"No current thread"};
-            try {
-                ObjectReference thisR = stackFrame.thisObject ();
+                StackFrame stackFrame = null;
+                try {
+                    stackFrame = callStackFrame.getStackFrame ();
+                } catch (InvalidStackFrameException e) {
+                }
+                if (stackFrame == null)
+                    return new String [] {"No current thread"};
+                ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
                 List<Operation> operations = callStackFrame.getThread().getLastOperations();
                 ReturnVariableImpl returnVariable;
                 boolean haveLastOperations;
@@ -468,7 +473,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 int currArgShift = (currentOperation != null) ? 1 : 0;
                 int shift = retValShift + currArgShift;
                 if (thisR == null) {
-                    ReferenceType classType = stackFrame.location().declaringType();
+                    ReferenceType classType = LocationWrapper.declaringType(StackFrameWrapper.location(stackFrame));
                     Object[] avs = null;
                     avs = getLocalVariables (
                         callStackFrame,
@@ -514,9 +519,13 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 }            
             } catch (NativeMethodException nmex) {
                 return new String[] { "NativeMethodException" };
-            } catch (InternalException ex) {
+            } catch (InternalExceptionWrapper ex) {
                 return new String [] {ex.getMessage ()};
+            } catch (VMDisconnectedExceptionWrapper dex) {
+                return new String[] {  };
             } catch (InvalidStackFrameException isfex) {
+                return new String [] {"No current thread"};
+            } catch (InvalidStackFrameExceptionWrapper isfex) {
                 return new String [] {"No current thread"};
             }
         } // synchronized

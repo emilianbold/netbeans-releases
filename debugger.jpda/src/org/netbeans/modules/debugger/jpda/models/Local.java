@@ -53,6 +53,11 @@ import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocalVariableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -77,8 +82,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         super (
             debugger, 
             value, 
-            local.name () + local.hashCode() +
-                (value instanceof ObjectReference ? "^" : "")
+            getID(local, value)
         );
         this.local = local;
         if (frame != null) {
@@ -86,6 +90,16 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             this.depth = frame.getFrameDepth();
         }
         this.className = className;
+    }
+
+    private static String getID(LocalVariable local, PrimitiveValue value) {
+        try {
+            return LocalVariableWrapper.name(local) + LocalVariableWrapper.hashCode(local) + (value instanceof ObjectReference ? "^" : "");
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 
     // LocalVariable impl.......................................................
@@ -97,7 +111,13 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     * @return string representation of type of this variable.
     */
     public String getName () {
-        return local.name ();
+        try {
+            return LocalVariableWrapper.name(local);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 
     /**
@@ -119,7 +139,13 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     * @return string representation of type of this variable.
     */
     public String getDeclaredType () {
-        return local.typeName ();
+        try {
+            return LocalVariableWrapper.typeName(local);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
     
     protected final void setValue (Value value) throws InvalidExpressionException {
@@ -135,6 +161,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             throw new InvalidExpressionException (ex);
         } catch (InvalidStackFrameException ex) {
             throw new InvalidExpressionException (ex);
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
         }
     }
     
@@ -154,6 +184,12 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     }
     
     public String toString () {
-        return "LocalVariable " + local.name ();
+        try {
+            return "LocalVariable " + LocalVariableWrapper.name(local);
+        } catch (InternalExceptionWrapper ex) {
+            return "LocalVariable " + ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 }

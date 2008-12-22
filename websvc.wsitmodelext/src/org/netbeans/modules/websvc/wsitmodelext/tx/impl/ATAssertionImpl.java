@@ -60,10 +60,15 @@ public class ATAssertionImpl extends TxComponentImpl implements ATAssertion {
     }
 
     public void setOptional(boolean optional) {
-        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0), Boolean.toString(optional));
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.getDefault()), Boolean.toString(optional));
+    }
+
+    public void setOptional(boolean optional, ConfigVersion version) {
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(version), Boolean.toString(optional));
     }
 
     public boolean isOptional() {
-        return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0)));
+        return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0))) ||
+               Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3)));
     }
 }

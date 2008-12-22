@@ -54,6 +54,7 @@ public class PlatformNodeProp extends Node.Property {
     private String name;
     private String description;
 
+    @SuppressWarnings("unchecked")
     public PlatformNodeProp(PlatformConfiguration platformConfiguration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.platformConfiguration = platformConfiguration;

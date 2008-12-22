@@ -58,11 +58,16 @@ import org.openide.filesystems.FileObject;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 
 /**
  *
@@ -70,6 +75,8 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
  * @version 1.0
  */
 public final class ScreenSupport {
+
+    private static final JButton BUTTON = new JButton();
 
     private ScreenSupport() {
     }
@@ -252,6 +259,62 @@ public final class ScreenSupport {
         FontMetrics fm = g.getFontMetrics(f);
         return fm.getHeight();
     }
+
+    static void addKeyboardSupport( final ScreenDisplayPresenter presenter){
+        final JComponent panel = presenter.getView();
+        panel.setInputMap( JComponent.WHEN_FOCUSED, BUTTON.getInputMap());
+        panel.addFocusListener( new FocusAdapter() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+
+                presenter.getRelatedComponent().getDocument().
+                        getTransactionManager().writeAccess(new Runnable()
+                {
+                    public void run() {
+                        presenter.getRelatedComponent().getDocument().
+                                setSelectedComponents(
+                                "screen", 
+                                Collections.singleton(
+                                presenter.getRelatedComponent()));   // NOI18N
+                    }
+                });
+
+                InputMap  map = panel.getInputMap();
+                if ( map != BUTTON.getInputMap() ){
+                    return;
+                }
+                else {
+                    map = new InputMap();
+                    panel.setInputMap( JComponent.WHEN_FOCUSED, map);
+                }
+
+                ActionMap actionMap = panel.getActionMap();
+                if ( actionMap == null ){
+                    actionMap = new ActionMap();
+                    panel.setActionMap(actionMap);
+                }
+
+                for (Action action : ActionsSupport.createActionsArray(
+                        presenter.getRelatedComponent()))
+                {
+                    if (action == null) {
+                        continue;
+                    }
+                    if ( action.getValue(Action.ACCELERATOR_KEY)!= null){
+                       map.put( (KeyStroke)action.getValue(Action.ACCELERATOR_KEY),
+                               action.getValue(Action.ACCELERATOR_KEY).toString());
+                       actionMap.put( action.getValue(Action.ACCELERATOR_KEY).toString(),
+                               action);
+                   }
+                }
+                if ( map.allKeys() == null || map.allKeys().length == 0 ){
+                    map.setParent( BUTTON.getInputMap() );
+                }
+            }
+        });
+    }
+
 
     private static Icon resolveImageForRoot(FileObject file, String relPath) {
         try {

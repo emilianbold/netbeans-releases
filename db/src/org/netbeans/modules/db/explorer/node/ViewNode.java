@@ -39,16 +39,30 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
-public class ViewNode extends BaseNode {
+public class ViewNode extends BaseNode implements SchemaNameProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
     private static final String FOLDER = "View"; //NOI18N
 
@@ -58,38 +72,146 @@ public class ViewNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ViewNode instance
      */
-    public static ViewNode create(NodeDataLookup dataLookup) {
-        ViewNode node = new ViewNode(dataLookup);
+    public static ViewNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ViewNode node = new ViewNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private View view;
+    private String name = ""; // NOI18N
+    private final MetadataElementHandle<View> viewHandle;
+    private final DatabaseConnection connection;
 
-    private ViewNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ViewNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
+        viewHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        view = getLookup().lookup(View.class);
+        boolean connected = !connection.getConnector().isDisconnected();
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        if (connected && metaDataModel != null) {
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            View view = viewHandle.resolve(metaData);
+                            name = view.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
+        }
+    }
 
+    public String getCatalogName() {
+        return getCatalogName(connection, viewHandle);
+    }
+
+    public String getSchemaName() {
+        return getSchemaName(connection, viewHandle);
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = connection.getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropView(getName());
+            command.execute();
+            remove();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = connection.getConnector();
+        return connector.supportsCommand(Specification.DROP_VIEW);
     }
 
     @Override
     public String getName() {
-        return view.getName();
+        return name;
     }
 
     @Override
     public String getDisplayName() {
-        return view.getName();
+        return getName();
     }
 
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.VIEW_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createViewData(connection.getDatabaseConnection(),
+                        connection.findJDBCDriver(), getName());
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_View"); //NOI18N
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        View view = handle.resolve(metaData);
+                        if (view != null) {
+                            array[0] = view.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        View view = handle.resolve(metaData);
+                        if (view != null) {
+                            array[0] = view.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }

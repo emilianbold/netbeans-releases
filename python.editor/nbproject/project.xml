@@ -87,6 +87,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.gsf</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -325,7 +334,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.python.project</friend>
-                <friend>org.netbeans.modules.python.tests</friend>
+                <friend>org.netbeans.modules.python.testrunner</friend>
                 <package>org.netbeans.modules.python.editor</package>
                 <package>org.netbeans.modules.python.editor.lexer</package>
                 <package>org.netbeans.modules.python.editor.codecoverage</package>

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -118,7 +117,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final NameKind kind = request.kind;
-        final Node node = request.node;
+        final Node target = request.target;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -145,47 +144,58 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
-        Set<? extends String> types = Collections.emptySet();
-        String callType = call.getType();
-        if (callType != null && !call.isLHSConstant()) {
-            types = Collections.singleton(callType);
+        RubyType type = RubyType.createUnknown();
+        final RubyType callType = call.getType();
+        if (callType.isKnown() && !call.isLHSConstant()) {
+            type = callType;
         }
 
-        if ((types.isEmpty()) && (lhs != null) && (node != null) &&
-                (call.isSimpleIdentifier() || call.isLHSConstant())) {
-            Node method = AstUtilities.findLocalScope(node, path);
+        // Target might be null somehow, since AST is not always available when
+        // the source is in the incosistent state
+        if (!type.isKnown() && lhs != null && target != null) {
+            if (call.isSimpleIdentifier() || call.isLHSConstant()) {
+                Node method = AstUtilities.findLocalScope(target, path);
 
-            String _lhs = lhs;
-            if (call.isLHSConstant()) {
-                // TODO: curently constants are class/module insensitive, cf. #154098
-                int lastColon2 = lhs.lastIndexOf("::"); // NOI18N
-                if (lastColon2 != -1) {
-                    _lhs = lhs.substring(lastColon2 + 2);
+                String _lhs = lhs;
+                if (call.isLHSConstant()) {
+                    // TODO: curently constants are class/module insensitive, cf. #154098
+                    int lastColon2 = lhs.lastIndexOf("::"); // NOI18N
+                    if (lastColon2 != -1) {
+                        _lhs = lhs.substring(lastColon2 + 2);
+                    }
                 }
-            }
-            if (method != null) {
-                // TODO - if the lhs is "foo.bar." I need to split this
-                // up and do it a bit more cleverly
-                types = getTypesForConstant(lhs);
-                if (types.isEmpty()) {
-                    types = createTypeAnalyzer(request, method).inferTypes(_lhs);
+                if (method != null) {
+                    // TODO - if the lhs is "foo.bar." I need to split this
+                    // up and do it a bit more cleverly
+                    type = getTypesForConstant(lhs);
+                    if (!type.isKnown()) {
+                        type = createTypeInferencer(request, method).inferType(_lhs);
+                    }
+                    if (type.isKnown() && call.isLHSConstant()) {
+                        // lhs is not a class or module, is a constant for which we have
+                        // type-inference. Clumsy -> polish infrastructure..
+                        skipInstanceMethods = false;
+                    }
                 }
-                if (!types.isEmpty() && call.isLHSConstant()) {
-                    // lhs is not a class or module, is a constant for which we have
-                    // type-inference. Clumsy -> polish infrastructure..
-                    skipInstanceMethods = false;
+                if (!type.isKnown() && call.isLHSConstant() && callType != null) {
+                    type = callType;
                 }
-            }
-            if (types.isEmpty() && call.isLHSConstant() && callType != null) {
-                types = Collections.singleton(callType);
+            } else { // try method chaining
+                if (target.nodeId == NodeType.CALLNODE) {
+                    System.out.println("Du na to");
+                    Node receiver = ((CallNode) target).getReceiverNode();
+                    System.out.println("node = " + receiver);
+                    type = RubyTypeInferencer.inferTypes(receiver, request.createContextKnowledge());
+                    System.out.println("type = " + type);
+                }
             }
         }
 
         // I'm not doing any data flow analysis at this point, so
         // I can't do anything with a LHS like "foo.". Only actual types.
-        if (!types.isEmpty()) {
+        if (type.isKnown()) {
             if ("self".equals(lhs)) { // NOI18N
-                types = Collections.singleton(fqn);
+                type = RubyType.create(fqn);
                 skipPrivate = true;
             } else if ("super".equals(lhs)) { // NOI18N
                 skipPrivate = true;
@@ -193,29 +203,29 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 IndexedClass sc = getIndex().getSuperclass(fqn);
 
                 if (sc != null) {
-                    types = Collections.singleton(sc.getFqn());
+                    type = RubyType.create(sc.getFqn());
                 } else {
                     ClassNode cls = AstUtilities.findClass(path);
 
                     if (cls != null) {
-                        types = Collections.singleton(AstUtilities.getSuperclass(cls));
+                        type = RubyType.create(AstUtilities.getSuperclass(cls));
                     }
                 }
 
-                if (types.isEmpty()) {
-                    types = Collections.singleton("Object"); // NOI18N
+                if (!type.isKnown()) {
+                    type = RubyType.OBJECT;
                 }
             }
 
-            if (!types.isEmpty()) {
+            if (type.isKnown()) {
                 // Possibly a class on the left hand side: try searching with the class as a qualifier.
                 // Try with the LHS + current FQN recursively. E.g. if we're in
                 // Test::Unit when there's a call to Foo.x, we'll try
                 // Test::Unit::Foo, and Test::Foo
                 String _fqn = fqn;
                 while (methods.isEmpty()) {
-                    for (String type : types) {
-                        methods.addAll(getIndex().getInheritedMethods(_fqn + "::" + type, prefix, kind));
+                    for (String realType : type.getRealTypes()) {
+                        methods.addAll(getIndex().getInheritedMethods(_fqn + "::" + realType, prefix, kind));
                     }
 
                     int f = _fqn.lastIndexOf("::");
@@ -228,20 +238,16 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
 
                 // Add methods in the class (without an FQN)
-                for (String type : types) {
-                    Set<IndexedMethod> m = getIndex().getInheritedMethods(type, prefix, kind);
-
-                    if (!m.isEmpty()) {
-                        methods.addAll(m);
-                    }
+                for (String realType : type.getRealTypes()) {
+                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind));
                 }
             }
         }
 
         // Try just the method call (e.g. across all classes). This is ignoring the
         // left hand side because we can't resolve it.
-        if ((methods.isEmpty()) || types.contains(RubyTypeAnalyzer.UNKNOWN_TYPE)) {
-            methods = getIndex().getMethods(prefix, null, kind);
+        if (methods.isEmpty() || type.hasUnknownMember()) {
+            methods.addAll(getIndex().getMethods(prefix, kind));
         }
 
         for (IndexedMethod method : methods) {
@@ -337,7 +343,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 targetMethod = callMethod;
             // if (targetMethod != null) {
             // Somehow figure out the argument index
-            // Perhaps I can keep the node tree around and look in it
+            // Perhaps I can keep the target tree around and look in it
             // (This is all trying to deal with temporarily broken
             // or ambiguous calls.
             // }
@@ -590,7 +596,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             methodHolder[0] = callMethod;
             parameterIndexHolder[0] = index;
 
-            // TODO - if you're in a splat node, I should be highlighting the splat node!!
+            // TODO - if you're in a splat target, I should be highlighting the splat target!!
             if (anchorOffset == -1) {
                 anchorOffset = call.getPosition().getStartOffset(); // TODO - compute
             }
@@ -603,22 +609,24 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         return true;
     }
 
-    private static RubyTypeAnalyzer createTypeAnalyzer(final CompletionRequest request, final Node root) {
-        return new RubyTypeAnalyzer(request.index, root, request.node, request.astOffset, request.lexOffset, request.doc, request.fileObject);
+    private static RubyTypeInferencer createTypeInferencer(final CompletionRequest request, final Node target) {
+        ContextKnowledge knowledge = request.createContextKnowledge();
+        request.target = target;
+        return new RubyTypeInferencer(knowledge);
     }
 
-    private Set<? extends String> getTypesForConstant(final String constantFqn) {
+    private RubyType getTypesForConstant(final String constantFqn) {
         String module = RubyUtils.parseConstantName(constantFqn)[0];
         Set<? extends IndexedConstant> constants = getIndex().getConstants(constantFqn);
         for (IndexedConstant indexedConstant : constants) {
             if (module.equals(indexedConstant.getFqn())) {
-                Set<? extends String> types = indexedConstant.getTypes();
-                if (types != null) {
-                    return types;
+                RubyType type = indexedConstant.getType();
+                if (type.isKnown()) {
+                    return type;
                 }
             }
         }
-        return Collections.emptySet();
+        return RubyType.createUnknown();
 
     }
 }

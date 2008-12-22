@@ -55,6 +55,11 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -117,21 +122,22 @@ implements PropertyChangeListener {
         try {
             VirtualMachine vm = debugger.getVirtualMachine ();
             if (vm == null) return;
-            EventRequestManager erm = vm.eventRequestManager ();
-            List<StepRequest> l = erm.stepRequests ();
+            EventRequestManager erm = VirtualMachineWrapper.eventRequestManager (vm);
+            List<StepRequest> l = EventRequestManagerWrapper.stepRequests (erm);
             Iterator<StepRequest> it = l.iterator ();
             while (it.hasNext ()) {
                 StepRequest stepRequest = it.next ();
-                if (stepRequest.thread ().equals (tr)) {
+                if (StepRequestWrapper.thread(stepRequest).equals (tr)) {
                     //S ystem.out.println("  remove request " + stepRequest);
-                    erm.deleteEventRequest (stepRequest);
+                    EventRequestManagerWrapper.deleteEventRequest (erm, stepRequest);
                     //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                     debugger.getOperator().unregister(stepRequest);
                     break;
                 }
                 //S ystem.out.println("  do not remove " + stepRequest + " : " + stepRequest.thread ());
             }
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         } catch (IllegalThreadStateException e) {
             e.printStackTrace();
         } catch (InvalidRequestStateException e) {

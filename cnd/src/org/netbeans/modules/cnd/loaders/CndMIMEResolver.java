@@ -56,6 +56,7 @@ public class CndMIMEResolver extends MIMEResolver {
     public CndMIMEResolver() {
         //System.err.println("called CndMIMEResolver.CndMIMEResolver()");
         super(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE,
+                MIMENames.HEADER_MIME_TYPE,
                 MIMENames.MAKEFILE_MIME_TYPE, MIMENames.SHELL_MIME_TYPE,
                 MIMENames.FORTRAN_MIME_TYPE, MIMENames.ASM_MIME_TYPE);
     }
@@ -69,6 +70,8 @@ public class CndMIMEResolver extends MIMEResolver {
             return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.C_FILE);
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mineType)){
             return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.CPP_FILE);
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mineType)) {
+            return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.HEADER);
         }
         return false;
     }
@@ -97,7 +100,7 @@ public class CndMIMEResolver extends MIMEResolver {
 	
         // Recognize header files by extension
         if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.HEADER)) {
-            return MIMENames.CPLUSPLUS_MIME_TYPE;
+            return MIMENames.HEADER_MIME_TYPE;
         }
 
 	// Recognize makefiles by extension

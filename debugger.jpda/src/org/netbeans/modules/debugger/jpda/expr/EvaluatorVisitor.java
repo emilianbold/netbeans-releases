@@ -479,8 +479,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                 } catch (ClassNotLoadedException ex) {
                     // Ignore
-                } catch (ObjectCollectedException ocex) {
-                    // What can we do?
                 }
             }
         }
@@ -1594,20 +1592,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     evaluationContext.putLocalVariable(arg0, lv);
                     return frame.getValue(lv);
                 } catch (AbsentInformationException aiex) {
-                    try {
-                        org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                        lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
-                                                     frame, 0, evaluationContext.getDebugger()).getMethodArguments();
-                        if (lvs != null) {
-                            for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
-                                if (paramName.equals(lv.getName())) {
-                                    return ((JDIVariable) lv).getJDIValue();
-                                }
+                    org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
+                    lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                                                 frame, 0, evaluationContext.getDebugger()).getMethodArguments();
+                    if (lvs != null) {
+                        for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
+                            if (paramName.equals(lv.getName())) {
+                                return ((JDIVariable) lv).getJDIValue();
                             }
                         }
-                    } catch (NativeMethodException nmex) {
-                        // ignore - no arguments available
-                    } catch (InvalidStackFrameException ex) {
                     }
                     return (Value) Assert2.error(arg0, "unknownVariable", paramName);
                 }
@@ -1829,7 +1822,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } catch (InvalidTypeException ex) {
                 throw new IllegalStateException("ArrayType "+arrayTypes[dimension]+" can not have "+elements+" elements.");
             } catch (ClassNotLoadedException ex) {
-                throw new IllegalStateException(new InvalidExpressionException (ex));
+                throw new IllegalStateException(ex);
             }
         }
         return array;
@@ -1856,7 +1849,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (InvalidTypeException ex) {
             throw new IllegalStateException("ArrayType "+getArrayType(arg0, type, depth)+" can not have "+elements+" elements.");
         } catch (ClassNotLoadedException ex) {
-            throw new IllegalStateException(new InvalidExpressionException (ex));
+            throw new IllegalStateException(ex);
         }
         return array;
     }
@@ -2013,7 +2006,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (InvalidTypeException itex) {
             throw new IllegalStateException(new InvalidExpressionException (itex));
         } catch (ClassNotLoadedException cnlex) {
-            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+            throw new IllegalStateException(cnlex);
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException ieex = new InvalidExpressionException (itsex);
             ieex.initCause(itsex);
@@ -2027,9 +2020,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw new IllegalStateException(ieex);
-        } catch (ObjectCollectedException ocex) {
-            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected")));
         } finally {
             try {
                 evaluationContext.methodInvokeDone();
@@ -2745,7 +2735,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (InvalidTypeException itex) {
             throw new IllegalStateException(new InvalidExpressionException (itex));
         } catch (ClassNotLoadedException cnlex) {
-            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+            throw new IllegalStateException(cnlex);
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException ieex = new InvalidExpressionException (itsex);
             ieex.initCause(itsex);
@@ -2763,9 +2753,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw new IllegalStateException(ieex);
-        } catch (ObjectCollectedException ocex) {
-            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected")));
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
@@ -2852,7 +2839,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (InvalidTypeException itex) {
             throw new IllegalStateException(new InvalidExpressionException (itex));
         } catch (ClassNotLoadedException cnlex) {
-            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+            throw new IllegalStateException(cnlex);
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException ieex = new InvalidExpressionException (itsex);
             ieex.initCause(itsex);
@@ -2866,9 +2853,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw new IllegalStateException(ieex);
-        } catch (ObjectCollectedException ocex) {
-            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected")));
         } finally {
             if (methodCalled) {
                 if (loggerMethod.isLoggable(Level.FINE)) {
@@ -2943,7 +2927,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (InvalidTypeException itex) {
             throw new IllegalStateException(new InvalidExpressionException (itex));
         } catch (ClassNotLoadedException cnlex) {
-            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+            throw new IllegalStateException(cnlex);
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException ieex = new InvalidExpressionException (itsex);
             ieex.initCause(itsex);
@@ -2957,9 +2941,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw new IllegalStateException(ieex);
-        } catch (ObjectCollectedException ocex) {
-            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected")));
         } finally {
             if (methodCalled) {
                 if (loggerMethod.isLoggable(Level.FINE)) {

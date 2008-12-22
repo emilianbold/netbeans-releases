@@ -60,8 +60,22 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.util.Exceptions;
 
 /**
  * The pool of operations, which are used for expression stepping.
@@ -70,7 +84,6 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
  */
 public class ExpressionPool {
     
-    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
     
     private Map<ExpressionLocation, Expression> expressions = new HashMap<ExpressionLocation, Expression>();
@@ -82,12 +95,18 @@ public class ExpressionPool {
     }
     
     public synchronized Expression getExpressionAt(Location loc, String url) {
-        ExpressionLocation exprLocation = new ExpressionLocation(loc.method(), loc.lineNumber());
-        if (!expressions.containsKey(exprLocation)) {
-            Expression expr = createExpressionAt(loc, url);
-            expressions.put(exprLocation, expr);
+        try {
+            ExpressionLocation exprLocation = new ExpressionLocation(LocationWrapper.method(loc), LocationWrapper.lineNumber(loc));
+            if (!expressions.containsKey(exprLocation)) {
+                Expression expr = createExpressionAt(loc, url);
+                expressions.put(exprLocation, expr);
+            }
+            return expressions.get(exprLocation);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
         }
-        return expressions.get(exprLocation);
     }
     
     // TODO: Clean unnecessray expressions:
@@ -104,16 +123,16 @@ public class ExpressionPool {
         }
         List<StackFrame> stackFrames;
         try {
-            stackFrames = thr.frames();
+            stackFrames = ThreadReferenceWrapper.frames(thr);
             synchronized (this) {
                 for (Iterator<ExpressionLocation> locIt = expressions.keySet().iterator(); locIt.hasNext(); ) {
                     ExpressionLocation exprLoc = locIt.next();
                     // TODO: Check the correct thread.
                     Method method = exprLoc.getMethod();
-                    int line = exprLoc.getLine();
+                    //int line = exprLoc.getLine();
                     for (Iterator<StackFrame> it = stackFrames.iterator(); it.hasNext(); ) {
                         StackFrame sf = it.next();
-                        if (method.equals(sf.location().method())) {
+                        if (method.equals(LocationWrapper.method(StackFrameWrapper.location(sf)))) {
                             //&& line == sf.location().lineNumber()) {
                             method = null;
                             break;
@@ -124,44 +143,37 @@ public class ExpressionPool {
                     }
                 }
             }
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
             // Ignore
         }
     }
 
-    private Expression createExpressionAt(Location loc, String url) {
-        if (!loc.virtualMachine().canGetBytecodes()) {
+    private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        if (!VirtualMachineWrapper.canGetBytecodes(MirrorWrapper.virtualMachine(loc))) {
             // Can not analyze expressions without bytecode
             return null;
         }
-        ReferenceType clazzType = loc.declaringType();
-        final Method method = loc.method();
-        final byte[] bytecodes = method.bytecodes();
+        ReferenceType clazzType = LocationWrapper.declaringType(loc);
+        final Method method = LocationWrapper.method(loc);
+        final byte[] bytecodes = MethodWrapper.bytecodes(method);
         byte[] constantPool = null;
-        String JDKVersion = System.getProperty("java.version"); // NOI18N
-        if (IS_JDK_16) {
-            try {     // => clazzType.constantPool(); on JDK 1.6.0 and higher
-                java.lang.reflect.Method constantPoolMethod =
-                        clazzType.getClass().getMethod("constantPool", new Class[0]); // NOI18N
-                try {
-                    constantPool = (byte[]) constantPoolMethod.invoke(clazzType, new Object[0]);
-                } catch (IllegalArgumentException ex) {
-                } catch (InvocationTargetException ex) {
-                } catch (IllegalAccessException ex) {
-                }
-            } catch (SecurityException ex) {
-            } catch (NoSuchMethodException ex) {
-            }
+        if (JPDAUtils.IS_JDK_16) {
+            constantPool = ReferenceTypeWrapper.constantPool(clazzType);
         }
         final byte[] theConstantPool = constantPool;
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         final String language = currentSession == null ? null : currentSession.getCurrentLanguage();
         
-        int line = loc.lineNumber(language);
+        int line = LocationWrapper.lineNumber(loc, language);
         
         final List<Location> methodLocations;
         try {
-            methodLocations = method.allLineLocations(language, null);
+            methodLocations = MethodWrapper.allLineLocations(method, language, null);
         } catch (AbsentInformationException aiex) {
             logger.log(Level.FINE, aiex.getLocalizedMessage());
             return null;
@@ -192,7 +204,7 @@ public class ExpressionPool {
         Location[] locations = new Location[ops.length];
         for (int i = 0; i < ops.length; i++) {
             int codeIndex = ops[i].getBytecodeIndex();
-            locations[i] = method.locationOfCodeIndex(codeIndex);
+            locations[i] = MethodWrapper.locationOfCodeIndex(method, codeIndex);
             if (locations[i] == null) {
                 logger.log(Level.FINE, "Location of the operation not found.");
                 return null;
@@ -206,10 +218,17 @@ public class ExpressionPool {
         Location startLocation;
         int startlocline = 0;
         int endlocline;
-        int firstLine = allLocations.get(0).lineNumber(language);
-        do {
-            startLocation = getLocationOfLine(allLocations, language, startLine - startlocline++);
-        } while (startLocation == null && (startLine - (startlocline - 1)) >= firstLine);
+        int firstLine;
+        try {
+            firstLine = LocationWrapper.lineNumber(allLocations.get(0), language);
+            do {
+                startLocation = getLocationOfLine(allLocations, language, startLine - startlocline++);
+            } while (startLocation == null && (startLine - (startlocline - 1)) >= firstLine);
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return null;
+        } catch (InternalExceptionWrapper e) {
+            return null;
+        }
         if (endLine > startLine - (startlocline - 1)) {
             endlocline = 0;
         } else {
@@ -219,14 +238,20 @@ public class ExpressionPool {
         endLine += endlocline;
         List<int[]> indexes = new ArrayList<int[]>();
         int startIndex = -1;
-        for (Location l : allLocations) {
-            int line = l.lineNumber(language);
-            if (startIndex == -1 && startLine <= line && line < endLine) {
-                startIndex = (int) l.codeIndex();
-            } else if (startIndex >= 0) {
-                indexes.add(new int[] { startIndex, (int) l.codeIndex() });
-                startIndex = -1;
+        try {
+            for (Location l : allLocations) {
+                int line = LocationWrapper.lineNumber(l, language);
+                if (startIndex == -1 && startLine <= line && line < endLine) {
+                    startIndex = (int) LocationWrapper.codeIndex(l);
+                } else if (startIndex >= 0) {
+                    indexes.add(new int[] { startIndex, (int) LocationWrapper.codeIndex(l) });
+                    startIndex = -1;
+                }
             }
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return null;
+        } catch (InternalExceptionWrapper e) {
+            return null;
         }
         if (indexes.size() == 0) {
             if (startIndex >= 0) {
@@ -246,9 +271,9 @@ public class ExpressionPool {
         }
     }
     
-    private static Location getLocationOfLine(List<Location> allLocations, String language, int line) {
+    private static Location getLocationOfLine(List<Location> allLocations, String language, int line) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         for (Location l : allLocations) {
-            if (l.lineNumber(language) == line) {
+            if (LocationWrapper.lineNumber(l, language) == line) {
                 return l;
             }
         }
@@ -336,7 +361,14 @@ public class ExpressionPool {
                                         new OperationLocation(operations[j], locations[j], j);
                             } else {
                                 int ci = op.getBytecodeIndex();
-                                Location loc = location.getMethod().locationOfCodeIndex(ci);
+                                Location loc;
+                                try {
+                                    loc = MethodWrapper.locationOfCodeIndex(location.getMethod(), ci);
+                                } catch (InternalExceptionWrapper ex) {
+                                    return null;
+                                } catch (VMDisconnectedExceptionWrapper ex) {
+                                    return null;
+                                }
                                 if (loc == null) {
                                     logger.log(Level.FINE, "Location of the operation not found.");
                                     return null;

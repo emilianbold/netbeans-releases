@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,14 +41,12 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 
@@ -266,31 +264,31 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     }
 
     @Override
-    public Set<? extends String> getTypes() {
-        if (types == null) {
+    public RubyType getType() {
+        if (type == null) {
             int lastSemiColon = attributes.lastIndexOf(';');
             if (lastSemiColon != -1) {
                 int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon -1);
                 if (lastSemiColon != -1) {
                     String typesS = attributes.substring(last2SemiColon + 1, lastSemiColon);
-                    types = parseTypes(typesS);
+                    type = parseTypes(typesS);
                 }
             }
         }
-        if (types == null) {
-            types = Collections.emptySet();
+        if (type == null) {
+            type = RubyType.createUnknown();
         }
-        return types;
+        return type;
     }
 
-    private Set<? extends String> parseTypes(final String typesS) {
-        if (typesS.length() == 0) {
-            return Collections.emptySet();
+    private RubyType parseTypes(final String types) {
+        if (types.length() == 0) {
+            return RubyType.createUnknown();
         }
-        if (!typesS.contains("|")) { // just one type
-            return Collections.singleton(typesS);
+        if (!types.contains("|")) { // just one type
+            return RubyType.create(types);
         }
-        return new HashSet<String>(Arrays.asList(typesS.split("\\|"))); // NOI18N
+        return new RubyType(types.split("\\|")); // NOI18N
 
     }
 }

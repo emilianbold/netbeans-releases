@@ -61,10 +61,13 @@ final class CompletionRequest {
     final NameKind kind;
     final QueryType queryType;
     final FileObject fileObject;
-
     AstPath path;
-    Node node;
-    
+    Node target;
+
+    CompletionRequest(Node node, RubyIndex index) {
+        this(null, null, null, -1, -1, null, null, index, null, null, null);
+    }
+
     CompletionRequest(
             final DefaultCompletionResult completionResult,
             final TokenHierarchy<Document> th,
@@ -88,5 +91,9 @@ final class CompletionRequest {
         this.kind = kind;
         this.queryType = queryType;
         this.fileObject = fileObject;
+    }
+
+    ContextKnowledge createContextKnowledge() {
+        return new ContextKnowledge(index, path.root(), target, astOffset, lexOffset, doc, fileObject);
     }
 }

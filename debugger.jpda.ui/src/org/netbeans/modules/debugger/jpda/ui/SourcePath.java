@@ -41,7 +41,6 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,14 +56,10 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.debugger.jpda.LocalVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -163,25 +157,6 @@ public class SourcePath {
             }
         }
         return url;
-    }
-    
-    public String getURL (
-        StackFrame sf,
-        String stratumn
-    ) {
-        try {
-            return getURL (
-                convertSlash (sf.location ().sourcePath (stratumn)), 
-                true
-            );
-        } catch (AbsentInformationException e) {
-            return getURL (
-                convertClassNameToRelativePath (
-                    sf.location ().declaringType ().name ()
-                ),
-                true
-            );
-        }
     }
     
     /**

@@ -592,4 +592,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             fileTime = getPrimaryFile().lastModified().getTime();
         }
     }
+    /** Access point for inheritors to verify document before close.
+     *
+     * @return true if document is valid, false otherwise
+     */
+    protected boolean verifyDocumentBeforeClose() {
+        return true;
+    }
 }

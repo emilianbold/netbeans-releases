@@ -56,6 +56,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
 
@@ -163,7 +164,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         String className = debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
-        final List<ReferenceType> classes = vm.classesByName(className);
+        final List<ReferenceType> classes = VirtualMachineWrapper.classesByName0(vm, className);
         if (!classes.isEmpty()) {
             MethodChooser chooser = new MethodChooser(debugger, url, classes.get(0), methodLine, methodOffset);
             boolean success = chooser.run();

@@ -126,6 +126,8 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         Preferences prefs;
         prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
         prefs.put(EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, methodName);
+        prefs = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
+        prefs.put(EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, methodName);
         prefs = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
         prefs.put(EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, methodName);
     }

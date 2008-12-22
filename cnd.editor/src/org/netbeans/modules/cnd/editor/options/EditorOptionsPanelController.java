@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.text.CloneableEditorSupport;
@@ -130,9 +131,9 @@ public class EditorOptionsPanelController extends OptionsPanelController
             previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditorOptionsPanelController.class, "AD_Preview")); //NOI18N
             previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
             if (language == CodeStyle.Language.C) {
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-c")); //NOI18N
-            } else {
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-c++")); //NOI18N
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
+            } else { // header or C++
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
             }
             previewPane.setEditable(false);
         }

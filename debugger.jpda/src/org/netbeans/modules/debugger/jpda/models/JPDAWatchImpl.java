@@ -57,6 +57,17 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -194,46 +205,48 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         // try to set as a field
         ReferenceType clazz = null;
         try {
-            clazz = frame.getStackFrame().location().declaringType();
-        } catch (InvalidStackFrameException ex) {
-            throw new InvalidExpressionException (ex);
-        }
-        Field field = clazz.fieldByName(getExpression());
-        if (field == null) {
-            throw new InvalidExpressionException (
-                NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
-        }
-        if (field.isStatic()) {
-            if (clazz instanceof ClassType) {
-                try {
-                    ((ClassType) clazz).setValue(field, value);
-                } catch (InvalidTypeException ex) {
-                    throw new InvalidExpressionException (ex);
-                } catch (ClassNotLoadedException ex) {
-                    throw new InvalidExpressionException (ex);
-                } catch (IllegalArgumentException iaex) {
-                    throw new InvalidExpressionException (iaex);
-                }
-            } else {
+            clazz = LocationWrapper.declaringType(StackFrameWrapper.location(frame.getStackFrame()));
+            Field field = ReferenceTypeWrapper.fieldByName(clazz, getExpression());
+            if (field == null) {
                 throw new InvalidExpressionException (
                     NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
             }
-        } else {
-            try {
-                ObjectReference thisObject = frame.getStackFrame ().thisObject ();
-                if (thisObject == null) {
-                    throw new InvalidExpressionException ("no instance context.");
+            if (TypeComponentWrapper.isStatic(field)) {
+                if (clazz instanceof ClassType) {
+                    try {
+                        ClassTypeWrapper.setValue((ClassType) clazz, field, value);
+                    } catch (IllegalArgumentException iaex) {
+                        throw new InvalidExpressionException (iaex);
+                    }
+                } else {
+                    throw new InvalidExpressionException (
+                        NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
                 }
-                thisObject.setValue (field, value);
-            } catch (InvalidTypeException ex) {
-                throw new InvalidExpressionException (ex);
-            } catch (ClassNotLoadedException ex) {
-                throw new InvalidExpressionException (ex);
-            } catch (IllegalArgumentException iaex) {
-                throw new InvalidExpressionException (iaex);
-            } catch (InvalidStackFrameException ex) {
-                throw new InvalidExpressionException (ex);
+            } else {
+                try {
+                    ObjectReference thisObject = StackFrameWrapper.thisObject(frame.getStackFrame ());
+                    if (thisObject == null) {
+                        throw new InvalidExpressionException ("no instance context.");
+                    }
+                    ObjectReferenceWrapper.setValue(thisObject, field, value);
+                } catch (IllegalArgumentException iaex) {
+                    throw new InvalidExpressionException (iaex);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    throw new InvalidExpressionException (ocex);
+                }
             }
+        } catch (InternalExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignore
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
         }
     }
     

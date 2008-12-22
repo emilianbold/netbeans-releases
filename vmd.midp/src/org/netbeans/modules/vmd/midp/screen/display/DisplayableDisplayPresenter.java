@@ -80,6 +80,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         panel = new DisplayableDisplayPanel(this);
         panel.getBattery().setIcon(new ImageIcon(BATTERY));
         panel.getSignal().setIcon(new ImageIcon(SIGNAL));
+
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
     }
     
     public DisplayableDisplayPresenter(Image image) {

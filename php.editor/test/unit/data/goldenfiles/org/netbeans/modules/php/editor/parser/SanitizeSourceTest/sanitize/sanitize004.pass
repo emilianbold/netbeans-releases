@@ -1,4 +1,6 @@
 <Program start='0' end='164'>
+    <Comments>
+    </Comments>
     <Statements>
         <ClassDeclaration start='9' end='160' modifier='NONE'>
             <ClassName>

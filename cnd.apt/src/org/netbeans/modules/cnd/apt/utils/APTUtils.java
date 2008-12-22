@@ -129,7 +129,21 @@ public class APTUtils {
                 return new APTConstTextToken();
         }
     }
-    
+
+    public static APTToken getLastToken(TokenStream ts) {
+        APTToken last = null;
+        try {
+            for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token);) {
+                assert (token != null) : "list of tokens must not have 'null' elements"; // NOI18N
+                last = token;
+                token = (APTToken) ts.nextToken();
+            }
+        } catch (TokenStreamException ex) {
+            // ignore
+        }
+        return last;
+    }
+
     public static String debugString(TokenStream ts) {
         // use simple stringize
         return stringize(ts, false);

@@ -61,4 +61,6 @@ public class MySQLMetadata extends JDBCMetadata {
     protected MySQLCatalog createJDBCCatalog(String catalogName, boolean _default, String defaultSchemaName) {
         return new MySQLCatalog(this, catalogName, _default, defaultSchemaName);
     }
+
+
 }

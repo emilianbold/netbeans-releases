@@ -49,7 +49,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author  rob
+ * @author  Rob Englander
  */
 public class ErrorInfoPanel extends javax.swing.JPanel {
     
