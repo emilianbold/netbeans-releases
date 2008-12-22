@@ -353,7 +353,9 @@ public class MavenSourcesImpl implements Sources {
         }
         Map<File, OtherGroup> map = test ? otherTestGroups : otherMainGroups;
         OtherGroup grp = map.get(rootFile);
-        if (root == null && grp != null) {
+        boolean isResourceNow = resourceRoots.contains(rootFile);
+        boolean wasResourceBefore = grp != null && grp.getResource() != null;
+        if ((root == null && grp != null) ||  (root != null && grp != null && wasResourceBefore && !isResourceNow)) {
             map.remove(rootFile);
             return true;
         }
@@ -361,8 +363,6 @@ public class MavenSourcesImpl implements Sources {
             return false;
         }
         boolean changed = false;
-        boolean isResourceNow = resourceRoots.contains(rootFile);
-        boolean wasResourceBefore = grp != null && grp.getResource() != null;
         if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root) ||
                 isResourceNow != wasResourceBefore) {
             grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName(), test); //NOI18N
@@ -398,7 +398,7 @@ public class MavenSourcesImpl implements Sources {
 //                ImageUtilities.addToolTipToImage(badge, "Resource root as defined in POM.");
                 icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(false), badge, 8, 8));
                 openedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(true), badge, 8, 8));
-                name = FileUtilities.getRelativePath(FileUtil.toFile(project.getProjectDirectory()), FileUtilities.convertStringToFile(resource.getDirectory()));
+                name = FileUtilities.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), FileUtilities.convertStringToFile(resource.getDirectory()));
                 displayName = name;
             } else {
                 icon = ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(false));
