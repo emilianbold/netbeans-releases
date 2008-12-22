@@ -318,7 +318,8 @@ public class Call {
                         (id == RubyTokenId.CLASS_VAR) || (id == RubyTokenId.IDENTIFIER)) ||
                         id.primaryCategory().equals("keyword") || (id == RubyTokenId.DOT) ||
                         (id == RubyTokenId.COLON3) || (id == RubyTokenId.CONSTANT) ||
-                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF)) {
+                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF) ||
+                        (isLiteral(id))) {
                     
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();
@@ -417,5 +418,19 @@ public class Call {
         } else {
             return null;
         }
+    }
+
+    private static boolean isLiteral(final TokenId id) {
+        return id == RubyTokenId.RBRACKET ||
+                id == RubyTokenId.RBRACE ||
+                id == RubyTokenId.STRING_END ||
+                id == RubyTokenId.REGEXP_END ||
+                id == RubyTokenId.INT_LITERAL ||
+                id == RubyTokenId.FLOAT_LITERAL ||
+                id == RubyTokenId.TYPE_SYMBOL ||
+                id == RubyTokenId.RANGE ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD;
     }
 }
