@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
@@ -92,13 +93,6 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     
     @Override
     public String addAction() {
-        String seed = null;
-        if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        }
-        if (seed == null) {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
         FileFilter[] filters;
         if (Utilities.isWindows()){
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
@@ -117,9 +111,8 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
                 getString("LIBRARY_CHOOSER_TITLE_TXT"),
                 getString("LIBRARY_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
-                false,
                 filters,
-                seed,
+                "",
                 false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {

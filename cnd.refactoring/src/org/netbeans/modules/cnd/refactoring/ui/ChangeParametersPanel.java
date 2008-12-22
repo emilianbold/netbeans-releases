@@ -75,7 +75,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private ChangeListener parent;
     
     private static Action editAction = null;
-    private CharSequence returnType;
+    private String returnType;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -120,7 +120,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @SuppressWarnings("unchecked")
         CsmFunction<CsmFunction> fun = ((CsmFunction<CsmFunction>) CsmRefactoringUtils.getReferencedElement(refactoredObj)).getDeclaration();
         functionObj = fun;
-        returnType = functionObj.getReturnType().getCanonicalText();
+        returnType = functionObj.getReturnType().getCanonicalText().toString();
         if (CsmKindUtilities.isMethod(functionObj)) {
             modifiersCombo.setEnabled(true);
             setModifier(((CsmMethod)functionObj).getVisibility());
@@ -397,9 +397,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private ListSelectionListener getListener1() {
         return new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting()) {
                     return;
-                
+                }
+
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
                 if (!lsm.isSelectionEmpty()) {
@@ -407,16 +408,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     int minIndex = lsm.getMinSelectionIndex();
                     int maxIndex = lsm.getMaxSelectionIndex();
                     setButtons(minIndex, maxIndex);
-                    
+
                     boolean enableRemoveBtn = true;
                     for (int i = minIndex; i <= maxIndex; i++) {
                         enableRemoveBtn = model.isRemovable(i);
-                        if (!enableRemoveBtn)
+                        if (!enableRemoveBtn) {
                             break;
+                        }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
-                }
-                else {
+                } else {
                     moveDownButton.setEnabled(false);
                     moveUpButton.setEnabled(false);
                     removeButton.setEnabled(false);
@@ -432,14 +433,14 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 int[] selectedRows = paramTable.getSelectedRows();
                 if (selectedRows.length == 0) {
                     removeButton.setEnabled(false);
-                }
-                else {
+                } else {
                     boolean enableRemoveBtn = true;
                     for (int i = 0; i < selectedRows.length; i++) {
                         if (selectedRows[i] < model.getRowCount()) {
                             enableRemoveBtn = model.isCellEditable(selectedRows[i], 0);
-                            if (!enableRemoveBtn)
+                            if (!enableRemoveBtn) {
                                 break;
+                            }
                         }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
@@ -447,10 +448,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     int max = selectedRows[selectedRows.length - 1];
                     setButtons(min, max);
                 }
-                
+
                 // update preview
                 previewChange.setText(genDeclarationString());
-                
+
                 parent.stateChanged(null);
             }
         };
@@ -473,7 +474,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             int originalIndex = 0;
             for (CsmParameter par: currentMethod.getParameters()) {
                 CsmType desc = par.getType();
-                CharSequence typeRepresentation;
+                String typeRepresentation;
                 if (par.isVarArgs() && originalIndex == pars.size()-1) {
                     typeRepresentation = "..."; // NOI18N
                 } else {
@@ -484,7 +485,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 //                Boolean removable = !scan.hasRefernces();
                 Boolean removable = false;
                 if (model.getRowCount()<=originalIndex) {
-                    Object[] parRep = new Object[] { par.getName(), typeRepresentation, "", Integer.valueOf(originalIndex), removable };
+                    Object[] parRep = new Object[] { par.getName().toString(), typeRepresentation, "", Integer.valueOf(originalIndex), removable };
                     model.addRow(parRep);
                 } else {
                     removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
@@ -497,8 +498,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
     }
     
-    private static CharSequence getTypeStringRepresentation(CsmType desc) {
-        return desc.getCanonicalText();
+    private static String getTypeStringRepresentation(CsmType desc) {
+        return desc.getCanonicalText().toString();
     }
 
     private boolean acceptEditedValue() {
@@ -588,9 +589,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buf.append('(');
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
-        Vector<List<String>> data = model.getDataVector();
+        Vector<List<Object>> data = model.getDataVector();
         @SuppressWarnings("unchecked")
-        List<CharSequence>[] parameters = data.toArray(new List[0]);
+        List<Object>[] parameters = data.toArray(new List[0]);
         if (parameters.length > 0) {
             int i;
             for (i = 0; i < parameters.length - 1; i++) {
@@ -621,10 +622,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private static void autoEdit(JTable tab) {
         if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null) &&
-            tab.getEditorComponent() != null)
-        {
+                tab.getEditorComponent() != null) {
             JTextField field = (JTextField) tab.getEditorComponent();
-            int len = field.getText().length();
             field.setCaretPosition(field.getText().length());
             field.requestFocusInWindow();
             field.selectAll();

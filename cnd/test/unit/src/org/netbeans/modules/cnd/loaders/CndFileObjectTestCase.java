@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
 import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -72,7 +73,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
-        assertEquals("Not text/x-c mime type", "text/x-c", fo.getMIMEType());
+        assertEquals("Not text/x-c mime type", MIMENames.C_MIME_TYPE, fo.getMIMEType());
     }
     
     public void testCCFileObject() throws Exception {
@@ -81,7 +82,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
-        assertEquals("Not text/x-c++ mime type", "text/x-c++", fo.getMIMEType());
+        assertEquals("Not text/x-c++ mime type", MIMENames.CPLUSPLUS_MIME_TYPE, fo.getMIMEType());
     }
 
     public void testHFileObject() throws Exception {
@@ -90,7 +91,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
-        assertEquals("Not text/x-c++ mime type", "text/x-c++", fo.getMIMEType());
+        assertEquals("Not text/x-c++ mime type", MIMENames.HEADER_MIME_TYPE, fo.getMIMEType());
     }
     
 }

@@ -399,6 +399,18 @@ public final class RubyIndex {
         return classes;
     }
     
+    Set<? extends IndexedMethod> getMethods(final String name, final RubyType clz, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : clz.getRealTypes()) {
+            methods.addAll(getMethods(name, realType, kind, ALL_SCOPE));
+        }
+        return methods;
+    }
+
+    Set<IndexedMethod> getMethods(String name, NameKind kind) {
+        return getMethods(name, (String) null, kind);
+    }
+
     /**
      * Return a set of methods that match the given name prefix, and are in the given
      * class and module. If no class is specified, match methods across all classes.
@@ -406,7 +418,6 @@ public final class RubyIndex {
      * you must call this method on each superclass as well as the mixin modules.
      */
     @SuppressWarnings("unchecked") // unchecked - lucene has source 1.4
-
     Set<IndexedMethod> getMethods(final String name, final String clz, NameKind kind) {
         return getMethods(name, clz, kind, ALL_SCOPE);
     }
@@ -634,7 +645,7 @@ public final class RubyIndex {
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
         IndexedConstant m = IndexedConstant.create(
-                this, name, classFQN, fileUrl, require, flags, context, Collections.singleton(type));
+                this, name, classFQN, fileUrl, require, flags, context, RubyType.create(type));
 
         return m;
     }
@@ -876,6 +887,14 @@ public final class RubyIndex {
         }
         
         return null;
+    }
+
+    Set<IndexedMethod> getInheritedMethods(RubyType receiverType, String prefix, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : receiverType.getRealTypes()) {
+            methods.addAll(getInheritedMethods(realType, prefix, kind));
+        }
+        return methods;
     }
 
     /**
@@ -1395,6 +1414,14 @@ public final class RubyIndex {
     public Set<? extends IndexedConstant> getConstants(final String constantFqn) {
         String[] parts = RubyUtils.parseConstantName(constantFqn);
         return getConstants(parts[0], parts[1]);
+    }
+
+    public Set<? extends IndexedConstant> getConstants(RubyType classFqn, String prefix) {
+        Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
+        for (String realType : classFqn.getRealTypes()) {
+            constants.addAll(getConstants(realType, prefix));
+        }
+        return constants;
     }
 
     public Set<? extends IndexedConstant> getConstants(String classFqn, String prefix) {

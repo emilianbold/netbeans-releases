@@ -49,6 +49,11 @@ import com.sun.jdi.VoidValue;
 import org.netbeans.api.debugger.jpda.ReturnVariable;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,8 +81,16 @@ public class ReturnVariableImpl extends AbstractObjectVariable implements Return
     private static String getStringValue(Value v) {
         if (v == null) return "null";
         if (v instanceof VoidValue) return "void";
-        if (v instanceof PrimitiveValue) return v.toString ();
-        else return "#" + ((ObjectReference) v).uniqueID ();
+        if (v instanceof PrimitiveValue) return v.toString();
+        else try {
+            return "#" + ObjectReferenceWrapper.uniqueID((ObjectReference) v);
+        } catch (InternalExceptionWrapper ex) {
+            return "#"+ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "#0";
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return "#0";
+        }
     }
     
     public String methodName() {

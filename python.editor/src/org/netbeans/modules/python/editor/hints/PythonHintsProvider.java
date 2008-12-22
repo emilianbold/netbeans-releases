@@ -154,8 +154,13 @@ public class PythonHintsProvider implements HintsProvider {
             return;
         }
 
-        applySelectionRules(manager, context, hints, result);
-    }
+        try {
+            context.doc.readLock();
+            applySelectionRules(manager, context, hints, result);
+        } finally {
+            context.doc.readUnlock();
+        }
+}
 
     private void applySelectionRules(HintsManager manager, RuleContext context, List<PythonSelectionRule> rules, List<Hint> result) {
 
@@ -170,7 +175,12 @@ public class PythonHintsProvider implements HintsProvider {
                 continue;
             }
 
-            rule.run(pythonContext, result);
+            try {
+                context.doc.readLock();
+                rule.run(pythonContext, result);
+            } finally {
+                context.doc.readUnlock();
+            }
         }
     }
 
@@ -208,9 +218,12 @@ public class PythonHintsProvider implements HintsProvider {
 
         RuleApplicator finder = new RuleApplicator(manager, context, hints, result);
         try {
+            context.doc.readLock();
             finder.visit(root);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            context.doc.readUnlock();
         }
     }
 
@@ -255,19 +268,24 @@ public class PythonHintsProvider implements HintsProvider {
             return;
         }
 
-        CompilationInfo info = context.compilationInfo;
-        int astOffset = PythonAstUtils.getAstOffset(info, caretOffset);
+        try {
+            context.doc.readLock();
 
-        AstPath path = AstPath.get(root, astOffset);
-        Iterator<PythonTree> it = path.leafToRoot();
-        while (it.hasNext()) {
-            if (isCancelled()) {
-                return;
+            CompilationInfo info = context.compilationInfo;
+            int astOffset = PythonAstUtils.getAstOffset(info, caretOffset);
+            AstPath path = AstPath.get(root, astOffset);
+            Iterator<PythonTree> it = path.leafToRoot();
+            while (it.hasNext()) {
+                if (isCancelled()) {
+                    return;
+                }
+
+                PythonTree node = it.next();
+
+                applySuggestions(manager, context, node.getClass(), node, path, suggestions, result);
             }
-
-            PythonTree node = it.next();
-
-            applySuggestions(manager, context, node.getClass(), node, path, suggestions, result);
+        } finally {
+            context.doc.readUnlock();
         }
 
     //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, caretOffset, result);
@@ -282,10 +300,15 @@ public class PythonHintsProvider implements HintsProvider {
             pyCtx.node = node;
             pyCtx.path = path;
 
-            for (PythonAstRule rule : rules) {
-                if (manager.isEnabled(rule)) {
-                    rule.run(pyCtx, result);
+            try {
+                context.doc.readLock();
+                for (PythonAstRule rule : rules) {
+                    if (manager.isEnabled(rule)) {
+                        rule.run(pyCtx, result);
+                    }
                 }
+            } finally {
+                context.doc.readUnlock();
             }
         }
     }

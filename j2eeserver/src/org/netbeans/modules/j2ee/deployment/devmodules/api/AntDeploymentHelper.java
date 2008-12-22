@@ -116,6 +116,7 @@ public final class AntDeploymentHelper {
         FileLock lock = fo.lock();
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
+            InputStream stream = null;
             try {
                 if (provider == null) {
                     InputStream is = ServerInstance.class.getResourceAsStream("resources/default-ant-deploy.xml"); // NOI18N
@@ -130,35 +131,55 @@ public final class AntDeploymentHelper {
 
                 if(file.exists() == true)
                 {
-                    InputStream stream = fo.getInputStream();
-                    ByteArrayInputStream stringStream = new ByteArrayInputStream(os.toString().getBytes());
-                    if(isEqual(stream, stringStream) == false)
+                    stream = fo.getInputStream();
+//                    ByteArrayInputStream stringStream = new ByteArrayInputStream(os.toString().getBytes());
+                    ByteArrayInputStream stringStream = new ByteArrayInputStream(os.toByteArray());
+                    try
                     {
-                        stream.close();
-                        stringStream.reset();
-                        OutputStream fileStream = fo.getOutputStream(lock);
-                        try
+                        if(isEqual(stream, stringStream) == false)
                         {
-                            FileUtil.copy(stringStream, fileStream);
+                            stream.close();
+                            stringStream.reset();
+                            OutputStream fileStream = fo.getOutputStream(lock);
+                            try
+                            {
+                                FileUtil.copy(stringStream, fileStream);
+                            }
+                            finally
+                            {
+                                fileStream.close();
+                            }
                         }
-                        finally
+                        else
                         {
-                            fileStream.close();
+                            stream.close();
                         }
                     }
-                    else
+                    finally
                     {
                         stream.close();
+                        stringStream.close();
                     }
 
                 }
                 else
                 {
 
-                    OutputStream fileOS = fo.getOutputStream(lock);
-                    OutputStreamWriter writer = new OutputStreamWriter(fileOS);
-                    String outString = os.toString();
-                    writer.write(outString, 0, outString.length());
+                    OutputStreamWriter writer = null;
+                    try
+                    {
+                        OutputStream fileOS = fo.getOutputStream(lock);
+                        writer = new OutputStreamWriter(fileOS);
+                        String outString = os.toString();
+                        writer.write(outString, 0, outString.length());
+                    }
+                    finally
+                    {
+                        if(writer != null)
+                        {
+                            writer.close();
+                        }
+                    }
                 }
 
             } finally {

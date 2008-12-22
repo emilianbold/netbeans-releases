@@ -71,7 +71,7 @@ public class AddIndexDialog {
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     
-    public AddIndexDialog(Collection columns, final Specification spec, final DatabaseNodeInfo info) {
+    public AddIndexDialog(Collection columns, final Specification spec, final String tablename, final String schemaName) {
         try {
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
@@ -164,7 +164,7 @@ public class AddIndexDialog {
             }
 
             con.weightx = 1.0;
-            con.weighty = 1.0;
+            con.weighty = 1.0; 
             con.gridwidth = 2;
             con.fill = GridBagConstraints.BOTH;
             con.insets = new java.awt.Insets (0, 0, 0, 0);
@@ -176,8 +176,6 @@ public class AddIndexDialog {
             pane.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddIndexDialogA11yName"));  // NOI18N
             pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexDialogA11yDesc"));  // NOI18N
             
-            final String tablename = (String)info.get(DatabaseNode.TABLE);
-
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
@@ -185,9 +183,7 @@ public class AddIndexDialog {
                             result = false;
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                                 public Boolean call() throws Exception {
-                                    AddIndexDDL ddl = new AddIndexDDL(spec,
-                                            ((String)info.get(DatabaseNodeInfo.SCHEMA)),
-                                              tablename);
+                                    AddIndexDDL ddl = new AddIndexDDL(spec, schemaName, tablename);
 
                                     return ddl.execute(getIndexName(), cbx_uq.isSelected(), getSelectedColumns());
                                 }

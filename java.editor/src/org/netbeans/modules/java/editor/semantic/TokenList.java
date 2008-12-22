@@ -36,6 +36,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -108,34 +109,33 @@ public class TokenList {
                             return ;
                     }
                 } else {
+                    Iterator<? extends TokenSequence> embeddedSeqs = null;
                     if (ts == null) {
                         List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(embeddedTokenSequences(TokenHierarchy.get(doc), offset));
-
                         Collections.reverse(seqs);
-
-                        for (TokenSequence tseq : seqs) {
+                        embeddedSeqs = seqs.iterator();
+                        while (embeddedSeqs.hasNext()) {
+                            TokenSequence tseq = embeddedSeqs.next();
                             if (tseq.language() == JavaTokenId.language()) {
                                 ts = tseq;
+                                break;
                             }
                         }
                     }
 
-                    if (ts == null) {
-                        return;
-                    }
-
-                    while (ts.offset() < offset) {
+                    while (ts != null && ts.offset() < offset) {
                         if (!ts.moveNext()) {
-                            TokenSequence oldTs = ts;
                             ts = null;
-                            List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(embeddedTokenSequences(TokenHierarchy.get(doc), offset));
-
-                            Collections.reverse(seqs);
-
-                            for (TokenSequence tseq : seqs) {
+                            if (embeddedSeqs == null) {
+                                List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(embeddedTokenSequences(TokenHierarchy.get(doc), offset));
+                                Collections.reverse(seqs);
+                                embeddedSeqs = seqs.iterator();
+                            }
+                            while (embeddedSeqs.hasNext()) {
+                                TokenSequence tseq = embeddedSeqs.next();
                                 if (tseq.language() == JavaTokenId.language()) {
-                                    if (tseq != ts)
-                                        ts = tseq;
+                                    ts = tseq;
+                                    break;
                                 }
                             }
                         }

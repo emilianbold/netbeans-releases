@@ -137,6 +137,9 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         public List<LayoutEdge> succs = new ArrayList<LayoutEdge>();
         public int pos = -1; // Position within layer
         public float crossingNumber;
+        private Rectangle sceneBounds;
+        private Widget widget;
+        private Point preferredLocation;
     }
 
     private class LayoutEdge {
@@ -228,10 +231,13 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
                         r = w.getPreferredBounds();
                     }
                     Dimension size = r.getSize();
-                    //node.bounds=r;
+                    node.bounds=r;
+                    node.sceneBounds= w.convertLocalToScene(r);
+                    node.preferredLocation=w.getPreferredLocation();
                     node.width = (int) size.getWidth();
                     node.height = (int) size.getHeight();
                     node.vertex = v;
+                    node.widget = w;
                     nodes.add(node);
                     vertexToLayoutNode.put(v, node);
                 }
@@ -242,34 +248,36 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
             for (IPresentationElement l : links) {
                 LayoutEdge edge = new LayoutEdge();
                 boolean valid=vertexToLayoutNode.containsKey(graph.getEdgeSource(l)) && vertexToLayoutNode.containsKey(graph.getEdgeTarget(l));
-                if(valid)
+                if(valid)//from-to visible/existent element
                 {
+                    Widget wSource=null;
+                    Widget wTarget=null;
                     if (invert) {
                         edge.to = vertexToLayoutNode.get(graph.getEdgeSource(l));
                         edge.from = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                        wSource=edge.to.widget;
+                        wTarget=edge.from.widget;
                     } else {
                         edge.from = vertexToLayoutNode.get(graph.getEdgeSource(l));
                         edge.to = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                        wSource=edge.from.widget;
+                        wTarget=edge.to.widget;
                     }
 
-                    Widget w = graph.getScene().findWidget(graph.getEdgeSource(l));
+                    //Widget w = graph.getScene().findWidget(graph.getEdgeSource(l));
 
-                    assert w != null;
-                    Rectangle r = w.getBounds();
+                    //assert w != null;
+                    Rectangle r = wSource.getBounds();
                     if (r == null) {
-                        r = w.getPreferredBounds();
+                        r = wSource.getPreferredBounds();
                     }
-                    Dimension size = r.getSize();
-                    edge.relativeFrom = size.width / 2;
+                    edge.relativeFrom = r.x + r.width/2;
 
-                    w = graph.getScene().findWidget(graph.getEdgeTarget(l));
-                    assert w != null;
-                    r = w.getBounds();
+                    r = wTarget.getBounds();
                     if (r == null) {
-                        r = w.getPreferredBounds();
+                        r = wTarget.getPreferredBounds();
                     }
-                    size = r.getSize();
-                    edge.relativeTo = size.width / 2;
+                    edge.relativeTo = r.x+r.width / 2;
                     edge.link = l;
 
                     edge.from.succs.add(edge);
@@ -366,7 +374,7 @@ public class HierarchicalLayout extends GraphLayout<IPresentationElement, IPrese
         protected void run() {
             HashSet<LayoutNode> set = new HashSet<LayoutNode>();
             for (LayoutNode n : nodes) {
-                if (n.preds.size() == 0) {
+                if (n.preds.size() == 0) {            //handle nodes on top (no connections into)l
                     set.add(n);
                     n.layer = 0;
                 }

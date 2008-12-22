@@ -1136,12 +1136,13 @@ public class J2MEProjectGenerator {
         public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings(value = "unused")
         File projectLocationFile, ArrayList<String> configurations) throws IOException {
             this.project = project;
+            assert project instanceof J2MEProject;
             this.helper = helper;
             this.projectLocation = projectLocation;
             this.projectLocationFile = projectLocationFile;
             this.configurations = configurations;
             //hotfix for issue 147403 - get this out of the event thread
-            RequestProcessor.getDefault().post(this);
+            ((J2MEProject) project).getRequestProcessor().post(this);
         }
 
         public void run() {

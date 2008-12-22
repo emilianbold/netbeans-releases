@@ -60,5 +60,5 @@ public abstract class ColumnImplementation extends ValueImplementation {
 
     public abstract Tuple getParent();
 
-    public abstract int getOrdinalPosition();
+    public abstract int getPosition();
 }

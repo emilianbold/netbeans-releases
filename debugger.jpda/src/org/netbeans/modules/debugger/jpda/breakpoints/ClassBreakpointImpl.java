@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -50,6 +52,13 @@ import com.sun.jdi.request.EventRequest;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ClassPrepareEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 
 /**
 * Implementation of breakpoint on method.
@@ -80,32 +89,34 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
         );
     }
     
-    protected EventRequest createEventRequest(EventRequest oldRequest) {
+    protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof ClassPrepareRequest) {
-            ClassPrepareRequest cpr = getEventRequestManager ().createClassPrepareRequest ();
+            ClassPrepareRequest cpr = EventRequestManagerWrapper.
+                    createClassPrepareRequest (getEventRequestManager ());
             String[] classFilters = breakpoint.getClassFilters ();
             int i, k = classFilters.length;
             for (i = 0; i < k; i++) {
-                cpr.addClassFilter (classFilters [i]);
+                ClassPrepareRequestWrapper.addClassFilter (cpr, classFilters [i]);
             }
             String[] classExclusionFilters = breakpoint.getClassExclusionFilters ();
             k = classExclusionFilters.length;
             for (i = 0; i < k; i++) {
-                cpr.addClassExclusionFilter (classExclusionFilters [i]);
+                ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, classExclusionFilters [i]);
             }
             return cpr;
         }
         if (oldRequest instanceof ClassUnloadRequest) {
-            ClassUnloadRequest cur = getEventRequestManager().createClassUnloadRequest();
+            ClassUnloadRequest cur = EventRequestManagerWrapper.
+                    createClassUnloadRequest(getEventRequestManager());
             String[] classFilters = breakpoint.getClassFilters ();
             int i, k = classFilters.length;
             for (i = 0; i < k; i++) {
-                cur.addClassFilter (classFilters [i]);
+                ClassUnloadRequestWrapper.addClassFilter (cur, classFilters [i]);
             }
             String[] classExclusionFilters = breakpoint.getClassExclusionFilters ();
             k = classExclusionFilters.length;
             for (i = 0; i < k; i++) {
-                cur.addClassExclusionFilter (classExclusionFilters [i]);
+                ClassUnloadRequestWrapper.addClassExclusionFilter (cur, classExclusionFilters [i]);
             }
             return cur;
         }
@@ -113,25 +124,33 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     public boolean exec (Event event) {
-        if (event instanceof ClassPrepareEvent)
+        if (event instanceof ClassPrepareEvent) {
             try {
-                return perform (
-                    event,
-                    ((ClassPrepareEvent) event).thread (),
-                    ((ClassPrepareEvent) event).referenceType (),
-                    ((ClassPrepareEvent) event).referenceType ().classObject ()
-                );
-            } catch (UnsupportedOperationException ex) {
-                // PATCH for KVM. They does not support 
-                // ReferenceType.classObject ()
-                return perform (
-                    event,
-                    ((ClassPrepareEvent) event).thread (),
-                    ((ClassPrepareEvent) event).referenceType (),
-                    null
-                );
+                ThreadReference thread = ClassPrepareEventWrapper.thread((ClassPrepareEvent) event);
+                ReferenceType type = ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event);
+                try {
+                    return perform (
+                        event,
+                        thread,
+                        type,
+                        ReferenceTypeWrapper.classObject(type)
+                    );
+                } catch (UnsupportedOperationException ex) {
+                    // PATCH for KVM. They does not support
+                    // ReferenceType.classObject ()
+                    return perform (
+                        event,
+                        thread,
+                        type,
+                        null
+                    );
+                }
+            } catch (InternalExceptionWrapper e) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return false;
             }
-        else
+        } else
             return perform (
                 event,
                 null,

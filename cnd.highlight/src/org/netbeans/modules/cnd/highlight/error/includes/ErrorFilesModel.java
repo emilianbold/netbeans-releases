@@ -49,7 +49,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 
 /**
@@ -58,18 +58,18 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
  */
 public class ErrorFilesModel implements ListModel{
     private List<String> names = new ArrayList<String>();
-    private List<CsmInclude> includeList = new ArrayList<CsmInclude>();
-    public ErrorFilesModel(List<CsmInclude> includes){
-        Map<String, CsmInclude> tree = new TreeMap<String,CsmInclude>();
-        for (Iterator<CsmInclude> it = includes.iterator(); it.hasNext(); ){
-            CsmInclude incl = it.next();
-            String name = incl.getContainingFile().getAbsolutePath().toString();
-            tree.put(name,incl);
+    private List<CsmOffsetable> failedPreproDirectiveList = new ArrayList<CsmOffsetable>();
+    public ErrorFilesModel(List<CsmOffsetable> errors){
+        Map<String, CsmOffsetable> tree = new TreeMap<String,CsmOffsetable>();
+        for (Iterator<CsmOffsetable> it = errors.iterator(); it.hasNext(); ){
+            CsmOffsetable error = it.next();
+            String name = error.getContainingFile().getAbsolutePath().toString();
+            tree.put(name, error);
         }
-        for (Iterator<Entry<String, CsmInclude>> it = tree.entrySet().iterator(); it.hasNext(); ){
-            Entry<String, CsmInclude> entry = it.next();
+        for (Iterator<Entry<String, CsmOffsetable>> it = tree.entrySet().iterator(); it.hasNext(); ){
+            Entry<String, CsmOffsetable> entry = it.next();
             names.add(entry.getKey());
-            includeList.add(entry.getValue());
+            failedPreproDirectiveList.add(entry.getValue());
         }
     }
     public int getSize() {
@@ -80,8 +80,8 @@ public class ErrorFilesModel implements ListModel{
         return names.get(index);
     }
 
-    public CsmInclude getElementInclude(int index){
-        return includeList.get(index);
+    public CsmOffsetable getFailedDirective(int index){
+        return failedPreproDirectiveList.get(index);
     }
 
     public void addListDataListener(ListDataListener l) {

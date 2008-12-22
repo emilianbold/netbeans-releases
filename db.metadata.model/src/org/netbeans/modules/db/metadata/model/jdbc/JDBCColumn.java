@@ -46,18 +46,18 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, David Van Couvering
  */
 public class JDBCColumn extends ColumnImplementation {
 
     private final Tuple parent;
     private final JDBCValue value;
-    private final int ordinalPosition;
+    private final int position;
 
-    public JDBCColumn(Tuple parent, int ordinalPosition, JDBCValue value) {
+    public JDBCColumn(Tuple parent, int position, JDBCValue value) {
         this.parent = parent;
         this.value = value;
-        this.ordinalPosition = ordinalPosition;
+        this.position = position;
     }
 
     public final Tuple getParent() {
@@ -70,7 +70,7 @@ public class JDBCColumn extends ColumnImplementation {
 
     @Override
     public String toString() {
-        return "JDBCColumn[" + value + ", ordinal_position=" + ordinalPosition + "]"; // NOI18N
+        return "JDBCColumn[" + value + ", ordinal_position=" + position + "]"; // NOI18N
     }
 
     @Override
@@ -104,7 +104,7 @@ public class JDBCColumn extends ColumnImplementation {
     }
 
     @Override
-    public int getOrdinalPosition() {
-        return ordinalPosition;
+    public int getPosition() {
+        return position;
     }
 }

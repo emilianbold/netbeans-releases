@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.List;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -52,12 +53,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableContainerImpl {
-    private String className;
+    private String classNormName;
     //new contructors
     MethodScopeImpl(ScopeImpl inScope, String returnType, MethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, returnType);
         assert inScope instanceof TypeScope;
-        className = inScope.getName();
+        classNormName = inScope.getNormalizedName();
     }
 
     MethodScopeImpl(ScopeImpl inScope, IndexedFunction element, PhpKind kind) {
@@ -65,9 +66,9 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         assert inScope instanceof TypeScope;
         String in = element.getIn();
         if (in != null) {
-            className = in;
+            classNormName = in;
         } else {
-            className = inScope.getName();
+            classNormName = inScope.getNormalizedName();
         }
     }
 
@@ -110,7 +111,43 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public String getNormalizedName() {
-        return className+super.getNormalizedName();
+        return classNormName+super.getNormalizedName();
+    }
+
+    public String getClassSkeleton() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
+        sb.append("function").append(" ").append(getName());//NOI18N
+        sb.append("(");//NOI18N
+        List<? extends String> parameterNames = getParameterNames();
+        for (int i = 0; i < parameterNames.size(); i++) {
+            String param = parameterNames.get(i);
+            if (i > 0) {
+                sb.append(",");//NOI18N
+            }
+            sb.append(param);
+        }
+        sb.append(")");
+        sb.append("{\n}\n");//NOI18N
+        return sb.toString();
+    }
+
+    public String getInterfaceSkeleton() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
+        sb.append("function").append(" ").append(getName());//NOI18N
+        sb.append("(");//NOI18N
+        List<? extends String> parameterNames = getParameterNames();
+        for (int i = 0; i < parameterNames.size(); i++) {
+            String param = parameterNames.get(i);
+            if (i > 0) {
+                sb.append(",");//NOI18N
+            }
+            sb.append(param);
+        }
+        sb.append(")");
+        sb.append(";\n");//NOI18N
+        return sb.toString();
     }
 
 }

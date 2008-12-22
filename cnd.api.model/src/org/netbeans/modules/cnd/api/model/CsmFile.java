@@ -62,6 +62,9 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIde
 
     /** Sorted (by start offset) list of #include directives in the file */
     Collection<CsmInclude> getIncludes();
+
+    /** Sorted (by start offset) list of #error directives in the file */
+    Collection<CsmErrorDirective> getErrors();
     
     /** Sorted (by start offset) list of declarations in the file */
     Collection<CsmOffsetableDeclaration> getDeclarations();

@@ -43,7 +43,6 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -88,7 +87,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     public Hk2StartServer(DeploymentManager jdm) {
         if (!(jdm instanceof Hk2DeploymentManager)) {
-            throw new IllegalArgumentException("Only GlassFish V3 is supported"); //NOI18N
+            throw new IllegalArgumentException("Only GlassFish v3 is supported"); //NOI18N
         }
         this.dm = (Hk2DeploymentManager) jdm;
         this.ip = dm.getProperties().getInstanceProperties();

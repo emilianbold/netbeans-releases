@@ -61,6 +61,7 @@ import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.For;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Tuple;
+import org.python.antlr.base.expr;
 
 /**
  * Detect unused variables
@@ -143,19 +144,22 @@ public class UnusedDetector extends PythonAstRule {
     private boolean isTupleAssignment(PythonTree node) {
         // This may not work right since the parent pointers often aren't set right;
         // find a more efficient way to do it correctly than a path search for each node
-        if (node.parent instanceof Tuple) {
+        if (node.getParent() instanceof Tuple) {
             // Allow tuples in tuples
-            PythonTree parentParent = node.parent.parent;
+            PythonTree parentParent = node.getParent().getParent();
             while (parentParent instanceof Tuple) {
-                parentParent = parentParent.parent;
-                node = node.parent;
+                parentParent = parentParent.getParent();
+                node = node.getParent();
             }
-            if (parentParent instanceof Assign &&
-                    ((Assign)parentParent).targets[0] == node.parent) {
-                return true;
+            if (parentParent instanceof Assign) {
+                Assign assign = (Assign)parentParent;
+                List<expr> targets = assign.getInternalTargets();
+                if (targets != null && targets.size() > 0 && targets.get(0) == node.getParent()) {
+                    return true;
+                }
             }
             if (parentParent instanceof For &&
-                    ((For)parentParent).target == node.parent) {
+                    ((For)parentParent).getInternalTarget() == node.getParent()) {
                 return true;
             }
         }

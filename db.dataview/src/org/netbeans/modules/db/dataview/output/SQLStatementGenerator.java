@@ -86,7 +86,7 @@ class SQLStatementGenerator {
                 continue;
             }
 
-            if (val.equals("<NULL>") && !dbcol.isNullable()) { // NOI18N
+            if ((val == null || val.equals("<NULL>")) && !dbcol.isNullable()) { // NOI18N
                 throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
             }
 
@@ -98,7 +98,7 @@ class SQLStatementGenerator {
             }
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
+            if (val != null && DataViewUtils.isSQLConstantString(val)) {
                 String constStr = ((String) val).substring(1, ((String) val).length() - 1);
                 values += constStr;
             } else { // ELSE literals
@@ -129,7 +129,7 @@ class SQLStatementGenerator {
                 continue;
             }
 
-            if (val.equals("<NULL>") && !dbcol.isNullable()) { // NOI18N
+            if ((val == null || val.equals("<NULL>")) && !dbcol.isNullable()) { // NOI18N
                 throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
             }
 
@@ -141,7 +141,7 @@ class SQLStatementGenerator {
             }
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
+            if (val != null && DataViewUtils.isSQLConstantString(val)) {
                 String constStr = ((String) val).substring(1, ((String) val).length() - 1);
                 rawvalues += constStr;
             } else { // ELSE literals
@@ -166,7 +166,7 @@ class SQLStatementGenerator {
             Object value = changedRow.get(col);
             int type = dbcol.getJdbcType();
 
-            if (!dbcol.isNullable() && value == null) {
+            if ((value == null || value.equals("<NULL>")) && !dbcol.isNullable()) { // NOI18N
                 throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
             }
 
@@ -176,9 +176,16 @@ class SQLStatementGenerator {
                 comma = true;
             }
 
-            updateStmt.append(tblMeta.getQualifiedName(col, true)).append(" = ?");
-            values.add(value);
-            types.add(type);
+            updateStmt.append(tblMeta.getQualifiedName(col, true));
+            // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+            if (value != null && DataViewUtils.isSQLConstantString(value)) {
+                String constStr = ((String) value).substring(1, ((String) value).length() - 1);
+                updateStmt.append(" = ").append(constStr);
+            } else { // ELSE literals
+                updateStmt.append(" = ?"); // NOI18N
+                values.add(value);
+                types.add(type);
+            }
         }
 
         updateStmt.append(" WHERE "); // NOI18N
@@ -197,7 +204,7 @@ class SQLStatementGenerator {
             Object value = changedRow.get(col);
             int type = dbcol.getJdbcType();
 
-            if (!dbcol.isNullable() && value == null) {
+            if ((value == null || value.equals("<NULL>")) && !dbcol.isNullable()) { // NOI18N
                 throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class, "MSG_nullable_check"));
             }
 
@@ -207,8 +214,14 @@ class SQLStatementGenerator {
                 comma = true;
             }
 
-            rawUpdateStmt.append(tblMeta.getQualifiedName(col, false)).append(" = ");
-            rawUpdateStmt.append(getQualifiedValue(type, value).toString());
+            rawUpdateStmt.append(tblMeta.getQualifiedName(col, true));
+            // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+            if (value != null && DataViewUtils.isSQLConstantString(value)) {
+                String constStr = ((String) value).substring(1, ((String) value).length() - 1);
+                rawUpdateStmt.append(" = ").append(constStr);
+            } else { // ELSE literals
+                rawUpdateStmt.append(" = ").append(getQualifiedValue(type, value).toString());
+            }
         }
 
         rawUpdateStmt.append(" WHERE "); // NOI18N
@@ -218,7 +231,6 @@ class SQLStatementGenerator {
 
     String generateDeleteStatement(List<Integer> types, List<Object> values, int rowNum, TableModel tblModel) {
         StringBuilder deleteStmt = new StringBuilder();
-
         deleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0, true)).append(" WHERE "); // NOI18N
 
         generateWhereCondition(deleteStmt, types, values, rowNum, tblModel);
@@ -227,7 +239,6 @@ class SQLStatementGenerator {
 
     String generateDeleteStatement(int rowNum, TableModel tblModel) {
         StringBuilder rawDeleteStmt = new StringBuilder();
-
         rawDeleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0, false)).append(" WHERE "); // NOI18N
 
         generateWhereCondition(rawDeleteStmt, rowNum, tblModel);

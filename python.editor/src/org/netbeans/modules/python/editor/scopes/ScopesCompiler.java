@@ -30,10 +30,11 @@ import org.python.antlr.ast.Return;
 import org.python.antlr.ast.Str;
 import org.python.antlr.ast.With;
 import org.python.antlr.ast.Yield;
-import org.python.antlr.ast.argumentsType;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.ast.alias;
+import org.python.antlr.ast.arguments;
+import org.python.antlr.base.expr;
 import org.python.antlr.ast.expr_contextType;
-import org.python.antlr.ast.stmtType;
+import org.python.antlr.base.stmt;
 
 /** 
  * Based on org.python.compiler.ScopesCompiler in Jython
@@ -88,7 +89,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     public void traverse(PythonTree node) throws Exception {
         // Jython's parser often doesn't set the parent references correctly
         // so try to fix that here
-        node.parent = parent;
+        node.setParent(parent);
 
         PythonTree oldParent = parent;
         parent = node;
@@ -147,7 +148,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         beginScope("<single-top>", TOPSCOPE, node, null);
         PythonTree oldParent = parent;
         parent = node;
-        suite(node.body);
+        suite(node.getInternalBody());
         parent = oldParent;
         endScope();
         return null;
@@ -156,11 +157,10 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     @Override
     public Object visitModule(org.python.antlr.ast.Module node)
             throws Exception {
-        if (node.body != null && node.body.length > 0) {
-            stmtType[] body = node.body;
+        List<stmt> body = node.getInternalBody();
+        if (body != null && body.size() > 0) {
             boolean foundFirst = false;
-            for (int i = 0; i < body.length; i++) {
-                stmtType stmt = body[i];
+            for (stmt stmt : body) {
                 if (stmt != null) {
                     if (stmt instanceof Import || stmt instanceof ImportFrom) {
                         if (!foundFirst) {
@@ -178,7 +178,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
         PythonTree oldParent = parent;
         parent = node;
-        suite(node.body);
+        suite(node.getInternalBody());
         parent = oldParent;
 
         endScope();
@@ -188,7 +188,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     @Override
     public Object visitExpression(Expression node) throws Exception {
         beginScope("<eval-top>", TOPSCOPE, node, null);
-        visit(new Return(node, node.body));
+        visit(new Return(node, node.getInternalBody()));
         endScope();
         return null;
     }
@@ -203,14 +203,15 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitAssign(Assign node) throws Exception {
-        if (node.targets != null && node.targets.length == 1 &&
-                node.targets[0] instanceof Name) {
-            Name lhs = (Name)node.targets[0];
-            if ("__all__".equals(lhs.id)) { // NOI18N
-                if (!invalidPublicSymbols && node.value instanceof org.python.antlr.ast.List) {
-                    org.python.antlr.ast.List allList = (org.python.antlr.ast.List)node.value;
-                    if (allList != null && allList.elts != null && allList.elts.length > 0) {
-                        for (exprType expr : allList.elts) {
+        List<expr> targets = node.getInternalTargets();
+        if (targets != null && targets.size() == 1 && targets.get(0) instanceof Name) {
+            Name lhs = (Name)targets.get(0);
+            if ("__all__".equals(lhs.getInternalId())) { // NOI18N
+                expr nodeValue = node.getInternalValue();
+                if (!invalidPublicSymbols && nodeValue instanceof org.python.antlr.ast.List) {
+                    org.python.antlr.ast.List allList = (org.python.antlr.ast.List)nodeValue;
+                    if (allList != null) {
+                        for (expr expr : allList.getInternalElts()) {
                             if (expr instanceof Str) {
                                 Str str = (Str)expr;
                                 if (publicSymbols == null) {
@@ -228,27 +229,27 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
             }
         }
 
-        if (node.targets != null && node.targets.length > 0) {
-            Name[] names = new Name[node.targets.length];
+        if (targets.size() > 0) {
+            List<Name> names = new ArrayList<Name>(targets.size());
             boolean valid = true;
-            for (int i = 0, n = node.targets.length; i < n; i++) {
-                exprType et = node.targets[i];
+            for (expr et : targets) {
                 if (et instanceof Name) {
                     Name name = (Name)et;
-                    names[i] = name;
+                    names.add(name);
                 } else {
                     valid = false;
                 }
             }
             if (valid) {
-                if (node.value instanceof Name) {
-                    Name value = (Name)node.value;
+                expr nodeValue = node.getInternalValue();
+                if (nodeValue instanceof Name) {
+                    Name value = (Name)nodeValue;
 
-                    SymInfo rhsSym = cur.tbl.get(value.id);
+                    SymInfo rhsSym = cur.tbl.get(value.getInternalId());
                     if (rhsSym != null && rhsSym.isDef()) {
                         for (Name name : names) {
                             visitName(name);
-                            SymInfo sym = cur.tbl.get(name.id);
+                            SymInfo sym = cur.tbl.get(name.getInternalId());
                             if (sym != null) {
                                 sym.flags |= ALIAS;
                                 sym.flags |= (rhsSym.flags & (CLASS | FUNCTION));
@@ -265,21 +266,22 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitFunctionDef(FunctionDef node) throws Exception {
-        def(node.name, FUNCTION, node);
+        def(node.getInternalName(), FUNCTION, node);
         ArgListCompiler ac = new ArgListCompiler(symbolTable);
-        ac.visitArgs(node.args);
+        ac.visitArgs(node.getInternalArgs());
 
-        exprType[] defaults = ac.getDefaults();
-        for (int i = 0; i < defaults.length; i++) {
-            visit(defaults[i]);
+        List<expr> defaults = ac.getDefaults();
+        for (int i = 0; i < defaults.size(); i++) {
+            visit(defaults.get(i));
         }
 
-        exprType[] decs = node.decorators;
-        for (int i = decs.length - 1; i >= 0; i--) {
-            visit(decs[i]);
+        List<expr> decs = node.getInternalDecorator_list();
+        for (int i = decs.size() - 1; i >= 0; i--) {
+            visit(decs.get(i));
         }
+
         ScopeInfo parentScope = cur;
-        beginScope(node.name, FUNCSCOPE, node, ac);
+        beginScope(node.getInternalName(), FUNCSCOPE, node, ac);
         cur.nested = parentScope;
 
         int n = ac.names.size();
@@ -293,7 +295,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
         PythonTree oldParent = parent;
         parent = node;
-        suite(node.body);
+        suite(node.getInternalBody());
         parent = oldParent;
 
         endScope();
@@ -303,11 +305,11 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     @Override
     public Object visitLambda(Lambda node) throws Exception {
         ArgListCompiler ac = new ArgListCompiler(symbolTable);
-        ac.visitArgs(node.args);
+        ac.visitArgs(node.getInternalArgs());
 
-        PythonTree[] defaults = ac.getDefaults();
-        for (int i = 0; i < defaults.length; i++) {
-            visit(defaults[i]);
+        List<expr> defaults = ac.getDefaults();
+        for (expr expr : defaults) {
+            visit(expr);
         }
 
         beginScope("<lambda>", FUNCSCOPE, node, ac);
@@ -316,19 +318,22 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
             cur.addParam(ac.names.get(i), ac.nodes.get(i));
         }
         for (Object o : ac.init_code) {
-            visit((stmtType)o);
+            visit((stmt)o);
         }
         cur.markFromParam();
-        visit(node.body);
+        visit(node.getInternalBody());
         endScope();
         return null;
     }
 
-    public void suite(stmtType[] stmts) throws Exception {
-        for (int i = 0; i < stmts.length; i++) {
-            path.descend(stmts[i]);
-            visit(stmts[i]);
-            path.ascend();
+    public void suite(List<stmt> stmts) throws Exception {
+        if (stmts != null) {
+            for (int i = 0; i < stmts.size(); i++) {
+                stmt s = stmts.get(i);
+                path.descend(s);
+                visit(s);
+                path.ascend();
+            }
         }
     }
 
@@ -339,17 +344,21 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         }
         imports.add(node);
 
-        for (int i = 0; i < node.names.length; i++) {
-            if (node.names[i].asname != null) {
-                SymInfo entry = cur.addBound(node.names[i].asname, node);
-                entry.flags |= IMPORTED;
-            } else {
-                String name = node.names[i].name;
-                if (name.indexOf('.') > 0) {
-                    name = name.substring(0, name.indexOf('.'));
+        List<alias> names = node.getInternalNames();
+        if (names != null) {
+            for (alias alias : names) {
+                String asname = alias.getInternalAsname();
+                if (asname != null) {
+                    SymInfo entry = cur.addBound(asname, node);
+                    entry.flags |= IMPORTED;
+                } else {
+                    String name = alias.getInternalName();
+                    if (name.indexOf('.') > 0) {
+                        name = name.substring(0, name.indexOf('.'));
+                    }
+                    SymInfo entry = cur.addBound(name, node);
+                    entry.flags |= IMPORTED;
                 }
-                SymInfo entry = cur.addBound(name, node);
-                entry.flags |= IMPORTED;
             }
         }
         return null;
@@ -363,17 +372,18 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         importsFrom.add(node);
 
         //Future.checkFromFuture(node); // future stmt support
-        int n = node.names.length;
-        if (n == 0) {
+        List<alias> names = node.getInternalNames();
+        if (names == null || names.size() == 0) {
             cur.from_import_star = true;
             return null;
         }
-        for (int i = 0; i < n; i++) {
-            if (node.names[i].asname != null) {
-                SymInfo entry = cur.addBound(node.names[i].asname, node);
+        for (alias alias : names) {
+            String asname = alias.getInternalAsname();
+            if (asname != null) {
+                SymInfo entry = cur.addBound(asname, node);
                 entry.flags |= IMPORTED;
             } else {
-                SymInfo entry = cur.addBound(node.names[i].name, node);
+                SymInfo entry = cur.addBound(alias.getInternalName(), node);
                 entry.flags |= IMPORTED;
             }
         }
@@ -382,9 +392,8 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitGlobal(Global node) throws Exception {
-        int n = node.names.length;
-        for (int i = 0; i < n; i++) {
-            String name = node.names[i];
+        List<String> names = node.getInternalNames();
+        for (String name : names) {
             int prev = cur.addGlobal(name, node);
             if (prev >= 0) {
                 if ((prev & FROM_PARAM) != 0) {
@@ -408,7 +417,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     @Override
     public Object visitExec(Exec node) throws Exception {
         cur.exec = true;
-        if (node.globals == null && node.locals == null) {
+        if (node.getInternalGlobals() == null && node.getInternalLocals() == null) {
             cur.unqual_exec = true;
         }
         traverse(node);
@@ -417,17 +426,20 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitClassDef(ClassDef node) throws Exception {
-        def(node.name, CLASS, node);
-        int n = node.bases.length;
-        for (int i = 0; i < n; i++) {
-            visit(node.bases[i]);
+        String name = node.getInternalName();
+        def(name, CLASS, node);
+        List<expr> bases = node.getInternalBases();
+        if (bases != null) {
+            for (expr expr : bases) {
+                visit(expr);
+            }
         }
         ScopeInfo parentScope = cur;
-        beginScope(node.name, CLASSSCOPE, node, null);
+        beginScope(name, CLASSSCOPE, node, null);
         cur.nested = parentScope;
         PythonTree oldParent = parent;
         parent = node;
-        suite(node.body);
+        suite(node.getInternalBody());
         parent = oldParent;
         endScope();
         return null;
@@ -437,10 +449,10 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     public Object visitName(Name node) throws Exception {
         // Jython's parser doesn't always initialize the parent references correctly;
         // try to correct that here.
-        node.parent = parent;
+        node.setParent(parent);
 
-        String name = node.id;
-        if (node.ctx != expr_contextType.Load) {
+        String name = node.getInternalId();
+        if (node.getInternalCtx() != expr_contextType.Load) {
             if (name.equals("__debug__")) {
                 symbolTable.error("can not assign to __debug__", true, node);
             }
@@ -456,13 +468,14 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     public Object visitCall(Call node) throws Exception {
         Object ret = super.visitCall(node);
 
-        if (node.func instanceof Name) {
-            Name name = (Name)node.func;
-            cur.markCall(name.id);
-        } else if (node.func instanceof Attribute) {
-            Attribute func = (Attribute)node.func;
+        expr func = node.getInternalFunc();
+        if (func instanceof Name) {
+            Name name = (Name)func;
+            cur.markCall(name.getInternalId());
+        } else if (func instanceof Attribute) {
+            Attribute attr = (Attribute)func;
             if (cur.attributes != null) {
-                SymInfo funcSymbol = cur.attributes.get(func.attr);
+                SymInfo funcSymbol = cur.attributes.get(attr.getInternalAttr());
                 if (funcSymbol != null) {
                     funcSymbol.flags |= FUNCTION | CALLED; // mark as func/method call
                 }
@@ -475,9 +488,9 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitDelete(Delete node) throws Exception {
-        for (exprType et : node.targets) {
+        for (expr et : node.getInternalTargets()) {
             if (et instanceof Name) {
-                String name = ((Name)et).id;
+                String name = ((Name)et).getInternalId();
                 cur.addUsed(name, node);
             }
         }
@@ -487,17 +500,19 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitAttribute(Attribute node) throws Exception {
-        if (parent instanceof Call && node.value instanceof Name &&
-                ("__all__".equals(((Name)node.value).id))) {
+        if (parent instanceof Call && node.getInternalValue() instanceof Name &&
+                ("__all__".equals(((Name)node.getInternalValue()).getInternalId()))) {
             // If you for example call
             //    __all__.extend("foo")
             // or
             //    __all__.append("bar")
             // then I don't want to try to analyze __all__
-            if ("extend".equals(node.attr) || "append".equals(node.attr)) { // NOI18N
+            String nodeAttr = node.getInternalAttr();
+            if ("extend".equals(nodeAttr) || "append".equals(nodeAttr)) { // NOI18N
                 Call call = (Call)parent;
-                if (call.args != null) {
-                    for (exprType expr : call.args) {
+                List<expr> callArgs = call.getInternalArgs();
+                if (callArgs != null) {
+                    for (expr expr : callArgs) {
                         if (expr instanceof Str) {
                             if (publicSymbols == null) {
                                 publicSymbols = new ArrayList<Str>();
@@ -505,16 +520,19 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
                             publicSymbols.add((Str)expr);
                         } else if (expr instanceof org.python.antlr.ast.List) {
                             org.python.antlr.ast.List list = (org.python.antlr.ast.List)expr;
-                            if (list != null && list.elts != null && list.elts.length > 0) {
-                                for (exprType ex : list.elts) {
-                                    if (ex instanceof Str) {
-                                        Str str = (Str)ex;
-                                        if (publicSymbols == null) {
-                                            publicSymbols = new ArrayList<Str>();
+                            if (list != null) {
+                                List<expr> elts = list.getInternalElts();
+                                if (elts != null) {
+                                    for (expr ex : elts) {
+                                        if (ex instanceof Str) {
+                                            Str str = (Str)ex;
+                                            if (publicSymbols == null) {
+                                                publicSymbols = new ArrayList<Str>();
+                                            }
+                                            publicSymbols.add(str);
+                                        } else {
+                                            invalidPublicSymbols = true;
                                         }
-                                        publicSymbols.add(str);
-                                    } else {
-                                        invalidPublicSymbols = true;
                                     }
                                 }
                             }
@@ -528,8 +546,9 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
                 invalidPublicSymbols = true;
             }
         } else {
-            if (node.attr != null) {
-                cur.addAttribute(path, node.attr, node);
+            String nodeAttr = node.getInternalAttr();
+            if (nodeAttr != null) {
+                cur.addAttribute(path, nodeAttr, node);
             }
         }
         return super.visitAttribute(node);
@@ -554,7 +573,7 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
 
     @Override
     public Object visitReturn(Return node) throws Exception {
-        if (node.value != null) {
+        if (node.getInternalValue() != null) {
             cur.noteReturnValue(node);
         }
         traverse(node);
@@ -564,16 +583,17 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
     @Override
     public Object visitGeneratorExp(GeneratorExp node) throws Exception {
         // The first iterator is evaluated in the outer scope
-        if (node.generators != null && node.generators.length > 0) {
-            visit(node.generators[0].iter);
+        if (node.getInternalGenerators() != null && node.getInternalGenerators().size() > 0) {
+            visit(node.getInternalGenerators().get(0).getInternalIter());
         }
         String bound_exp = "_(x)";
         String tmp = "_(" + node.getLine() + "_" + node.getCharPositionInLine() + ")";
         def(tmp, GENERATOR, node);
         ArgListCompiler ac = new ArgListCompiler(symbolTable);
-        Name argsName = new Name(node.token, bound_exp, expr_contextType.Param);
-        ac.visitArgs(new argumentsType(node, new exprType[]{argsName}, null, null,
-                new exprType[0]));
+        List<expr> args = new ArrayList<expr>();
+        Name argsName = new Name(node.getToken(), bound_exp, expr_contextType.Param);
+        args.add(argsName);
+        ac.visitArgs(new arguments(node, args, null, null, new ArrayList<expr>()));
         beginScope(tmp, FUNCSCOPE, node, ac);
         cur.addParam(bound_exp, argsName);
         cur.markFromParam();
@@ -581,23 +601,23 @@ public class ScopesCompiler extends Visitor implements ScopeConstants {
         cur.defineAsGenerator(node);
         cur.yield_count++;
         // The reset of the iterators are evaluated in the inner scope
-        if (node.elt != null) {
-            visit(node.elt);
+        if (node.getInternalElt() != null) {
+            visit(node.getInternalElt());
         }
-        if (node.generators != null) {
-            for (int i = 0; i < node.generators.length; i++) {
-                if (node.generators[i] != null) {
+        if (node.getInternalGenerators() != null) {
+            for (int i = 0; i < node.getInternalGenerators().size(); i++) {
+                if (node.getInternalGenerators().get(i) != null) {
                     if (i == 0) {
-                        visit(node.generators[i].target);
-                        if (node.generators[i].ifs != null) {
-                            for (exprType cond : node.generators[i].ifs) {
+                        visit(node.getInternalGenerators().get(i).getInternalTarget());
+                        if (node.getInternalGenerators().get(i).getInternalIfs() != null) {
+                            for (expr cond : node.getInternalGenerators().get(i).getInternalIfs()) {
                                 if (cond != null) {
                                     visit(cond);
                                 }
                             }
                         }
                     } else {
-                        visit(node.generators[i]);
+                        visit(node.getInternalGenerators().get(i));
                     }
                 }
             }

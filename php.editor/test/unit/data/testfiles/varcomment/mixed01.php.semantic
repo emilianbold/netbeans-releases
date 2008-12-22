@@ -1,0 +1,4 @@
+<?php
+/* |>CUSTOM1:@var<| $hello person|user */
+$hello->getCity();
+?>

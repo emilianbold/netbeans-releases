@@ -613,6 +613,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case WHILE_LOOP:
                     insideWhile(env);
                     break;
+                case DO_WHILE_LOOP:
+                    insideDoWhile(env);
+                    break;
                 case FOR_LOOP:
                     insideFor(env);
                     break;
@@ -1605,19 +1608,35 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void insideIf(Env env) throws IOException {
             IfTree iff = (IfTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), iff.getCondition()) <= env.getOffset()) {
-                localResult(env);
-                addKeywordsForStatement(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, iff, env.getOffset());
+                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                    localResult(env);
+                    addKeywordsForStatement(env);
+                }
             }
         }
         
         private void insideWhile(Env env) throws IOException {
             WhileLoopTree wlt = (WhileLoopTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), wlt.getCondition()) <= env.getOffset()) {
-                localResult(env);
-                addKeywordsForStatement(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, wlt, env.getOffset());
+                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                    localResult(env);
+                    addKeywordsForStatement(env);
+                }
             }
         }
         
+        private void insideDoWhile(Env env) throws IOException {
+            DoWhileLoopTree dwlt = (DoWhileLoopTree)env.getPath().getLeaf();
+            if (env.getSourcePositions().getEndPosition(env.getRoot(), dwlt.getStatement()) <= env.getOffset()) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, dwlt, env.getOffset());
+                if (last != null && (last.token().id() == JavaTokenId.RBRACE || last.token().id() == JavaTokenId.SEMICOLON)) {
+                    addKeyword(env, WHILE_KEYWORD, null, false);
+                }
+            }
+        }
+
         private void insideFor(Env env) throws IOException {
             int offset = env.getOffset();
             TreePath path = env.getPath();
@@ -1650,9 +1669,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             if (lastTree == null) {
-                addLocalFieldsAndVars(env);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
-                addPrimitiveTypeKeywords(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, fl, offset);
+                if (last != null && last.token().id() == JavaTokenId.LPAREN) {
+                    addLocalFieldsAndVars(env);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
+                    addPrimitiveTypeKeywords(env);
+                }
             } else {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, lastTreePos, offset);
                 if (last != null && last.token().id() == JavaTokenId.SEMICOLON) {
@@ -1964,16 +1986,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (it.hasNext()) {
                     t = it.next();
                 } else {
-                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                    ts.move((int)env.getSourcePositions().getStartPosition(env.getRoot(), est));
-                    ts.movePrevious();
-                    switch (ts.token().id()) {
-                        case FOR:
-                        case IF:
-                        case SWITCH:
-                        case WHILE:
-                            return;
-                    }
                     localResult(env);
                     Tree parentTree = path.getParentPath().getLeaf();
                     switch (parentTree.getKind()) {

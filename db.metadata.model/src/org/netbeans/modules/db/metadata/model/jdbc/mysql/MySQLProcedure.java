@@ -78,6 +78,9 @@ public class MySQLProcedure extends JDBCProcedure {
     /**
      * A "special" version because MySQL returns character lengths in
      * the precision column instead of the length column - sheesh.
+     *
+     * Logged as a MySQL bug - http://bugs.mysql.com/bug.php?id=41269
+     * When this is fixed this workaround will need to be backed out.
      */
     private static JDBCValue createValue(ResultSet rs) throws SQLException {
         String name = rs.getString("COLUMN_NAME");

@@ -44,7 +44,9 @@ import java.sql.Types;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 
@@ -151,6 +153,37 @@ public final class JDBCUtils {
             default:
                 LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadat.getProcedureColumns(): " + sqlDirection);
                 return Direction.IN;
+        }
+    }
+
+    public static Ordering getOrdering(String ascOrDesc) {
+        if (ascOrDesc == null || ascOrDesc.length() == 0) {
+            return Ordering.NOT_SUPPORTED;
+        } else if (ascOrDesc.equals("A")) {
+            return Ordering.ASCENDING;
+        } else if (ascOrDesc.equals("D")) {
+            return Ordering.DESCENDING;
+        } else {
+            LOGGER.log(Level.INFO, "Unexpected ordering code from database: " + ascOrDesc);
+            return Ordering.NOT_SUPPORTED;
+        }
+
+    }
+
+    static IndexType getIndexType(short sqlIndexType) {
+        switch (sqlIndexType) {
+            case DatabaseMetaData.tableIndexHashed:
+                return IndexType.HASHED;
+            case DatabaseMetaData.tableIndexClustered:
+                return IndexType.CLUSTERED;
+            case DatabaseMetaData.tableIndexOther:
+                return IndexType.OTHER;
+            case DatabaseMetaData.tableIndexStatistic:
+                LOGGER.log(Level.INFO, "Got unexpected index type of tableIndexStatistic, marking as 'other'");
+                return IndexType.OTHER;
+            default:
+                LOGGER.log(Level.INFO, "Unexpected index type code from database metadata: " + sqlIndexType);
+                return IndexType.OTHER;
         }
     }
 

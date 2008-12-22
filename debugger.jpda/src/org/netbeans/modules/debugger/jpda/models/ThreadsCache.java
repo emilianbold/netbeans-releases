@@ -60,7 +60,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -94,24 +106,28 @@ public class ThreadsCache implements Executor {
         if (this.vm == vm) return ;
         try {
             this.vm = vm;
-            ThreadStartRequest tsr = vm.eventRequestManager().createThreadStartRequest();
-            ThreadDeathRequest tdr = vm.eventRequestManager().createThreadDeathRequest();
-            tsr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
-            tdr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
+            ThreadStartRequest tsr = EventRequestManagerWrapper.createThreadStartRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm));
+            ThreadDeathRequest tdr = EventRequestManagerWrapper.createThreadDeathRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm));
+            EventRequestWrapper.setSuspendPolicy(tsr, ThreadStartRequest.SUSPEND_NONE);
+            EventRequestWrapper.setSuspendPolicy(tdr, ThreadStartRequest.SUSPEND_NONE);
             debugger.getOperator().register(tsr, this);
             debugger.getOperator().register(tdr, this);
-            tsr.enable();
-            tdr.enable();
+            EventRequestWrapper.enable(tsr);
+            EventRequestWrapper.enable(tdr);
             init();
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+            this.vm = null;
+        } catch (InternalExceptionWrapper e) {
             this.vm = null;
         }
     }
     
-    private synchronized void init() {
-        allThreads = new ArrayList<ThreadReference>(vm.allThreads());
+    private synchronized void init() throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
+        allThreads = new ArrayList<ThreadReference>(VirtualMachineWrapper.allThreads(vm));
         List<ThreadGroupReference> groups;
-        groupMap.put(null, groups = new ArrayList(vm.topLevelThreadGroups()));
+        groupMap.put(null, groups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups(vm)));
         for (ThreadGroupReference group : groups) {
             initGroups(group);
         }
@@ -119,18 +135,19 @@ public class ThreadsCache implements Executor {
         threadMap.put(null, mainThreads);
         for (ThreadReference thread : allThreads) {
             try {
-                if (thread.threadGroup() == null) {
+                if (ThreadReferenceWrapper.threadGroup(thread) == null) {
                     mainThreads.add(thread);
                 }
-            } catch (ObjectCollectedException e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
+            } catch (IllegalThreadStateExceptionWrapper e) {
             }
         }
     }
     
     private void initGroups(ThreadGroupReference group) {
         try {
-            List<ThreadGroupReference> groups = new ArrayList(group.threadGroups());
-            List<ThreadReference> threads = new ArrayList(group.threads());
+            List<ThreadGroupReference> groups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(group));
+            List<ThreadReference> threads = new ArrayList(ThreadGroupReferenceWrapper.threads0(group));
             groupMap.put(group, groups);
             threadMap.put(group, threads);
             for (ThreadGroupReference g : groups) {
@@ -150,7 +167,7 @@ public class ThreadsCache implements Executor {
             if (vm == null) {
                 return Collections.EMPTY_LIST;
             }
-            topGroups = new ArrayList(vm.topLevelThreadGroups());
+            topGroups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups0(vm));
             groupMap.put(null, topGroups);
         }
         return Collections.unmodifiableList(new ArrayList(topGroups));
@@ -178,7 +195,17 @@ public class ThreadsCache implements Executor {
     
     private List<ThreadGroupReference> addGroups(ThreadGroupReference group) {
         List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
-        ThreadGroupReference parent = group.parent();
+        ThreadGroupReference parent;
+        try {
+            parent = ThreadGroupReferenceWrapper.parent(group);
+        } catch (InternalExceptionWrapper ex) {
+            parent = null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            parent = null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            parent = null;
+        }
         if (groupMap.get(parent) == null) {
             addedGroups.addAll(addGroups(parent));
         }
@@ -196,12 +223,19 @@ public class ThreadsCache implements Executor {
 
     public boolean exec(Event event) {
         if (event instanceof ThreadStartEvent) {
-            ThreadReference thread = ((ThreadStartEvent) event).thread();
+            ThreadReference thread;;
             ThreadGroupReference group;
             try {
-                group = thread.threadGroup();
-            } catch (ObjectCollectedException ocex) {
-                group = null;
+                thread = ThreadStartEventWrapper.thread((ThreadStartEvent) event);
+                group = ThreadReferenceWrapper.threadGroup(thread);
+            } catch (InternalExceptionWrapper ex) {
+                return true;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return true;
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                return true;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                return true;
             }
             List<ThreadGroupReference> addedGroups = null;
             synchronized (this) {
@@ -224,11 +258,20 @@ public class ThreadsCache implements Executor {
             pcs.firePropertyChange(PROP_THREAD_STARTED, null, thread);
         }
         if (event instanceof ThreadDeathEvent) {
-            ThreadReference thread = ((ThreadDeathEvent) event).thread();
+            ThreadReference thread;
             ThreadGroupReference group;
             try {
-                group = thread.threadGroup();
-            } catch (ObjectCollectedException ocex) {
+                thread = ThreadDeathEventWrapper.thread((ThreadDeathEvent) event);
+                group = ThreadReferenceWrapper.threadGroup(thread);
+            } catch (InternalExceptionWrapper ex) {
+                return true;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return true;
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                thread = null; // I should not have to initialize this when this exception can not be thrown!
+                group = null;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                thread = null; // I should not have to initialize this when this exception can not be thrown!
                 group = null;
             }
             synchronized (this) {

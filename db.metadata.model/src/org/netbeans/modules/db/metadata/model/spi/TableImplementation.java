@@ -42,6 +42,9 @@ package org.netbeans.modules.db.metadata.model.spi;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
@@ -67,6 +70,16 @@ public abstract class TableImplementation {
     public abstract Collection<Column> getColumns();
 
     public abstract Column getColumn(String name);
+
+    public abstract PrimaryKey getPrimaryKey();
+
+    public abstract Index getIndex(String name);
+
+    public abstract Collection<Index> getIndexes();
+
+    public abstract Collection<ForeignKey> getForeignKeys();
+
+    public abstract ForeignKey getForeignKeyByInternalName(String internalName);
 
     public abstract void refresh();
 }

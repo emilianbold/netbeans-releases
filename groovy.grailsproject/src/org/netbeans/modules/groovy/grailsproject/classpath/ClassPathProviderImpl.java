@@ -41,14 +41,19 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  * @todo runtime classpath
@@ -56,7 +61,8 @@ import org.openide.filesystems.FileUtil;
  * Defines the various class paths for a EJB project.
  */
 public final class ClassPathProviderImpl implements ClassPathProvider {
-    
+
+    private final GrailsProject project;
     private final File projectDirectory;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
@@ -79,12 +85,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
 
-    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, File projectDirectory) {
+    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, File projectDirectory, GrailsProject project) {
+        this.project = project;
         this.projectDirectory = projectDirectory;
         assert this.projectDirectory != null;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
+
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
     }
+
 
     private synchronized FileObject getDir(String propname) {
         FileObject fo = this.dirCache.get(propname);
@@ -240,7 +250,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation());
+            cp = ClassPathFactory.createClassPath(BootClassPathImplementation.forProject(project));
             cache[7] = cp;
         }
         return cp;

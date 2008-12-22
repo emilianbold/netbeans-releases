@@ -42,17 +42,21 @@
 package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InternalException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.Mirror;
+import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 
@@ -62,7 +66,23 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.JDIExceptionReporter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,20 +117,29 @@ public class TreeEvaluator {
      * @throws IncompatibleThreadStateException if the context thread is in an
      * incompatible state (running, dead)
      */
-    public Value evaluate() throws EvaluationException2, IncompatibleThreadStateException, InvalidExpressionException
+    public Value evaluate() throws EvaluationException2, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper
     {
         frame = evaluationContext.getFrame();
-        vm = evaluationContext.getFrame().virtualMachine();
-        frameThread = frame.thread();
-        frameIndex = indexOf(frameThread.frames(), frame);
+        vm = MirrorWrapper.virtualMachine(evaluationContext.getFrame());
+        frameThread = StackFrameWrapper.thread(frame);
+        try {
+            frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), frame);
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected"));
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thread died
+            throw new InvalidExpressionException(ex.getCause().getLocalizedMessage());
+        }
         if (frameIndex == -1) {
             throw new IncompatibleThreadStateException("Thread does not contain current frame");
         }
-        currentPackage = evaluationContext.getFrame().location().declaringType().name();
+        currentPackage = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                StackFrameWrapper.location(evaluationContext.getFrame())));
         int idx = currentPackage.lastIndexOf('.');
         currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
         operators = new Operators(vm);
-        int line = frame.location().lineNumber();
+        int line = LocationWrapper.lineNumber(StackFrameWrapper.location(frame));
         String url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
         /*try {
             url = frame.location().sourcePath(expression.getLanguage());
@@ -137,9 +166,28 @@ public class TreeEvaluator {
             if (thr instanceof InvalidExpressionException) {
                 throw (InvalidExpressionException) thr;
             }
+            if (thr instanceof ClassNotLoadedException) {
+                // TODO: Load the class!
+                throw new InvalidExpressionException("Class "+((ClassNotLoadedException) thr).className()+" not loaded.");
+            }
             throw isex;
         } catch (InternalException e) {
+            JDIExceptionReporter.report(e);
             throw new InvalidExpressionException (e.getLocalizedMessage());
+        } catch (VMDisconnectedException e) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_disconnected"));
+        } catch (ObjectCollectedException e) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected"));
+        } catch (ClassNotPreparedException e) {
+            throw new InvalidExpressionException (e);
+        } catch (NativeMethodException e) {
+            throw new InvalidExpressionException (e.getLocalizedMessage());
+        } catch (InvalidStackFrameException e) {
+            Exceptions.printStackTrace(e); // Should not occur
+            throw new InvalidExpressionException (NbBundle.getMessage(
+                    JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         }
         //return (Value) rootNode.jjtAccept(this, null);
         //return null;
@@ -167,7 +215,7 @@ public class TreeEvaluator {
                 loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
             }
             Value value =
-                    objectReference.invokeMethod(evaluationThread, method,
+                    ObjectReferenceWrapper.invokeMethod(objectReference, evaluationThread, method,
                                                  args,
                                                  ObjectReference.INVOKE_SINGLE_THREADED);
             if (loggerMethod.isLoggable(Level.FINE)) {
@@ -191,9 +239,14 @@ public class TreeEvaluator {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw ieex;
-        } catch (ObjectCollectedException ocex) {
+        } catch (InternalExceptionWrapper iex) {
+            throw new InvalidExpressionException(iex.getLocalizedMessage());
+        } catch (ObjectCollectedExceptionWrapper ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_collected"));
+        } catch (VMDisconnectedExceptionWrapper e) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_disconnected"));
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);

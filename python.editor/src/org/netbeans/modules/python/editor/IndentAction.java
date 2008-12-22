@@ -74,10 +74,10 @@ public class IndentAction extends BaseKit.InsertTabAction {
             }
 
             try {
-
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 final int offset = target.getCaretPosition();
-                if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
+                if ((target.getSelectionStart() == target.getSelectionEnd()) &&
+                   (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset))) {
                     doc.runAtomicAsUser(new Runnable() {
                         public void run() {
                             try {

@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Import;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
 
 /**
  * Import statements should be one per line. This quickfix
@@ -81,7 +81,8 @@ public class SplitImports extends PythonAstRule {
     @Override
     public void run(PythonRuleContext context, List<Hint> result) {
         Import imp = (Import)context.node;
-        if (imp.names != null && imp.names.length > 1) {
+        List<alias> names = imp.getInternalNames();
+        if (names != null && names.size() > 1) {
             PythonTree node = context.node;
             CompilationInfo info = context.compilationInfo;
             OffsetRange astOffsets = PythonAstUtils.getNameRange(info, node);
@@ -163,17 +164,20 @@ public class SplitImports extends PythonAstRule {
                 if (lexRange != OffsetRange.NONE) {
                     int indent = GsfUtilities.getLineIndent(doc, lexRange.getStart());
                     StringBuilder sb = new StringBuilder();
-                    for (aliasType at : imp.names) {
-                        if (indent > 0 && sb.length() > 0) {
-                            sb.append(IndentUtils.createIndentString(doc, indent));
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (indent > 0 && sb.length() > 0) {
+                                sb.append(IndentUtils.createIndentString(doc, indent));
+                            }
+                            sb.append("import "); // NOI18N
+                            sb.append(at.getInternalName());
+                            if (at.getInternalAsname() != null && at.getInternalAsname().length() > 0) {
+                                sb.append(" as "); // NOI18N
+                                sb.append(at.getInternalAsname());
+                            }
+                            sb.append("\n");
                         }
-                        sb.append("import "); // NOI18N
-                        sb.append(at.name);
-                        if (at.asname != null && at.asname.length() > 0) {
-                            sb.append(" as "); // NOI18N
-                            sb.append(at.asname);
-                        }
-                        sb.append("\n");
                     }
                     // Remove the final newline since Import doesn't include it
                     sb.setLength(sb.length() - 1);

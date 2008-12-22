@@ -344,7 +344,7 @@
   ==> [Numeric]
 
 #  stub => num or nil
-  ==> [NilClass, Numeric]
+  ==> [Numeric, NilClass]
 
 #  stub => num or numeric
   ==> [Numeric]
