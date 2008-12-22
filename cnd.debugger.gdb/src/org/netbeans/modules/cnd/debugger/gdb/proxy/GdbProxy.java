@@ -296,7 +296,7 @@ public class GdbProxy {
      */
     public void data_disassemble(String filename, int line, boolean withSource) {
         int src = withSource ? 1 : 0;
-        engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
+        engine.sendCommand("-data-disassemble -f \"" + filename + "\" -l " + line + " -- " + src); // NOI18N
     }
     
     /*
