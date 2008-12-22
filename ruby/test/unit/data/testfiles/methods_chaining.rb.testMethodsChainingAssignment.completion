@@ -1,0 +1,8 @@
+Code completion result for source line:
+puts greeting.cap|italize
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       puts(obj)                                  Kernel
+------------------------------------
+METHOD     capitalize                                 String
+METHOD     capitalize!                                String
+METHOD     captures                                   MatchData

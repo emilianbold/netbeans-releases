@@ -38,62 +38,108 @@
  */
 package org.netbeans.modules.ruby;
 
-import javax.swing.text.Document;
+import java.util.HashMap;
+import java.util.Map;
 import org.jruby.nb.ast.Node;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.filesystems.FileObject;
 
-final class CompletionRequest {
+public final class ContextKnowledge {
 
-    final DefaultCompletionResult completionResult;
-    final TokenHierarchy<Document> th;
-    final CompilationInfo info;
-    final int lexOffset;
-    final int astOffset;
-    final BaseDocument doc;
-    final String prefix;
+    /** Map from variable or field(etc) name to type. */
+    private Map<String, RubyType> typesForSymbols;
+    
     final RubyIndex index;
-    final NameKind kind;
-    final QueryType queryType;
+    final Node root;
+    final Node target;
+    final int astOffset;
+    final int lexOffset;
+    final BaseDocument doc;
     final FileObject fileObject;
-    AstPath path;
-    Node target;
 
-    CompletionRequest(Node node, RubyIndex index) {
-        this(null, null, null, -1, -1, null, null, index, null, null, null);
+    private boolean analyzed;
+
+    ContextKnowledge() {
+        this(null, null, null, -1, -1, null, null);
     }
 
-    CompletionRequest(
-            final DefaultCompletionResult completionResult,
-            final TokenHierarchy<Document> th,
-            final CompilationInfo info,
-            final int lexOffset,
-            final int astOffset,
-            final BaseDocument doc,
-            final String prefix,
-            final RubyIndex index,
-            final NameKind kind,
-            final QueryType queryType,
-            final FileObject fileObject) {
-        this.completionResult = completionResult;
-        this.lexOffset = lexOffset;
-        this.astOffset = astOffset;
+    public ContextKnowledge(RubyIndex index, Node root, Node target, int astOffset,
+            int lexOffset, BaseDocument doc, FileObject fileObject) {
         this.index = index;
+        this.root = root;
+        this.target = target;
+        this.astOffset = astOffset;
+        this.lexOffset = lexOffset;
         this.doc = doc;
-        this.info = info;
-        this.prefix = prefix;
-        this.th = th;
-        this.kind = kind;
-        this.queryType = queryType;
         this.fileObject = fileObject;
+        this.typesForSymbols = new HashMap<String, RubyType>();
     }
 
-    ContextKnowledge createContextKnowledge() {
-        return new ContextKnowledge(index, path.root(), target, astOffset, lexOffset, doc, fileObject);
+    RubyType getType(final String symbol) {
+        RubyType type = typesForSymbols.get(symbol);
+        return type == null ? RubyType.createUnknown() : type;
+    }
+
+    void setAnalyzed(boolean analyzed) {
+        this.analyzed = analyzed;
+    }
+
+    boolean wasAnalyzed() {
+        return analyzed;
+    }
+
+    Map<String, RubyType> getTypesForSymbols() {
+        return typesForSymbols;
+    }
+
+    static RubyType getTypesForSymbol(
+            final Map<String, RubyType> typeForSymbol, final String name) {
+        RubyType type = typeForSymbol.get(name);
+        return type == null ? RubyType.createUnknown() : type;
+    }
+
+    int getAstOffset() {
+        return astOffset;
+    }
+
+    BaseDocument getDocument() {
+        return doc;
+    }
+
+    FileObject getFileObject() {
+        return fileObject;
+    }
+
+    RubyIndex getIndex() {
+        return index;
+    }
+
+    int getLexOffset() {
+        return lexOffset;
+    }
+
+    Node getRoot() {
+        return root;
+    }
+
+    /**
+     * The target node to which we are performing analysis. Ignore everything in
+     * the AST from this node further.
+     */
+    Node getTarget() {
+        return target;
+    }
+
+    boolean hasDocument() {
+        return doc != null;
+    }
+
+    boolean hasFileObject() {
+        return fileObject != null;
+    }
+
+    @Override
+    public String toString() {
+        return "ContextKnowledge[realTypes:" + typesForSymbols + ']'; // NOI18N
     }
 }

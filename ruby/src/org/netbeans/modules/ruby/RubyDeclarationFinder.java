@@ -398,8 +398,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
-                        type = analyzer.inferTypes(lhs);
+                        ContextKnowledge knowledge = new ContextKnowledge(
+                                index, root, method, astOffset, lexOffset, doc, info.getFileObject());
+                        RubyTypeInferencer inferencer = new RubyTypeInferencer(knowledge);
+                        type = inferencer.inferType(lhs);
                     }
                 }
 
@@ -1149,9 +1151,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
-                            (BaseDocument)doc, info.getFileObject());
-                    type = analyzer.inferTypes(lhs);
+                    ContextKnowledge knowledge = new ContextKnowledge(
+                            index, root, method, astOffset, lexOffset, (BaseDocument) doc, info.getFileObject());
+                    RubyTypeInferencer inferencer = new RubyTypeInferencer(knowledge);
+                    type = inferencer.inferType(lhs);
                 }
             }
 

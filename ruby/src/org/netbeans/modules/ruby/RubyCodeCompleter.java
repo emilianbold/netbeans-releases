@@ -1197,7 +1197,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         Map<String, Node> constants = new HashMap<String, Node>();
 
         final Node closest = path.leaf();
-        request.node = closest;
+        request.target = closest;
 
         // Don't try to add local vars, globals etc. as part of calls or class fqns
         if (call.getLhs() == null) {
@@ -1458,13 +1458,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
                 //                ComObject co;
                 //                if (isClassName(variable)) {
-                //                    co = JRubyNode.create(node, null);  
+                //                    co = JRubyNode.create(target, null);
                 //                    if (co == null) {
                 //                        continue;
                 //                    }
                 //                } else {
                 //                    co = new DefaultComVariable(variable, false, -1, -1);
-                //                    ((DefaultComVariable)co).setNode(node);
+                //                    ((DefaultComVariable)co).setNode(target);
                 AstElement co = new AstNameElement(info, node, variable,
                         ElementKind.VARIABLE);
 
@@ -1676,7 +1676,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         ISourcePosition pos = node.getPosition();
 
         //return (((pos.getStartOffset() <= lineEnd) && (pos.getEndOffset() >= lineBegin)));
-        // Don't look to see if the line is within the node. See if the node is started on this line (where
+        // Don't look to see if the line is within the target. See if the target is started on this line (where
         // the declaration is, e.g. it might be an incomplete line.
         return ((pos.getStartOffset() >= lineBegin) && (pos.getStartOffset() <= lineEnd));
     }
@@ -1749,8 +1749,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             break;
         }
 
-        //        } else if (node instanceof AliasNode) {
-        //            AliasNode an = (AliasNode)node;
+        //        } else if (target instanceof AliasNode) {
+        //            AliasNode an = (AliasNode)target;
         // Tricky -- which NODE do we add here? Completion creator needs to be aware of new name etc. Do later.
         // Besides, do we show it as a field or a method or what?
 
@@ -1793,8 +1793,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 variables.put(name, node);
             }
 
-            //} else if (node instanceof ArgsNode) {
-            //    ArgsNode an = (ArgsNode)node;
+            //} else if (target instanceof ArgsNode) {
+            //    ArgsNode an = (ArgsNode)target;
             //
             //    if (an.getArgsCount() > 0) {
             //        List<Node> args = an.childNodes();
@@ -1817,8 +1817,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             //            }
             //        }
             //    }
-            //        } else if (!ignoreAlias && node instanceof AliasNode) {
-            //            AliasNode an = (AliasNode)node;
+            //        } else if (!ignoreAlias && target instanceof AliasNode) {
+            //            AliasNode an = (AliasNode)target;
             //
             //            if (an.getNewName().equals(name)) {
             //                OffsetRange range = AstUtilities.getAliasNewRange(an);

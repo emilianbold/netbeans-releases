@@ -58,7 +58,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
-    private RubyTypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
+    private RubyTypeInferencer getInferencer(String file, String caretLine, boolean findMethod) throws Exception {
         FileObject fo = getTestFile("testfiles/" + file);
         BaseDocument doc = getDocument(fo);
         GsfTestCompilationInfo info = getInfo(fo);
@@ -86,9 +86,8 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
             root = method;
         }
 
-        RubyTypeAnalyzer instance = new RubyTypeAnalyzer(index, root, node, caretOffset, caretOffset, doc, fo);
-
-        return instance;
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, doc, fo);
+        return new RubyTypeInferencer(knowledge);
     }
 
     private void assertTypes(final RubyType actualTypes, final String... expectedTypes) {
@@ -116,61 +115,61 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
     private void assertTypes(String relFilePath, String matchingLine,
             String exprToInfer, boolean hasUnknownMember, String... expectedTypes) throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer(relFilePath, matchingLine, false);
-        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), hasUnknownMember, expectedTypes);
+        RubyTypeInferencer instance = getInferencer(relFilePath, matchingLine, false);
+        assertTypes("Types correctly inferred", instance.inferType(exprToInfer), hasUnknownMember, expectedTypes);
     }
 
     public void testGetType() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("types.rb", " l^oc = {", false);
+        RubyTypeInferencer instance = getInferencer("types.rb", " l^oc = {", false);
 
-        assertTypes(instance.inferTypes("x"), "Integer");
+        assertTypes(instance.inferType("x"), "Integer");
         // y is reassigned later in the file - make sure that at this
         // point in scope we have the right type
-        assertTypes(instance.inferTypes("y"), "File");
-        assertTypes(instance.inferTypes("$baz"), "Hash");
-        assertTypes(instance.inferTypes("@bar"), "Fixnum");
-        assertTypes(instance.inferTypes("@foo"), "Array");
+        assertTypes(instance.inferType("y"), "File");
+        assertTypes(instance.inferType("$baz"), "Hash");
+        assertTypes(instance.inferType("@bar"), "Fixnum");
+        assertTypes(instance.inferType("@foo"), "Array");
     }
 
     public void testGetType2() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("types.rb", " # d^one", false);
+        RubyTypeInferencer instance = getInferencer("types.rb", " # d^one", false);
 
         // Y is assigned different types - make sure that at this position, it's a number
-        assertTypes(instance.inferTypes("y"), "Fixnum");
+        assertTypes(instance.inferType("y"), "Fixnum");
         // Lots of reassignments - track types through vars, statics, fields, classvars
-        assertTypes(instance.inferTypes("loc"), "Hash");
-        assertTypes(instance.inferTypes("$glob"), "Hash");
-        assertTypes(instance.inferTypes("@field"), "Hash");
-        assertTypes(instance.inferTypes("@@clsvar"), "Hash");
-        assertTypes(instance.inferTypes("loc2"), "Hash");
+        assertTypes(instance.inferType("loc"), "Hash");
+        assertTypes(instance.inferType("$glob"), "Hash");
+        assertTypes(instance.inferType("@field"), "Hash");
+        assertTypes(instance.inferType("@@clsvar"), "Hash");
+        assertTypes(instance.inferType("loc2"), "Hash");
     }
 
     public void testTypeAssertions() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("types.rb", " l^oc = {", true);
-        assertTypes(instance.inferTypes("param1"), "String");
-        assertTypes(instance.inferTypes("param2"), "Hash");
+        RubyTypeInferencer instance = getInferencer("types.rb", " l^oc = {", true);
+        assertTypes(instance.inferType("param1"), "String");
+        assertTypes(instance.inferType("param2"), "Hash");
     }
 
     public void testBegin() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("types2.rb", " @f^iles = ARGV.dup", true);
-        assertTypes(instance.inferTypes("go"), "GetoptLong");
+        RubyTypeInferencer instance = getInferencer("types2.rb", " @f^iles = ARGV.dup", true);
+        assertTypes(instance.inferType("go"), "GetoptLong");
     }
 
     public void testRailsController() throws Exception {
         assertTypes("type_controller.rb", "^end", "request", "ActionController::CgiRequest");
-        RubyTypeAnalyzer instance = getAnalyzer("type_controller.rb", "^end", false);
-        assertTypes(instance.inferTypes("request"), "ActionController::CgiRequest");
+        RubyTypeInferencer instance = getInferencer("type_controller.rb", "^end", false);
+        assertTypes(instance.inferType("request"), "ActionController::CgiRequest");
     }
 
 // This test doesn't work; the behavior works in the IDE but the
 // Lucene index isn't returning local symbols in the testing framework yet    
 //    public void testComplex1() throws Exception {
-//        RubyTypeAnalyzer instance = getAnalyzer("types3.rb", "^caret", false);
+//        RubyTypeInferencer instance = getAnalyzer("types3.rb", "^caret", false);
 //        assertEquals("Product", instance.getType("@product"));
 //    }
 
 //    public void testComplex2() throws Exception {
-//        RubyTypeAnalyzer instance = getAnalyzer("types3.rb", "^caret", true);
+//        RubyTypeInferencer instance = getAnalyzer("types3.rb", "^caret", true);
 //        assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
 //    }
 
@@ -182,8 +181,8 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     // TODO: Make sure I can handle compound expressions like this one:
     //  Product.find(params[:id]).destroy
     public void testMigrationType() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("migrate/20080726182725_create_posts.rb", " t.^time", true);
-        assertTypes(instance.inferTypes("t"), "ActiveRecord::ConnectionAdapters::TableDefinition");
+        RubyTypeInferencer instance = getInferencer("migrate/20080726182725_create_posts.rb", " t.^time", true);
+        assertTypes(instance.inferType("t"), "ActiveRecord::ConnectionAdapters::TableDefinition");
     }
 
     public void testIfType() throws Exception {
