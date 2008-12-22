@@ -96,10 +96,11 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         }
         
         if (mutatorModifiers != null){
+            // See issue 151387
             if (!mutatorModifiers.contains(Modifier.PUBLIC)
                     && !mutatorModifiers.contains(Modifier.PROTECTED)){
                 errors.add(Rule.createProblem(attrib.getMutator(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator")));
+                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator"), Severity.WARNING));
             }
             // see issue #108876
 //            else if (attrib.getModelElement() instanceof Id
