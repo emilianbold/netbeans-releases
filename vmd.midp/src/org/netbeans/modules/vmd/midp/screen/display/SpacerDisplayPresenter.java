@@ -57,13 +57,21 @@ import java.util.Collections;
  * @author David Kaspar
  */
 public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
-    
-    JSeparator separator = new JSeparator (JSeparator.HORIZONTAL) {
-        @Override
-        public JPopupMenu getComponentPopupMenu () {
-            return Utilities.actionsToPopup (ActionsSupport.createActionsArray (getRelatedComponent ()), this);
-        }
-    };
+
+    private JSeparator separator;
+
+    public SpacerDisplayPresenter() {
+        separator = new JSeparator(JSeparator.HORIZONTAL) {
+
+            @Override
+            public JPopupMenu getComponentPopupMenu() {
+                return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
+            }
+        };
+
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
+    }
 
     public boolean isTopLevelDisplay () {
         return false;
