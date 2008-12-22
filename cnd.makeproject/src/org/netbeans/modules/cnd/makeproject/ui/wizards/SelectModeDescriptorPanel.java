@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -54,11 +55,13 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeDescriptorPanel implements WizardDescriptor.Panel, ChangeListener {
+public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
     private String name;
+    private WizardStorage wizardStorage= new WizardStorage();
+    private boolean isValid = false;;
 
     public SelectModeDescriptorPanel(){
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
@@ -81,13 +84,23 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.Panel, Change
     }
     
     public boolean isValid() {
-        boolean valid = ((SelectModePanel)getComponent()).valid(wizardDescriptor);
-        if (valid) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
-        }
-        return valid;
+        return isValid;
     }
-    
+
+    private void validate(){
+        isValid = component.valid();
+        fireChangeEvent();
+    }
+
+    private void setMode(boolean isSimple) {
+        if (isSimple) {
+            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+        } else {
+            wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
+        }
+        validate();
+    }
+
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -109,22 +122,222 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.Panel, Change
             it.next().stateChanged(ev);
         }
     }
+    
+    WizardDescriptor getWizardDescriptor(){
+        return wizardDescriptor;
+    }
 
     public void stateChanged(ChangeEvent e) {
+        String[] res;
+        Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
+        String[] names = (String[]) o;
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+            res = new String[]{names[0]};
+        } else {
+            res = new String[]{names[0], "..."}; // NOI18N
+        }
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, res);
       	fireChangeEvent();
     }
-    
-    
+
+    public boolean isFinishPanel() {
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+    }
+
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;
+        if (wizardDescriptor.getProperty("simpleMode") == null) {
+            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+        }
+
     }
     
     public void storeSettings(Object settings) {
         component.store((WizardDescriptor)settings);
+    }
+
+    public WizardStorage getWizardStorage(){
+        return wizardStorage;
+    }
+
+    public class WizardStorage {
+        private String path = ""; // NOI18N
+        private static final String PREDEFINED_FLAGS = "\"-g3 -gdwarf-2\""; // NOI18N
+        private String flags = ""; // NOI18N
+        private boolean setMain = true;
+        private boolean buildProject = true;
+        public WizardStorage(){
+        }
+
+        /**
+         * @return the path
+         */
+        public void setMode(boolean isSimple) {
+            SelectModeDescriptorPanel.this.setMode(isSimple);
+        }
+
+        /**
+         * @return the path
+         */
+        public String getPath() {
+            return path;
+        }
+
+        /**
+         * @param path the path to set
+         */
+        public void setPath(String path) {
+            this.path = path.trim();
+            validate();
+        }
+
+        public String getConfigure(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/configure"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
+        }
+
+        public boolean isNbProjectFolder(){
+            if (path.length() == 0) {
+                return false;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return false;
+            }
+            file = new File(path+"/nbproject/project.xml"); // NOI18N
+            return file.exists();
+        }
+
+        public String getMake(){
+            if (path.length() == 0) {
+                return null;
+            }
+            File file = new File(path);
+            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+                return null;
+            }
+            file = new File(path+"/Makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            file = new File(path+"/makefile"); // NOI18N
+            if (file.exists() && file.isFile() && file.canRead()) {
+                return file.getAbsolutePath();
+            }
+            return null;
+        }
+
+        /**
+         * @return the flags
+         */
+        public String getFlags() {
+            return flags;
+        }
+
+        /**
+         * @return the flags
+         */
+        public String getRealFlags() {
+            StringBuilder buf = new StringBuilder();
+            if (flags.indexOf("CFLAGS=") < 0) { // NOI18N
+                buf.append("CFLAGS="+PREDEFINED_FLAGS); // NOI18N
+            }
+            if (flags.indexOf("CXXFLAGS=") < 0 ){ // NOI18N
+                if (buf.length() > 0) {
+                    buf.append(' '); // NOI18N
+                }
+                buf.append("CXXFLAGS="+PREDEFINED_FLAGS); // NOI18N
+            }
+            if (flags.length() > 0) {
+                if (buf.length() > 0) {
+                    buf.append(' '); // NOI18N
+                }
+                buf.append(flags);
+            }
+            return buf.toString();
+        }
+
+        /**
+         * @param flags the flags to set
+         */
+        public void setFlags(String flags) {
+            this.flags = flags;
+            validate();
+        }
+
+        /**
+         * @return the setMain
+         */
+        public boolean isSetMain() {
+            return setMain;
+        }
+
+        /**
+         * @param setMain the setMain to set
+         */
+        public void setSetMain(boolean setMain) {
+            this.setMain = setMain;
+            validate();
+        }
+
+        /**
+         * @return the buildProject
+         */
+        public boolean isBuildProject() {
+            return buildProject;
+        }
+
+        /**
+         * @param buildProject the buildProject to set
+         */
+        public void setBuildProject(boolean buildProject) {
+            this.buildProject = buildProject;
+            validate();
+        }
+    }
+
+    public static class WizardDescriptorAdapter extends WizardDescriptor{
+        private WizardStorage storage;
+        public WizardDescriptorAdapter(WizardStorage storage) {
+            this.storage = storage;
+        }
+        @Override
+        public synchronized Object getProperty(String name) {
+            if ("path".equals(name)) { // NOI18N
+                return storage.getPath();
+            } else if ("realFlags".equals(name)) { // NOI18N
+                return storage.getRealFlags();
+            } else if ("buildProject".equals(name)) { // NOI18N
+                if (storage.isBuildProject()) {
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            } else if ("setMain".equals(name)) { // NOI18N
+                if (storage.isSetMain()) {
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            } else if ("simpleMode".equals(name)) { // NOI18N
+                return Boolean.TRUE;
+            }
+            return super.getProperty(name);
+        }
     }
 }
 

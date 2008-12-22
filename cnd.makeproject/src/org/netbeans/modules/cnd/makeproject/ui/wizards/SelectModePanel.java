@@ -46,6 +46,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -55,12 +56,14 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class SelectModePanel extends javax.swing.JPanel {
-    private SelectModeDescriptorPanel wizard;
+    private SelectModeDescriptorPanel controller;
     
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel wizard) {
-        this.wizard = wizard;
+        this.controller = wizard;
         initComponents();
+        instructions.setEditorKit(new HTMLEditorKit());
+        instructions.setBackground(instructionPanel.getBackground());
         addListeners();
     }
     
@@ -68,26 +71,26 @@ public class SelectModePanel extends javax.swing.JPanel {
         projectFolder.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
             public void changedUpdate(DocumentEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setPath(projectFolder.getText());
             }
         });
         simpleMode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();
             }
         });
         advancedMode.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                wizard.fireChangeEvent();
+                controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();
             }
         });
@@ -96,13 +99,12 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
-            instructionsTextArea.setText(getString("SelectModeSimpleInstructionText")); // NOI18N
+            instructions.setText(getString("SelectModeSimpleInstructionText")); // NOI18N
         } else {
-            instructionsTextArea.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
+            instructions.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
-        wizard.stateChanged(null);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -114,7 +116,8 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         instructionPanel = new javax.swing.JPanel();
-        instructionsTextArea = new javax.swing.JTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        instructions = new javax.swing.JTextPane();
         simpleMode = new javax.swing.JRadioButton();
         advancedMode = new javax.swing.JRadioButton();
         modeLabel = new javax.swing.JLabel();
@@ -124,20 +127,16 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
+        instructionPanel.setLayout(new java.awt.BorderLayout());
 
-        instructionsTextArea.setBackground(instructionPanel.getBackground());
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setWrapStyleWord(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
+        jScrollPane1.setBorder(null);
+
+        instructions.setBorder(null);
+        instructions.setEditable(false);
+        instructions.setFocusable(false);
+        jScrollPane1.setViewportView(instructions);
+
+        instructionPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -192,11 +191,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 6);
         add(projectFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
@@ -207,7 +206,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         add(browseButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -258,7 +257,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     private static final byte notFoundMakeAndConfigure = 5;
     private byte messageKind = noMessage;
 
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    boolean valid() {
         messageKind = noMessage;
         String path = projectFolder.getText().trim();
         try {
@@ -304,15 +303,15 @@ public class SelectModePanel extends javax.swing.JPanel {
             return true;
         } finally {
             if (messageKind > 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path)); // NOI18N
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectModeError"+messageKind,path)); // NOI18N
             } else {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
             }
         }
     }
     
     private String getString(String key, String ... params){
-        return NbBundle.getMessage(ImportProjectPanel.class, key, params);
+        return NbBundle.getMessage(SelectModePanel.class, key, params);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -320,8 +319,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel instructionPanel;
-    private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JTextPane instructions;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel modeLabel;
     private javax.swing.JTextField projectFolder;
     private javax.swing.JRadioButton simpleMode;

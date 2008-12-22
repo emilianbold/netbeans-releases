@@ -100,22 +100,31 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     private boolean isApplicable(WizardDescriptor settings) {
-        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-        if (extension != null) {
-            boolean res = extension.isApplicable(settings);
-            String providerID = extension.getProviderID(settings);
-            if ("dwarf-executable".equals(providerID)) { // NOI18N
-                additionalLibrariesButton.setVisible(true);
-                librariesLabel.setVisible(true);
-                librariesTextField.setVisible(true);
-            } else { // NOI18N
-                additionalLibrariesButton.setVisible(false);
-                librariesLabel.setVisible(false);
-                librariesTextField.setVisible(false);
+        if (NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
+            librariesLabel.setVisible(false);
+            librariesTextField.setVisible(false);
+            additionalLibrariesButton.setVisible(false);
+            automaticButton.setVisible(false);
+            manualButton.setVisible(false);
+            return true;
+        } else {
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                boolean res = extension.isApplicable(settings);
+                String providerID = extension.getProviderID(settings);
+                if ("dwarf-executable".equals(providerID)) { // NOI18N
+                    additionalLibrariesButton.setVisible(true);
+                    librariesLabel.setVisible(true);
+                    librariesTextField.setVisible(true);
+                } else { // NOI18N
+                    additionalLibrariesButton.setVisible(false);
+                    librariesLabel.setVisible(false);
+                    librariesTextField.setVisible(false);
+                }
+                return res;
             }
-            return res;
+            return false;
         }
-        return false;
     }
 
     private void addListeners() {
@@ -142,62 +151,73 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void read(WizardDescriptor settings) {
         lastApplicable = isApplicable(settings);
-        if (lastApplicable) {
-            manualButton.setEnabled(true);
-            automaticButton.setEnabled(true);
-            if (first) {
-                automaticButton.setSelected(true);
-                togglePanel(false);
+        if (!NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
+            if (lastApplicable) {
+                manualButton.setEnabled(true);
+                automaticButton.setEnabled(true);
+                if (first) {
+                    automaticButton.setSelected(true);
+                    togglePanel(false);
+                }
+            } else {
+                manualButton.setEnabled(true);
+                automaticButton.setEnabled(true);
+                manualButton.setSelected(true);
+                togglePanel(true);
             }
-        } else {
-            manualButton.setEnabled(true);
-            automaticButton.setEnabled(true);
-            manualButton.setSelected(true);
-            togglePanel(true);
+            first = false;
         }
-        first = false;
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        if (manualButton.isSelected()) {
+        if (!NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
+            if (manualButton.isSelected()) {
+                wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
+                wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
+            } else {
+                wizardDescriptor.putProperty("includeTextField", ""); // NOI18N
+                wizardDescriptor.putProperty("macroTextField", ""); // NOI18N
+            }
+            if (automaticButton.isSelected()) {
+                ConfigutationItem level = (ConfigutationItem) configurationComboBox.getSelectedItem();
+                wizardDescriptor.putProperty("consolidationLevel", level.getID()); // NOI18N
+                wizardDescriptor.putProperty("additionalLibraries", librariesTextField.getText()); // NOI18N
+            } else {
+                wizardDescriptor.putProperty("consolidationLevel", ""); // NOI18N
+                wizardDescriptor.putProperty("additionalLibraries", ""); // NOI18N
+            }
+        } else {
             wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
-        } else {
-            wizardDescriptor.putProperty("includeTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", ""); // NOI18N
-        }
-        if (automaticButton.isSelected()) {
             ConfigutationItem level = (ConfigutationItem) configurationComboBox.getSelectedItem();
             wizardDescriptor.putProperty("consolidationLevel", level.getID()); // NOI18N
-            wizardDescriptor.putProperty("additionalLibraries", librariesTextField.getText()); // NOI18N
-        } else {
-            wizardDescriptor.putProperty("consolidationLevel", ""); // NOI18N
-            wizardDescriptor.putProperty("additionalLibraries", ""); // NOI18N
         }
     }
 
     boolean valid(WizardDescriptor settings) {
-        if (automaticButton.isSelected()) {
-            if (!lastApplicable) {
-                String selectedExecutable = (String) settings.getProperty("outputTextField"); // NOI18N
-                if (selectedExecutable == null || selectedExecutable.length() == 0) {
-                    settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.NoOutputResult")); // NOI18N
+        if (!NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
+            if (automaticButton.isSelected()) {
+                if (!lastApplicable) {
+                    String selectedExecutable = (String) settings.getProperty("outputTextField"); // NOI18N
+                    if (selectedExecutable == null || selectedExecutable.length() == 0) {
+                        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.NoOutputResult")); // NOI18N
+                        return false;
+                    }
+                    File file = new File(selectedExecutable);
+                    if (!file.exists()) {
+                        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.OutputResultNotExist")); // NOI18N
+                        return false;
+                    }
+                    settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.NoDebugOutputResult")); // NOI18N
                     return false;
                 }
-                File file = new File(selectedExecutable);
-                if (!file.exists()) {
-                    settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.OutputResultNotExist")); // NOI18N
-                    return false;
-                }
-                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("Automatic.Error.NoDebugOutputResult")); // NOI18N
-                return false;
-            }
-            StringTokenizer st = new StringTokenizer(librariesTextField.getText(), ";"); // NOI18N
-            while (st.hasMoreTokens()) {
-                String path = st.nextToken();
-                File file = new File(path);
-                if (!(file.exists() && file.isFile())) {
-                    return false;
+                StringTokenizer st = new StringTokenizer(librariesTextField.getText(), ";"); // NOI18N
+                while (st.hasMoreTokens()) {
+                    String path = st.nextToken();
+                    File file = new File(path);
+                    if (!(file.exists() && file.isFile())) {
+                        return false;
+                    }
                 }
             }
         }
@@ -818,6 +838,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             this.name = name;
         }
 
+        @Override
         public String toString() {
             return name;
         }
