@@ -59,14 +59,16 @@ class _NbTextTestResult(TestResult):
 
         # More compact stack format
         stackstr = ""
-        while 1:
-            frame = tb.tb_frame
+        stack = []
+        while tb:
+            stack.append(tb.tb_frame)
+            tb = tb.tb_next
+        stack.reverse()
+        for frame in stack:
             stackstr += "%s() in %s:%s%%BR%%" % (frame.f_code.co_name,
                                                  frame.f_code.co_filename,
                                                  frame.f_lineno)
-            if not tb.tb_next:
-                break
-            tb = tb.tb_next
+
         return stackstr
 
     def addError(self, test, err):
