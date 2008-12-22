@@ -371,8 +371,12 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/core_methods.rb", "puts has_one.t^");
     }
 
-    public void testMethodsChaining() throws Exception {
-        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
+//    public void testMethodsChainingAssignment() throws Exception {
+//        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
+//    }
+
+    public void testMethodsChainingDirect() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.empty?.to_^s");
     }
 
     // TODO uncomment when reindexed
