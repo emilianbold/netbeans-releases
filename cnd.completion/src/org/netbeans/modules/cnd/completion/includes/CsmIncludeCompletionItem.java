@@ -242,6 +242,20 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     protected String getRightText(boolean shrink, String separator) {
         StringBuilder builder = new StringBuilder(this.getParentFolder());
         builder.append(separator).append(getChildSubdir());
+        String toReplace = null;
+        if (SLASH.equals(separator)) {
+            if (builder.indexOf("\\") >= 0) {
+                toReplace = "\\";
+            }
+        } else {
+            if (builder.indexOf(SLASH) >= 0) {
+                toReplace = SLASH;
+            }
+        }
+        if (toReplace != null) {
+            // replace all "/" or "\" to system separator
+            builder = new StringBuilder(builder.toString().replace(toReplace, separator));
+        }
         int len = builder.length();
         if (shrink && len > MAX_DISPLAYED_DIR_LENGTH) {
 
