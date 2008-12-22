@@ -285,7 +285,7 @@ public class Call {
                 Exceptions.printStackTrace(ble);
             }
 
-            int dots = 0;
+            boolean dotted = false;
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
             while (ts.movePrevious()) {
@@ -307,7 +307,7 @@ public class Call {
                 }
 
                 // do not evaluate e.g. '1.even?.' expression to Fixnum type
-                if (dots < 2) {
+                if (!dotted) {
                     Call call = tryLiteral(id, methodExpected, tokenText);
                     if (call != null) {
                         return call;
@@ -323,7 +323,9 @@ public class Call {
                     
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();
-                    dots++;
+                    if (id == RubyTokenId.DOT) {
+                        dotted = true;
+                    }
 
                     continue;
                 } else if ((id == RubyTokenId.LPAREN) || (id == RubyTokenId.LBRACE) ||
