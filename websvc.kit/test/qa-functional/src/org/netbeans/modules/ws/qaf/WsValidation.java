@@ -56,6 +56,7 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CleanProjectAction;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -219,17 +220,17 @@ public class WsValidation extends WebServicesTestBase {
      */
     public void testAddOperation() {
         final EditorOperator eo = new EditorOperator(getWsName());
-        //Web Service
-        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_WebServiceActionGroup");
-        //Add Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
-        //invoke action from editor's context menu
-        new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
+        //Add Web Service Operation...
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_AddWsOperationAction");
+        //invoke action from editor's insert menu
+        GenerateCodeOperator.openDialog(actionName, eo);
         addWsOperation(eo, "myStringMethod", "String"); //NOI18N
         //invoke action from ws node's context menu
         Node wsRootNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME);
         wsRootNode.expand();
         Node wsImplNode = new Node(wsRootNode, getWsName());
+        //Add Operation...
+        actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_OperationAction");
         wsImplNode.callPopup().pushMenuNoBlock(actionName);
         addWsOperation(eo, "myIntMethod", "int[]"); //NOI18N
     //      wsImplNode.expand();
@@ -243,17 +244,10 @@ public class WsValidation extends WebServicesTestBase {
      * - check set to SOAP 1.1
      */
     public void testSetSOAP() {
-        //Web Service
-        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_WebServiceActionGroup");
-        //Set to SOAP 1.2
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_SetSoap12");
+        //Switch to SOAP 1.2
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_SetSoap12");
         EditorOperator eo = new EditorOperator(getWsName() + ".java"); //NOI18N
-        try {
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
-        } catch (TimeoutExpiredException tee) {
-            eo.select(16);
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
-        }
+        GenerateCodeOperator.openDialog(actionName, eo);
         eo.save();
         try {
             Thread.sleep(1000);
@@ -262,14 +256,9 @@ public class WsValidation extends WebServicesTestBase {
         }
         assertTrue("missing @BindingType", eo.contains("@BindingType")); //NOI18N
         assertTrue("missing namespace", eo.contains("http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/")); //NOI18N
-        //Set to SOAP 1.1
-        actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_SetSoap11");
-        try {
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
-        } catch (TimeoutExpiredException tee) {
-            eo.select(16);
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
-        }
+        //Switch to SOAP 1.1
+        actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_SetSoap11");
+        GenerateCodeOperator.openDialog(actionName, eo);
         eo.save();
         try {
             Thread.sleep(1000);
@@ -596,25 +585,30 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     protected void callWsOperation(final EditorOperator eo, String opName, int line) {
-        //Web Service Client Resources
-        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_WebServiceClientActionGroup");
+        eo.select(line);
         //Call Web Service Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_CallWebServiceOperation");
-        try {
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
-        } catch (TimeoutExpiredException tee) {
-            eo.select(line);
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_CallWebServiceOperation");
+        if (eo.getToolTipText().endsWith(".java")) { //NOI18N
+            //java files do have Insert code
+            GenerateCodeOperator.openDialog(actionName, eo);
+        } else {
+            //Web Service Client Resources
+            String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_WebServiceClientActionGroup");
+            try {
+                new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
+            } catch (TimeoutExpiredException tee) {
+                eo.select(line);
+                new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo); //NOI18N
+            }
         }
         //Select Operation to Invoke
-        String dlgTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "TTL_SelectOperation");
+        String dlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "TTL_SelectOperation");
         NbDialogOperator ndo = new NbDialogOperator(dlgTitle);
         JTreeOperator jto = new JTreeOperator(ndo);
         jto.selectPath(jto.findPath(
                 getWsClientProjectName() + "|" + getWsName()//NOI18N
                 + "|" + getWsName() + "Service|" //NOI18N
                 + getWsName() + "Port|" + opName)); //NOI18N
-        eo.select(line);
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
         try {
