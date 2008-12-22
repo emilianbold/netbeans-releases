@@ -327,7 +327,8 @@ public class FileElementsCollector {
                 }
             }
         } else {
-            for (CsmNamespaceDefinition nsd : localDirectVisibleNamespaceDefinitions) {
+            LinkedHashSet<CsmNamespaceDefinition> currentDVNDs = new LinkedHashSet<CsmNamespaceDefinition>(localDirectVisibleNamespaceDefinitions);
+            for (CsmNamespaceDefinition nsd : currentDVNDs) {
                 if (nsd.getQualifiedName().equals(nsName)) {
                     gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);
                 }
