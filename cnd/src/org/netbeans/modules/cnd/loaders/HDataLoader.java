@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
@@ -57,11 +56,10 @@ import org.openide.util.SharedClassObject;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=100)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position = 100)
 public final class HDataLoader extends CndAbstractDataLoaderExt {
-    
-    private static HDataLoader instance = null;
 
+    private static HDataLoader instance = null;
     /** Serial version number */
     static final long serialVersionUID = -2924582006340980748L;
 
@@ -70,33 +68,33 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
         instance = this;
     }
 
-    public static HDataLoader getInstance(){
+    public static HDataLoader getInstance() {
         if (instance == null) {
             instance = SharedClassObject.findObject(HDataLoader.class, true);
         }
         return instance;
     }
-    
-    protected String getMimeType(){
+
+    protected String getMimeType() {
         return MIMENames.HEADER_MIME_TYPE;
     }
 
     /** set the default display name */
     @Override
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
+        return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
     }
- 
+
     protected MultiDataObject createMultiObject(FileObject primaryFile)
-	throws DataObjectExistsException, IOException {
-	return new HDataObject(primaryFile, this);
+            throws DataObjectExistsException, IOException {
+        return new HDataObject(primaryFile, this);
     }
 
-        public String getDisplayNameForExtensionList() {
-            return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
-        }
+    public String getDisplayNameForExtensionList() {
+        return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
+    }
 
-        public String getSettingsName() {
-            return ExtensionsSettings.HEADER;
-        }
+    public String getSettingsName() {
+        return ExtensionsSettings.HEADER;
+    }
 }
