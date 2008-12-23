@@ -110,6 +110,13 @@ public final class MIMENames {
     /** Generic ELF files (shouldn't be recognized anymore) */
     public static final String ELF_GENERIC_MIME_TYPE = "application/x-elf"; //NOI18N
 
+    public static boolean isCppOrC(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE);
+    }
+
     public static boolean isHeaderOrCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;
