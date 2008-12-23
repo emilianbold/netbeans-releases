@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <ext name="hxx"/>
         <ext name="SUNWCCh"/>
         <ext name="tcc"/>
-        <resolver mime="text/x-c++"/>
+        <resolver mime="text/x-h"/>
     </file>
     <file>
         <ext name="c"/>
