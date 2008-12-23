@@ -37,8 +37,9 @@ import java.util.Map;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 
 /**
@@ -119,8 +120,7 @@ public class CsmIncludeCompletionQuery {
             String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
         File dir = new File (parentFolder, childSubDir);
         if (dir != null && dir.exists()) {
-            File[] list = filtered ?  dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions())) :
-                                    dir.listFiles(new DefFileFilter());
+            File[] list = filtered ?  dir.listFiles(new HeadersFileFilter()) : dir.listFiles(new DefFileFilter());
             if (list != null) {
                 String relFileName;
                 for (File curFile : list) {
@@ -161,11 +161,14 @@ public class CsmIncludeCompletionQuery {
         }
     }
     
-    private static final class MyFileFilter implements FileFilter {
+    private static final class HeadersFileFilter implements FileFilter {
         private final ExtensionList exts;
 
-        protected MyFileFilter(ExtensionList exts) {
-            this.exts = exts;
+        protected HeadersFileFilter() {
+            exts = new ExtensionList();
+            for (String ext : FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE)) {
+                exts.addExtension(ext);
+            }
         }
 
         public boolean accept(File pathname) {
