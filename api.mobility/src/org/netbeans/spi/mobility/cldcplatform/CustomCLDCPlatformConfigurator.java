@@ -49,8 +49,8 @@ import java.io.File;
 
 /**
  * CustomCLDCPlatformConfigurator is an SPI for service providing information about some non-standard CLDC platform (SDK, emulator).
- * This interface has to be implemented and registered in module META-INF/services/org.netbeans.spi.mobility.cldcplatform.CustomCLDCPlatformConfigurator
- * #position=xx attribute of the registration is important if two different CustomCLDCPlatformConfigurator implementation recognize the same platform.
+ * This interface has to be implemented and registered using {@link org.openide.util.lookup.ServiceProvider}.
+ * The {@code position} attribute of the registration is important if two different CustomCLDCPlatformConfigurator implementations recognize the same platform.
  * @author Adam Sotona
  */
 public interface CustomCLDCPlatformConfigurator {

@@ -42,7 +42,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 
 /**
  * Factory class to create indexers
- * Instances of this class are registered in the META-INF/services
+ * Instances of this class are registered in {@link org.openide.util.lookup.ServiceProvider}.
  * @author Tomas Zezula
  */
 public abstract class CustomIndexerFactory {

@@ -145,7 +145,7 @@ and helper implementations in
 <div class="nonnormative">
 
 The whole NetBeans platform is moving toward 
-installation of services via XML layer or <code>META-INF/services</code>.
+installation of services via XML layer or (via the <code>@ServiceProvider</code> annotation on classes) <code>META-INF/services</code>.
 Layer-based installation is more flexible in many ways. 
 
 <p>The need for having a standard interface to access such
@@ -468,7 +468,9 @@ service provider</a>. If some module wants to register for example
 <font class="type">org.me.MyService</font> it shall provide file name 
 <font class="function-name">META-INF/services/org.me.MyService</FONT> in its own JAR 
 with single line containing name of the implementation class (for example
-<font class="type">org.you.MyServiceImpl</FONT>). The lookup infrastructure
+<font class="type">org.you.MyServiceImpl</FONT>).
+This is normally done more easily by using the <code>@ServiceProvider</code> annotation in <code>MyService.java</code>.
+The lookup infrastructure
 will then load the implementation class and call its default constructor 
 to answer the query in the above example.
 <P>
@@ -515,6 +517,7 @@ to answer the query in the above example.
     gap for other modules if they need to get in front of your item. And, 
     again, to keep compatibility the position attribute must starts with
     comment delimiter.</p>
+<p>Both extensions are supported by <code>@ServiceProvider</code>.</p>
 </DIV>
 
 <P>
@@ -709,7 +712,9 @@ standalone mode. This is not very recommended in the NetBeans IDE, but
 can be found pretty useful when using this library in standalone applications:
 <code>Lookups.forPath(path)</code> scans all instances registered in the 
 <a href="#service-lookup">META-INF/services style</a> just it uses
-<code>META-INF/namedservices/path</code> prefix instead. As a result to
+<code>META-INF/namedservices/path</code> prefix instead.
+(<code>@ServiceProvider</code> supports this mode.)
+As a result to
 perform a successfull search for all <code>javax.xml.parsers.DocumentBuilderFactory</code> 
 inside <code>Lookups.forName("my/xml/app/data")</code> one can register the
 implementation into <code>META-INF/namedservices/my/xml/app/data/javax.xml.parsers.DocumentBuilderFactory</code>.
