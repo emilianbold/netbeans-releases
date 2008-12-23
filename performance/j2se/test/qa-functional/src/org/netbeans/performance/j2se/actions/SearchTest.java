@@ -50,6 +50,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -72,6 +73,7 @@ public class SearchTest extends PerformanceTestCase {
     
     private Node testNode;
     private NbDialogOperator dlgSearch;
+    JButtonOperator btn_Find;
     
     /** Creates a new instance of RefactorFindUsagesDialog */
     public SearchTest(String testName) {
@@ -108,7 +110,6 @@ public class SearchTest extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
         testNode = new Node(new SourcePackagesNode("jEdit"), new SourcePackagesNode("jEdit").getChildren()[0]);
     }
     
@@ -123,17 +124,21 @@ public class SearchTest extends PerformanceTestCase {
         JComboBoxOperator  searchPattern = new JComboBoxOperator(dlgSearch,  0);
         searchPattern.typeText("100%NoSuchTextExists");
 
-        JButtonOperator btn_Find = new JButtonOperator(dlgSearch, Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","TEXT_BUTTON_SEARCH"));
-        btn_Find.push();
+        btn_Find = new JButtonOperator(dlgSearch, Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","TEXT_BUTTON_SEARCH"));
+        
     }
     
     public ComponentOperator open() {
+        btn_Find.push();
         JComponentOperator srch_wnd = new JComponentOperator(MainWindowOperator.getDefault(), new NameComponentChooser(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","TITLE_SEARCH_RESULTS")));
+
         JTreeOperator tree = new JTreeOperator(srch_wnd);
         tree.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 5*60*1000);
 
         Node results = new Node(tree, tree.getPathForRow(0));
-        System.out.println("TEST RESULTS :" + results.getText().lastIndexOf(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_MSG_NO_NODE_FOUND")));
+
+        while (!results.getText().contains(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_MSG_NO_NODE_FOUND"))) 
+            results = new Node(tree, tree.getPathForRow(0));
 
         return null;
     }

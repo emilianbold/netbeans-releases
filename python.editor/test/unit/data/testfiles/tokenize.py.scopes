@@ -72,16 +72,16 @@ x [bound][data][read][node=Name]
 
     =============================================
     group: FunctionDef : OffsetRange[1394,1452>
-    choices [bound][param][data][read][node=argumentsType]
+    choices [bound][param][data][read][node=arguments]
 
     =============================================
     any: FunctionDef : OffsetRange[1452,1500>
-    choices [bound][param][data][read][node=argumentsType]
+    choices [bound][param][data][read][node=arguments]
     group [free][read][called][node=Name]
 
     =============================================
     maybe: FunctionDef : OffsetRange[1500,1551>
-    choices [bound][param][data][read][node=argumentsType]
+    choices [bound][param][data][read][node=arguments]
     group [free][read][called][node=Name]
 
     =============================================

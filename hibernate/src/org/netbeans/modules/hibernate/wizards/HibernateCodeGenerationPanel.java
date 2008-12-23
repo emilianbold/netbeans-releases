@@ -41,7 +41,10 @@
 package org.netbeans.modules.hibernate.wizards;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -51,11 +54,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
-import org.netbeans.modules.hibernate.wizards.support.SelectedTables;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.hibernate.wizards.support.SourceGroupUISupport;
-import org.netbeans.modules.hibernate.wizards.support.TableClosure;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -70,11 +72,13 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
     private Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private JTextComponent packageComboBoxEditor;
-    private SelectedTables selectedTables;    
+    private HibernateEnvironment env;
+    List<FileObject> configFileObjects;
+    List<FileObject> revengFileObjects;
+
 
     public HibernateCodeGenerationPanel() {
-        initComponents();
-
+        initComponents();        
         packageComboBoxEditor = (JTextComponent) cmbPackage.getEditor().getEditorComponent();
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
         packageComboBoxDocument.addDocumentListener(new DocumentListener() {
@@ -96,6 +100,12 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
     /** Creates new form HibernateCodeGenerationPanel */
     public void initialize(Project project, FileObject targetFolder) {        
         this.project = project;
+        env = project.getLookup().lookup(HibernateEnvironment.class);
+        // Fill Configuration files dropdown
+        fillConfiguration();
+
+        // Fill Reveng Files dropdown
+        fillRevengFiles();
 
         // Setting the project text field.
         txtProject.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -124,44 +134,48 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
         }
     }
 
+    private void fillConfiguration() {        
+        String[] configFiles = getConfigFilesFromProject(project);
+        this.cmbConf.setModel(new DefaultComboBoxModel(configFiles));
+    }
+
+    private void fillRevengFiles() {
+        String[] revengFiles = getRevengFilesFromProject(project);
+        this.cmbReveng.setModel(new DefaultComboBoxModel(revengFiles));
+    }
+
+      // Gets the list of Config files from HibernateEnvironment.
+    public String[] getConfigFilesFromProject(Project project) {
+        List<String> configFiles = new ArrayList<String>();
+        configFileObjects = env.getAllHibernateConfigFileObjects();
+        for (FileObject fo : configFileObjects) {
+            configFiles.add(fo.getNameExt());
+        }
+        return configFiles.toArray(new String[]{});
+    }
+
+    // Gets the list of Reveng files from HibernateEnvironment.
+    public String[] getRevengFilesFromProject(Project project) {
+        List<String> revengFiles = new ArrayList<String>();
+        revengFileObjects = env.getAllHibernateReverseEnggFileObjects();
+        for (FileObject fo : revengFileObjects) {
+            revengFiles.add(fo.getNameExt());
+        }
+        return revengFiles.toArray(new String[]{});
+    }
+
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
     private void packageChanged() {
-        updateSelectedTables();
         changeSupport.fireChange();
     }
 
-    private void updateSelectedTables() {
-        if (selectedTables != null) {
-            try {
-                selectedTables.setTargetFolder(getLocationValue(), getPackageName());
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
+
     
-    public void update(TableClosure tableClosure) {
-        try {
-            if (selectedTables == null) {
-                selectedTables = new SelectedTables(tableClosure, getLocationValue(), getPackageName());                
-                selectedTables.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent event) {
-                        changeSupport.fireChange();
-                    }
-                });
-            } else {                
-                selectedTables.setTableClosureAndTargetFolder(tableClosure, getLocationValue(), getPackageName());
-            }
-            
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }        
-    }
-
-
+   
     private void updatePackageComboBox() {
         SourceGroup sourceGroup = (SourceGroup) cmbLocation.getSelectedItem();
         if (sourceGroup != null) {
@@ -173,10 +187,22 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
             cmbPackage.setModel(model);
         }
     }
-    
-    public SelectedTables getSelectedTables() {                
-        return selectedTables;
+
+
+    public FileObject getConfigurationFile() {
+        if (cmbConf.getSelectedIndex() != -1) {
+            return configFileObjects.get(cmbConf.getSelectedIndex());
+        }
+        return null;
     }
+
+    public FileObject getRevengFile() {
+        if (cmbReveng.getSelectedIndex() != -1) {
+            return revengFileObjects.get(cmbReveng.getSelectedIndex());
+        }
+        return null;
+    }
+ 
 
     public SourceGroup getLocationValue() {
         return (SourceGroup)cmbLocation.getSelectedItem();
@@ -203,8 +229,7 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
     }
     
     private void locationChanged() {
-        updatePackageComboBox();
-        updateSelectedTables();
+        updatePackageComboBox();        
         changeSupport.fireChange();
     }
 
@@ -229,6 +254,10 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         chkJava = new javax.swing.JCheckBox();
         chkEjb = new javax.swing.JCheckBox();
+        cmbConf = new javax.swing.JComboBox();
+        cmbReveng = new javax.swing.JComboBox();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "LBL_GenerateClasses")); // NOI18N
 
@@ -277,47 +306,76 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(chkEjb, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkEjb.text")); // NOI18N
 
+        cmbConf.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        cmbReveng.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel6.text")); // NOI18N
+
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.jLabel7.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(chkEjb)
-                    .add(chkJava)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel6)
+                            .add(jLabel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 217, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cmbReveng, 0, 273, Short.MAX_VALUE)
+                            .add(cmbConf, 0, 273, Short.MAX_VALUE)))
                     .add(jLabel5)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(chkJava)
+                            .add(chkEjb)))
+                    .add(jLabel1)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(chkDomain)
+                            .add(chkHbm)))
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
                             .add(jLabel4)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
-                            .add(cmbPackage, 0, 414, Short.MAX_VALUE)
-                            .add(cmbLocation, 0, 414, Short.MAX_VALUE)))
-                    .add(chkHbm)
-                    .add(chkDomain)
-                    .add(jLabel1))
+                            .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                            .add(cmbPackage, 0, 416, Short.MAX_VALUE)
+                            .add(cmbLocation, 0, 416, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(6, 6, 6)
-                .add(jLabel5)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel6)
+                    .add(cmbConf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(9, 9, 9)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel7)
+                    .add(cmbReveng, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(chkJava)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chkEjb)
-                .add(19, 19, 19)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(chkDomain)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(chkHbm)
-                .add(23, 23, 23)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(txtProject, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -329,7 +387,7 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cmbPackage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel4))
-                .add(29, 29, 29))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -351,13 +409,17 @@ private void txtProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JCheckBox chkEjb;
     private javax.swing.JCheckBox chkHbm;
     private javax.swing.JCheckBox chkJava;
+    private javax.swing.JComboBox cmbConf;
     private javax.swing.JComboBox cmbLocation;
     private javax.swing.JComboBox cmbPackage;
+    private javax.swing.JComboBox cmbReveng;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JTextField txtProject;
     // End of variables declaration//GEN-END:variables
 }

@@ -73,8 +73,6 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     private JPanel panel;
     private JLabel label;
     private JComponent contentComponent;
-
-    private static final JButton BUTTON = new JButton();
     
     public ItemDisplayPresenter() {
         panel = new JPanel() {
@@ -87,50 +85,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         panel.setOpaque(false);
         
         // Fix for #79636 - Screen designer tab traversal
-        panel.setInputMap( JComponent.WHEN_FOCUSED, BUTTON.getInputMap());
-        panel.addFocusListener( new FocusAdapter() {
-
-            @Override
-            public void focusGained(FocusEvent e) {
-
-                getComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
-                    public void run() {
-                        getComponent().getDocument().setSelectedComponents(
-                                "screen", Collections.singleton(getComponent()));   // NOI18N
-                    }
-                });
-
-                InputMap  map = panel.getInputMap();
-                if ( map != BUTTON.getInputMap() ){
-                    return;
-                }
-                else {
-                    map = new InputMap();
-                    panel.setInputMap( JComponent.WHEN_FOCUSED, map);
-                }
-
-                ActionMap actionMap = panel.getActionMap();
-                if ( actionMap == null ){
-                    actionMap = new ActionMap();
-                    panel.setActionMap(actionMap);
-                }
-
-                for (Action action : ActionsSupport.createActionsArray(getRelatedComponent())) {
-                    if (action == null) {
-                        continue;
-                    }
-                    if ( action.getValue(Action.ACCELERATOR_KEY)!= null){
-                       map.put( (KeyStroke)action.getValue(Action.ACCELERATOR_KEY),
-                               action.getValue(Action.ACCELERATOR_KEY).toString());
-                       actionMap.put( action.getValue(Action.ACCELERATOR_KEY).toString(),
-                               action);
-                   }
-                }
-                if ( map.allKeys() == null || map.allKeys().length == 0 ){
-                    map.setParent( BUTTON.getInputMap() );
-                }
-            }
-        });
+        ScreenSupport.addKeyboardSupport(this);
         
         label = new JLabel();
         Font bold = label.getFont().deriveFont(Font.BOLD);

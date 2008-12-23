@@ -74,6 +74,17 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -186,7 +197,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         String className = debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
-        final List<ReferenceType> classes = vm.classesByName(className);
+        final List<ReferenceType> classes;
+        try {
+            classes = VirtualMachineWrapper.classesByName(vm, className);
+        } catch (InternalExceptionWrapper ex) {
+            return ;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ;
+        }
         if (!classes.isEmpty()) {
             doAction(url, classes.get(0), methodLine, methodOffset, method);
         } else {
@@ -229,9 +247,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                           int methodOffset, final String methodName) {
         List<Location> locations = java.util.Collections.emptyList();
         try {
-            while (methodLine > 0 && (locations = clazz.locationsOfLine(methodLine)).isEmpty()) {
+            while (methodLine > 0 && (locations = ReferenceTypeWrapper.locationsOfLine(clazz, methodLine)).isEmpty()) {
                 methodLine--;
             }
+        } catch (InternalExceptionWrapper aiex) {
+            return ;
+        } catch (VMDisconnectedExceptionWrapper aiex) {
+            return ;
+        } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
@@ -272,7 +295,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             boolean setBoundaryStep) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
-        final int line = bpLocation.lineNumber("Java");
+        final int line = LocationWrapper.lineNumber0(bpLocation, "Java");
         CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
         if (csf == null) {
             return false; // No intelligent stepping without the current stack frame.
@@ -280,10 +303,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final JPDAThreadImpl t;
         boolean areWeOnTheLocation;
         try {
-            areWeOnTheLocation = csf.getStackFrame().location().equals(bpLocation);
+            areWeOnTheLocation = LocationWrapper.equals(StackFrameWrapper.location(csf.getStackFrame()), bpLocation);
             t = (JPDAThreadImpl) csf.getThread();
-        } catch (InvalidStackFrameException e) {
+        } catch (InvalidStackFrameExceptionWrapper e) {
             return false; // No intelligent stepping without the current stack frame.
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return false; // No stepping without the connection.
+        } catch (InternalExceptionWrapper e) {
+            return false; // No stepping without the correct functionality.
         }
         final boolean doFinishWhenMethodNotFound = setBoundaryStep;
         if (areWeOnTheLocation) {
@@ -292,30 +319,45 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } else {
             final JPDAStep[] boundaryStepPtr = new JPDAStep[] { null };
             // Submit the breakpoint to get to the point from which the method is called
-            final BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(bpLocation);
-            Executor tracingExecutor = new Executor() {
+            try {
+                final BreakpointRequest brReq = EventRequestManagerWrapper.createBreakpointRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        bpLocation);
+                Executor tracingExecutor = new Executor() {
 
-                public boolean exec(Event event) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("Calling location reached, tracing for "+methodName+"()");
-                    if (boundaryStepPtr[0] != null) {
-                        ((JPDAStepImpl) boundaryStepPtr[0]).cancel();
+                    public boolean exec(Event event) {
+                        Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                            fine("Calling location reached, tracing for "+methodName+"()");
+                        if (boundaryStepPtr[0] != null) {
+                            ((JPDAStepImpl) boundaryStepPtr[0]).cancel();
+                        }
+                        try {
+                            EventRequestManagerWrapper.deleteEventRequest(
+                                    VirtualMachineWrapper.eventRequestManager(vm),
+                                    brReq);
+                            debugger.getOperator().unregister(brReq);
+                        } catch (InternalExceptionWrapper e) {
+                        } catch (VMDisconnectedExceptionWrapper e) {
+                            return false;
+                        }
+                        traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
+                        return true;
                     }
-                    vm.eventRequestManager().deleteEventRequest(brReq);
-                    debugger.getOperator().unregister(brReq);
-                    traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
-                    return true;
-                }
 
-                public void removed(EventRequest eventRequest) {}
-            };
-            debugger.getOperator().register(brReq, tracingExecutor);
-            brReq.addThreadFilter(t.getThreadReference());
-            brReq.setSuspendPolicy(debugger.getSuspend());
-            brReq.addCountFilter(1);
-            brReq.enable();
-            if (setBoundaryStep) {
-                boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
+                    public void removed(EventRequest eventRequest) {}
+                };
+                debugger.getOperator().register(brReq, tracingExecutor);
+                BreakpointRequestWrapper.addThreadFilter(brReq, t.getThreadReference());
+                EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
+                EventRequestWrapper.addCountFilter(brReq, 1);
+                EventRequestWrapper.enable(brReq);
+                if (setBoundaryStep) {
+                    boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
+                }
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return false;
+            } catch (InternalExceptionWrapper e) {
+                return false;
             }
         }
         resume(debugger);
@@ -332,8 +374,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             public void propertyChange(PropertyChangeEvent evt) {
                 VirtualMachine vm = debugger.getVirtualMachine();
                 if (vm != null) {
-                    debugger.getOperator().unregister(request);
-                    vm.eventRequestManager().deleteEventRequest(request);
+                    try {
+                        debugger.getOperator().unregister(request);
+                        EventRequestManagerWrapper.deleteEventRequest(
+                                VirtualMachineWrapper.eventRequestManager(vm),
+                                request);
+                    } catch (InternalExceptionWrapper ex) {
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                    }
                 }
             }
         });

@@ -57,6 +57,10 @@ import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -65,6 +69,10 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -139,10 +147,14 @@ public class ThreadsTreeModel implements TreeModel {
                 if (vm == null) {
                     System.err.println("\nThreadsTreeModel.computeChildren():\nVM is null!\n");
                 } else {
-                    List<ThreadReference> threads = vm.allThreads();
-                    System.err.println("\nThreadsTreeModel.computeChildren() ALL Threads:");
-                    for (ThreadReference t : threads) {
-                        System.err.println("  "+t.name()+" is suspended: "+t.isSuspended()+", suspend count = "+t.suspendCount());
+                    try {
+                        List<ThreadReference> threads = VirtualMachineWrapper.allThreads(vm);
+                        System.err.println("\nThreadsTreeModel.computeChildren() ALL Threads:");
+                        for (ThreadReference t : threads) {
+                            System.err.println("  "+ThreadReferenceWrapper.name(t)+" is suspended: "+ThreadReferenceWrapper.isSuspended(t)+", suspend count = "+ThreadReferenceWrapper.suspendCount(t));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     System.err.println("");
                 }
@@ -307,13 +319,41 @@ public class ThreadsTreeModel implements TreeModel {
             ThreadGroupReference tg;
             if (e.getPropertyName() == ThreadsCache.PROP_THREAD_STARTED) {
                 ThreadReference t = (ThreadReference) e.getNewValue();
-                tg = t.threadGroup();
+                try {
+                    tg = ThreadReferenceWrapper.threadGroup(t);
+                } catch (InternalExceptionWrapper ex) {
+                    tg = null;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    return ;
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    tg = null;
+                }
             } else if (e.getPropertyName() == ThreadsCache.PROP_THREAD_DIED) {
                 ThreadReference t = (ThreadReference) e.getOldValue();
-                tg = t.threadGroup();
+                try {
+                    tg = ThreadReferenceWrapper.threadGroup(t);
+                } catch (InternalExceptionWrapper ex) {
+                    tg = null;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    tg = null;
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    tg = null;
+                }
             } else if (e.getPropertyName() == ThreadsCache.PROP_GROUP_ADDED) {
                 tg = (ThreadGroupReference) e.getNewValue();
-                tg = tg.parent();
+                try {
+                    tg = ThreadGroupReferenceWrapper.parent(tg);
+                } catch (InternalExceptionWrapper ex) {
+                    tg = null;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    tg = null;
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    tg = null;
+                }
             } else {
                 return ;
             }

@@ -149,8 +149,7 @@ public class QmakeProjectWriter {
     }
 
     private void write(BufferedWriter bw) throws IOException {
-        write(bw, Variable.TEMPLATE, Operation.ASSIGN,
-                configuration.getQmakeConfiguration().getTemplate().getOption());
+        write(bw, Variable.TEMPLATE, Operation.ASSIGN, getTemplate());
         write(bw, Variable.TARGET, Operation.ASSIGN,
                 configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
         write(bw, Variable.CONFIG, Operation.APPEND,
@@ -244,6 +243,17 @@ public class QmakeProjectWriter {
             list.add(item.getPath());
         }
         return list;
+    }
+
+    private String getTemplate() {
+        switch (configuration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                return "app"; // NOI18N
+            case MakeConfiguration.TYPE_QT_LIBRARY:
+                return "lib"; // NOI18N
+            default:
+                return ""; // NOI18N
+        }
     }
 
 }

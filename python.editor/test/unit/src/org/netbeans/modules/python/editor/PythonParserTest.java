@@ -108,4 +108,10 @@ public class PythonParserTest extends PythonTestBase {
         // See 150921
         checkNoParseAbort("testfiles/errors6.py");
     }
+
+    // Still broken
+    //public void testNpe2() throws Exception {
+    //    // See 155904
+    //    checkNoParseAbort("testfiles/errors7.py");
+    //}
 }

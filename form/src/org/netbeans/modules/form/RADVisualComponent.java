@@ -311,9 +311,13 @@ public class RADVisualComponent extends RADComponent {
 
         LayoutSupportManager layoutSupport = getParentLayoutSupport();
         if (layoutSupport != null) {
-            LayoutConstraints constr = layoutSupport.getConstraints(this);
-            if (constr != null)
-                constraintsProperties = constr.getProperties();
+            // Issue 154824 - do not create layout properties for menu-bar
+            if (getParentContainer().isLayoutSubcomponent(this)) {
+                LayoutConstraints constr = layoutSupport.getConstraints(this);
+                if (constr != null) {
+                    constraintsProperties = constr.getProperties();
+                }
+            }
         } else if (getParentContainer() != null) {
             LayoutComponent component = getFormModel().getLayoutModel().getLayoutComponent(getId());
             if (component == null) return; // Will be called again later

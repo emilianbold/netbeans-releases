@@ -48,12 +48,18 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
@@ -152,16 +158,16 @@ public class SourcePath {
     public String getURL (
         StackFrame sf,
         String stratumn
-    ) {
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper {
         try {
             return getURL (
-                convertSlash (sf.location ().sourcePath (stratumn)),
+                convertSlash(LocationWrapper.sourcePath(StackFrameWrapper.location(sf), stratumn)),
                 true
             );
         } catch (AbsentInformationException e) {
             return getURL (
                 convertClassNameToRelativePath (
-                    sf.location ().declaringType ().name ()
+                    ReferenceTypeWrapper.name(LocationWrapper.declaringType(StackFrameWrapper.location(sf)))
                 ),
                 true
             );
@@ -171,16 +177,16 @@ public class SourcePath {
     public String getURL (
         Location loc,
         String stratumn
-    ) {
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         try {
             return getURL (
-                convertSlash(loc.sourcePath(stratumn)),
+                convertSlash(LocationWrapper.sourcePath(loc, stratumn)),
                 true
             );
         } catch (AbsentInformationException e) {
             return getURL (
                 convertClassNameToRelativePath (
-                    loc.declaringType().name()
+                    ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc))
                 ),
                 true
             );

@@ -265,7 +265,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     @Override
     public RubyType getType() {
-        if (type == null) {
+        if (type == null && attributes != null) {
             int lastSemiColon = attributes.lastIndexOf(';');
             if (lastSemiColon != -1) {
                 int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon -1);

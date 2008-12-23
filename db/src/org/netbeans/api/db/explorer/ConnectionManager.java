@@ -48,9 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -216,7 +214,7 @@ public final class ConnectionManager {
             throw new NullPointerException();
         }
 
-        ((RootNodeInfo)RootNode.getInstance().getInfo()).removeConnection(dbconn.getDelegate());
+        ConnectionList.getDefault().remove(dbconn.getDelegate());
     }
 
     /**

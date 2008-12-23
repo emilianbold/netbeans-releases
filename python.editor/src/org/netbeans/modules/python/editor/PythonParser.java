@@ -59,10 +59,10 @@ import org.python.antlr.ListErrorHandler;
 import org.python.antlr.ModuleParser;
 import org.python.antlr.ParseException;
 import org.python.antlr.PythonTree;
-import org.python.antlr.ast.exprType;
-import org.python.antlr.ast.modType;
-import org.python.antlr.ast.sliceType;
-import org.python.antlr.ast.stmtType;
+import org.python.antlr.base.expr;
+import org.python.antlr.base.mod;
+import org.python.antlr.base.slice;
+import org.python.antlr.base.stmt;
 
 /**
  * Parser for Python. Wraps Jython.
@@ -103,7 +103,17 @@ public class PythonParser implements Parser {
         final ParserFile file = context.file;
         try {
             String fileName = file.getNameExt();
-            ModuleParser g = new ModuleParser(new ANTLRStringStream(sourceCode), fileName);
+            // TODO - sniff file headers etc. Frank's comment:
+            // Longer term for Python compatibility, having NetBeans sniff the top two lines
+            // for an encoding would be the right thing to do from a pure Python
+            // compatibility standard (see http://www.python.org/dev/peps/pep-0263/) I
+            // have pep-0263 code in Jython that I could probably extract for this
+            // purpose down the road.
+            //String charset = "ISO8859_1"; // NOI18N
+            //String charset = "UTF-8"; // NOI18N
+            //String charset = "iso8859_1"; // NOI18N
+            String charset = null;
+            ModuleParser g = new ModuleParser(new ANTLRStringStream(sourceCode), fileName, charset);
             final boolean ignoreErrors = sanitizedSource;
             ListErrorHandler errorHandler = new ListErrorHandler() {
                 @Override
@@ -113,22 +123,22 @@ public class PythonParser implements Parser {
                 }
 
                 @Override
-                public exprType errorExpr(PythonTree t) {
+                public expr errorExpr(PythonTree t) {
                     return super.errorExpr(t);
                 }
 
                 @Override
-                public modType errorMod(PythonTree t) {
+                public mod errorMod(PythonTree t) {
                     return super.errorMod(t);
                 }
 
                 @Override
-                public sliceType errorSlice(PythonTree t) {
+                public slice errorSlice(PythonTree t) {
                     return super.errorSlice(t);
                 }
 
                 @Override
-                public stmtType errorStmt(PythonTree t) {
+                public stmt errorStmt(PythonTree t) {
                     return super.errorStmt(t);
                 }
 

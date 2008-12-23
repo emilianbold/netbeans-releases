@@ -61,6 +61,7 @@ import org.netbeans.modules.python.editor.elements.AstElement;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.imports.ImportEntry;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -79,7 +80,8 @@ import org.python.antlr.ast.Interactive;
 import org.python.antlr.ast.Lambda;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Str;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
+import org.python.antlr.base.expr;
 import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
 
 /**
@@ -94,7 +96,6 @@ public class SymbolTable {
     private final static int YES = 1;
     private final static int NO = 0;
     private final static int CIRCULAR = -1;
-
     private Map<PythonTree, ScopeInfo> scopes = new HashMap<PythonTree, ScopeInfo>();
     private PythonTree root;
     private FileObject fileObject;
@@ -123,7 +124,7 @@ public class SymbolTable {
         for (PythonTree cur : scopes.keySet()) {
             if (cur instanceof ClassDef) {
                 ClassDef curClass = (ClassDef)cur;
-                localClasses.put(curClass.name, curClass);
+                localClasses.put(curClass.getInternalName(), curClass);
             }
         }
         return localClasses;
@@ -306,10 +307,11 @@ public class SymbolTable {
         List<String> modules = new ArrayList<String>();
 
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
                     }
                 }
             }
@@ -517,64 +519,73 @@ public class SymbolTable {
                     int ordinal = 0;
                     String module = null;
                     String asName = null;
-                    for (aliasType at : imp.names) {
-                        if (name.equals(at.asname)) {
-                            module = at.name;
-                            asName = at.asname;
-                            break;
-                        } else if (name.equals(at.name)) {
-                            module = at.name;
-                            break;
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (name.equals(at.getInternalAsname())) {
+                                module = at.getInternalName();
+                                asName = at.getInternalAsname();
+                                break;
+                            } else if (name.equals(at.getInternalName())) {
+                                module = at.getInternalName();
+                                break;
+                            }
                         }
-                    }
-                    if (module == null) {
-                        // For imports with dotted names, like wsgiref.handlers,
-                        // the symbol table entry is just "wsgiref", yet I have to match
-                        // the symbols, so try again more carefully
-                        for (aliasType at : imp.names) {
-                            if (at.asname != null && at.asname.startsWith(name) &&
-                                    at.asname.charAt(name.length()) == '.') {
-                                module = at.name;
-                                asName = at.asname;
-                                break;
-                            } else if (at.name.startsWith(name) &&
-                                    at.name.charAt(name.length()) == '.') {
-                                module = at.name;
-                                break;
+                        if (module == null) {
+                            // For imports with dotted names, like wsgiref.handlers,
+                            // the symbol table entry is just "wsgiref", yet I have to match
+                            // the symbols, so try again more carefully
+                            for (alias at : names) {
+                                if (at.getInternalAsname() != null && at.getInternalAsname().startsWith(name) &&
+                                        at.getInternalAsname().charAt(name.length()) == '.') {
+                                    module = at.getInternalName();
+                                    asName = at.getInternalAsname();
+                                    break;
+                                } else if (at.getInternalName().startsWith(name) &&
+                                        at.getInternalName().charAt(name.length()) == '.') {
+                                    module = at.getInternalName();
+                                    break;
+                                }
                             }
                         }
                     }
                     unused.add(new ImportEntry(module, asName, true, imp, imp.getCharStartIndex() + (ordinal++)));
                 } else if (node instanceof ImportFrom) {
                     ImportFrom imp = (ImportFrom)node;
-                    String module = imp.module;
+                    if (ImportManager.isFutureImport(imp)) {
+                        continue;
+                    }
+                    String module = imp.getInternalModule();
                     String origName = null;
                     String asName = null;
                     int ordinal = 0;
-                    for (aliasType at : imp.names) {
-                        if (name.equals(at.asname)) {
-                            origName = at.name;
-                            asName = at.asname;
-                            break;
-                        } else if (name.equals(at.name)) {
-                            origName = at.name;
-                            break;
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (name.equals(at.getInternalAsname())) {
+                                origName = at.getInternalName();
+                                asName = at.getInternalAsname();
+                                break;
+                            } else if (name.equals(at.getInternalName())) {
+                                origName = at.getInternalName();
+                                break;
+                            }
                         }
-                    }
-                    if (origName == null) {
-                        // For imports with dotted names, like wsgiref.handlers,
-                        // the symbol table entry is just "wsgiref", yet I have to match
-                        // the symbols, so try again more carefully
-                        for (aliasType at : imp.names) {
-                            if (at.asname != null && at.asname.startsWith(name) &&
-                                    at.asname.charAt(name.length()) == '.') {
-                                origName = at.name;
-                                asName = at.asname;
-                                break;
-                            } else if (at.name.startsWith(name) &&
-                                    at.name.charAt(name.length()) == '.') {
-                                origName = at.name;
-                                break;
+                        if (origName == null) {
+                            // For imports with dotted names, like wsgiref.handlers,
+                            // the symbol table entry is just "wsgiref", yet I have to match
+                            // the symbols, so try again more carefully
+                            for (alias at : names) {
+                                if (at.getInternalAsname() != null && at.getInternalAsname().startsWith(name) &&
+                                        at.getInternalAsname().charAt(name.length()) == '.') {
+                                    origName = at.getInternalName();
+                                    asName = at.getInternalAsname();
+                                    break;
+                                } else if (at.getInternalName().startsWith(name) &&
+                                        at.getInternalName().charAt(name.length()) == '.') {
+                                    origName = at.getInternalName();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -606,15 +617,17 @@ public class SymbolTable {
 
         @Override
         public Object visitImport(Import imp) throws Exception {
-            if (imp.names != null) {
+            List<alias> names = imp.getInternalNames();
+            if (names != null && names.size() > 0) {
                 boolean found = false;
-                for (aliasType at : imp.names) {
-                    if (at.asname != null) {
-                        if (name.equals(at.asname)) {
+                for (alias at : names) {
+                    String asName = at.getInternalAsname();
+                    if (asName != null) {
+                        if (name.equals(asName)) {
                             found = true;
                             break;
                         }
-                    } else if (name.equals(at.name)) {
+                    } else if (name.equals(at.getInternalName())) {
                         found = true;
                         break;
                     }
@@ -628,15 +641,17 @@ public class SymbolTable {
 
         @Override
         public Object visitImportFrom(ImportFrom imp) throws Exception {
-            if (imp.names != null) {
+            List<alias> names = imp.getInternalNames();
+            if (names != null && names.size() > 0) {
                 boolean found = false;
-                for (aliasType at : imp.names) {
-                    if (at.asname != null) {
-                        if (name.equals(at.asname)) {
+                for (alias at : names) {
+                    String asName = at.getInternalAsname();
+                    if (asName != null) {
+                        if (name.equals(asName)) {
                             found = true;
                             break;
                         }
-                    } else if (name.equals(at.name)) {
+                    } else if (name.equals(at.getInternalName())) {
                         found = true;
                         break;
                     }
@@ -651,7 +666,7 @@ public class SymbolTable {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            if (node.id.equals(name)) {
+            if (node.getInternalId().equals(name)) {
                 nodes.add(node);
             }
             return super.visitName(node);
@@ -659,7 +674,7 @@ public class SymbolTable {
 
         @Override
         public Object visitFunctionDef(FunctionDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 nodes.add(node);
             }
 
@@ -672,7 +687,7 @@ public class SymbolTable {
 
         @Override
         public Object visitClassDef(ClassDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 nodes.add(node);
             }
 
@@ -803,7 +818,7 @@ public class SymbolTable {
         for (ScopeInfo scopeInfo : scopes.values()) {
             if (scopeInfo.scope_node instanceof ClassDef) {
                 ClassDef curClass = (ClassDef)scopeInfo.scope_node;
-                if (curClass.name.equals(className)) {
+                if (curClass.getInternalName().equals(className)) {
                     return scopeInfo;
                 }
             }
@@ -812,13 +827,14 @@ public class SymbolTable {
     }
 
     private int belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling) {
-        if (cls.bases == null) {
+        List<expr> bases = cls.getInternalBases();
+        if (bases == null || bases.size() == 0) {
             return NO; // no parents
         }
-        for (int ii = 0; ii < cls.bases.length; ii++) {
+        for (expr base : bases) {
             String className = null;
-            if (cls.bases[ii] instanceof Name) {
-                className = ((Name)cls.bases[ii]).id;
+            if (base instanceof Name) {
+                className = ((Name)base).getInternalId();
             } else {
                 // should be Attribute here( module.className form )
                 // which imply imported from external scope
@@ -829,8 +845,8 @@ public class SymbolTable {
             if (cycling.get(className) != null) {
                 cycling.clear();
                 // put parent child conficting back in cycling
-                cycling.put(className, cls.name);
-                return CIRCULAR ;
+                cycling.put(className, cls.getInternalName());
+                return CIRCULAR;
             }
             cycling.put(className, className);
             ScopeInfo localClassScope = getClassScope(className);
@@ -848,9 +864,11 @@ public class SymbolTable {
                 }
                 // try recurse parentage to resolve attribute
                 ClassDef parentClass = (ClassDef)localClassScope.scope_node;
-                int recResult = belongsToParents(parentClass, name, cycling ) ;
-                if ( recResult != NO ) // stop on FOUND(YES) or CIRCULAR error
-                    return recResult ;
+                int recResult = belongsToParents(parentClass, name, cycling);
+                if (recResult != NO) // stop on FOUND(YES) or CIRCULAR error
+                {
+                    return recResult;
+                }
             }
         }
         return NO;
@@ -858,11 +876,15 @@ public class SymbolTable {
 
     private boolean isImported(String moduleName) {
         for (Import imported : imports) {
-            for (int ii = 0; ii < imported.names.length; ii++) {
-                aliasType cur = imported.names[ii];
-                if (((cur.name != null) && (cur.name.equals(moduleName))) ||
-                        ((cur.asname != null) && (cur.asname.equals(moduleName)))) {
-                    return true;
+            List<alias> names = imported.getInternalNames();
+            if (names != null) {
+                for (alias cur : names) {
+                    String name = cur.getInternalName();
+                    String asName = cur.getInternalAsname();
+                    if (((name != null) && (name.equals(moduleName))) ||
+                            ((asName != null) && (asName.equals(moduleName)))) {
+                        return true;
+                    }
                 }
             }
         }
@@ -871,11 +893,15 @@ public class SymbolTable {
 
     private boolean isImportedFrom(String className) {
         for (ImportFrom importedFrom : importsFrom) {
-            for (int ii = 0; ii < importedFrom.names.length; ii++) {
-                aliasType cur = importedFrom.names[ii];
-                if (((cur.name != null) && (cur.name.equals(className))) ||
-                        ((cur.asname != null) && (cur.asname.equals(className)))) {
-                    return true;
+            List<alias> names = importedFrom.getInternalNames();
+            if (names != null) {
+                for (alias cur : names) {
+                    String name = cur.getInternalName();
+                    String asName = cur.getInternalAsname();
+                    if (((name != null) && (name.equals(className))) ||
+                            ((asName != null) && (asName.equals(className)))) {
+                        return true;
+                    }
                 }
             }
         }
@@ -890,37 +916,38 @@ public class SymbolTable {
 
         for (String cur : classes.keySet()) {
             ClassDef cls = classes.get(cur);
-            if (cls.bases != null) {
+            List<expr> bases = cls.getInternalBases();
+            if (bases == null || bases.size() > 0) {
                 // has parents
-                for (int ii = 0; ii < cls.bases.length; ii++) {
-                    if (cls.bases[ii] instanceof Name) {
-                        String className = ((Name)cls.bases[ii]).id;
+                for (expr base : bases) {
+                    if (base instanceof Name) {
+                        String className = ((Name)base).getInternalId();
                         Set<String> builtin = getBuiltin(info);
                         if ((!classes.containsKey(className)) &&
                                 (!builtin.contains(className))) {
                             // check in from imports
                             if (!isImportedFrom(className)) {
-                                unresolvedParents.add(cls.bases[ii]);
+                                unresolvedParents.add(base);
                             }
                         }
                     } else {
                         // should be Attribute here( module.className form )
                         // which imply imported from external scope
-                        Attribute attr = (Attribute)cls.bases[ii];
-                        String clsName = attr.attr;
-                        if (attr.value instanceof Name) {
-                            String moduleName = ((Name)(attr.value)).id;
+                        Attribute attr = (Attribute)base;
+                        String clsName = attr.getInternalAttr();
+                        if (attr.getInternalValue() instanceof Name) {
+                            String moduleName = ((Name)(attr.getInternalValue())).getInternalId();
                             // check that import is resolved first
                             if (!isImported(moduleName)) {
-                                unresolvedParents.add(cls.bases[ii]);
+                                unresolvedParents.add(base);
                             } else {
                                 Set<IndexedElement> found = index.getImportedElements(clsName, NameKind.EXACT_NAME, PythonIndex.ALL_SCOPE, Collections.<String>singleton(moduleName), null);
                                 if (found.size() == 0) {
-                                    unresolvedParents.add(cls.bases[ii]);
+                                    unresolvedParents.add(base);
                                 }
                             }
                         } else {
-                            unresolvedParents.add(cls.bases[ii]);
+                            unresolvedParents.add(base);
                         }
                     }
                 }
@@ -935,7 +962,7 @@ public class SymbolTable {
             HashMap<String, String> returned = new HashMap<String, String>();
             ClassDef curClass = classes.get(cur);
             if (!cyclingRedundancies.containsKey(curClass)) {
-                if (  belongsToParents(curClass, null, returned) == CIRCULAR ) {
+                if (belongsToParents(curClass, null, returned) == CIRCULAR) {
                     // store hashMap returned
                     Map.Entry<String, String> cycling = returned.entrySet().iterator().next();
                     cyclingRedundancies.put(curClass, cycling.getKey());
@@ -978,7 +1005,7 @@ public class SymbolTable {
                                         // no corresponding attributes
                                         //PythonTree tree = symInfo.node ;
                                         Attribute attr = (Attribute)symInfo.node;
-                                        // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
+                                        // Name name = new Name(tree.getToken(),attr.getInternalAttr(),attr.ctx) ;
                                         unresolvedNodes.add(attr);
                                     }
                                 }
@@ -1135,7 +1162,7 @@ public class SymbolTable {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            String name = node.id;
+            String name = node.getInternalId();
             if (names.contains(name)) {
                 nodes.add(node);
             }

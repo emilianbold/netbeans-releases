@@ -67,6 +67,8 @@ import org.python.antlr.ast.Call;
 import org.python.antlr.ast.Expr;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Str;
+import org.python.antlr.base.expr;
+import org.python.antlr.base.stmt;
 
 /**
  * Assign an expression to a variable
@@ -83,9 +85,10 @@ public class AssignToVariable extends PythonAstRule {
     public void run(PythonRuleContext context, List<Hint> result) {
         PythonTree node = context.node;
         Expr expr = (Expr)node;
-        if (expr.value instanceof Str) {
+        expr exprValue = expr.getInternalValue();
+        if (exprValue instanceof Str) {
             // Skip triple-quoted strings (typically doc strings)
-            Str str = (Str)expr.value;
+            Str str = (Str)exprValue;
             String s = str.getText();
             if (s.startsWith("'''") || s.startsWith("\"\"\"")) { // NOI18N
                 return;
@@ -93,17 +96,17 @@ public class AssignToVariable extends PythonAstRule {
             PythonTree grandParent = context.path.leafGrandParent();
             if (grandParent instanceof FunctionDef) {
                 FunctionDef def = (FunctionDef)grandParent;
-                if (def.body != null && def.body.length > 0 &&
-                        def.body[0] == expr) {
+                List<stmt> body = def.getInternalBody();
+                if (body != null && body.size() > 0 && body.get(0) == expr) {
                     // First string in a function -- it's a docstring
                     return;
                 }
             }
         }
-        if (expr.value instanceof Call) {
+        if (exprValue instanceof Call) {
             // Skip calls - they may have side effects
             // ...unless it looks like a "getter" style Python method
-            Call call = (Call)expr.value;
+            Call call = (Call)exprValue;
             if (!PythonAstUtils.isGetter(call, false)) {
                 return;
             }

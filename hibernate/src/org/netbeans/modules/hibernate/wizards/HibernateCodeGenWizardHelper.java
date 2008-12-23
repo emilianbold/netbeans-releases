@@ -61,6 +61,7 @@ public class HibernateCodeGenWizardHelper {
     private boolean javaSyntax;
     private boolean ejbAnnotation;
     private FileObject confFile;
+    private FileObject revengFile;
     private String schemaName;
     private String catalogName;
 
@@ -70,24 +71,6 @@ public class HibernateCodeGenWizardHelper {
     
     public Project getProject() {
         return project;
-    }
-    
-    public SelectedTables getSelectedTables() {
-        return selectedTables;
-    }    
-
-    public void setSelectedTables(SelectedTables selectedTables) {
-        assert selectedTables != null;
-        this.selectedTables = selectedTables;
-    }
-    
-    public void setTableClosure(TableClosure tableClosure) {
-        assert tableClosure != null;
-        this.tableClosure = tableClosure;
-    }
-    
-    public TableClosure getTableClosure() {
-        return tableClosure;
     }
     
     public SourceGroup getLocation() {
@@ -145,6 +128,15 @@ public class HibernateCodeGenWizardHelper {
     public FileObject getConfigurationFile() {
         return confFile;
     }
+
+    public void setRevengFile(FileObject revengFile) {
+        this.revengFile = revengFile;
+    }
+
+    public FileObject getRevengFile() {
+        return revengFile;
+    }
+
     
     public void setSchemaName(String schemaName) {
         this.schemaName = schemaName;
