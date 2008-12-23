@@ -139,7 +139,7 @@ public final class MIMENames {
     }
 
     /**
-     * tries to detect mime type of file
+     * tries to detect cnd specific mime type of file
      * @param file file to check
      * @return one of cnd source mime types (@see SOURCE_MIME_TYPES) or "content/unknown"
      */
@@ -148,17 +148,24 @@ public final class MIMENames {
         if (fo != null) {
             return FileUtil.getMIMEType(fo, SOURCE_MIME_TYPES);
         } else {
-            try {
-                String name = file.getName();
-                // check by file extension
-                String ext = name.substring(name.lastIndexOf('.') + 1);
-                for (String mimeType : SOURCE_MIME_TYPES) {
-                    if (FileUtil.getMIMETypeExtensions(mimeType).contains(ext)) {
-                        return mimeType;
-                    }
-                }
-            } catch (StringIndexOutOfBoundsException ex) {
-                // file without extension and without mime type
+            return getSourceMIMEType(file.getPath());
+        }
+    }
+
+    /**
+     * tries to detect mime type by file path extension only
+     * more precise (but possibly slower) method is @see getSourceMIMEType(File file).
+     * This method can not detect header files without extensions, while 
+     * @see getSourceMIMEType(File file) can
+     * @param path file's path to check
+     * @return one of cnd source mime types (@see SOURCE_MIME_TYPES) or "content/unknown"
+     */
+    public static String getSourceMIMEType(String path) {
+        // check by file extension
+        String ext = FileUtil.getExtension(path);
+        for (String mimeType : SOURCE_MIME_TYPES) {
+            if (FileUtil.getMIMETypeExtensions(mimeType).contains(ext)) {
+                return mimeType;
             }
         }
         return "content/unknown"; // NOI18N
