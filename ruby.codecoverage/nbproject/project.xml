@@ -160,6 +160,7 @@
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
+                <friend>org.netbeans.modules.ruby.kit</friend>
                 <package>org.netbeans.modules.ruby.codecoverage</package>
             </friend-packages>
         </data>
