@@ -314,6 +314,7 @@ public class ImportProject implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+            OpenProjects.getDefault().removePropertyChangeListener(this);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     doWork();
