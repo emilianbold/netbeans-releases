@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CndMIMEResolver;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -651,18 +650,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Set<String> h = MakeProject.createExtensionSet();
         Set<String> c = MakeProject.createExtensionSet();
         Set<String> cpp = MakeProject.createExtensionSet();
-        for(Item item : getProjectItems()){
+        for(Item item : getProjectItems()) {
             String path = item.getPath();
             int i = path.lastIndexOf('.');
             if (i > 0) {
                 String ext = path.substring(i+1);
                 if (ext.length()>0) {
                     if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
-                        if (CndMIMEResolver.isHeaderExtension(ext)){
+                        if (FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE).contains(ext)){
                             h.add(ext);
-                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.C_MIME_TYPE, ext)) {
+                        } else if (FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE).contains(ext)) {
                             c.add(ext);
-                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.CPLUSPLUS_MIME_TYPE, ext)) {
+                        } else if (FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE).contains(ext)) {
                             cpp.add(ext);
                         }
                     }
