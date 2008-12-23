@@ -41,15 +41,20 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -109,7 +114,11 @@ public final class UiUtils {
         
         return doOpen(fo, offset);
     }
-    
+
+    public static ImageIcon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
+        return Icons.getElementIcon(elementKind, modifiers);
+    }
+
     // Private methods ---------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
