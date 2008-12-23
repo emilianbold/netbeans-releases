@@ -135,7 +135,7 @@ public class CommittingCvs11Test extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
-        TestKit.TIME_OUT = 25;
+        TestKit.TIME_OUT = 50;
         MessageHandler mh = new MessageHandler("Checking out");
         log.addHandler(mh);
 

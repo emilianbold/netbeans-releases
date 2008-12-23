@@ -359,7 +359,10 @@ public class LogReader {
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
-            StringBuilder out = new StringBuilder(line.substring(0, i-1));
+            StringBuilder out = new StringBuilder();
+            if (i > 0) {
+                out.append(line.substring(0, i-1));
+            }
             line = line.substring(i+1);
             int j = line.indexOf('`'); //NOI18N
             if (j < 0) {

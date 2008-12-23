@@ -183,11 +183,12 @@ final class AbstractFileObject extends AbstractFolder {
         return fs.isReadOnly() || fs.info.readOnly(getPath());
     }
 
+    @Override
     public String getMIMEType() {
         String retVal = getAbstractFileSystem().info.mimeType(getPath());
 
         if (retVal == null) {
-            retVal = FileUtil.getMIMETypeOrDefault(this);
+            retVal = super.getMIMEType();
         }
 
         return retVal;

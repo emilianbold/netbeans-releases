@@ -104,7 +104,7 @@ final class TestsuiteNode extends AbstractNode {
     void displayReport(final Report report) {
         assert (this.report == null) && (report != null);
         assert report.suiteClassName.equals(this.suiteName)
-               || (this.suiteName == ResultDisplayHandler.ANONYMOUS_SUITE);
+               || (this.suiteName.equals(ResultDisplayHandler.ANONYMOUS_SUITE));
         
         this.report = report;
         suiteName = report.suiteClassName;
@@ -139,7 +139,7 @@ final class TestsuiteNode extends AbstractNode {
                         : (failed ? "MSG_TestsuiteFailed"               //NOI18N
                                   : null);
         } else {
-            if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
+            if (!suiteName.equals(ResultDisplayHandler.ANONYMOUS_SUITE)) {
                 bundleKey = "MSG_TestsuiteRunning";                     //NOI18N
             } else {
                 bundleKey = "MSG_TestsuiteRunningNoname";               //NOI18N
@@ -166,7 +166,7 @@ final class TestsuiteNode extends AbstractNode {
         assert suiteName != null;
         
         StringBuilder buf = new StringBuilder(60);
-        if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
+        if (!suiteName.equals(ResultDisplayHandler.ANONYMOUS_SUITE)) {
             buf.append(suiteName);
         } else {
             buf.append(NbBundle.getMessage(getClass(),
@@ -184,7 +184,7 @@ final class TestsuiteNode extends AbstractNode {
             if (interrupted) {
                 buf.append("&nbsp;&nbsp;");                             //NOI18N
                 HtmlMarkupUtils.appendColourText(
-                        buf, COLOR_WARNING, "MSG_TestsuiteInterrupted_HTML");   //NOI18N
+                        buf, COLOR_OK, "MSG_TestsuiteInterrupted_HTML");   //NOI18N
             }
             if (!containsFailed && !interrupted) {
                 buf.append("&nbsp;&nbsp;");                             //NOI18N

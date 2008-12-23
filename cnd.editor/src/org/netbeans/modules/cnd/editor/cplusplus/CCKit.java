@@ -88,6 +88,10 @@ public class CCKit extends NbEditorKit {
 
     private InputAttributes lexerAttrs = null;
 
+    public CCKit() {
+        // default constructor needed to be created from services
+    }
+    
     @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;

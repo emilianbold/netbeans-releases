@@ -63,6 +63,7 @@ public class FmtOptions {
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
+    public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
     
     private FmtOptions() {}
 
@@ -82,6 +83,11 @@ public class FmtOptions {
     
     private static final String TRUE = "true";      // NOI18N
     private static final String FALSE = "false";    // NOI18N
+
+    //opening brace styles
+    public static final String OBRACE_NEWLINE = "ob.new_line"; //NOI18N
+    public static final String OBRACE_SAMELINE = "ob.sameline_line"; //NOI18N
+    public static final String OBRACE_PRESERVE = "ob.preserve"; //NOI18N
     
     private static Map<String,String> defaults;
     
@@ -98,6 +104,7 @@ public class FmtOptions {
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
+            { openingBraceStyle, OBRACE_PRESERVE},
         };
         
         defaults = new HashMap<String,String>();

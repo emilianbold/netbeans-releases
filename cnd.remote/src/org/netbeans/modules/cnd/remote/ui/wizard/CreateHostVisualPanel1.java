@@ -98,7 +98,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
 
             },
             new String [] {
-                "Host", "Platform", "Status"
+                "", "", "" // NOI18N
             }
         ) {
             boolean[] canEdit = new boolean [] {

@@ -62,6 +62,6 @@ made subject to such option by the copyright holder.
         <!-- Pattern #include in first 128 bytes. -->
         <pattern value="#include" range="128"/>
         <pattern value="#pragma" range="128"/>
-        <resolver mime="text/x-c++"/>
+        <resolver mime="text/x-h"/>
     </file>
 </MIME-resolver>

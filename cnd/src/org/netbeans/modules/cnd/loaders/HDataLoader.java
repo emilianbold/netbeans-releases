@@ -68,7 +68,6 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
     public HDataLoader() {
         super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
         instance = this;
-        //createExtentions(hdrExtensions);
     }
 
     public static HDataLoader getInstance(){
@@ -79,26 +78,13 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
     }
     
     protected String getMimeType(){
-        return MIMENames.CPLUSPLUS_MIME_TYPE;
+        return MIMENames.HEADER_MIME_TYPE;
     }
 
     /** set the default display name */
     @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
-    }
-    
-    @Override
-    protected FileObject findPrimaryFile(FileObject fo) {
-        if (fo.isFolder()) {
-            return null;
-        }
-        String mime = fo.getMIMEType();
-        // this loader is after CPP loader, so accept all C++ files
-        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-            return fo;
-        }
-        return null;
     }
  
     protected MultiDataObject createMultiObject(FileObject primaryFile)

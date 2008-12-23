@@ -43,17 +43,25 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Databases">
-        <folder name="NodeProviders">
-            <file name="ServerNodeProvider.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.ServerNodeProvider.getDefault"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.NodeProvider"/>
-            </file>
-        </folder>
-        <folder name="ActionProviders">
-            <file name="MySQLActionProvider.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLActionProvider.getDefault"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.ActionProvider"/>
-            </file>
+        <folder name="Explorer">
+            <folder name="Root">
+                <folder name="NodeProviders">
+                    <file name="ServerNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLServerNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="50"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="Separator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="120"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-mysql-actions-RegisterServerAction.instance">
+                        <attr name="position" intvalue="125"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
         <folder name="MySQL">
             <!--folder name="Servers">

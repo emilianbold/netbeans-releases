@@ -296,6 +296,7 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
     private Set<OffsetRange> findNameFromImport(int lexOffset, PythonParserResult ppr, AstPath path, CompilationInfo info, Set<OffsetRange> offsets) {
         BaseDocument doc = (BaseDocument)info.getDocument();
         try {
+            doc.readLock();
             String identifier = Utilities.getIdentifier(doc, lexOffset);
             if (identifier == null) {
                 return null;
@@ -311,6 +312,8 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            doc.readUnlock();
         }
 
         return null;

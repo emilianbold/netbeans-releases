@@ -254,9 +254,7 @@ public class LogHyperLinkSupport {
                 errAnnot = new ErrorAnnotation(errorMsg);
                 errAnnot.attach(errorLine);
                 errAnnot.moveToFront();
-                // !PW recommend replacement for deprecated call doesn't work.
-//                errorLine.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
-                errorLine.show(Line.SHOW_TRY_SHOW);
+                errorLine.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
             }
         }
 

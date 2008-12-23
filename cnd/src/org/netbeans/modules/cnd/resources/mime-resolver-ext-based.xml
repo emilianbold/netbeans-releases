@@ -45,24 +45,35 @@ made subject to such option by the copyright holder.
 
 <MIME-resolver >
     <file>
-	<ext name="exe"/>
+        <ext name="exe"/>
         <resolver mime="application/x-exe"/>
     </file>
-
     <file>
-	<ext name="dll"/>
+        <ext name="dll"/>
         <resolver mime="application/x-exe+dll"/>
     </file>
     <file>
-	<ext name="o"/>
+        <ext name="o"/>
         <resolver mime="application/x-object+elf"/>
     </file>
     <file>
-	<ext name="so"/>
+        <ext name="so"/>
         <resolver mime="application/x-shobj+elf"/>
     </file>    
     <file>
-	<ext name="core"/>
+        <ext name="core"/>
         <resolver mime="application/x-core+elf"/>
-    </file>  
+    </file>
+    <file>
+        <ext name="ui"/>
+        <resolver mime="text/xml+qtui"/>
+    </file>
+    <file>
+        <ext name="qrc"/>
+        <resolver mime="text/xml+qtresource"/>
+    </file>
+    <file>
+        <ext name="pro"/>
+        <resolver mime="text/x-qtproject"/>
+    </file>
 </MIME-resolver>

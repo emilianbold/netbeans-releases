@@ -39,10 +39,8 @@
 package org.netbeans.modules.ruby;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
 
 public final class RDocAnalyzerTest extends RubyTestBase {
 
@@ -55,8 +53,8 @@ public final class RDocAnalyzerTest extends RubyTestBase {
     }
 
     private void assertTypes(String[] expectedTypes, String... comment) {
-        Set<? extends String> actualTypes = RDocAnalyzer.collectTypesFromComment(Arrays.asList(comment));
-        assertEquals("Got correct tyeps", Arrays.asList(expectedTypes), new ArrayList<String>(actualTypes));
+        RubyType actualTypes = RDocAnalyzer.collectTypesFromComment(Arrays.asList(comment));
+        assertEquals("Got correct tyeps", new RubyType(expectedTypes), actualTypes);
     }
 
     protected void checkTypesForComments(final String commentRelFilePath) throws Exception {
@@ -71,8 +69,8 @@ public final class RDocAnalyzerTest extends RubyTestBase {
         String s = readFile(commentFile);
         StringBuilder sb = new StringBuilder();
         for (String line : s.split("\n")) {
-            Set<? extends String> types = RDocAnalyzer.collectTypesFromComment(Collections.singletonList(line));
-            sb.append(line + "\n  ==> " + types + "\n\n");
+            RubyType types = RDocAnalyzer.collectTypesFromComment(Collections.singletonList(line));
+            sb.append(line + "\n  ==> [" + types.asString(", ") + "]\n\n");
         }
         assertDescriptionMatches(commentRelFilePath, sb.toString(), false, ".types");
     }

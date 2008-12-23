@@ -248,6 +248,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         connectionUrlComboBox.setModel(new UrlComboBoxModel());
         connectionUrlComboBox.setRenderer(new ConnectionUrlRenderer());
 
+        jLabel2.setLabelFor(searchTextField);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
 
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
@@ -267,7 +268,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_History")); // NOI18N
 
         sqlLimitLabel.setLabelFor(sqlLimitTextField);
-        sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sqlLimitLabel, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
 
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));

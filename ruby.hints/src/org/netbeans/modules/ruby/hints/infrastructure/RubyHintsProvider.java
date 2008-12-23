@@ -88,12 +88,17 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
         
-        for (Error error : errors) {
-            if (error instanceof RubyError) {
-                if (!applyRules(manager, (RubyError)error, context, hints, result)) {
-                    unhandled.add(error);
+        try {
+            context.doc.readLock();
+            for (Error error : errors) {
+                if (error instanceof RubyError) {
+                    if (!applyRules(manager, (RubyError)error, context, hints, result)) {
+                        unhandled.add(error);
+                    }
                 }
             }
+        } finally {
+            context.doc.readUnlock();
         }
     }
     
@@ -125,8 +130,14 @@ public class RubyHintsProvider implements HintsProvider {
         if (isCancelled()) {
             return;
         }
-        
-        applyRules(manager, context, hints, result);
+
+
+        try {
+            context.doc.readLock();
+            applyRules(manager, context, hints, result);
+        } finally {
+            context.doc.readUnlock();
+        }
     }
     
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> result) {
@@ -156,9 +167,14 @@ public class RubyHintsProvider implements HintsProvider {
         AstPath path = new AstPath();
         path.descend(root);
         
-        applyRules(manager, context, NodeType.ROOTNODE, root, path, hints, result);
+        try {
+            context.doc.readLock();
+            applyRules(manager, context, NodeType.ROOTNODE, root, path, hints, result);
+            scan(manager, context, root, path, hints, result);
+        } finally {
+            context.doc.readUnlock();
+        }
         
-        scan(manager, context, root, path, hints, result);
         path.ascend();
     }
     
@@ -211,14 +227,19 @@ public class RubyHintsProvider implements HintsProvider {
 
         AstPath path = new AstPath(root, astOffset);
         
-        Iterator<Node> it = path.leafToRoot();
-        while (it.hasNext()) {
-            if (isCancelled()) {
-                return;
-            }
+        try {
+            context.doc.readLock();
+            Iterator<Node> it = path.leafToRoot();
+            while (it.hasNext()) {
+                if (isCancelled()) {
+                    return;
+                }
 
-            Node node = it.next();
-            applyRules(manager, context, node.nodeId, node, path, suggestions, result);
+                Node node = it.next();
+                applyRules(manager, context, node.nodeId, node, path, suggestions, result);
+            }
+        } finally {
+            context.doc.readUnlock();
         }
         
         //applyRules(NodeType.ROOTNODE, path, info, suggestions, caretOffset, result);

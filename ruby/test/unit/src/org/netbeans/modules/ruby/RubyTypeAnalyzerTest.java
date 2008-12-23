@@ -40,17 +40,12 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;
-
-import static org.netbeans.modules.ruby.RubyTypeAnalyzer.UNKNOWN_TYPE;
 
 /**
  * @todo Test compound assignment:  x = File::Stat.new
@@ -74,7 +69,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         int caretOffset = -1;
         if (caretLine != null) {
             int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
+            assertTrue("No caret marker (^) in caretLine: " + caretLine, caretDelta != -1);
             caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
             int lineOffset = info.getText().indexOf(caretLine);
             assertTrue("unable to find offset for give carretLine: " + caretLine, lineOffset != -1);
@@ -96,21 +91,33 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         return instance;
     }
 
-    private void assertTypes(final Set<? extends String> actualTypes, final String... expectedTypes) {
+    private void assertTypes(final RubyType actualTypes, final String... expectedTypes) {
         assertTypes(null, actualTypes, expectedTypes);
     }
 
-    private void assertTypes(final String message, final Set<? extends String> actualTypes, final String... expectedTypes) {
-        Set<String> expectedTypesHash = new HashSet<String>(Arrays.asList(expectedTypes));
+    private void assertTypes(final String message, final RubyType actualTypes, final String... expectedTypes) {
+        assertTypes(message, actualTypes, false, expectedTypes);
+    }
+
+    private void assertTypes(final String message, final RubyType actualTypes,
+            final boolean hasUnknownMember, final String... expectedTypes) {
+        RubyType expected = new RubyType(expectedTypes);
+        if (hasUnknownMember) {
+            expected.append(RubyType.createUnknown());
+        }
         assertTrue(message + ":" +
                 "\n  actualTypes:   " + actualTypes +
-                "\n  expectedTypes: " + expectedTypesHash, actualTypes.equals(expectedTypesHash));
+                "\n  expectedTypes: " + expected, actualTypes.equals(expected));
     }
 
     private void assertTypes(String relFilePath, String matchingLine,
             String exprToInfer, String... expectedTypes) throws Exception {
+        assertTypes(relFilePath, matchingLine, exprToInfer, false, expectedTypes);
+    }
+    private void assertTypes(String relFilePath, String matchingLine,
+            String exprToInfer, boolean hasUnknownMember, String... expectedTypes) throws Exception {
         RubyTypeAnalyzer instance = getAnalyzer(relFilePath, matchingLine, false);
-        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), expectedTypes);
+        assertTypes("Types correctly inferred", instance.inferTypes(exprToInfer), hasUnknownMember, expectedTypes);
     }
 
     public void testGetType() throws Exception {
@@ -204,7 +211,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testIfWithFailingInferenceInBranchType() throws Exception {
-        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", "NilClass", UNKNOWN_TYPE);
+        assertTypes("if_with_failing_inference_in_branch_type.rb", "var.to_^", "var", true, "NilClass");
     }
 
     // TODO inference is still not able to do the below
@@ -221,6 +228,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testConstant() throws Exception {
         assertTypes("constants.rb", "Colors::RED.byte^", "RED", "String");
+        assertTypes("constants.rb", "puts b.down^case", "b", "String");
         // TODO fix and uncomment when reindexed
         // assertTypes("indexed constants type inference", "constants.rb", "REXML::COPY^RIGHT", "COPYRIGHT", "String");
     }
@@ -228,6 +236,10 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     public void testCoreMethodType() throws Exception {
         assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
         assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
-        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum");
+        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum", "Numeric");
+    }
+
+    public void testMethodsChaining() throws Exception {
+        assertTypes("methods_chaining.rb", "puts gree^ting", "greeting", "String");
     }
 }

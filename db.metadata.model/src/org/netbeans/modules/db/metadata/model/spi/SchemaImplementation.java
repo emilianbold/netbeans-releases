@@ -81,4 +81,6 @@ public abstract class SchemaImplementation {
     public abstract Collection<Table> getTables();
 
     public abstract Table getTable(String name);
+
+    public abstract void refresh();
 }

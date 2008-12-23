@@ -56,7 +56,7 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewDBTable {
+public class DataViewDBTable {
 
     private final DBTable[] dbTables;
     private final List<DBColumn> columns;

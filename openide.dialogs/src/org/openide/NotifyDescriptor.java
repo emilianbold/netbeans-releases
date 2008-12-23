@@ -215,6 +215,9 @@ public class NotifyDescriptor extends Object {
     private boolean valid = true;
 
     private NotificationLineSupport notificationLineSupport = null;
+    private String infoMsg;
+    private String warnMsg;
+    private String errMsg;
 
     /** The object specifying the detail object. */
 
@@ -633,6 +636,9 @@ public class NotifyDescriptor extends Object {
         if (notificationLineSupport == null) {
             throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
         }
+        infoMsg = msg;
+        warnMsg = null;
+        errMsg = null;
         firePropertyChange (PROP_INFO_NOTIFICATION, null, msg);
     }
 
@@ -640,6 +646,9 @@ public class NotifyDescriptor extends Object {
         if (notificationLineSupport == null) {
             throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
         }
+        infoMsg = null;
+        warnMsg = msg;
+        errMsg = null;
         firePropertyChange (PROP_WARNING_NOTIFICATION, null, msg);
     }
 
@@ -647,7 +656,31 @@ public class NotifyDescriptor extends Object {
         if (notificationLineSupport == null) {
             throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
         }
+        infoMsg = null;
+        warnMsg = null;
+        errMsg = msg;
         firePropertyChange (PROP_ERROR_NOTIFICATION, null, msg);
+    }
+
+    String getInformationMessage () {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        return infoMsg;
+    }
+
+    String getWarningMessage () {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        return warnMsg;
+    }
+
+    String getErrorMessage () {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        return errMsg;
     }
 
     void clearMessages () {

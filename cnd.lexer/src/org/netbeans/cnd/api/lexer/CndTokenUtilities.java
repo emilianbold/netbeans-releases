@@ -89,9 +89,7 @@ public class CndTokenUtilities {
             TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
             TokenSequence<?> ts = hi.tokenSequence();
             if (ts != null) {
-                if (ts.language() == CppTokenId.languageC() ||
-                        ts.language() == CppTokenId.languageCpp() ||
-                        ts.language() == CppTokenId.languagePreproc()) {
+                if (CndLexerUtilities.isCppLanguage(ts.language(), true)) {
                     tp.start(startOffset, startOffset);
                     // just emulate finish
                     tp.end(lastOffset, lastOffset);

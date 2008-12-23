@@ -669,9 +669,11 @@ public class CompilerSetManager {
     //TODO: temp test code
     public static Writer writer = null;
     private void report(String msg)  {
-        try {
-            writer.write(msg);
-        } catch (IOException ex) {
+        if (writer != null) {
+            try {
+                writer.write(msg);
+            } catch (IOException ex) {
+            }
         }
     }
 

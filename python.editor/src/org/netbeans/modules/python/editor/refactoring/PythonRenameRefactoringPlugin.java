@@ -561,8 +561,10 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
             int start = pos;
             int end = pos + oldCode.length();
             // TODO if a SymbolNode, +=1 since the symbolnode includes the ":"
+            BaseDocument doc = null;
             try {
-                BaseDocument doc = (BaseDocument)ces.openDocument();
+                doc = (BaseDocument)ces.openDocument();
+                doc.readLock();
 
                 if (start > doc.getLength()) {
                     start = end = doc.getLength();
@@ -623,6 +625,10 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
                 Exceptions.printStackTrace(ie);
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
+            } finally {
+                if (doc != null) {
+                    doc.readUnlock();
+                }
             }
 
             if (newCode == null) {

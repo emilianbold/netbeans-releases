@@ -1,4 +1,10 @@
 <Program start='0' end='105'>
+    <Comments>
+        <PHPDocBlock start='9' end='30'>
+            <Tags>
+            </Tags>
+        </PHPDocBlock>
+    </Comments>
     <Statements>
         <ClassDeclaration start='36' end='102' modifier='NONE'>
             <ClassName>

@@ -53,6 +53,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -66,6 +68,7 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.python.api.PythonExecution;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
@@ -142,7 +145,23 @@ public final class PythonCoverageProvider implements CoverageProvider {
                 executed++;
             }
 
-            //int executed = lineCount - notExecuted;
+            // Attempt to make a more accurate percentage by using file details
+            if (file != null) {
+                BaseDocument doc = GsfUtilities.getDocument(file, true);
+                if (doc != null) {
+                    FileCoverageDetails details = getDetails(file, doc);
+                    if (details != null) {
+                        lineCount = details.getLineCount();
+                        int notExecuted = 0;
+                        for (int line = 0; line < lineCount; line++) {
+                            if (details.getType(line) == CoverageType.NOT_COVERED) {
+                                notExecuted++;
+                            }
+                        }
+                        executed = lineCount-notExecuted;
+                    }
+                }
+            }
 
             FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executed);
             results.add(result);
@@ -248,7 +267,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
                 result[lineno - 1] = 1;
             }
 
-            inferCounts(result, doc);
+            result = inferCounts(result, doc);
 
             return new PythonFileCoverageDetails(result);
         }
@@ -299,11 +318,29 @@ public final class PythonCoverageProvider implements CoverageProvider {
      * contents to conclude that for example comments between two executed
      * lines should be inferred as executed
      */
-    private void inferCounts(int[] result, Document document) {
+    private int[] inferCounts(int[] result, Document document) {
         BaseDocument doc = (BaseDocument) document;
         TokenSequence<? extends PythonTokenId> ts = PythonLexerUtils.getPythonSequence(doc, 0);
         if (ts == null) {
-            return;
+            return result;
+        }
+
+        int knownRange = result.length;
+
+        // Make a larger line count array which includes unknown data for the
+        // tail end of the file
+        try {
+            int lineCount = Utilities.getLineOffset(doc, doc.getLength());
+            if (lineCount > result.length) {
+                int[] r = new int[lineCount];
+                System.arraycopy(result, 0, r, 0, result.length);
+                for (int i = result.length; i < r.length; i++) {
+                    r[i] = COUNT_UNKNOWN;
+                }
+                result = r;
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         boolean[] continued = new boolean[result.length];
@@ -400,6 +437,34 @@ public final class PythonCoverageProvider implements CoverageProvider {
                 }
             }
         }
+        
+        // Mark the end of the file (after known coverage data) based on what we see earlier.
+        // If it contains only whitespace or comments, then it's either inferred executed
+        // or not executed  based on the status of the last line, until the first executable
+        // line, and at that point it's all not executed from then on.
+        if (knownRange > 0) {
+            int last = result[knownRange-1];
+            boolean foundExecutable = false;
+            for (int lineno = knownRange; lineno < result.length; lineno++) {
+                if (foundExecutable) {
+                    result[lineno] = COUNT_NOT_COVERED;
+                } else {
+                    int count = result[lineno];
+                    if (count == COUNT_UNKNOWN) {
+                        if (isExecutableToken(lineFirstTokens[lineno])) {
+                            foundExecutable = true;
+                            result[lineno] = COUNT_NOT_COVERED;
+                        } else {
+                            if (last == COUNT_INFERRED || last >= 0) {
+                                result[lineno] = COUNT_INFERRED;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     private void computeLineDetails(int[] result, Document document, TokenId[] lineFirstTokens, boolean[] continued) {
@@ -551,6 +616,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
         execution.setWrapperCommand(wrapper.getPath(),
                 wrapperArgs.toArray(new String[wrapperArgs.size()]),
                 new String[]{"COVERAGE_FILE=" + pythonCoverage.getPath()}); // NOI18N
+        execution.addLineConvertor(new HideCoverageFramesConvertor());
 
         execution.setPostExecutionHook(new Runnable() {
             public void run() {
@@ -561,6 +627,25 @@ public final class PythonCoverageProvider implements CoverageProvider {
         });
 
         return execution;
+    }
+
+    // Remove stacktrace lines that refer to frames in the wrapper scripts
+    private static class HideCoverageFramesConvertor implements LineConvertor {
+        boolean lastWasCulled = false;
+
+        public List<ConvertedLine> convert(String line) {
+            // What about Windows? Do \\ instead?
+            if (line.contains("/python1/coverage/coverage")) { // NOI18N
+                lastWasCulled = true;
+                return Collections.emptyList();
+            } else if (lastWasCulled) {
+                // Filter out the first line AFTER a code coverage line as well - these are the method names
+                lastWasCulled = false;
+                return Collections.emptyList();
+            }
+
+            return null;
+        }
     }
 
     public synchronized void notifyProjectOpened() {

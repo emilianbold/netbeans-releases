@@ -48,6 +48,7 @@ public class GrabTableHelperTest extends DDLTestBase {
     }
     
     public void testGrabTable() throws Exception {
+        /*
         File file = null;
         
         try {
@@ -132,5 +133,6 @@ public class GrabTableHelperTest extends DDLTestBase {
                 file.delete();
             }
         }
+        */
     }
 }
