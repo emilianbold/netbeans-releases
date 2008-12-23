@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.jsfsupport</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.components</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
+                <friend>org.netbeans.modules.visualweb.runtime.kit</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <package>com.sun.sql.rowset</package>

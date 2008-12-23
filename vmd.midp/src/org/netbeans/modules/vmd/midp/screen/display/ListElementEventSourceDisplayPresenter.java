@@ -80,7 +80,7 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     private JPanel view;
     private JLabel state;
     private JLabel image;
-    private JLabel label;
+    private WrappedLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
 
@@ -93,7 +93,17 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         view.add(state);
         image = new JLabel();
         view.add(image);
-        label = new JLabel();
+        label = new WrappedLabel(){
+
+            @Override
+            public Dimension getSize() {
+                Dimension dimension = super.getSize();
+                return new Dimension( (int)(view.getSize().getWidth() -
+                        image.getSize().getWidth() - state.getSize().getWidth()) ,
+                        (int)dimension.getHeight());
+            }
+            
+        };
         view.add(label);
 
         view.add(Box.createHorizontalGlue());
@@ -162,12 +172,15 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         }
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(text);
+        label.setMode( WrappedLabel.Mode.forInt( getFitPolicy()));
 
         value = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT);
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
             DesignComponent font = value.getComponent();
             label.setFont(ScreenSupport.getFont(deviceInfo, font));
         }
+        
+        label.repaint();
     }
 
     public Shape getSelectionShape() {
@@ -203,5 +216,16 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
             Exceptions.printStackTrace(ex);
         }
         return new ScreenMoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
+    }
+
+    private int getFitPolicy() {
+        DesignComponent component = getRelatedComponent().
+                getParentComponent();
+        if (component != null) {
+            return Integer.parseInt(
+                    component.readProperty(ListCD.PROP_FIT_POLICY).
+                    getPrimitiveValue().toString());
+        }
+        return 0;
     }
 }
