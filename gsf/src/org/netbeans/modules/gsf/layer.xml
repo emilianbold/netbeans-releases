@@ -11,7 +11,11 @@
                 -->
             </file>
         </folder>
-        
+<!-- These are now defined in csl.api module. Maybe we could just move them to tasklist.ui where
+     nb-tasklist-error and nb-tasklist-warning are. The *hint versions could be useful for no GSF/CSL
+     based languages too. If we don't move them we may need to somehow make sure that these groups
+     are available even in builds with GSF, but without CSL (unlikely though).
+
         <folder name="Groups">
             <file name="hint-error.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
@@ -35,7 +39,7 @@
                 <attr name="position" intvalue="210"/>
             </file>
         </folder>
-        
+-->
     </folder>
 
 </filesystem>
