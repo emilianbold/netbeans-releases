@@ -244,8 +244,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         builder.append(separator).append(getChildSubdir());
         String toReplace = null;
         if (SLASH.equals(separator)) {
-            if (builder.indexOf("\\") >= 0) {
-                toReplace = "\\";
+            if (builder.indexOf("\\") >= 0) { // NOI18N
+                toReplace = "\\"; // NOI18N
             }
         } else {
             if (builder.indexOf(SLASH) >= 0) {
