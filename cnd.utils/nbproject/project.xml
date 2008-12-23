@@ -47,6 +47,7 @@
                 <package>org.netbeans.modules.cnd.utils</package>
                 <package>org.netbeans.modules.cnd.utils.cache</package>
                 <package>org.netbeans.modules.cnd.utils.ui</package>
+                <package>org.netbeans.modules.cnd.navigation</package>
             </friend-packages>
         </data>
     </configuration>
