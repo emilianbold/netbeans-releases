@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -55,19 +53,17 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.ExtensionList;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -262,39 +258,36 @@ public final class CppSwitchAction extends BaseAction {
     private static FileObject findToggleFile(final Node[] activatedNodes) {
         FileObject res = null;
         // check whether current file is C++ Source file
-        DataObject dob = activatedNodes[0].getLookup().lookup(CCDataObject.class);
-        if (dob == null) {
-            // check whether current file is C Source file
-            dob = activatedNodes[0].getLookup().lookup(CDataObject.class);
-        }
-        if (dob != null) {
-            // it was Source file, find Header
-            res = findBrother(dob, getSuffices(HDataLoader.getInstance().getExtensions()));
-        } else {
-            // check whether current file is Header file
-            dob = activatedNodes[0].getLookup().lookup(HDataObject.class);
-            if (dob != null) {
+        DataObject dob = activatedNodes[0].getLookup().lookup(DataObject.class);
+        FileObject fo = dob.getPrimaryFile();
+        if (fo != null) {
+            String mimeType = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE);
+            if (MIMENames.isCppOrC(mimeType)) {
+                // it was Source file, find Header
+                res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE));
+            } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
+                // check whether current file is Header file
                 // try to find C++ Source file
-                res = findBrother(dob, getSuffices(CCDataLoader.getInstance().getExtensions()));
+                res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE));
                 if (res == null) {
                     // try to find C Source file
-                    res = findBrother(dob, getSuffices(CDataLoader.getInstance().getExtensions()));
+                    res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE));
                 }
             }
         }
         return res;
     }
 
-    private static FileObject findBrother(DataObject dob, String[] ext) {
+    private static FileObject findBrother(DataObject dob, List<String> extensions) {
         assert (dob != null);
         assert (dob.getPrimaryFile() != null);
-        if (ext != null && ext.length > 0) {
+        if (!extensions.isEmpty()) {
             // get a file object associated with the data object
             FileObject fo = dob.getPrimaryFile();
             FileObject[] childs = fo.getParent().getChildren();
 
             // try to find a file with the same name and one of passed extensions
-            for (int i = 0; i < ext.length; i++) {
+            for (String ext : extensions) {
                 // use FileUtilities to find brother of the file object
                 // FileObject res = FileUtil.findBrother(fo, ext[i]);
 
@@ -303,7 +296,7 @@ public final class CppSwitchAction extends BaseAction {
                 // separate FileObjects for name.h and name.H although they are names
                 // of the same file. So FileUtil.findBrother can't be used for now.
                 
-                String ne = fo.getName() + '.' + ext[i];
+                String ne = fo.getName() + '.' + ext;
                 for (int j = 0; j < childs.length; j++) {
                     FileObject fileObject = childs[j];
                     if ( IpeUtils.areFilenamesEqual( fileObject.getNameExt(), ne )) {
@@ -313,15 +306,6 @@ public final class CppSwitchAction extends BaseAction {
             }
         }
         return null;
-    }
-
-    private static String[] getSuffices(ExtensionList list) {
-        List<String> suffixes = new ArrayList<String>();
-        for (Enumeration e = list.extensions(); e != null && e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
-            suffixes.add(ex);
-        }
-        return suffixes.toArray(new String[suffixes.size()]);
     }
 
     // Utility
