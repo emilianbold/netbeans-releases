@@ -41,11 +41,14 @@ package org.netbeans.modules.cnd.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -57,13 +60,16 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -92,7 +98,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected abstract boolean accept(DataObject object);
 
     protected static String getDevelopmentHost(FileObject fileObject) {
-        Project project = FileOwnerQuery.getOwner(fileObject);
+        Project project = findProject(fileObject);
 
         String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
         if (project != null) {
@@ -104,10 +110,28 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return developmentHost;
     }
 
+    private static Project findProject(FileObject fileObject){
+        // First platform provider uses simplified algorithm for search that finds project in parent folder.
+        // Fixed algorithm try to find opened project by second make project provider.
+        //return FileOwnerQuery.getOwner(fileObject);
+        Collection<? extends FileOwnerQueryImplementation> instances =  Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+        for(FileOwnerQueryImplementation provider : instances){
+            Project project = provider.getOwner(fileObject);
+            if (project != null){
+                for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    if (project == p) {
+                        return project;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     protected String getMakeCommand(Node node){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        Project project = FileOwnerQuery.getOwner(fileObject);
+        Project project = findProject(fileObject);
         String makeCommand = null;
         if (project != null) {
             ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
