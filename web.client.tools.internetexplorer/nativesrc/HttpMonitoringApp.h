@@ -14,6 +14,7 @@
 #include <string>
 //typedef std::basic_string<TCHAR> tstring;
 #include <vector>
+#include "DbgpResponse.h"
 
 class CHttpMonitoringApp;
 
@@ -63,6 +64,8 @@ class CHttpMonitoringApp :
 {
 };
 
+tstring getCategoryForMimeType( tstring mimeType );
+void addAllHeaders(const tstring headerSet, HttpDbgpResponse &msg);
 std::wstring getJavaTimestamp();
 
 #endif // !defined(AFX_TESTAPP_H__3D916FFB_17FD_424F_B91D_4CF63A10DF49__INCLUDED_)
