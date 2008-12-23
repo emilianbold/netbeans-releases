@@ -115,7 +115,7 @@ public final class MIMENames {
     public static final String ELF_GENERIC_MIME_TYPE = "application/x-elf"; //NOI18N
 
     public static final String[] SOURCE_MIME_TYPES = new String[] {
-        CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, HEADER_MIME_TYPE, FORTRAN_MIME_TYPE,
+        CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, HEADER_MIME_TYPE, FORTRAN_MIME_TYPE, ASM_MIME_TYPE,
     };
     public static boolean isCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
