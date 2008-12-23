@@ -70,8 +70,8 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOtherOptionsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="1000"/>
-            </file>
-        </folder>     
+            </file>            
+        </folder>
     </folder>
 
     <folder name="Editors">
@@ -271,7 +271,32 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="4000"/>
             </file>
         </folder>
-
+        <folder name="CndExtensions">
+            <file name="Header">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="default" stringvalue="h"/>
+                <attr name="mimeType" stringvalue="text/x-h"/>
+            </file>
+            <file name="C++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="default" stringvalue="cpp"/>
+                <attr name="mimeType" stringvalue="text/x-c++"/>
+            </file>
+            <file name="C">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="default" stringvalue="c"/>
+                <attr name="mimeType" stringvalue="text/x-c"/>
+            </file>
+            <file name="Fortran">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="default" stringvalue="f"/>
+                <attr name="mimeType" stringvalue="text/x-fortran"/>
+            </file>
+        </folder>
     </folder>	<!-- Services -->
 
     <folder name="Templates">
