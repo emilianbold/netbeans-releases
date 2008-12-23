@@ -42,11 +42,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -67,7 +65,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -98,7 +95,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected abstract boolean accept(DataObject object);
 
     protected static String getDevelopmentHost(FileObject fileObject) {
-        Project project = findProject(fileObject);
+        Project project = findInOpenedProject(fileObject);
 
         String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
         if (project != null) {
@@ -110,7 +107,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return developmentHost;
     }
 
-    private static Project findProject(FileObject fileObject){
+    private static Project findInOpenedProject(FileObject fileObject){
         // First platform provider uses simplified algorithm for search that finds project in parent folder.
         // Fixed algorithm try to find opened project by second make project provider.
         //return FileOwnerQuery.getOwner(fileObject);
@@ -131,7 +128,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected String getMakeCommand(Node node){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        Project project = findProject(fileObject);
+        Project project = findInOpenedProject(fileObject);
         String makeCommand = null;
         if (project != null) {
             ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
