@@ -133,7 +133,7 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
         Object buttonPressed = wiz.getValue();
         if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
                 buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-            HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
+            HibernateCodeGenWizardHelper helper = HibernateCodeGenWizard.getHelper(wizardDescriptor);
 
             helper.setTableClosure(getComponent().getTableClosure());
             helper.setConfigurationFile(getComponent().getConfigurationFile());

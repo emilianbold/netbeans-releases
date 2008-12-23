@@ -51,7 +51,7 @@ import org.openide.util.actions.NodeAction;
 public abstract class BaseAction extends NodeAction {
 
     protected static ResourceBundle bundle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     }
     
     @Override

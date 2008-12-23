@@ -377,6 +377,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            release.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.RELEASE_FLAG);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
             MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
             FileObject dir = FileUtil.toFileObject(dirF);

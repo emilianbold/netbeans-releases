@@ -58,10 +58,13 @@ public final class GrailsSettings {
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-"; // NOI18N
     private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-"; // NOI18N
     private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-"; // NOI18N
+    private static final String GRAILS_JAVA_PLATFORM_KEY = "grailsPrj-JavaPlatform-"; // NOI18N
 
     // Which browser to use for client side debugging Firfox or Internet Explorer ?
     // Possible values for this key are FIREFOX and INTERNET_EXPLORER
     private static final String GRAILS_DEBUG_BROWSER_KEY = "grailsPrj-DebugBrowser-"; // NOI18N
+
+    private static final String GRAILS_DISPLAY_BROWSER_KEY = "grailsPrj-DisplayBrowser-"; // NOI18N
 
     private static GrailsSettings instance;
 
@@ -174,6 +177,31 @@ public final class GrailsSettings {
         getPreferences().put(getDebugBrowserKey(prj), browser);
     }
 
+    public String getJavaPlatformForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().get(getJavaPlatformKey(prj), null);
+    }
+
+    public void setJavaPlatformForProject(Project prj, String platformId) {
+        assert prj != null;
+        assert platformId != null;
+
+        getPreferences().put(getJavaPlatformKey(prj), platformId);
+    }
+
+    public boolean getDisplayBrowserForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().getBoolean(getDisplayBrowserKey(prj), true);
+    }
+
+    public void setDisplayBrowserForProject(Project prj, boolean displayBrowser) {
+        assert prj != null;
+
+        getPreferences().putBoolean(getDisplayBrowserKey(prj), displayBrowser);
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -205,6 +233,16 @@ public final class GrailsSettings {
     private String getDebugBrowserKey(Project prj) {
         assert prj != null;
         return GRAILS_DEBUG_BROWSER_KEY + getProjectName(prj);
+    }
+
+    private String getJavaPlatformKey(Project prj) {
+        assert prj != null;
+        return GRAILS_JAVA_PLATFORM_KEY + getProjectName(prj);
+    }
+
+    private String getDisplayBrowserKey(Project prj) {
+        assert prj != null;
+        return GRAILS_DISPLAY_BROWSER_KEY + getProjectName(prj);
     }
 
     private Preferences getPreferences() {

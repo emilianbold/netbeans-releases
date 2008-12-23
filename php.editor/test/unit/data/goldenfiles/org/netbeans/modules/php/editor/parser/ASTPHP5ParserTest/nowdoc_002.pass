@@ -77,6 +77,8 @@
         </token>
     </scanner>
     <Program start='0' end='290'>
+        <Comments>
+        </Comments>
         <Statements>
             <InLineHtml start='0' end='45'/>
             <ExpressionStatement start='52' end='78'>

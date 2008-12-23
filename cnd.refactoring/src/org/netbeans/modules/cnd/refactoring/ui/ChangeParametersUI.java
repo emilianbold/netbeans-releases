@@ -41,9 +41,7 @@
 package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.text.MessageFormat;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -93,8 +91,6 @@ public class ChangeParametersUI implements RefactoringUI {
     
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
             panel = new ChangeParametersPanel(refactoredObj, parent);
         }
         return panel;
@@ -110,17 +106,16 @@ public class ChangeParametersUI implements RefactoringUI {
     
     private Problem setParameters(boolean checkOnly) {
         @SuppressWarnings("unchecked")
-        List<Object> data = (List<Object>) panel.getTableModel().getDataVector();
+        List<List<Object>> data = (List<List<Object>>) panel.getTableModel().getDataVector();
         ChangeParametersRefactoring.ParameterInfo[] paramList = new ChangeParametersRefactoring.ParameterInfo[data.size()];
         int counter = 0;
         Problem problem = null;
-        for (Iterator rowIt = data.iterator(); rowIt.hasNext(); ++counter) {
-            List row = (List) rowIt.next();
+        for (List<Object> row : data) {
             int origIndex = ((Integer) row.get(3)).intValue();
             CharSequence name = (CharSequence) row.get(0);
             CharSequence type = (CharSequence) row.get(1);
             CharSequence defaultVal = (CharSequence) row.get(2);
-            paramList[counter] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
+            paramList[counter++] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
         }
         CsmVisibility visibility = panel.getModifier();
         refactoring.setParameterInfo(paramList);

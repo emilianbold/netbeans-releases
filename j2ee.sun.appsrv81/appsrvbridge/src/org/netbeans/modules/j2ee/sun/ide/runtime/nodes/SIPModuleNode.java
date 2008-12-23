@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.sun.ide.runtime.nodes;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.sun.ide.controllers.DeployedItemsController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.SIPController;

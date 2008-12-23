@@ -54,6 +54,7 @@ public class CreateTableAction extends DatabaseAction {
     static final long serialVersionUID =-7008851466327604724L;
     
     public void performAction (Node[] activatedNodes) {
+        /*
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];
@@ -77,5 +78,6 @@ public class CreateTableAction extends DatabaseAction {
                 }
             );
         }
+        */
     }
 }

@@ -114,12 +114,12 @@ public class TableSorter extends AbstractTableModel {
 
     private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
 
-    public static final Comparator COMPARABLE_COMAPRATOR = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            return ((Comparable) o1).compareTo(o2);
+    public static final Comparator<Comparable<Object>> COMPARABLE_COMAPRATOR = new Comparator<Comparable<Object>>() {
+        public int compare(Comparable<Object> o1, Comparable<Object> o2) {
+            return o1.compareTo(o2);
         }
     };
-    public static final Comparator LEXICAL_COMPARATOR = new Comparator() {
+    public static final Comparator<Object> LEXICAL_COMPARATOR = new Comparator<Object>() {
         public int compare(Object o1, Object o2) {
             return o1.toString().compareTo(o2.toString());
         }
@@ -131,8 +131,8 @@ public class TableSorter extends AbstractTableModel {
     private JTableHeader tableHeader;
     private MouseListener mouseListener;
     private TableModelListener tableModelListener;
-    private Map columnComparators = new HashMap();
-    private List sortingColumns = new ArrayList();
+    private Map<Class, Comparator<Object>> columnComparators = new HashMap<Class, Comparator<Object>>();
+    private List<Directive> sortingColumns = new ArrayList<Directive>();
 
     public TableSorter() {
         this.mouseListener = new MouseHandler();
@@ -198,8 +198,7 @@ public class TableSorter extends AbstractTableModel {
     }
 
     private Directive getDirective(int column) {
-        for (int i = 0; i < sortingColumns.size(); i++) {
-            Directive directive = (Directive)sortingColumns.get(i);
+        for (Directive directive : sortingColumns) {
             if (directive.column == column) {
                 return directive;
             }
@@ -243,7 +242,7 @@ public class TableSorter extends AbstractTableModel {
         sortingStatusChanged();
     }
 
-    public void setColumnComparator(Class type, Comparator comparator) {
+    public void setColumnComparator(Class type, Comparator<Object> comparator) {
         if (comparator == null) {
             columnComparators.remove(type);
         } else {
@@ -253,7 +252,7 @@ public class TableSorter extends AbstractTableModel {
 
     protected Comparator getComparator(int column) {
         Class columnType = tableModel.getColumnClass(column);
-        Comparator comparator = (Comparator) columnComparators.get(columnType);
+        Comparator<Object> comparator = columnComparators.get(columnType);
         if (comparator != null) {
             return comparator;
         }
@@ -303,14 +302,17 @@ public class TableSorter extends AbstractTableModel {
         return (tableModel == null) ? 0 : tableModel.getColumnCount();
     }
 
+    @Override
     public String getColumnName(int column) {
         return tableModel.getColumnName(column);
     }
 
+    @Override
     public Class getColumnClass(int column) {
         return tableModel.getColumnClass(column);
     }
 
+    @Override
     public boolean isCellEditable(int row, int column) {
         return tableModel.isCellEditable(modelIndex(row), column);
     }
@@ -319,6 +321,7 @@ public class TableSorter extends AbstractTableModel {
         return tableModel.getValueAt(modelIndex(row), column);
     }
 
+    @Override
     public void setValueAt(Object aValue, int row, int column) {
         tableModel.setValueAt(aValue, modelIndex(row), column);
     }
@@ -351,7 +354,9 @@ public class TableSorter extends AbstractTableModel {
                 } else if (o2 == null) {
                     comparison = 1;
                 } else {
-                    comparison = getComparator(column).compare(o1, o2);
+                    @SuppressWarnings("unchecked")
+                    final Comparator<Object> comparator = getComparator(column);
+                    comparison = comparator.compare(o1, o2);
                 }
                 if (comparison != 0) {
                     return directive.direction == DESCENDING ? -comparison : comparison;
@@ -417,6 +422,7 @@ public class TableSorter extends AbstractTableModel {
     }
 
     private class MouseHandler extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent e) {
             JTableHeader h = (JTableHeader) e.getSource();
             TableColumnModel columnModel = h.getColumnModel();

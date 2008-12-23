@@ -53,6 +53,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -74,15 +75,15 @@ public class JaxWsAddOperation implements AddOperationCookie {
         service = getService();
     }
     
-    public void addOperation(final FileObject implementationClass) {
+    public void addOperation() {
         final AddWsOperationHelper strategy = new AddWsOperationHelper(
                 NbBundle.getMessage(JaxWsAddOperation.class, "TITLE_OperationAction"));  //NOI18N
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    String className = _RetoucheUtil.getMainClassName(implementationClass);
+                    String className = _RetoucheUtil.getMainClassName(implClassFo);
                     if (className != null) {
-                        strategy.addMethod(implementationClass, className);
+                        strategy.addMethod(implClassFo, className);
                     }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -90,8 +91,9 @@ public class JaxWsAddOperation implements AddOperationCookie {
             }
         });
     }
-    
-    public boolean isEnabled(FileObject implClass) {
+
+    @Override
+    public boolean isEnabledInEditor(Lookup nodeLookup) {
         return isJaxWsImplementationClass() && !isFromWSDL() && !isProvider();
     }
     

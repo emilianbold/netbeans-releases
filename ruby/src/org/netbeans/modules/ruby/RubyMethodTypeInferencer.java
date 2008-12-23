@@ -39,7 +39,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.jruby.nb.ast.CallNode;
@@ -58,7 +57,7 @@ final class RubyMethodTypeInferencer {
     private final CallNode callNode;
     private final RubyIndex index;
 
-    static Set<? extends String> inferTypeFor(final CallNode callNode, final RubyIndex index) {
+    static RubyType inferTypeFor(final CallNode callNode, final RubyIndex index) {
         return new RubyMethodTypeInferencer(callNode, index).inferType();
     }
 
@@ -67,17 +66,17 @@ final class RubyMethodTypeInferencer {
         this.index = index;
     }
 
-    private Set<? extends String> inferType() {
+    private RubyType inferType() {
         String name = callNode.getName();
         Node receiver = callNode.getReceiverNode();
-        String receiverName = getReceiverType(receiver);
+        RubyType receiverType = getReceiverType(receiver);
         // If you call Foo.new I'm going to assume the type of the expression if "Foo"
         if ("new".equals(name)) { // NOI18N
-            return Collections.singleton(receiverName);
+            return receiverType;
         } else if (name.startsWith("find")) {
             // -Possibly- ActiveRecord finders, very important
-            if (receiverName != null && index != null) {
-                IndexedClass superClass = index.getSuperclass(receiverName);
+            if (receiverType.isSingleton() && index != null) {
+                IndexedClass superClass = index.getSuperclass(receiverType.first());
                 if (superClass != null && "ActiveRecord::Base".equals(superClass.getFqn())) { // NOI18N
                     // Looks like a find method on active record The big
                     // question is whether this is going to return the type
@@ -86,38 +85,38 @@ final class RubyMethodTypeInferencer {
                     // it's an item, and for find(1,2,3) it's an array etc.
                     // There are other find signatures which define other
                     // semantics
-                    return Collections.singleton(pickFinderType(callNode, name, receiverName));
+                    return pickFinderType(callNode, name, receiverType);
                 }
             }
         }
 
+        RubyType resultType = new RubyType();
         if (index != null) {
-            Set<IndexedMethod> methods = index.getInheritedMethods(receiverName, name, NameKind.EXACT_NAME);
-            if (!methods.isEmpty()) {
-                IndexedMethod targetMethod = methods.iterator().next();
-                Set<? extends String> types = targetMethod.getTypes();
-                if (!types.isEmpty()) {
-                    return types;
+            Set<IndexedMethod> methods = index.getInheritedMethods(receiverType, name, NameKind.EXACT_NAME);
+            for (IndexedMethod indexedMethod : methods) {
+                RubyType type = indexedMethod.getType();
+                if (!type.isKnown()) {
+                    // fallback to the RDoc comment
+                    IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
+                    if (match != null) {
+                        List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
+                        type = RDocAnalyzer.collectTypesFromComment(comment);
+                    }
                 }
-                // fallback to the RDoc comment
-                IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, targetMethod);
-                if (match != null) {
-                    List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
-                    return RDocAnalyzer.collectTypesFromComment(comment);
-                }
+                resultType.append(type);
             }
         }
-        return RubyTypeAnalyzer.UNKNOWN_TYPE_SET;
+        return resultType;
     }
 
-    static Set<? extends String> inferTypeFor(final List<String> comment) {
+    static RubyType inferTypeFor(final List<String> comment) {
         return RDocAnalyzer.collectTypesFromComment(comment);
     }
 
     /**
      * Look up the right return type for the given finder call.
      */
-    private static String pickFinderType(final CallNode call, final String method, final String model) {
+    private static RubyType pickFinderType(final CallNode call, final String method, final RubyType model) {
         // Dynamic finders
         boolean multiple;
         if (method.startsWith("find_all")) { // NOI18N
@@ -144,18 +143,22 @@ final class RubyMethodTypeInferencer {
         }
 
         if (multiple) {
-            return "Array<" + model + ">"; // NOI18N
+            return RubyType.create("Array<" + model.first() + ">"); // NOI18N
         } else {
             return model;
         }
     }
 
-    private String getReceiverType(final Node receiver) {
-        if (receiver instanceof Colon2Node) {
-            return AstUtilities.getFqn((Colon2Node) receiver);
-        } else if (receiver instanceof INameNode) {
+    private RubyType getReceiverType(final Node receiver) {
+        switch (receiver.nodeId) {
+            case COLON2NODE:
+                return RubyType.create(AstUtilities.getFqn((Colon2Node) receiver));
+            case CALLNODE:
+                return RubyMethodTypeInferencer.inferTypeFor((CallNode) receiver, index);
+        }
+        if (receiver instanceof INameNode) {
             // TODO - compute fqn (packages etc.)
-            return ((INameNode) receiver).getName();
+            return RubyType.create(((INameNode) receiver).getName());
         } else {
             return RubyTypeAnalyzer.getTypeForLiteral(receiver);
         }

@@ -110,8 +110,7 @@ public abstract class CsmFileTaskFactory {
             return false;
         } else {
             String mimeType = fileObject.getMIMEType();
-            return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType) 
-                    || MIMENames.C_MIME_TYPE.equals(mimeType);
+            return MIMENames.isHeaderOrCppOrC(mimeType);
         }
     }
 

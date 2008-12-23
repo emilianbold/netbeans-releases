@@ -41,34 +41,47 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNode extends BaseNode {
+public class TableListNode extends BaseNode implements SchemaNameProvider {
     private static final String NAME = "Tables"; // NOI18N
     private static final String DISPLAYNAME = "Tables"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "TableList"; //NOI18N
 
-    /** 
+    private MetadataElementHandle<Schema> schemaHandle;
+    private final DatabaseConnection connection;
+
+    /**
      * Create an instance of TableListNode.
      * 
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableListNode instance
      */
-    public static TableListNode create(NodeDataLookup dataLookup) {
-        TableListNode node = new TableListNode(dataLookup);
+    public static TableListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        TableListNode node = new TableListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private TableListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private TableListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
     
     protected void initialize() {
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
     
     @Override
@@ -84,5 +97,57 @@ public class TableListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    public String getSchemaName() {
+        return getSchemaName(connection, schemaHandle);
+    }
+
+    public String getCatalogName() {
+        return getCatalogName(connection, schemaHandle);
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Schema> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Schema schema = handle.resolve(metaData);
+                        if (schema != null) {
+                            array[0] = schema.getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Schema> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Schema schema = handle.resolve(metaData);
+                        if (schema != null) {
+                            array[0] = schema.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }

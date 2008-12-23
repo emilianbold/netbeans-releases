@@ -39,16 +39,24 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
@@ -66,42 +74,64 @@ public class ConnectionNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ConnectionNode instance
      */
-    public static ConnectionNode create(NodeDataLookup dataLookup) {
-        ConnectionNode node = new ConnectionNode(dataLookup);
+    public static ConnectionNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ConnectionNode node = new ConnectionNode(dataLookup, provider);
         node.setup();
         return node;
     }
     
     // the connection
-    private DatabaseConnection connection;
+    private final DatabaseConnection connection;
 
     /**
      * Constructor
      * 
      * @param lookup the associated lookup
      */
-    private ConnectionNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-
         // listen for change events
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    // just ask the node to update itself
-                    update();
+                    if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
+                            evt.getPropertyName().equals("disconnected")) { // NOI18N
+                        updateModel();
+                    }
                 }
             }
         );
+
+        updateModel();
     }
 
-    @Override
-    public boolean canRefresh() {
-        return true;
+    public DatabaseConnection getDatabaseConnection() {
+        return connection;
+    }
+    
+    private synchronized void updateModel() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    boolean connected = !connection.getConnector().isDisconnected();
+
+                    if (connected) {
+                        MetadataModel model = MetadataModels.createModel(connection.getConnection(), connection.getSchema());
+                        connection.setMetadataModel(model);
+                        refresh();
+
+                    } else {
+                        connection.setMetadataModel(null);
+                        refresh();
+                    }
+
+                }
+            }
+        );
     }
 
     @Override
@@ -162,4 +192,27 @@ public class ConnectionNode extends BaseNode {
             return CONNECTEDICONBASE;
         }
     }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.CONNECTION_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createConnectionData(connection.getDatabaseConnection(),
+                        connection.findJDBCDriver());
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Connection"); //NOI18N
+    }
+
 }

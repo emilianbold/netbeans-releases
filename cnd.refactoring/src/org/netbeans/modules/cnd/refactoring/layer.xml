@@ -80,6 +80,36 @@
                     </file>                     
                 </folder>
             </folder>            
+            <folder name="x-h">
+                <file name="org-netbeans-modules-cnd-refactoring-editor-HighlightsLayerFactoryImpl.instance" />
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
+                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                        <attr name="position" intvalue="1210"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1250"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

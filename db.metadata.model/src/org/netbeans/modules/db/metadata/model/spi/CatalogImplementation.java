@@ -68,4 +68,6 @@ public abstract class CatalogImplementation {
     public abstract Collection<Schema> getSchemas();
 
     public abstract Schema getSchema(String name);
+
+    public abstract void refresh();
 }

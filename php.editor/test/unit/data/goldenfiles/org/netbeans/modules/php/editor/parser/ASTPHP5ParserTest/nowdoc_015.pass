@@ -434,6 +434,8 @@
         </token>
     </scanner>
     <Program start='0' end='850'>
+        <Comments>
+        </Comments>
         <Statements>
             <InLineHtml start='0' end='49'/>
             <FunctionDeclaration start='55' end='132' isReference='false'>

@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -204,7 +205,8 @@ class OpenedEditors implements PropertyChangeListener {
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
-    private final static List<String> mimeTypesList = Arrays.asList(new String[]{"text/x-c++", "text/x-c"}); //NOI18N
+    private final static List<String> mimeTypesList = Arrays.asList(new String[]
+                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE}); 
 
     /**
      * Filter unsupported files from the <code>files</code> parameter.
