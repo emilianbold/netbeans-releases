@@ -42,96 +42,97 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     DWORD flags = 0;
     hrTemp = spWinInetHttpInfo->QueryInfo(
         HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,
-        0, &size, &flags, 0);
+        0, &size, &flags, 0); // get buffer size for headers
     ATLASSERT(SUCCEEDED(hrTemp));
-    std::vector<char> vecBuf(size);
+    std::vector<char> vecBuf(size); // allocate buffer
     LPSTR pbuf = &vecBuf.front();
     hrTemp = spWinInetHttpInfo->QueryInfo(
         HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,
-        pbuf, &size, &flags, 0);
+        pbuf, &size, &flags, 0); // get actual headers
     ATLASSERT(SUCCEEDED(hrTemp));
 
+    // url - the URL requested
     tstring url = (szURL ? W2CT(szURL) : _T("???"));
+    msg.addChildTagWithValue(_T("url"), url);
+
+    // This block for displaying as debug message
     tstring request = _T("(Request for ") + url + _T(")\r\n");
     m_redirects = _T("(Response for ") + url + _T(")\r\n");
-
     request += A2CT(pbuf);
     EnsureCRLF(request);
 
     if (szHeaders)
     {
-        request += L"----szHeaders----\r\n";
-        request += W2CT(szHeaders);
-        EnsureCRLF(request);
+        // This block for displaying as debug message
+        //request += L"----szHeaders----\r\n";
+        //request += W2CT(szHeaders);
+        //EnsureCRLF(request);
 
-        tstring headerSet = _T("");
-        headerSet += W2CT(szHeaders);
-        EnsureCRLF(request);
-
-        size_t pos0 = 0;
-        size_t pos1 = 0;
-        size_t pos2 = 0;
-        int tempCounter = 0;
-
-        pos1 = headerSet.find(L":",pos0);
-        while (pos1 < headerSet.size() && pos1 != wstring::npos) {
-            pos2 = headerSet.find_first_of(L"\r\n",pos1);
-
-            tstring headerName = L"";
-            tstring headerValue = L"";
-            headerName += headerSet.substr(pos0, pos1-pos0); // substr(start,len)
-
-            int valStartPos = pos1+2; // skip past the ": " 
-
-            if (pos2 > headerSet.size()) {
-                headerValue += headerSet.substr(valStartPos); //substr(start)
-            } else {
-                headerValue += headerSet.substr(
-                    valStartPos, pos2-valStartPos); // substr(start,len)
-            }
-            msg.addHeader(headerName, headerValue);
-
-            if (pos2 == wstring::npos) break;
-
-            pos0 = pos2 + 2; // increment past "\r\n" of previous line
-            pos1 = headerSet.find(L":",pos0);
-        }
+        // This block for http monitor functionality
+        tstring headerSet = W2CT(szHeaders);
+        addAllHeaders(headerSet, msg); //parse headers from szHeaders
     }
 
     if (SUCCEEDED(hr) && pszAdditionalHeaders && *pszAdditionalHeaders)
     {
+        // This block for displaying as debug message
         request += L"----pszAdditionalHeaders----\r\n";
         request += W2CT(*pszAdditionalHeaders);
         EnsureCRLF(request);
+
+        tstring headerSet = W2CT(*pszAdditionalHeaders);
+        addAllHeaders(headerSet, msg); //parse headers from pszAdditionalHeaders
     }
+
+    // This block for displaying as debug message
     request += _T("\r\n");
- 
-    // TEST: display the header stuff
     //MessageBox(0,request.c_str(),_T("Netbeans BHO - Request Received"),MB_OK);
 
-    msg.addChildTagWithValue(_T("url"), url);
 
-	std::vector<char> vecBuf2(size);
-    LPSTR buf = &vecBuf2.front();
+    size = 0;
     hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_CONTENT_ID,
-        buf, &size, &flags, 0);
-    ATLASSERT(SUCCEEDED(hrTemp));
- 
-    msg.addChildTagWithValue(_T("id"), 100); //TODO
+        0, &size, &flags, 0);
+    if (size > 0) {
+        // TODO - this doesn't work
+	    std::vector<char> vecBuf2(size);
+        LPSTR buf = &vecBuf2.front();
+        hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_CONTENT_ID,
+            buf, &size, &flags, 0);
+        ATLASSERT(SUCCEEDED(hrTemp));
+        MessageBox(0,A2CT(buf),_T("Netbeans BHO - Request Received"),MB_OK);
+    }
 
-    // HTTP_QUERY_REQUEST_METHOD - "Receives the HTTP verb that is
-    // being used in the request, typically GET or POST."
-    std::vector<char> vecBuf3(size);
-    LPSTR getOrPostStrBuf = &vecBuf3.front();
+    // id - TODO
+    msg.addChildTagWithValue(_T("id"), 100);
+
+    // method - Fill in whether this request was a GET or POST request
+    size = 0; //reset buffer size
     hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_REQUEST_METHOD,
-        getOrPostStrBuf, &size, &flags, 0);
+        0, &size, &flags, 0); //determine size of buffer
+    std::vector<char> getOrPostStrBufVector(size); //allocate buffer 
+    LPSTR getOrPostStrBuf = &getOrPostStrBufVector.front();
+    hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_REQUEST_METHOD,
+        getOrPostStrBuf, &size, &flags, 0); //fill buffer
     ATLASSERT(SUCCEEDED(hrTemp));
+    tstring getOrPostString = A2CT(getOrPostStrBuf);
+    msg.addChildTagWithValue(_T("method"), getOrPostString); 
 
-    msg.addChildTagWithValue(_T("method"),A2CT(getOrPostStrBuf)); 
-
+    // urlParams
     msg.addChildTagWithValue(_T("urlParams"), _T("null"));
-    msg.addChildTagWithValue(_T("postText"), _T("undefined"));
-    msg.addChildTagWithValue(_T("loadInit"), rand()); //TODO: what is this???
+
+    if (getOrPostString.find(_T("POST")) != tstring::npos) {
+        // todo - should this be case-insensitive?
+        // post request
+        msg.addChildTagWithValue(_T("postText"), _T("undefined"));
+    }
+    else {
+        // postText - only applicable for POST requests, undefined otherwise
+        msg.addChildTagWithValue(_T("postText"), _T("undefined"));
+    }
+    // loadInit - ???
+    msg.addChildTagWithValue(_T("loadInit"), rand()); 
+
+    // timestamp - current time when the request was made
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
 
     // TODO: this could crash if lastInstance isn't valid
@@ -141,6 +142,83 @@ STDMETHODIMP CTestSink::BeginningTransaction(
 
     return hr;
 }
+
+/**
+ * Parses input parameter headerSet for headers and adds them to msg
+ * as key-value pairs.
+ *
+ * headerSet is expected to be of the format used by 
+ * HTTP_QUERY_RAW_HEADERS_CRLF, ie: one header per line, with "\r\n"
+ * as the line-breaks. Each header is expected to be of the format
+ * "header-name: header-value"
+ */
+void addAllHeaders(const tstring headerSet, HttpDbgpResponse &msg) {
+    size_t posLineStart = 0;
+    size_t posColon = 0;
+    size_t posLineEnd = 0;
+    int tempCounter = 0;
+//DebugBreak();    
+ /*   do {
+        posLineEnd = headerSet.find(L"\r\n", posLineStart);
+        posColon = headerSet.find(L":", posLineStart);
+        
+        if (posLineEnd < posColon) {
+            // line does not have a colon, not handled          
+            continue; 
+        }
+        
+        // substr(start,len)
+        tstring headerName = headerSet.substr(posLineStart, posColon-posLineStart);
+        tstring headerValue;
+        int valStartPos = posColon+2; // skip past the ": " (2 characters) 
+
+        if (posLineEnd == wstring::npos) { //end of string
+            headerValue = headerSet.substr(valStartPos); 
+        } else { 
+            headerValue = headerSet.substr(valStartPos, posLineEnd-valStartPos); 
+        }
+        msg.addHeader(headerName, headerValue);
+
+        // move to next line, skipping the "\r\n"
+        posLineStart = posLineEnd + 2; 
+    } while (posLineEnd != wstring::npos);
+*/
+    posColon = headerSet.find(L":", posLineStart);
+    // on response messages the first line is not a header but the HTTP response
+    // eg: HTTP/1.1 402 OK -- filter these out. This is kind of a hack, not really
+    // filtering on content, but just chopping the first line if its not have a ":" on it
+    size_t posFirstLineBreak = headerSet.find(L"\r\n", posLineStart);
+    if (posFirstLineBreak < posColon) {
+        posLineStart = posFirstLineBreak + 2;
+    }
+
+    while (posColon < headerSet.size() && posColon != wstring::npos) {
+        posLineEnd = headerSet.find_first_of(L"\r\n",posColon);
+
+        tstring headerName = L"";
+        tstring headerValue = L"";
+        headerName += headerSet.substr(posLineStart, posColon-posLineStart); // substr(start,len)
+
+        int valStartPos = posColon+2; // skip past the ": " (2 characters) 
+
+        if (posLineEnd >= headerSet.size()) {
+            // at end of string
+            headerValue += headerSet.substr(valStartPos); //substr(start)
+        } else {
+            // probably more header(s) follow
+            headerValue += headerSet.substr(
+                valStartPos, posLineEnd-valStartPos); // substr(start,len)
+        }
+        msg.addHeader(headerName, headerValue);
+
+        if (posLineEnd == wstring::npos) break;
+
+        posLineStart = posLineEnd + 2; // increment past "\r\n" of previous line
+        posColon = headerSet.find(L":",posLineStart);
+    }
+}
+
+
 
 std::wstring getJavaTimestamp() {
     // Note on Time conversion:
@@ -168,6 +246,9 @@ STDMETHODIMP CTestSink::OnResponse(
 {
     USES_CONVERSION;
 
+    HttpDbgpResponse msg;
+    msg.addChildTagWithValue(_T("type"), _T("response"));
+
     if (pszAdditionalRequestHeaders)
     {
         *pszAdditionalRequestHeaders = 0;
@@ -180,9 +261,43 @@ STDMETHODIMP CTestSink::OnResponse(
             szRequestHeaders, pszAdditionalRequestHeaders) :
         S_OK;
 
+    // This block gets the content-type header
+    CComPtr<IWinInetHttpInfo> spWinInetHttpInfo;
+    HRESULT hrTemp = m_spTargetProtocol->QueryInterface(IID_IWinInetHttpInfo,
+        reinterpret_cast<void**>(&spWinInetHttpInfo));
+    ATLASSERT(SUCCEEDED(hrTemp));
+    DWORD size = 0;
+    DWORD flags = 0;
+    hrTemp = spWinInetHttpInfo->QueryInfo( HTTP_QUERY_CONTENT_TYPE,
+        0, &size, &flags, 0); // get buffer size for header
+    ATLASSERT(SUCCEEDED(hrTemp));
+    std::vector<char> vecBuf(size); // allocate buffer
+    LPSTR contentTypeStr = &vecBuf.front();
+    hrTemp = spWinInetHttpInfo->QueryInfo( HTTP_QUERY_CONTENT_TYPE,
+        contentTypeStr, &size, &flags, 0); // get actual header
+    ATLASSERT(SUCCEEDED(hrTemp));
+
+
+    // For Debug output message
     tstring response = m_redirects;
+    response += L"----szResponseHeaders----\r\n";
     response += W2CT(szResponseHeaders);
     EnsureCRLF(response);
+    response += L"----/szResponseHeaders----\r\n";
+
+    tstring headerSet1 = W2CT(szResponseHeaders);
+    // First line contains the HTTP status response.
+    // Examples: "HTTP/1.0 200 OK" or "HTTP/1.0 404 Not Found"
+    // to get the status code we will get the first numeric token after the first
+    // space
+    int whitespaceIndex = headerSet1.find(L" ",0);
+    int statusStart = headerSet1.find_first_of(L"0123456789", whitespaceIndex);
+    int statusEnd = headerSet1.find(L" ",statusStart);
+    tstring httpStatus = headerSet1.substr(statusStart, statusEnd-statusStart);
+    msg.addChildTagWithValue(_T("status"),httpStatus);
+
+    addAllHeaders(headerSet1, msg); //parse headers from szResponseHeaders
+
     if (szRequestHeaders)
     {
         response += _T("(Repeat request)\r\n");
@@ -191,21 +306,41 @@ STDMETHODIMP CTestSink::OnResponse(
         if (SUCCEEDED(hr) && pszAdditionalRequestHeaders &&
             *pszAdditionalRequestHeaders)
         {
+            response += L"----pszAdditionalRequestHeaders----\r\n";
             response += W2CT(*pszAdditionalRequestHeaders);
             EnsureCRLF(response);
         }
     }
     response += _T("\r\n");
 
-    HttpDbgpResponse msg;
-    msg.addChildTagWithValue(_T("type"), _T("response"));
-    msg.addChildTagWithValue(_T("url"), _T("http://www.google.com"));
-    msg.addChildTagWithValue(_T("test"), _T("foo"));
+
+    msg.addChildTagWithValue(_T("url"), _T("http://www.example.com"));
+    
     msg.addChildTagWithValue(_T("id"), 100);
-    msg.addChildTagWithValue(_T("method"),_T("FOO"));//orPOST
-    msg.addChildTagWithValue(_T("urlParams"), _T("null"));
-    msg.addChildTagWithValue(_T("postText"), _T("undefined"));
-    msg.addChildTagWithValue(_T("loadInit"), rand());
+
+    msg.addChildTagWithValue(_T("name"),_T("FOO"));
+
+    // Content type: comes as a string formatted such as:
+    // "Content-Type: text/html; charset=utf-8"
+    // We aren't interested (primarily) in charset so that part needs to be
+    // trimmed off if present.
+    tstring contentType1 =  A2CT(contentTypeStr);
+    int semicolonPos = contentType1.find(_T(";"),0);
+    if (semicolonPos != std::wstring::npos) {
+        contentType1 = contentType1.substr(0,semicolonPos);
+    }
+    msg.addChildTagWithValue(_T("contentType"), contentType1);
+    msg.addChildTagWithValue(_T("mimeType"), contentType1);
+
+    //xhr, html, image, js, etc.
+    tstring categoryString = getCategoryForMimeType(contentType1);
+    msg.addChildTagWithValue(_T("category"), categoryString);
+
+    msg.addChildTagWithValue(_T("responseText"),_T("FOO"));
+
+    //msg.addChildTagWithValue(_T("urlParams"), _T("null"));
+    //msg.addChildTagWithValue(_T("postText"), _T("undefined"));
+    //msg.addChildTagWithValue(_T("loadInit"), rand());
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
     //msg.addHeader(_T("Host"), _T("www.google.com"));
     //msg.addHeader(_T("Keep-Alive"), _T("300"));
@@ -214,8 +349,44 @@ STDMETHODIMP CTestSink::OnResponse(
         DbgpConnection::lastInstance->sendResponse(msg.toString());
     }
 
+    //if (categoryString.find(L"text") != tstring::npos) {
     //MessageBox(0,response.c_str(),_T("Netbeans BHO - Response Received"),MB_OK);
+    //}
     return hr;
+}
+
+typedef std::map<tstring, tstring> TStrStrMap;
+typedef std::pair<tstring, tstring> TStrStrPair;
+/**
+ * mimeType - string with the mime type
+ * Return type - Category (eg: html, image, css, etc)
+ */
+tstring getCategoryForMimeType( tstring mimeType ) 
+{
+    TStrStrMap stringMap;
+    stringMap.insert(TStrStrPair(L"application/javascript", L"js"));
+    stringMap.insert(TStrStrPair(L"application/javascript", L"js"));
+    stringMap.insert(TStrStrPair(L"application/json", L"xhr")); //L"json"));
+    stringMap.insert(TStrStrPair(L"application/octet-stream", L"bin"));
+    stringMap.insert(TStrStrPair(L"application/x-javascript", L"js"));
+    stringMap.insert(TStrStrPair(L"application/x-shockwave-flash", L"flash"));
+    stringMap.insert(TStrStrPair(L"image/bmp", L"image"));
+    stringMap.insert(TStrStrPair(L"image/gif", L"image"));
+    stringMap.insert(TStrStrPair(L"image/jpeg", L"image"));
+    stringMap.insert(TStrStrPair(L"image/png", L"image"));
+    stringMap.insert(TStrStrPair(L"text/css", L"css"));
+    stringMap.insert(TStrStrPair(L"text/html", L"html"));
+    stringMap.insert(TStrStrPair(L"text/javascript", L"js"));
+    stringMap.insert(TStrStrPair(L"text/plain", L"txt"));
+    stringMap.insert(TStrStrPair(L"text/xml", L"html"));
+
+	tstring category = stringMap[mimeType];
+	if(category != _T("")) {
+		return category;
+	}
+	else {
+        return _T("unknown");
+    }
 }
 
 STDMETHODIMP CTestSink::ReportProgress(
