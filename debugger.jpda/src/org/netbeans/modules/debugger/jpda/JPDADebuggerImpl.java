@@ -905,11 +905,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 iee.initCause (e);
                 throw iee;
             } catch (IncompatibleThreadStateException itsex) {
-                IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
+                InvalidExpressionException isex = new InvalidExpressionException(itsex.getLocalizedMessage());
                 isex.initCause(itsex);
                 throw isex;
             } catch (InternalException e) {
-                IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
+                InvalidExpressionException isex = new InvalidExpressionException(e.getLocalizedMessage());
                 isex.initCause(e);
                 throw isex;
             } catch (RuntimeException rex) {

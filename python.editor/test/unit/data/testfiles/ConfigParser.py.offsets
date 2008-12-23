@@ -236,9 +236,9 @@ ConfigParser -- responsible for parsing a list of
         <Expr><Str>"""Return a list of option names for the given section name."""</Str></Expr>
         <TryExcept>try:
             <Assign><Name>opts</Name> = <Call><Attribute><Name>self</Name>._sections</Attribute><Attribute><Subscript>[<Index><Name>section</Name></Index>]</Subscript>.copy</Attribute>()</Call></Assign>
-        except <Name>KeyError</Name>:
+        <ExceptHandler>except <Name>KeyError</Name>:
             <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
-       </TryExcept> <Expr><Call><Attribute><Name>opts</Name>.update</Attribute>(<Attribute><Name>self</Name>._defaults</Attribute>)</Call></Expr>
+       </ExceptHandler></TryExcept> <Expr><Call><Attribute><Name>opts</Name>.update</Attribute>(<Attribute><Name>self</Name>._defaults</Attribute>)</Call></Expr>
         <If>if <Compare><Str>'__name__'</Str> in <Name>opts</Name></Compare>:
             <Delete>del <Subscript><Name>opts</Name>[<Index><Str>'__name__'</Str></Index>]</Subscript></Delete>
        </If> <Return>return <Call><Attribute><Name>opts</Name>.keys</Attribute>()</Call></Return>
@@ -258,9 +258,9 @@ ConfigParser -- responsible for parsing a list of
        </If> <For>for <Name>filename</Name> in <Name>filenames</Name>:
             <TryExcept>try:
                 <Assign><Name>fp</Name> = <Call><Name>open</Name>(<Name>filename</Name>)</Call></Assign>
-            except <Name>IOError</Name>:
+            <ExceptHandler>except <Name>IOError</Name>:
                 <Continue>continue</Continue>
-           </TryExcept> <Expr><Call><Attribute><Name>self</Name>._read</Attribute>(<Name>fp</Name>, <Name>filename</Name>)</Call></Expr>
+           </ExceptHandler></TryExcept> <Expr><Call><Attribute><Name>self</Name>._read</Attribute>(<Name>fp</Name>, <Name>filename</Name>)</Call></Expr>
             <Expr><Call><Attribute><Name>fp</Name>.close</Attribute>()</Call></Expr>
 
    </For></FunctionDef> <FunctionDef>def readfp(<Name>self</Name>, <Name>fp</Name>, <Name>filename</Name>=<Name>None</Name>):
@@ -275,9 +275,9 @@ ConfigParser -- responsible for parsing a list of
         <If>if <Compare><Name>filename</Name> is <Name>None</Name></Compare>:
             <TryExcept>try:
                 <Assign><Name>filename</Name> = <Attribute><Name>fp</Name>.name</Attribute></Assign>
-            except <Name>AttributeError</Name>:
+            <ExceptHandler>except <Name>AttributeError</Name>:
                 <Assign><Name>filename</Name> = <Str>'&lt;???&gt;'</Str></Assign>
-       </TryExcept></If> <Expr><Call><Attribute><Name>self</Name>._read</Attribute>(<Name>fp</Name>, <Name>filename</Name>)</Call></Expr>
+       </ExceptHandler></TryExcept></If> <Expr><Call><Attribute><Name>self</Name>._read</Attribute>(<Name>fp</Name>, <Name>filename</Name>)</Call></Expr>
 
    </FunctionDef> <FunctionDef>def get(<Name>self</Name>, <Name>section</Name>, <Name>option</Name>):
         <Assign><Name>opt</Name> = <Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Assign>
@@ -298,11 +298,11 @@ ConfigParser -- responsible for parsing a list of
    </If></If></If></FunctionDef> <FunctionDef>def items(<Name>self</Name>, <Name>section</Name>):
         <TryExcept>try:
             <Assign><Name>d2</Name> = <Subscript><Attribute><Name>self</Name>._sections</Attribute>[<Index><Name>section</Name></Index>]</Subscript></Assign>
-        except <Name>KeyError</Name>:
+        <ExceptHandler>except <Name>KeyError</Name>:
             <If>if <Compare><Name>section</Name> != <Name>DEFAULTSECT</Name></Compare>:
                 <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
            </If> <Assign><Name>d2</Name> = <Dict>{}</Dict></Assign>
-       </TryExcept> <Assign><Name>d</Name> = <Call><Attribute><Attribute><Name>self</Name>._defaults</Attribute>.copy</Attribute>()</Call></Assign>
+       </ExceptHandler></TryExcept> <Assign><Name>d</Name> = <Call><Attribute><Attribute><Name>self</Name>._defaults</Attribute>.copy</Attribute>()</Call></Assign>
         <Expr><Call><Attribute><Name>d</Name>.update</Attribute>(<Name>d2</Name>)</Call></Expr>
         <If>if <Compare><Str>"__name__"</Str> in <Name>d</Name></Compare>:
             <Delete>del <Subscript><Name>d</Name>[<Index><Str>"__name__"</Str></Index>]</Subscript></Delete>
@@ -348,9 +348,9 @@ ConfigParser -- responsible for parsing a list of
         else:
             <TryExcept>try:
                 <Assign><Name>sectdict</Name> = <Subscript><Attribute><Name>self</Name>._sections</Attribute>[<Index><Name>section</Name></Index>]</Subscript></Assign>
-            except <Name>KeyError</Name>:
+            <ExceptHandler>except <Name>KeyError</Name>:
                 <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
-       </TryExcept></If> <Assign><Subscript><Name>sectdict</Name>[<Index><Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Index>]</Subscript> = <Name>value</Name></Assign>
+       </ExceptHandler></TryExcept></If> <Assign><Subscript><Name>sectdict</Name>[<Index><Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Index>]</Subscript> = <Name>value</Name></Assign>
 
    </FunctionDef> <FunctionDef>def write(<Name>self</Name>, <Name>fp</Name>):
         <Expr><Str>"""Write an .ini-format representation of the configuration state."""</Str></Expr>
@@ -374,9 +374,9 @@ ConfigParser -- responsible for parsing a list of
         else:
             <TryExcept>try:
                 <Assign><Name>sectdict</Name> = <Subscript><Attribute><Name>self</Name>._sections</Attribute>[<Index><Name>section</Name></Index>]</Subscript></Assign>
-            except <Name>KeyError</Name>:
+            <ExceptHandler>except <Name>KeyError</Name>:
                 <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
-       </TryExcept></If> <Assign><Name>option</Name> = <Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Assign>
+       </ExceptHandler></TryExcept></If> <Assign><Name>option</Name> = <Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Assign>
         <Assign><Name>existed</Name> = <Compare><Name>option</Name> in <Name>sectdict</Name></Compare></Assign>
         <If>if <Name>existed</Name>:
             <Delete>del <Subscript><Name>sectdict</Name>[<Index><Name>option</Name></Index>]</Subscript></Delete>
@@ -500,19 +500,19 @@ ConfigParser -- responsible for parsing a list of
         <Assign><Name>d</Name> = <Call><Attribute><Attribute><Name>self</Name>._defaults</Attribute>.copy</Attribute>()</Call></Assign>
         <TryExcept>try:
             <Expr><Call><Attribute><Name>d</Name>.update</Attribute>(<Subscript><Attribute><Name>self</Name>._sections</Attribute>[<Index><Name>section</Name></Index>]</Subscript>)</Call></Expr>
-        except <Name>KeyError</Name>:
+        <ExceptHandler>except <Name>KeyError</Name>:
             <If>if <Compare><Name>section</Name> != <Name>DEFAULTSECT</Name></Compare>:
                 <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
         # Update with the entry specific variables
-       </If></TryExcept> <If>if <Compare><Name>vars</Name> is not <Name>None</Name></Compare>:
+       </If></ExceptHandler></TryExcept> <If>if <Compare><Name>vars</Name> is not <Name>None</Name></Compare>:
             <Expr><Call><Attribute><Name>d</Name>.update</Attribute>(<Name>vars</Name>)</Call></Expr>
        </If> <Assign><Name>option</Name> = <Call><Attribute><Name>self</Name>.optionxform</Attribute>(<Name>option</Name>)</Call></Assign>
         <TryExcept>try:
             <Assign><Name>value</Name> = <Subscript><Name>d</Name>[<Index><Name>option</Name></Index>]</Subscript></Assign>
-        except <Name>KeyError</Name>:
+        <ExceptHandler>except <Name>KeyError</Name>:
             <Raise>raise <Call><Name>NoOptionError</Name>(<Name>option</Name>, <Name>section</Name>)</Call></Raise>
 
-       </TryExcept> <If>if <Name>raw</Name>:
+       </ExceptHandler></TryExcept> <If>if <Name>raw</Name>:
             <Return>return <Name>value</Name></Return>
         else:
             <Return>return <Call><Attribute><Name>self</Name>._interpolate</Attribute>(<Name>section</Name>, <Name>option</Name>, <Name>value</Name>, <Name>d</Name>)</Call></Return>
@@ -532,11 +532,11 @@ ConfigParser -- responsible for parsing a list of
         <Assign><Name>d</Name> = <Call><Attribute><Attribute><Name>self</Name>._defaults</Attribute>.copy</Attribute>()</Call></Assign>
         <TryExcept>try:
             <Expr><Call><Attribute><Name>d</Name>.update</Attribute>(<Subscript><Attribute><Name>self</Name>._sections</Attribute>[<Index><Name>section</Name></Index>]</Subscript>)</Call></Expr>
-        except <Name>KeyError</Name>:
+        <ExceptHandler>except <Name>KeyError</Name>:
             <If>if <Compare><Name>section</Name> != <Name>DEFAULTSECT</Name></Compare>:
                 <Raise>raise <Call><Name>NoSectionError</Name>(<Name>section</Name>)</Call></Raise>
         # Update with the entry specific variables
-       </If></TryExcept> <If>if <Name>vars</Name>:
+       </If></ExceptHandler></TryExcept> <If>if <Name>vars</Name>:
             <Expr><Call><Attribute><Name>d</Name>.update</Attribute>(<Name>vars</Name>)</Call></Expr>
        </If> <Assign><Name>options</Name> = <Call><Attribute><Name>d</Name>.keys</Attribute>()</Call></Assign>
         <If>if <Compare><Str>"__name__"</Str> in <Name>options</Name></Compare>:
@@ -557,10 +557,10 @@ ConfigParser -- responsible for parsing a list of
             <If>if <Compare><Call><Attribute><Name>value</Name>.find</Attribute>(<Str>"%("</Str>)</Call> != <Num>-1</Num></Compare>:
                 <TryExcept>try:
                     <Assign><Name>value</Name> = <BinOp><Name>value</Name> % <Name>vars</Name></BinOp></Assign>
-                except <Name>KeyError</Name>, <Name>e</Name>:
+                <ExceptHandler>except <Name>KeyError</Name>, <Name>e</Name>:
                     <Raise>raise <Call><Name>InterpolationMissingOptionError</Name>(
                         <Name>option</Name>, <Name>section</Name>, <Name>rawval</Name>, <Subscript><Name>e</Name>[<Index><Num>0</Num></Index>]</Subscript>)</Call></Raise>
-           </TryExcept> else:
+           </ExceptHandler></TryExcept> else:
                 <Break>break</Break>
        </If></While> <If>if <Compare><Call><Attribute><Name>value</Name>.find</Attribute>(<Str>"%("</Str>)</Call> != <Num>-1</Num></Compare>:
             <Raise>raise <Call><Name>InterpolationDepthError</Name>(<Name>option</Name>, <Name>section</Name>, <Name>rawval</Name>)</Call></Raise>
@@ -602,10 +602,10 @@ ConfigParser -- responsible for parsing a list of
                 <Assign><Name>rest</Name> = <Subscript><Name>rest</Name>[<Slice><Call><Attribute><Name>m</Name>.end</Attribute>()</Call>:</Slice>]</Subscript></Assign>
                 <TryExcept>try:
                     <Assign><Name>v</Name> = <Subscript><Name>map</Name>[<Index><Name>var</Name></Index>]</Subscript></Assign>
-                except <Name>KeyError</Name>:
+                <ExceptHandler>except <Name>KeyError</Name>:
                     <Raise>raise <Call><Name>InterpolationMissingOptionError</Name>(
                         <Name>option</Name>, <Name>section</Name>, <Name>rest</Name>, <Name>var</Name>)</Call></Raise>
-               </TryExcept> <If>if <Compare><Str>"%"</Str> in <Name>v</Name></Compare>:
+               </ExceptHandler></TryExcept> <If>if <Compare><Str>"%"</Str> in <Name>v</Name></Compare>:
                     <Expr><Call><Attribute><Name>self</Name>._interpolate_some</Attribute>(<Name>option</Name>, <Name>accum</Name>, <Name>v</Name>,
                                            <Name>section</Name>, <Name>map</Name>, <BinOp><Name>depth</Name> + <Num>1</Num></BinOp>)</Call></Expr>
                 else:

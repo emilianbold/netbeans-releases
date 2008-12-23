@@ -85,7 +85,9 @@ public class AttributeDefinedOutsideInit extends PythonAstRule {
                 range = PythonLexerUtils.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = Collections.emptyList();
-                    String message = NbBundle.getMessage(NameRule.class, ATTRIBUTE_DEFINED_OUTSITE_INIT_VAR, cur.attr);
+                    String message = NbBundle.getMessage(NameRule.class,
+                            ATTRIBUTE_DEFINED_OUTSITE_INIT_VAR,
+                            cur.getInternalAttr());
                     Hint desc = new Hint(this, message, info.getFileObject(), range, fixList, 2305);
                     result.add(desc);
                 }

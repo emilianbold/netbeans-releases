@@ -2,6 +2,8 @@
 platform9
 # application cluster second
 nb6.5
+# ergonomics cluster if present
+ergonomics1
 # and now the rest
 ide10
 java2

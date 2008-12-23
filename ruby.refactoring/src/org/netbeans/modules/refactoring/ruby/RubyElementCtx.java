@@ -54,9 +54,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.ContextKnowledge;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.RubyTypeAnalyzer;
+import org.netbeans.modules.ruby.RubyTypeInferencer;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -401,9 +402,10 @@ public class RubyElementCtx {
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        RubyTypeAnalyzer analyzer =
-                            new RubyTypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
-                        types = analyzer.inferTypes(lhs);
+                        ContextKnowledge knowledge =
+                            new ContextKnowledge(null, method, node, astOffset, lexOffset, doc, null);
+                        RubyTypeInferencer rti = new RubyTypeInferencer(knowledge);
+                        types = rti.inferType(lhs);
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 

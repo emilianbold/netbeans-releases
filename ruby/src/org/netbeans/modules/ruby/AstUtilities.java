@@ -442,7 +442,7 @@ public class AstUtilities {
     private static void addRequires(Node node, Set<String> requires) {
         if (node.nodeId == NodeType.FCALLNODE) {
             // A method call
-            String name = ((INameNode)node).getName();
+            String name = getName(node);
 
             if (name.equals("require")) { // XXX Load too?
 
@@ -486,7 +486,7 @@ public class AstUtilities {
     public static MethodDefNode findMethod(Node node, String name, Arity arity) {
         // Recursively search for methods or method calls that match the name and arity
         if ((node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) &&
-            ((MethodDefNode)node).getName().equals(name)) {
+            getName(node).equals(name)) {
             Arity defArity = Arity.getDefArity(node);
 
             if (Arity.matches(arity, defArity)) {
@@ -667,7 +667,7 @@ public class AstUtilities {
         assert isCall(node);
 
         if (node instanceof INameNode) {
-            return ((INameNode)node).getName();
+            return getName(node);
         }
         assert false : node;
 
@@ -676,7 +676,7 @@ public class AstUtilities {
 
     public static String getDefName(Node node) {
         if (node instanceof MethodDefNode) {
-            return ((MethodDefNode)node).getName();
+            return getName(node);
         }
         assert false : node;
 
@@ -718,11 +718,8 @@ public class AstUtilities {
                         List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
-                            if (arg2 instanceof ArgumentNode) {
-                                String name = ((ArgumentNode)arg2).getName();
-                                parameters.add(name);
-                            } else if (arg2 instanceof LocalAsgnNode) {
-                                String name = ((LocalAsgnNode)arg2).getName();
+                            if (arg2 instanceof ArgumentNode || arg2 instanceof LocalAsgnNode) {
+                                String name = getName(arg2);
                                 parameters.add(name);
                             }
                         }
@@ -976,7 +973,7 @@ public class AstUtilities {
         switch (node.nodeId) {
         case INSTASGNNODE:
             if (name.charAt(0) == '@') {
-                String n = ((INameNode)node).getName();
+                String n = getName(node);
                 //if (name.regionMatches(1, n, 0, n.length())) {
                 if (name.equals(n)) {
                     return node;
@@ -986,7 +983,7 @@ public class AstUtilities {
         case CLASSVARDECLNODE:
         case CLASSVARASGNNODE:
             if (name.startsWith("@@")) {
-                String n = ((INameNode)node).getName();
+                String n = getName(node);
                 //if (name.regionMatches(2, n, 0, n.length())) {
                 if (name.equals(n)) {
                     return node;
@@ -1039,7 +1036,7 @@ public class AstUtilities {
             break;
             
         case CONSTDECLNODE:
-            if (name.equals(((INameNode) node).getName())) {
+            if (name.equals(getName(node))) {
                 return node;
             }
         break;
@@ -1083,9 +1080,9 @@ public class AstUtilities {
 
             if (receiver instanceof Colon2Node) {
                 // TODO - check to see if we qualify
-                rn = ((Colon2Node)receiver).getName();
+                rn = getName(receiver);
             } else if (receiver instanceof ConstNode) {
-                rn = ((ConstNode)receiver).getName();
+                rn = getName(receiver);
             } // else: some other type of singleton class definition, like class << foo
 
             if (rn != null) {
@@ -1197,7 +1194,7 @@ public class AstUtilities {
         ISourcePosition pos = node.getPosition();
         OffsetRange range =
             new OffsetRange(pos.getStartOffset(),
-                pos.getStartOffset() + ((INameNode)node).getName().length());
+                pos.getStartOffset() + getName(node).length());
 
         return range;
     }
@@ -1262,7 +1259,7 @@ public class AstUtilities {
         }
 
         if (node instanceof INameNode) {
-            end = start + ((INameNode)node).getName().length();
+            end = start + getName(node).length();
         }
 
         return new OffsetRange(start, end);
@@ -1342,7 +1339,7 @@ public class AstUtilities {
     }
 
     public static String getClassOrModuleName(IScopingNode node) {
-        return ((INameNode)node.getCPath()).getName();
+        return getName(node.getCPath());
     }
 
     public static List<ClassNode> getClasses(Node root) {
@@ -1401,7 +1398,7 @@ public class AstUtilities {
                 sb.append("::");
             }
 
-            sb.append(((INameNode)node).getName());
+            sb.append(getName(node));
         }
     }
 
@@ -1461,7 +1458,7 @@ public class AstUtilities {
             return false;
         }
 
-        String name = ((INameNode)node).getName();
+        String name = getName(node);
 
         if (name.startsWith("attr")) { // NOI18N
 
@@ -1612,7 +1609,7 @@ public class AstUtilities {
             // XXX Can I have nested method definitions? If so I may have to continue here
             return access;
         } else if (node instanceof VCallNode || node instanceof FCallNode) {
-            String name = ((INameNode)node).getName();
+            String name = getName(node);
 
             if ("private".equals(name)) {
                 // TODO - see if it has arguments, if it does - it's just a single
@@ -1627,7 +1624,7 @@ public class AstUtilities {
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {
-                                    String symbol = ((SymbolNode)param2).getName();
+                                    String symbol = getName(param2);
                                     privateMethodSymbols.add(symbol);
                                 }
                             }
@@ -1651,7 +1648,7 @@ public class AstUtilities {
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {
-                                    String symbol = ((SymbolNode)param2).getName();
+                                    String symbol = getName(param2);
                                     protectedMethodSymbols.add(symbol);
                                 }
                             }
@@ -1676,7 +1673,7 @@ public class AstUtilities {
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {
-                                    String symbol = ((SymbolNode)param2).getName();
+                                    String symbol = getName(param2);
                                     publicMethodSymbols.add(symbol);
                                 }
                             }
@@ -1860,7 +1857,7 @@ public class AstUtilities {
                                     }
                                 }
                             } else if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
-                                result[0] = ((MethodDefNode)node).getName();
+                                result[0] = getName(node);
                                 return;
                             }
                         }
@@ -2075,5 +2072,16 @@ public class AstUtilities {
         }
         
         return variables.keySet();
+    }
+
+    /**
+     * Throws {@link ClassCastException} if the given node is not instance of
+     * {@link INameNode}.
+     *
+     * @param node instance of {@link INameNode}.
+     * @return node's name
+     */
+    public static String getName(final Node node) {
+        return ((INameNode) node).getName();
     }
 }

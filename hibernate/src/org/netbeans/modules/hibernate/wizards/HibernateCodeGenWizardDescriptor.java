@@ -100,8 +100,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
             project = Templates.getProject(wizardDescriptor);
             FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
             getComponent().initialize(project, targetFolder);
-        }
-        getComponent().update(helper.getTableClosure());
+        }       
     }
 
     public boolean isValid() {
@@ -136,7 +135,8 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
                 buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
 
             HibernateCodeGenWizardHelper helper = HibernateCodeGenWizard.getHelper(wizardDescriptor);
-            helper.setSelectedTables(getComponent().getSelectedTables());
+            helper.setConfigurationFile(getComponent().getConfigurationFile());
+            helper.setRevengFile(getComponent().getRevengFile());
             helper.setLocation(getComponent().getLocationValue());
             helper.setPackageName(getComponent().getPackageName());
             helper.setDomainGen(getComponent().getChkDomain());

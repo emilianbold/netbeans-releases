@@ -64,6 +64,7 @@ public class CallTest extends RubyTestBase {
 
     private Call getCall(String source) {
         int caretPos = source.indexOf('^');
+        assertTrue("No ^ marker for the caret in the text", caretPos != -1);
 
         source = source.substring(0, caretPos) + source.substring(caretPos + 1);
 
@@ -392,18 +393,23 @@ public class CallTest extends RubyTestBase {
         assertFalse(call.getType().isKnown());
     }
 
-    public void testNotConstructorCal2() throws Exception {
+    public void testNotConstructorCall2() throws Exception {
         Call call = getCall("new.^");
         assertFalse(call.getType().isKnown());
     }
 
-    public void testNotConstructorCal3() throws Exception {
+    public void testNotConstructorCall3() throws Exception {
         Call call = getCall("@foo.new.^");
         assertFalse(call.getType().isKnown());
     }
 
-    public void testNotConstructorCal4() throws Exception {
+    public void testNotConstructorCall4() throws Exception {
         Call call = getCall("foo.new.^");
+        assertFalse(call.getType().isKnown());
+    }
+
+    public void testNotConstructorCall5() throws Exception {
+        Call call = getCall("1.even?.^");
         assertFalse(call.getType().isKnown());
     }
 
