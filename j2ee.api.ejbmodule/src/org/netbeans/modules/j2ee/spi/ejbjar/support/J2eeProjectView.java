@@ -60,8 +60,10 @@ import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,11 +103,23 @@ public final class J2eeProjectView {
     }
     
     public static Node createServerResourcesNode (Project p) {
-        return new ServerResourceNode (p);
+        try {
+            return new ServerResourceNode(p);
+        } catch (DataObjectNotFoundException ex) {
+            // Should never happen
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
-    public static Node createEjbsView(EjbJar ejbModule, Project p) {
-        return new EjbContainerNode(ejbModule, p, getEjbNodesFactory());
+    public static Node createEjbsView(EjbJar ejbModule, Project p){
+        try {
+            return new EjbContainerNode(ejbModule, p, getEjbNodesFactory());
+        } catch (DataObjectNotFoundException ex) {
+            //Should not happen 
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
     public static Node createConfigFilesView (FileObject folder) {

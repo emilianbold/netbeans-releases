@@ -83,7 +83,7 @@ public class FindDialogUI extends JCenterDialog
         initDialog();
         center(parent);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -92,7 +92,7 @@ public class FindDialogUI extends JCenterDialog
     private void initComponents()
     {
         java.awt.GridBagConstraints gridBagConstraints;
-        
+
         jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         textLabel = new javax.swing.JLabel();
@@ -124,7 +124,7 @@ public class FindDialogUI extends JCenterDialog
         jPanel2 = new javax.swing.JPanel();
         m_FindButton = new javax.swing.JButton();
         m_CloseButton = new javax.swing.JButton();
-        
+
         setTitle(DefaultFindDialogResource.getString("IDS_PROJNAME2"));
         addWindowListener(new java.awt.event.WindowAdapter()
         {
@@ -133,11 +133,11 @@ public class FindDialogUI extends JCenterDialog
                 closeDialog(evt);
             }
         });
-        
+
         jPanel1.setLayout(new GridBagLayout());
         jPanel4.setLayout(new GridBagLayout());
-        
-        
+
+
         //CBeckham -  added to dynamicaly adjust panel size for larger fonts
         // Note...getFoint.getSize will not return the ide parm -fontsize
         //in most cases of localized version, the user will use the -fontsize to start the ide
@@ -157,18 +157,18 @@ public class FindDialogUI extends JCenterDialog
         int width  = 450;
         int height = 400;
         int multiplyer = 2;
-        
+
 //			java.awt.Font theFont = new java.awt.Font("Dialog", 0, fontsize);
-        
+
         if (fontsize > 17 ) multiplyer =3;
         width  = width  + Math.round(width*(multiplyer*fontsize/100f));
         height = height + Math.round(height*(multiplyer*fontsize/100f));
-        
+
         //setSize(width,height);
         // CBeckham - end of add
-        
-        
-        
+
+
+
         // text label
 //			textLabel.setFont(theFont);
         textLabel.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_FINDWHAT")));
@@ -179,7 +179,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.weightx=0;
         gridBagConstraints.insets=new Insets(0,4,0,0);
         jPanel4.add(textLabel,gridBagConstraints);
-        
+
         // combo box
         m_FindCombo.setEditable(true);
         m_FindCombo.setMaximumRowCount(10);
@@ -188,7 +188,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill=GridBagConstraints.BOTH;
         gridBagConstraints.insets=new Insets(0,5,0,0);
         jPanel4.add(m_FindCombo,gridBagConstraints);
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
         gridBagConstraints.weightx=2.0;
@@ -197,7 +197,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill=GridBagConstraints.BOTH;
         jPanel1.add(jPanel4,gridBagConstraints);
         //jPanel1.add(jPanel16);
-        
+
         // check boxes
         jPanel3.setLayout(new GridBagLayout());
 //			m_LoadExternalCheck.setFont(theFont);
@@ -205,7 +205,7 @@ public class FindDialogUI extends JCenterDialog
         DefaultFindDialogResource.setMnemonic(m_LoadExternalCheck, DefaultFindDialogResource.getString("IDS_LOADEXTERNAL"));
 //			m_LoadExternalCheck.getAccessibleContext().setAccessibleDescription(
 //					NbBundle.getMessage(DefaultFindDialogResource.class, "ACSN_LoadExternalCheck"));
-        
+
         m_LoadExternalCheck.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -214,16 +214,16 @@ public class FindDialogUI extends JCenterDialog
             }
         });
         //jPanel3.add(m_LoadExternalCheck);
-        
+
         m_MatchCaseCheck.setSelected(isMatchCase());
         m_Controller.setCaseSensitive(m_MatchCaseCheck.isSelected());
-        
+
         m_MatchCaseCheck.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_MATCHCASE")));
         DefaultFindDialogResource.setMnemonic(m_MatchCaseCheck, DefaultFindDialogResource.getString("IDS_MATCHCASE"));
 //			m_MatchCaseCheck.setFont(theFont);
         m_MatchCaseCheck.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(DefaultFindDialogResource.class, "ACSD_MatchCaseCheck"));
-        
+
         m_MatchCaseCheck.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -231,7 +231,7 @@ public class FindDialogUI extends JCenterDialog
                 onMatchCaseCheck(evt);
             }
         });
-        
+
         //kris - if "LongSearch" property is set to NEVER, then force the case
         // sensitivity to true and disable it so that it can not be changed. To
         // enable this checkbox, the user box set the "LongSearch" property to
@@ -242,12 +242,12 @@ public class FindDialogUI extends JCenterDialog
             m_MatchCaseCheck.setSelected(true) ;
             m_MatchCaseCheck.setEnabled(false) ;
         }
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
         gridBagConstraints.weighty=0.5;
         jPanel3.add(m_MatchCaseCheck,gridBagConstraints);
-        
+
         m_XpathCheck.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_XPATHEXPRESSION")));
         DefaultFindDialogResource.setMnemonic(m_XpathCheck, DefaultFindDialogResource.getString("IDS_XPATHEXPRESSION"));
 //			m_XpathCheck.setFont(theFont);
@@ -264,7 +264,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=0;
         gridBagConstraints.weighty=0.5;
         jPanel3.add(m_XpathCheck,gridBagConstraints);
-        
+
         m_WholeWordCheck.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_MATCHWHOLE")));
         DefaultFindDialogResource.setMnemonic(m_WholeWordCheck, DefaultFindDialogResource.getString("IDS_MATCHWHOLE"));
 //			m_WholeWordCheck.setFont(theFont);
@@ -281,7 +281,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=1;
         gridBagConstraints.weighty=0.5;
         jPanel3.add(m_WholeWordCheck,gridBagConstraints);
-        
+
         m_SearchAliasCheck.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_SEARCHALIAS")));
         DefaultFindDialogResource.setMnemonic(m_SearchAliasCheck, DefaultFindDialogResource.getString("IDS_SEARCHALIAS"));
 //			m_SearchAliasCheck.setFont(theFont);
@@ -298,7 +298,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=1;
         gridBagConstraints.weighty=0.5;
         jPanel3.add(m_SearchAliasCheck,gridBagConstraints);
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=1;
         gridBagConstraints.weightx=1.0;
@@ -306,10 +306,10 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.insets=new Insets(0,0,5,5);
         gridBagConstraints.fill=GridBagConstraints.HORIZONTAL;
         jPanel1.add(jPanel3,gridBagConstraints);
-        
+
         jPanel7.setLayout(new java.awt.GridBagLayout());
         jPanel6.setLayout(new java.awt.GridBagLayout());
-        
+
         m_ProjectLabel.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_PROJECTS")));
         DefaultFindDialogResource.setMnemonic(m_ProjectLabel, DefaultFindDialogResource.getString("IDS_PROJECTS"));
         m_ProjectLabel.getAccessibleContext().setAccessibleDescription(
@@ -319,10 +319,10 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets=new Insets(0,5,0,5);
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        
+
         jPanel6.add(m_ProjectLabel, gridBagConstraints);
         // project list
-        
+
         m_ProjectList.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0)));
         m_ProjectList.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jScrollPrjList = new JScrollPane(m_ProjectList);
@@ -337,7 +337,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.weighty = 1.0;
 //			jPanel6.add(m_ProjectList, gridBagConstraints);
         jPanel6.add(jScrollPrjList, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -349,13 +349,13 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.weightx=6;
         gridBagConstraints.weighty=1;
         jPanel7.add(jPanel6, gridBagConstraints);
-        
+
         // element/description radio buttons
         jPanel9.setLayout(new GridBagLayout());
         javax.swing.border.TitledBorder bord = new javax.swing.border.TitledBorder(DefaultFindDialogResource.getString("IDS_SEARCHIN"));
 //			bord.setTitleFont(theFont);
         jPanel9.setBorder(bord);
-        
+
 //			m_SearchElementsRadio.setFont(theFont);
         // default the dialog to have the element radio button checked
         m_SearchElementsRadio.setSelected(true);
@@ -374,7 +374,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=0;
         gridBagConstraints.insets=new Insets(10,0,5,0);
         jPanel9.add(m_SearchElementsRadio,gridBagConstraints);
-        
+
 //			m_SearchDescriptionsRadio.setFont(theFont);
         m_SearchDescriptionsRadio.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_DESCRIPTIONS")));
         DefaultFindDialogResource.setMnemonic(m_SearchDescriptionsRadio, DefaultFindDialogResource.getString("IDS_DESCRIPTIONS"));
@@ -391,7 +391,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=1;
         gridBagConstraints.insets=new Insets(5,0,12,0);
         jPanel9.add(m_SearchDescriptionsRadio,gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.gridx=1;
@@ -400,7 +400,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         //gridBagConstraints.insets=new Insets(5,0,0,0);
         jPanel7.add(jPanel9, gridBagConstraints);
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=2;
         gridBagConstraints.weightx=2.0;
@@ -408,7 +408,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill=GridBagConstraints.BOTH;
         gridBagConstraints.insets=new Insets(2,5,5,5);
         jPanel1.add(jPanel7,gridBagConstraints);
-        
+
         // results grid
         jPanel11.setLayout(new GridBagLayout());
 //			m_ResultsTable.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
@@ -418,7 +418,7 @@ public class FindDialogUI extends JCenterDialog
         resultLabel.setLabelFor(m_ResultsTable);
         resultLabel.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(DefaultFindDialogResource.class, "LBL_SearchResult"));
-        
+
         jScrollPane2 = new JScrollPane(m_ResultsTable);
         GridBagConstraints gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridx=0;
@@ -426,7 +426,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints2.insets=new Insets(5,0,5,0);
         gridBagConstraints2.fill = GridBagConstraints.BOTH;
         jPanel11.add(resultLabel, gridBagConstraints2);
-        
+
         gridBagConstraints2.gridx=0;
         gridBagConstraints2.gridy=1;
         gridBagConstraints2.fill = GridBagConstraints.BOTH;
@@ -434,12 +434,12 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         jPanel11.add(jScrollPane2, gridBagConstraints2);
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=2;
-        
-        
-        
+
+
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=3;
         gridBagConstraints.weightx=2.0;
@@ -447,7 +447,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill=GridBagConstraints.BOTH;
         gridBagConstraints.insets=new Insets(2,10,5,5);
         jPanel1.add(jPanel11,gridBagConstraints);
-        
+
         // navigate check
         jPanel12.setLayout(new GridBagLayout());
 //			m_NavigateCheck.setFont(theFont);
@@ -470,8 +470,8 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.fill=GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         jPanel12.add(m_NavigateCheck,gridBagConstraints);
-        
-        
+
+
         // status
 //			m_Status.setEditable(false);
         m_Status.setMaximumSize(new java.awt.Dimension(2147483647, 20));
@@ -486,7 +486,7 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.gridy=1;
         gridBagConstraints.insets=new Insets(0,5,0,5);
         jPanel12.add(m_Status,gridBagConstraints);
-        
+
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=4;
         gridBagConstraints.weightx=2.0;
@@ -495,14 +495,14 @@ public class FindDialogUI extends JCenterDialog
         gridBagConstraints.insets=new Insets(2,10,0,5);
         jPanel1.add(jPanel12,gridBagConstraints);
         //jPanel1.add(Box.createVerticalStrut(5),gridBagConstraints);
-        
+
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
-        
+
         // find/close buttons
 //			Dimension buttonSize = new Dimension(75, 25);
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.Y_AXIS));
         jPanel2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-        
+
 //			m_FindButton.setFont(theFont);
         m_FindButton.setEnabled(false);
         m_FindButton.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_FIND")));
@@ -519,7 +519,7 @@ public class FindDialogUI extends JCenterDialog
         getRootPane().setDefaultButton(m_FindButton);
         jPanel2.add(Box.createVerticalStrut(9));
         jPanel2.add(m_FindButton);
-        
+
 //			m_CloseButton.setFont(theFont);
         m_CloseButton.setText(DefaultFindDialogResource.determineText(DefaultFindDialogResource.getString("IDS_CLOSE")));
         DefaultFindDialogResource.setMnemonic(m_CloseButton, DefaultFindDialogResource.getString("IDS_CLOSE"));
@@ -535,22 +535,22 @@ public class FindDialogUI extends JCenterDialog
         });
         jPanel2.add(Box.createVerticalStrut(3));
         jPanel2.add(m_CloseButton);
-        
+
         getContentPane().add(jPanel2, java.awt.BorderLayout.EAST);
-        
+
 			pack();
         Dimension buttonSize = getMaxButtonWidth();
         m_FindButton.setMaximumSize(buttonSize);
         m_FindButton.setPreferredSize(buttonSize);
         m_CloseButton.setPreferredSize(buttonSize);
         m_CloseButton.setMaximumSize(buttonSize);
-        
+
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         this.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(DefaultFindDialogResource.class, "ACSD_FindDialog"));
     }
-    
-    
+
+
     private void initTextFieldListeners()
     {
         class TextChangeListener implements DocumentListener
@@ -580,7 +580,7 @@ public class FindDialogUI extends JCenterDialog
         ((JTextField)m_FindCombo.getEditor().getEditorComponent()).getDocument().addDocumentListener(
                 new TextChangeListener((JTextField)m_FindCombo.getEditor().getEditorComponent()));
     }
-    
+
     private void updateState()
     {
         if (!update)
@@ -589,17 +589,17 @@ public class FindDialogUI extends JCenterDialog
             return;
         }
         String text = ((JTextField)m_FindCombo.getEditor().getEditorComponent()).getText().trim();
-        
+
         m_FindButton.setEnabled(!"".equals(text));
     }
-    
-    
+
+
     private Dimension getMaxButtonWidth()
     {
         Dimension ret = null;
         Dimension d = m_FindButton.getPreferredSize();
         double max  = d.width;
-        
+
         d = m_CloseButton.getPreferredSize();
         if(d.width > max)
         {
@@ -608,8 +608,8 @@ public class FindDialogUI extends JCenterDialog
         }
         return ret;
     }
-    
-    
+
+
     private void onLoadExternalCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -627,7 +627,7 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
+
     private void onXPathCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -657,7 +657,7 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
+
     private void onAliasCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -679,7 +679,7 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
+
     private void onWholeWordCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -694,11 +694,11 @@ public class FindDialogUI extends JCenterDialog
             else
             {
                 m_Controller.setWholeWordSearch(false);
-                
+
             }
         }
     }
-    
+
     private void onMatchCaseCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -719,7 +719,7 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
+
     private void onSearchElementsRadio(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -731,7 +731,7 @@ public class FindDialogUI extends JCenterDialog
             m_SearchAliasCheck.setEnabled(true);
         }
     }
-    
+
     private void onSearchDescriptionsRadio(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -744,7 +744,7 @@ public class FindDialogUI extends JCenterDialog
             m_SearchAliasCheck.setEnabled(false);
         }
     }
-    
+
     private void onNavigateCheck(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -762,7 +762,7 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
+
     private void onFindButton(java.awt.event.ActionEvent evt)
     {
         Object obj = evt.getSource();
@@ -776,8 +776,8 @@ public class FindDialogUI extends JCenterDialog
             catch (Exception ex)
             {
                 String msg;
-                
-                if (m_XpathCheck.isSelected())  
+
+                if (m_XpathCheck.isSelected())
                     msg = FindUtilities.translateString("IDS_ERROR1");
                 else
                     msg = FindUtilities.translateString("IDS_NONEFOUND");
@@ -790,20 +790,19 @@ public class FindDialogUI extends JCenterDialog
             }
         }
     }
-    
-    
+
+
     private void onFindButton() throws Exception
     {
         m_Status.setText("");
-        // clear the grid
-        clearGrid();
+        boolean clear=true;
         String searchStr = (String)m_FindCombo.getSelectedItem();
         update=false;
         // Save the values of the search combo
         FindUtilities.saveSearchString("LastSearchStrings", m_FindCombo);
         // reset what is in the search combo
         FindUtilities.populateComboBoxes("LastSearchStrings", m_FindCombo);
-        
+
         boolean continueFlag = true;
         int count = m_ProjectList.getSelectedIndex();
         if (count == -1)
@@ -817,7 +816,7 @@ public class FindDialogUI extends JCenterDialog
                 pTemp.display(msg, MessageIconKindEnum.EDIK_ICONINFORMATION, title);
             }
         }
-        
+
         if (continueFlag)
         {
             // do the search
@@ -835,8 +834,10 @@ public class FindDialogUI extends JCenterDialog
                     // show the results
                     ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
                     FindTableModel model = new FindTableModel(this, findResults);
+                    m_ResultsTable.setAutoCreateColumnsFromModel(false);
                     m_ResultsTable.setModel(model);
-                    
+                    clear=false;
+
                     int countD = pDiagrams.size();
                     if (pElements.size() > 0 || countD > 0)
                     {
@@ -844,22 +845,6 @@ public class FindDialogUI extends JCenterDialog
                         String strMsg = totalC + " ";
                         strMsg += FindUtilities.translateString("IDS_NUMFOUND");
                         m_Status.setText(strMsg);
-                        //
-                        // This is special code to aid in the automating testing.  We had no way to access
-                        // the information in the grid from the automated scripts and/or VisualTest, so
-                        // if a flag is set in the registry, we will dump the results of the grid to a
-                        // specified file
-                        //
-                            /* TODO
-                            if( GETDEBUGFLAG_RELEASE(_T("DumpGridResults"), 0))
-                            {
-                             CComBSTR file = CRegistry::GetItem( CString(_T("DumpGridResultsFile")), CString(_T("")));
-                                 if (file.Length())
-                                 {
-                                     m_FlexGrid->SaveGrid(file, flexFileCommaText, CComVariant(FALSE));
-                                 }
-                             }
-                             */
                     }
                     else
                     {
@@ -878,15 +863,19 @@ public class FindDialogUI extends JCenterDialog
                 String str2 = FindUtilities.translateString("IDS_NONEFOUND2");
                 m_Status.setText(str2);
             }
-            
+            if(clear)
+            {
+                // clear the grid
+                clearGrid();
+            }
         }
         update = false;
         m_FindCombo.setSelectedItem(searchStr);
-        
+
         update = true;
         m_FindCombo.getEditor().selectAll();
     }
-    
+
     public void onDblClickFindResults(int row, FindTableModel model, boolean isShift)
     {
         m_Status.setText("");
@@ -897,14 +886,14 @@ public class FindDialogUI extends JCenterDialog
             m_Status.setText(msg);
         }
     }
-    
+
     private void clearGrid()
     {
         // clear the results
         FindTableModel model = new FindTableModel(this, null);
         m_ResultsTable.setModel(model);
     }
-    
+
     private void initDialog()
     {
         m_Status.setText("");
@@ -913,20 +902,20 @@ public class FindDialogUI extends JCenterDialog
         FindUtilities.populateComboBoxes("LastSearchStrings", m_FindCombo);
         m_FindCombo.getEditor().selectAll();
     }
-    
+
     public void setController(FindController controller)
     {
         m_Controller = controller;
         m_Controller.setDialog(this);
     }
-    
+
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt)
     {
         setVisible(false);
         dispose();
     }
-    
+
     private boolean isMatchCase()
     {
         //kris - this is a new hidden property that simply remember the state of
@@ -934,17 +923,17 @@ public class FindDialogUI extends JCenterDialog
         // property.
         //return "PSK_YES".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "CaseSensitivity"));
         return NbPreferences.forModule (DummyCorePreference.class).getBoolean ("UML_Case_Sensitivity", true);
-        
+
     }
-    
+
     private boolean matchCaseEnabled () {
-        //return !"PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch"));    
-        
+        //return !"PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch"));
+
         //options are "ASK ME", "ALWAYS", and "NEVER"
         String status = NbPreferences.forModule (DummyCorePreference.class).get ("UML_ShowMe_Allow_Lengthy_Searches", "ALWAYS");
         return ! status.equals ("PSK_NEVER") ;
     }
-    
+
     // Variables declaration - do not modify
     private javax.swing.JButton m_FindButton;
     private javax.swing.JButton m_CloseButton;
@@ -975,10 +964,10 @@ public class FindDialogUI extends JCenterDialog
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel9;
-    
+
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPrjList;
-    
+
     // End of variables declaration
     private FindController m_Controller = null;
     private boolean update = true;

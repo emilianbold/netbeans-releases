@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
             <buildpath location="gsf.testrunner"/>
+            <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="libs.bytelist"/>
             <buildpath location="libs.jvyamlb"/>
@@ -125,6 +126,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
             <buildpath location="gsf.testrunner"/>
+            <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="libs.bytelist"/>
             <buildpath location="libs.jvyamlb"/>

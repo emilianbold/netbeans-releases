@@ -75,6 +75,8 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+
 
 /**
  * Test runner for RSpec tests.
@@ -194,6 +196,12 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+        }
+
         TestSession session = new TestSession(name,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST,
