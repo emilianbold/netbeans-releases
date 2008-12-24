@@ -207,7 +207,7 @@ public final class MIMEExtensions {
 
     private static class Manager {
         // special mime type for C Headers extensions
-        private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h";
+        private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
         private final Map<String, MIMEExtensions> mime2ext = new LinkedHashMap<String, MIMEExtensions>(5);
         private final FileObject configFolder;
         private final FileChangeListener listener;
@@ -229,7 +229,7 @@ public final class MIMEExtensions {
 
         public List<MIMEExtensions> getOrderedExtensions() {
             Map<String, MIMEExtensions> out = new LinkedHashMap<String, MIMEExtensions>(mime2ext);
-            out.remove(C_HEADER_MIME_TYPE); // NOI18N
+            out.remove(C_HEADER_MIME_TYPE); 
             return new ArrayList<MIMEExtensions>(out.values());
         }
         
@@ -243,7 +243,7 @@ public final class MIMEExtensions {
                         if (MIMENames.HEADER_MIME_TYPE.equals(data.getMIMEType())) {
                             MIMEExtensions cHeader = new MIMEExtensions(C_HEADER_MIME_TYPE, data);
                             // check if newly created or already has custom value in prefs
-                            String defExt = preferences.get(C_HEADER_MIME_TYPE, "");
+                            String defExt = preferences.get(C_HEADER_MIME_TYPE, ""); // NOI18N
                             if (defExt.length() == 0) {
                                 // for newly created use normal headers extension
                                 cHeader.setDefaultExtension(data.getDefaultExtension());
