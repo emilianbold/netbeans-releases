@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.navigation.switchfiles;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
@@ -57,6 +56,7 @@ import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
@@ -264,21 +264,21 @@ public final class CppSwitchAction extends BaseAction {
             String mimeType = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE);
             if (MIMENames.isCppOrC(mimeType)) {
                 // it was Source file, find Header
-                res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE));
+                res = findBrother(dob, MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
             } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
                 // check whether current file is Header file
                 // try to find C++ Source file
-                res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE));
+                res = findBrother(dob, MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
                 if (res == null) {
                     // try to find C Source file
-                    res = findBrother(dob, FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE));
+                    res = findBrother(dob, MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
                 }
             }
         }
         return res;
     }
 
-    private static FileObject findBrother(DataObject dob, List<String> extensions) {
+    private static FileObject findBrother(DataObject dob, Collection<String> extensions) {
         assert (dob != null);
         assert (dob.getPrimaryFile() != null);
         if (!extensions.isEmpty()) {

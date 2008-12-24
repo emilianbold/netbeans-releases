@@ -164,7 +164,7 @@ public final class MIMENames {
         // check by file extension
         String ext = FileUtil.getExtension(path);
         for (String mimeType : SOURCE_MIME_TYPES) {
-            if (FileUtil.getMIMETypeExtensions(mimeType).contains(ext)) {
+            if (MIMEExtensions.isRegistered(mimeType, ext)) {
                 return mimeType;
             }
         }

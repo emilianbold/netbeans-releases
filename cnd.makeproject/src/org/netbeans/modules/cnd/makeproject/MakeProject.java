@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -365,26 +366,26 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static Set<String> getSourceSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        suffixes.addAll(FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE));
-        suffixes.addAll(FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE));
+        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getCSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        suffixes.addAll(FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE));
+        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getCppSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        suffixes.addAll(FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE));
+        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getHeaderSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        suffixes.addAll(FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE));
+        suffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         return suffixes;
     }
 

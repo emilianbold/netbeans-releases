@@ -38,8 +38,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 
 /**
@@ -166,7 +166,7 @@ public class CsmIncludeCompletionQuery {
 
         protected HeadersFileFilter() {
             exts = new ExtensionList();
-            for (String ext : FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE)) {
+            for (String ext : MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues()) {
                 exts.addExtension(ext);
             }
         }

@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -652,18 +653,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Set<String> cpp = MakeProject.createExtensionSet();
         for(Item item : getProjectItems()) {
             String path = item.getPath();
-            int i = path.lastIndexOf('.');
-            if (i > 0) {
-                String ext = path.substring(i+1);
-                if (ext.length()>0) {
-                    if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
-                        if (FileUtil.getMIMETypeExtensions(MIMENames.HEADER_MIME_TYPE).contains(ext)){
-                            h.add(ext);
-                        } else if (FileUtil.getMIMETypeExtensions(MIMENames.C_MIME_TYPE).contains(ext)) {
-                            c.add(ext);
-                        } else if (FileUtil.getMIMETypeExtensions(MIMENames.CPLUSPLUS_MIME_TYPE).contains(ext)) {
-                            cpp.add(ext);
-                        }
+            String ext = FileUtil.getExtension(path);
+            if (ext.length()>0) {
+                if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
+                    if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)){
+                        h.add(ext);
+                    } else if (MIMEExtensions.isRegistered(MIMENames.C_MIME_TYPE, ext)) {
+                        c.add(ext);
+                    } else if (MIMEExtensions.isRegistered(MIMENames.CPLUSPLUS_MIME_TYPE, ext)) {
+                        cpp.add(ext);
                     }
                 }
             }
