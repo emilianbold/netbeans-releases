@@ -61,6 +61,23 @@ import org.openide.awt.Toolbar;
  * Test of org.netbeans.jellytools.MainWindowOperator.
  */
 public class MainWindowOperatorTest extends JellyTestCase {
+
+    public static final String[] tests = {
+        "testGetDefault",
+        "testMenuBar",
+        "testGetSetStatusText",
+        "testWaitStatusText",
+        "testGetToolbarInt",
+        "testGetToolbarString",
+        "testGetToolbarCount",
+        "testGetToolbarName",
+        "testGetToolbarButtonInt",
+        "testGetToolbarButtonString",
+        "testPushToolbarPopupMenu",
+        "testPushToolbarPopupMenuNoBlock",
+        /* this only works with robot on linux "testDragNDropToolbar",*/
+        "testStatusTextTracer"
+    };
     
     /** Instance of MainWindowOperator (singleton) to test. */
     private MainWindowOperator mainWindowOper;
@@ -79,7 +96,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
         //NbTestSuite suite = new NbTestSuite(MainWindowOperatorTest.class);
         //return suite;
         //return (NbTestSuite) createModuleTest(".*", "platform", MainWindowOperatorTest.class);
-        return (NbTestSuite) NbModuleSuite.create(NbModuleSuite.createConfiguration(MainWindowOperatorTest.class));
+        return (NbTestSuite) NbModuleSuite.create(NbModuleSuite.createConfiguration(MainWindowOperatorTest.class).addTest(tests));
     }
     
     
@@ -222,7 +239,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
         });
         ContainerOperator toolbarOper = mainWindowOper.getToolbar(0);
         int heightOrig = toolbarPool.getHeight();
-        mainWindowOper.dragNDropToolbar(toolbarOper, 0, 100);
+        mainWindowOper.dragNDropToolbar(toolbarOper, 0, heightOrig);
         assertTrue("Toolbar not moved down - main window height the same.", 
                    heightOrig != toolbarPool.getHeight());
     }
