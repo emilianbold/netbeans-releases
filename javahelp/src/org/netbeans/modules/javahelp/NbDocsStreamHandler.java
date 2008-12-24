@@ -66,7 +66,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             }
         }
     }
-    
+
     /** Make a URLConnection for nbdocs: URLs.
      * @param u the URL
      * @throws IOException if the wrong protocol
@@ -79,7 +79,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             throw new IOException("mismatched protocol"); // NOI18N
         }
     }
-    
+
     @Override
     protected synchronized InetAddress getHostAddress(URL u) {
         if (u.getProtocol().equals("nbdocs")) { // NOI18N
@@ -88,26 +88,26 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             return super.getHostAddress(u);
         }
     }
-    
+
     /** A URL connection that reads from the docs classloader.
      */
     private static final class NbDocsURLConnection extends URLConnection {
-        
+
         /** underlying URL connection
          */
         private URLConnection real = null;
-        
+
         /** any associated exception while handling
          */
         private IOException exception = null;
-        
+
         /** Make the connection.
          * @param u URL to connect to
          */
         public NbDocsURLConnection(URL u) {
             super(u);
         }
-        
+
         /** Connect to the URL.
          * Actually look up and open the underlying connection.
          * @throws IOException for the usual reasons
@@ -180,7 +180,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 connected = true;
             }
         }
-        
+
         /** Searches for module with given code name.
          * @param codeNameBase unique string base name of the module
          * (without release number)
@@ -191,7 +191,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
          * future releases
          */
         private static ModuleInfo findModule (String codeNameBase) {
-            Lookup.Result<ModuleInfo> modulesResult = 
+            Lookup.Result<ModuleInfo> modulesResult =
                 Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
             for (ModuleInfo curInfo: modulesResult.allInstances()) {
                 if (curInfo.getCodeNameBase().equals(codeNameBase)) {
@@ -200,7 +200,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             }
             return null;
         }
-        
+
         /** Maybe connect, if not keep track of the problem.
          */
         private void tryToConnect() {
@@ -211,7 +211,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 exception = ioe;
             }
         }
-        
+
         /** Get a URL header.
          * @param n index of the header
          * @return the header value
@@ -223,7 +223,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             else
                 return null;
         }
-        
+
         /** Get the name of a header.
          * @param n the index
          * @return the header name
@@ -235,7 +235,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             else
                 return null;
         }
-        
+
         /** Get a header by name.
          * @param key the header name
          * @return the value
@@ -247,7 +247,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             else
                 return null;
         }
-        
+
         /** Get an input stream on the connection.
          * @throws IOException for the usual reasons
          * @return a stream to the object
@@ -256,7 +256,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             connect();
             return real.getInputStream();
         }
-        
+
         /** Get an output stream on the object.
          * @throws IOException for the usual reasons
          * @return an output stream writing to it
@@ -265,7 +265,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             connect();
             return real.getOutputStream();
         }
-        
+
         /** Get the type of the content.
          * @return the MIME type
          */
@@ -276,7 +276,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             else
                 return "application/octet-stream"; // NOI18N
         }
-        
+
         /** Get the length of content.
          * @return the length in bytes
          */
@@ -287,9 +287,9 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             else
                 return 0;
         }
-        
+
     }
-    
+
     /** A URL connection that reads from the info files. It displays
      * help page when referred module is not enabled or installed.
      * It also takes module display name from bundle when available.
@@ -301,7 +301,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
         private ByteArrayInputStream stream;
         /** Module display name */
         private String moduleName;
-        
+
         /** Make the connection.
          * @param u URL to connect to
          */
@@ -309,7 +309,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             super(u);
             this.moduleName = moduleName;
         }
-        
+
         /** Connect to the URL.
          * Actually look up and open the underlying connection.
          * @throws IOException for the usual reasons
@@ -331,7 +331,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 connected = true;
             }
         }
-        
+
         /** Reads all available data from input steram to byte array. It is workaround
          * to avoid usage of InputStream.available which might be unreliable on URL. */
         private byte [] readData (InputStream is) throws IOException {
@@ -340,7 +340,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             byte[] sum = new byte[0];
             byte[] result;
             int len = -1, readLen = 0, allocLen = 0;
-            
+
             for (;;) {
                 len = is.read(buff);
                 if (len == -1) {
@@ -359,7 +359,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 readLen = readLen + len;
             }
         }
-        
+
         /** Maybe connect, if not keep track of the problem.
          */
         private void tryToConnect() {
@@ -371,7 +371,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             } catch (IOException ioe) {
             }
         }
-        
+
         /** Get an input stream on the connection.
          * @throws IOException for the usual reasons
          * @return a stream to the object
@@ -380,15 +380,15 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             connect();
             return stream;
         }
-        
-        
+
+
         /** Get the type of the content.
          * @return the MIME type
          */
         public String getContentType() {
             return "text/html"; // NOI18N
         }
-        
+
         /** Get the length of content.
          * @return the length in bytes
          */

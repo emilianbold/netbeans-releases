@@ -70,7 +70,7 @@ You can alternatively set this property in ${.nbbuild.properties} to affect all 
 If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-5-check">
+    <target name="build-init" depends="basic-init">
         <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">
@@ -309,6 +309,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 </fileset>
                 <fileset dir="${netbeans.dest.dir}">
                     <include name="harness/jsearch*.jar"/>
+                </fileset>
+		<fileset dir="${netbeans.dest.dir}">
+                    <include name="platform9\modules\org-netbeans-modules-javahelp.jar"/>
                 </fileset>
             </classpath>
             <include name="**/*.html"/>
