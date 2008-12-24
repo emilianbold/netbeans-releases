@@ -141,10 +141,10 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             }
             file = new File(path+"/configure"); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
-                configureNameTextField.setText(file.getAbsolutePath());
                 if (!selected) {
                     configureRadioButton.setSelected(true);
                     runConfigureCheckBox.setSelected(true);
+                    configureNameTextField.setText(file.getAbsolutePath());
                 }
                 configureArgumentsTextField.setText("CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
             }
@@ -173,6 +173,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             makefileNameLabel.setEnabled(true);
             makefileNameTextField.setEnabled(true);
             makefileBrowseButton.setEnabled(true);
+            makeCheckBox.setEnabled(true);
             
             configureNameLabel.setEnabled(false);
             configureNameTextField.setEnabled(false);
@@ -186,6 +187,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             makefileNameLabel.setEnabled(false);
             makefileNameTextField.setEnabled(false);
             makefileBrowseButton.setEnabled(false);
+            makeCheckBox.setEnabled(false);
             
             configureNameLabel.setEnabled(true);
             configureNameTextField.setEnabled(true);

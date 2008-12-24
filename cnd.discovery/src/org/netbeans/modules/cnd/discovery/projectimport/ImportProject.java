@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -107,7 +109,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class ImportProject {
+public class ImportProject implements PropertyChangeListener {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
 
@@ -296,7 +298,6 @@ public class ImportProject {
             }
             configurePath = FilePathAdaptor.normalize(configurePath);
             importantItems.add(configurePath);
-            postConfigure();
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();
         if (!importantItemsIterator.hasNext()) {
@@ -304,12 +305,32 @@ public class ImportProject {
         }
         makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(projectFolder);
-        resultSet.add(dir);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
-        OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-        if (setAsMain) {
-            OpenProjects.getDefault().setMainProject(makeProject);
+        resultSet.add(dir);
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        return resultSet;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+            OpenProjects.getDefault().removePropertyChangeListener(this);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    doWork();
+                }
+            });
+        }
+    }
+
+
+    private void doWork(){
+        //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
+        //if (setAsMain) {
+        //    OpenProjects.getDefault().setMainProject(makeProject);
+        //}
+        if (configurePath != null && configurePath.length() > 0) {
+            postConfigure();
         }
         if (runMake) {
             makeProject(true);
@@ -322,7 +343,6 @@ public class ImportProject {
                 }
             });
         }
-        return resultSet;
     }
 
 //    private void parseConfigureLog(File configureLog){
@@ -353,7 +373,7 @@ public class ImportProject {
         }
     }
 
-    private void postConfigure() throws IOException {
+    private void postConfigure() {
         try {
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
@@ -361,8 +381,12 @@ public class ImportProject {
             // Add arguments to configure script?
             if (configureArguments != null) {
                 ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                // Keep user arguments as is in args[0]
-                ses.setArguments(new String[]{configureArguments});
+                try {
+                    // Keep user arguments as is in args[0]
+                    ses.setArguments(new String[]{configureArguments});
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             // Possibly run the configure script
             if (runConfigure) {
@@ -505,15 +529,15 @@ public class ImportProject {
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                 if (extension.canApply(map, makeProject)) {
                     DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
-                    if (provider != null && "make-log".equals(provider.getID())){
-                        if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+ map.get(DiscoveryWizardDescriptor.LOG_FILE));} // NOI18N
+                    if (provider != null && "make-log".equals(provider.getID())){ // NOI18N
+                        if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+ provider.getProperty("make-log-file").getValue());} // NOI18N
                     } else {
                         if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
                     }
                     try {
                         done = true;
                         extension.apply(map, makeProject);
-                        if (provider != null && "make-log".equals(provider.getID())){
+                        if (provider != null && "make-log".equals(provider.getID())){ // NOI18N
                             importResult.put(Step.DiscoveryLog, State.Successful);
                         } else {
                             importResult.put(Step.DiscoveryDwarf, State.Successful);
