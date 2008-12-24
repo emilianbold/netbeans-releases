@@ -31,9 +31,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
 import org.netbeans.modules.cnd.classview.resources.I18n;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
@@ -73,7 +71,7 @@ public class SelectInClassesAction extends CookieAction {
     
     protected Class[] cookieClasses() {
         return new Class[] {
-            CDataObject.class, CCDataObject.class, HDataObject.class
+            DataObject.class
         };
     }
     
