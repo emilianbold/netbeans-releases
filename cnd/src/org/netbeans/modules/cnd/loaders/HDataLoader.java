@@ -43,12 +43,9 @@ package org.netbeans.modules.cnd.loaders;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.SharedClassObject;
 
 /**
  *  Recognizes .h header files and create .h data objects for them
@@ -56,45 +53,22 @@ import org.openide.util.SharedClassObject;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position = 100)
 public final class HDataLoader extends CndAbstractDataLoaderExt {
 
-    private static HDataLoader instance = null;
     /** Serial version number */
     static final long serialVersionUID = -2924582006340980748L;
 
     public HDataLoader() {
         super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
-        instance = this;
     }
 
-    public static HDataLoader getInstance() {
-        if (instance == null) {
-            instance = SharedClassObject.findObject(HDataLoader.class, true);
-        }
-        return instance;
-    }
-
+    @Override
     protected String getMimeType() {
         return MIMENames.HEADER_MIME_TYPE;
-    }
-
-    /** set the default display name */
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException {
         return new HDataObject(primaryFile, this);
-    }
-
-    public String getDisplayNameForExtensionList() {
-        return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
-    }
-
-    public String getSettingsName() {
-        return ExtensionsSettings.HEADER;
     }
 }
