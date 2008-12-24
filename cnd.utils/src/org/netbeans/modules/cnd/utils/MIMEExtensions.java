@@ -103,7 +103,7 @@ public final class MIMEExtensions {
      * @return one of mime types or "content/unknown"
      */
     public static String getFileMIMEType(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         String mime;
         if (fo != null) {
             // try fast check
