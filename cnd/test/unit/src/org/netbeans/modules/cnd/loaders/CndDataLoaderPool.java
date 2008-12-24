@@ -45,6 +45,7 @@ import java.util.Enumeration;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.util.Enumerations;
+import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -54,13 +55,14 @@ import org.openide.util.Enumerations;
 public class CndDataLoaderPool extends DataLoaderPool {
     private final DataLoader[] loaders;
     public CndDataLoaderPool() {
-        loaders = new DataLoader[] { CCDataLoader.getInstance(), 
-                                        CDataLoader.getInstance(),
-                                        HDataLoader.getInstance(),
-                                        MakefileDataLoader.getInstance(), 
-                                        ShellDataLoader.getInstance(),  
-                                        FortranDataLoader.getInstance(),
-                                        new ExeLoader()};
+        loaders = new DataLoader[] { SharedClassObject.findObject(CCDataLoader.class, true),
+                                     SharedClassObject.findObject(CDataLoader.class, true),
+                                     SharedClassObject.findObject(HDataLoader.class, true),
+                                     SharedClassObject.findObject(MakefileDataLoader.class, true),
+                                     SharedClassObject.findObject(ShellDataLoader.class, true),
+                                     SharedClassObject.findObject(FortranDataLoader.class, true),
+                                     SharedClassObject.findObject(ExeLoader.class, true),
+                                   };
     }
     
     protected Enumeration<? extends DataLoader> loaders() {
