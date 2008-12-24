@@ -76,6 +76,10 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.jemmy.operators</package>
                 <package>org.netbeans.jemmy.util</package>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jemmy-2.3.0.0.jar</runtime-relative-path>
+                <binary-origin>external/jemmy-2.3.0.0.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

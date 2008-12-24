@@ -152,17 +152,44 @@ class PythonPathHandler:
         except:
             # go ahead on exception on file access
             pass
-    
+
+_debugPath = os.path.dirname( sys._getframe(0).f_code.co_filename )
+_DEBUGLOG = _debugPath + "/jpydbg.log"
+
+class DebugLogger :
+
+  def __init__( self  ) :
+      f = file( _DEBUGLOG ,"w") ;
+      f.close() # reset log on startup
+
+  def debug( self , toWrite ) :
+      f = file( _DEBUGLOG ,"a+") ;
+      f.write( toWrite + '\n')
+      f.close()
+
+###############################################################################
+# do a touch of jpydbg.log in same directory as jpydebug.py to get debug traces on
+###############################################################################
+_debugLogger = None
+if os.path.exists(_DEBUGLOG) :
+    _debugLogger = DebugLogger()
+    _debugLogger.debug("***** Debug Session Started ******")
+
+
 class NetworkSession:
     """ handle network session for JpyDbg and Completion engine """
     
     def __init__( self , connection ) :
         self._connection = connection
         self._lastBuffer = ''
-        
+
+    def _DBG( self , toWrite ):
+        if _debugLogger :
+            _debugLogger.debug(toWrite)
+
     def populateToClient( self , bufferList ) :
         """ populate back bufferList to client side """
-        #print buffer
+        self._DBG( "populateXmlToClient --> " + buffer )
         self._connection.send( ''.join(bufferList) )
 
     def populateXmlToClient( self , bufferList ) :
@@ -171,7 +198,7 @@ class NetworkSession:
         for element in bufferList:
             mbuffer = mbuffer + ' ' + str(element)
         mbuffer = mbuffer + '</JPY>\n'
-        #print buffer
+        self._DBG( "populateToClient --> " + mbuffer )
         self._connection.send( mbuffer )
     
         
@@ -203,6 +230,7 @@ class NetworkSession:
             if ( eocPos != -1 ): # full command received in buffer
                 self._lastBuffer = data[nextPos:] # cleanup received command from buffer
                 returned = data[:eocPos]
+                self._DBG( "<-- received Command " + returned )
                 if (returned[-1] == '\r'):
                     return returned[:-1]
                 return returned  
@@ -212,4 +240,5 @@ class NetworkSession:
 
     def close( self ):
         """ close the associated ip session """
+        self._DBG( "**** DEBUGGER CONNECTION CLOSED ***" )
         self._connection.close()

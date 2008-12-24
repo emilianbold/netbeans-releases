@@ -42,7 +42,10 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -96,5 +99,30 @@ public class CndDataObjectTestCase extends BaseTestCase {
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);
     }
-    
+
+    public void testHDataObjectWithoutExtension() throws Exception {
+        checkHeaderWithoutExtension("headerWithComments", "//    -*- C++ -*-    \n"); // NOI18N
+        checkHeaderWithoutExtension("headerWithStandardComments", "//    standard header\n"); // NOI18N
+        checkHeaderWithoutExtension("headerWithInclude", "\n\n#include <stdio>\n"); // NOI18N
+        checkHeaderWithoutExtension("headerWithPragma", "\n#pragma once\n"); // NOI18N
+    }
+
+    private void checkHeaderWithoutExtension(String fileName, CharSequence content) throws Exception {
+        File newFile = new File(super.getWorkDir(), fileName); // NOI18N
+        newFile.createNewFile();
+        assertTrue("Not created file " + newFile, newFile.exists());
+        FileObject fo = FileUtil.toFileObject(newFile);
+        Writer writer = new OutputStreamWriter(fo.getOutputStream());
+        try {
+            writer.append(content);
+            writer.flush();
+        } finally {
+            writer.close();
+        }
+        assertNotNull("Not found file object for file" + newFile, fo);
+        String mime = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE);
+        assertEquals("header with content " + content + " is not recognized ", MIMENames.HEADER_MIME_TYPE, mime);
+        DataObject dob = DataObject.find(fo);
+        assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);
+    }
 }

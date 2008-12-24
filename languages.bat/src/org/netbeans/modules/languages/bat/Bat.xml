@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="bat"/>
+        <ext name="cmd"/>
         <resolver mime="text/bat"/>
     </file>
 </MIME-resolver>

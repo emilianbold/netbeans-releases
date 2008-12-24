@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.TreeSet;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -63,9 +62,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -77,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -96,7 +94,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -262,10 +259,16 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         }
         if (usedExtension.size() > 0 && addNewExtensionDialog(usedExtension, "H")) { // NOI18N
-            // add unknown extensin to HDataLoader
-            HDataLoader.getInstance().addExtensions(usedExtension);
+            // add unknown extension to header files
+            addMIMETypeExtensions(usedExtension, MIMENames.HEADER_MIME_TYPE);
             headerExtensions.addAll(usedExtension);
             saveAdditionalExtensions();
+        }
+    }
+
+    private void addMIMETypeExtensions(Collection<String> extensions, String mime) {
+        for (String ext : extensions) {
+            FileUtil.setMIMEType(ext, mime);
         }
     }
 
@@ -284,15 +287,15 @@ public final class MakeProject implements Project, AntProjectListener {
     private void checkNeededExtensions() {
         Set<String> unknown = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
         if (unknown.size() > 0 && addNewExtensionDialog(unknown, "C")) { // NOI18N
-            CDataLoader.getInstance().addExtensions(unknown);
+            addMIMETypeExtensions(unknown, MIMENames.C_MIME_TYPE);
         }
         unknown = getUnknownExtensions(MakeProject.getCppSuffixes(), cppExtensions);
         if (unknown.size() > 0 && addNewExtensionDialog(unknown, "CPP")) { // NOI18N
-            CCDataLoader.getInstance().addExtensions(unknown);
+            addMIMETypeExtensions(unknown, MIMENames.CPLUSPLUS_MIME_TYPE);
         }
         unknown = getUnknownExtensions(MakeProject.getHeaderSuffixes(), headerExtensions);
         if (unknown.size() > 0 && addNewExtensionDialog(unknown, "H")) { // NOI18N
-            HDataLoader.getInstance().addExtensions(unknown);
+            addMIMETypeExtensions(unknown, MIMENames.HEADER_MIME_TYPE);
         }
     }
 
@@ -363,34 +366,27 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static Set<String> getSourceSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
-        addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getCSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getCppSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private static Set<String> getHeaderSuffixes() {
         Set<String> suffixes = createExtensionSet();
-        addSuffices(suffixes, HDataLoader.getInstance().getExtensions());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         return suffixes;
-    }
-
-    private static void addSuffices(Set<String> suffixes, ExtensionList list) {
-        for (Enumeration e = list.extensions(); e != null && e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
-            suffixes.add(ex);
-        }
     }
 
     private static String getString(String s) {
