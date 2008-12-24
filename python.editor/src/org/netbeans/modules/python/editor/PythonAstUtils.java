@@ -62,9 +62,9 @@ import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Str;
-import org.python.antlr.ast.argumentsType;
-import org.python.antlr.ast.exprType;
-import org.python.antlr.ast.stmtType;
+import org.python.antlr.ast.arguments;
+import org.python.antlr.base.expr;
+import org.python.antlr.base.stmt;
 
 /**
  * Utility functions for dealing with the Jython AST
@@ -186,7 +186,7 @@ public class PythonAstUtils {
             // there in fact is the start of the name, and if not, search forwards for it.
             int DELTA = 4; // HACK:
             int start = def.getCharStartIndex() + DELTA;
-            int end = start + def.name.length();
+            int end = start + def.getInternalName().length();
 
             // TODO - look up offset
 
@@ -202,23 +202,23 @@ public class PythonAstUtils {
             // there in fact is the start of the name, and if not, search forwards for it.
             int DELTA = 6; // HACK:
             int start = def.getCharStartIndex() + DELTA;
-            int end = start + def.name.length();
+            int end = start + def.getInternalName().length();
 
             // TODO - look up offset
 
             return new OffsetRange(start, end);
         } else if (node instanceof Attribute) {
             Attribute attr = (Attribute)node;
-            return getNameRange(info, attr.value);
+            return getNameRange(info, attr.getInternalValue());
         } else if (node instanceof Call) {
             Call call = (Call)node;
-            if (call.func instanceof Name) {
-                return getNameRange(info, call.func);
-            } else if (call.func instanceof Attribute) {
+            if (call.getInternalFunc() instanceof Name) {
+                return getNameRange(info, call.getInternalFunc());
+            } else if (call.getInternalFunc() instanceof Attribute) {
                 // The call name is in the value part of the name.value part
-                Attribute attr = (Attribute)call.func;
-                int start = attr.value.getCharStopIndex() + 1; // +1: Skip .
-                String name = attr.attr;
+                Attribute attr = (Attribute)call.getInternalFunc();
+                int start = attr.getInternalValue().getCharStopIndex() + 1; // +1: Skip .
+                String name = attr.getInternalAttr();
                 return new OffsetRange(start, start + name.length());
             } else {
                 String name = getCallName(call);
@@ -272,7 +272,7 @@ public class PythonAstUtils {
                     sb.append('.'); // NOI18N
                 }
                 ClassDef cls = (ClassDef)node;
-                sb.append(cls.name);
+                sb.append(cls.getInternalName());
             }
         }
 
@@ -349,23 +349,23 @@ public class PythonAstUtils {
         return name.startsWith("get") || name.startsWith("_get"); // NOI18N
     }
 
-    public static String getCallName(Call node) {
-        exprType func = node.func;
+    public static String getCallName(Call call) {
+        expr func = call.getInternalFunc();
 
         return getExprName(func);
     }
 
-    public static String getExprName(exprType type) {
+    public static String getExprName(expr type) {
         if (type instanceof Attribute) {
             Attribute attr = (Attribute)type;
-            return attr.attr;
+            return attr.getInternalAttr();
         } else if (type instanceof Name) {
-            return ((Name)type).id;
+            return ((Name)type).getInternalId();
         } else if (type instanceof Call) {
             Call call = (Call)type;
-            return getExprName(call.func);
-        //} else if (type instanceof Str) {
-        //    return ((Str)type).getText();
+            return getExprName(call.getInternalFunc());
+            //} else if (type instanceof Str) {
+            //    return ((Str)type).getText();
         } else {
             return null;
         }
@@ -373,12 +373,12 @@ public class PythonAstUtils {
 
     public static String getName(PythonTree node) {
         if (node instanceof Name) {
-            return ((Name)node).id;
+            return ((Name)node).getInternalId();
         }
         if (node instanceof Attribute) {
             Attribute attrib = (Attribute)node;
-            String prefix = getName(attrib.value);
-            return (prefix + '.' + attrib.attr);
+            String prefix = getName(attrib.getInternalValue());
+            return (prefix + '.' + attrib.getInternalAttr());
         }
         NameVisitor visitor = new NameVisitor();
         try {
@@ -396,14 +396,14 @@ public class PythonAstUtils {
     }
 
     public static List<String> getParameters(FunctionDef def) {
-        argumentsType args = def.args;
+        arguments args = def.getInternalArgs();
         List<String> params = new ArrayList<String>();
 
         NameVisitor visitor = new NameVisitor();
 
-        for (int i = 0; i < args.args.length; i++) {
+        for (expr e : args.getInternalArgs()) {
             try {
-                Object result = visitor.visit(args.args[i]);
+                Object result = visitor.visit(e);
                 if (result instanceof String) {
                     params.add((String)result);
                 } else {
@@ -414,21 +414,24 @@ public class PythonAstUtils {
             }
         }
 
-        if (args.vararg != null) {
-            params.add(args.vararg);
+        String vararg = args.getInternalVararg();
+        if (vararg != null) {
+            params.add(vararg);
         }
-        if (args.kwarg != null) {
-            params.add(args.kwarg);
+        String kwarg = args.getInternalKwarg();
+        if (kwarg != null) {
+            params.add(kwarg);
         }
 
         return params;
     }
 
-    private static Str searchForDocNode(stmtType stmt) {
+    private static Str searchForDocNode(stmt stmt) {
         if (stmt instanceof Expr) {
             Expr expr = (Expr)stmt;
-            if (expr.value instanceof Str) {
-                return (Str)expr.value;
+            expr value = expr.getInternalValue();
+            if (value instanceof Str) {
+                return (Str)value;
             }
         }
 
@@ -446,20 +449,23 @@ public class PythonAstUtils {
         if (node instanceof FunctionDef) {
             // Function
             FunctionDef def = (FunctionDef)node;
-            if (def.body != null && def.body.length > 0) {
-                return searchForDocNode(def.body[0]);
+            List<stmt> body = def.getInternalBody();
+            if (body != null && body.size() > 0) {
+                return searchForDocNode(body.get(0));
             }
         } else if (node instanceof ClassDef) {
             // Class
             ClassDef def = (ClassDef)node;
-            if (def.body != null && def.body.length > 0) {
-                return searchForDocNode(def.body[0]);
+            List<stmt> body = def.getInternalBody();
+            if (body != null && body.size() > 0) {
+                return searchForDocNode(body.get(0));
             }
         } else if (node instanceof Module) {
             // Module
             Module module = (Module)node;
-            if (module.body != null && module.body.length > 0) {
-                return searchForDocNode(module.body[0]);
+            List<stmt> body = module.getInternalBody();
+            if (body != null && body.size() > 0) {
+                return searchForDocNode(body.get(0));
             }
         }
         // TODO: As per http://www.python.org/dev/peps/pep-0257/ I should
@@ -616,7 +622,7 @@ public class PythonAstUtils {
     private static final class NameVisitor extends Visitor {
         @Override
         public Object visitName(Name name) throws Exception {
-            return name.id;
+            return name.getInternalId();
         }
     }
 
@@ -629,7 +635,7 @@ public class PythonAstUtils {
                 if (path != null) {
                     PythonTree closest = path.leaf();
                     PythonTree scope = getLocalScope(path);
-                    String name = ((Name)closest).id;
+                    String name = ((Name)closest).getInternalId();
 
                     return getLocalVarOffsets(info, scope, name);
                 }
@@ -698,12 +704,12 @@ public class PythonAstUtils {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            if (parent instanceof Call && ((Call)parent).func == node) {
+            if (parent instanceof Call && ((Call)parent).getInternalFunc() == node) {
                 return super.visitName(node);
             }
 
-            if ((name == null && !PythonUtils.isClassName(node.id, false)) ||
-                    (name != null && name.equals(node.id))) {
+            if ((name == null && !PythonUtils.isClassName(node.getInternalId(), false)) ||
+                    (name != null && name.equals(node.getInternalId()))) {
                 if (collectOffsets) {
                     OffsetRange astRange = PythonAstUtils.getNameRange(info, node);
                     OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
@@ -747,8 +753,8 @@ public class PythonAstUtils {
         @Override
         public Object visitName(Name node) throws Exception {
             if (parent instanceof FunctionDef || parent instanceof Assign) {
-                if ((name == null && !PythonUtils.isClassName(node.id, false)) ||
-                        (name != null && name.equals(node.id))) {
+                if ((name == null && !PythonUtils.isClassName(node.getInternalId(), false)) ||
+                        (name != null && name.equals(node.getInternalId()))) {
                     if (collectOffsets) {
                         OffsetRange astRange = PythonAstUtils.getNameRange(info, node);
                         OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
@@ -819,15 +825,15 @@ public class PythonAstUtils {
             return null;
         }
 
-        exprType[] baseClasses = curClass.bases;
+        List<expr> baseClasses = curClass.getInternalBases();
         if (baseClasses == null) {
             return null; // no inheritance ;
         }
         int ii = 0;
-        while (ii < baseClasses.length) {
-            if (baseClasses[ii] instanceof Name) {
-                Name cur = (Name)baseClasses[ii];
-                if (cur.id.equals(name)) {
+        while (ii < baseClasses.size()) {
+            if (baseClasses.get(ii) instanceof Name) {
+                Name cur = (Name)baseClasses.get(ii);
+                if (cur.getInternalId().equals(name)) {
                     return cur;
                 }
             }
@@ -843,14 +849,14 @@ public class PythonAstUtils {
     public static int findArgumentIndex(Call call, int astOffset, AstPath path) {
 
         // On the name part in the call rather than the args?
-        if (astOffset <= call.func.getCharStopIndex()) {
+        if (astOffset <= call.getInternalFunc().getCharStopIndex()) {
             return -1;
         }
-
-        if (call.args != null) {
+        List<expr> args = call.getInternalArgs();
+        if (args != null) {
             int index = 0;
-            for (; index < call.args.length; index++) {
-                exprType et = call.args[index];
+            for (; index < args.size(); index++) {
+                expr et = args.get(index);
                 if (et.getCharStopIndex() >= astOffset) {
                     return index;
                 }

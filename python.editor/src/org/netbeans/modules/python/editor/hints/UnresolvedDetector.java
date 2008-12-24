@@ -100,9 +100,9 @@ public class UnresolvedDetector extends PythonAstRule {
                 List<HintFix> fixList = new ArrayList<HintFix>(3);
                 // Is is a reference to a module?
                 boolean tryModule = false;
-                if (node.parent instanceof Call) {
-                    Call call = (Call)node.parent;
-                    PythonTree t = call.func;
+                if (node.getParent() instanceof Call) {
+                    Call call = (Call)node.getParent();
+                    PythonTree t = call.getInternalFunc();
                     if (t instanceof Attribute) {
                         tryModule = true;
                     }

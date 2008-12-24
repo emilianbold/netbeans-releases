@@ -867,6 +867,7 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+
             <folder name="x-qtproject">
                 <folder name="Factories">
                     <file name="QtProjectDataLoader.instance">
@@ -997,11 +998,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <!--
-                    <file name="org-netbeans-modules-cnd-actions-ExternalOpenAction.instance">
+                    <file name="org-netbeans-modules-cnd-actions-OpenWithQtDesigner.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
-                    -->
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>

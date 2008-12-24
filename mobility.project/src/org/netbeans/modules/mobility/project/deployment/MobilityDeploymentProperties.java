@@ -62,12 +62,26 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
 
     public static final String DEPLOYMENT_PREFIX = "deployments."; //NOI18N
     
-    final RequestProcessor.Task task=RequestProcessor.getDefault().create(this);
-    
+    final RequestProcessor.Task task;
+    private final RequestProcessor requestProcessor;
+
+    /**
+     * Should use RP owned by the project, but not possible to fix all
+     * calls to this constructor
+     * @deprecated
+     */
+    @Deprecated
+    public MobilityDeploymentProperties() {
+        //Use a single threaded RP
+        this (new RequestProcessor());
+    }
+
     /**
      * Creates a new instance of MobilityDeploymentProperties
      */
-    public MobilityDeploymentProperties() {
+    public MobilityDeploymentProperties(RequestProcessor requestProcessor) {
+        this.requestProcessor = requestProcessor;
+        task = requestProcessor.create(this);
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         for (Map.Entry<String,String> en : ep.entrySet()) {
             String key = en.getKey();
@@ -93,7 +107,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
         for (String key : keySet().toArray(new String[0])) {
             if (key.startsWith(pref)) remove(key);
         }
-        RequestProcessor.getDefault().post(this, 200);
+        task.schedule(200);
     }
     
     public void createInstance(String deploymentTypeName, String instanceName) {
@@ -105,7 +119,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
                     for (Map.Entry<String,Object> en : def.entrySet()) {
                        if (en.getValue() != null) super.put(pref+en.getKey(), en.getValue().toString());
                     }
-                    RequestProcessor.getDefault().post(this, 200);
+                    task.schedule(200);
                     return;
                 }
             }
@@ -131,6 +145,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
         });
     }
 
+    @Override
     public Object put(String key, Object value) {
         Object retValue = super.put(key, value);
         task.schedule(200);

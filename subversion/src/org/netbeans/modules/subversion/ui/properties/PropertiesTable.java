@@ -52,6 +52,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.versioning.util.TableSorter;
@@ -94,7 +95,12 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
         table.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesTable.class, "tableProperties.AccessibleContext.accessibleName"));
         table.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesTable.class, "tableProperties.AccessibleContext.accessibleDescription"));
         table.getTableHeader().setReorderingAllowed(false);
-        table.setDefaultRenderer(String.class, new PropertiesTableCellRenderer());
+        TableCellRenderer cellRenderer = new PropertiesTableCellRenderer();
+        table.setDefaultRenderer(String.class, cellRenderer);
+        table.setRowHeight(Math.max(
+                table.getRowHeight(),
+                cellRenderer.getTableCellRendererComponent(table, "abc", true, true, 0, 0)//NOI18N
+                            .getPreferredSize().height + 2));
         //table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
         this.sorter.setTableHeader(table.getTableHeader());
@@ -200,7 +206,7 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
            
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int columnIndex) {
             Component renderer =  super.getTableCellRendererComponent(table, value, hasFocus, hasFocus, rowIndex, columnIndex);
-            if (renderer instanceof JComponent) {
+            if ((rowIndex < tableModel.getRowCount()) && (renderer instanceof JComponent)) {
                 String strValue = tableModel.getNode(sorter.modelIndex(rowIndex)).getValue(); 
                 ((JComponent) renderer).setToolTipText(strValue);
             }

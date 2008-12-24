@@ -49,6 +49,13 @@ import com.sun.source.tree.Tree;
 import java.util.*;
 import java.text.MessageFormat;
 
+import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,6 +91,7 @@ public class EvaluationException2 extends RuntimeException {
 
         String [] msgParams = null;
 
+        try {
         if (reason.equals("internalError"))
             msgParams = new String [] { null };
         else if (reason.equals("invalidArrayInitializer"))
@@ -119,15 +127,15 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("internalErrorResolvingType"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("instanceOfLeftOperandNotAReference"))
-            msgParams = new String [] { ((Value)params[0]).type().name() };
+            msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("conditionalOrAndBooleanOperandRequired"))
-            msgParams = new String [] { ((Value)params[0]).type().name() };
+            msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("conditionalQuestionMarkBooleanOperandRequired"))
-            msgParams = new String [] { ((Value)params[0]).type().name() };
+            msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("thisObjectUnavailable"))
             msgParams = null;
         else if (reason.equals("objectReferenceRequiredOnDereference"))
-            msgParams = new String [] { ((Value)params[0]).type().name() };
+            msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("badArgument"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("argumentsBadSyntax"))
@@ -143,16 +151,16 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("callException"))
             msgParams = new String [] { params[1].toString(), params[0].toString() };
         else if (reason.equals("calleeException"))
-            msgParams = new String [] { ((Identifier)params[1]).typeContext.name(),  ((Identifier)params[1]).identifier,
+            msgParams = new String [] { ReferenceTypeWrapper.name(((Identifier)params[1]).typeContext),  ((Identifier)params[1]).identifier,
                                         ((InvocationException)(params[0])).exception().toString() };
         else if (reason.equals("identifierNotAReference"))
-            msgParams = new String [] { ((Value)params[0]).type().name() };
+            msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("notarray"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("arrayIndexNAN"))
             msgParams = new String [] { params[1].toString() };
         else if (reason.equals("arrayIndexOutOfBounds"))
-            msgParams = new String [] { params[1].toString(), Integer.toString(((ArrayReference)params[0]).length() - 1) };
+            msgParams = new String [] { params[1].toString(), Integer.toString(ArrayReferenceWrapper.length0((ArrayReference) params[0]) - 1) };
         else if (reason.equals("unknownVariable"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("integerLiteralTooBig"))
@@ -195,6 +203,14 @@ public class EvaluationException2 extends RuntimeException {
         else {
             msgParams = new String [] { reason };
             reason = "unknownInternalError";
+        }
+        } catch (InternalExceptionWrapper e) {
+            msgParams = new String [] { e.getLocalizedMessage() };
+            reason = "unknownInternalError";
+        } catch (VMDisconnectedExceptionWrapper e) {
+            msgParams = new String [] { e.getLocalizedMessage() };
+        } catch (ObjectCollectedExceptionWrapper e) {
+            msgParams = new String [] { e.getLocalizedMessage() };
         }
 
         message = formatMessage("CTL_EvalError_" + reason, msgParams);

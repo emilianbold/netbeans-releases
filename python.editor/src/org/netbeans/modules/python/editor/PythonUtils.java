@@ -473,7 +473,7 @@ public class PythonUtils {
     }
     public static Comparator NAME_NODE_COMPARATOR = new Comparator<Name>() {
         public int compare(Name n1, Name n2) {
-            return n1.id.compareTo(n2.id);
+            return n1.getInternalId().compareTo(n2.getInternalId());
         }
     };
     public static Comparator ATTRIBUTE_NAME_NODE_COMPARATOR = new Comparator<Object>() {
@@ -483,26 +483,26 @@ public class PythonUtils {
             String s2 = "";
 
             if (n1 instanceof Name) {
-                s1 = ((Name)n1).id;
+                s1 = ((Name)n1).getInternalId();
             } else if (n1 instanceof Attribute) {
                 Attribute a = (Attribute)n1;
-                String v = PythonAstUtils.getName(a.value);
+                String v = PythonAstUtils.getName(a.getInternalValue());
                 if (v != null) {
-                    s1 = a.attr + "." + v;
+                    s1 = a.getInternalAttr() + "." + v;
                 } else {
-                    s1 = a.attr;
+                    s1 = a.getInternalAttr();
                 }
             }
 
             if (n2 instanceof Name) {
-                s2 = ((Name)n2).id;
+                s2 = ((Name)n2).getInternalId();
             } else if (n2 instanceof Attribute) {
                 Attribute a = (Attribute)n2;
-                String v = PythonAstUtils.getName(a.value);
+                String v = PythonAstUtils.getName(a.getInternalValue());
                 if (v != null) {
-                    s2 = a.attr + "." + v;
+                    s2 = a.getInternalAttr() + "." + v;
                 } else {
-                    s2 = a.attr;
+                    s2 = a.getInternalAttr();
                 }
             }
 
@@ -519,7 +519,7 @@ public class PythonUtils {
             if (ret != 0) {
                 return ret;
             }
-            return p2.getType() - p1.getType();
+            return p2.getAntlrType() - p1.getAntlrType();
         }
     };
 }

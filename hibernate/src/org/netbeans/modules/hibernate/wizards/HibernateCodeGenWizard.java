@@ -42,7 +42,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -57,13 +56,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject;
-import org.netbeans.modules.hibernate.reveng.model.HibernateReverseEngineering;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
-import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
@@ -133,8 +128,6 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
 
                 panels = new WizardDescriptor.Panel[]{
-                            targetChooser,
-                            dbTablesDescriptor,
                             codeGenDescriptor
                         };
             }
@@ -176,7 +169,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateCodeGenWizard.class, "LBL_RevEngWizardTitle"); // NOI18N
+        return NbBundle.getMessage(HibernateCodeGenWizard.class, "Templates/Hibernate/CodeGen"); // NOI18N
 
     }
 
@@ -255,7 +248,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         helper = new HibernateCodeGenWizardHelper(project);
 
         wiz.putProperty(PROP_HELPER, helper);
-        String wizardTitle = NbBundle.getMessage(HibernateCodeGenWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N
+        String wizardTitle = NbBundle.getMessage(HibernateCodeGenWizard.class, "Templates/Hibernate/CodeGen"); // NOI18N
         nameLocationDescriptor = new HibernateCodGenNameLocationWizardDescriptor(project, wizardTitle);
         dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project, wizardTitle);
         codeGenDescriptor = new HibernateCodeGenWizardDescriptor(project, wizardTitle);
@@ -298,7 +291,6 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
 
         File confFile = FileUtil.toFile(helper.getConfigurationFile());
         File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
-
         try {
 
             // Setup classloader.
@@ -330,7 +322,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
 
                 cfg.readFromJDBC();
-                cfg.buildMappings();
+                cfg.buildMappings();                
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -338,7 +330,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             // Generating POJOs            
             try {
                 if (helper.getDomainGen()) {
-                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
+                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenPOJO"), 1); // NOI18N
                     POJOExporter exporter = new POJOExporter(cfg, outputDir);
                     exporter.getProperties().setProperty("jdk5", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
@@ -351,9 +343,9 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
-                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenMapping"), 3); // NOI18N
+                    handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenMapping"), 2); // NOI18N
                     HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
-                    exporter.start();
+                    exporter.start();                    
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -417,52 +409,15 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
     }
 
     public Set instantiate(ProgressHandle handle) throws IOException {
-        handle.start(4);
-        handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_CreatingReveng"), 1); // NOI18N
-        FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
-        String targetName = Templates.getTargetName(wizardDescriptor);
-        FileObject templateFileObject = Templates.getTemplate(wizardDescriptor);
-        DataObject templateDataObject = DataObject.find(templateFileObject);
-
-
-        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
+        handle.start(3);
         try {
-            HibernateRevengDataObject hro = (HibernateRevengDataObject) newOne;
-            HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
-
-            // Add Schema Selection.
-            int jx = hre.addSchemaSelection(true);
-            if (helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
-                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, CATALOG_NAME, helper.getCatalogName());
-            } else {
-                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, CATALOG_NAME, null);
-            }
-            if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
-                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, ATTRIBUTE_NAME, helper.getSchemaName());
-            } else {
-                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, ATTRIBUTE_NAME, null);
-            }
-
-            // Add Table filters.
-            ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
-            for (int i = 0; i < list.size(); i++) {
-                int ix = hre.addTableFilter(true);
-                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, null);
-                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, null);
-                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, MATCH_NAME, list.get(i).getName());
-                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, EXCLUDE_NAME, null);
-            }
-            hro.addReveng();
-            hro.save();
-            if (list.size() > 0) {
-                generateClasses(hro.getPrimaryFile(), handle);
-                handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_UpdateConf"), 4); // NOI18N
-                updateConfiguration();
-            }
-            return Collections.singleton(hro.getPrimaryFile());
-        } catch (Exception e) {
+            generateClasses(helper.getRevengFile(), handle);
+            handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_UpdateConf"), 3); // NOI18N
+            updateConfiguration();
+            return Collections.singleton(helper.getRevengFile());
+        } catch(Exception e) {
             return Collections.EMPTY_SET;
         }
-    }
+    }    
+    
 }

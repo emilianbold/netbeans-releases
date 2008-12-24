@@ -68,12 +68,6 @@ public class RlogTest extends TestCase {
         System.setProperty("cvsClientLog", protocolLog);
         System.out.println(protocolLog);
 
-        final InputStream in = getClass().getResourceAsStream("protocol/iz57365.in");
-        if (in == null) {
-            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
-            in.markSupported();
-        }
-
         final File requestsLog = File.createTempFile("requests", null, tmpDir);
 
         final Exception testException[] = new Exception[1];
@@ -81,7 +75,7 @@ public class RlogTest extends TestCase {
         Runnable run = new Runnable() {
             public void run() {
                 try {
-                    PseudoCvsServer cvss = new PseudoCvsServer(in);
+                    PseudoCvsServer cvss = new PseudoCvsServer("protocol/iz57365.in");
                     cvss.logRequests(new FileOutputStream(requestsLog));
                     try {
                         new Thread(cvss).start();

@@ -82,7 +82,7 @@ public class RelativeImports extends PythonAstRule {
     @Override
     public void run(PythonRuleContext context, List<Hint> result) {
         ImportFrom imp = (ImportFrom)context.node;
-        if (imp.module != null && imp.module.startsWith(".")) {
+        if (imp.getInternalModule() != null && imp.getInternalModule().startsWith(".")) {
             PythonTree node = context.node;
             CompilationInfo info = context.compilationInfo;
             OffsetRange astOffsets = PythonAstUtils.getNameRange(info, node);
@@ -168,7 +168,7 @@ public class RelativeImports extends PythonAstRule {
                 if (lexRange != OffsetRange.NONE) {
                     FileObject fo = context.compilationInfo.getFileObject();
                     if (fo != null) {
-                        String path = imp.module;
+                        String path = imp.getInternalModule();
                         int i = 0;
                         for (; i < path.length(); i++) {
                             if (path.charAt(i) != '.') {
@@ -200,9 +200,9 @@ public class RelativeImports extends PythonAstRule {
                             fo = fo.getParent();
                         }
                         String text = doc.getText(lexRange.getStart(), lexRange.getLength());
-                        int relativePos = text.indexOf(imp.module);
+                        int relativePos = text.indexOf(imp.getInternalModule());
                         if (relativePos != -1) {
-                            edits.replace(lexRange.getStart() + relativePos, imp.module.length(), path, false, 0);
+                            edits.replace(lexRange.getStart() + relativePos, imp.getInternalModule().length(), path, false, 0);
                         }
                     }
                 }

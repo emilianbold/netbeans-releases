@@ -24,8 +24,6 @@ class  ${clsname}TestCase(unittest.TestCase):
         # assert_equal("foo", bar)
         self.fail("TODO: Write test")
 
-#suite = unittest.TestLoader().loadTestsFromTestCase(${clsname}TestCase)
-#unittest.TextTestRunner(verbosity=2).run(suite)
 if __name__ == '__main__':
     unittest.main()
 

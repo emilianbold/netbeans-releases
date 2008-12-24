@@ -317,7 +317,7 @@ PropertyChangeListener {
                 } catch (NoSuchMethodException ex) {
                     exceptionMessage = "<"+ex.getLocalizedMessage()+">";
                 } catch (InvalidExpressionException ex) {
-                    Exceptions.printStackTrace(ex);
+                    exceptionMessage = "<"+ex.getLocalizedMessage()+">";
                 }
                 printText = exceptionMessagePattern.matcher (printText).replaceAll
                     (exceptionMessage);

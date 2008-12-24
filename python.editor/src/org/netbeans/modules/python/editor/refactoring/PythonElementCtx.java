@@ -95,7 +95,7 @@ public class PythonElementCtx {
         Iterator<PythonTree> it = path.leafToRoot();
 
         // Is it a call name?
-        if (leaf instanceof Name && path.leafParent() instanceof Call && (leaf == ((Call)path.leafParent()).func)) {
+        if (leaf instanceof Name && path.leafParent() instanceof Call && (leaf == ((Call)path.leafParent()).getInternalFunc())) {
             leaf = path.leafParent();
         } else {
             FindNode:
