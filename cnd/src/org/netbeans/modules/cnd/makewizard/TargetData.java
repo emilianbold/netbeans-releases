@@ -42,11 +42,7 @@
 package  org.netbeans.modules.cnd.makewizard;
 
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.loaders.AsmDataLoader;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.FortranDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  * A TargetData record. This class should contain ALL iformation necessary to
@@ -526,27 +522,26 @@ final public class TargetData {
 
     /** Check if a file is a C++ file */
     public boolean isCppFile(String file) {
-        return CCDataLoader.getInstance().getExtensions().isRegistered(file);
+        return MIMENames.CPLUSPLUS_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
     }
 
 
     /** Check if a file is a C file */
     public boolean isCFile(String file) {
-        return CDataLoader.getInstance().getExtensions().isRegistered(file);
+        return MIMENames.C_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
     }
 
 
     /** Check if a file is a C/C++ header file */
     public boolean isHdrFile(String file) {
-        return HDataLoader.getInstance().getExtensions().isRegistered(file);
+        return MIMENames.HEADER_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
     }
 
 
     /** Check if a file is a Fortran file */
     public boolean isFortranFile(String file) {
-        return FortranDataLoader.getInstance().getExtensions().isRegistered(file);
+        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
     }
-
 
     /** Check if a file is a X-Designer file */
     public boolean isXdFile(String file) {
@@ -556,7 +551,7 @@ final public class TargetData {
 
     /** Check if a file is a Assembly file */
     public boolean isAssemblyFile(String file) {
-        return AsmDataLoader.getInstance().getExtensions().isRegistered(file);
+        return MIMENames.ASM_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
     }
 
 
