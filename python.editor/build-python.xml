@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
             
         </subant>
@@ -93,6 +94,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="o.jython.distro"/>

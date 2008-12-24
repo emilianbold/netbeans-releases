@@ -231,13 +231,6 @@ class DiagramLoader
         }
     }
 
-    private void printData()
-    {
-//        System.out.println(" connector list =  " + connectorList);
-//        System.out.println(" pres elt list =  " + presEltList);
-
-    }
-
     private void handleStartElement()
     {
         if (reader.getName().getLocalPart().equalsIgnoreCase("Diagram"))
@@ -285,13 +278,11 @@ class DiagramLoader
 
         if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.position"))
         {
-            //            System.out.println("Ignoring POSITION.. ");
             jumpToClosingTag("GraphElement.position");
             return; //This is needed for the reader to continue reading
         }
         if (reader.getName().getLocalPart().equalsIgnoreCase("GraphNode.size"))
         {
-            //            System.out.println("Ignoring SIZE.. ");
             jumpToClosingTag("GraphNode.size");
             return; //This is needed for the reader to continue reading
         }
@@ -395,7 +386,6 @@ class DiagramLoader
                 {
                     if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
                     {
-//                        System.out.println(" hash table = " + tempProps.toString());
                         return tempProps;
                     }
                 }
@@ -1187,14 +1177,12 @@ class DiagramLoader
                             if(edgeConnectors[0]!=null)edgeReader.setSourcePE(findNode(edgeConnectors[0])); //We know that the first conn is src and the second is target
                             else
                             {
-//                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
                                 edgeInfoList.remove(edgeReader);
                                 return;
                             }
                             if(edgeConnectors[1]!=null)edgeReader.setTargetPE(findNode(edgeConnectors[1])); //target
                             else
                             {
-//                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
                                 edgeInfoList.remove(edgeReader);
                                 return;
                             }
@@ -1205,7 +1193,6 @@ class DiagramLoader
                 {
                     if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphEdge"))
                     {
-//                        System.out.println(" End Graph Edge !!");                        
                         return;
                     }
                 }
@@ -1237,16 +1224,11 @@ class DiagramLoader
             messageList = interaction.getMessages();
         }
         //now get the list of all edgeReaders and sort them based on y-axis
-        Collections.sort(edgeInfoList, Y_AXIS_COMPARATOR);
-        //System.out.println("  AFTER SORT !!!!!"+edgeInfoList);
-        
+        Collections.sort(edgeInfoList, Y_AXIS_COMPARATOR);        
         //now for each message in the edgeInfoList, find it in the messageList,
         // and create it.. since sequence of creation is very important.
-
-        
         for (Iterator<EdgeInfo> it = edgeInfoList.iterator(); it.hasNext();) {
             EdgeInfo edgeInfo = it.next();
-//            System.out.println("  !!!  edgeInfo = "+edgeInfo);
             Widget sourceWidget = scene.findWidget(edgeInfo.getSourcePE());
             Widget targetWidget = scene.findWidget(edgeInfo.getTargetPE());
             //
@@ -1264,7 +1246,6 @@ class DiagramLoader
                 if (message.getKind() == IMessageKind.MK_SYNCHRONOUS)
                 {
                     Point resultStartingPoint, resultEndingPoint;
-//                    System.out.println(" SYNCHRONOUS message... ");
                     //now find the result message for this call message
                     IMessage returnMsg = findReturnMessage(messageList, message);
                     if (returnMsg != null)
@@ -1276,27 +1257,21 @@ class DiagramLoader
                         if (returnMsgInfo != null) {
                             resultStartingPoint = (Point) returnMsgInfo.getWayPoints().get(0);
                             resultEndingPoint = (Point) returnMsgInfo.getWayPoints().get(returnMsgInfo.getWayPoints().size() - 1);
-                            
                             retVal = (List)provider.createSynchConnection(sourceWidget, targetWidget, startingPoint, endingPoint, resultStartingPoint, resultEndingPoint);
-//                            System.out.println("syncMsg"+retVal);
                         }
                     }
                 } 
                 else if ((message.getKind() == IMessageKind.MK_ASYNCHRONOUS) 
                         || (message.getKind() == IMessageKind.MK_CREATE))
                 {
-//                    System.out.println(" ASYNC message ..");
                     provider = sqdengine.getConnectProvider(message, null);
                     retVal = (List)provider.createConnection(sourceWidget, targetWidget, startingPoint, endingPoint);                    
-//                    System.out.println("Async "+retVal);
                 } 
                 else if (message.getKind() == IMessageKind.MK_RESULT) {
                     //do nothing for now.. TODO delete it.
-//                    System.out.println(" Result Message ! ");
                 }
                else
                 {
-//                    System.out.println(" short method..");
                     provider = sqdengine.getConnectProvider(message, null);
                     provider.createConnection(sourceWidget, targetWidget);
                 }
@@ -1319,7 +1294,6 @@ class DiagramLoader
             }
             else if (message == null && edgeInfo != null)  // we may be a comment edge..
             {
-//                System.out.println("comment edge .. I cannot think of any other edge type here..");
                 Widget connWidget = addEdgeToScene(edgeInfo);
                 if (connWidget != null && connWidget instanceof UMLEdgeWidget)
                 {
