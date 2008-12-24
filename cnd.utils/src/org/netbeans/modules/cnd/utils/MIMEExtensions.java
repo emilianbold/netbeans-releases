@@ -75,7 +75,7 @@ public final class MIMEExtensions {
         return manager.get(mimeType);
     }
 
-    public static List<MIMEExtensions> getAllOrdered() {
+    public static List<MIMEExtensions> getCustomizable() {
         return manager.getOrderedExtensions();
     }
 
@@ -84,6 +84,9 @@ public final class MIMEExtensions {
     }
 
     public static boolean isRegistered(String mimeType, String ext) {
+        if (ext == null || ext.length() == 0) {
+            return false;
+        }
         // try cache
         MIMEExtensions out = get(mimeType);
         if (out == null) {
@@ -95,16 +98,22 @@ public final class MIMEExtensions {
 
     private final String mimeType;
     private final String description;
-    private final String prefKey;
-    private final Set<String> exts = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> exts;
 
     private MIMEExtensions(String mimeType, String description) {
         this.mimeType = mimeType;
         this.description = description;
-        this.prefKey = mimeType;
+        exts = new TreeSet<String>();
         exts.addAll(FileUtil.getMIMETypeExtensions(mimeType));
     }
 
+    private MIMEExtensions(String mimeType, MIMEExtensions primary) {
+        // own
+        this.mimeType = mimeType;
+        // share
+        this.description = primary.description;
+        exts = primary.exts;
+    }
     /**
      * assign extensions and default one to specified mime type
      * @param mimeType mime type to change
@@ -133,7 +142,7 @@ public final class MIMEExtensions {
             exts.clear();
             exts.addAll(newExts);
         }
-        preferences.put(prefKey, defaultExt);
+        preferences.put(getMIMEType(), defaultExt);
     }
 
     public String getMIMEType() {
@@ -141,7 +150,7 @@ public final class MIMEExtensions {
     }
 
     public String getDefaultExtension() {
-        String defaultExt = preferences.get(prefKey, "");
+        String defaultExt = preferences.get(getMIMEType(), "");
         if (defaultExt.length() == 0) {
             Collection<String> vals = getValues();
             return vals.isEmpty() ? "" : vals.iterator().next(); // NOI18N
@@ -193,11 +202,12 @@ public final class MIMEExtensions {
 
     public void setDefaultExtension(String defaultExt) {
         addExtension(defaultExt);
-        preferences.put(prefKey, defaultExt);
+        preferences.put(getMIMEType(), defaultExt);
     }
 
     private static class Manager {
-
+        // special mime type for C Headers extensions
+        private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h";
         private final Map<String, MIMEExtensions> mime2ext = new LinkedHashMap<String, MIMEExtensions>(5);
         private final FileObject configFolder;
         private final FileChangeListener listener;
@@ -218,7 +228,9 @@ public final class MIMEExtensions {
         }
 
         public List<MIMEExtensions> getOrderedExtensions() {
-            return new ArrayList<MIMEExtensions>(mime2ext.values());
+            Map<String, MIMEExtensions> out = new LinkedHashMap<String, MIMEExtensions>(mime2ext);
+            out.remove(C_HEADER_MIME_TYPE); // NOI18N
+            return new ArrayList<MIMEExtensions>(out.values());
         }
         
         private void initialize(FileObject configFolder) {
@@ -228,6 +240,16 @@ public final class MIMEExtensions {
                     MIMEExtensions data = create(fo);
                     if (!mime2ext.containsKey(data.getMIMEType())) {
                         mime2ext.put(data.getMIMEType(), data);
+                        if (MIMENames.HEADER_MIME_TYPE.equals(data.getMIMEType())) {
+                            MIMEExtensions cHeader = new MIMEExtensions(C_HEADER_MIME_TYPE, data);
+                            // check if newly created or already has custom value in prefs
+                            String defExt = preferences.get(C_HEADER_MIME_TYPE, "");
+                            if (defExt.length() == 0) {
+                                // for newly created use normal headers extension
+                                cHeader.setDefaultExtension(data.getDefaultExtension());
+                            }
+                            mime2ext.put(C_HEADER_MIME_TYPE, cHeader);
+                        }
                     }
                 }
             }
