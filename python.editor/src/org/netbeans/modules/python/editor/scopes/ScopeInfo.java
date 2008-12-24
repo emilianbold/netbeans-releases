@@ -18,7 +18,7 @@ import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Return;
 import org.python.antlr.ast.Tuple;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
 
 /** 
@@ -207,29 +207,21 @@ public class ScopeInfo extends Object {
         return cur;
     }
 
-    private boolean belongsToExprList(exprType[] types, exprType cur) {
-        if (types == null) {
-            return false;
-        }
-        for (int ii = 0; ii < types.length; ii++) {
-            if (types[ii] == cur) {
-                return true;
-            }
-        }
-        return false;
+    private boolean belongsToExprList(List<expr> types, expr cur) {
+        return types != null && types.contains(cur);
     }
 
     boolean isAttributeAssigment(AstPath path, Attribute attr) {
         PythonTree leaf = path.leaf();
         Assign assign = null;
-        exprType target = attr; // default to single
+        expr target = attr; // default to single
         if (leaf instanceof Assign) {
             assign = (Assign)leaf;
         } else if (leaf instanceof Tuple) {
             // check for tuple assignment
             Tuple tuple = (Tuple)leaf;
             PythonTree tupleParent = path.leafParent();
-            if (belongsToExprList(tuple.elts, attr)) {
+            if (belongsToExprList(tuple.getInternalElts(), attr)) {
                 if (tupleParent instanceof Assign) {
                     assign = (Assign)tupleParent;
                     target = tuple; // tuple assignment target
@@ -240,7 +232,7 @@ public class ScopeInfo extends Object {
         if (assign == null) {
             return false;
         }
-        if (belongsToExprList(assign.targets, target)) {
+        if (belongsToExprList(assign.getInternalTargets(), target)) {
             return true;
         }
         return false;
@@ -250,15 +242,15 @@ public class ScopeInfo extends Object {
         // deeply check assignment context for attribute.
         Attribute curAttr = (Attribute)node;
 
-        if (curAttr.value instanceof Attribute) {
+        if (curAttr.getInternalValue() instanceof Attribute) {
             // recursice attributes( x.y.z.w ) to be handled later
-        } else if (curAttr.value instanceof Name) {
+        } else if (curAttr.getInternalValue() instanceof Name) {
 
-            Name parentName = (Name)curAttr.value;
+            Name parentName = (Name)curAttr.getInternalValue();
 
             ScopeInfo classScope = getClassScope();
             boolean inConstructor = false;
-            String parName = parentName.id;
+            String parName = parentName.getInternalId();
 
             // for simplicity handle only at classScope in current source
             if (classScope != null) {
@@ -271,7 +263,7 @@ public class ScopeInfo extends Object {
                             return;
                         }
                     }
-                    if ( scope_name.equals("__init__") || scope_name.equals("__new__")) {
+                    if (scope_name.equals("__init__") || scope_name.equals("__new__")) {
                         inConstructor = true; // set in constructor
                     }
                     //
@@ -370,7 +362,7 @@ public class ScopeInfo extends Object {
         info.flags |= READ;
 
         return info;
-    // </netbeans>
+        // </netbeans>
     }
 
 
@@ -387,7 +379,7 @@ public class ScopeInfo extends Object {
     public List<String> cellvars = new ArrayList<String>();
     public List<String> jy_paramcells = new ArrayList<String>();
     public int jy_npurecell;
-    public int cell,  distance;
+    public int cell, distance;
     public ScopeInfo up;
     public ScopeInfo nested;
 
@@ -471,7 +463,7 @@ public class ScopeInfo extends Object {
                 }
             }
 
-        // </netbeans>
+            // </netbeans>
         }
         if ((jy_npurecell = purecells.size()) > 0) {
             int sz = purecells.size();
@@ -565,7 +557,7 @@ public class ScopeInfo extends Object {
                 System.identityHashCode(this);
     }
 
-    public void defineAsGenerator(exprType node) {
+    public void defineAsGenerator(expr node) {
         generator = true;
         if (hasReturnWithValue) {
             throw new ParseException("'return' with argument " +

@@ -481,6 +481,9 @@ public final class PythonCoverageProvider implements CoverageProvider {
             boolean prevWasContinue = false;
             for (int lineno = 0; lineno < result.length; lineno++) {
                 // Update the line balance
+                if (currentOffset > doc.getLength()) {
+                    break;
+                }
                 int begin = Utilities.getRowStart(doc, currentOffset);
                 int end = Utilities.getRowEnd(doc, currentOffset);
                 int nonWhiteOffset = Utilities.getRowFirstNonWhite(doc, begin);
@@ -583,7 +586,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
         }
     }
 
-    public PythonExecution wrapWithCoverage(PythonExecution original) {
+    public PythonExecution wrapWithCoverage(final PythonExecution original) {
         InstalledFileLocator locator = InstalledFileLocator.getDefault();
         // Set COVERAGE_FILE to ${getPythonCoverageFile()}
         // Run with "-x"
@@ -616,13 +619,18 @@ public final class PythonCoverageProvider implements CoverageProvider {
         execution.setWrapperCommand(wrapper.getPath(),
                 wrapperArgs.toArray(new String[wrapperArgs.size()]),
                 new String[]{"COVERAGE_FILE=" + pythonCoverage.getPath()}); // NOI18N
-        execution.addLineConvertor(new HideCoverageFramesConvertor());
+        execution.addOutConvertor(new HideCoverageFramesConvertor());
+        execution.addErrConvertor(new HideCoverageFramesConvertor());
 
         execution.setPostExecutionHook(new Runnable() {
             public void run() {
                 // Process the data immediately since it's available when we need it...
                 PythonCoverageProvider.this.update();
                 CoverageManager.INSTANCE.resultsUpdated(project, PythonCoverageProvider.this);
+
+                if (original.getPostExecutionHook() != null) {
+                    original.getPostExecutionHook().run();
+                }
             }
         });
 

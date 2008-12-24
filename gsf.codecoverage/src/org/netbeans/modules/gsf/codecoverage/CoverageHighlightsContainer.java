@@ -73,21 +73,26 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
+public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* implements DocumentListener*/ {
     private static final AttributeSet covered;
     private static final AttributeSet uncovered;
     private static final AttributeSet inferred;
+    private static final AttributeSet partial;
+
+    //private boolean enabled;
 
 
     static {
         Color coveredBc = null;
         Color uncoveredBc = null;
         Color inferredBc = null;
+        Color partialBc = null;
         FontColorSettings fcs = MimeLookup.getLookup("text/plain").lookup(FontColorSettings.class);
         if (fcs != null) {
             coveredBc = getColoring(fcs, "covered"); // NOI18N
             uncoveredBc = getColoring(fcs, "uncovered"); // NOI18N
             inferredBc = getColoring(fcs, "inferred"); // NOI18N
+            partialBc = getColoring(fcs, "partial"); // NOI18N
         }
         if (coveredBc == null) {
             coveredBc = new Color(0xCC, 0xFF, 0xCC);
@@ -98,6 +103,9 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
         if (inferredBc == null) {
             inferredBc = new Color(0xE0, 0xFF, 0xE0);
         }
+        if (partialBc == null) {
+            partialBc = new Color(0xFF, 0xFF, 0xE0);
+        }
 
         covered = coveredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
                 StyleConstants.Background, coveredBc,
@@ -107,6 +115,9 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
                 ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
         inferred = inferredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
                 StyleConstants.Background, inferredBc,
+                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
+        partial = partialBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+                StyleConstants.Background, partialBc,
                 ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
     }
     private final BaseDocument doc;
@@ -121,14 +132,17 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
         } else {
             this.doc = null;
         }
+        //document.addDocumentListener(this);
         this.mimeType = (String) document.getProperty("mimeType");
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        //enabled = false;
         CoverageManagerImpl manager = CoverageManagerImpl.getInstance();
         if (doc == null || manager == null || !manager.isEnabled(mimeType)) {
             return HighlightsSequence.EMPTY;
         }
+        //enabled = true;
         synchronized (this) {
             if (fileObject == null) {
                 fileObject = GsfUtilities.findFileObject(doc);
@@ -169,6 +183,27 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
         fireHighlightsChange(0, doc.getLength());
     }
 
+    //public void insertUpdate(DocumentEvent ev) {
+    //    if (enabled) {
+    //        // Fire changes when we have newlines to prevent covered lines from
+    //        // getting split into two
+    //        try {
+    //            String s = doc.getText(ev.getOffset(), ev.getLength());
+    //            if (s.indexOf('\n') != -1) {
+    //                fireHighlightsChange(ev.getOffset(), ev.getOffset()+ev.getLength());
+    //            }
+    //        } catch (BadLocationException ex) {
+    //            Exceptions.printStackTrace(ex);
+    //        }
+    //    }
+    //}
+    //
+    //public void removeUpdate(DocumentEvent ev) {
+    //}
+    //
+    //public void changedUpdate(DocumentEvent ev) {
+    //}
+
     private class Highlights implements HighlightsSequence {
         private final List<Position> positions;
         private final List<CoverageType> types;
@@ -190,7 +225,8 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
             types = new ArrayList<CoverageType>();
             for (int lineno = 0, maxLines = details.getLineCount(); lineno < maxLines; lineno++) {
                 CoverageType type = details.getType(lineno);
-                if (type == CoverageType.COVERED || type == CoverageType.INFERRED || type == CoverageType.NOT_COVERED) {
+                if (type == CoverageType.COVERED || type == CoverageType.INFERRED || 
+                        type == CoverageType.NOT_COVERED || type == CoverageType.PARTIAL) {
                     try {
                         int offset = Utilities.getRowStartFromLineOffset(doc, lineno);
                         Position pos = doc.createPosition(offset);
@@ -225,6 +261,9 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer {
                                 break;
                             case INFERRED:
                                 attributeSet = inferred;
+                                break;
+                            case PARTIAL:
+                                attributeSet = partial;
                                 break;
                             default:
                                 throw new IllegalArgumentException();

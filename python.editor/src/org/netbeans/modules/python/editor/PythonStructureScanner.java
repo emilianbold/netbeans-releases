@@ -59,13 +59,13 @@ import org.python.antlr.ast.Str;
  */
 public class PythonStructureScanner implements StructureScanner {
     public static PythonStructureItem create(SymbolTable scopes, ClassDef def) {
-        PythonStructureItem item = new PythonStructureItem(scopes, def, def.name, ElementKind.CLASS);
+        PythonStructureItem item = new PythonStructureItem(scopes, def, def.getInternalName(), ElementKind.CLASS);
 
         return item;
     }
 
     public static PythonStructureItem create(SymbolTable scopes, FunctionDef def) {
-        String name = def.name;
+        String name = def.getInternalName();
         ElementKind kind = ElementKind.METHOD;
         if ("__init__".equals(name)) { // NOI18N
             kind = ElementKind.CONSTRUCTOR;
@@ -208,7 +208,7 @@ public class PythonStructureScanner implements StructureScanner {
 
         @Override
         public Object visitClassDef(ClassDef def) throws Exception {
-            PythonStructureItem item = new PythonStructureItem(scopes, def, def.name, ElementKind.CLASS);
+            PythonStructureItem item = new PythonStructureItem(scopes, def, def.getInternalName(), ElementKind.CLASS);
             add(item);
 
             ScopeInfo scope = scopes.getScopeInfo(def);

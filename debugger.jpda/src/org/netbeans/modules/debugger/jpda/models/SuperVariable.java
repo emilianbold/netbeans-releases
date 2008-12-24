@@ -46,6 +46,10 @@ import com.sun.jdi.ObjectReference;
 
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -77,7 +81,14 @@ class SuperVariable extends AbstractObjectVariable implements Super {
     public Super getSuper () {
         if (getInnerValue () == null) 
             return null;
-        ClassType superType = this.classType.superclass ();
+        ClassType superType;
+        try {
+            superType = ClassTypeWrapper.superclass(this.classType);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        }
         if (superType == null) 
             return null;
         return new SuperVariable(

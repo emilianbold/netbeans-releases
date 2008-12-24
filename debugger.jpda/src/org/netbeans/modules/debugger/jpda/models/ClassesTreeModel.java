@@ -68,6 +68,13 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.openide.util.RequestProcessor;
 
 
@@ -116,7 +123,7 @@ public class ClassesTreeModel implements TreeModel {
                 r = getPackages (null);
             } else
             if (o instanceof ReferenceType) {
-                r = ((ReferenceType) o).nestedTypes ().toArray ();
+                r = ReferenceTypeWrapper.nestedTypes((ReferenceType) o).toArray ();
             } else
             throw new UnknownTypeException (o);
             to = Math.min(r.length, to);
@@ -125,6 +132,10 @@ public class ClassesTreeModel implements TreeModel {
             System.arraycopy (r, from, rr, 0, to - from);
             return rr;
         } catch (VMDisconnectedException ex) {
+            return new Object [0];
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return new Object [0];
+        } catch (InternalExceptionWrapper ex) {
             return new Object [0];
         }
     }
@@ -219,15 +230,19 @@ public class ClassesTreeModel implements TreeModel {
 	    VirtualMachine vm = debugger.getVirtualMachine ();
             List referenceTypes = new ArrayList ();
             if (vm != null) 
-                referenceTypes = vm.allClasses ();
+                referenceTypes = VirtualMachineWrapper.allClasses0(vm);
             int i, k = referenceTypes.size ();
             names = new ArrayList<String>();
             classes = new ArrayList<ReferenceType>();
             for (i = 0; i < k; i++) {
                 ReferenceType rt = (ReferenceType) referenceTypes.get (i);
                 if (rt instanceof ArrayType) continue;
-                names.add (rt.name ());
-                classes.add (rt);
+                try {
+                    names.add (ReferenceTypeWrapper.name (rt));
+                    classes.add (rt);
+                } catch (InternalExceptionWrapper e) {
+                } catch (VMDisconnectedExceptionWrapper e) {
+                }
             }
         }
         return names;
@@ -241,17 +256,19 @@ public class ClassesTreeModel implements TreeModel {
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
             try {
-            String name = names.get (i);
-            ReferenceType rt = classes.get (i);
-            ClassLoaderReference clr = rt.classLoader ();
-            if (clr == null)
-                loaders.add (NULL_CLASS_LOADER);
-            else
-            if (clr.referenceType ().name ().equals ("sun.reflect.DelegatingClassLoader"))
-                continue;
-            else
-                loaders.add (clr);
-            } catch (ObjectCollectedException ex) {
+                String name = names.get (i);
+                ReferenceType rt = classes.get (i);
+                ClassLoaderReference clr = ReferenceTypeWrapper.classLoader(rt);
+                if (clr == null)
+                    loaders.add (NULL_CLASS_LOADER);
+                else
+                if (ReferenceTypeWrapper.name(ObjectReferenceWrapper.referenceType(clr)).equals ("sun.reflect.DelegatingClassLoader"))
+                    continue;
+                else
+                    loaders.add (clr);
+            } catch (InternalExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
         }
         ch = loaders.toArray ();
@@ -259,7 +276,7 @@ public class ClassesTreeModel implements TreeModel {
         return ch;
     }
     
-    private Object[] getPackages (ClassLoaderReference clr) {
+    private Object[] getPackages (ClassLoaderReference clr) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         Object[] ch = clr == null ?
             (Object[]) cache.get (NULL_CLASS_LOADER) :
             (Object[]) cache.get (clr);
@@ -271,7 +288,7 @@ public class ClassesTreeModel implements TreeModel {
         for (i = 0; i < k; i++) {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
-            if (rt.classLoader () != clr) continue;
+            if (ReferenceTypeWrapper.classLoader(rt) != clr) continue;
             int end;
             if (flat) {
                 end = name.lastIndexOf ('.');
@@ -295,7 +312,7 @@ public class ClassesTreeModel implements TreeModel {
         return ch;
     }
     
-    private Object[] getChildren (Object[] parent) {
+    private Object[] getChildren (Object[] parent) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         Object[] ch = (Object[]) cache.get (parent);
         if (ch != null) return ch;
         List<String> names = getNames ();
@@ -305,7 +322,7 @@ public class ClassesTreeModel implements TreeModel {
         for (i = 0; i < k; i++) {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
-            if (rt.classLoader () != parent [1]) continue;
+            if (ReferenceTypeWrapper.classLoader(rt) != parent [1]) continue;
             String parentN = ((String) parent [0]) + '.';
             if (!name.startsWith (parentN)) continue;
             int start = (parentN).length ();
@@ -316,7 +333,7 @@ public class ClassesTreeModel implements TreeModel {
                     objects.add (rt);
                 }
             } else if (!flat) {
-                objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
+                objects.add (new Object[] {name.substring (0, end), ReferenceTypeWrapper.classLoader(rt)});
             }
         }
         ch = objects.toArray ();

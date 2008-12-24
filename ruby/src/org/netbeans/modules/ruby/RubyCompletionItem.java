@@ -715,7 +715,7 @@ class RubyCompletionItem extends DefaultCompletionProposal {
                             // TODO - no problem with ambiguity if it's on a separate line, correct?
 
                             // Is this the method we're trying to complete?
-                            if (node != request.node) {
+                            if (node != request.target) {
                                 // See if the outer call has parentheses!
                                 ambiguous = true;
                                 break;

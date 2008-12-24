@@ -117,7 +117,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final NameKind kind = request.kind;
-        final Node node = request.node;
+        final Node target = request.target;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -150,33 +150,41 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             type = callType;
         }
 
-        if ((!type.isKnown()) && (lhs != null) && (node != null) &&
-                (call.isSimpleIdentifier() || call.isLHSConstant())) {
-            Node method = AstUtilities.findLocalScope(node, path);
+        // Target might be null somehow, since AST is not always available when
+        // the source is in the incosistent state
+        if (!type.isKnown() && lhs != null && target != null) {
+            if (call.isSimpleIdentifier() || call.isLHSConstant()) {
+                Node method = AstUtilities.findLocalScope(target, path);
 
-            String _lhs = lhs;
-            if (call.isLHSConstant()) {
-                // TODO: curently constants are class/module insensitive, cf. #154098
-                int lastColon2 = lhs.lastIndexOf("::"); // NOI18N
-                if (lastColon2 != -1) {
-                    _lhs = lhs.substring(lastColon2 + 2);
+                String _lhs = lhs;
+                if (call.isLHSConstant()) {
+                    // TODO: curently constants are class/module insensitive, cf. #154098
+                    int lastColon2 = lhs.lastIndexOf("::"); // NOI18N
+                    if (lastColon2 != -1) {
+                        _lhs = lhs.substring(lastColon2 + 2);
+                    }
                 }
-            }
-            if (method != null) {
-                // TODO - if the lhs is "foo.bar." I need to split this
-                // up and do it a bit more cleverly
-                type = getTypesForConstant(lhs);
-                if (!type.isKnown()) {
-                    type = createTypeAnalyzer(request, method).inferTypes(_lhs);
+                if (method != null) {
+                    // TODO - if the lhs is "foo.bar." I need to split this
+                    // up and do it a bit more cleverly
+                    type = getTypesForConstant(lhs);
+                    if (!type.isKnown()) {
+                        type = createTypeInferencer(request, method).inferType(_lhs);
+                    }
+                    if (type.isKnown() && call.isLHSConstant()) {
+                        // lhs is not a class or module, is a constant for which we have
+                        // type-inference. Clumsy -> polish infrastructure..
+                        skipInstanceMethods = false;
+                    }
                 }
-                if (type.isKnown() && call.isLHSConstant()) {
-                    // lhs is not a class or module, is a constant for which we have
-                    // type-inference. Clumsy -> polish infrastructure..
-                    skipInstanceMethods = false;
+                if (!type.isKnown() && call.isLHSConstant() && callType != null) {
+                    type = callType;
                 }
-            }
-            if (!type.isKnown() && call.isLHSConstant() && callType != null) {
-                type = callType;
+            } else { // try method chaining
+                if (target.nodeId == NodeType.CALLNODE) {
+                    Node receiver = ((CallNode) target).getReceiverNode();
+                    type = RubyTypeInferencer.inferTypes(receiver, request.createContextKnowledge());
+                }
             }
         }
 
@@ -228,11 +236,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
                 // Add methods in the class (without an FQN)
                 for (String realType : type.getRealTypes()) {
-                    Set<IndexedMethod> m = getIndex().getInheritedMethods(realType, prefix, kind);
-
-                    if (!m.isEmpty()) {
-                        methods.addAll(m);
-                    }
+                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind));
                 }
             }
         }
@@ -336,7 +340,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 targetMethod = callMethod;
             // if (targetMethod != null) {
             // Somehow figure out the argument index
-            // Perhaps I can keep the node tree around and look in it
+            // Perhaps I can keep the target tree around and look in it
             // (This is all trying to deal with temporarily broken
             // or ambiguous calls.
             // }
@@ -589,7 +593,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             methodHolder[0] = callMethod;
             parameterIndexHolder[0] = index;
 
-            // TODO - if you're in a splat node, I should be highlighting the splat node!!
+            // TODO - if you're in a splat target, I should be highlighting the splat target!!
             if (anchorOffset == -1) {
                 anchorOffset = call.getPosition().getStartOffset(); // TODO - compute
             }
@@ -602,8 +606,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         return true;
     }
 
-    private static RubyTypeAnalyzer createTypeAnalyzer(final CompletionRequest request, final Node root) {
-        return new RubyTypeAnalyzer(request.index, root, request.node, request.astOffset, request.lexOffset, request.doc, request.fileObject);
+    private static RubyTypeInferencer createTypeInferencer(final CompletionRequest request, final Node target) {
+        ContextKnowledge knowledge = request.createContextKnowledge();
+        request.target = target;
+        return new RubyTypeInferencer(knowledge);
     }
 
     private RubyType getTypesForConstant(final String constantFqn) {

@@ -63,6 +63,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
+        if (!NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
+            makeCheckBox.setVisible(false);
+        }
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.descriptorPanel = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
@@ -122,25 +125,28 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         initFields();
         String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
         if (path != null) {
+            boolean selected = false;
             File file = new File(path+"/Makefile"); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 makefileNameTextField.setText(file.getAbsolutePath());
                 makefileRadioButton.setSelected(true);
-                return;
-            }
-            file = new File(path+"/makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                makefileNameTextField.setText(file.getAbsolutePath());
-                makefileRadioButton.setSelected(true);
-                return;
+                selected = true;
+            } else {
+                file = new File(path+"/makefile"); // NOI18N
+                if (file.exists() && file.isFile() && file.canRead()) {
+                    makefileNameTextField.setText(file.getAbsolutePath());
+                    makefileRadioButton.setSelected(true);
+                    selected = true;
+                }
             }
             file = new File(path+"/configure"); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 configureNameTextField.setText(file.getAbsolutePath());
-                configureRadioButton.setSelected(true);
-                runConfigureCheckBox.setSelected(true);
+                if (!selected) {
+                    configureRadioButton.setSelected(true);
+                    runConfigureCheckBox.setSelected(true);
+                }
                 configureArgumentsTextField.setText("CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
-                return;
             }
         }
     }
@@ -150,12 +156,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             wizardDescriptor.putProperty("makefileName", makefileNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("configureName", ""); // NOI18N
             wizardDescriptor.putProperty("configureArguments", ""); // NOI18N
+            wizardDescriptor.putProperty("makeProject", makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty("runConfigure", ""); // NOI18N
         } else {
             wizardDescriptor.putProperty("makefileName", configureMakefileNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("configureName", configureNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("configureArguments", configureArgumentsTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("runConfigure", runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
+            wizardDescriptor.putProperty("makeProject", ""); // NOI18N
         }
     }
     
@@ -269,6 +277,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureMakefileNameLabel = new javax.swing.JLabel();
         configureMakefileNameTextField = new javax.swing.JTextField();
         runConfigureCheckBox = new javax.swing.JCheckBox();
+        makeCheckBox = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(323, 223));
         setLayout(new java.awt.GridBagLayout());
@@ -339,7 +348,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
@@ -351,13 +360,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureNameLabel.setText(bundle.getString("CONFIGURE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(configureNameLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
@@ -372,7 +381,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(configureBrowseButton, gridBagConstraints);
@@ -382,13 +391,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureArgumentsLabel.setText(bundle.getString("CONFIGURE_ARGUMENT_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(configureArgumentsLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -403,6 +412,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         instructionsTextArea.setText(bundle.getString("MakefileOrConfigureInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -412,7 +423,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -426,7 +437,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureMakefileNameLabel.setText(bundle.getString("CONFIGURE_MAKEFILE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(configureMakefileNameLabel, gridBagConstraints);
@@ -434,7 +445,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureMakefileNameTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -446,10 +457,23 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         runConfigureCheckBox.setText(bundle.getString("RUN_CONFIGURE_CHECKBOX")); // NOI18N
         runConfigureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
         add(runConfigureCheckBox, gridBagConstraints);
+
+        makeCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(makeCheckBox, bundle.getString("CLEAN_BUILD_CHECKBOX")); // NOI18N
+        makeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
+        add(makeCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void configureRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureRadioButtonActionPerformed
@@ -526,6 +550,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     private javax.swing.JLabel infoLabel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JCheckBox makeCheckBox;
     private javax.swing.JButton makefileBrowseButton;
     private javax.swing.JLabel makefileNameLabel;
     private javax.swing.JTextField makefileNameTextField;

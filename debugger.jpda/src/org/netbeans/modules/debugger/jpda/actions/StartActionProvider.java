@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -188,7 +189,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             debuggerImpl.setAttaching(cookie);
             VirtualMachine virtualMachine = cookie.getVirtualMachine ();
             debuggerImpl.setAttaching(null);
-            virtualMachine.setDebugTraceMode (jdiTrace);
+            VirtualMachineWrapper.setDebugTraceMode (virtualMachine, jdiTrace);
 
             final Object startLock = new Object();
             Operator o = createOperator (virtualMachine, startLock);

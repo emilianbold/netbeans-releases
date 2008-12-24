@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -42,8 +43,13 @@ public class PythonExecution {
     private String[] wrapperArgs;
     private String[] wrapperEnv;
     private List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private List<LineConvertor> errConvertors = new ArrayList<LineConvertor>();
+    private InputProcessorFactory outProcessorFactory;
+    private InputProcessorFactory errProcessorFactory;
     private boolean addStandardConvertors;
     private FileLocator fileLocator;
+    private boolean lineBased;
+    private Runnable postExecutionHook;
     
     public PythonExecution() {
 
@@ -68,11 +74,20 @@ public class PythonExecution {
             wrapperEnv = new String[from.wrapperEnv.length];
             System.arraycopy(from.wrapperEnv, 0, wrapperEnv, 0, from.wrapperEnv.length);
         }
-        outConvertors = new ArrayList<LineConvertor>(from.outConvertors);
         fileLocator = from.fileLocator;
+        outConvertors = new ArrayList<LineConvertor>(from.outConvertors);
+        errConvertors = new ArrayList<LineConvertor>(from.errConvertors);
+        setOutProcessorFactory(from.outProcessorFactory);
+        setErrProcessorFactory(from.errProcessorFactory);
+        lineBased(from.lineBased);
         if (from.addStandardConvertors) {
             addStandardRecognizers();
         }
+        postExecutionHook = from.postExecutionHook;
+    }
+
+    public ExecutionDescriptor toExecutionDescriptor() {
+        return descriptor;
     }
 
     //internal process control    
@@ -111,7 +126,7 @@ public class PythonExecution {
     }
 
 
-    private ExternalProcessBuilder buildProcess() throws IOException{
+    public ExternalProcessBuilder buildProcess() throws IOException{
         ExternalProcessBuilder processBuilder =
                     new ExternalProcessBuilder(command);
             processBuilder = processBuilder.workingDirectory(new File(workingDirectory));
@@ -240,17 +255,41 @@ public class PythonExecution {
        descriptor = descriptor.controllable(showControls);
     }
 
-
-    public synchronized void addLineConvertor(LineConvertor convertor) {
-        outConvertors.add(convertor);
+    public PythonExecution addOutConvertor(LineConvertor convertor) {
+        this.outConvertors.add(convertor);
         descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
-        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
+        return this;
+    }
+
+    public PythonExecution addErrConvertor(LineConvertor convertor) {
+        this.errConvertors.add(convertor);
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(errConvertors));
+        return this;
     }
 
     public synchronized void addStandardRecognizers() {
         this.addStandardConvertors = true;
         descriptor = descriptor.outConvertorFactory(lineConvertorFactory(outConvertors));
-        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(outConvertors));
+        descriptor = descriptor.errConvertorFactory(lineConvertorFactory(errConvertors));
+    }
+
+    public void setErrProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        this.errProcessorFactory = errProcessorFactory;
+        descriptor = descriptor.errProcessorFactory(errProcessorFactory);
+    }
+
+    public void setOutProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        this.outProcessorFactory = outProcessorFactory;
+        descriptor = descriptor.outProcessorFactory(outProcessorFactory);
+    }
+
+    public PythonExecution lineBased(boolean lineBased) {
+        this.lineBased = lineBased;
+        if (lineBased) {
+            descriptor = descriptor.errLineBased(lineBased).outLineBased(lineBased);
+        }
+
+        return this;
     }
 
     private LineConvertorFactory lineConvertorFactory(List<LineConvertor> convertors) {
@@ -306,7 +345,12 @@ public class PythonExecution {
     }
 
     public void setPostExecutionHook(Runnable runnable) {
+        postExecutionHook = runnable;
         descriptor = descriptor.postExecution(runnable);
+    }
+
+    public Runnable getPostExecutionHook() {
+        return postExecutionHook;
     }
 
     /**

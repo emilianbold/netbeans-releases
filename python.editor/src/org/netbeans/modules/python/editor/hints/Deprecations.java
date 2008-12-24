@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
+import org.python.antlr.ast.alias;
 
 /**
  * Handle deprecaton warnings, for modules listed as obsolete or
@@ -204,9 +205,10 @@ public class Deprecations extends PythonAstRule {
         PythonTree node = context.node;
         if (node instanceof Import) {
             Import imp = (Import)node;
-            if (imp.names != null) {
-                for (int i = 0; i < imp.names.length; i++) {
-                    String name = imp.names[i].name;
+            List<alias> names = imp.getInternalNames();
+            if (names != null) {
+                for (alias alias : names) {
+                    String name = alias.getInternalName();
                     if (deprecated.containsKey(name)) {
                         addDeprecation(name, deprecated.get(name), context, result);
                     }
@@ -215,7 +217,7 @@ public class Deprecations extends PythonAstRule {
         } else {
             assert node instanceof ImportFrom;
             ImportFrom imp = (ImportFrom)node;
-            String name = imp.module;
+            String name = imp.getInternalModule();
             if (deprecated.containsKey(name)) {
                 addDeprecation(name, deprecated.get(name), context, result);
             }

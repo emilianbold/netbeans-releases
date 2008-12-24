@@ -1,0 +1,3 @@
+Code completion result for source line:
+from __future__ import |absolute_imports, with_statement
+(QueryType=COMPLETION, NameKind=PREFIX)
