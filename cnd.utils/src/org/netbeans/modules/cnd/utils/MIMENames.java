@@ -110,6 +110,9 @@ public final class MIMENames {
     /** Generic ELF files (shouldn't be recognized anymore) */
     public static final String ELF_GENERIC_MIME_TYPE = "application/x-elf"; //NOI18N
 
+    // special mime type for C Headers extensions
+    /*package*/ static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
+
     public static final String[] SOURCE_MIME_TYPES = new String[] {
         CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, HEADER_MIME_TYPE, FORTRAN_MIME_TYPE, ASM_MIME_TYPE,
     };
