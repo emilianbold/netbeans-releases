@@ -85,8 +85,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         if (number != null) {
             String fullname = map.get("fullname"); // NOI18N
             
-            //TODO: not good to check for child type here
-            if (fullname != null && !(this instanceof AddressBreakpointImpl)) {
+            // Note: The following test is appropriate only for line breakpoints...
+            if (this instanceof LineBreakpointImpl && fullname != null) {
                 // We set a valid breakpoint, but its not in the exact source file we meant it to
                 // be. This can happen when a source path has embedded spaces and we shorten the
                 // path to a possiby non-unique relative path and another project has a similar

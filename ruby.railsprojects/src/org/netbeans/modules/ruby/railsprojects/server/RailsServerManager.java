@@ -66,6 +66,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
@@ -81,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -240,6 +242,7 @@ public final class RailsServerManager {
                 desc.fastDebugRequired(debug);
                 desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
                 desc.showSuspended(true);
+                // TODO - can we support code coverage for custom descriptors?
                 
                 runServer(desc, displayName, new GrizzlyServerLineConvertor(instance));
                 return false;
@@ -282,6 +285,10 @@ public final class RailsServerManager {
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
         //desc.showProgress(false); // http://ruby.netbeans.org/issues/show_bug.cgi?id=109261
         desc.showSuspended(true);
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+        }
         runServer(desc, displayName, new RailsServerLineConverter(server));
         return false;
     }

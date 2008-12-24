@@ -423,9 +423,9 @@ import org.openide.util.NbBundle;
         Project project = Templates.getProject(wizard);
         
         // http://www.netbeans.org/issues/show_bug.cgi?id=126642
-        if (Templates.getTargetFolder(wizard) == null) {
-            Templates.setTargetFolder(wizard, project.getProjectDirectory());
-        }
+        //if (Templates.getTargetFolder(wizard) == null) {
+        //    Templates.setTargetFolder(wizard, project.getProjectDirectory());
+        //}
         
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{new PersistenceClientEntitySelection(NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard), new EjbFacadeWizardPanel2(project, wizard)};
