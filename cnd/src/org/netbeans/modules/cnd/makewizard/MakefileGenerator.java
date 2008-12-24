@@ -60,6 +60,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.utils.FortranParser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1335,7 +1336,7 @@ public class MakefileGenerator {
 
     /** Check to see if file is a fortran file (just looking at the extension) */
     private boolean isFortranFile(String file) {
-        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMENames.getSourceMIMEType(file));
+        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMEExtensions.getKnownMIMETypeByExtension(file));
     }
 
     /** A class holding module definition and use information for a Fortran file */

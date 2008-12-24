@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -321,7 +322,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
         String mimeType = "";
         if (fo == null) {
-            mimeType = MIMENames.getSourceMIMEType(new File(getPath()));
+            mimeType = MIMEExtensions.getFileMIMEType(new File(getPath()));
         } else {
             mimeType = FileUtil.getMIMEType(fo, MIMENames.SOURCE_MIME_TYPES);
         }

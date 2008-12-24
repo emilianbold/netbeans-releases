@@ -41,10 +41,6 @@
 
 package org.netbeans.modules.cnd.utils;
 
-import java.io.File;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 /**
  * MIME names.
  * We need these both in the loaders code and in the editor code
@@ -136,38 +132,5 @@ public final class MIMENames {
             return false;
         }
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
-    }
-
-    /**
-     * tries to detect cnd specific mime type of file
-     * @param file file to check
-     * @return one of cnd source mime types (@see SOURCE_MIME_TYPES) or "content/unknown"
-     */
-    public static String getSourceMIMEType(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null) {
-            return FileUtil.getMIMEType(fo, SOURCE_MIME_TYPES);
-        } else {
-            return getSourceMIMEType(file.getPath());
-        }
-    }
-
-    /**
-     * tries to detect mime type by file path extension only
-     * more precise (but possibly slower) method is @see getSourceMIMEType(File file).
-     * This method can not detect header files without extensions, while 
-     * @see getSourceMIMEType(File file) can
-     * @param path file's path to check
-     * @return one of cnd source mime types (@see SOURCE_MIME_TYPES) or "content/unknown"
-     */
-    public static String getSourceMIMEType(String path) {
-        // check by file extension
-        String ext = FileUtil.getExtension(path);
-        for (String mimeType : SOURCE_MIME_TYPES) {
-            if (MIMEExtensions.isRegistered(mimeType, ext)) {
-                return mimeType;
-            }
-        }
-        return "content/unknown"; // NOI18N
     }
 }

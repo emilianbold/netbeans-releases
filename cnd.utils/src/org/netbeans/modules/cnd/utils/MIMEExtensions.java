@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -96,6 +97,46 @@ public final class MIMEExtensions {
         }
     }
 
+    /**
+     * tries to detect mime type of file checking cnd known types first
+     * @param file file to check
+     * @return one of mime types or "content/unknown"
+     */
+    public static String getFileMIMEType(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        String mime;
+        if (fo != null) {
+            // try fast check
+            mime = FileUtil.getMIMEType(fo, MIMENames.SOURCE_MIME_TYPES);
+            if (mime == null) {
+                // now full check
+                mime = FileUtil.getMIMEType(fo);
+            }
+        } else {
+            mime = getKnownMIMETypeByExtension(file.getPath());
+        }
+        return mime != null ? mime : "content/unknown"; // NOI18N
+    }
+
+    /**
+     * tries to detect mime type by file path extension only
+     * more precise (but possibly slower) method is @see getSourceMIMEType(File file).
+     * This method can not detect header files without extensions, while
+     * @see getSourceMIMEType(File file) can
+     * @param path file's path to check
+     * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
+     */
+    public static String getKnownMIMETypeByExtension(String path) {
+        // check by known file extension
+        String ext = FileUtil.getExtension(path);
+        for (String mimeType : MIMENames.SOURCE_MIME_TYPES) {
+            if (isRegistered(mimeType, ext)) {
+                return mimeType;
+            }
+        }
+        return null; 
+    }
+    
     private final String mimeType;
     private final String description;
     private final Set<String> exts;
