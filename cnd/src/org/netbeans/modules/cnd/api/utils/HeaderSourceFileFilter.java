@@ -60,12 +60,18 @@ public class HeaderSourceFileFilter extends SourceFileFilter {
 
     @Override
     public boolean accept(File f) {
-        // headers could be without extensions
-        if (FileUtil.getExtension(f.getPath()).length() == 0) {
-            return MIMENames.HEADER_MIME_TYPE.equals(MIMEExtensions.getFileMIMEType(f));
-        } else {
-            return super.accept(f);
+        if (f != null) {
+            if (f.isDirectory()) {
+                return true;
+            }
+            // headers could be without extensions
+            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+                return MIMENames.HEADER_MIME_TYPE.equals(MIMEExtensions.getFileMIMEType(f));
+            } else {
+                return super.accept(f);
+            }
         }
+        return false;
     }
 
     public String getDescription() {

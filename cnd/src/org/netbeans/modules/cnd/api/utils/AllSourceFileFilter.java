@@ -67,12 +67,18 @@ public class AllSourceFileFilter extends SourceFileFilter {
 
     @Override
     public boolean accept(File f) {
-        if (FileUtil.getExtension(f.getPath()).length() == 0) {
-            // could be header without extension
-            return MIMENames.HEADER_MIME_TYPE.equals(MIMEExtensions.getFileMIMEType(f));
-        } else {
-            return super.accept(f);
+        if (f != null) {
+            if (f.isDirectory()) {
+                return true;
+            }
+            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+                // could be header without extension
+                return MIMENames.HEADER_MIME_TYPE.equals(MIMEExtensions.getFileMIMEType(f));
+            } else {
+                return super.accept(f);
+            }
         }
+        return false;
     }
     
     public String[] getSuffixes() {
