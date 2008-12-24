@@ -69,6 +69,7 @@ import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 
 /**
  * Test runner implmentation for running test/unit tests.
@@ -172,6 +173,12 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+        }
+
         TestSession session = new TestSession(name, 
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST, new RubyTestRunnerNodeFactory());
