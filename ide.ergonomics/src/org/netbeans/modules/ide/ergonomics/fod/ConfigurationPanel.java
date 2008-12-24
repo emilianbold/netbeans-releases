@@ -94,6 +94,7 @@ public class ConfigurationPanel extends JPanel {
 
         infoLabel.setText(lblMsg);
         downloadButton.setText(btnMsg);
+        downloadButton.setMnemonic(btnMsg.charAt(0));
         setError(" "); // NOI18N
     }
 
