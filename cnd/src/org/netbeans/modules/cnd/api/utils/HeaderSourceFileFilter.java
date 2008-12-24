@@ -38,31 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
-import org.netbeans.modules.cnd.loaders.HDataLoader;
+import java.io.File;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class HeaderSourceFileFilter extends SourceFileFilter{
-    
+public class HeaderSourceFileFilter extends SourceFileFilter {
+
     private static HeaderSourceFileFilter instance = null;
-    
     private String[] suffixList = null;
-    
+
     public static HeaderSourceFileFilter getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new HeaderSourceFileFilter();
+        }
         return instance;
     }
-    
+
+    @Override
+    public boolean accept(File f) {
+        // headers could be without extensions
+        if (FileUtil.getExtension(f.getPath()).length() == 0) {
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMENames.getSourceMIMEType(f));
+        } else {
+            return super.accept(f);
+        }
+    }
+
     public String getDescription() {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_HEADER_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-    
+
     public String[] getSuffixes() {
         if (suffixList == null) {
-            suffixList = getSuffixList(HDataLoader.getInstance().getExtensions());
+            suffixList = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues().toArray(new String[]{});
         }
         return suffixList;
     }

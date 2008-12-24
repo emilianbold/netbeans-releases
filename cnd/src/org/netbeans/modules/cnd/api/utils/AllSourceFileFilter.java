@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.FortranDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.openide.loaders.ExtensionList;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class AllSourceFileFilter extends SourceFileFilter {
@@ -66,7 +64,16 @@ public class AllSourceFileFilter extends SourceFileFilter {
     public String getDescription() {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-    
+
+    @Override
+    public boolean accept(File f) {
+        if (FileUtil.getExtension(f.getPath()).length() == 0) {
+            // could be header without extension
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMENames.getSourceMIMEType(f));
+        } else {
+            return super.accept(f);
+        }
+    }
     
     public String[] getSuffixes() {
         if (suffixes == null) {
@@ -75,20 +82,12 @@ public class AllSourceFileFilter extends SourceFileFilter {
         return suffixes;
     }
     
-    public static String[] getAllSuffixes() {
-        List<String> allSuffixes = new ArrayList<String>();
-        addSuffices(allSuffixes, CCDataLoader.getInstance().getExtensions());
-        addSuffices(allSuffixes, CDataLoader.getInstance().getExtensions());
-        addSuffices(allSuffixes, HDataLoader.getInstance().getExtensions());
-        addSuffices(allSuffixes, FortranDataLoader.getInstance().getExtensions());
+    private String[] getAllSuffixes() {
+        Set<String> allSuffixes = new HashSet<String>();
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());
         return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
-    
-    private static void addSuffices(List<String> suffixes, ExtensionList list) {
-        for (Enumeration<String> e = list.extensions(); e != null && e.hasMoreElements();) {
-            String ex = e.nextElement();
-            suffixes.add(ex);
-        }
-    }
-
 }
