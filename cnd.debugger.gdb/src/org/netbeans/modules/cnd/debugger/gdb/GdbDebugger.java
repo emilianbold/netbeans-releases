@@ -2210,11 +2210,11 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     // TODO: unify with requestWhatis and requestValueEx
-    public String requestSymbolTypeFromName(String type) {
+    public String requestSymbolTypeFromName(String name) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
-        if (state == State.STOPPED && type != null && type.length() > 0) {
-            CommandBuffer cb = gdb.symbol_type(type);
+        if (state == State.STOPPED && name != null && name.length() > 0) {
+            CommandBuffer cb = gdb.symbol_type(name);
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
                 if (cb.isError()) {
@@ -2225,7 +2225,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     return "";
                 }
             } else {
-                log.fine("GD.requestSymbolTypeFromName[" + cb + "]: " + type + " --> [" + info + "]");
+                log.fine("GD.requestSymbolTypeFromName[" + cb + "]: " + name + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {
