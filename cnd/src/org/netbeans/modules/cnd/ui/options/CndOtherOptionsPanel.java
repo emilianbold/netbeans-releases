@@ -46,8 +46,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -55,13 +54,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
-import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
-import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,10 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionListener {
 
-    private final Collection<? extends CndHandlableExtensions> res;
-    
     public CndOtherOptionsPanel() {
-        res = Lookup.getDefault().lookupResult(CndHandlableExtensions.class).allInstances();
         setName("TAB_CndOtherOptionsTab"); // NOI18N (used as a pattern...)
         initComponents();
         initGeneratedComponents();
@@ -113,7 +106,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
     
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
         StringArrayCustomEditor editor = new StringArrayCustomEditor(
-                ee.getValues(), ee.defaultValue,
+                ee.getValues().toArray(new String[]{}), ee.defaultValue,
                 getMessage("EE_ItemLabel"), getMessage("EE_ItemLabel_Mnemonic").charAt(0),  // NOI18N
                 getMessage("EE_ItemListLabel"), getMessage("EE_ItemListLabel_Mnemonic").charAt(0),  // NOI18N
                 false);
@@ -142,14 +135,13 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
     }
 
     private final List<ExtensionsElements> eeList = new ArrayList<ExtensionsElements>();
-    
-    private void initGeneratedComponents() {
-        for (Iterator<? extends CndHandlableExtensions> it = res.iterator(); it.hasNext();) {
-            CndHandlableExtensions che = it.next();
-            ExtensionsSettings es = ExtensionsSettings.getInstance(che);
-            final ExtensionsElements ee = new ExtensionsElements(es);
 
-            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_ExtensionListTitle", che.getDisplayNameForExtensionList()));
+    private void initGeneratedComponents() {
+        Collection<MIMEExtensions> orderedExtensions = MIMEExtensions.getCustomizable();
+        for (MIMEExtensions ext : orderedExtensions) {
+            final ExtensionsElements ee = new ExtensionsElements(ext);
+
+            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_ExtensionListTitle", ext.getLocalizedDescription()));// NOI18N
             ee.button.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     editExtensionsButtonActionPerformed(ee);
@@ -157,8 +149,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             });
 
             eeList.add(ee);
-         }
-
+        }
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(layout);
         GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
@@ -286,9 +277,9 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         return NbBundle.getMessage(CndOtherOptionsPanel.class, resourceName);
     }
     
-    private static class ExtensionsElements {
+    private static final class ExtensionsElements {
 
-        public ExtensionsElements(ExtensionsSettings es) {
+        public ExtensionsElements(MIMEExtensions es) {
             this.es = es;
             update();
             textfield.setContentType("text/html");  // NOI18N
@@ -314,32 +305,27 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             textfield.setText(text.toString());
         }
 
-        String[] getValues() {
-            return list.toArray(new String[list.size()]);
+        List<String> getValues() {
+            return Collections.unmodifiableList(list);
         }
         
         void setValues(String[] values) {
             list = Arrays.asList(values);
+            Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
             updateTextField();
         }
 
         public void apply() {
-            CndExtensionList el = new CndExtensionList(getValues());
-
-            es.setExtensionList(el);
-            es.setDefaultExtension(defaultValue);
+            es.setExtensions(getValues(), defaultValue);
         }
 
         public void update() {
-            list = new ArrayList<String>();
+            list = new ArrayList<String>(es.getValues());
             this.defaultValue = es.getDefaultExtension();
-            for (Enumeration<String> enList = es.getExtensionList().extensions(); enList != null && enList.hasMoreElements();) {
-                list.add(enList.nextElement());
-            }
             updateTextField();
         }
         
-        private final ExtensionsSettings es;
+        private final MIMEExtensions es;
         public final JLabel label = new JLabel();
         public final JEditorPane textfield = new JEditorPane();
         public final JButton button = new JButton();
