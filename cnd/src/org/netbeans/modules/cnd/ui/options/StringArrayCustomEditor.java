@@ -58,7 +58,7 @@ import org.openide.awt.Mnemonics;
  * 
  * Improved to have isEmptyAllowed and default value 
  */
-public class StringArrayCustomEditor extends javax.swing.JPanel {
+public final class StringArrayCustomEditor extends javax.swing.JPanel {
 
     // the bundle to use
     private ResourceBundle bundle = NbBundle.getBundle (
@@ -73,10 +73,20 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
     private final boolean isEmptyAllowed;
     private String defaultValue;
 
+    @Deprecated
     public StringArrayCustomEditor(String[] array, String defaultValue, boolean isEmptyAllowed) {
         this(array, defaultValue, null, '\0', null, '\0', isEmptyAllowed);
     }
-    
+    /**
+     *
+     * @param array
+     * @param defaultValue
+     * @param customItemLabel could be null
+     * @param customItemLabelMnemonic pass '\0' if customItemLabel is null
+     * @param customItemListLabel could be null
+     * @param customItemListLabelMnemonic pass '\0' if customItemListLabel is null
+     * @param isEmptyAllowed
+     */
     public StringArrayCustomEditor(String[] array, String defaultValue, 
             String customItemLabel, char customItemLabelMnemonic, 
             String customItemListLabel, char customItemListLabelMnemonic, 
