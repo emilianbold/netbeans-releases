@@ -70,8 +70,8 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOtherOptionsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="1000"/>
-            </file>
-        </folder>     
+            </file>            
+        </folder>
     </folder>
 
     <folder name="Editors">
@@ -171,11 +171,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="215"/>
-            </file>     
-            <file name="org-netbeans-modules-cnd-loaders-CndMIMEResolver.instance">
-                <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
-                <attr name="position" intvalue="460"/>
-            </file>  
+            </file>
             <file name="cnd-mime-resolver-content-based.xml" url="mime-resolver-content-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="470"/>
@@ -275,7 +271,32 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="4000"/>
             </file>
         </folder>
-
+        <folder name="CndExtensions">
+            <file name="Header">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="default" stringvalue="h"/>
+                <attr name="mimeType" stringvalue="text/x-h"/>
+            </file>
+            <file name="C++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="default" stringvalue="cpp"/>
+                <attr name="mimeType" stringvalue="text/x-c++"/>
+            </file>
+            <file name="C">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="default" stringvalue="c"/>
+                <attr name="mimeType" stringvalue="text/x-c"/>
+            </file>
+            <file name="Fortran">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="default" stringvalue="f"/>
+                <attr name="mimeType" stringvalue="text/x-fortran"/>
+            </file>
+        </folder>
     </folder>	<!-- Services -->
 
     <folder name="Templates">
@@ -312,6 +333,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
+                <attr name="text/x-c/text/x-h" boolvalue="true"/> <!-- special attribute to be checked in CCFSrcFileIterator.initialize -->
             </file>
         </folder> <!-- End cFiles folder -->
 

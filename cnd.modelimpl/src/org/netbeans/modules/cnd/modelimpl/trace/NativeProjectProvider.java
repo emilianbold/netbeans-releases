@@ -51,13 +51,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -97,7 +93,28 @@ public final class NativeProjectProvider {
             ((NativeProjectImpl) nativeProject).usrMacros.addAll(usrMacros);
 	}
     }
-    
+
+    public static NativeFileItem.Language getLanguage(File file, DataObject dobj) {
+        FileObject fo = null;
+        String mimeType = "";
+        if (dobj != null) {
+            fo = dobj.getPrimaryFile();
+        }
+        if (fo != null) {
+            mimeType = FileUtil.getMIMEType(fo, MIMENames.SOURCE_MIME_TYPES);
+        } else {
+            mimeType = MIMEExtensions.getFileMIMEType(file);
+        }
+        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
+            return NativeFileItem.Language.CPP;
+        } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
+            return NativeFileItem.Language.C;
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
+            return NativeFileItem.Language.C_HEADER;
+        }
+        return NativeFileItem.Language.OTHER;
+    }
+
     private static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;
@@ -232,44 +249,6 @@ public final class NativeProjectProvider {
 	    this.files.add(item);
 	}
 	
-	NativeFileItem.Language getLanguage(File file, DataObject dobj) {
-	    if (dobj == null) {
-		String path = file.getAbsolutePath();
-		if (CCDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-		    return NativeFileItem.Language.CPP;
-		} else if (CDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-		    return NativeFileItem.Language.C;
-		} else if (HDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-		    return NativeFileItem.Language.C_HEADER;
-		} else {
-		    return NativeFileItem.Language.OTHER;
-		}
-	    } else if (dobj instanceof CCDataObject) {
-		return NativeFileItem.Language.CPP;
-	    } else if (dobj instanceof HDataObject) {
-		return NativeFileItem.Language.C_HEADER;
-	    } else if (dobj instanceof CDataObject) {
-		return NativeFileItem.Language.C;
-	    } else {
-		return NativeFileItem.Language.OTHER;
-	    }
-	}
-	
-//        /*package*/ void addHeaders(List<String> files) {
-//            addFiles(files, this.sources, NativeFileItem.Language.C_HEADER);
-//        }
-//        
-//        /*package*/ void addSources(List<String> files) {
-//            addFiles(files, this.sources, NativeFileItem.Language.CPP);
-//        }
-//        
-//        private void addFiles(List<String> files, List<NativeFileItem> dest, NativeFileItem.Language lang) {
-//            for (String path : files) {
-//                NativeFileItem item = new NativeFileItemImpl(path, this, lang);
-//                dest.add(item);
-//            }
-//        }
-
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }

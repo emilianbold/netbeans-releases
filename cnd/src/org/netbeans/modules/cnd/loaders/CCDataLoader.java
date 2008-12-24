@@ -38,62 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=200)
 public class CCDataLoader extends CndAbstractDataLoaderExt {
-    
-    private static CCDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975684L;
 
     public CCDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
-        instance = this;
+        super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
     }
 
-    public static CCDataLoader getInstance(){
-        if (instance == null) {
-            instance = SharedClassObject.findObject(CCDataLoader.class, true);
-        }
-        return instance;
-    }
-
-    /** set the default display name */
     @Override
-    protected String defaultDisplayName() {
-	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CCDataLoader_Name"); // NOI18N
-    }
-
-    protected String getMimeType(){
+    protected String getMimeType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new CCDataObject(primaryFile, this);
-    }
-
-    public String getDisplayNameForExtensionList() {
-	return NbBundle.getMessage(CCDataLoader.class, "CCDataLoader_Name_ForExtList"); // NOI18N
-    }
-
-    public String getSettingsName() {
-        return ExtensionsSettings.CPP_FILE;
     }
 }
