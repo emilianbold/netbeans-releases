@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -202,5 +204,49 @@ public class ContextUtils {
         }
         return false;
     }
+
+    public static CsmScope findScope(Node activatedNode) {
+        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
+        if (c != null) {
+            JEditorPane[] panes = c.getOpenedPanes();
+            if (panes != null && panes.length>0) {
+                int offset = panes[0].getCaret().getDot();
+                CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
+                if (file != null){
+                    return findInnerFileScope(file, offset);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static CsmScope findInnerFileScope(CsmFile file, int offset) {
+        CsmScope innerScope = null;
+        for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
+            CsmDeclaration decl = (CsmDeclaration) it.next();
+            if (CsmKindUtilities.isScope(decl) && isInObject(decl, offset)) {
+                innerScope = findInnerScope((CsmScope)decl, offset);
+                innerScope = innerScope != null ? innerScope : (CsmScope)decl;
+                break;
+            }
+        }
+        return innerScope;
+    }
+
+    private static CsmScope findInnerScope(CsmScope outScope, int offset) {
+        for (CsmScopeElement item : outScope.getScopeElements()) {
+            if(CsmKindUtilities.isScope(item) && isInObject(item, offset)) {
+                CsmScope inScope = findInnerScope((CsmScope) item, offset);
+                if(inScope != null) {
+                    return inScope;
+                } else {
+                    return (CsmScope) item;
+                }
+            }
+        }
+        return null;
+    }
+
+
 
 }

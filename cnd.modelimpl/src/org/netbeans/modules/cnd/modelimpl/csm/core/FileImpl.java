@@ -727,7 +727,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             for (next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken()) {
                 assert (next instanceof APTToken) : "we have only APTTokens in token stream";
                 int currOffset = ((APTToken) next).getOffset();
-                if (currOffset == startOffset) {
+                if (currOffset >= startOffset) {
                     break;
                 }
             }

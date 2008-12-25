@@ -391,6 +391,17 @@ public class CsmUtilities {
         return fo;
     }
 
+    public static FileObject getFileObject(Document doc) {
+        FileObject fo = (FileObject)doc.getProperty(FileObject.class);
+        if(fo == null) {
+            CsmFile csmFile = getCsmFile(doc, false);
+            if(csmFile != null) {
+                fo = getFileObject(csmFile);
+            }
+        }
+        return fo;
+    }
+
     public static DataObject getDataObject(CsmFile csmFile) {
         return getDataObject(getFileObject(csmFile));
     }
@@ -404,6 +415,29 @@ public class CsmUtilities {
             }
         }
         return dob;
+    }
+
+    public static Document getDocument(FileObject fo) {
+        try {
+            DataObject dob = DataObject.find(fo);
+            if (dob != null && dob.isValid()) {
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    return ec.getDocument();
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public static Document getDocument(CsmFile file) {
+        FileObject fo = getFileObject(file);
+        if(fo != null) {
+            return getDocument(fo);
+        }
+        return null;
     }
 
     public static PositionBounds createPositionBounds(CsmOffsetable csmObj) {
