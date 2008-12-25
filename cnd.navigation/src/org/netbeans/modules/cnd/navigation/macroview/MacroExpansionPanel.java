@@ -61,52 +61,21 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /** Creates new form MacroExpansionPanel */
     public MacroExpansionPanel(boolean isView) {
         initComponents();
-
-
-        //jCodeExpansionEditorPane;
-
-       // OpenedEditors e;
-
-
-
-//        if (!isView){
-//            // refresh
-//            toolBar.remove(0);
-//            // separstor
-//            toolBar.remove(0);
-//            // a11n
-//            directOnlyButton.setFocusable(true);
-//            treeButton.setFocusable(true);
-//            whoIncludesButton.setFocusable(true);
-//            whoIsIncludedButton.setFocusable(true);
-//        }
         setName(NbBundle.getMessage(getClass(), "CTL_MacroExpansionTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_MacroExpansionTopComponent")); // NOI18N
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
-//        getTreeView().setRootVisible(false);
-//        Children.Array children = new Children.SortedArray();
-//        if (isView) {
-//            actions = new Action[]{new RefreshAction(),
-//                                   null, new WhoIncludesAction(), new WhoIsIncludedAction(),
-//                                   null, new DirectOnlyAction(), new TreeAction()};
-//        } else {
-//            actions = new Action[]{new WhoIncludesAction(), new WhoIsIncludedAction(),
-//                                   null, new DirectOnlyAction(), new TreeAction()};
-//        }
-//        root = new AbstractNode(children){
-//            @Override
-//            public Action[] getActions(boolean context) {
-//                return actions;
-//            }
-//        };
-//        getExplorerManager().setRootContext(root);
     }
 
-    public void setMacroExpansionText(String text) {
-        jMacroExpansionEditorPane.setText(text);
+    public void setMacroExpansionDocument(Document doc) {
+        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+        String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
+        if (mimeTypeObj != null) {
+            mimeType = (String) mimeTypeObj;
+        }
+        jMacroExpansionEditorPane.setContentType(mimeType);
+        jMacroExpansionEditorPane.setDocument(doc);
     }
 
-    public void setCodeExpansionDocument(Document doc) {
+    public void setContextExpansionDocument(Document doc) {
         Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
         String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
         if (mimeTypeObj != null) {
@@ -114,9 +83,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
-
-//        Registry.addDocument((BaseDocument)doc);
-
     }
 
     /** This method is called from within the constructor to
@@ -148,7 +114,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionPane.setBorder(null);
 
         jCodeExpansionEditorPane.setBorder(null);
-        jCodeExpansionEditorPane.setEditable(false);
         jCodeExpansionPane.setViewportView(jCodeExpansionEditorPane);
 
         jSplitPane1.setLeftComponent(jCodeExpansionPane);
