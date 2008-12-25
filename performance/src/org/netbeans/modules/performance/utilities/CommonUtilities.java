@@ -964,7 +964,7 @@ public class CommonUtilities {
 
             testSuiteTag=null;
             for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
-                if (sname.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
+                if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
                     testSuiteTag =(Element)allPerfDoc.getElementsByTagName("Suite").item(i);
                     break;
                 }
@@ -972,8 +972,8 @@ public class CommonUtilities {
 
             if (testSuiteTag==null) {
                 testSuiteTag=allPerfDoc.createElement("Suite");
-                testSuiteTag.setAttribute("name", suite);
-                testSuiteTag.setAttribute("suitename", sname);
+                testSuiteTag.setAttribute("name", sname);
+                testSuiteTag.setAttribute("suitename", suite);
                 testSuiteTag.appendChild(testTag);
             } else {
                 testSuiteTag.appendChild(testTag);
