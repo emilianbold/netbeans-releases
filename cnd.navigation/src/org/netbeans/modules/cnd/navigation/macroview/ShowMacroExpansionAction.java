@@ -119,8 +119,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
 
         // Init expanded macro field
 
-        FileObject expandedMacroFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
-        if(expandedMacroFile == null) {
+        FileObject expandedMacroFile = createMemoryFile(CsmUtilitiesC
             return;
         }
         Document expandedMacroDoc = openFileDocument(expandedMacroFile);
