@@ -1036,6 +1036,18 @@ public class IndentSupport {
         return getCodeStyle().alignMultilineCallArgs();
     }
 
+    protected boolean alignMultilineIf() {
+        return getCodeStyle().alignMultilineIfCondition();
+    }
+
+    protected boolean alignMultilineWhile() {
+        return getCodeStyle().alignMultilineWhileCondition();
+    }
+
+    protected boolean alignMultilineFor() {
+        return getCodeStyle().alignMultilineFor();
+    }
+
     protected boolean alignMultilineMethodParams() {
         return getCodeStyle().alignMultilineMethodParams();
     }
