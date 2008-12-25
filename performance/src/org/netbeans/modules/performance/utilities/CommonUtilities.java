@@ -931,7 +931,7 @@ public class CommonUtilities {
 
         testTag=null;
         for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
-            if (("classname=\""+classname+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("classname").toString() ) ) {
+            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
                 testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
                 break;
             }
@@ -993,7 +993,7 @@ public class CommonUtilities {
         } catch (TransformerConfigurationException ex) {
         }
 
-        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.INDENT, "no");
         tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         DOMSource docSrc = new DOMSource(allPerfDoc);
         StreamResult result = new StreamResult(out);
