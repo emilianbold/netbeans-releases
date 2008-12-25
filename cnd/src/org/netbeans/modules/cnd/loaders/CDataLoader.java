@@ -38,65 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=300)
 public class CDataLoader extends CndAbstractDataLoaderExt {
-    
-    private static CDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975685L;
 
     public CDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
-        instance = this;
-        //createExtentions(cExtensions);
+        super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
     }
 
-    public static CDataLoader getInstance(){
-        if (instance == null) {
-            instance = SharedClassObject.findObject(CDataLoader.class, true);
-        }
-        return instance;
-    }
-
-    /** set the default display name */
     @Override
-    protected String defaultDisplayName() {
-	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CDataLoader_Name"); // NOI18N
-    }
-
-    protected String getMimeType(){
+    protected String getMimeType() {
         return MIMENames.C_MIME_TYPE;
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new CDataObject(primaryFile, this);
-    }
-
-    // CndHandlableExtensions
-    
-    public String getDisplayNameForExtensionList() {
-	return NbBundle.getMessage(CDataLoader.class, "CDataLoader_Name_ForExtList"); // NOI18N
-    }
-
-    public String getSettingsName() {
-        return ExtensionsSettings.C_FILE;  
     }
 }

@@ -96,12 +96,12 @@ public class ServerResourceNode extends FilterNode {
     private FileChangeListener projectDirectoryListener;
     
     /** Creates a new instance of ServerResourceNode */
-    public ServerResourceNode(Project project) {
+    public ServerResourceNode(Project project) throws DataObjectNotFoundException {
         this(getSetupDataFolder(project), project);
     }
     
-    private ServerResourceNode(DataFolder folderDo, Project project) {
-        super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo));
+    private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException {
+        super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo), Lookups.singleton(DataFolder.find(project.getProjectDirectory())));
         projectDirectoryListener = new ProjectDirectoryListener();
         if (LOG) {
             LOGGER.log(Level.FINE, "Adding file listener to " + project.getProjectDirectory()); // NOI18N

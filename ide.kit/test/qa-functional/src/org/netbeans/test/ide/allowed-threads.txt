@@ -12,3 +12,11 @@ Flushing caches
 Signal Dispatcher
 CLI Requests Server
 Active Reference Queue Daemon
+
+# Added to whitelist 081215
+Reference Handler
+AWT-EventQueue-1
+Java2D Disposer
+AWT-Shutdown
+Timer-0
+TimerQueue

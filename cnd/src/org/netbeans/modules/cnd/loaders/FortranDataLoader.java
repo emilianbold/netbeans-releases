@@ -42,57 +42,31 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=400)
+//@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=400)
 public class FortranDataLoader extends CndAbstractDataLoaderExt {
 
-    private static FortranDataLoader instance;
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;
 
     public FortranDataLoader() {
         super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
-        instance = this;
     }
 
-    public static FortranDataLoader getInstance() {
-        if (instance == null) {
-            instance = SharedClassObject.findObject(FortranDataLoader.class, true);
-        }
-        return instance;
-    }
-
-    /** set the default display name */
     @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
-    }
-
     protected String getMimeType() {
         return MIMENames.FORTRAN_MIME_TYPE;
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new FortranDataObject(primaryFile, this);
-    }
-
-    public String getDisplayNameForExtensionList() {
-        return NbBundle.getMessage(FortranDataLoader.class, "FortranDataLoader_Name_ForExtList"); // NOI18N
-    }
-
-    public String getSettingsName() {
-        return ExtensionsSettings.FORTRAN;
     }
 }

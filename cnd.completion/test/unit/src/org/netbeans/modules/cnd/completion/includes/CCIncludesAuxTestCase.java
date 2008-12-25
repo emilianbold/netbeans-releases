@@ -53,5 +53,15 @@ public class CCIncludesAuxTestCase extends BaseTestCase {
         shrinked = item.getRightText(true, "\\");
         System.err.println("shrinked is " + shrinked);
         assertEquals("C:\\very\\long...\\Windows\\system", shrinked);
+        text = "C:\\very\\long\\path\\to\\mixed/include/dir";
+        item = new CsmIncludeCompletionItem(0, 0, text, "on/Windows//mixed", "", false, true, false);
+        shrinked = item.getRightText(true, "\\");
+        System.err.println("shrinked is " + shrinked);
+        assertEquals("C:\\very\\long...\\\\mixed", shrinked);
+        text = "/very/long/path/to\\include\\mixed\\dir";
+        item = new CsmIncludeCompletionItem(0, 0, text, "on/unix/mixed", "", false, true, false);
+        shrinked = item.getRightText(true, "/");
+        System.err.println("shrinked is " + shrinked);
+        assertEquals("/very/long.../unix/mixed", shrinked);
     }
 }

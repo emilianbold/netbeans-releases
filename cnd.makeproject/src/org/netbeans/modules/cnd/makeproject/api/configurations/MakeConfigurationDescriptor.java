@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CndMIMEResolver;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -78,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -651,20 +651,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Set<String> h = MakeProject.createExtensionSet();
         Set<String> c = MakeProject.createExtensionSet();
         Set<String> cpp = MakeProject.createExtensionSet();
-        for(Item item : getProjectItems()){
+        for(Item item : getProjectItems()) {
             String path = item.getPath();
-            int i = path.lastIndexOf('.');
-            if (i > 0) {
-                String ext = path.substring(i+1);
-                if (ext.length()>0) {
-                    if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
-                        if (CndMIMEResolver.isHeaderExtension(ext)){
-                            h.add(ext);
-                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.C_MIME_TYPE, ext)) {
-                            c.add(ext);
-                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.CPLUSPLUS_MIME_TYPE, ext)) {
-                            cpp.add(ext);
-                        }
+            String ext = FileUtil.getExtension(path);
+            if (ext.length()>0) {
+                if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
+                    if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)){
+                        h.add(ext);
+                    } else if (MIMEExtensions.isRegistered(MIMENames.C_MIME_TYPE, ext)) {
+                        c.add(ext);
+                    } else if (MIMEExtensions.isRegistered(MIMENames.CPLUSPLUS_MIME_TYPE, ext)) {
+                        cpp.add(ext);
                     }
                 }
             }

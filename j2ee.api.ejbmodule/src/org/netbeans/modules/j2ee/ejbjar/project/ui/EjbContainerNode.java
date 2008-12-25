@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.ejbjar.project.ui;
 
 import java.awt.Image;
@@ -54,45 +53,43 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
  * @author Chris Webster
  */
 public class EjbContainerNode extends AbstractNode {
-    
+
     public static final String NAME = "EJBS"; // NOI18N
-    
     private static final String EJB_BADGE = "org/netbeans/modules/j2ee/ejbjar/project/ui/enterpriseBeansBadge.png"; // NOI18N
-    
-    public EjbContainerNode(EjbJar ejbModule, Project p, EjbNodesFactory nodesFactory) {
-        super(new EjbContainerChildren(ejbModule, nodesFactory, p), Lookups.singleton(p));
+
+    public EjbContainerNode(EjbJar ejbModule, Project p, EjbNodesFactory nodesFactory) throws DataObjectNotFoundException {
+        super(new EjbContainerChildren(ejbModule, nodesFactory, p), Lookups.fixed(new Object[]{p, DataFolder.find(p.getProjectDirectory())}));
         setName(EjbNodesFactory.CONTAINER_NODE_NAME);
         setDisplayName(NbBundle.getMessage(EjbContainerNode.class, "LBL_node"));
         setShortDescription(NbBundle.getMessage(EjbContainerNode.class, "HINT_node"));
     }
-    
+
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            CommonProjectActions.newFileAction()
-        };
+        return new Action[]{
+                    CommonProjectActions.newFileAction()
+                };
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // When you have help, change to:
-        // return new HelpCtx(EjbContainerNode.class);
+    // When you have help, change to:
+    // return new HelpCtx(EjbContainerNode.class);
     }
-    
+
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
-    
+
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
-    
+
     private Image computeIcon(boolean opened, int type) {
         Image image;
         Node iconDelegate = getIconDelegate();
@@ -104,12 +101,11 @@ public class EjbContainerNode extends AbstractNode {
         Image badge = ImageUtilities.loadImage(EJB_BADGE);
         return ImageUtilities.mergeImages(image, badge, 7, 7);
     }
-    
+
     private Node getIconDelegate() {
         try {
             return DataFolder.find(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-        }
-        catch (DataObjectNotFoundException donfe) {
+        } catch (DataObjectNotFoundException donfe) {
             return null;
         }
     }

@@ -45,7 +45,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,8 +81,8 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
         Set<DataObject> res = new HashSet<DataObject>();
         res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
-        String headerExt = ExtensionsSettings.getInstance(HDataLoader.getInstance()).getDefaultExtension();
-        res.add(dobjBro.createFromTemplate(targetFolder, sourceFileName.substring(0,sourceFileName.lastIndexOf(".")+1) + headerExt)); // NOI18N
+        String headerExt = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getDefaultExtension();
+        res.add(dobjBro.createFromTemplate(targetFolder, FileUtil.getExtension(sourceFileName) + headerExt)); // NOI18N
 
         return res;
     }

@@ -137,11 +137,15 @@ public final class TestExecutionManager {
 
         RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
 
+        final Runnable oldPostExecutionHook = rubyDescriptor.getPostBuild();
         ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor()
                 .postExecution(new Runnable() {
 
             public void run() {
                 refresh();
+                if (oldPostExecutionHook != null) {
+                    oldPostExecutionHook.run();
+                }
             }
         });
         execution = ExecutionService.newService(rpc, descriptor, rubyDescriptor.getDisplayName());

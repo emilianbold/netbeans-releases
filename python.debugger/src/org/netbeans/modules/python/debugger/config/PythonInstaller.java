@@ -1,8 +1,40 @@
-/**
- * Copyright (C) 2006 Jean-Yves Mengant
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * PythonInstaller.java
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.python.debugger.config;
 
@@ -27,10 +59,9 @@ import org.netbeans.modules.python.debugger.gui.PythonDebugContainer;
 /**
  * automatically install and check necessary Python resources for the IDE
  *
- * @author jean-yves
+ * @author jean-yves Mengant
  */
-public class PythonInstaller
-{
+public class PythonInstaller {
   // private final static String _PYLOC_   = "python/";
   // moving back to root 
   // used for old cleaning old  
@@ -46,37 +77,29 @@ public class PythonInstaller
   /**
    * Creates a new instance of PythonInstaller
    */
-  public PythonInstaller()
-  {
+  public PythonInstaller() {
   }
 
-  private String getDestPythonDir()
-  {
+  private String getDestPythonDir() {
     return PythonDebugParameters.getSettingsDirectory() + '/' + _DEST_PYLOC_;
   }
 
-  private File getPythonWorkDir()
-  {
+  private File getPythonWorkDir() {
     String dir = PythonDebugParameters.getSettingsDirectory() + '/' + _WORK_;
     File fDir = new File(dir);
-    if (fDir.exists())
-    {
+    if (fDir.exists()) {
       return fDir;
     }
     fDir.mkdir();
     return fDir;
   }
 
-  private void cleanupPythonDir(File pythonDir)
-  {
-    if (pythonDir.isDirectory())
-    {
+  private void cleanupPythonDir(File pythonDir) {
+    if (pythonDir.isDirectory()) {
       String fileNames[] = pythonDir.list();
-      for (int ii = 0; ii < fileNames.length; ii++)
-      {
+      for (int ii = 0; ii < fileNames.length; ii++) {
         if ((fileNames[ii].startsWith(_VERSIONPREFIX_)) ||
-                (fileNames[ii].endsWith(_PYSUFFIX_)))
-        {
+                (fileNames[ii].endsWith(_PYSUFFIX_))) {
           File f = new File(pythonDir, fileNames[ii]);
           f.delete();
         }
@@ -84,29 +107,24 @@ public class PythonInstaller
     }
   }
 
-  private void cleanupVersions(File vFName)
-  {
+  private void cleanupVersions(File vFName) {
     File curDir = vFName.getParentFile();
     // ./nbpythondebug
     cleanupPythonDir(curDir);
 
   }
 
-  private File getFileNameVersion()
-  {
+  private File getFileNameVersion() {
     return new File(
             getDestPythonDir(),
             NetBeansFrontend.getVersion().replace(' ', '_'));
   }
 
-  private boolean checkVersion()
-  {
+  private boolean checkVersion() {
     File versionFile = getFileNameVersion();
-    if (versionFile.isFile())
-    {
+    if (versionFile.isFile()) {
       return true;
-    } else
-    {
+    } else {
       // cleanup previous version file and return false
       // to install new  
       cleanupVersions(versionFile);
@@ -114,8 +132,7 @@ public class PythonInstaller
     }
   }
 
-  private InputStream getResourceFromDistrib(String name)
-  {
+  private InputStream getResourceFromDistrib(String name) {
     return this.getClass().getResourceAsStream(name);
   }
 
@@ -124,32 +141,26 @@ public class PythonInstaller
    *
    * @return true if in place
    */
-  public boolean checkInPlace()
-  {
+  public boolean checkInPlace() {
     return checkVersion();
   }
 
   private void populatePythonDirectory(InputStream myStream)
-          throws PythonDebugException
-  {
+          throws PythonDebugException {
     BufferedReader rdr =
             new BufferedReader(new InputStreamReader(myStream));
     Vector list = new Vector();
-    try
-    {
+    try {
       String curPython = rdr.readLine();
-      while (curPython != null)
-      {
-        if (curPython.trim().length() > 0)
-        {
+      while (curPython != null) {
+        if (curPython.trim().length() > 0) {
           list.addElement(curPython);
         }
         curPython = rdr.readLine();
       }
       rdr.close();
 
-    } catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new PythonDebugException(
               " IO Error reading Manifest in populatePythonDirectory");
     }
@@ -159,24 +170,19 @@ public class PythonInstaller
 
     Enumeration pyList = list.elements();
     int counter = 0;
-    while (pyList.hasMoreElements())
-    {
+    while (pyList.hasMoreElements()) {
       String curPy = (String) pyList.nextElement();
       InputStream cur = getResourceFromDistrib(_PYLOC_ + curPy);
-      if (cur == null)
-      {
+      if (cur == null) {
         throw new PythonDebugException(_PYLOC_ + curPy + " resource missing in JpyDbg distribution");
       }
 
       BufferedReader in = new BufferedReader(new InputStreamReader(cur));
-      try
-      {
+      try {
         File fDir = new File(getDestPythonDir());
-        if (!fDir.exists())
-        {
+        if (!fDir.exists()) {
           fDir.mkdirs();
-        } else if (!fDir.isDirectory())
-        // give up when python is not a subdir !!!!!!
+        } else if (!fDir.isDirectory()) // give up when python is not a subdir !!!!!!
         {
           throw new PythonDebugException(fDir.toString() + " exists but is not a Directory => Giving up on nbPython debugger setup");
         }
@@ -186,16 +192,14 @@ public class PythonInstaller
                 curPy);
         BufferedWriter dest = new BufferedWriter(new FileWriter(f));
         String line = in.readLine();
-        while (line != null)
-        {
+        while (line != null) {
           dest.write(line);
           dest.newLine();
           line = in.readLine();
         }
         in.close();
         dest.close();
-      } catch (IOException e)
-      {
+      } catch (IOException e) {
         throw new PythonDebugException(
                 "nbPython : severe IOError populating python directory : " + e.getMessage());
 
@@ -203,15 +207,13 @@ public class PythonInstaller
       mon.statusChanged(++counter, "File " + curPy + " processed ");
     }
 
-    try
-    {
+    try {
 
       // Finally acknowledge by writing an empty VersionFile inside directory
       BufferedWriter dest =
               new BufferedWriter(new FileWriter(getFileNameVersion()));
       dest.close();
-    } catch (IOException e)
-    {
+    } catch (IOException e) {
       throw new PythonDebugException(
               "nbPython : severe IOError writing :" + getFileNameVersion() + "=" + e.getMessage());
 
@@ -229,30 +231,24 @@ public class PythonInstaller
    *
    * @throws PythonDebugException When any configuration problem is encountererd
    */
-  public void putInPlace()
-  {
+  public void putInPlace() {
 
-    if (!checkInPlace())
-    {
+    if (!checkInPlace()) {
       InputStream myStream = getResourceFromDistrib(_PYLOC_ + _LOCATOR_);
-      try
-      {
-        if (myStream == null)
-        {
+      try {
+        if (myStream == null) {
           throw new PythonDebugException(
                   _PYLOC_ + _LOCATOR_ +
                   " not in nbpython debugger module => JpyDbg Packaging error");
         }
         populatePythonDirectory(myStream);
-      } catch (PythonDebugException e)
-      {
+      } catch (PythonDebugException e) {
         JOptionPane.showMessageDialog(null, "Python setup error = " + e.getMessage(), "Severe nbPython Setup Error", JOptionPane.ERROR_MESSAGE);
       }
     }
     // populate the jpyDbg directory accordingly + setup a tmp work directory as well
     File f = new File(getDestPythonDir(), _JPYDBGSCRIPT_);
-    if (!f.exists() || f.isDirectory())
-    {
+    if (!f.exists() || f.isDirectory()) {
       JOptionPane.showMessageDialog(null, "Python setup error : missing jpydbgdaemon = " + f.toString(), "Severe nbPython Setup Error", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -262,21 +258,18 @@ public class PythonInstaller
     PythonDebugParameters.set_tempDir(getPythonWorkDir().getAbsolutePath());
   }
 
-  class _MONITOR_ extends Thread
-  {
+  class _MONITOR_ extends Thread {
 
     private ProgressMonitor _pBar;
     private int _size;
 
-    public _MONITOR_(int size)
-    {
+    public _MONITOR_(int size) {
       _size = size;
       SwingUtilities.invokeLater(this);
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
       _pBar = new ProgressMonitor(
               null,
               "Upgrading nbPython_debugger Python's stuff for " + PythonDebugContainer.VERSION,
@@ -288,14 +281,11 @@ public class PythonInstaller
 
     private void statusChanged(
             final int counter,
-            final String message)
-    {
+            final String message) {
       SwingUtilities.invokeLater(
-              new Runnable()
-              {
+              new Runnable() {
 
-                public void run()
-                {
+                public void run() {
                   _pBar.setProgress(counter);
                   _pBar.setNote(message);
                 }
