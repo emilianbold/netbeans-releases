@@ -267,7 +267,9 @@ public class CsmUtilities {
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
         CsmFile csmFile = null;
         try {
-            csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
+            if(bDoc != null) {
+                csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
+            }
             if (csmFile == null) {
                 csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
             }
