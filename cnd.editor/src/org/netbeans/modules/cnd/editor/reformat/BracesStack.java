@@ -369,9 +369,8 @@ class BracesStack implements Cloneable {
                 case DO: //("do", "keyword-directive"),
                 {
                     if (next != null && next.id() == WHILE) {
-                        if (i > 0 && stack.get(i-1).getKind() == WHILE) {
-                            stack.setSize(i);
-                            return;
+                        if (i+1 < stack.size() && stack.get(i+1).getKind() == WHILE) {
+                            break;
                         } else {
                             stack.setSize(i + 1);
                             return;

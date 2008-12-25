@@ -654,8 +654,12 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private void showFollwUp(NativeProject project){
-        FollowUp.showFollowUp(this, project);
+    private void showFollwUp(final NativeProject project){
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                FollowUp.showFollowUp(ImportProject.this, project);
+            }
+        });
     }
 
     Map<Step,State> getImportResult(){

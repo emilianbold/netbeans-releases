@@ -213,7 +213,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             }
             
             String mn = makefileNameTextField.getText();
-            int i = mn.lastIndexOf('/');
+            int i = mn.replace('\\', '/').lastIndexOf('/');
             if (i > 0) {
                 String cn = mn.substring(0, i+1) + "configure";  // NOI18N
                 if (new File(cn).exists()) {
@@ -237,7 +237,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 return false;
             }
             
-            int i = configureNameTextField.getText().lastIndexOf('/');
+            int i = configureNameTextField.getText().replace('\\', '/').lastIndexOf('/');  // NOI18N
             if (i > 0) {
                 String mn = configureNameTextField.getText().substring(0, i+1) + "Makefile";  // NOI18N
                 configureMakefileNameTextField.setText(mn); // NOI18N

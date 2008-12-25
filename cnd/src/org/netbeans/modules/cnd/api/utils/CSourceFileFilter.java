@@ -38,31 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
-import org.netbeans.modules.cnd.loaders.CDataLoader;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class CSourceFileFilter extends SourceFileFilter{
-    
+public class CSourceFileFilter extends SourceFileFilter {
+
     private static CSourceFileFilter instance = null;
-    
     private String[] suffixList = null;
-    
+
     public static SourceFileFilter getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new CSourceFileFilter();
+        }
         return instance;
     }
-    
+
     public String getDescription() {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_C_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-    
+
     public String[] getSuffixes() {
         if (suffixList == null) {
-            suffixList = getSuffixList(CDataLoader.getInstance().getExtensions());
+            suffixList = MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues().toArray(new String[] {});
         }
         return suffixList;
     }
