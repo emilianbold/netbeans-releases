@@ -355,7 +355,7 @@ public class JHIndexer extends MatchingTask {
                 }
                 AntClassLoader loader = new AntClassLoader(getProject(), classpath);
                 try {
-                    Class<?> clazz = loader.loadClass("com.sun.java.help.search.Indexer");
+                    Class<?> clazz = loader.loadClass("com.sun.java.help.search.ModifiedIndexer");
                     Method main = clazz.getMethod("main", String[].class);
                     List<String> args = Arrays.asList(
                         "-c", config.getAbsolutePath(),
