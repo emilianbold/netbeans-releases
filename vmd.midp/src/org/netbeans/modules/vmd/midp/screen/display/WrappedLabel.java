@@ -44,8 +44,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 
@@ -54,7 +52,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class WrappedLabel extends JPanel {
+abstract class WrappedLabel extends JPanel {
 
     private static final long serialVersionUID = 1123746185724284730L;
 
@@ -97,10 +95,64 @@ class WrappedLabel extends JPanel {
             i++;
         }
         int componentHeight  = myList.size()*height;
-        setPreferredSize( new Dimension( (int)getSize().getWidth() , componentHeight));
+        setPreferredSize( new Dimension( getPreferedWidth() , componentHeight));
         setMaximumSize( getPreferredSize() );
         setMinimumSize( getPreferredSize() );
         revalidate();
+    }
+    
+    public String getText(){
+        return myText;
+    }
+    
+    public void setText(String text ){
+        myText = text;
+    }
+   
+    protected Mode getMode(){
+        return myMode;
+    }
+
+    protected int getLabelHeight(){
+        return -1;
+    }
+
+    protected int getPreferedWidth(){
+        if ( myWidth == -1 ){
+            return getLabelWidth();
+        }
+        else {
+            return myWidth;
+        }
+    }
+
+    protected void setPreferedWidth(int width ){
+        myWidth = width;
+    }
+
+    abstract protected int getLabelWidth();
+
+    protected void setMode(Mode mode) {
+        myMode = mode;
+    }
+    
+    protected String getSuffix() {
+        if ( getMode() == Mode.WRAP_ON ){
+            return NbBundle.getMessage(WrappedLabel.class,
+                    "TXT_NoWrapSign");
+        }
+        else if ( getMode() == Mode.DEFAULT ){
+            return "";
+        }
+        return null;
+    }
+
+    private Dimension getLabelSize(){
+        int height = getLabelHeight();
+        if ( height == -1 ){
+            height = (int)super.getSize().getHeight();
+        }
+        return new Dimension( getPreferedWidth() , height );
     }
 
     private void fillWrapList( Graphics g ) {
@@ -108,15 +160,13 @@ class WrappedLabel extends JPanel {
             myList = new LinkedList<String>();
         }
         String str = getText();
-        
-        double width  = getSize().getWidth();
-        int height = g.getFontMetrics().getHeight();
-        
-        
-        double empiricLetterWidth = g.getFontMetrics().getStringBounds("a", // NOI18N 
-                g).getWidth();          
+
+        int width  = getPreferedWidth();
+
+        double empiricLetterWidth = g.getFontMetrics().getStringBounds("a", // NOI18N
+                g).getWidth();
         int empiricSize = (int)(width/empiricLetterWidth);
-        
+
         int indx;
         myList.clear();
         boolean noWrap= getSuffix()!= null;
@@ -138,33 +188,6 @@ class WrappedLabel extends JPanel {
         if ( str.length() > 0 ){
             myList.add( str );
         }
-    }
-    
-    protected String getSuffix() {
-        if ( getMode() == Mode.WRAP_ON ){
-            return NbBundle.getMessage(WrappedLabel.class,
-                    "TXT_NoWrapSign");
-        }
-        else if ( getMode() == Mode.DEFAULT ){
-            return "";
-        }
-        return null;
-    }
-    
-    public String getText(){
-        return myText;
-    }
-    
-    public void setText(String text ){
-        myText = text;
-    }
-    
-    protected Mode getMode(){
-        return myMode;
-    }
-
-    protected void setMode(Mode mode) {
-        myMode = mode;
     }
 
     private int getWrapIndex( String str, Graphics g, double width,
@@ -219,4 +242,5 @@ class WrappedLabel extends JPanel {
     private String myText;
     private Mode myMode;
     private List<String> myList;
+    private int myWidth =-1;
 }
