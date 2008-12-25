@@ -52,6 +52,7 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -59,21 +60,21 @@ import org.openide.util.Lookup;
  *
  * @author Nick Krasilnikov
  */
-public abstract class CsmMacroExpansionProvider {
+public final class CsmMacroExpansion {
 
     /** A dummy provider that never returns any results.
      */
     private static final CsmMacroExpansionProvider EMPTY = new Empty();
-    /** default instance */
+    /** default provider */
     private static CsmMacroExpansionProvider defaultProvider;
 
-    protected CsmMacroExpansionProvider() {
+    protected CsmMacroExpansion() {
     }
-
+    
     /** Static method to obtain the provider.
      * @return the provider
      */
-    public static synchronized CsmMacroExpansionProvider getDefault() {
+    private static synchronized CsmMacroExpansionProvider getProvider() {
         if (defaultProvider != null) {
             return defaultProvider;
         }
@@ -88,12 +89,14 @@ public abstract class CsmMacroExpansionProvider {
      * @param params - template paramrters
      * @return - instantiation
      */
-    public abstract String getExpandedText(CsmFile file, int startOffset, int endOffset);
+    public static String getExpandedText(CsmFile file, int startOffset, int endOffset) {
+        return getProvider().getExpandedText(file, startOffset, endOffset);
+    }
 
     //
     // Implementation of the default provider
     //
-    private static final class Empty extends CsmMacroExpansionProvider {
+    private static final class Empty implements CsmMacroExpansionProvider {
 
         Empty() {
         }

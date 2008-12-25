@@ -137,7 +137,9 @@ public abstract class CsmFileTaskFactory {
                     continue;
                 }
                 Document doc = CsmUtilities.getDocument(r);
-                docToRemove.put(doc, doc2task.remove(doc));
+                if(doc !=  null) {
+                    docToRemove.put(doc, doc2task.remove(doc));
+                }
             }
 
             List<FileObject> verifiedFiles = new ArrayList<FileObject>(fobj2csm.keySet());
@@ -155,11 +157,10 @@ public abstract class CsmFileTaskFactory {
                 }
 
                 CsmFile csmFile = getCsmFile(v);
-                if (csmFile != null) {
+                Document doc = CsmUtilities.getDocument(v);
+                if (csmFile != null && doc != null) {
                     CsmFile oldCsmFile = fobj2csm.get(v);
                     if (!csmFile.equals(oldCsmFile)) {
-                        Document doc = CsmUtilities.getDocument(v);
-
                         fobj2csm.remove(v);
                         docToRemove.put(doc, doc2task.remove(doc));
 
@@ -185,9 +186,8 @@ public abstract class CsmFileTaskFactory {
                 }
 
                 CsmFile csmFile = getCsmFile(fileObject);                
-                if (csmFile != null) {
-                    Document doc = CsmUtilities.getDocument(fileObject);
-
+                Document doc = CsmUtilities.getDocument(fileObject);
+                if (csmFile != null && doc != null) {
                     PhaseRunner task = createTask(fileObject);
                     Pair pair = new Pair(task);
                     docToAdd.put(doc, pair);
@@ -245,8 +245,11 @@ public abstract class CsmFileTaskFactory {
     
     private final void runTask(FileObject file, PhaseRunner.Phase phase, int delay) {
         Document doc = CsmUtilities.getDocument(file);
+        if (doc == null) {
+            return;
+        }
+
         Pair pr = doc2task.get(doc);
-        
         if (pr!=null) {
             pr.runner.cancel();
             if (pr.task != null) {
@@ -322,15 +325,17 @@ public abstract class CsmFileTaskFactory {
         public void modelChanged(CsmChangeEvent e) {
             for (CsmFile f : e.getRemovedFiles()){
                 Document doc = CsmUtilities.getDocument(f);
-                if (doc2task.get(doc) != null) {
-                    synchronized (this) {
-                        runTask(CsmUtilities.getFileObject(f), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                        doc2task.put(doc, new Pair(lazyRunner()));
-                        // Run the same task for related document if it exists
-                        Document doc2 = (Document)doc.getProperty(Document.class);
-                        if(doc2 != null) {
-                            runTask(CsmUtilities.getFileObject(doc2), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                            doc2task.put(doc2, new Pair(lazyRunner()));
+                if (doc != null) {
+                    if (doc2task.get(doc) != null) {
+                        synchronized (this) {
+                            runTask(CsmUtilities.getFileObject(f), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
+                            doc2task.put(doc, new Pair(lazyRunner()));
+                            // Run the same task for related document if it exists
+                            Document doc2 = (Document) doc.getProperty(Document.class);
+                            if (doc2 != null) {
+                                runTask(CsmUtilities.getFileObject(doc2), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
+                                doc2task.put(doc2, new Pair(lazyRunner()));
+                            }
                         }
                     }
                 }
@@ -399,7 +404,8 @@ public abstract class CsmFileTaskFactory {
         }
 
         public void run() {
-            if (CsmUtilities.getCsmFile(doc, false).isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            if (file !=  null && file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
                 run.run();
             }
         }

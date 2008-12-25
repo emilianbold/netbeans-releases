@@ -105,7 +105,6 @@ final class Report {
             LOG.finer("<init>(" + suiteClassName + ')');                //NOI18N
         }
         this.suiteClassName = suiteClassName;
-        this.antScript = antScript;
         this.tests = new ArrayList<Testcase>(10);
     }
     
