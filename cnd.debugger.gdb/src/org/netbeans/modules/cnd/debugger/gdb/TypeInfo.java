@@ -79,7 +79,7 @@ public class TypeInfo {
         if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
             rawInfo = debugger.requestSymbolType(var.getType());
         } else {
-            rawInfo = debugger.requestSymbolType(var.getFullName(false));
+            rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
         }
         log.fine("TI.getTypeInfo[rawInfo]: " + var.getType() + " ==> [" + rawInfo + "]");
         
@@ -133,7 +133,7 @@ public class TypeInfo {
     public String getResolvedType(AbstractVariable var) {
         if (resolvedType == null) {
             if (rawInfo == null) {
-                rawInfo = debugger.requestSymbolType(var.getFullName(false));
+                rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
             }
             if (rawInfo != null) {
                 rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
@@ -158,7 +158,7 @@ public class TypeInfo {
     
     public String getDetailedType(AbstractVariable var) {
         if (rawInfo == null) {
-            rawInfo = debugger.requestSymbolType(var.getFullName(false));
+            rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
         }
         return rawInfo;
     }
