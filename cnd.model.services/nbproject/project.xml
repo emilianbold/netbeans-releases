@@ -130,6 +130,7 @@
                 <package>org.netbeans.modules.cnd.api.model.syntaxerr</package>
                 <package>org.netbeans.modules.cnd.api.model.xref</package>
                 <package>org.netbeans.modules.cnd.model.tasks</package>
+                <package>org.netbeans.modules.cnd.spi.model.services</package>
             </friend-packages>
         </data>
     </configuration>

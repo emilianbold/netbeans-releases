@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansionProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -93,17 +93,16 @@ public final class ShowMacroExpansionAction extends CookieAction {
         mainDoc.putProperty(Document.class, expandedContextDoc);
         expandedContextDoc.putProperty(Document.class, mainDoc);
 
-        CsmMacroExpansionProvider mep = CsmMacroExpansionProvider.getDefault();
         CsmScope scope = ContextUtils.findScope(activatedNodes[0]);
         if (CsmKindUtilities.isOffsetable(scope)) {
-            String expandedText = mep.getExpandedText(csmFile, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset());
+            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset());
             try {
                 expandedContextDoc.insertString(0, expandedText, null);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
         } else {
-            String expandedText = mep.getExpandedText(csmFile, 0, mainDoc.getLength());
+            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, 0, mainDoc.getLength());
             try {
                 expandedContextDoc.insertString(0, expandedText, null);
             } catch (BadLocationException ex) {

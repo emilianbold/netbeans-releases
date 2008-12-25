@@ -49,43 +49,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelimpl.impl.services;
+package org.netbeans.modules.cnd.spi.model.services;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider;
-import org.openide.util.Exceptions;
 
 /**
  * Servise that provides macro expansions
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider.class)
-public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
+public interface CsmMacroExpansionProvider {
 
-    public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
-        if(file instanceof FileImpl) {
-            FileImpl f = (FileImpl) file;
-            TokenStream ts = f.getTokenStream(startOffset, endOffset);
-            StringBuilder sb = new StringBuilder();
-            try {
-                Token token = ts.nextToken();
-                while (token != null && token.getType() != Token.EOF_TYPE) {
-                    sb.append(token.getText());
-                    sb.append(' '); // NOI18N
-                    token = ts.nextToken();
-                }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            f.releaseTokenStream(ts);
-            return sb.toString();
-        }
-        return null;
-    }
+    /**
+     * Returns instantiation of template
+     *
+     * @param template - template for instantiation
+     * @param params - template paramrters
+     * @return - instantiation
+     */
+    public abstract String getExpandedText(CsmFile file, int startOffset, int endOffset);
 
 }
