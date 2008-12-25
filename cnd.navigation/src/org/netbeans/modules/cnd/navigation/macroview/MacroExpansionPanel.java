@@ -92,22 +92,17 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        macroExpansionPane = new javax.swing.JScrollPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         jCodeExpansionPane = new javax.swing.JScrollPane();
         jCodeExpansionEditorPane = new javax.swing.JEditorPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jMacroExpansionEditorPane = new javax.swing.JEditorPane();
 
-        setLayout(new java.awt.GridBagLayout());
+        setLayout(new java.awt.BorderLayout());
 
-        macroExpansionPane.setFocusable(false);
-
-        jSplitPane1.setDividerLocation(200);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setResizeWeight(0.9);
         jSplitPane1.setFocusable(false);
         jSplitPane1.setOneTouchExpandable(true);
 
@@ -126,19 +121,13 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
 
         jSplitPane1.setRightComponent(jScrollPane1);
 
-        macroExpansionPane.setViewportView(jSplitPane1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(macroExpansionPane, gridBagConstraints);
+        add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
-        return macroExpansionPane.requestFocusInWindow();
+        return jCodeExpansionPane.requestFocusInWindow();
     }
 
     public ExplorerManager getExplorerManager() {
@@ -151,7 +140,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JEditorPane jMacroExpansionEditorPane;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
-    javax.swing.JScrollPane macroExpansionPane;
     // End of variables declaration//GEN-END:variables
 
     public HelpCtx getHelpCtx() {
