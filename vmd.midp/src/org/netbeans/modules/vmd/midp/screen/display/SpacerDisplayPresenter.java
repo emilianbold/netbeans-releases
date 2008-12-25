@@ -141,6 +141,9 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
         innerPanel.setPreferredSize( new Dimension( prefWidth , (int)separator.getPreferredSize().getHeight()) );
         innerPanel.setMaximumSize( new Dimension( prefWidth , (int) separator.getMaximumSize().getHeight()) );
 
+        innerPanel.invalidate();
+        innerPanel.revalidate();
+        panel.revalidate();
     }
 
     public Shape getSelectionShape () {

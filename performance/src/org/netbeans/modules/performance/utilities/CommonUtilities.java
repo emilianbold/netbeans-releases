@@ -931,7 +931,7 @@ public class CommonUtilities {
 
         testTag=null;
         for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
-            if (("classname=\""+classname+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("classname").toString() ) ) {
+            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
                 testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
                 break;
             }
@@ -964,7 +964,7 @@ public class CommonUtilities {
 
             testSuiteTag=null;
             for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
-                if (sname.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
+                if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
                     testSuiteTag =(Element)allPerfDoc.getElementsByTagName("Suite").item(i);
                     break;
                 }
@@ -972,8 +972,8 @@ public class CommonUtilities {
 
             if (testSuiteTag==null) {
                 testSuiteTag=allPerfDoc.createElement("Suite");
-                testSuiteTag.setAttribute("name", suite);
-                testSuiteTag.setAttribute("suitename", sname);
+                testSuiteTag.setAttribute("name", sname);
+                testSuiteTag.setAttribute("suitename", suite);
                 testSuiteTag.appendChild(testTag);
             } else {
                 testSuiteTag.appendChild(testTag);
@@ -993,7 +993,7 @@ public class CommonUtilities {
         } catch (TransformerConfigurationException ex) {
         }
 
-        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.INDENT, "no");
         tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         DOMSource docSrc = new DOMSource(allPerfDoc);
         StreamResult result = new StreamResult(out);

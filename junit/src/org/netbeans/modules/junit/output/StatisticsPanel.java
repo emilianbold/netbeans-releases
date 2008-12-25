@@ -142,12 +142,12 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     
     /**
      */
-    void displayReport(final Report report) {
-        treePanel.displayReport(report);
-        
-        btnFilter.setEnabled(
-            treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
-    }
+//    void displayReport(final Report report) {
+//        treePanel.displayReport(report);
+//
+//        btnFilter.setEnabled(
+//            treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
+//    }
     
     /**
      */

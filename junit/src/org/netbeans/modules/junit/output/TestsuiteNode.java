@@ -184,7 +184,7 @@ final class TestsuiteNode extends AbstractNode {
             if (interrupted) {
                 buf.append("&nbsp;&nbsp;");                             //NOI18N
                 HtmlMarkupUtils.appendColourText(
-                        buf, COLOR_OK, "MSG_TestsuiteInterrupted_HTML");   //NOI18N
+                        buf, COLOR_OK, "MSG_TestsuiteInProgress_HTML");   //NOI18N
             }
             if (!containsFailed && !interrupted) {
                 buf.append("&nbsp;&nbsp;");                             //NOI18N

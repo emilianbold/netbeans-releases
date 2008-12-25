@@ -108,13 +108,10 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         label = new WrappedLabel(){
 
             @Override
-            public Dimension getSize() {
-                Dimension dimension = super.getSize();
-                return new Dimension( (int)(view.getSize().getWidth() -
-                        image.getSize().getWidth() - state.getSize().getWidth()),
-                        (int)dimension.getHeight());
+            protected int getLabelWidth() {
+                return (int)(view.getSize().getWidth() -
+                        image.getSize().getWidth() - state.getSize().getWidth());
             }
-            
         };
         view.add(label);
 

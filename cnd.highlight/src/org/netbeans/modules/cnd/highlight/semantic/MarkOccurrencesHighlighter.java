@@ -66,14 +66,13 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupte
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
+import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,11 +112,6 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
 
         return bag;
-    }
-
-    private CsmFile getCsmFile() {
-        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-        return CsmUtilities.getCsmFile(dobj, false);
     }
 
     private void clean() {
@@ -163,8 +157,8 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 return;
             }
 
-            CsmFile file = getCsmFile();
-            FileObject fo = CsmUtilities.getFileObject(file);
+            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            FileObject fo = CsmUtilities.getFileObject(doc);
 
             if (file == null || fo == null) {
                 // this can happen if MO was triggered right before closing project
@@ -173,6 +167,23 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             }
 
             int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
+
+            // Check existance of related document
+            // And if it exist and check should we use its caret position or not
+            Document doc2 = (Document)doc.getProperty(Document.class);
+            if(doc2 != null) {
+                boolean useOwnCarretPosition = true;
+                Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
+                if (obj != null) {
+                    useOwnCarretPosition = (Boolean) obj;
+                }
+                if (!useOwnCarretPosition) {
+                    FileObject fo2 = CsmUtilities.getFileObject(doc2);
+                    if(fo2 != null) {
+                        lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo2);
+                    }
+                }
+            }
 
             HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
             while (hs.moveNext()) {

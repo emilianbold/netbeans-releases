@@ -267,22 +267,14 @@ final class Manager {
      */
     void displayReport(final AntSession session,
                        final TaskType sessionType,
-                       final Report report) {
-        /* Called from the AntLogger's thread */
-        displayReport(session, sessionType, report, false);
-    }
-
-    /**
-     */
-    void displayReport(final AntSession session,
-                       final TaskType sessionType,
                        final Report report,
-                       final boolean promote) {
+                       final boolean promote,
+                       final int[] statistics) {
 
         /* Called from the AntLogger's thread */
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
-        displayHandler.displayReport(report);
+        displayHandler.displayReport(report, statistics);
         displayInWindow(session, sessionType, displayHandler, promote);
     }
 
