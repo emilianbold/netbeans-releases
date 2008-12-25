@@ -125,6 +125,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
 
         if (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT){
             if (isMultiLineComment(token)) {
+                if (caretOffset == token.getTokenSequence().offset()){
+                    return findIndent(token);
+                }
                 // Indent the inner lines of the multi-line comment by one
                 if (!getFormatLeadingStarInComment()) {
                     return findIndent(token) + 1;
