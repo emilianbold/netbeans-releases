@@ -157,7 +157,7 @@ public abstract class CsmFileTaskFactory {
                 }
 
                 CsmFile csmFile = getCsmFile(v);
-                Document doc = CsmUtilities.getDocument(v);
+                Document doc = (csmFile == null) ? null : CsmUtilities.getDocument(v);
                 if (csmFile != null && doc != null) {
                     CsmFile oldCsmFile = fobj2csm.get(v);
                     if (!csmFile.equals(oldCsmFile)) {
@@ -186,7 +186,7 @@ public abstract class CsmFileTaskFactory {
                 }
 
                 CsmFile csmFile = getCsmFile(fileObject);                
-                Document doc = CsmUtilities.getDocument(fileObject);
+                Document doc = (csmFile == null) ? null : CsmUtilities.getDocument(fileObject);
                 if (csmFile != null && doc != null) {
                     PhaseRunner task = createTask(fileObject);
                     Pair pair = new Pair(task);
@@ -199,7 +199,10 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<Document, Pair> e : docToRemove.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: removing " + CsmUtilities.getCsmFile(e.getKey(), false).getAbsolutePath());}
+            CsmFile csmFile = CsmUtilities.getCsmFile(e.getKey(), false);
+            if (csmFile != null) {
+                if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: removing " + csmFile.getAbsolutePath());}
+            }
             if (e!=null && e.getValue()!=null ) {
                 PhaseRunner runner = e.getValue().runner;
                 Task task = e.getValue().task;
@@ -211,14 +214,19 @@ public abstract class CsmFileTaskFactory {
             }
             // it isn't necessary to check mime type here -
             // we checked it when adding task
-            CsmStandaloneFileProvider.getDefault().notifyClosed(CsmUtilities.getCsmFile(e.getKey(), false));
+            if (csmFile != null) {
+                CsmStandaloneFileProvider.getDefault().notifyClosed(csmFile);
+            }
         }
 
         for (Entry<Document, Pair> e : docToAdd.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: adding "+ //NOI18N
-                    (CsmUtilities.getCsmFile(e.getKey(), false).isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
-                    " "+e.getValue().runner.toString()+" " + CsmUtilities.getCsmFile(e.getKey(), false).getAbsolutePath());} //NOI18N
-                post(e.getValue(), e.getKey(), CsmUtilities.getCsmFile(e.getKey(), false).isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, taskDelay());
+            CsmFile csmFile = CsmUtilities.getCsmFile(e.getKey(), false);
+            if (csmFile != null) {
+                if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: adding "+ //NOI18N
+                        (csmFile.isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
+                        " "+e.getValue().runner.toString()+" " + csmFile.getAbsolutePath());} //NOI18N
+                post(e.getValue(), e.getKey(), csmFile.isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, taskDelay());
+            }
         }
     }
 

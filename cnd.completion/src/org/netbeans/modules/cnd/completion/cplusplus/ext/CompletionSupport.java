@@ -171,8 +171,8 @@ public final class CompletionSupport {
         this.contextOffset = offset;
     }
 
-    public int getContextOffset() {
-        return this.contextOffset;
+    private int doc2context(int docPos) {
+        return docPos + this.contextOffset;
     }
     
     protected void setLastSeparatorOffset(int lastSeparatorOffset) {
@@ -226,18 +226,18 @@ public final class CompletionSupport {
 
     /** Get the class that belongs to the given position */
     public CsmClass getClass(int pos) {
-        pos += getContextOffset();
+        pos = doc2context(pos);
         return CompletionUtilities.findClassOnPosition(getDocument(), pos);
     }
 
     /** Get the class or function definition that belongs to the given position */
     public CsmOffsetableDeclaration getDefinition(int pos, FileReferencesContext fileContext) {
-        pos += getContextOffset();
+        pos = doc2context(pos);
         return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos, fileContext);
     }
 
     public boolean isStaticBlock(int pos) {
-        pos += getContextOffset();
+        pos = doc2context(pos);
         return false;
     }
 
@@ -474,7 +474,7 @@ public final class CompletionSupport {
         if (file == null) {
             return null;
         }
-        pos += getContextOffset();
+        pos = doc2context(pos);
         CsmContext context = CsmOffsetResolver.findContext(file, pos, refContext);
         if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject())) {
             // probably in initializer of variable, like
