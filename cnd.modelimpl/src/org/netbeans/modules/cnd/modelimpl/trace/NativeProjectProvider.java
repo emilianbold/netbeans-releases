@@ -52,8 +52,8 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
-import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -101,9 +101,9 @@ public final class NativeProjectProvider {
             fo = dobj.getPrimaryFile();
         }
         if (fo != null) {
-            mimeType = FileUtil.getMIMEType(fo, MIMENames.SOURCE_MIME_TYPES);
+            mimeType = MIMESupport.getFileMIMEType(fo);
         } else {
-            mimeType = MIMEExtensions.getFileMIMEType(file);
+            mimeType = MIMESupport.getFileMIMEType(file);
         }
         if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.CPP;
