@@ -417,7 +417,11 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
     }
-    
+
+    public FileObject getCurrentFileObject() {
+        return EditorContextDispatcher.getDefault().getCurrentFile();
+    }
+
     /**
      * Get the MIME type of the most recently selected file.
      *
