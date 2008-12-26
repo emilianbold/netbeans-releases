@@ -147,11 +147,11 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     private static String getDisplayString() {
         if (displayString == null) {
             try {
-                String localDisplay = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getEnv().get("DISPLAY");
+                String localDisplay = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getEnv().get("DISPLAY"); //NOI18N
                 if (localDisplay == null) {
-                    localDisplay = ":.0";
+                    localDisplay = ":.0"; //NOI18N
                 }
-                displayString = "DISPLAY=" + InetAddress.getLocalHost().getHostAddress() + localDisplay;
+                displayString = "DISPLAY=" + InetAddress.getLocalHost().getHostAddress() + localDisplay; //NOI18N
             } catch (UnknownHostException ex) {
                 displayString = "";
             }
