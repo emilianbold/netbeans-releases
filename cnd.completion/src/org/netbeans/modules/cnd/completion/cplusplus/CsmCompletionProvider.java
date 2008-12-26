@@ -94,6 +94,10 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
+        CompletionSupport sup = CompletionSupport.get(component);
+        if (sup == null) {
+            return null;
+        }
         final int dot = component.getCaret().getDot();
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
