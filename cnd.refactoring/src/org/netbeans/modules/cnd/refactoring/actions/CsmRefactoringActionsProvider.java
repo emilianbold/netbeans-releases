@@ -126,7 +126,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    throw null; //new EncapsulateFieldUI(selectedElement);
+                    return null; //new EncapsulateFieldUI(selectedElement);
                 }
             };
         }
