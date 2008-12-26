@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.awt.AWTKeyStroke;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -60,8 +59,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -72,11 +69,12 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -101,12 +99,12 @@ public class WatchPanel {
     }
 
     public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-c++");
+        EditorKit kit = CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE);
         editorPane.setEditorKit(kit);
         if (EventQueue.isDispatchThread()) {
             synchronized (WatchPanel.class) {
                 if (contextRetrievalRP == null) {
-                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1);
+                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1); // NOI18N
                 }
                 contextRetrievalRP.post(new Runnable() {
 
@@ -116,7 +114,7 @@ public class WatchPanel {
                             SwingUtilities.invokeLater(new Runnable() {
 
                                 public void run() {
-                                    setupContext(editorPane, c.url, c.line);
+                                    setupContext(editorPane, c.fileObject, c.line);
                                     if (contextSetUp != null) {
                                         contextSetUp.actionPerformed(null);
                                     }
@@ -130,7 +128,7 @@ public class WatchPanel {
         } else {
             Context c = retrieveContext();
             if (c != null) {
-                setupContext(editorPane, c.url, c.line);
+                setupContext(editorPane, c.fileObject, c.line);
             } else {
                 setupUI(editorPane);
             }
@@ -154,64 +152,45 @@ public class WatchPanel {
             String language = DebuggerManager.getDebuggerManager().getCurrentSession().getCurrentLanguage();
             String fullname = csf.getFullname();
 
-            if (fullname != null) {
-                Context c = new Context();
-                try {
-                    c.url = new File(fullname).toURL().toExternalForm();
-                    c.line = csf.getLineNumber();
-                    return c;
-                } catch (MalformedURLException ex) {
-                    ex.printStackTrace(System.err);
-                }
+            if (fullname != null && fullname.trim().length() > 0) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fullname)));
+                return new Context(fo, csf.getLineNumber());
             }
         } else {
             EditorContext context = EditorContextBridge.getContext();
-            String url = context.getCurrentURL();
-            if (url != null) {
-                Context c = new Context();
-                c.url = url;
-                c.line = context.getCurrentLineNumber();
-                if (c.line == -1) {
-                    c.line = 0;
-                }
-                return c;
+            FileObject fo = context == null ? null : context.getCurrentFileObject();
+            if (fo != null) {
+                return new Context(fo, context.getCurrentLineNumber());
             }
         }
         return null;
     }
 
-    public static void setupContext(JEditorPane editorPane, String url, int line) {
+    public static void setupContext(JEditorPane editorPane, FileObject contextFO, int line) {
         setupUI(editorPane);
-        FileObject file;
         StyledDocument doc;
+        if (contextFO == null) {
+            return;
+        }
         try {
-            file = URLMapper.findFileObject(new URL(url));
-            if (file == null) {
+            DataObject dobj = DataObject.find(contextFO);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec == null) {
                 return;
             }
             try {
-                DataObject dobj = DataObject.find(file);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec == null) {
-                    return;
-                }
-                try {
-                    doc = ec.openDocument();
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return;
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // null dobj
+                doc = ec.openDocument();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
                 return;
             }
-        } catch (MalformedURLException e) {
+        } catch (DataObjectNotFoundException ex) {
             // null dobj
             return;
         }
         try {
             int offset = NbDocument.findLineOffset(doc, line);
-            DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+            DialogBinding.bindComponentToFile(contextFO, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
@@ -330,7 +309,11 @@ public class WatchPanel {
 
     private static final class Context {
 
-        public String url;
-        public int line;
+        public final FileObject fileObject;
+        public final int line;
+        private Context(FileObject fo, int contextLine) {
+            this.fileObject = fo;
+            this.line = contextLine <= 0 ? 0 : contextLine;
+        }
     }
 }
