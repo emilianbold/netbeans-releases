@@ -1,0 +1,129 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.maven.repository.ui;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
+
+/**
+ *
+ * @author mkleint
+ */
+public final class ArtifactMultiViewFactory {
+
+    public static TopComponent createArtifactTopComponent(final NBVersionInfo info) {
+        final InstanceContent ic = new InstanceContent();
+        AbstractLookup lookup = new AbstractLookup(ic);
+        final Artifact artifact = RepositoryUtil.createArtifact(info);
+        ic.add(info);
+        ic.add(artifact);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
+                    ArtifactRepositoryFactory fact = (ArtifactRepositoryFactory) embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.ROLE);
+
+                    List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                    //add central repo
+                    ArtifactRepository cent = fact.createArtifactRepository("central", "http://repo1.maven.org/maven2", new DefaultRepositoryLayout(), null, null);
+                    repos.add(cent);
+                    //add repository form info
+                    if (!"central".equals(info.getRepoId())) {
+                        RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                        String url = rinfo.getRepositoryUrl();
+                        if (url != null) {
+                            cent = fact.createArtifactRepository(info.getRepoId(), url, new DefaultRepositoryLayout(), null, null);
+                            repos.add(cent);
+                        }
+                    }
+                    MavenProject prj = readMavenProject(embedder, artifact, repos);
+                    ic.add(prj);
+                } catch (ComponentLookupException ex) {
+                    Exceptions.printStackTrace(ex);
+                    ic.add(new MavenProject());
+                }
+            }
+        });
+        MultiViewDescription artDesc = new BasicArtifactMD(lookup);
+        MultiViewDescription prjDesc = new BasicProjectMD(lookup);
+        TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[]
+            { artDesc, prjDesc }, artDesc);
+        tc.setDisplayName(info.getArtifactId() + ":" + info.getVersion());
+        tc.setToolTipText(info.getGroupId() + ":" + info.getArtifactId() + ":" + info.getVersion());
+        return tc;
+    }
+
+    public static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) {
+
+        try {
+            MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
+            return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+        } catch (ProjectBuildingException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ComponentLookupException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new MavenProject();
+    }
+
+}

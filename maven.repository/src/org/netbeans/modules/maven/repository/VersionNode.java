@@ -39,6 +39,8 @@
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 
@@ -47,6 +49,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
+import org.netbeans.modules.maven.repository.ui.ArtifactMultiViewFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -57,6 +60,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -112,33 +116,40 @@ public class VersionNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-       Artifact artifact = RepositoryUtil.createArtifact(record);
+        Artifact artifact = RepositoryUtil.createArtifact(record);
         Action[] retValue;
-        if(info.isRemoteDownloadable()){
-             retValue = new Action[]{
-            new AddAsDependencyAction(artifact),
-            CommonArtifactActions.createFindUsages(artifact),
-            null,
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
-        };
-        
-        }else{
-        
+        if (info.isRemoteDownloadable()) {
+            retValue = new Action[]{
+                        new ShowArtifactAction(record),
+                        new AddAsDependencyAction(artifact),
+                        CommonArtifactActions.createFindUsages(artifact),
+                        null,
+                        CommonArtifactActions.createViewProjectHomeAction(artifact),
+                        CommonArtifactActions.createViewBugTrackerAction(artifact),
+                        CommonArtifactActions.createSCMActions(artifact)
+                    };
 
-        retValue = new Action[]{
-            new AddAsDependencyAction(artifact),
-            null,
-            CommonArtifactActions.createFindUsages(artifact),
-            null,
-            CommonArtifactActions.createViewJavadocAction(artifact),
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
-        };
+        } else {
+
+
+            retValue = new Action[]{
+                        new ShowArtifactAction(record),
+                        new AddAsDependencyAction(artifact),
+                        null,
+                        CommonArtifactActions.createFindUsages(artifact),
+                        null,
+                        CommonArtifactActions.createViewJavadocAction(artifact),
+                        CommonArtifactActions.createViewProjectHomeAction(artifact),
+                        CommonArtifactActions.createViewBugTrackerAction(artifact),
+                        CommonArtifactActions.createSCMActions(artifact)
+                    };
         }
         return retValue;
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return new ShowArtifactAction(record);
     }
 
     @Override
@@ -172,5 +183,19 @@ public class VersionNode extends AbstractNode {
 //            buffer.append("</html>");//NOI18N
         }
         return buffer.toString();
+    }
+
+    private static class ShowArtifactAction extends AbstractAction {
+        private NBVersionInfo info;
+        ShowArtifactAction(NBVersionInfo info) {
+            this.info = info;
+            putValue(NAME, NbBundle.getMessage(VersionNode.class, "ACT_View_Details"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            TopComponent tc = ArtifactMultiViewFactory.createArtifactTopComponent(info);
+            tc.open();
+            tc.requestActive();
+        }
     }
 }
