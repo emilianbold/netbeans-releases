@@ -133,7 +133,16 @@ public final class RepositoryUtil {
         return bytes;
     }
 
-    public static MavenProject readMavenProject(String grId, String artId, String ver, ArtifactRepository repository) {
+    /**
+     *
+     * @param grId
+     * @param artId
+     * @param ver
+     * @param repository
+     * @return
+     * @deprecated don't use, to be moved out of public packages.
+     */
+    public @Deprecated static MavenProject readMavenProject(String grId, String artId, String ver, ArtifactRepository repository) {
         MavenProject mavenProject = null;
         try {
             // we need to use the online embedder as the project one never

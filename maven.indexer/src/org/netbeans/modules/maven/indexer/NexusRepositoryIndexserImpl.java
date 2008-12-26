@@ -961,6 +961,9 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             nbvi.setJavadocExists(ai.javadocExists == ArtifactAvailablility.PRESENT);
             nbvi.setSourcesExists(ai.sourcesExists == ArtifactAvailablility.PRESENT);
             nbvi.setSignatureExists(ai.signatureExists == ArtifactAvailablility.PRESENT);
+//            nbvi.setSha(ai.sha1);
+            nbvi.setLastModified(ai.lastModified);
+            nbvi.setSize(ai.size);
             bVersionInfos.add(nbvi);
         }
         return bVersionInfos;
