@@ -71,9 +71,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
  * Java completion query which is aware of project context.
@@ -113,7 +111,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
                 this.csmFile = CsmUtilities.getCsmFile(bDoc, true);
-                String mimeType = (String) bDoc.getProperty("mimeType"); // NOI18N
+                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
                 if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
                     // this is context based code completion
                     InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
