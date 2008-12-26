@@ -61,7 +61,7 @@ public class FilteredKeymap implements Keymap {
     private final javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0);
     private final javax.swing.KeyStroke tab = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_TAB, 0);
     private final Keymap keyMap; // The original keymap
-    
+    private static final String KEY_MAP = "keymap"; // NOI18N
     /** Creates a new instance of FilteredKeymap */
     public FilteredKeymap(final JTextComponent component) {
         
@@ -72,12 +72,12 @@ public class FilteredKeymap implements Keymap {
         }
         
         this.keyMap = component.getKeymap();
-        component.addPropertyChangeListener("keymap", new PropertyChangeListener() {
+        component.addPropertyChangeListener(KEY_MAP, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!(evt.getNewValue() instanceof FilteredKeymap)) {
                     // We have to do that lazily, because the property change
                     // is fired *before* the keymap is actually changed!
-                    component.removePropertyChangeListener("keymap", this);
+                    component.removePropertyChangeListener(KEY_MAP, this);
                     if (EventQueue.isDispatchThread()) {
                         EventQueue.invokeLater(new KeymapUpdater());
                     } else {
