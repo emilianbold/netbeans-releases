@@ -260,7 +260,7 @@ public class WatchPanel {
         editorPane.selectAll();
 
         textLabel.setLabelFor(editorPane);
-        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch");
+        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch"); // NOI18N
         editorPane.requestFocus();
 
         return panel;
@@ -279,7 +279,7 @@ public class WatchPanel {
                 new CompoundBorder(editorPane.getBorder(),
                 new EmptyBorder(0, 0, 0, 0)));
 
-        JTextField referenceTextField = new JTextField("M");
+        JTextField referenceTextField = new JTextField("M"); // NOI18N
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(referenceTextField.getBackground());
         sp.setBorder(referenceTextField.getBorder());
