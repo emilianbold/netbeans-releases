@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -92,6 +94,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
 
         mainDoc.putProperty(Document.class, expandedContextDoc);
         expandedContextDoc.putProperty(Document.class, mainDoc);
+        setupMimeType(expandedContextDoc);
 
         CsmScope scope = ContextUtils.findScope(activatedNodes[0]);
         if (CsmKindUtilities.isOffsetable(scope)) {
@@ -126,6 +129,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
         if(expandedMacroDoc == null) {
             return;
         }
+        setupMimeType(expandedMacroDoc);
 
         CsmDeclaration decl = ContextUtils.findDeclaration(activatedNodes[0]);
         if (decl != null) {
@@ -148,6 +152,15 @@ public final class ShowMacroExpansionAction extends CookieAction {
         }
         view.setDocuments(expandedContextDoc, expandedMacroDoc);
         view.requestActive();
+    }
+
+    private void setupMimeType(Document doc){
+        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+        if (mimeTypeObj != null) {
+            if ("text/plain".equals(mimeTypeObj)){ // NOI18N
+                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
+            }
+        }
     }
 
     private FileObject createMemoryFile (String name) {
