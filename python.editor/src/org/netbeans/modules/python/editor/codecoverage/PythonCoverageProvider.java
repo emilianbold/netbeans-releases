@@ -105,6 +105,69 @@ public final class PythonCoverageProvider implements CoverageProvider {
         return project.getLookup().lookup(PythonCoverageProvider.class);
     }
 
+    private FileCoverageSummary createSummary(String fileName, List<Integer> linenos) {
+        FileObject file;
+        File f = new File(fileName);
+        if (f.exists()) {
+            file = FileUtil.toFileObject(f);
+        } else {
+            file = project.getProjectDirectory().getFileObject(fileName.replace('\\', '/'));
+        }
+        if (file != null) {
+            Project p = FileOwnerQuery.getOwner(file);
+            if (p != project) {
+                return null;
+            }
+        }
+
+        // Compute coverage:
+        int lineCount = 0;
+        int executed = 0;
+        //int notExecuted = 0;
+        //int inferred = 0;
+        for (Integer lineno : linenos) {
+            int line = lineno.intValue();
+            if (line > lineCount) {
+                lineCount = lineno;
+            }
+            // The lines explicitly listed are executed
+            executed++;
+        }
+
+        // Attempt to make a more accurate percentage by using file details
+        int inferredCount = 0;
+        int partialCount = 0;
+        if (file != null) {
+            BaseDocument doc = GsfUtilities.getDocument(file, true);
+            if (doc != null) {
+                FileCoverageDetails details = getDetails(file, doc);
+                if (details != null) {
+                    lineCount = details.getLineCount();
+                    int notExecuted = 0;
+                    for (int line = 0; line < lineCount; line++) {
+                        CoverageType type = details.getType(line);
+                        if (type == CoverageType.NOT_COVERED) {
+                            notExecuted++;
+                        } else if (type == CoverageType.INFERRED) {
+                            inferredCount++;
+                        } else if (type == CoverageType.PARTIAL) {
+                            partialCount++;
+                        }
+                    }
+                    executed = lineCount-notExecuted;
+                }
+            }
+        }
+
+        if (file != null && FileUtil.isParentOf(project.getProjectDirectory(), file)) {
+            fileName = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+        }
+
+        FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executed, inferredCount, partialCount);
+
+        return result;
+    }
+
     public synchronized List<FileCoverageSummary> getResults() {
         List<FileCoverageSummary> results = new ArrayList<FileCoverageSummary>();
 
@@ -116,55 +179,11 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
         for (Map.Entry<String, String> entry : hitCounts.entrySet()) {
             String fileName = entry.getKey();
-            FileObject file;
-            File f = new File(fileName);
-            if (f.exists()) {
-                file = FileUtil.toFileObject(f);
-            } else {
-                file = project.getProjectDirectory().getFileObject(fileName.replace('\\', '/'));
-            }
-            if (file != null) {
-                Project p = FileOwnerQuery.getOwner(file);
-                if (p != project) {
-                    continue;
-                }
-            }
-
-            // Compute coverage:
             List<Integer> linenos = getLineCounts(entry.getValue());
-            int lineCount = 0;
-            int executed = 0;
-            //int notExecuted = 0;
-            //int inferred = 0;
-            for (Integer lineno : linenos) {
-                int line = lineno.intValue();
-                if (line > lineCount) {
-                    lineCount = lineno;
-                }
-                // The lines explicitly listed are executed
-                executed++;
+            FileCoverageSummary summary = createSummary(fileName, linenos);
+            if (summary != null) {
+                results.add(summary);
             }
-
-            // Attempt to make a more accurate percentage by using file details
-            if (file != null) {
-                BaseDocument doc = GsfUtilities.getDocument(file, true);
-                if (doc != null) {
-                    FileCoverageDetails details = getDetails(file, doc);
-                    if (details != null) {
-                        lineCount = details.getLineCount();
-                        int notExecuted = 0;
-                        for (int line = 0; line < lineCount; line++) {
-                            if (details.getType(line) == CoverageType.NOT_COVERED) {
-                                notExecuted++;
-                            }
-                        }
-                        executed = lineCount-notExecuted;
-                    }
-                }
-            }
-
-            FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executed);
-            results.add(result);
         }
 
         return results;
@@ -269,7 +288,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
             result = inferCounts(result, doc);
 
-            return new PythonFileCoverageDetails(result);
+            return new PythonFileCoverageDetails(fo, result, path, linenos, timestamp);
         }
 
         return null;
@@ -287,7 +306,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
         return new File(getNbCoverageDir(), ".coverage"); // NOI18N
     }
 
-    private List<Integer> getLineCounts(String lines) {
+    private static List<Integer> getLineCounts(String lines) {
         int size = lines.length() / 6;
         List<Integer> lineCounts = new ArrayList<Integer>(size);
 
@@ -668,11 +687,19 @@ public final class PythonCoverageProvider implements CoverageProvider {
         return mimeTypes;
     }
 
-    private static class PythonFileCoverageDetails implements FileCoverageDetails {
+    private class PythonFileCoverageDetails implements FileCoverageDetails {
         private int[] hitCounts;
+        private final String fileName;
+        private final List<Integer> lineCounts;
+        private final long lastUpdated;
+        private final FileObject fileObject;
 
-        public PythonFileCoverageDetails(int[] hitCounts) {
+        public PythonFileCoverageDetails(FileObject fileObject, int[] hitCounts, String fileName, List<Integer> lineCounts, long lastUpdated) {
+            this.fileObject = fileObject;
             this.hitCounts = hitCounts;
+            this.fileName = fileName;
+            this.lineCounts = lineCounts;
+            this.lastUpdated = lastUpdated;
         }
 
         public int getLineCount() {
@@ -684,7 +711,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
         }
 
         public FileCoverageSummary getSummary() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return createSummary(fileName, lineCounts);
         }
 
         public CoverageType getType(int lineNo) {
@@ -703,6 +730,14 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
         public int getHitCount(int lineNo) {
             return hitCounts[lineNo];
+        }
+
+        public long lastUpdated() {
+            return lastUpdated;
+        }
+
+        public FileObject getFile() {
+            return fileObject;
         }
     }
 }
