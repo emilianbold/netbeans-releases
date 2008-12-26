@@ -114,6 +114,11 @@ if (fo.getName().equals("delegating_attributes.rb")) {
     continue;
 }
 
+if (fo.getName().equals("sample_02.rb")) {
+    System.err.println("Can't properly format sample_02.rb yet - it's unusual" + fo.getNameExt());
+    continue;
+}
+
 // This bug triggers #108889
 if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());

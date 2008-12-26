@@ -59,6 +59,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
@@ -85,6 +87,7 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public final class RubyCoverageProvider implements CoverageProvider {
+
     private Map<String, String> hitCounts;
     private Map<String, String> fullNames;
     private long timestamp;
@@ -171,6 +174,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
         int i = start;
         int length = lines.length();
         int line = 0;
+        int startLine = -1;
         while (i < length) {
             char c = lines.charAt(i);
             if (c == ':') {
@@ -178,15 +182,75 @@ public final class RubyCoverageProvider implements CoverageProvider {
                 start = i + 1;
             } else if (c == ',') {
                 int count = Integer.valueOf(lines.substring(start, i));
-                lineCounts.add(new LineCount(line, count));
+                if (startLine != -1 && startLine < line) {
+                    for (int l = startLine; l <= line; l++) {
+                        lineCounts.add(new LineCount(l, count));
+                    }
+                    startLine = -1;
+                } else {
+                    lineCounts.add(new LineCount(line, count));
+                }
                 start = i + 1;
             } else if (c == ' ') {
+                start = i + 1;
+            } else if (c == '>') {
+                startLine = Integer.valueOf(lines.substring(start, i));
                 start = i + 1;
             }
             i++;
         }
 
         return lineCounts;
+    }
+
+    private static FileCoverageSummary createSummary(Project project, String fileName, List<LineCount> counts) {
+        // Compute coverage:
+        int lineCount = 0;
+        int notExecuted = 0;
+        int partialCount = 0;
+        int inferredCount = 0;
+        for (LineCount lc : counts) {
+            if (lc.lineno > lineCount) {
+                lineCount = lc.lineno;
+            }
+            if (lc.count == -2) {
+                notExecuted++;
+            } else if (lc.count == -1) {
+                inferredCount++;
+            }
+        }
+
+        int executedCount = lineCount - notExecuted;
+        FileObject file;
+        File f = new File(fileName);
+        if (f.exists()) {
+            file = FileUtil.toFileObject(f);
+        } else {
+            file = project.getProjectDirectory().getFileObject(fileName.replace('\\', '/'));
+        }
+        if (file == null) {
+            Sources sources = project.getLookup().lookup(Sources.class);
+            if (sources != null) {
+                // From RubyBaseProject, downstream
+                String SOURCES_TYPE_RUBY = "ruby"; // NOI18N
+                for (SourceGroup sg : sources.getSourceGroups(SOURCES_TYPE_RUBY)) { // NOI18N
+                    FileObject root = sg.getRootFolder();
+                    if (fileName.indexOf('\\') != -1) {
+                        file = root.getFileObject(fileName.replace("\\", "/")); // NOI18N
+                    } else {
+                        file = root.getFileObject(fileName);
+                    }
+                    if (file != null) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executedCount,
+                inferredCount, partialCount);
+
+        return result;
     }
 
     public synchronized List<FileCoverageSummary> getResults() {
@@ -200,33 +264,9 @@ public final class RubyCoverageProvider implements CoverageProvider {
 
         for (Map.Entry<String, String> entry : hitCounts.entrySet()) {
             String fileName = entry.getKey();
-
             List<LineCount> counts = getLineCounts(entry.getValue());
-            // Compute coverage:
-            int lineCount = 0;
-            int notExecuted = 0;
-            int inferred = 0;
-            for (LineCount lc : counts) {
-                if (lc.lineno > lineCount) {
-                    lineCount = lc.lineno;
-                }
-                if (lc.count == -2) {
-                    notExecuted++;
-                } else if (lc.count == -1) {
-                    inferred++;
-                }
-            }
 
-            int executedCount = lineCount - notExecuted;
-            FileObject file;
-            File f = new File(fileName);
-            if (f.exists()) {
-                file = FileUtil.toFileObject(f);
-            } else {
-                file = project.getProjectDirectory().getFileObject(fileName.replace('\\', '/'));
-            }
-
-            FileCoverageSummary result = new FileCoverageSummary(file, fileName, lineCount, executedCount);
+            FileCoverageSummary result = createSummary(project, fileName, counts);
             results.add(result);
         }
 
@@ -300,7 +340,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
                 result[lineCount.lineno] = lineCount.count;
             }
 
-            return new RubyFileCoverageDetails(result);
+            return new RubyFileCoverageDetails(fo, result, project, path, hits, timestamp);
         }
 
         return null;
@@ -532,6 +572,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
         descriptor.addOutConvertor(hideWrapperConverter);
         descriptor.addErrConvertor(hideWrapperConverter);
         descriptor.postBuild(new Runnable() {
+
             public void run() {
                 RubyCoverageProvider.this.update();
                 CoverageManager.INSTANCE.resultsUpdated(project, RubyCoverageProvider.this);
@@ -547,6 +588,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
 
     // Remove stacktrace lines that refer to frames in the wrapper scripts (rcov, or rcov_wrapper)
     private static class HideCoverageFramesConvertor implements LineConvertor {
+
         public List<ConvertedLine> convert(String line) {
             if (line.contains("/ruby2/coverage/") || line.contains("/rcov") || // NOI18N
                     (File.separatorChar == '\\' && (line.contains("\\ruby2\\coverage\\") || line.contains("\\rcov")))) { // NOI18N
@@ -665,10 +707,21 @@ public final class RubyCoverageProvider implements CoverageProvider {
     }
 
     private static class RubyFileCoverageDetails implements FileCoverageDetails {
-        private int[] hitCounts;
 
-        public RubyFileCoverageDetails(int[] hitCounts) {
+        private final int[] hitCounts;
+        private final String fileName;
+        private final List<LineCount> lineCounts;
+        private Project project;
+        private final long lastUpdated;
+        private final FileObject fileObject;
+
+        public RubyFileCoverageDetails(FileObject fileObject, int[] hitCounts, Project project, String fileName, List<LineCount> lineCounts, long lastUpdated) {
+            this.fileObject = fileObject;
             this.hitCounts = hitCounts;
+            this.project = project;
+            this.fileName = fileName;
+            this.lineCounts = lineCounts;
+            this.lastUpdated = lastUpdated;
         }
 
         public int getLineCount() {
@@ -680,7 +733,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
         }
 
         public FileCoverageSummary getSummary() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return createSummary(project, fileName, lineCounts);
         }
 
         public CoverageType getType(int lineNo) {
@@ -700,9 +753,18 @@ public final class RubyCoverageProvider implements CoverageProvider {
         public int getHitCount(int lineNo) {
             return hitCounts[lineNo];
         }
+
+        public long lastUpdated() {
+            return lastUpdated;
+        }
+
+        public FileObject getFile() {
+            return fileObject;
+        }
     }
 
     private static class LineCount {
+
         private final int lineno;
         private final int count;
 
