@@ -112,7 +112,7 @@ final class RootNodeChildren extends Children.Array {
         assert EventQueue.isDispatchThread();
         assert (runningSuiteNode != null)
                == (live && (runningSuiteName != null));
-        
+
         TestsuiteNode correspondingNode;
         
         if (reports == null) {
