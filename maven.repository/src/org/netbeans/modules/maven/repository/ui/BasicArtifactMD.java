@@ -41,13 +41,8 @@ package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Image;
 import java.io.Serializable;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -70,11 +65,11 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
     }
 
     public String getDisplayName() {
-        return "Basic";
+        return org.openide.util.NbBundle.getMessage(BasicArtifactMD.class, "TAB_Basic");
     }
 
     public Image getIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true); //NOI18N
     }
 
     public HelpCtx getHelpCtx() {

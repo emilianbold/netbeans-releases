@@ -66,11 +66,11 @@ public class BasicProjectMD implements MultiViewDescription, Serializable {
     }
 
     public String getDisplayName() {
-        return "Project";
+        return org.openide.util.NbBundle.getMessage(BasicProjectMD.class, "TAB_Project");
     }
 
     public Image getIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true); //NOI18N
     }
 
     public HelpCtx getHelpCtx() {
