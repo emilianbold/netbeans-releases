@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Image;
+import java.io.Serializable;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -56,7 +57,7 @@ import org.openide.windows.TopComponent;
  *
  * @author mkleint
  */
-public class BasicArtifactMD implements MultiViewDescription {
+public class BasicArtifactMD implements MultiViewDescription, Serializable {
     private Lookup lookup;
 
     BasicArtifactMD(Lookup lkp) {

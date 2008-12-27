@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Image;
+import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.HelpCtx;
@@ -51,7 +52,7 @@ import org.openide.windows.TopComponent;
  *
  * @author mkleint
  */
-public class BasicProjectMD implements MultiViewDescription {
+public class BasicProjectMD implements MultiViewDescription, Serializable {
 
     private Lookup lookup;
 
