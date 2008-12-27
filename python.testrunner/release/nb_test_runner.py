@@ -36,7 +36,8 @@ class _NbTextTestResult(TestResult):
         self._start_time = None
 
     def getDescription(self, test):
-        return test.shortDescription() or str(test)
+        #return test.shortDescription() or str(test)
+        return str(test)
 
     def startTest(self, test):
         TestResult.startTest(self, test)
