@@ -66,7 +66,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-//import javax.swing.table.TableRowSorter;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.Project;
@@ -87,11 +86,9 @@ import org.openide.windows.TopComponent;
  * Window which displays a code coverage report
  */
 final class CoverageReportTopComponent extends TopComponent {
-    /** path to the icon used by the component and its open action */
-    //static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private CoverageTableModel model;
     private Project project;
-    private static final String PREFERRED_ID = "CoverageReportTopComponent";
+    private static final String PREFERRED_ID = "CoverageReportTopComponent"; // NOI18N
 
     CoverageReportTopComponent(Project project, List<FileCoverageSummary> results) {
         model = new CoverageTableModel(results);
@@ -113,9 +110,9 @@ final class CoverageReportTopComponent extends TopComponent {
         //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(0).setMaxWidth(1000);
-        columnModel.getColumn(1).setMaxWidth(150);
+        columnModel.getColumn(1).setMaxWidth(300);
         columnModel.getColumn(2).setMaxWidth(150);
-        columnModel.getColumn(3).setMaxWidth(300);
+        columnModel.getColumn(3).setMaxWidth(150);
 
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         setName(NbBundle.getMessage(CoverageReportTopComponent.class, "CTL_CoverageReportTopComponent", projectName));
@@ -150,12 +147,10 @@ final class CoverageReportTopComponent extends TopComponent {
 
         table.setDefaultRenderer(Float.class, new CoverageRenderer());
         table.setDefaultRenderer(String.class, new FileRenderer());
+
         //JDK6 only - row sorting
         //table.setAutoCreateRowSorter(true);
         try {
-            // Paint the full table
-            // JDK6 only...
-            //JTable.setFillsViewportHeight(true);
             // Try with reflection:
             Method method = JTable.class.getMethod("setAutoCreateRowSorter", new Class[] { Boolean.TYPE }); // NOI18N
             if (method != null) {
@@ -173,19 +168,20 @@ final class CoverageReportTopComponent extends TopComponent {
             // No complaints - we may not be on JDK6
         }
 
-         /*
-        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
-        table.setRowSorter(sorter);
-        Comparator comparableComparator = new Comparator() {
-            @SuppressWarnings("unchecked")
-            public int compare(Object o1, Object o2) {
-                return ((Comparable) o1).compareTo(o2);
-            }
-        };
-        for (int i = 0; i < 4; i++) {
-            sorter.setComparator(i, comparableComparator);
-        }
-        */
+        // JDK6 only
+        //    import javax.swing.table.TableRowSorter;
+        //    ...
+        //    TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+        //    table.setRowSorter(sorter);
+        //    Comparator comparableComparator = new Comparator() {
+        //        @SuppressWarnings("unchecked")
+        //        public int compare(Object o1, Object o2) {
+        //            return ((Comparable) o1).compareTo(o2);
+        //        }
+        //    };
+        //    for (int i = 0; i < 4; i++) {
+        //        sorter.setComparator(i, comparableComparator);
+        //    }
 
         totalCoverage.setCoveragePercentage(model.getTotalCoverage());
     }
@@ -286,6 +282,27 @@ final class CoverageReportTopComponent extends TopComponent {
         if (evt.getClickCount() == 2) {
             int row = table.getSelectedRow();
             if (row != -1) {
+                try {
+                    // If sorting is in effect.
+                    // JDK6 only...
+                    // Try with reflection:
+                    //row = table.convertRowIndexToModel(row);
+                    Method method = JTable.class.getMethod("convertRowIndexToModel", new Class[] { Integer.TYPE }); // NOI18N
+                    if (method != null) {
+                        row = (Integer)method.invoke(table, Integer.valueOf(row));
+                    }
+                } catch (InvocationTargetException ex) {
+                    // No complaints - we may not be on JDK6
+                } catch (IllegalArgumentException ex) {
+                    // No complaints - we may not be on JDK6
+                } catch (IllegalAccessException ex) {
+                    // No complaints - we may not be on JDK6
+                } catch (NoSuchMethodException ex) {
+                    // No complaints - we may not be on JDK6
+                } catch (SecurityException ex) {
+                    // No complaints - we may not be on JDK6
+                }
+
                 FileCoverageSummary result = (FileCoverageSummary) model.getValueAt(row, -1);
                 CoverageManagerImpl.getInstance().showFile(project, result);
             }
@@ -324,7 +341,6 @@ final class CoverageReportTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
     }
 
     @Override
@@ -395,11 +411,12 @@ final class CoverageReportTopComponent extends TopComponent {
             switch (col) {
                 case 0:
                     return NbBundle.getMessage(CoverageReportTopComponent.class, "Filename");
-                case 1:
-                    return NbBundle.getMessage(CoverageReportTopComponent.class, "TotalStatements");
                 case 2:
-                    return NbBundle.getMessage(CoverageReportTopComponent.class, "ExecutedStatements");
+                    return NbBundle.getMessage(CoverageReportTopComponent.class, "TotalStatements");
                 case 3:
+                    //return NbBundle.getMessage(CoverageReportTopComponent.class, "ExecutedStatements");
+                    return NbBundle.getMessage(CoverageReportTopComponent.class, "NotExecutedStatements");
+                case 1:
                 default:
                     return NbBundle.getMessage(CoverageReportTopComponent.class, "Coverage");
             }
@@ -408,11 +425,11 @@ final class CoverageReportTopComponent extends TopComponent {
         public Class<?> getColumnClass(int col) {
             switch (col) {
                 case 1:
-                    return Integer.class;
+                    return Float.class;
                 case 2:
                     return Integer.class;
                 case 3:
-                    return Float.class;
+                    return Integer.class;
                 case 0:
                 default:
                     return String.class;
@@ -431,11 +448,12 @@ final class CoverageReportTopComponent extends TopComponent {
                 case 0:
                     return result.getDisplayName();
                 case 1:
-                    return result.getLineCount();
-                case 2:
-                    return result.getExecutedLineCount();
-                case 3:
                     return result.getCoveragePercentage();
+                case 2:
+                    return result.getLineCount();
+                case 3:
+                    //return result.getExecutedLineCount();
+                    return result.getLineCount()-result.getExecutedLineCount();
                 default:
                     return null;
             }
@@ -478,10 +496,10 @@ final class CoverageReportTopComponent extends TopComponent {
             if (hasFocus) {
                 Border border = null;
                 if (isSelected) {
-                    border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder");
+                    border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder"); // NOI18N
                 }
                 if (border == null) {
-                    border = UIManager.getBorder("Table.focusCellHighlightBorder");
+                    border = UIManager.getBorder("Table.focusCellHighlightBorder"); // NOI18N
                 }
                 setBorder(border);
             } else {
