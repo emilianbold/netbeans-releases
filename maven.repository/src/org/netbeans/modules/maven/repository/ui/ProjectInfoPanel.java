@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
 import java.util.Iterator;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.apache.maven.model.IssueManagement;
+import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -75,44 +81,158 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblProjectHome = new javax.swing.JLabel();
         lblProjectName = new javax.swing.JLabel();
-        lblDescription = new javax.swing.JLabel();
         txtProjectName = new javax.swing.JTextField();
+        lblDescription = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         taDescription = new javax.swing.JTextArea();
-        txtProjectHome = new javax.swing.JTextField();
-
-        lblProjectHome.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectHome.text")); // NOI18N
+        lblProjectHome = new javax.swing.JLabel();
+        btnProjectHome = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        lblSystem = new javax.swing.JLabel();
+        txtSystem = new javax.swing.JTextField();
+        lblIssues = new javax.swing.JLabel();
+        btnIssues = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        lblScmUrl = new javax.swing.JLabel();
+        btnScmUrl = new javax.swing.JButton();
+        lblConnection = new javax.swing.JLabel();
+        txtConnection = new javax.swing.JTextField();
+        lblDevConnection = new javax.swing.JLabel();
+        txtDevConnection = new javax.swing.JTextField();
 
         lblProjectName.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectName.text")); // NOI18N
 
-        lblDescription.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblDescription.text")); // NOI18N
-
         txtProjectName.setEditable(false);
+
+        lblDescription.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblDescription.text")); // NOI18N
 
         taDescription.setColumns(20);
         taDescription.setEditable(false);
         taDescription.setRows(5);
         jScrollPane1.setViewportView(taDescription);
 
-        txtProjectHome.setEditable(false);
+        lblProjectHome.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectHome.text")); // NOI18N
+
+        btnProjectHome.setText("prj url"); // NOI18N
+        btnProjectHome.setBorder(null);
+        btnProjectHome.setBorderPainted(false);
+        btnProjectHome.setContentAreaFilled(false);
+        btnProjectHome.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "TIT_Issues"))); // NOI18N
+
+        lblSystem.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblSystem.text")); // NOI18N
+
+        txtSystem.setEditable(false);
+
+        lblIssues.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblIssues.text")); // NOI18N
+
+        btnIssues.setText("isssue tracking url"); // NOI18N
+        btnIssues.setBorder(null);
+        btnIssues.setBorderPainted(false);
+        btnIssues.setContentAreaFilled(false);
+        btnIssues.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblSystem)
+                    .add(lblIssues))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btnIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                    .add(txtSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblSystem)
+                    .add(txtSystem, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(btnIssues)
+                    .add(lblIssues))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "TIT_SCM"))); // NOI18N
+
+        lblScmUrl.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblScmUrl.text")); // NOI18N
+
+        btnScmUrl.setText("scm url"); // NOI18N
+        btnScmUrl.setBorder(null);
+        btnScmUrl.setBorderPainted(false);
+        btnScmUrl.setContentAreaFilled(false);
+        btnScmUrl.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+
+        lblConnection.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblConnection.text")); // NOI18N
+
+        txtConnection.setEditable(false);
+
+        lblDevConnection.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblDevConnection.text")); // NOI18N
+
+        txtDevConnection.setEditable(false);
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblScmUrl)
+                    .add(lblConnection)
+                    .add(lblDevConnection))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(txtConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                    .add(btnScmUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                    .add(txtDevConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblScmUrl)
+                    .add(btnScmUrl))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblConnection)
+                    .add(txtConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblDevConnection)
+                    .add(txtDevConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblProjectName)
-                    .add(lblDescription)
-                    .add(lblProjectHome))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(txtProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblProjectName)
+                            .add(lblDescription)
+                            .add(lblProjectHome))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                            .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                            .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -125,24 +245,40 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(lblDescription)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblProjectHome)
-                    .add(txtProjectHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(171, Short.MAX_VALUE))
+                    .add(btnProjectHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(122, 122, 122))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnIssues;
+    private javax.swing.JButton btnProjectHome;
+    private javax.swing.JButton btnScmUrl;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblConnection;
     private javax.swing.JLabel lblDescription;
+    private javax.swing.JLabel lblDevConnection;
+    private javax.swing.JLabel lblIssues;
     private javax.swing.JLabel lblProjectHome;
     private javax.swing.JLabel lblProjectName;
+    private javax.swing.JLabel lblScmUrl;
+    private javax.swing.JLabel lblSystem;
     private javax.swing.JTextArea taDescription;
-    private javax.swing.JTextField txtProjectHome;
+    private javax.swing.JTextField txtConnection;
+    private javax.swing.JTextField txtDevConnection;
     private javax.swing.JTextField txtProjectName;
+    private javax.swing.JTextField txtSystem;
     // End of variables declaration//GEN-END:variables
 
     public JComponent getVisualRepresentation() {
@@ -201,13 +337,37 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         Iterator<? extends MavenProject> iter = result.allInstances().iterator();
         if (iter.hasNext()) {
             MavenProject prj = iter.next();
-            txtProjectHome.setText(prj.getUrl());
             txtProjectName.setText(prj.getName());
             taDescription.setText(prj.getDescription());
+            setLinkedText(btnProjectHome, prj.getUrl());
+            IssueManagement im = prj.getIssueManagement();
+            String imUrl = null;
+            if (im != null) {
+                imUrl = im.getUrl();
+                txtSystem.setText(im.getSystem());
+            } else {
+                txtSystem.setText(""); //NOI18N
+            }
+            setLinkedText(btnIssues, imUrl);
+            Scm scm = prj.getScm();
+            String scmUrl = null;
+            if (scm != null) {
+                scmUrl = scm.getUrl();
+                txtConnection.setText(scm.getConnection());
+                txtDevConnection.setText(scm.getDeveloperConnection());
+            } else {
+                txtConnection.setText(""); //NOI18N
+                txtDevConnection.setText(""); //NOI18N
+            }
+            setLinkedText(btnScmUrl, scmUrl);
         } else {
-            txtProjectHome.setText("");
-            txtProjectName.setText("");
-            taDescription.setText("");
+            setLinkedText(btnProjectHome, null);
+            setLinkedText(btnIssues, null);
+            txtProjectName.setText(""); //NOI18N
+            taDescription.setText(""); //NOI18N
+            txtSystem.setText(""); //NOI18N
+            txtConnection.setText(""); //NOI18N
+            txtDevConnection.setText(""); //NOI18N
         }
     }
 
@@ -215,4 +375,28 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         populateFields();
     }
 
+    private void setLinkedText(JButton btn, String url) {
+        if (url == null) {
+            btn.setAction(null);
+            btn.setText(""); //NOI18N
+            btn.setCursor(null);
+        } else {
+            btn.setAction(new LinkAction(url));
+            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            btn.setText("<html><a href=\"\">" + url + "</a></html>");
+        }
+    }
+
+    private class LinkAction extends AbstractAction {
+        private String url;
+
+        public LinkAction(String url) {
+            this.url = url;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            System.out.println("linked.." + url);
+        }
+
+    }
 }

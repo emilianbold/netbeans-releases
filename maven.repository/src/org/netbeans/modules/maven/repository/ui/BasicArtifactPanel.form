@@ -53,14 +53,14 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="lblGroupId" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="lblArtifactId" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="lblVersion" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="txtArtifactId" alignment="0" pref="366" max="32767" attributes="0"/>
                       <Component id="txtGroupId" alignment="0" pref="366" max="32767" attributes="0"/>
@@ -87,7 +87,7 @@
                       <Component id="lblVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="txtVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="91" max="32767" attributes="0"/>
+                  <EmptySpace pref="95" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -163,9 +163,9 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="txtLastModified" pref="322" max="32767" attributes="0"/>
-                      <Component id="txtSize" alignment="0" pref="322" max="32767" attributes="0"/>
-                      <Component id="txtSHA" alignment="0" pref="322" max="32767" attributes="0"/>
+                      <Component id="txtLastModified" pref="323" max="32767" attributes="0"/>
+                      <Component id="txtSize" alignment="0" pref="323" max="32767" attributes="0"/>
+                      <Component id="txtSHA" alignment="0" pref="323" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -188,7 +188,7 @@
                       <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="txtSHA" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="59" max="32767" attributes="0"/>
+                  <EmptySpace pref="61" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
