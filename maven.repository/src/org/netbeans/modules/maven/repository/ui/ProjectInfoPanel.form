@@ -19,6 +19,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
                   <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -28,9 +29,9 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" pref="373" max="32767" attributes="0"/>
-                          <Component id="btnProjectHome" pref="373" max="32767" attributes="0"/>
-                          <Component id="txtProjectName" alignment="0" pref="373" max="32767" attributes="0"/>
+                          <Component id="btnProjectHome" pref="357" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="357" max="32767" attributes="0"/>
+                          <Component id="txtProjectName" alignment="0" pref="357" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
@@ -55,13 +56,15 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblProjectHome" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnProjectHome" alignment="3" min="-2" pref="15" max="-2" attributes="0"/>
+                  <Component id="btnProjectHome" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="122" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -142,8 +145,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnIssues" pref="412" max="32767" attributes="0"/>
-                      <Component id="txtSystem" alignment="0" pref="412" max="32767" attributes="0"/>
+                      <Component id="btnIssues" pref="396" max="32767" attributes="0"/>
+                      <Component id="txtSystem" alignment="0" pref="396" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -222,9 +225,9 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="txtConnection" pref="358" max="32767" attributes="0"/>
-                      <Component id="btnScmUrl" alignment="0" pref="358" max="32767" attributes="0"/>
-                      <Component id="txtDevConnection" alignment="0" pref="358" max="32767" attributes="0"/>
+                      <Component id="txtConnection" pref="342" max="32767" attributes="0"/>
+                      <Component id="btnScmUrl" alignment="0" pref="342" max="32767" attributes="0"/>
+                      <Component id="txtDevConnection" alignment="0" pref="342" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -296,6 +299,30 @@
           </Properties>
         </Component>
       </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="jPanel3">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Continuous Integration">
+              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/maven/repository/ui/Bundle.properties" key="TIT_CIManagement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </TitledBorder>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="484" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="94" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
     </Container>
   </SubComponents>
 </Form>
