@@ -79,6 +79,9 @@ public class GotoTest implements TestLocator {
             // In the same directory as module.py.
             "/" + FILE + "\\." + EXT, "/" + FILE + "_test\\." + EXT, // NOI18N
             "/" + FILE + "\\." + EXT, "/test_" + FILE + "\\." + EXT, // NOI18N
+            // Same as above, but no underscore
+            "/" + FILE + "\\." + EXT, "/" + FILE + "test\\." + EXT, // NOI18N
+            "/" + FILE + "\\." + EXT, "/test" + FILE + "\\." + EXT, // NOI18N
         };
 
     public GotoTest() {
