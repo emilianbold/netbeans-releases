@@ -174,11 +174,13 @@ public class CoverageBar extends JComponent {
             coveredDark = coveredDark.darker();
         } else if (selected) {
             coveredLight = coveredLight.brighter();
+            coveredDark = coveredDark.darker();
         }
         if (emphasize) {
             notCoveredDark = notCoveredDark.darker();
         } else if (selected) {
             notCoveredLight = notCoveredLight.brighter();
+            notCoveredDark = notCoveredDark.darker();
         }
 
         g2.setPaint(new GradientPaint(0, 0, notCoveredLight,
