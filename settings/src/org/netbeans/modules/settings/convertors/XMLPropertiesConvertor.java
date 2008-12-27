@@ -93,8 +93,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     
     public Object read(java.io.Reader r) throws IOException, ClassNotFoundException {
         Object def = defaultInstanceCreate();
-        readSetting(r, def);
-        return def;
+        return readSetting(r, def);
     }
     
     public void write(java.io.Writer w, Object inst) throws IOException {
@@ -243,7 +242,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(instanceClass);
     }
     
-    private void readSetting(java.io.Reader input, Object inst) throws IOException {
+    private Object readSetting(java.io.Reader input, Object inst) throws IOException {
         try {
             java.lang.reflect.Method m = inst.getClass().getDeclaredMethod(
                 "readProperties", new Class[] {Properties.class}); // NOI18N
@@ -251,7 +250,11 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             XMLPropertiesConvertor.Reader r = new XMLPropertiesConvertor.Reader();
             r.parse(input);
             m.setAccessible(true);
-            m.invoke(inst, new Object[] {r.getProperties()});
+            Object ret = m.invoke(inst, new Object[] {r.getProperties()});
+            if (ret == null) {
+                ret = inst;
+            }
+            return ret;
         } catch (NoSuchMethodException ex) {
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);

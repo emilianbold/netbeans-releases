@@ -331,8 +331,10 @@ and
 <pre>
 &lt;ANY-ACCESS-MODIFIER&gt; <font class="type">void</font> <font class="function-name">writeProperties</font>(java.util.<font class="type">Properties</font> <font class="variable-name">p</font>)
 </pre>
-
-It is the setting object concern to collect all properties of its super classes. 
+It is the setting object concern to collect all properties of its super classes.
+Since version 1.18, the <code>readProperties</code> can also return an Object.
+In such case, the <code>XMLPropertiesConvertor</code> replaces the current object
+with the returned one.
 <p>
 The XMLProperties convertor also makes possible to prevent automatic storing
 of the setting object by using file attribute <code>xmlproperties.preventStoring</code>

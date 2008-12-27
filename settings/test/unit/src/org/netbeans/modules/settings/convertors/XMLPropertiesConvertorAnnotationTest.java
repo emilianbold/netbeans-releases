@@ -77,17 +77,22 @@ public final class XMLPropertiesConvertorAnnotationTest extends NbTestCase {
         CharArrayReader car = new CharArrayReader(caw.toCharArray());
         Object obj = c.read(car);
         assertEquals(foo, obj);
+        assertEquals("HooFoo is the class", HooFoo.class, obj.getClass());
     }
 
     @ConvertAsProperties(
         dtd="-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 2.0//EN"
     )
     public static class AnnoFoo extends FooSetting {
-        public void readProperties(Properties p) {
-            this.setProperty1(p.getProperty("p1"));
+        public Object readProperties(Properties p) {
+            HooFoo n = new HooFoo();
+            n.setProperty1(p.getProperty("p1"));
+            return n;
         }
         public void writeProperties(Properties p) {
             p.setProperty("p1", this.getProperty1());
         }
+    }
+    public static class HooFoo extends AnnoFoo {
     }
 }
