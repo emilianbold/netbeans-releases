@@ -48,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
+import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.IssueManagement;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
@@ -103,6 +104,10 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         lblDevConnection = new javax.swing.JLabel();
         txtDevConnection = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
+        lblCimSystem = new javax.swing.JLabel();
+        txtCimSystem = new javax.swing.JTextField();
+        lblCimUrl = new javax.swing.JLabel();
+        btnCimUrl = new javax.swing.JButton();
 
         lblProjectName.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectName.text")); // NOI18N
 
@@ -162,7 +167,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btnIssues)
                     .add(lblIssues))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "TIT_SCM"))); // NOI18N
@@ -214,32 +219,62 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblDevConnection)
                     .add(txtDevConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "TIT_CIManagement"))); // NOI18N
+
+        lblCimSystem.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblCimSystem.text")); // NOI18N
+
+        txtCimSystem.setEditable(false);
+
+        lblCimUrl.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblCimUrl.text")); // NOI18N
+
+        btnCimUrl.setText("cim url"); // NOI18N
+        btnCimUrl.setBorder(null);
+        btnCimUrl.setBorderPainted(false);
+        btnCimUrl.setContentAreaFilled(false);
+        btnCimUrl.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 484, Short.MAX_VALUE)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblCimSystem)
+                    .add(lblCimUrl))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btnCimUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 94, Short.MAX_VALUE)
+            .add(0, 52, Short.MAX_VALUE)
+            .add(jPanel3Layout.createSequentialGroup()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblCimSystem)
+                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(btnCimUrl)
+                    .add(lblCimUrl))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblProjectName)
                             .add(lblDescription)
@@ -249,7 +284,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                             .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                             .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -273,12 +309,13 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(50, 50, 50))
+                .add(68, 68, 68))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCimUrl;
     private javax.swing.JButton btnIssues;
     private javax.swing.JButton btnProjectHome;
     private javax.swing.JButton btnScmUrl;
@@ -286,6 +323,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblCimSystem;
+    private javax.swing.JLabel lblCimUrl;
     private javax.swing.JLabel lblConnection;
     private javax.swing.JLabel lblDescription;
     private javax.swing.JLabel lblDevConnection;
@@ -295,6 +334,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private javax.swing.JLabel lblScmUrl;
     private javax.swing.JLabel lblSystem;
     private javax.swing.JTextArea taDescription;
+    private javax.swing.JTextField txtCimSystem;
     private javax.swing.JTextField txtConnection;
     private javax.swing.JTextField txtDevConnection;
     private javax.swing.JTextField txtProjectName;
@@ -359,6 +399,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         String name = null, desc = null, homeUrl = null;
         String imUrl = null, imSystem = null;
         String scmUrl = null, scmConn = null, scmDevConn = null;
+        String cimSystem = null, cimUrl = null;
         if (iter.hasNext()) {
             loading = false;
             MavenProject prj = iter.next();
@@ -376,6 +417,11 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 scmConn = scm.getConnection();
                 scmDevConn = scm.getDeveloperConnection();
             }
+            CiManagement cim = prj.getCiManagement();
+            if (cim != null) {
+                cimSystem = cim.getSystem();
+                cimUrl = cim.getUrl();
+            }
         }
         setPlainText(txtProjectName, name, loading); 
         setPlainText(taDescription, desc, loading); 
@@ -387,6 +433,10 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         setLinkedText(btnScmUrl, scmUrl, loading);
         setPlainText(txtConnection, scmConn, loading);
         setPlainText(txtDevConnection, scmDevConn, loading);
+
+        setLinkedText(btnCimUrl, cimUrl, loading);
+        setPlainText(txtCimSystem, cimSystem, loading);
+
     }
 
     public void resultChanged(LookupEvent ev) {
