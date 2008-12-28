@@ -201,7 +201,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s*(.+)"); //NOI18N
+            super("%TEST_STARTED%\\s*(.+) \\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -216,7 +216,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(\\S+)\\s+(.+)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s+(.+) \\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -224,7 +224,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
             Testcase testcase = new Testcase(TestType.PY_UNIT.name(), session);
             testcase.setName(matcher.group(2));
             testcase.setTimeMillis(toMillis(matcher.group(1)));
-            //testcase.setClassName(matcher.group(3));
+            testcase.setClassName(matcher.group(3));
             session.addTestCase(testcase);
         }
     }
