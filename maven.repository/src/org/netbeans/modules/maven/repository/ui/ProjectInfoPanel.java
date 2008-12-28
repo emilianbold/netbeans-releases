@@ -50,6 +50,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.IssueManagement;
@@ -515,7 +516,11 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     }
 
     public void resultChanged(LookupEvent ev) {
-        populateFields();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                populateFields();
+            }
+        });
     }
 
     private void setLinkedText(JButton btn, String url, boolean loading) {
