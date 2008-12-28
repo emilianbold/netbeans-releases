@@ -65,7 +65,6 @@ public class MavenRepoProvider implements SearchProvider {
      */
     public void evaluate(final SearchRequest request, final SearchResponse response) {
         RequestProcessor.getDefault().post(new Runnable() {
-
             public void run() {
                 List<NBVersionInfo> infos = RepositoryQueries.find(getQuery(request));
                 Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
@@ -85,10 +84,8 @@ public class MavenRepoProvider implements SearchProvider {
                     nbai.addAlVersionInfos(entry.getValue());
                     response.addResult(new OpenArtifactInfo(nbai), nbai.getName());
                 }
-                
             }
         });
-
     }
 
     List<QueryField> getQuery(SearchRequest request) {

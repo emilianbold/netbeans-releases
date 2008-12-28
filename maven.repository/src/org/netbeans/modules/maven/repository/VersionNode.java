@@ -48,8 +48,8 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
-import org.netbeans.modules.maven.repository.ui.ArtifactMultiViewFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -59,8 +59,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -193,9 +191,7 @@ public class VersionNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            TopComponent tc = ArtifactMultiViewFactory.createArtifactTopComponent(info);
-            tc.open();
-            tc.requestActive();
+            ArtifactViewer.showArtifactViewer(info);
         }
     }
 }

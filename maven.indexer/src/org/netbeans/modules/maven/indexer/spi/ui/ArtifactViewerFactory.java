@@ -32,33 +32,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): theanuradha@netbeans.org
+ * Contributor(s):
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.search;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
+package org.netbeans.modules.maven.indexer.spi.ui;
+
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Anuradha
+ * @author mkleint
  */
-public class OpenArtifactInfo implements Runnable {
+public interface ArtifactViewerFactory {
 
-    private NBArtifactInfo artifactInfo;
-
-    public OpenArtifactInfo(NBArtifactInfo artifactInfo) {
-        this.artifactInfo = artifactInfo;
-    }
-
-    public void run() {
-        List<NBVersionInfo> infos = artifactInfo.getVersionInfos();
-        if (infos != null && infos.size() > 0) {
-            ArtifactViewer.showArtifactViewer(infos.get(0));
-        }
-    }
+    TopComponent createTopComponent(NBVersionInfo info);
 }

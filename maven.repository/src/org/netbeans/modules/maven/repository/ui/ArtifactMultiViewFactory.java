@@ -57,21 +57,24 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mkleint
  */
-public final class ArtifactMultiViewFactory {
+@ServiceProvider( service=ArtifactViewerFactory.class )
+public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
-    public static TopComponent createArtifactTopComponent(final NBVersionInfo info) {
+    public TopComponent createTopComponent(final NBVersionInfo info) {
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
         final Artifact artifact = RepositoryUtil.createArtifact(info);

@@ -32,33 +32,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): theanuradha@netbeans.org
+ * Contributor(s):
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.search;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
+package org.netbeans.modules.maven.indexer.api.ui;
+
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Anuradha
+ * @author mkleint
  */
-public class OpenArtifactInfo implements Runnable {
+public final class ArtifactViewer {
 
-    private NBArtifactInfo artifactInfo;
-
-    public OpenArtifactInfo(NBArtifactInfo artifactInfo) {
-        this.artifactInfo = artifactInfo;
+    private ArtifactViewer() {
     }
 
-    public void run() {
-        List<NBVersionInfo> infos = artifactInfo.getVersionInfos();
-        if (infos != null && infos.size() > 0) {
-            ArtifactViewer.showArtifactViewer(infos.get(0));
+    /**
+     * Shows detailed view component with information about the given artifact.
+     * @param info
+     */
+    public static void showArtifactViewer(NBVersionInfo info) {
+        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        if (fact == null) {
+            Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
+            return;
         }
+        TopComponent tc = fact.createTopComponent(info);
+        tc.open();
+        tc.requestActive();
     }
 }
+
