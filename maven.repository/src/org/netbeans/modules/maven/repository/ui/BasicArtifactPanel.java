@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.repository.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -110,6 +109,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         txtArtifactId = new javax.swing.JTextField();
         lblVersion = new javax.swing.JLabel();
         txtVersion = new javax.swing.JTextField();
+        lblPackaging = new javax.swing.JLabel();
+        txtPackaging = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtSize = new javax.swing.JTextField();
@@ -141,6 +142,10 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
         txtVersion.setEditable(false);
 
+        lblPackaging.setText(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "BasicArtifactPanel.lblPackaging.text")); // NOI18N
+
+        txtPackaging.setEditable(false);
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -150,12 +155,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(lblGroupId)
                     .add(lblArtifactId)
-                    .add(lblVersion))
-                .add(13, 13, 13)
+                    .add(lblVersion)
+                    .add(lblPackaging))
+                .add(18, 18, 18)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                     .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                    .add(txtPackaging, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -172,7 +179,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblVersion)
                     .add(txtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblPackaging)
+                    .add(txtPackaging, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "TIT_PrimaryArtifact"))); // NOI18N
@@ -201,9 +212,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtLastModified, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
-                    .add(txtSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
-                    .add(txtSHA, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
+                    .add(txtLastModified, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .add(txtSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .add(txtSHA, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -220,7 +231,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(txtSHA, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(104, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "TIT_Versions"))); // NOI18N
@@ -240,7 +251,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -323,12 +334,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblArtifactId;
     private javax.swing.JLabel lblGroupId;
+    private javax.swing.JLabel lblPackaging;
     private javax.swing.JLabel lblVersion;
     private javax.swing.JList lstClassifiers;
     private javax.swing.JList lstVersions;
     private javax.swing.JTextField txtArtifactId;
     private javax.swing.JTextField txtGroupId;
     private javax.swing.JTextField txtLastModified;
+    private javax.swing.JTextField txtPackaging;
     private javax.swing.JTextField txtSHA;
     private javax.swing.JTextField txtSize;
     private javax.swing.JTextField txtVersion;
@@ -380,6 +393,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         txtGroupId.setText(info.getGroupId());
         txtArtifactId.setText(info.getArtifactId());
         txtVersion.setText(info.getVersion());
+        txtPackaging.setText(info.getPackaging());
 
         txtSize.setText(computeSize(info.getSize()));
         txtLastModified.setText("" + new Date(info.getLastModified()));
