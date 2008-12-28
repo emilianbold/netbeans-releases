@@ -238,9 +238,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 allTests(evt);
             }
         });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
-        add(allTestsButton, gridBagConstraints);
+        add(allTestsButton, new GridBagConstraints());
 
         clearButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text")); // NOI18N
         clearButton.addActionListener(new ActionListener() {
@@ -248,9 +246,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 clearResults(evt);
             }
         });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
-        add(clearButton, gridBagConstraints);
+        add(clearButton, new GridBagConstraints());
 
         reportButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text")); // NOI18N
         reportButton.addActionListener(new ActionListener() {
@@ -258,9 +254,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 report(evt);
             }
         });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
-        add(reportButton, gridBagConstraints);
+        add(reportButton, new GridBagConstraints());
 
         jButton1.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text")); // NOI18N
         jButton1.addActionListener(new ActionListener() {
@@ -268,9 +262,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 done(evt);
             }
         });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
-        add(jButton1, gridBagConstraints);
+        add(jButton1, new GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     private void clearResults(ActionEvent evt) {//GEN-FIRST:event_clearResults
