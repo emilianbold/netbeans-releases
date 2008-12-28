@@ -363,7 +363,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
         }
 
         boolean[] continued = new boolean[result.length];
-        TokenId[] lineFirstTokens = new TokenId[result.length];
+        PythonTokenId[] lineFirstTokens = new PythonTokenId[result.length];
         computeLineDetails(result, document, lineFirstTokens, continued);
 
         // coverage.py only records a hit on the LAST line of a multiline statement.
@@ -415,7 +415,32 @@ public final class PythonCoverageProvider implements CoverageProvider {
         for (int lineno = 0; lineno < result.length; lineno++) {
             int count = result[lineno];
             if (count == COUNT_UNKNOWN) {
-                if (isExecutableToken(lineFirstTokens[lineno])) {
+                PythonTokenId id = lineFirstTokens[lineno];
+                if (isExecutableToken(id)) {
+
+                    // (4) If I have String literals immediately before executed code, those are executable
+                    // as well (docstrings)
+                    if (id == PythonTokenId.STRING_BEGIN || id == PythonTokenId.STRING_LITERAL) {
+                        // Peek ahead
+                        boolean beforeExecutable = false;
+                        int j = lineno+1;
+                        for (; j < result.length; j++) {
+                            if (lineFirstTokens[j] != PythonTokenId.STRING_LITERAL && isExecutableToken(lineFirstTokens[j])) {
+                                if (result[j] >= 0) {
+                                    beforeExecutable = true;
+                                }
+                                break;
+                            }
+                        }
+                        if (beforeExecutable) {
+                            for (; lineno < j; lineno++) {
+                                result[lineno] = COUNT_INFERRED;
+                            }
+                            continue;
+                        }
+                    }
+
+
                     // There's code here.
                     // If this line is not continued, mark it, and all lines
                     // up to the next known or inferred line, as not covered
