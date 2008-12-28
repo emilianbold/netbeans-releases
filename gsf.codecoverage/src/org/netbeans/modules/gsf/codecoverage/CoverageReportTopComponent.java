@@ -83,7 +83,12 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
- * Window which displays a code coverage report
+ * Window which displays a code coverage report.
+ *
+ * <p>
+ * <b>NOTE</b>: You must compile this module before attempting to open this form
+ * in the GUI builder! The design depends on the CoverageBar class and Matisse can
+ * only load the form if the .class, not just the .java file, is available!
  */
 final class CoverageReportTopComponent extends TopComponent {
     private CoverageTableModel model;
