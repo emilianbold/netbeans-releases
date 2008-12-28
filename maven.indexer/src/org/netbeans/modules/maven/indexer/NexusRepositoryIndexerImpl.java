@@ -129,7 +129,7 @@ import org.sonatype.nexus.index.updater.IndexUpdater;
  * @author Anuradha G
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation.class)
-public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementation,
+public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, GenericFindQuery {
     private static final String MAVENINDEX_PATH = "mavenindex";
@@ -163,7 +163,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         return EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir();
     }
 
-    public NexusRepositoryIndexserImpl() {
+    public NexusRepositoryIndexerImpl() {
         //to prevent MaxClauseCount exception (will investigate better way)
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
@@ -186,8 +186,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
 	            //#154755 - start
 	            ClassWorld world = new ClassWorld();
 	            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
-	            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
-	            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexserImpl.class.getClassLoader()); //NOI18N
+	            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
+	            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
 	            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
 	            // and the Dependency Injection won't work.
 	            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
@@ -264,7 +264,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
                     LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
                     FileUtils.deleteDirectory(loc);
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NexusRepositoryIndexserImpl.class, "MSG_Reconstruct_Index"));
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "MSG_Reconstruct_Index"));
                     indexer.addIndexingContextForced(
                             info.getId(), // context id
                             info.getId(), // repository id
