@@ -42,13 +42,14 @@ package org.netbeans.modules.maven.repository.ui;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.IssueManagement;
@@ -59,10 +60,14 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -518,9 +523,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         if (url == null) {
             btn.setAction(null);
             if (loading) {
-                btn.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
+                btn.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
             } else {
-                btn.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
+                btn.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
             }
             btn.setCursor(null);
         } else {
@@ -533,9 +538,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private void setPlainText(JTextComponent field, String value, boolean loading) {
         if (value == null) {
             if (loading) {
-                field.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
+                field.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
             } else {
-                field.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
+                field.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
             }
         } else {
             field.setText(value);
@@ -550,7 +555,12 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         }
 
         public void actionPerformed(ActionEvent e) {
-            System.out.println("linked.." + url);
+            try {
+                URL u = new URL(url);
+                HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+            } catch (MalformedURLException ex) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ProjectInfoPanel.class, "ERR_WrongURL", url));
+            }
         }
 
     }
