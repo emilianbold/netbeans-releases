@@ -40,6 +40,8 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,11 +51,16 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -264,24 +271,24 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(15, 15, 15))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .add(123, 123, 123))
@@ -367,12 +374,16 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     public void componentOpened() {
         final NBVersionInfo info = getLookup().lookup(NBVersionInfo.class);
         assert info != null;
+        final Artifact artifact = getLookup().lookup(Artifact.class);
+        assert artifact != null;
+        
         txtGroupId.setText(info.getGroupId());
         txtArtifactId.setText(info.getArtifactId());
         txtVersion.setText(info.getVersion());
 
         txtSize.setText(computeSize(info.getSize()));
         txtLastModified.setText("" + new Date(info.getLastModified()));
+
         final DefaultListModel dlm = new DefaultListModel();
         dlm.addElement("Loading...");
         lstVersions.setModel(dlm);
@@ -430,6 +441,21 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             }
         });
 
+
+        String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(artifact);
+        File base = FileUtilities.convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File artFile = FileUtilities.resolveFilePath(base, path);
+        if (artFile.exists()) {
+            try {
+                String sha = RepositoryUtil.calculateSHA1Checksum(artFile);
+                txtSHA.setText(sha);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                txtSHA.setText("<Failed to calculate SHA1>");
+            }
+        } else {
+            txtSHA.setText("<Cannot calculate SHA1, the artifact is not present locally>");
+        }
     }
 
     @Override

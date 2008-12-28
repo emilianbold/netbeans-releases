@@ -104,7 +104,7 @@ public final class RepositoryUtil {
         return md5sum;
     }
     
-    static String calculateSHA1Checksum(File file) throws IOException {
+    public static String calculateSHA1Checksum(File file) throws IOException {
         byte[] buffer = readFile(file);
         String sha1sum = DigestUtils.shaHex(buffer);
         return sha1sum;
