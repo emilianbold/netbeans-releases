@@ -46,7 +46,7 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- *
+ * a factory class for creation of artifact view components.
  * @author mkleint
  */
 public final class ArtifactViewer {
