@@ -53,6 +53,8 @@ import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.SideBarFactory;
@@ -72,6 +74,10 @@ import org.openide.util.NbBundle;
  * Editor footer for files while in code coverage mode: Show file coverage rate,
  * warnings about files being out of date, and quick buttons for enabling/disabling
  * highlights and clearing results.
+ * <p>
+ * <b>NOTE</b>: You must compile this module before attempting to open this form
+ * in the GUI builder! The design depends on the CoverageBar class and Matisse can
+ * only load the form if the .class, not just the .java file, is available!
  *
  * @author Tor Norbye
  */
@@ -191,7 +197,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        GridBagConstraints gridBagConstraints;
+
 
         label = new JLabel();
         coverageBar = new CoverageBar();
@@ -202,27 +208,10 @@ public class CoverageSideBar extends javax.swing.JPanel {
         reportButton = new JButton();
         jButton1 = new JButton();
 
-        setLayout(new GridBagLayout());
-
         label.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.text")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(0, 6, 0, 11);
-        add(label, gridBagConstraints);
-
         coverageBar.setMinimumSize(new Dimension(40, 10));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        add(coverageBar, gridBagConstraints);
 
         warningsLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
-        warningsLabel.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.warningsLabel.text")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        add(warningsLabel, gridBagConstraints);
 
         testButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.testButton.text")); // NOI18N
         testButton.addActionListener(new ActionListener() {
@@ -230,7 +219,6 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 testOne(evt);
             }
         });
-        add(testButton, new GridBagConstraints());
 
         allTestsButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.allTestsButton.text")); // NOI18N
         allTestsButton.addActionListener(new ActionListener() {
@@ -238,7 +226,6 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 allTests(evt);
             }
         });
-        add(allTestsButton, new GridBagConstraints());
 
         clearButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text")); // NOI18N
         clearButton.addActionListener(new ActionListener() {
@@ -246,7 +233,6 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 clearResults(evt);
             }
         });
-        add(clearButton, new GridBagConstraints());
 
         reportButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text")); // NOI18N
         reportButton.addActionListener(new ActionListener() {
@@ -254,7 +240,6 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 report(evt);
             }
         });
-        add(reportButton, new GridBagConstraints());
 
         jButton1.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text")); // NOI18N
         jButton1.addActionListener(new ActionListener() {
@@ -262,7 +247,41 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 done(evt);
             }
         });
-        add(jButton1, new GridBagConstraints());
+
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                .add(warningsLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(testButton)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(allTestsButton)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(clearButton)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(reportButton)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(jButton1))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                .add(label)
+                .add(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .add(jButton1)
+                .add(reportButton)
+                .add(clearButton)
+                .add(allTestsButton)
+                .add(testButton)
+                .add(warningsLabel))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void clearResults(ActionEvent evt) {//GEN-FIRST:event_clearResults

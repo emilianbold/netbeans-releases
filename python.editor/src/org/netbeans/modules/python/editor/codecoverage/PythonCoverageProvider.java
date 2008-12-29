@@ -425,7 +425,8 @@ public final class PythonCoverageProvider implements CoverageProvider {
                         boolean beforeExecutable = false;
                         int j = lineno+1;
                         for (; j < result.length; j++) {
-                            if (lineFirstTokens[j] != PythonTokenId.STRING_LITERAL && isExecutableToken(lineFirstTokens[j])) {
+                            PythonTokenId lft = lineFirstTokens[j];
+                            if (lft != PythonTokenId.STRING_LITERAL && lft != PythonTokenId.STRING_END && isExecutableToken(lft)) {
                                 if (result[j] >= 0) {
                                     beforeExecutable = true;
                                 }

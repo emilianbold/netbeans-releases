@@ -150,11 +150,10 @@ public class CoverageBar extends JComponent {
             return;
         }
 
-        Insets b = getInsets(); // area for border
         int width = getWidth();
-        int barRectWidth = width - (b.right + b.left);
+        int barRectWidth = width;
         int height = getHeight();
-        int barRectHeight = height - (b.top + b.bottom);
+        int barRectHeight = height;
 
         if (barRectWidth <= 0 || barRectHeight <= 0) {
             return;
@@ -200,13 +199,17 @@ public class CoverageBar extends JComponent {
         g2.fillRect(1, height / 2, amountFull, height / 2);
 
         Rectangle oldClip = g2.getClipBounds();
-        g2.setColor(coveredDark);
-        g2.clipRect(0, 0, amountFull + 1, height);
-        g2.drawRect(0, 0, width - 1, height - 1);
-        g2.setColor(notCoveredDark);
-        g2.setClip(oldClip);
-        g2.clipRect(amountFull + 1, 0, width, height);
-        g2.drawRect(0, 0, width - 1, height - 1);
+        if (coveragePercentage > 0.0f) {
+            g2.setColor(coveredDark);
+            g2.clipRect(0, 0, amountFull + 1, height);
+            g2.drawRect(0, 0, width - 1, height - 1);
+        }
+        if (coveragePercentage < 100.0f) {
+            g2.setColor(notCoveredDark);
+            g2.setClip(oldClip);
+            g2.clipRect(amountFull, 0, width, height);
+            g2.drawRect(0, 0, width - 1, height - 1);
+        }
         g2.setClip(oldClip);
 
         g2.setFont(getFont());
@@ -238,7 +241,7 @@ public class CoverageBar extends JComponent {
     @Override
     public Dimension getMinimumSize() {
         Dimension pref = getPreferredSize();
-        pref.width = 80;
+        pref.width = 40;
         return pref;
     }
 
@@ -247,6 +250,12 @@ public class CoverageBar extends JComponent {
         Dimension pref = getPreferredSize();
         pref.width = Short.MAX_VALUE;
         return pref;
+    }
+
+    //@Override JDK6
+    public int getBaseline(int w, int h) {
+        FontMetrics fm = getFontMetrics(getFont());
+        return h - fm.getDescent() - ((h - fm.getHeight()) / 2);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
