@@ -123,10 +123,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
     
-    private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
+    private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-python-org-netbeans-modules-python-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
         
     static final String PRIMARY_TYPE = "application";   //NOI18N
-    static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
+    static final String SUBTYPE = "x-python-org-netbeans-modules-python-project-packagenodednd";    //NOI18N
     static final String MASK = "mask";  //NOI18N
 
     private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
