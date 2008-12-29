@@ -74,52 +74,13 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* implements DocumentListener*/ {
-    private static final AttributeSet covered;
-    private static final AttributeSet uncovered;
-    private static final AttributeSet inferred;
-    private static final AttributeSet partial;
+    private AttributeSet covered;
+    private AttributeSet uncovered;
+    private AttributeSet inferred;
+    private AttributeSet partial;
 
     //private boolean enabled;
 
-
-    static {
-        Color coveredBc = null;
-        Color uncoveredBc = null;
-        Color inferredBc = null;
-        Color partialBc = null;
-        FontColorSettings fcs = MimeLookup.getLookup("text/plain").lookup(FontColorSettings.class);
-        if (fcs != null) {
-            coveredBc = getColoring(fcs, "covered"); // NOI18N
-            uncoveredBc = getColoring(fcs, "uncovered"); // NOI18N
-            inferredBc = getColoring(fcs, "inferred"); // NOI18N
-            partialBc = getColoring(fcs, "partial"); // NOI18N
-        }
-        if (coveredBc == null) {
-            coveredBc = new Color(0xCC, 0xFF, 0xCC);
-        }
-        if (uncoveredBc == null) {
-            uncoveredBc = new Color(0xFF, 0xCC, 0xCC);
-        }
-        if (inferredBc == null) {
-            inferredBc = new Color(0xE0, 0xFF, 0xE0);
-        }
-        if (partialBc == null) {
-            partialBc = new Color(0xFF, 0xFF, 0xE0);
-        }
-
-        covered = coveredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
-                StyleConstants.Background, coveredBc,
-                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
-        uncovered = uncoveredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
-                StyleConstants.Background, uncoveredBc,
-                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
-        inferred = inferredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
-                StyleConstants.Background, inferredBc,
-                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
-        partial = partialBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
-                StyleConstants.Background, partialBc,
-                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
-    }
     private final BaseDocument doc;
     private final String mimeType;
     private long version = 0;
@@ -163,6 +124,8 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
             return HighlightsSequence.EMPTY;
         }
 
+        initColors();
+
         return new Highlights(0, startOffset, endOffset, details);
     }
 
@@ -177,6 +140,49 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
             return (Color) as.getAttribute(StyleConstants.Background); //NOI18N
         }
         return null;
+    }
+
+    private void initColors() {
+        if (covered != null) {
+            return;
+        }
+
+        Color coveredBc = null;
+        Color uncoveredBc = null;
+        Color inferredBc = null;
+        Color partialBc = null;
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        if (fcs != null) {
+            coveredBc = getColoring(fcs, "covered"); // NOI18N
+            uncoveredBc = getColoring(fcs, "uncovered"); // NOI18N
+            inferredBc = getColoring(fcs, "inferred"); // NOI18N
+            partialBc = getColoring(fcs, "partial"); // NOI18N
+        }
+        if (coveredBc == null) {
+            coveredBc = new Color(0xCC, 0xFF, 0xCC);
+        }
+        if (uncoveredBc == null) {
+            uncoveredBc = new Color(0xFF, 0xCC, 0xCC);
+        }
+        if (inferredBc == null) {
+            inferredBc = new Color(0xE0, 0xFF, 0xE0);
+        }
+        if (partialBc == null) {
+            partialBc = new Color(0xFF, 0xFF, 0xE0);
+        }
+
+        covered = coveredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+                StyleConstants.Background, coveredBc,
+                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
+        uncovered = uncoveredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+                StyleConstants.Background, uncoveredBc,
+                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
+        inferred = inferredBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+                StyleConstants.Background, inferredBc,
+                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
+        partial = partialBc == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+                StyleConstants.Background, partialBc,
+                ATTR_EXTENDS_EOL, Boolean.TRUE, ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE);
     }
 
     void refresh() {

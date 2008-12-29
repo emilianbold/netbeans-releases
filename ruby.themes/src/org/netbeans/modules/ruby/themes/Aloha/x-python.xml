@@ -5,8 +5,6 @@
         <font style="bold"/>
     </fontcolor>
     <fontcolor default="keyword" name="ANY_KEYWORD"/>
-    <fontcolor name="mod-interface"/>
-    <fontcolor name="mod-public"/>
     <fontcolor foreColor="ff99006b" name="COMMENT_TODO">
         <font style="bold"/>
     </fontcolor>
@@ -19,13 +17,9 @@
     <fontcolor foreColor="ffeddd37" name="STRING_ESCAPE">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor default="comment" foreColor="ffaaaaff" name="COMMENT_RDOC">
-        <font style="bold"/>
-    </fontcolor>
     <fontcolor foreColor="ffd1ceff" name="GLOBAL_VAR">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="mod-annotation-type"/>
     <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
     <fontcolor default="default" foreColor="blue" name="COMMENT_LINK" underline="blue"/>
     <fontcolor foreColor="ff8aa6c1" name="mod-parameter"/>
@@ -33,20 +27,12 @@
     <fontcolor foreColor="ff99ffff" name="CLASS_VAR">
         <font style="bold+italic"/>
     </fontcolor>
-    <fontcolor name="mod-package-private"/>
     <fontcolor default="string" name="STRING_LITERAL"/>
     <fontcolor name="mod-static">
         <font style="italic"/>
     </fontcolor>
     <fontcolor default="field" foreColor="ffd1ceff" name="INSTANCE_VAR"/>
-    <fontcolor default="comment" name="DOCUMENTATION"/>
-    <fontcolor default="default" name="COMMENT_BOLD">
-        <font style="bold"/>
-    </fontcolor>
     <fontcolor default="number" foreColor="ffeddd3d" name="INT_LITERAL"/>
-    <fontcolor default="comment" name="COMMENT_HTMLTAG">
-        <font style="bold"/>
-    </fontcolor>
     <fontcolor bgColor="ff38566f" name="mark-occurrences"/>
     <fontcolor foreColor="ff2e92c7" name="TYPE_SYMBOL"/>
     <fontcolor default="comment" name="COMMENT_TEXT"/>
@@ -58,11 +44,8 @@
     <fontcolor foreColor="fff3c55f" name="mod-method">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor default="comment" name="BLOCK_COMMENT"/>
-    <fontcolor name="mod-protected"/>
     <fontcolor default="comment" name="LINE_COMMENT"/>
     <fontcolor name="mod-local-variable"/>
-    <fontcolor name="mod-private"/>
     <fontcolor default="whitespace" name="WHITESPACE"/>
     <fontcolor foreColor="ffca4344" name="REGEXP_LITERAL"/>
     <fontcolor foreColor="ffd27522" name="mod-class"/>
@@ -73,14 +56,11 @@
     <fontcolor default="operator" name="ANY_OPERATOR"/>
     <fontcolor default="identifier" name="IDENTIFIER"/>
     <fontcolor default="string" name="QUOTED_STRING_LITERAL"/>
-    <fontcolor default="default" name="COMMENT_ITALIC">
-        <font style="italic"/>
-    </fontcolor>
-    <fontcolor name="mod-abstract"/>
     <fontcolor default="number" foreColor="ff66cc00" name="LONG_LITERAL"/>
 
     <!-- Code Coverage -->
     <fontcolor name="covered" bgColor="ff2b492b"/>
     <fontcolor name="uncovered" bgColor="ff672b2b"/>
     <fontcolor name="inferred" bgColor="ff2b3a2b"/>
+
 </fontscolors>
