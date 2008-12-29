@@ -192,20 +192,9 @@ public final class SourceNodeFactory implements NodeFactory {
         Action[] actions;
         
         public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
-            super(getOriginalNode(sourceGroup));
+            super(PackageView.createPackageView(sourceGroup));
             this.project = project;
             this.nodeName = "Sources";  //NOI18N
-        }
-        
-        private static Node getOriginalNode(final SourceGroup group) {
-            if (group == null) {
-                return new AbstractNode(Children.LEAF);
-            }
-            FileObject root = group.getRootFolder();
-            if (root == null || !root.isValid()) {
-                return new AbstractNode(Children.LEAF);
-            }
-            return new TreeRootNode(group);
         }
         
         public Action[] getActions(boolean context) {
