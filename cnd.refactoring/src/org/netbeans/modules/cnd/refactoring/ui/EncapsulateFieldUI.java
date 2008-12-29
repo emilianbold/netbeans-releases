@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,13 +41,9 @@
 package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.text.MessageFormat;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -56,95 +52,101 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
-* (based on Java version)
- * 
- * @author  Pavel Flaska, Jan Becicka
+ * (based on Java version)
+ *
+ * @author  Tomas Hurka, Pavel Flaska, Jan Pokorsky
  * @author Vladimir Voskresensky
  */
-public class ChangeParametersUI implements RefactoringUI {
-    
+public final class EncapsulateFieldUI implements RefactoringUI {
+
+    private EncapsulateFieldPanel panel;
+    private transient EncapsulateFieldsRefactoring refactoring;
     CsmObject refactoredObj;
-    ChangeParametersPanel panel;
-    ChangeParametersRefactoring refactoring;
-    
-    /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    private ChangeParametersUI(CsmObject refactoredObj) {
-        this.refactoring = new ChangeParametersRefactoring(refactoredObj);
-        this.refactoredObj = refactoredObj;
+
+    /** Creates new form RenamePanelName */
+    public EncapsulateFieldUI(CsmObject selectedObject) {
+        this.refactoring = new EncapsulateFieldsRefactoring(selectedObject);
+        this.refactoredObj = selectedObject;
     }
     
-    public static ChangeParametersUI create(CsmObject refactoredObj) {
-        return new ChangeParametersUI(refactoredObj);
+    public boolean isQuery() {
+        return false;
     }
-    
-    public String getDescription() {
-        String msg = NbBundle.getMessage(ChangeParametersUI.class, 
-                                        "DSC_ChangeParsRootNode"); // NOI18N
-        String name = CsmRefactoringUtils.getSimpleText(refactoredObj);
-        boolean isConstructor = CsmKindUtilities.isConstructor(refactoredObj);
-        return new MessageFormat(msg).format(new Object[] { 
-            name,
-            NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isConstructor ? "Constr" : "Method")),
-            panel.genDeclarationString()
-       });
-    }
-    
+
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new ChangeParametersPanel(refactoredObj, parent);
+            panel = new EncapsulateFieldPanel(refactoredObj, parent);
         }
         return panel;
     }
-    
+
+    private Problem setParameters(boolean checkOnly) {
+        refactoring.setRefactorFields(panel.getAllFields());
+        refactoring.setMethodModifiers(panel.getMethodModifiers());
+        refactoring.setFieldModifiers(panel.getFieldModifiers());
+        refactoring.setAlwaysUseAccessors(panel.isCheckAccess());
+        refactoring.getContext().add(panel.getInsertPoint());
+        refactoring.getContext().add(panel.getSortBy());
+        refactoring.getContext().add(panel.getJavadoc());
+        if (checkOnly) {
+            return refactoring.fastCheckParameters();
+        } else {
+            return refactoring.checkParameters();
+        }
+    }
+
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
-    public boolean isQuery() {
-        return false;
+    public String getDescription() {
+        String name = panel.getClassname();
+//        name = "<anonymous>"; // NOI18N
+        return new MessageFormat(NbBundle.getMessage(EncapsulateFieldUI.class, "DSC_EncapsulateFields")).format (
+                    new Object[] {name}
+                );
     }
-    
-    private Problem setParameters(boolean checkOnly) {
-        @SuppressWarnings("unchecked")
-        List<List<Object>> data = (List<List<Object>>) panel.getTableModel().getDataVector();
-        ChangeParametersRefactoring.ParameterInfo[] paramList = new ChangeParametersRefactoring.ParameterInfo[data.size()];
-        int counter = 0;
-        Problem problem = null;
-        for (List<Object> row : data) {
-            int origIndex = ((Integer) row.get(3)).intValue();
-            CharSequence name = (CharSequence) row.get(0);
-            CharSequence type = (CharSequence) row.get(1);
-            CharSequence defaultVal = (CharSequence) row.get(2);
-            paramList[counter++] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
-        }
-        CsmVisibility visibility = panel.getModifier();
-        refactoring.setParameterInfo(paramList);
-        refactoring.setVisibility(visibility);
-        if (checkOnly) {
-            problem = refactoring.fastCheckParameters();
-        } else {
-            problem = refactoring.checkParameters();
-        }
-        return problem;
-    }
-    
+
     public String getName() {
-        return NbBundle.getMessage(ChangeParametersUI.class, "LBL_ChangeMethodSignature");
+        return NbBundle.getMessage(EncapsulateFieldUI.class, "LBL_EncapsulateFields");
     }
     
     public Problem checkParameters() {
         return setParameters(true);
     }
-
+    
     public Problem setParameters() {
         return setParameters(false);
     }
-    
+
     public boolean hasParameters() {
         return true;
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx(EncapsulateFieldUI.class);
     }
+    
+    /**
+     * returns field in case the selectedObject is field or enclosing class
+     * in other cases.
+     */
+//    private static TreePathHandle resolveSourceType(TreePathHandle selectedObject, CompilationInfo javac) {
+//        TreePath selectedField = selectedObject.resolve(javac);
+//        Element elm = javac.getTrees().getElement(selectedField);
+//        TypeElement encloser = null;
+//        if (elm != null && ElementKind.FIELD == elm.getKind()
+//                && !"this".contentEquals(elm.getSimpleName())) { // NOI18N
+//            encloser = (TypeElement) elm.getEnclosingElement();
+//            if (ElementKind.INTERFACE != encloser.getKind() && NestingKind.ANONYMOUS != encloser.getNestingKind()) {
+//                // interface constants, local variables and annonymous declarations are unsupported
+//                TreePath tp = javac.getTrees().getPath(elm);
+//                return TreePathHandle.create(tp, javac);
+//            }
+//        }
+//
+//        // neither interface, annotation type nor annonymous declaration
+//        TreePath tpencloser = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+//        return TreePathHandle.create(tpencloser, javac);
+//    }
 }
