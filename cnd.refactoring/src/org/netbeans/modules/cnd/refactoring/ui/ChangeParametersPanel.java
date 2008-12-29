@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -122,8 +123,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         functionObj = fun;
         returnType = functionObj.getReturnType().getCanonicalText().toString();
         if (CsmKindUtilities.isMethod(functionObj)) {
+            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) functionObj);
             modifiersCombo.setEnabled(true);
-            setModifier(((CsmMethod)functionObj).getVisibility());
+            setModifier(method.getVisibility());
         } else {
             modifiersCombo.setEnabled(false);
             setModifier(CsmVisibility.NONE);

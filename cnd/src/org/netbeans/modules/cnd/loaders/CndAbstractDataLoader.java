@@ -70,7 +70,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
     protected abstract String getMimeType();
 
     @Override
-    protected void initialize() {
+    protected final void initialize() {
         super.initialize();
         getExtensions().addMimeType(getMimeType());
     }
