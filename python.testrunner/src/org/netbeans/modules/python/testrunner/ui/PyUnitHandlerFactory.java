@@ -124,7 +124,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
             testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
-            String message = matcher.group(4);
+            String message = matcher.group(4).replace("%BR%", "\n");
             String location = matcher.group(5);
             testcase.getTrouble().setStackTrace(getStackTrace(message, location));
 
@@ -170,7 +170,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
             testcase.setClassName(matcher.group(3));
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4), matcher.group(5)));
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5)));
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
