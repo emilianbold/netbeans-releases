@@ -42,9 +42,11 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
@@ -169,7 +171,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         if (referencedObject != null) {
             this.referencedObjects = new LinkedHashSet<CsmObject>();
             if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
-                CsmMethod method = (CsmMethod) referencedObject;
+                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
                 this.referencedObjects.add(method);
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));

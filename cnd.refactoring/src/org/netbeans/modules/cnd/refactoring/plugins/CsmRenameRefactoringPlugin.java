@@ -154,7 +154,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                     this.referencedObjects.addAll(getRenamingClassObjects(cls));
                 }
             } else if (CsmKindUtilities.isMethod(referencedObject)) {
-                CsmMethod method = (CsmMethod)referencedObject;
+                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
                 this.referencedObjects.add(method);
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
