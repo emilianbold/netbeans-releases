@@ -341,9 +341,16 @@ public class CallTest extends RubyTestBase {
         assertType(null, call.getType());
     }
 
+    public void testCall21() throws Exception {
+        Call call = getCall("10.between?(0, 100).^");
+        assertEquals("10.between?(0, 100)", call.getLhs());
+        assertFalse(call.getType().isKnown());
+    }
+
     public void testCallUnknown() throws Exception {
         Call call = getCall("getFoo().x^");
-        assertSame(Call.UNKNOWN, call);
+        assertEquals("getFoo()", call.getLhs());
+        assertFalse(call.getType().isKnown());
     }
 
     public void testCallLocal() throws Exception {
