@@ -53,15 +53,15 @@ import org.openide.util.actions.NodeAction;
 /**
  * @author Alexey Vladykin
  */
-public class OpenWithQtDesigner extends NodeAction {
+/*package*/ class OpenWithQtDesignerAction extends NodeAction {
 
     private static final String QTUI_MIME_TYPE = "text/xml+qtui"; // NOI18N
     private static final String DESIGNER_EXECUTABLE = "designer"; // NOI18N
 
     private final String name;
 
-    public OpenWithQtDesigner() {
-        name = NbBundle.getMessage(OpenWithQtDesigner.class, "LBL_OpenWithQtDesigner"); // NOI18N
+    public OpenWithQtDesignerAction() {
+        name = NbBundle.getMessage(OpenWithQtDesignerAction.class, "LBL_OpenWithQtDesigner"); // NOI18N
     }
 
     @Override
@@ -86,7 +86,7 @@ public class OpenWithQtDesigner extends NodeAction {
                 pb.start();
             } catch (IOException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(OpenWithQtDesigner.class, "MSG_OpenWithQtDesignerFailed", DESIGNER_EXECUTABLE))); // NOI18N
+                        NbBundle.getMessage(OpenWithQtDesignerAction.class, "MSG_OpenWithQtDesignerFailed", DESIGNER_EXECUTABLE))); // NOI18N
             }
         }
     }
