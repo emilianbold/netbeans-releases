@@ -96,7 +96,7 @@ public class VersionNode extends AbstractNode {
     }
 
     /** Creates a new instance of VersionNode */
-    public VersionNode(RepositoryInfo info,NBVersionInfo versionInfo, boolean javadoc, boolean source, boolean dispNameShort) {
+    public VersionNode(RepositoryInfo info, NBVersionInfo versionInfo, boolean javadoc, boolean source, boolean dispNameShort) {
         super(createChildren(info,versionInfo));
         this.info = info;
         hasJavadoc = javadoc;
