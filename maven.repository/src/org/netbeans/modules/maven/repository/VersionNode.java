@@ -86,10 +86,7 @@ public class VersionNode extends AbstractNode {
         if (info.isLocal() && !"pom".equals(record.getType())) { //NOI18N
             try {
                 Artifact art = RepositoryUtil.createArtifact(record);
-                String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(art);
-                File base = FileUtilities.convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
-                File artFile = FileUtilities.resolveFilePath(base, path);
-                FileObject fo = FileUtil.toFileObject(artFile);
+                FileObject fo = FileUtil.toFileObject(FileUtilities.convertArtifactToLocalRepositoryFile(art));
                 if (fo != null) {
                     DataObject dobj = DataObject.find(fo);
                     return new FilterNode.Children(dobj.getNodeDelegate().cloneNode());

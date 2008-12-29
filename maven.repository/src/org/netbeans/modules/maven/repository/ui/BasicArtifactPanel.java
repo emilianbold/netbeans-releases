@@ -456,9 +456,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         });
 
 
-        String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(artifact);
-        File base = FileUtilities.convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
-        File artFile = FileUtilities.resolveFilePath(base, path);
+        File artFile = FileUtilities.convertArtifactToLocalRepositoryFile(artifact);
         if (artFile.exists()) {
             try {
                 String sha = RepositoryUtil.calculateSHA1Checksum(artFile);
