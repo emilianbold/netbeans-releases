@@ -69,9 +69,8 @@ public class MavenRepoProvider implements SearchProvider {
             public void run() {
                 List<NBVersionInfo> infos = RepositoryQueries.find(getQuery(request));
                 Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
-
                 for (NBVersionInfo nbvi : infos) {
-                    String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+                    String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N
                     List<NBVersionInfo> get = map.get(key);
                     if (get == null) {
                         get = new ArrayList<NBVersionInfo>();
@@ -92,11 +91,11 @@ public class MavenRepoProvider implements SearchProvider {
     List<QueryField> getQuery(SearchRequest request) {
         List<QueryField> fq = new ArrayList<QueryField>();
         String q = request.getText();
-        String[] splits = q.split(" ");
+        String[] splits = q.split(" "); //NOI18N
         List<String> fields = new ArrayList<String>();
         fields.add(QueryField.FIELD_GROUPID);
         fields.add(QueryField.FIELD_ARTIFACTID);
-
+        //TODO search based on all fields..
 
 //            fields.add(QueryField.FIELD_NAME);
 
