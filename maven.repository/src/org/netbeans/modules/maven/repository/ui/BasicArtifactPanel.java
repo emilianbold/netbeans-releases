@@ -61,6 +61,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -81,13 +82,13 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     private String computeSize(long size) {
         long kbytes = size / 1024;
         if (kbytes == 0) {
-            return size + " bytes";
+            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Bytes", size);
         }
         long mbytes = kbytes / 1024;
         if (mbytes == 0) {
-            return kbytes + " kb";
+            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_kb", kbytes);
         }
-        return mbytes + " Mb";
+        return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Mb", mbytes);
     }
 
 
@@ -399,7 +400,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         txtLastModified.setText("" + new Date(info.getLastModified()));
 
         final DefaultListModel dlm = new DefaultListModel();
-        dlm.addElement("Loading...");
+        dlm.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstVersions.setModel(dlm);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -419,7 +420,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             }
         });
         final DefaultListModel mdl = new DefaultListModel();
-        mdl.addElement("Loading...");
+        mdl.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstClassifiers.setModel(mdl);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -463,10 +464,10 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 txtSHA.setText(sha);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                txtSHA.setText("<Failed to calculate SHA1>");
+                txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_FailedSHA1"));
             }
         } else {
-            txtSHA.setText("<Cannot calculate SHA1, the artifact is not present locally>");
+            txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_NOSHA"));
         }
     }
 
