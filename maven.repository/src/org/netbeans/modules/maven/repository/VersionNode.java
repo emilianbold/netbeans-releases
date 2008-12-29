@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
@@ -48,6 +49,8 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
 import org.openide.filesystems.FileObject;
@@ -83,8 +86,10 @@ public class VersionNode extends AbstractNode {
         if (info.isLocal() && !"pom".equals(record.getType())) { //NOI18N
             try {
                 Artifact art = RepositoryUtil.createArtifact(record);
-                FileObject fo = FileUtil.toFileObject(art.getFile());
-
+                String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(art);
+                File base = FileUtilities.convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+                File artFile = FileUtilities.resolveFilePath(base, path);
+                FileObject fo = FileUtil.toFileObject(artFile);
                 if (fo != null) {
                     DataObject dobj = DataObject.find(fo);
                     return new FilterNode.Children(dobj.getNodeDelegate().cloneNode());
@@ -151,7 +156,7 @@ public class VersionNode extends AbstractNode {
     }
 
     @Override
-    public java.awt.Image getIcon(int param) {
+    public Image getIcon(int param) {
         java.awt.Image retValue = super.getIcon(param);
         if (hasJavadoc) {
             Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
@@ -165,6 +170,11 @@ public class VersionNode extends AbstractNode {
         }
         return retValue;
 
+    }
+
+    @Override
+    public Image getOpenedIcon(int param) {
+        return getIcon(param);
     }
 
     @Override
