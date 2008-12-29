@@ -70,7 +70,6 @@ import org.netbeans.modules.uml.core.IQueryManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IAliasedType;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Abstraction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.CreationFactory;
@@ -2632,9 +2631,6 @@ public class UMLParsingIntegrator
                 {
                     ETPairT<Node, String> curSymbol = symbolIter.next();
                     Node curNode = curSymbol.getParamOne();
-                    
-                    //                    if (!supervisor.proceed(1))
-                    //                        onCancelled();
                     
                     supervisor.log(ITaskSupervisor.VERBOSE,
                             INDENT + INDENT + "Analyzing " + curNode.getName());
