@@ -162,24 +162,11 @@ public final class FileUtilities {
      * 
      * @param file
      * @return
+     * @deprecated use FileUtil.refreshFor(File)
      */
-    public static FileObject toFileObject(File fl) {
-      //TODO replace with FileUtil.refreshFile(File) in 6.1
-        FileObject outDir = null;
-        outDir = FileUtil.toFileObject(fl);
-        File parent = fl.getParentFile();
-        boolean wasRefreshed = false;
-        while (outDir == null && parent != null && !wasRefreshed) {
-            FileObject par = FileUtil.toFileObject(parent);
-            if (par != null) {
-                par.refresh();
-                outDir = FileUtil.toFileObject(fl);
-                wasRefreshed = true;
-            } else {
-                parent = parent.getParentFile();
-            }
-        }
-        return outDir;
+    public @Deprecated static FileObject toFileObject(File fl) {
+        FileUtil.refreshFor(fl);
+        return FileUtil.toFileObject(fl);
     }
    
 }
