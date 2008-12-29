@@ -58,8 +58,6 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="STRING_LITERAL" default="string"/>
     <fontcolor name="DOUBLE_LITERAL" default="number"/>
-    <fontcolor name="BLOCK_COMMENT" default="comment"/>
-    <fontcolor name="DOCUMENTATION" default="comment"/>
     <fontcolor name="LONG_LITERAL" default="number"/>
     <fontcolor name="REGEXP_LITERAL" foreColor="CA4344"/>
     <fontcolor name="ERROR" default="error"/>
@@ -76,7 +74,6 @@ made subject to such option by the copyright holder.
 
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" waveUnderlined="ff8888"/>
-    <fontcolor name="mod-abstract" />
     <fontcolor name="mod-field" foreColor="EDDD3D" >
         <font style="bold" />
     </fontcolor>
@@ -89,24 +86,7 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-class" />
-    <fontcolor name="mod-interface" />
-    <fontcolor name="mod-annotation-type" />
-    <fontcolor name="mod-enum" />
     <fontcolor name="mod-deprecated" strikeThrough="404040" />
-    <fontcolor name="mod-static" >
-        <font style="italic" />
-    </fontcolor>
-    <fontcolor name="mod-package-private" />
-    <fontcolor name="mod-private" />
-    <fontcolor name="mod-protected" />
-    <fontcolor name="mod-public" />
-
-    <!--currently not used:-->
-<!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>
-    <fontcolor name="mod-type-parameter-use" bgColor="green"/>
-    <fontcolor name="mod-undefined" foreColor="red"/>-->
-
-    <!--mark occurrences:-->
     <fontcolor name="mark-occurrences" bgColor="38566F"/>
 
     <!-- embedded strings and colors -->
@@ -119,20 +99,6 @@ made subject to such option by the copyright holder.
     </fontcolor>
     
     <fontcolor name="COMMENT_TODO" foreColor="ff99006b">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="COMMENT_TEXT" default="comment"/>
-    <fontcolor name="COMMENT_RDOC" foreColor="aaaaff" default="comment">
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="COMMENT_HTMLTAG" default="comment">
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="COMMENT_LINK" underline="blue" foreColor="blue" default="default"/>
-    <fontcolor name="COMMENT_ITALIC" default="default">
-        <font style="italic"/>
-    </fontcolor>
-    <fontcolor name="COMMENT_BOLD" default="default">
         <font style="bold"/>
     </fontcolor>
 

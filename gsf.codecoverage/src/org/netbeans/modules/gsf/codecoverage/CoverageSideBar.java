@@ -257,7 +257,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 .add(label)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.RELATED, 86, Short.MAX_VALUE)
                 .add(warningsLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(testButton)
