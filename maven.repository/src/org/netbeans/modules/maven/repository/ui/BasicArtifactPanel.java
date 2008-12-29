@@ -40,25 +40,33 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,6 +85,38 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     public BasicArtifactPanel(Lookup lookup) {
         super(lookup);
         initComponents();
+        lstVersions.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if (e.getClickCount() > 1 && e.getButton() == MouseEvent.BUTTON1) {
+                    NBVersionInfo info = (NBVersionInfo) lstVersions.getSelectedValue();
+                    if (info != null) {
+                        int pos = callback.getTopComponent().getTabPosition();
+                        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+                        TopComponent tc = fact.createTopComponent(info);
+                        tc.openAtTabPosition(pos);
+                        callback.getTopComponent().close();
+                        tc.requestActive();
+                    }
+                }
+            }
+            public void mouseWheelMoved(MouseWheelEvent e) {}
+            public void mouseDragged(MouseEvent e) {}
+            public void mouseMoved(MouseEvent e) {}
+        });
+        lstVersions.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof NBVersionInfo) {
+                    NBVersionInfo info = (NBVersionInfo)value;
+                    ((JLabel)c).setText(info.getVersion());
+                }
+                return c;
+            }
+        });
+        lstVersions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private String computeSize(long size) {
@@ -122,6 +162,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstVersions = new javax.swing.JList();
+        jLabel4 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         lstClassifiers = new javax.swing.JList();
@@ -184,7 +225,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblPackaging)
                     .add(txtPackaging, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "TIT_PrimaryArtifact"))); // NOI18N
@@ -232,12 +273,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(txtSHA, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(104, Short.MAX_VALUE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "TIT_Versions"))); // NOI18N
 
         jScrollPane2.setViewportView(lstVersions);
+
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(BasicArtifactPanel.class, "BasicArtifactPanel.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -245,14 +288,17 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                .add(jLabel4)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -288,8 +334,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .add(15, 15, 15))
         );
         jPanel3Layout.setVerticalGroup(
@@ -325,6 +371,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -404,15 +451,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         lstVersions.setModel(dlm);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.getVersions(info.getGroupId(), info.getArtifactId());
-                final Set<String> vers = new TreeSet<String>();
-                for (NBVersionInfo inf : infos) {
-                    vers.add(inf.getVersion());
-                }
+                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(info.getGroupId(), info.getArtifactId());
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         dlm.removeAllElements();
-                        for (String ver : vers) {
+                        for (NBVersionInfo ver : infos) {
                             dlm.addElement(ver);
                         }
                     }
