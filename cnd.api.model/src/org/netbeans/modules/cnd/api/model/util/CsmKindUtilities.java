@@ -513,7 +513,8 @@ public class CsmKindUtilities {
     
     /**
      * checks if passed object is method definition or method declaration
-     * after this check it is safe to cast only to CsmFunction (not CsmMethod)
+     * after this check it is safe to cast only to CsmFunction (not CsmMethod),
+     * but it is guaranteed that CsmBaseUtilities.getFunctionDeclaration((CsmFunction) obj) is CsmMethod
      * @see isMethodDeclaration
      */
     public static boolean isMethod(CsmObject obj) {
