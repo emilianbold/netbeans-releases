@@ -71,6 +71,7 @@ import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.MultipleAsgnNode;
+import org.jruby.nb.ast.NewlineNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SClassNode;
@@ -2083,5 +2084,77 @@ public class AstUtilities {
      */
     public static String getName(final Node node) {
         return ((INameNode) node).getName();
+    }
+
+    /**
+     * Finds exit points of a method definition for the given node.
+     *
+     * @param defNode {@link MethodDefNode method definition node}
+     * @param exits accumulator for found exit points
+     */
+    static void findExitPoints(final MethodDefNode defNode, final Set<? super Node> exits) {
+        Node body = defNode.getBodyNode();
+        findNonLastExitPoints(body, exits);
+        Node last = findLastNode(body);
+        if (last != null) {
+            exits.add(last);
+        }
+    }
+
+    private static Node findLastNode(final Node node) {
+        Node last = null;
+        List<Node> list = node.childNodes();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            last = list.get(i);
+
+            if (last instanceof ArgsNode || last instanceof ArgumentNode) {
+                // Done - no valid statement
+                return null;
+            }
+
+            if (last instanceof ListNode) {
+                last = last.childNodes().get(last.childNodes().size() - 1);
+            }
+
+            if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
+                last = last.childNodes().get(last.childNodes().size() - 1);
+                break;
+            }
+            break;
+        }
+        return last;
+    }
+
+    /** Helper for {@link #findExitPoints}. */
+    private static void findNonLastExitPoints(final Node node, final Set<? super Node> exits) {
+        switch (node.nodeId) {
+            case RETURNNODE:
+            case YIELDNODE:
+                exits.add(node);
+                break;
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
+                return; // Don't go into sub methods, classes, etc
+            case FCALLNODE:
+                FCallNode fc = (FCallNode) node;
+                if ("fail".equals(fc.getName()) || "raise".equals(fc.getName())) { // NOI18N
+                    exits.add(node);
+                }
+                break;
+        }
+        if (node instanceof MethodDefNode) {
+            // Don't go into sub methods, classes, etc
+            return;
+        }
+
+        List<Node> children = node.childNodes();
+
+        for (Node child : children) {
+            if (child.isInvisible()) {
+                continue;
+            }
+            findNonLastExitPoints(child, exits);
+        }
     }
 }
