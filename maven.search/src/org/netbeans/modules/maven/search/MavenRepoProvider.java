@@ -39,11 +39,12 @@
 package org.netbeans.modules.maven.search;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
@@ -67,7 +68,7 @@ public class MavenRepoProvider implements SearchProvider {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 List<NBVersionInfo> infos = RepositoryQueries.find(getQuery(request));
-                Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+                Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
 
                 for (NBVersionInfo nbvi : infos) {
                     String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
@@ -115,4 +116,35 @@ public class MavenRepoProvider implements SearchProvider {
         }
         return fq;
     }
+
+    //TODO copied from AddDependencyPanel.java, we shall somehow unify..
+    private static class Comp implements Comparator<String> {
+        private String query;
+
+        public Comp(String q) {
+            query = q;
+        }
+
+        /** Impl of comparator, sorts artifacts asfabetically with exception
+         * of items that contain current query string, which take precedence.
+         */
+        public int compare(String s1, String s2) {
+
+            int index1 = s1.indexOf(query);
+            int index2 = s2.indexOf(query);
+
+            if (index1 >= 0 || index2 >=0) {
+                if (index1 < 0) {
+                    return 1;
+                } else if (index2 < 0) {
+                    return -1;
+                }
+                return index1 - index2;
+            } else {
+                return s1.compareTo(s2);
+            }
+        }
+
+    }
+
 }
