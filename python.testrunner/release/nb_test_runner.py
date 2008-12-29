@@ -10,6 +10,7 @@ import sys
 import time
 from optparse import OptionParser
 import os
+import re
 from unittest import TestResult
 
 class _NbWritelnDecorator:
@@ -34,6 +35,7 @@ class _NbTextTestResult(TestResult):
         TestResult.__init__(self)
         self.stream = stream
         self._start_time = None
+        self._doctest_id = 1
 
     def getDescription(self, test):
         return str(test)
@@ -71,13 +73,33 @@ class _NbTextTestResult(TestResult):
 
         return stackstr
 
+
+    def _handle_doctest(self, time_taken, message_str, stackstr):
+        for m in re.finditer(r'---------------------+\nFile "(.+)", line (.+), in (.*)\nFailed example:\n(.+)\nExpected:\n(.+)\n(Got:\n(.+)|Got nothing)\n', message_str):
+            filename = m.group(1)
+            lineno = m.group(2)
+            testname = m.group(3)
+            stackstr = "%s() in %s:%s%%BR%%" % (testname, filename, lineno)
+            # HACK: Regexp in handler expected method (class) format
+            # Plus, we need unique ids for each test so just synthesize one here
+            testname = testname + " (" + str(self._doctest_id) + ")" 
+            self._doctest_id += 1
+            expected = m.group(5).strip()
+            got = "Nothing"
+            if (len(m.groups()) >= 7):
+                got = m.group(7).strip()
+            msg = "Expected " + expected + " but got " + got
+            self.stream.writeln("%%TEST_STARTED%% %s" % testname)
+            self.stream.writeln("%%TEST_FAILED%% time=%.6f testname=%s message=%s location=%s" %
+                                (time_taken, testname, msg.replace('\n', '%BR%'), stackstr))
+
     def addError(self, test, err):
         time_taken = time.time() - self._start_time
         TestResult.addError(self, test, err)
         (error, message, tb) = err
         stackstr = self._generate_stack(tb)
         self.stream.writeln("%%TEST_ERROR%% time=%.6f testname=%s message=%s location=%s" %
-                            (time_taken, self.getDescription(test), message, stackstr))
+                            (time_taken, self.getDescription(test), str(message).replace('\n', '%BR%'), stackstr))
 
     def addFailure(self, test, err):
         time_taken = time.time() - self._start_time
@@ -85,8 +107,13 @@ class _NbTextTestResult(TestResult):
 
         (error, message, tb) = err
         stackstr = self._generate_stack(tb)
+        
+        message_str = str(message)
+        if message_str.startswith("Failed doctest test for "):
+            self._handle_doctest(time_taken, message_str, stackstr)
+            return
         self.stream.writeln("%%TEST_FAILED%% time=%.6f testname=%s message=%s location=%s" %
-                            (time_taken, self.getDescription(test), message, stackstr))
+                            (time_taken, self.getDescription(test), message_str.replace('\n', '%BR%'), stackstr))
 
     def printErrors(self):
         pass
@@ -143,7 +170,7 @@ class _NetBeansTestRunner:
             if errored:
                 self.stream.writeln("%%SUITE_ERRORS%% %d" % errored)
         else:
-            print "%SUITE_SUCCESS%"
+            self.stream.writeln("%SUITE_SUCCESS%")
         self.stream.writeln("%%SUITE_FINISHED%% time=%.4f" % timeTaken)
         return result
 
@@ -152,6 +179,7 @@ class _NetBeansTestRunner:
 ##############################################################################
 if __name__ == '__main__':
     import unittest
+    import doctest
 
     parser = OptionParser(usage="%prog <[--method <name> ]--file|--directory>  <files/directories...>", version="%prog 1.0")
     parser.add_option("-f", "--file",
@@ -176,30 +204,60 @@ if __name__ == '__main__':
     if options.filename or options.method:
         if len(args) > 1:
             parser.error("You can only specify one file with --file")
-        file_name = args[0]
-        module_name = os.path.splitext(file_name)[0:-1][0]
+        module_name = args[0]
         module = __import__(module_name, globals(), locals(), module_name)
         if (options.method):
             suite = unittest.TestLoader().loadTestsFromName(options.method, module)
         else:
             suite = unittest.TestLoader().loadTestsFromModule(module)
+            # Doctest
+            try:
+                suite.addTest(doctest.DocTestSuite(module))
+            except ValueError, e:
+                # doctest will raise ValueError(module, "has no tests")
+                # and we're trying this on random modules: No loud complaints!
+                pass
+
     else:
         assert options.directory;
         test_modules = []
+
         for dir in args:
-            file_list = os.listdir(dir)
-            for file_name in file_list:
-                extension = os.path.splitext(file_name)[-1]
-                if extension == '.py':
-                    test_module_name = os.path.splitext(file_name)[0:-1][0]
-                    try:
-                        module = __import__(test_module_name, globals(), locals(), test_module_name)
-                        test_modules.append(module)
-                    except:
-                        # No complaints - just test the files we can (user may have run
-                        # test project on an unfinished project where not all files are valid)
-                        pass
+            relative_start = len(dir)
+            if (dir[relative_start-1] != os.sep):
+                relative_start += 1
+            module_names = []
+            for root, dirs, files in os.walk(dir):
+                for file_name in files:
+                    extension = os.path.splitext(file_name)[-1]
+                    if extension == '.py':
+                        relative = root[relative_start:]
+                        pkg = relative.replace(os.sep,'.')
+                        base = os.path.splitext(file_name)[0:-1][0]
+                        if (base == "__init__"):
+                            continue
+                        if len(pkg) > 0:
+                            module_name = pkg + "." + base
+                        else:
+                            module_name = base
+                        module_names.append(module_name)
+            for module_name in module_names:
+                try:
+                    module = __import__(module_name, globals(), locals(), module_name)
+                    test_modules.append(module)
+                except:
+                    # No complaints - just test the files we can (user may have run
+                    # test project on an unfinished project where not all files are valid)
+                    pass
         suite = unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromModule, test_modules))
+        # Doctest
+        for module in test_modules:
+            try:
+                suite.addTest(doctest.DocTestSuite(module))
+            except ValueError, e:
+                # doctest will raise ValueError(module, "has no tests")
+                # and we're trying this on random modules: No loud complaints!
+                pass
 
     # Run all the tests
     _NetBeansTestRunner().run(suite)
