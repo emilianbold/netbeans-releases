@@ -160,11 +160,13 @@ class ResultViewPanel extends JPanel{
     /** */
     private int objectsCount = 0;           //accessed only from the EventQueue
 
-    public ResultViewPanel() {
-        setLayout(new BorderLayout(0, 5));
+    private SearchTask task;
 
+    public ResultViewPanel(SearchTask task) {
+        setLayout(new BorderLayout(0, 5));
         arrowUpdater = new ArrowStatusUpdater(this);
 
+        this.task = task;
         treeModel = createTreeModel();
         tree = createTree(treeModel, nodeListener = new NodeListener(), arrowUpdater);
         treeView = new JScrollPane(tree);
@@ -237,7 +239,7 @@ class ResultViewPanel extends JPanel{
         });
         btnStop.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                Manager.getInstance().stopSearching();
+                Manager.getInstance().stopSearching(getTask());
             }
         });
         btnReplace.addActionListener(new ActionListener(){
@@ -283,6 +285,10 @@ class ResultViewPanel extends JPanel{
 
         initAccessibility();
         resultModelChanged();
+    }
+
+    ResultModel getResultModel(){
+        return resultModel;
     }
 
     void setResultModel(ResultModel resultModel){
@@ -337,10 +343,9 @@ class ResultViewPanel extends JPanel{
     /** Send search details to output window. */
     public void fillOutput() {
         btnShowDetails.setEnabled(false);
-        Manager.getInstance()
-               .schedulePrintingDetails(resultModel.getFoundObjects(),
+        Manager.getInstance().schedulePrintTask(new PrintDetailsTask(resultModel.getFoundObjects(),
                                         basicSearchCriteria,
-                                        searchTypes);
+                                        searchTypes));
     }
 
 
@@ -425,6 +430,10 @@ class ResultViewPanel extends JPanel{
         resetMatchingObjIndexCache();
 
         objectsCount = 0;
+    }
+
+    private SearchTask getTask(){
+        return task;
     }
 
     private MatchingObject matchingObjIndexCacheObj = null;
@@ -552,6 +561,10 @@ class ResultViewPanel extends JPanel{
         String msg = exMsg == null ? baseMsg
                                    : baseMsg + " (" + exMsg + ")";      //NOI18N
         setRootDisplayName(msg);
+    }
+
+    boolean isSearchInProgress(){
+        return searchInProgress;
     }
 
     /**
@@ -1019,7 +1032,8 @@ class ResultViewPanel extends JPanel{
         basicSearchCriteria = searchPanel.getBasicSearchCriteria();
         searchTypes = searchPanel.getSearchTypes();
 
-        SearchTask task = new SearchTask(searchScope, basicSearchCriteria, searchPanel.getCustomizedSearchTypes());
+        Manager.getInstance().stopSearching(task);
+        task = new SearchTask(searchScope, basicSearchCriteria, searchPanel.getCustomizedSearchTypes());
         ResultView.getInstance().addSearchPair(this, task);
         Manager.getInstance().scheduleSearchTask(task);
     }
