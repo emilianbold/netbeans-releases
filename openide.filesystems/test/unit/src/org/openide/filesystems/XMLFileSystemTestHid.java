@@ -487,6 +487,19 @@ public class XMLFileSystemTestHid extends TestBaseHid {
       assertNotNull("Value returned", obj);
       assertEquals("works for bundle key", "Hello World!", obj);
     }
+    public void testPeerAttribute() throws Exception {
+      URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
+      assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);
+      FileSystem fs = FileSystemFactoryHid.createXMLSystem(getName(), this, fsURLDef);
+      FileObject fo = fs.findResource("testMethodValue");
+      FileObject peer = fs.findResource("peer");
+      assertTrue ("Cannot acces  FileObject named testMethodValue", fo != null);
+
+      Object obj = fo.getAttribute("testPeer");
+      assertTrue ("methodValue failed", obj != null);
+      assertEquals("it is the top most fileobject", peer, obj);
+
+    }
 
     
     public void testChangeOfAnAttributeInLayerIsFiredIfThereIsRealChange() throws Exception {
@@ -719,7 +732,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return attrs.get("value1");
     }
     private static Object getObjectViaMethodValue7 (Map<String,Object> attrs, String attrName) {
-        assertEquals(9, attrs.keySet().size());
+        assertEquals(10, attrs.keySet().size());
         try {
             attrs.entrySet().remove(null);
             return "UnsupportedOperationException";
@@ -729,6 +742,14 @@ public class XMLFileSystemTestHid extends TestBaseHid {
 
 
         return attrs.get("value1") + attrName;
+    }
+    private static Object getReadOtherFileObjectAttribute(FileObject fo) {
+        FileObject peer = fo.getParent().getFileObject("peer");
+        assertNotNull("Peer exists", peer);
+        return peer.getAttribute("testPeer");
+    }
+    private static Object getFO(FileObject fo) {
+        return fo;
     }
     
 }
