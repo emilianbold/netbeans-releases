@@ -256,7 +256,7 @@ public class CsmDisplayUtilities {
                 txt.append(" = 0"); // NOI18N
             }
         }
-        return htmlize(txt.toString());
+        return txt.toString();
     }
 
     private static String getHtmlizedString(String key, CharSequence value) {
