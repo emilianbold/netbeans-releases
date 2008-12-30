@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -73,7 +74,7 @@ import org.openide.util.RequestProcessor.Task;
 public abstract class CsmFileTaskFactory {
 
     private final Map<FileObject, CsmFile> fobj2csm = new HashMap<FileObject, CsmFile>();
-    private final Map<Document, Pair> doc2task = new HashMap<Document, Pair>();
+    private final Map<Document, Pair> doc2task = new WeakHashMap<Document, Pair>();
     private final ProgressListener progressListener = new ProgressListener();
     private final ModelListener modelListener = new ModelListener();
    
@@ -135,10 +136,6 @@ public abstract class CsmFileTaskFactory {
                 if (csmFile == null) {
                     //TODO: log
                     continue;
-                }
-                Document doc = CsmUtilities.getDocument(r);
-                if(doc !=  null) {
-                    docToRemove.put(doc, doc2task.remove(doc));
                 }
             }
 
