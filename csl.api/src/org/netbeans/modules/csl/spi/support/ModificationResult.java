@@ -68,6 +68,12 @@ public final class ModificationResult {
     private boolean committed;
     private final Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
     
+    private static final Comparator<Difference> COMPARATOR = new Comparator<Difference>() {
+        public int compare(Difference d1, Difference d2) {
+            return d1.getStartPosition().getOffset() - d2.getStartPosition().getOffset();
+        }
+    };
+
     /** Creates a new instance of ModificationResult */
     public ModificationResult() {
     }
@@ -77,10 +83,15 @@ public final class ModificationResult {
     public void addDifferences(FileObject fo, List<Difference> differences) {
         List<Difference> fileDiffs = diffs.get(fo);
         if (fileDiffs == null) {
-            fileDiffs = new LinkedList();
+            fileDiffs = new ArrayList<Difference>();
             diffs.put(fo, fileDiffs);
         }
         fileDiffs.addAll(differences);
+
+        // Sort the diffs, if applicable
+        if (fileDiffs.size() > 0) {
+            Collections.sort(fileDiffs, COMPARATOR);
+        }
     }
 
     public Set<? extends FileObject> getModifiedFileObjects() {

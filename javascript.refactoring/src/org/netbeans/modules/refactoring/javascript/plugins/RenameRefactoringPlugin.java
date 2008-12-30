@@ -518,9 +518,9 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         if (treePathHandle == null) {
             return null;
         }
-        Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
+        Set<FileObject> files = getRelevantFiles();
+        fireProgressListenerStart(ProgressEvent.START, files.size());
+        if (!files.isEmpty()) {
             TransformTask transform = new TransformTask() {
                 @Override
                 protected Collection<ModificationResult> process(JsParseResult jspr) {
@@ -533,7 +533,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
             };
 
-            final Collection<ModificationResult> results = processFiles(a, transform);
+            final Collection<ModificationResult> results = processFiles(files, transform);
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -847,15 +847,6 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
             }
 
-            // Sort the diffs, if applicable
-            if (diffs.size() > 0) {
-                Collections.sort(diffs, new Comparator<Difference>() {
-                    public int compare(Difference d1, Difference d2) {
-                        return d1.getStartPosition().getOffset() - d2.getStartPosition().getOffset();
-                    }
-                });
-            }
-
             ces = null;
         }
         
@@ -1054,7 +1045,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldCode, newCode, desc);
             diffs.add(diff);
         }
-    
+
         /** Search for local variables in local scope */
         @SuppressWarnings("fallthrough")
         private void findLocal(JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
@@ -1145,6 +1136,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                         // TODO - check arity - see OccurrencesFinder
                         //node = AstUtilities.getDefNameNode((MethodDefNode)node);
                         rename(node, name, null, getString("UpdateMethodDef"));
+                        return;
                     }
                 }
                 break;
@@ -1159,6 +1151,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                     // TODO - make a node on the same line
                     // TODO - check arity - see OccurrencesFinder
                     rename(node, name, null, null);
+                    return;
                  }
                  break;
             }
@@ -1181,6 +1174,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 // Global vars
                 if (node.getString().equals(name)) {
                     rename(node, name, null, null);
+                    return;
                 }
                 break;
             }
