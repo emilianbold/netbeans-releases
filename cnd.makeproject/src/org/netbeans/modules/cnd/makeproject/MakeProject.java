@@ -267,8 +267,9 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     private void addMIMETypeExtensions(Collection<String> extensions, String mime) {
+        MIMEExtensions exts = MIMEExtensions.get(mime);
         for (String ext : extensions) {
-            FileUtil.setMIMEType(ext, mime);
+            exts.addExtension(ext);
         }
     }
 
