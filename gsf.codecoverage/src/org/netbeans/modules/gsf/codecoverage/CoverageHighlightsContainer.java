@@ -42,8 +42,12 @@ package org.netbeans.modules.gsf.codecoverage;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -64,23 +68,22 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 /**
- * Highlight coverage lines
- *
- * @todo More efficient way to compute affected lines... instead of iterating over lines
- *
+ * Highlight coverage lines and react to line edits
  *
  * @author Tor Norbye
  */
-public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* implements DocumentListener*/ {
+public class CoverageHighlightsContainer extends AbstractHighlightsContainer implements DocumentListener {
     private AttributeSet covered;
     private AttributeSet uncovered;
     private AttributeSet inferred;
     private AttributeSet partial;
-
-    //private boolean enabled;
-
+    private List<Position> lastPositions;
+    private List<CoverageType> lastTypes;
+    private boolean enabled;
+    private boolean listening;
     private final BaseDocument doc;
     private final String mimeType;
     private long version = 0;
@@ -93,17 +96,16 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
         } else {
             this.doc = null;
         }
-        //document.addDocumentListener(this);
         this.mimeType = (String) document.getProperty("mimeType");
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        //enabled = false;
+        enabled = false;
         CoverageManagerImpl manager = CoverageManagerImpl.getInstance();
         if (doc == null || manager == null || !manager.isEnabled(mimeType)) {
             return HighlightsSequence.EMPTY;
         }
-        //enabled = true;
+        enabled = true;
         synchronized (this) {
             if (fileObject == null) {
                 fileObject = GsfUtilities.findFileObject(doc);
@@ -125,14 +127,13 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
         }
 
         initColors();
+        if (!listening) {
+            listening = true;
+            doc.addDocumentListener(WeakListeners.document(this, null));
+        }
 
         return new Highlights(0, startOffset, endOffset, details);
     }
-
-//    public void updatedCoveredLines(FileObject fo, FileCoverageDetails details) {
-//        //fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
-//        fireHighlightsChange(0, doc.getLength());
-//    }
 
     private static Color getColoring(FontColorSettings fcs, String tokenName) {
         AttributeSet as = fcs.getTokenFontColors(tokenName);
@@ -186,29 +187,84 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
     }
 
     void refresh() {
+        lastPositions = null;
+        lastTypes = null;
         fireHighlightsChange(0, doc.getLength());
     }
 
-    //public void insertUpdate(DocumentEvent ev) {
-    //    if (enabled) {
-    //        // Fire changes when we have newlines to prevent covered lines from
-    //        // getting split into two
-    //        try {
-    //            String s = doc.getText(ev.getOffset(), ev.getLength());
-    //            if (s.indexOf('\n') != -1) {
-    //                fireHighlightsChange(ev.getOffset(), ev.getOffset()+ev.getLength());
-    //            }
-    //        } catch (BadLocationException ex) {
-    //            Exceptions.printStackTrace(ex);
-    //        }
-    //    }
-    //}
-    //
-    //public void removeUpdate(DocumentEvent ev) {
-    //}
-    //
-    //public void changedUpdate(DocumentEvent ev) {
-    //}
+    private void handleEdits(int offset, int length, boolean inserted) {
+        // If we're editing a document with coverage highlights, we need to
+        // do a couple of things:
+        // (1) If you're inserting a newline AFTER the text on a line, simply
+        //    insert a blank (non-highlighted) line after the previous line
+        // (2) If you're inserting a newline at the beginning of a highlighted
+        //    line (including in the whitespace prefix of the line), then move
+        //    the highlight down, and insert a blank line in the previous position
+        // (3) If you're editing somewhere in the middle of a line, clear the
+        //    coverage line highlight
+        try {
+            assert length > 0;
+            if (inserted) {
+                String s = doc.getText(offset, length);
+                // Can't just check for \n, because on a newline some languages also
+                // add and subtract spaces to the document to implement
+                // smart-indent
+                if ((s.trim().length() == 0)) { // whitespace changes only?
+                    if (Utilities.isRowEmpty(doc, offset) ||
+                            (offset >= Utilities.getRowLastNonWhite(doc, offset) + 1) ||
+                            (offset <= Utilities.getRowFirstNonWhite(doc, offset))) {
+                        fireHighlightsChange(offset, offset + length);
+                        return;
+                    }
+                }
+            }
+
+            int lineStart = Utilities.getRowFirstNonWhite(doc, offset);
+            if (lineStart == -1) {
+                lineStart = Utilities.getRowStart(doc, offset);
+            }
+            List<Position> positions = lastPositions;
+            if (positions != null) {
+                int positionIndex = findPositionIndex(positions, lineStart);
+                if (positionIndex >= 0) {
+                    // Create a new list to avoid sync problems
+                    List<Position> copy = new ArrayList<Position>(positions);
+                    copy.remove(positionIndex);
+                    lastPositions = copy;
+                    fireHighlightsChange(offset, offset + length);
+                }
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public void insertUpdate(DocumentEvent ev) {
+        if (enabled) {
+            handleEdits(ev.getOffset(), ev.getLength(), true);
+        }
+    }
+
+    public void removeUpdate(DocumentEvent ev) {
+        //if (enabled) {
+        //    handleEdits(ev.getOffset(), ev.getLength(), false);
+        //}
+    }
+
+    public void changedUpdate(DocumentEvent ev) {
+    }
+
+    private int findPositionIndex(List<Position> positions, final int target) {
+        return Collections.binarySearch(positions, new Position() {
+            public int getOffset() {
+                return target;
+            }
+        }, new Comparator<Position>() {
+            public int compare(Position pos1, Position pos2) {
+                return pos1.getOffset() - pos2.getOffset();
+            }
+        });
+    }
 
     private class Highlights implements HighlightsSequence {
         private final List<Position> positions;
@@ -227,30 +283,64 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer/* i
             this.startOffsetBoundary = startOffset;
             this.endOffsetBoundary = endOffset;
 
-            positions = new ArrayList<Position>();
-            types = new ArrayList<CoverageType>();
-            for (int lineno = 0, maxLines = details.getLineCount(); lineno < maxLines; lineno++) {
-                CoverageType type = details.getType(lineno);
-                if (type == CoverageType.COVERED || type == CoverageType.INFERRED || 
-                        type == CoverageType.NOT_COVERED || type == CoverageType.PARTIAL) {
-                    try {
-                        int offset = Utilities.getRowStartFromLineOffset(doc, lineno);
-                        Position pos = doc.createPosition(offset);
-                        positions.add(pos);
-                        types.add(type);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+            if (lastPositions == null) {
+                positions = new ArrayList<Position>();
+                types = new ArrayList<CoverageType>();
+                for (int lineno = 0, maxLines = details.getLineCount(); lineno < maxLines; lineno++) {
+                    CoverageType type = details.getType(lineno);
+                    if (type == CoverageType.COVERED || type == CoverageType.INFERRED ||
+                            type == CoverageType.NOT_COVERED || type == CoverageType.PARTIAL) {
+                        try {
+                            int offset = Utilities.getRowStartFromLineOffset(doc, lineno);
+                            // Attach the highlight position to the beginning of text, such
+                            // that if we insert a new line at the beginning of a line (or in
+                            // the whitespace region) the highlight will move down with the
+                            // text
+                            int rowStart = Utilities.getRowFirstNonWhite(doc, offset);
+                            if (rowStart != -1) {
+                                offset = rowStart;
+                            }
+                            Position pos = doc.createPosition(offset, Position.Bias.Forward);
+                            positions.add(pos);
+                            types.add(type);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
+                lastPositions = positions;
+                lastTypes = types;
+            } else {
+                positions = lastPositions;
+                types = lastTypes;
             }
 
+            try {
+                int lineStart = Utilities.getRowFirstNonWhite(doc, startOffsetBoundary);
+                if (lineStart == -1) {
+                    lineStart = Utilities.getRowStart(doc, startOffsetBoundary);
+                    index = findPositionIndex(positions, lineStart);
+                    if (index < 0) {
+                        index = -index;
+                    }
+                }
+            } catch (BadLocationException ble) {
+            }
         }
 
         private boolean _moveNext() {
             for (; index < positions.size(); index++) {
                 Position pos = positions.get(index);
                 int offset = pos.getOffset();
-                if (offset >= startOffsetBoundary && offset <= endOffsetBoundary) {
+                try {
+                    offset = Utilities.getRowStart(doc, offset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (offset > endOffsetBoundary) {
+                    break;
+                }
+                if (offset >= startOffsetBoundary) {
                     startOffset = offset;
                     try {
                         endOffset = Utilities.getRowEnd(doc, offset);
