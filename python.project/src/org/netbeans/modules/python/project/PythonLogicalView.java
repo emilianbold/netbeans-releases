@@ -15,6 +15,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.python.project.ui.ChangePackageViewTypeAction;
+import org.netbeans.modules.python.project.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -61,23 +63,15 @@ class PythonLogicalView implements LogicalViewProvider {
             if (!project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
-            
-            Node[] rootChildren = root.getChildren().getNodes(true);
-            for (int i = 0; i < rootChildren.length; i++) {
-                TreeRootNode.PathFinder pf2 = rootChildren[i].getLookup().lookup(TreeRootNode.PathFinder.class);
-                if (pf2 != null) {
-                    Node n =  pf2.findPath(rootChildren[i], target);
-                    if (n != null) {
-                        return n;
-                    }
-                }
-                FileObject childFO = rootChildren[i].getLookup().lookup(DataObject.class).getPrimaryFile();
-                if (targetFO.equals(childFO)) {
-                    return rootChildren[i];
+
+            for (Node n : root.getChildren().getNodes(true)) {
+                Node result = PackageView.findPath(n, target);
+                if (result != null) {
+                    return result;
                 }
             }
         }
-        
+
         return null;
     }
     
@@ -173,6 +167,8 @@ class PythonLogicalView implements LogicalViewProvider {
             actions.add(CommonProjectActions.moveProjectAction());
             actions.add(CommonProjectActions.copyProjectAction());
             actions.add(CommonProjectActions.deleteProjectAction());
+            actions.add(null);
+            actions.add(new ChangePackageViewTypeAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
             
