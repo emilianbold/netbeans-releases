@@ -63,25 +63,25 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersUI implements RefactoringUI {
     
-    CsmObject refactoredObj;
-    ChangeParametersPanel panel;
-    ChangeParametersRefactoring refactoring;
+    private final CsmObject selectedElement;
+    private ChangeParametersPanel panel;
+    private final ChangeParametersRefactoring refactoring;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    private ChangeParametersUI(CsmObject refactoredObj) {
-        this.refactoring = new ChangeParametersRefactoring(refactoredObj);
-        this.refactoredObj = refactoredObj;
+    private ChangeParametersUI(CsmObject selectedElement) {
+        this.refactoring = new ChangeParametersRefactoring(selectedElement);
+        this.selectedElement = selectedElement;
     }
     
-    public static ChangeParametersUI create(CsmObject refactoredObj) {
-        return new ChangeParametersUI(refactoredObj);
+    public static ChangeParametersUI create(CsmObject selectedElement) {
+        return new ChangeParametersUI(selectedElement);
     }
     
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
-        String name = CsmRefactoringUtils.getSimpleText(refactoredObj);
-        boolean isConstructor = CsmKindUtilities.isConstructor(refactoredObj);
+        String name = CsmRefactoringUtils.getSimpleText(selectedElement);
+        boolean isConstructor = CsmKindUtilities.isConstructor(selectedElement);
         return new MessageFormat(msg).format(new Object[] { 
             name,
             NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isConstructor ? "Constr" : "Method")),
@@ -91,7 +91,7 @@ public class ChangeParametersUI implements RefactoringUI {
     
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new ChangeParametersPanel(refactoredObj, parent);
+            panel = new ChangeParametersPanel(selectedElement, parent);
         }
         return panel;
     }
