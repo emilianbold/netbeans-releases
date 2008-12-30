@@ -165,12 +165,12 @@ public final class MemberInfo<H> {
         if (CsmKindUtilities.isField(elem)) {
             CsmField field = (CsmField) elem;
 //            format += " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
-            htmlText = field.getName().toString() + ": " + field.getType().getText();
+            htmlText = field.getName().toString() + ": " + field.getType().getText(); //NOI18N
             g=Group.FIELD;
         } else if (CsmKindUtilities.isMethod(elem)) {
             CsmMethod method = (CsmMethod) elem;
 //            format += "%parameters%" + " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
-            htmlText = method.getSignature() + ": " + method.getReturnType().getText();
+            htmlText = method.getSignature() + ": " + method.getReturnType().getText(); //NOI18N
             g=Group.METHOD;
         }
 
