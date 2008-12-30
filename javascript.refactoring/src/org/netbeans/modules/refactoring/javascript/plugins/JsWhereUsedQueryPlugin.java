@@ -418,7 +418,6 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             
             if (root == null) {
                 // TODO - warn that this file isn't compileable and is skipped?
-                fireProgressListenerStep();
                 return Collections.<ModificationResult>emptySet();
             }
             
@@ -491,7 +490,6 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             } else if (isSearchFromBaseClass()) {
                 // TODO
             }
-            fireProgressListenerStep();
 
             return Collections.<ModificationResult>emptySet();
         }
