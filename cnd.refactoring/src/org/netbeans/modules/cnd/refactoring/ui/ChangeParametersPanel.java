@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
 
-    private final CsmObject refactoredObj;
+    private final CsmObject selectedElement;
     private CsmFunction<CsmFunction> functionObj;
     private ParamTableModel model;
     private ChangeListener parent;
@@ -106,8 +106,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
     /** Creates new form ChangeMethodSignature */
-    public ChangeParametersPanel(CsmObject refactoredObj, ChangeListener parent) {
-        this.refactoredObj = refactoredObj;
+    public ChangeParametersPanel(CsmObject selectedObj, ChangeListener parent) {
+        this.selectedElement = selectedObj;
         this.parent = parent;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
@@ -119,7 +119,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             return;
         }
         @SuppressWarnings("unchecked")
-        CsmFunction<CsmFunction> fun = ((CsmFunction<CsmFunction>) CsmRefactoringUtils.getReferencedElement(refactoredObj)).getDeclaration();
+        CsmFunction<CsmFunction> fun = ((CsmFunction<CsmFunction>) CsmRefactoringUtils.getReferencedElement(selectedElement)).getDeclaration();
         functionObj = fun;
         returnType = functionObj.getReturnType().getCanonicalText().toString();
         if (CsmKindUtilities.isMethod(functionObj)) {
@@ -579,13 +579,13 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         // generate the return type for the method and name
         // for the both - method and constructor
         String name;
-        if (CsmKindUtilities.isConstructor(refactoredObj)) {
+        if (CsmKindUtilities.isConstructor(functionObj)) {
             buf.append(' ');
-            name = CsmRefactoringUtils.getSimpleText(refactoredObj);
+            name = CsmRefactoringUtils.getSimpleText(functionObj);
         } else {
             buf.append(returnType);
             buf.append(' ');
-            name = CsmRefactoringUtils.getSimpleText(refactoredObj);
+            name = CsmRefactoringUtils.getSimpleText(functionObj);
         }
         buf.append(name);
         buf.append('(');

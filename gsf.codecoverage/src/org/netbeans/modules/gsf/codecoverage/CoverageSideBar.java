@@ -135,7 +135,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
             boolean tooOld = false;
             if (fo != null && dataModified > 0 && dataModified < fo.lastModified().getTime()) {
                 tooOld = true;
-            } else {
+            } else if (fo != null && fo.isValid()) {
                 try {
                     DataObject dobj = DataObject.find(fo);
                     tooOld = dobj.isModified();

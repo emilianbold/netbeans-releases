@@ -149,6 +149,8 @@ public final class CoverageAction extends AbstractAction implements ContextAware
         if (!enabled || !on) {
             menuitem.setEnabled(false);
         }
+        menu.add(menuitem);
+        menu.addSeparator();
 
         menuitem = new JCheckBoxMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_ShowEditorBar"),
                 manager.getShowEditorBar());
