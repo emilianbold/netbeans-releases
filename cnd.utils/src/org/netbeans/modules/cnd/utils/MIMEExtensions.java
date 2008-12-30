@@ -196,6 +196,7 @@ public final class MIMEExtensions {
 
     public void addExtension(String ext) {
         if (!getValues().contains(ext)) {
+            exts.add(ext);
             FileUtil.setMIMEType(ext, mimeType);
         }
     }
