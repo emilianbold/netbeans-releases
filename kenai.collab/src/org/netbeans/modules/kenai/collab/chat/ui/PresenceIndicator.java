@@ -162,12 +162,16 @@ public class PresenceIndicator {
 
     }
 
-    public class PresenceListener implements PacketListener {
+    public class PresenceListener implements PacketListener, Runnable {
         /**
          *
          * @param packet
          */
         public void processPacket(Packet packet) {
+            java.awt.EventQueue.invokeLater(this);
+        }
+
+        public void run() {
             label.setText(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOnline", new Object[] {KenaiConnection.getDefault().getChats().first().getOccupantsCount()}));
         }
     }

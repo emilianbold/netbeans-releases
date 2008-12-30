@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.kenai.collab.chat.ui;
 
-import java.awt.Component;
-import javax.swing.JFrame;
+import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
+import org.openide.util.ImageUtilities;
 
 /**
  * Container for ChatPanels
@@ -51,6 +54,8 @@ import javax.swing.JFrame;
  */
 public class ChatContainer extends javax.swing.JPanel {
 
+    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+
     /** Creates new form ChatContainer */
     public ChatContainer() {
         initComponents();
@@ -58,7 +63,9 @@ public class ChatContainer extends javax.swing.JPanel {
 
     void addChats(String string, ChatPanel chatPanel) {
         chats.add(chatPanel,string);
-        jComboBox1.addItem(string);
+        final JToggleButton jToggleButton = new JToggleButton(string, ONLINE);
+        jToggleButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        buttonsGroup.add(jToggleButton);
     }
 
     /** This method is called from within the constructor to
@@ -70,53 +77,59 @@ public class ChatContainer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jComboBox1 = new javax.swing.JComboBox();
-        contactListButton = new javax.swing.JToggleButton();
         chats = new javax.swing.JPanel();
+        topPanel = new javax.swing.JPanel();
+        buttonsGroup = new javax.swing.JPanel();
+        addChat = new javax.swing.JButton();
 
-        contactListButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/chat.gif"))); // NOI18N
-        contactListButton.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                contactListButtonStateChanged(evt);
+        setLayout(new java.awt.BorderLayout());
+
+        chats.setLayout(new java.awt.CardLayout());
+        add(chats, java.awt.BorderLayout.CENTER);
+
+        buttonsGroup.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        addChat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/plus.gif"))); // NOI18N
+        addChat.setBorder(null);
+        addChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addChatActionPerformed(evt);
             }
         });
 
-        chats.setLayout(new java.awt.CardLayout());
+        org.jdesktop.layout.GroupLayout topPanelLayout = new org.jdesktop.layout.GroupLayout(topPanel);
+        topPanel.setLayout(topPanelLayout);
+        topPanelLayout.setHorizontalGroup(
+            topPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, topPanelLayout.createSequentialGroup()
+                .add(buttonsGroup, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(addChat))
+        );
+        topPanelLayout.setVerticalGroup(
+            topPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.CENTER, buttonsGroup, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.CENTER, addChat)
+        );
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 170, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(contactListButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(200, Short.MAX_VALUE))
-            .add(chats, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(contactListButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chats, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
-        );
+        add(topPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void contactListButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_contactListButtonStateChanged
-        for (Component panel : chats.getComponents()) {
-            ((ChatPanel) panel).setUsersListVisible(!contactListButton.isSelected());
-        }
-        ((JFrame) getRootPane().getParent()).pack();
-}//GEN-LAST:event_contactListButtonStateChanged
+    private void addChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChatActionPerformed
+        JPopupMenu menu = new JPopupMenu();
+
+        //TODO: How to get list of available projects?
+        menu.add("Test Project");
+        menu.add("Foo");
+        menu.show(addChat, 0, addChat.getSize().height);
+    }//GEN-LAST:event_addChatActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addChat;
+    private javax.swing.JPanel buttonsGroup;
     private javax.swing.JPanel chats;
-    private javax.swing.JToggleButton contactListButton;
-    private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JPanel topPanel;
     // End of variables declaration//GEN-END:variables
 
 }

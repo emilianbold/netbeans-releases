@@ -46,14 +46,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.MessageTypeFilter;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Message.Type;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
@@ -66,11 +61,22 @@ import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
  */
 public class KenaiConnection {
 
+    public void join(MultiUserChat chat) {
+                try {
+            // User2 joins the new room
+            // The room service will decide the amount of history to send
+            chat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
+            chat.join(USER);
+        } catch (XMPPException ex) {
+            Logger.getLogger(KenaiConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
     void tryConnect() {
         try {
             connect();
-            joinChat();
-            nbChat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
+            initChats();
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
             XMPPLOG.log(Level.WARNING, ex.getMessage());
@@ -79,10 +85,18 @@ public class KenaiConnection {
 
     XMPPConnection connection;
     MultiUserChat nbChat;
+//    bcol4 test server
     private static final String USER = "testuser1";
     private static final String PASSWORD = "password";
-    private static final String XMPP_SERVER = "bco108.central.sun.com";
+    private static final String XMPP_SERVER = "bco14.central.sun.com";
     private static final String CHAT_ROOM = "nbchat@muc.central.sun.com";
+
+////  test server on localhost
+//    private static final String USER = "netbeans";
+//    private static final String PASSWORD = "netbeans";
+//    private static final String XMPP_SERVER = "127.0.0.1";
+//    private static final String CHAT_ROOM = "nb@conference.127.0.0.1";
+
 
     private static KenaiConnection instance;
 
@@ -102,23 +116,23 @@ public class KenaiConnection {
     }
 
    public boolean isConnected() {
-        return connection!=null && connection.isConnected() && connection.isAuthenticated() && nbChat!=null && nbChat.isJoined();
+        return connection!=null && connection.isConnected() && connection.isAuthenticated();
     }
 
     private void connect() throws XMPPException {
         connection = new XMPPConnection(XMPP_SERVER);
         connection.connect();
         login();
-        connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
+        //connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
 
-    private class PacketL implements PacketListener {
-
-        public void processPacket(Packet packet) {
-            notification.addMessage((Message)packet);
-            notification.add();
-        }
-    }
+//    private class PacketL implements PacketListener {
+//
+//        public void processPacket(Packet packet) {
+//            notification.addMessage((Message)packet);
+//            notification.add();
+//        }
+//    }
 
     private static MessageNotification notification = new MessageNotification();
 
@@ -126,17 +140,17 @@ public class KenaiConnection {
         connection.login(USER,PASSWORD);
     }
 
-    private MultiUserChat joinChat() {
+    private MultiUserChat initChats() {
         if (!connection.isConnected())
             return null;
         nbChat = new MultiUserChat(connection,CHAT_ROOM);
-        try {
-            // User2 joins the new room
-            // The room service will decide the amount of history to send
-            nbChat.join(USER);
-        } catch (XMPPException ex) {
-            Logger.getLogger(KenaiConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            // User2 joins the new room
+//            // The room service will decide the amount of history to send
+//            nbChat.join(USER);
+//        } catch (XMPPException ex) {
+//            Logger.getLogger(KenaiConnection.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         return nbChat;
     }
 
