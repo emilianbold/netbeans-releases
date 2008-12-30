@@ -41,33 +41,27 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.text.AttributeSet;
+import java.awt.Font;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.packet.MUCUser;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.jivesoftware.smackx.packet.DelayInformation;
+import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Panel representing single ChatRoom
@@ -76,90 +70,86 @@ import org.openide.util.Exceptions;
 public class ChatPanel extends javax.swing.JPanel {
 
     MultiUserChat muc;
-    static final SimpleAttributeSet ITALIC_GRAY = new SimpleAttributeSet();
-    static final SimpleAttributeSet BOLD_BLACK = new SimpleAttributeSet();
-    static final SimpleAttributeSet BLACK = new SimpleAttributeSet();
-
-    static {
-        StyleConstants.setForeground(ITALIC_GRAY, Color.gray);
-        StyleConstants.setItalic(ITALIC_GRAY, true);
-        StyleConstants.setFontFamily(ITALIC_GRAY, "Helvetica");
-        StyleConstants.setFontSize(ITALIC_GRAY, 14);
-
-        StyleConstants.setForeground(BOLD_BLACK, Color.black);
-        StyleConstants.setBold(BOLD_BLACK, true);
-        StyleConstants.setFontFamily(BOLD_BLACK, "Helvetica");
-        StyleConstants.setFontSize(BOLD_BLACK, 14);
-        StyleConstants.setFontSize(BOLD_BLACK, 14);
-
-        StyleConstants.setForeground(BLACK, Color.black);
-        StyleConstants.setFontFamily(BLACK, "Helvetica");
-        StyleConstants.setFontSize(BLACK, 14);
-    }
-
+    private final HTMLEditorKit editorKit;
 
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
         initComponents();
-        users.setCellRenderer(new BuddyListCellRenderer());
-        users.setModel(new BuddyListModel(chat));
-        //users.setModel(new BuddyListModel(ctrl.getRoster()));
-        chat.addParticipantListener(getBuddyListModel());
+        editorKit= (HTMLEditorKit) inbox.getEditorKit();
+
+        Font font = UIManager.getFont("Label.font");
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
+                "font-size: " + font.getSize() + "pt; }";
+        final StyleSheet styleSheet = ((HTMLDocument) inbox.getDocument()).getStyleSheet();
+
+        styleSheet.addRule(bodyRule);
+        styleSheet.addRule(".buddy {color: black; font-weight: bold;}");
+        styleSheet.addRule(".time {color: lightgrey;");
+        styleSheet.addRule(".message {color: lightgrey;");
+        styleSheet.addRule(".date {color: #FF9933;");
+
+
+//        users.setCellRenderer(new BuddyListCellRenderer());
+//        users.setModel(new BuddyListModel(chat));
+//        users.setModel(new BuddyListModel(ctrl.getRoster()));
+//        chat.addParticipantListener(getBuddyListModel());
         chat.addParticipantListener(new PresenceListener());
         chat.addMessageListener(new ChatListener());
+        KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
         outbox.setBackground(Color.WHITE);
-        setUpPrivateMessages();
+        splitter.setResizeWeight(0.9);
+//        setUpPrivateMessages();
     }
 
-    void setUpPrivateMessages() {
-
-        final JPopupMenu popupMenu = new JPopupMenu();
-        popupMenu.add(new SendPrivateMessage());
-
-        users.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-                processMouseEvent(me);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                processMouseEvent(e);
-            }
-
-            private void processMouseEvent(MouseEvent me) {
-                if (me.isPopupTrigger()) {
-                    users.setSelectedIndex(users.locationToIndex(me.getPoint()));
-                    popupMenu.show(users, me.getX(), me.getY());
-                }
-            }
-        });
-    }
-
-    private class SendPrivateMessage extends AbstractAction {
-
-        public SendPrivateMessage() {
-            super("Send Private Message");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Buddy b = (Buddy) users.getModel().getElementAt(users.getSelectedIndex());
-            try {
-                JEditorPane pane = new JEditorPane();
-                JScrollPane scrollPane = new JScrollPane(pane);
-                DialogDescriptor sendMessage = new DialogDescriptor(scrollPane, "Send private message to " + b.getLabel());
-                DialogDisplayer.getDefault().createDialog(sendMessage).setVisible(true);
-                if (sendMessage.getValue()==DialogDescriptor.OK_OPTION) {
-                    muc.createPrivateChat(b.getJid(), null).sendMessage(pane.getText());
-                }
-            } catch (XMPPException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-    }
+//    void setUpPrivateMessages() {
+//
+//        final JPopupMenu popupMenu = new JPopupMenu();
+//        popupMenu.add(new SendPrivateMessage());
+//
+//        users.addMouseListener(new MouseAdapter() {
+//
+//            @Override
+//            public void mousePressed(MouseEvent me) {
+//                processMouseEvent(me);
+//            }
+//
+//            @Override
+//            public void mouseReleased(MouseEvent e) {
+//                processMouseEvent(e);
+//            }
+//
+//            private void processMouseEvent(MouseEvent me) {
+//                if (me.isPopupTrigger()) {
+//                    users.setSelectedIndex(users.locationToIndex(me.getPoint()));
+//                    popupMenu.show(users, me.getX(), me.getY());
+//                }
+//            }
+//        });
+//    }
+//
+//    private class SendPrivateMessage extends AbstractAction {
+//
+//        public SendPrivateMessage() {
+//            super("Send Private Message");
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            Buddy b = (Buddy) users.getModel().getElementAt(users.getSelectedIndex());
+//            try {
+//                JEditorPane pane = new JEditorPane();
+//                JScrollPane scrollPane = new JScrollPane(pane);
+//                DialogDescriptor sendMessage = new DialogDescriptor(scrollPane, "Send private message to " + b.getLabel());
+//                DialogDisplayer.getDefault().createDialog(sendMessage).setVisible(true);
+//                if (sendMessage.getValue()==DialogDescriptor.OK_OPTION) {
+//                    muc.createPrivateChat(b.getJid(), null).sendMessage(pane.getText());
+//                }
+//            } catch (XMPPException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//
+//    }
 
     private class ChatListener implements PacketListener {
 
@@ -168,12 +158,12 @@ public class ChatPanel extends javax.swing.JPanel {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     setEndSelection();
-                    insertText(StringUtils.parseResource(message.getFrom()) + ": ", ChatPanel.ITALIC_GRAY);
-                    insertText(message.getBody() + "\n", ChatPanel.BLACK);
+                    insertMessage(message);
                 }
             });
         }
     }
+
 
     private class PresenceListener implements PacketListener {
 
@@ -182,18 +172,26 @@ public class ChatPanel extends javax.swing.JPanel {
             java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                setEndSelection();
-                insertText(presence.getFrom() + " is now ", ChatPanel.ITALIC_GRAY);
-                insertText(presence.getType() + "\n", ChatPanel.ITALIC_GRAY);
+                online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
+                Iterator<String> string = muc.getOccupants();
+                StringBuffer buffer = new StringBuffer();
+                buffer.append("<html><body>");
+                while (string.hasNext()) {
+                    buffer.append(StringUtils.parseResource(string.next()) + "<br>");
+                }
+                buffer.append("</body></html>");
+                online.setToolTipText(buffer.toString());
+                //setEndSelection();
+                //insertPresence(presence);
             }
         });
         }
     }
 
 
-    private BuddyListModel getBuddyListModel() {
-        return (BuddyListModel) users.getModel();
-    }
+//    private BuddyListModel getBuddyListModel() {
+//        return (BuddyListModel) users.getModel();
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -204,25 +202,20 @@ public class ChatPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        usersScrollPane = new javax.swing.JScrollPane();
-        users = new javax.swing.JList();
         splitter = new javax.swing.JSplitPane();
-        inboxScrollPane = new javax.swing.JScrollPane();
-        inbox = new javax.swing.JTextPane();
         outboxScrollPane = new javax.swing.JScrollPane();
         outbox = new javax.swing.JTextPane();
-        sendButton = new javax.swing.JButton();
+        inboxPanel = new javax.swing.JPanel();
+        inboxScrollPane = new javax.swing.JScrollPane();
+        inbox = new javax.swing.JTextPane();
+        online = new javax.swing.JLabel();
 
-        usersScrollPane.setViewportView(users);
-
-        splitter.setDividerLocation(200);
         splitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        inbox.setEditable(false);
-        inboxScrollPane.setViewportView(inbox);
+        outboxScrollPane.setBorder(null);
 
-        splitter.setLeftComponent(inboxScrollPane);
-
+        outbox.setBorder(null);
+        outbox.setMaximumSize(new java.awt.Dimension(0, 16));
         outbox.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 ChatPanel.this.keyTyped(evt);
@@ -232,72 +225,124 @@ public class ChatPanel extends javax.swing.JPanel {
 
         splitter.setRightComponent(outboxScrollPane);
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/kenai/collab/chat/ui/Bundle"); // NOI18N
-        sendButton.setText(bundle.getString("ChatPanel.sendButton.text")); // NOI18N
-        sendButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sendButtonActionPerformed(evt);
-            }
-        });
+        inboxPanel.setBackground(java.awt.Color.white);
+        inboxPanel.setLayout(new java.awt.BorderLayout());
+
+        inboxScrollPane.setBorder(null);
+        inboxScrollPane.setViewportBorder(null);
+
+        inbox.setBorder(null);
+        inbox.setContentType("text/html"); // NOI18N
+        inbox.setEditable(false);
+        inbox.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.inbox.text", new Object[] {})); // NOI18N
+        inboxScrollPane.setViewportView(inbox);
+
+        inboxPanel.add(inboxScrollPane, java.awt.BorderLayout.CENTER);
+
+        online.setBackground(java.awt.Color.white);
+        online.setForeground(java.awt.Color.blue);
+        online.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        online.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.online.text", new Object[] {})); // NOI18N
+        online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
+        inboxPanel.add(online, java.awt.BorderLayout.PAGE_START);
+
+        splitter.setTopComponent(inboxPanel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap(375, Short.MAX_VALUE)
-                        .add(sendButton))
-                    .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(usersScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(sendButton))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, usersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void keyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyTyped
-        if (evt.getKeyChar() == '\n' && evt.getModifiers() == KeyEvent.ALT_MASK) {
-            sendButton.doClick();
-        }
-    }//GEN-LAST:event_keyTyped
-
-    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        if (evt.getKeyChar() == '\n') {
         try {
             muc.sendMessage(outbox.getText().trim());
         } catch (XMPPException ex) {
             Exceptions.printStackTrace(ex);
         }
         outbox.setText("");
-    }//GEN-LAST:event_sendButtonActionPerformed
+    }                                          
+    }//GEN-LAST:event_keyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane inbox;
+    private javax.swing.JPanel inboxPanel;
     private javax.swing.JScrollPane inboxScrollPane;
+    private javax.swing.JLabel online;
     private javax.swing.JTextPane outbox;
     private javax.swing.JScrollPane outboxScrollPane;
-    private javax.swing.JButton sendButton;
     private javax.swing.JSplitPane splitter;
-    private javax.swing.JList users;
-    private javax.swing.JScrollPane usersScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    protected void insertText(String text, AttributeSet set) {
+
+    private Date lastDatePrinted;
+
+    protected void insertMessage(Message message) {
         try {
-            StyledDocument doc = inbox.getStyledDocument();
-            doc.insertString(doc.getLength(), text, set);
+            HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
+            final Date timestamp = getTimestamp(message);
+            if (!isSameDate(lastDatePrinted,timestamp)) {
+                lastDatePrinted = timestamp;
+                String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" +
+                    (isToday(timestamp)?"Today":DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" +
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>";
+                editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
+            }
+            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+
+                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" +
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" +
+                    "<div class=\"message\">" + message.getBody() + "</div>";
+
+            editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
+
+    public static Date getTimestamp(Packet packet) {
+         DelayInformation delay = (DelayInformation) packet.getExtension("x", "jabber:x:delay");
+         if (delay != null) {
+             return delay.getStamp();
+         } else {
+             //this is realtime message
+             return new Date();
+         }
+    }
+
+    boolean isToday(Date date) {
+        return isSameDate(date, new Date());
+    }
+
+    boolean isSameDate(Date date, Date date2) {
+        if (date==null) {
+            return false;
+        }
+        return date.getDate() == date2.getDate() && date.getMonth() == date2.getMonth() && date.getYear() == date2.getYear();
+    }
+
+
+    protected void insertPresence(Presence presence) {
+        try {
+            HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
+            String text = "<i><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</i>";
+            editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     // Needed for inserting icons in the right places
     protected void setEndSelection() {
@@ -305,7 +350,7 @@ public class ChatPanel extends javax.swing.JPanel {
         inbox.setSelectionEnd(inbox.getDocument().getLength());
     }
 
-    void setUsersListVisible(boolean visible) {
-        usersScrollPane.setVisible(visible);
-    }
+//    void setUsersListVisible(boolean visible) {
+//        usersScrollPane.setVisible(visible);
+//    }
 }

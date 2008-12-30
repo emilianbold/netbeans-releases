@@ -44,6 +44,7 @@ package org.netbeans.modules.kenai.collab.chat.ui;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jivesoftware.smack.util.StringUtils;
+import org.openide.util.ImageUtilities;
 
 /**
  * Participant representation.
@@ -53,9 +54,10 @@ import org.jivesoftware.smack.util.StringUtils;
 public class Buddy implements Comparable<Buddy> {
     
     private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(Buddy.class.getResource("/org/netbeans/modules/kenai/collab/resources/online.gif"));
+    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
 
     public Buddy(String jid) {
+        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
         this.jid = jid;
     }
 
