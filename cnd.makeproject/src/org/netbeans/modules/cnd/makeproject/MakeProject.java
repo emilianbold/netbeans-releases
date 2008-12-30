@@ -88,6 +88,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -285,17 +286,37 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     private void checkNeededExtensions() {
-        Set<String> unknown = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
-        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "C")) { // NOI18N
-            addMIMETypeExtensions(unknown, MIMENames.C_MIME_TYPE);
-        }
-        unknown = getUnknownExtensions(MakeProject.getCppSuffixes(), cppExtensions);
-        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "CPP")) { // NOI18N
-            addMIMETypeExtensions(unknown, MIMENames.CPLUSPLUS_MIME_TYPE);
-        }
-        unknown = getUnknownExtensions(MakeProject.getHeaderSuffixes(), headerExtensions);
-        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "H")) { // NOI18N
-            addMIMETypeExtensions(unknown, MIMENames.HEADER_MIME_TYPE);
+        Set<String> unknownC = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
+        Set<String> unknownCpp = getUnknownExtensions(MakeProject.getCppSuffixes(), cppExtensions);
+        Set<String> unknownH = getUnknownExtensions(MakeProject.getHeaderSuffixes(), headerExtensions);
+        if (!unknownC.isEmpty() && unknownCpp.isEmpty() && unknownH.isEmpty()) {
+            if (unknownC.size() > 0 && addNewExtensionDialog(unknownC, "C")) { // NOI18N
+                addMIMETypeExtensions(unknownC, MIMENames.C_MIME_TYPE);
+            }
+        } else if (unknownC.isEmpty() && !unknownCpp.isEmpty() && unknownH.isEmpty()) {
+            if (addNewExtensionDialog(unknownCpp, "CPP")) { // NOI18N
+                addMIMETypeExtensions(unknownCpp, MIMENames.CPLUSPLUS_MIME_TYPE);
+            }
+        } else if (unknownC.isEmpty() && unknownCpp.isEmpty() && !unknownH.isEmpty()) {
+            if (addNewExtensionDialog(unknownH, "H")) { // NOI18N
+                addMIMETypeExtensions(unknownH, MIMENames.HEADER_MIME_TYPE);
+            }
+        } else if (!(unknownC.isEmpty() && unknownCpp.isEmpty() && unknownH.isEmpty())) {
+            ConfirmExtensions panel = new ConfirmExtensions(unknownC, unknownCpp, unknownH);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(panel,
+                    getString("ConfirmExtensions.dialog.title")); // NOI18N
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                if (panel.isC()) {
+                    addMIMETypeExtensions(unknownC, MIMENames.C_MIME_TYPE);
+                }
+                if (panel.isCpp()) {
+                    addMIMETypeExtensions(unknownCpp, MIMENames.CPLUSPLUS_MIME_TYPE);
+                }
+                if (panel.isHeader()) {
+                    addMIMETypeExtensions(unknownH, MIMENames.HEADER_MIME_TYPE);
+                }
+            }
         }
     }
 
