@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.maven.api;
 
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -49,6 +51,8 @@ import org.netbeans.modules.maven.actions.ViewProjectHomeAction;
 import org.netbeans.modules.maven.actions.scm.SCMActions;
 import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,10 +112,28 @@ public class CommonArtifactActions {
                "http://repo1.maven.org/maven2", "central"))); //NOI18N
     }
 
-
     public static Action createFindUsages(Artifact artifact) {
         
         return new FindArtifactUsages(artifact);
+    }
+
+    public static Action createViewArtifactDetails(Artifact art, List<ArtifactRepository> remoteRepos) {
+        return new ShowArtifactAction(art, remoteRepos);
+    }
+
+    private static class ShowArtifactAction extends AbstractAction {
+        private Artifact artifact;
+        private List<ArtifactRepository> repos;
+
+        ShowArtifactAction(Artifact art, List<ArtifactRepository> repos) {
+            this.artifact = art;
+            this.repos = repos;
+            putValue(NAME, NbBundle.getMessage(ShowArtifactAction.class, "ACT_View_Details"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ArtifactViewer.showArtifactViewer(artifact, repos);
+        }
     }
     
 }

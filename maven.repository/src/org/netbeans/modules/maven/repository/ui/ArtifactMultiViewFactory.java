@@ -56,6 +56,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Exceptions;
@@ -74,45 +75,54 @@ import org.openide.windows.TopComponent;
 @ServiceProvider( service=ArtifactViewerFactory.class )
 public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
+    public TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos) {
+        return createTopComponent(null, artifact, repos);
+    }
     public TopComponent createTopComponent(final NBVersionInfo info) {
+        return createTopComponent(info, null, null);
+    }
+
+    private TopComponent createTopComponent(final NBVersionInfo info, Artifact artifact, final List<ArtifactRepository> fRepos) {
+        assert info != null || artifact != null;
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
-        final Artifact artifact = RepositoryUtil.createArtifact(info);
-        ic.add(info);
+        if (artifact == null && info != null) {
+            artifact = RepositoryUtil.createArtifact(info);
+        }
         ic.add(artifact);
+        if (info != null) {
+            ic.add(info);
+        }
+        final Artifact fArt = artifact;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                try {
-                    MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                    ArtifactRepositoryFactory fact = (ArtifactRepositoryFactory) embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.ROLE);
-
-                    List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
+                List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                if (fRepos != null) {
+                    repos.addAll(fRepos);
+                }
+                if (repos.size() == 0) {
                     //add central repo
-                    ArtifactRepository cent = fact.createArtifactRepository("central", "http://repo1.maven.org/maven2", new DefaultRepositoryLayout(), null, null);
-                    repos.add(cent);
+                    repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central"));
                     //add repository form info
-                    if (!"central".equals(info.getRepoId())) {
+                    if (info != null && !"central".equals(info.getRepoId())) {
                         RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
                         String url = rinfo.getRepositoryUrl();
                         if (url != null) {
-                            cent = fact.createArtifactRepository(info.getRepoId(), url, new DefaultRepositoryLayout(), null, null);
-                            repos.add(cent);
+                            repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
                         }
                     }
-                    MavenProject prj = readMavenProject(embedder, artifact, repos);
-                    ic.add(prj);
-                } catch (ComponentLookupException ex) {
-                    Exceptions.printStackTrace(ex);
-                    ic.add(new MavenProject());
                 }
+                MavenProject prj = readMavenProject(embedder, fArt, repos);
+                ic.add(prj);
             }
         });
         MultiViewDescription artDesc = new BasicArtifactMD(lookup);
         MultiViewDescription prjDesc = new BasicProjectMD(lookup);
         TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[]
             { artDesc, prjDesc }, artDesc);
-        tc.setDisplayName(info.getArtifactId() + ":" + info.getVersion());
-        tc.setToolTipText(info.getGroupId() + ":" + info.getArtifactId() + ":" + info.getVersion());
+        tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
+        tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         return tc;
     }
 
@@ -122,11 +132,13 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
             return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
         } catch (ProjectBuildingException ex) {
+            //TODO shall not end up in user's face..
             Exceptions.printStackTrace(ex);
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         }
         return new MavenProject();
     }
+
 
 }

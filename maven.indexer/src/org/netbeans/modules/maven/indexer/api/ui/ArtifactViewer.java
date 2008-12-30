@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.maven.indexer.api.ui;
 
+import java.util.List;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Lookup;
@@ -68,5 +71,21 @@ public final class ArtifactViewer {
         tc.open();
         tc.requestActive();
     }
+
+    /**
+     * Shows detailed view component with information about the given artifact.
+     * @param info
+     */
+    public static void showArtifactViewer(Artifact artifact, List<ArtifactRepository> repos) {
+        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        if (fact == null) {
+            Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
+            return;
+        }
+        TopComponent tc = fact.createTopComponent(artifact, repos);
+        tc.open();
+        tc.requestActive();
+    }
+
 }
 

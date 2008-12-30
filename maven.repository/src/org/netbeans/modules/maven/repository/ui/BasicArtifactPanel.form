@@ -86,17 +86,26 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblGroupId" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblArtifactId" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblVersion" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblPackaging" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="txtArtifactId" alignment="0" pref="306" max="32767" attributes="0"/>
-                              <Component id="txtGroupId" alignment="0" pref="306" max="32767" attributes="0"/>
-                              <Component id="txtVersion" alignment="0" pref="306" max="32767" attributes="0"/>
-                              <Component id="txtPackaging" alignment="0" pref="306" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="lblGroupId" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lblArtifactId" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lblVersion" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lblPackaging" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="txtArtifactId" alignment="0" pref="311" max="32767" attributes="0"/>
+                                      <Component id="txtGroupId" alignment="0" pref="311" max="32767" attributes="0"/>
+                                      <Component id="txtVersion" alignment="0" pref="311" max="32767" attributes="0"/>
+                                      <Component id="txtPackaging" alignment="0" pref="311" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="lblClassifier" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="txtClassifier" pref="310" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -124,7 +133,15 @@
                               <Component id="lblPackaging" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtPackaging" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="50" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="lblClassifier" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="txtClassifier" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="1" pref="1" max="1" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace pref="29" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -183,6 +200,18 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="txtPackaging">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="lblClassifier">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/maven/repository/ui/Bundle.properties" key="BasicArtifactPanel.lblClassifier.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="txtClassifier">
                   <Properties>
                     <Property name="editable" type="boolean" value="false"/>
                   </Properties>
@@ -310,7 +339,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="111" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="116" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
