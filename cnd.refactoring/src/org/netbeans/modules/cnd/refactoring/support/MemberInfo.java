@@ -43,12 +43,12 @@ package org.netbeans.modules.cnd.refactoring.support;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
@@ -58,11 +58,11 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
  */
 public final class MemberInfo<H> {
 
-    private H member;
-    private String htmlText;
-    private Icon icon;
-    private Group group;
-    private Set<CsmVisibility> visibility;
+    private final H member;
+    private final String htmlText;
+    private final Icon icon;
+    private final Group group;
+    private final Set<CsmVisibility> visibility;
     private boolean makeAbstract;
     private String name;
 
@@ -75,10 +75,14 @@ public final class MemberInfo<H> {
     }
 
     public enum Group {
-        /** 
-         * member is in implements clause
-         */ 
-        IMPLEMENTS,
+        /**
+         * No group info
+         */
+        NONE,
+//        /**
+//         * member is in implements clause
+//         */
+//        IMPLEMENTS,
         /**  
          * member represents method
          */
@@ -93,19 +97,21 @@ public final class MemberInfo<H> {
         TYPE;
     }
     
-    /** Creates a new instance of MemberInfo describing a field
-     * to be pulled up.
-     * @param member 
-     * @param name 
-     * @param htmlText 
-     * @param icon 
-     */
-    private MemberInfo(H member, String name, String htmlText, Icon icon) {
-        this.member = member;
-        this.htmlText = htmlText;
-        this.icon = icon;
-        this.name =name;
-    }
+//    /** Creates a new instance of MemberInfo describing a field
+//     * to be pulled up.
+//     * @param member
+//     * @param name
+//     * @param htmlText
+//     * @param icon
+//     */
+//    private MemberInfo(H member, String name, String htmlText, Icon icon) {
+//        this.member = member;
+//        this.htmlText = htmlText;
+//        this.icon = icon;
+//        this.name =name;
+//        this.group = Group.NONE;
+//        this.visibility = EnumSet.of(CsmVisibility.NONE);
+//    }
     
     public H getElementHandle() {
         return member;
@@ -152,18 +158,23 @@ public final class MemberInfo<H> {
 //        return mi;
 //    }
 //
-    public static MemberInfo<CsmUID<CsmMember>> create(CsmMember elem) {
-        String format = "%name%"; // ElementHeaders.NAME; // NOI18N
+    public static <T extends CsmMember> MemberInfo<T> create(T elem) {
+//        String format = "%name%"; // ElementHeaders.NAME; // NOI18N
+        CharSequence htmlText = elem.getName();
         Group g = null;
         if (CsmKindUtilities.isField(elem)) {
-            format += " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
+            CsmField field = (CsmField) elem;
+//            format += " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
+            htmlText = field.getName().toString() + ": " + field.getType().getText();
             g=Group.FIELD;
         } else if (CsmKindUtilities.isMethod(elem)) {
-            format += "%parameters%" + " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
+            CsmMethod method = (CsmMethod) elem;
+//            format += "%parameters%" + " : " + "%type%"; //NOI18N ElementHeaders.TYPE; // NOI18N
+            htmlText = method.getSignature() + ": " + method.getReturnType().getText();
             g=Group.METHOD;
         }
 
-        MemberInfo<CsmUID<CsmMember>> mi = new MemberInfo<CsmUID<CsmMember>>(CsmRefactoringUtils.getHandler(elem), CsmDisplayUtilities.getTooltipText(elem).toString(), (Icon)CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
+        MemberInfo<T> mi = new MemberInfo<T>(elem, htmlText.toString(), (Icon)CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
         return mi;
     }
 

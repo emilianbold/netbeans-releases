@@ -60,22 +60,26 @@ import org.openide.util.NbBundle;
 public final class EncapsulateFieldUI implements RefactoringUI {
 
     private EncapsulateFieldPanel panel;
-    private transient EncapsulateFieldsRefactoring refactoring;
-    CsmObject refactoredObj;
+    private final transient EncapsulateFieldsRefactoring refactoring;
+    private final CsmObject selectedObj;
 
-    /** Creates new form RenamePanelName */
-    public EncapsulateFieldUI(CsmObject selectedObject) {
+    /** Creates new form EncapsulateField */
+    private EncapsulateFieldUI(CsmObject selectedObject) {
         this.refactoring = new EncapsulateFieldsRefactoring(selectedObject);
-        this.refactoredObj = selectedObject;
+        this.selectedObj = selectedObject;
     }
-    
+
+    public static EncapsulateFieldUI create(CsmObject refactoredObj) {
+        return new EncapsulateFieldUI(refactoredObj);
+    }
+
     public boolean isQuery() {
         return false;
     }
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new EncapsulateFieldPanel(refactoredObj, parent);
+            panel = new EncapsulateFieldPanel(selectedObj, parent);
         }
         return panel;
     }
@@ -87,7 +91,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         refactoring.setAlwaysUseAccessors(panel.isCheckAccess());
         refactoring.getContext().add(panel.getInsertPoint());
         refactoring.getContext().add(panel.getSortBy());
-        refactoring.getContext().add(panel.getJavadoc());
+        refactoring.getContext().add(panel.getDocumentation());
         if (checkOnly) {
             return refactoring.fastCheckParameters();
         } else {

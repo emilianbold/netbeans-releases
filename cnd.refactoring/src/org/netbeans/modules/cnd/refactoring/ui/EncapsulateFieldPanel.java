@@ -60,9 +60,12 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -82,13 +85,14 @@ import org.openide.util.NbBundle;
  * Panel used by Encapsulate Field refactoring. Contains components to
  * set parameters for the refactoring.
  *
- * @author  Pavel Flaska
- * @author  Jan Pokorsky
+ * @author  Pavel Flaska, Jan Pokorsky
+ * @author  Vladimir Voskresensky
  */
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
     
     private DefaultTableModel model;
-    private CsmObject selectedObjects;
+    private CsmObject selectedObject;
+    private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
     private static boolean ALWAYS_USE_ACCESSORS = true;
@@ -128,7 +132,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     public EncapsulateFieldPanel(CsmObject selectedObject, ChangeListener parent) {
         String title = getString("LBL_TitleEncapsulateFields");
         
-        this.selectedObjects = selectedObject;
+        this.selectedObject = selectedObject;
         this.parent = parent;
         model = new TabM(columnNames, 0);
         initComponents();
@@ -153,7 +157,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
 
         initEnumCombo(jComboSort, SortBy.PAIRS);
-        initEnumCombo(jComboJavadoc, Javadoc.DEFAULT);
+        initEnumCombo(jComboJavadoc, Documentation.DEFAULT);
     }
 
     public Component getComponent() {
@@ -166,73 +170,70 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         if (initialized) {
             return;
         }
-//        TreePath selectedPath = selectedObjects.resolve(javac);
-//        Element selectedElm = javac.getTrees().getElement(selectedPath);
-//
-//        int tableSelection = 0;
-//        for (VariableElement field : initFields(selectedPath, javac)) {
-//            TreePath fieldTPath = javac.getTrees().getPath(field);
-//            boolean createGetter = selectedElm == field;
-//            boolean createSetter = createGetter && !field.getModifiers().contains(CsmVisibility.FINAL);
-//            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-//            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
-//            model.addRow(new Object[] {
-//                CsmField.create(fieldTPath, javac),
-//                createGetter ? Boolean.TRUE : Boolean.FALSE,
-//                AccessorInfo.createGetter(javac, field, getName),
-//                createSetter ? Boolean.TRUE : Boolean.FALSE,
-//                AccessorInfo.createSetter(javac, field, setName),
-//            });
-//            if (createGetter) {
-//                tableSelection = model.getRowCount() - 1;
-//            }
-//        }
-//
-//        packRows(jTableFields);
-//
-//        setColumnWidth(1);
-//        setColumnWidth(3);
-//
-//        jTableFields.changeSelection(tableSelection, 0, false, false);
-//
-//        jTableFields.invalidate();
-//        jTableFields.repaint();
-//        model.addTableModelListener(new TableModelListener() {
-//            boolean isUpdating = false;
-//            public void tableChanged(TableModelEvent e) {
-//                if (isUpdating) {
-//                    return;
-//                }
-//                int col = e.getColumn();
-//                int row = e.getFirstRow();
-//                if (col == 1 || col==3 ) {
-//                    Boolean value = (Boolean) model.getValueAt(row, col);
-//                    if (value.booleanValue()) {
-//                        AccessorInfo ai = (AccessorInfo) model.getValueAt(row, col + 1);
-//                        if (ai != null) {
-//                            ai.reset();
-//                        }
-//                    }
-//                    try {
-//                        isUpdating = true;
-//                        model.fireTableCellUpdated(row, col + 1);
-//                    } finally {
-//                        isUpdating = false;
-//                    }
-//                } else {
-//                    AccessorInfo value = (AccessorInfo) model.getValueAt(row, col);
-//                    if (!isUpdating && (value == null || value.name == null || value.name.length() == 0)) {
-//                        try {
-//                            isUpdating = true;
-//                            model.setValueAt(Boolean.FALSE, row, col-1);
-//                        } finally {
-//                            isUpdating = false;
-//                        }
-//                    }
-//                }
-//                parent.stateChanged(null);
-//            }
-//        });
+        CsmObject selectedResolvedObject = CsmRefactoringUtils.getReferencedElement(selectedObject);
+        int tableSelection = 0;
+        for (CsmField field : initFields(selectedObject)) {
+            boolean createGetter = field.equals(selectedResolvedObject);
+            boolean createSetter = createGetter && !isConstant(field);
+            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
+            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+            model.addRow(new Object[] {
+                MemberInfo.create(field),
+                createGetter ? Boolean.TRUE : Boolean.FALSE,
+                AccessorInfo.createGetter(field, getName),
+                createSetter ? Boolean.TRUE : Boolean.FALSE,
+                AccessorInfo.createSetter(field, setName),
+            });
+            if (createGetter) {
+                tableSelection = model.getRowCount() - 1;
+            }
+        }
+
+        packRows(jTableFields);
+
+        setColumnWidth(1);
+        setColumnWidth(3);
+
+        jTableFields.changeSelection(tableSelection, 0, false, false);
+
+        jTableFields.invalidate();
+        jTableFields.repaint();
+        model.addTableModelListener(new TableModelListener() {
+            boolean isUpdating = false;
+            public void tableChanged(TableModelEvent e) {
+                if (isUpdating) {
+                    return;
+                }
+                int col = e.getColumn();
+                int row = e.getFirstRow();
+                if (col == 1 || col==3 ) {
+                    Boolean value = (Boolean) model.getValueAt(row, col);
+                    if (value.booleanValue()) {
+                        AccessorInfo ai = (AccessorInfo) model.getValueAt(row, col + 1);
+                        if (ai != null) {
+                            ai.reset();
+                        }
+                    }
+                    try {
+                        isUpdating = true;
+                        model.fireTableCellUpdated(row, col + 1);
+                    } finally {
+                        isUpdating = false;
+                    }
+                } else {
+                    AccessorInfo value = (AccessorInfo) model.getValueAt(row, col);
+                    if (!isUpdating && (value == null || value.name == null || value.name.length() == 0)) {
+                        try {
+                            isUpdating = true;
+                            model.setValueAt(Boolean.FALSE, row, col-1);
+                        } finally {
+                            isUpdating = false;
+                        }
+                    }
+                }
+                parent.stateChanged(null);
+            }
+        });
 //
 //        initInsertPoints(selectedPath);
 //        
@@ -534,28 +535,28 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
      *                        array of fields.
      * @return  array of all fields in a class.
      */
-//    private List<VariableElement> initFields(TreePath selectedField, CompilationInfo javac) {
-//        Element elm = javac.getTrees().getElement(selectedField);
-//        TypeElement encloser = null;
-//        if (ElementKind.FIELD == elm.getKind()) {
-//            encloser = (TypeElement) elm.getEnclosingElement();
-//        } else {
-//            encloser = (TypeElement) elm;
-//        }
-//
-//        List<VariableElement> result = new ArrayList<VariableElement>();
-//        for (Element member : encloser.getEnclosedElements()) {
-//            if (ElementKind.FIELD == member.getKind()) {
-//                result.add((VariableElement) member);
-//            }
-//        }
-//
-//        this.classname = encloser.getQualifiedName().toString();
-//        final String title = " - " + classname; // NOI18N
-//        setName(getName() + title);
-//
-//        return result;
-//    }
+    private List<CsmField> initFields(CsmObject selectedObject) {
+        CsmObject selectedResolvedObject = CsmRefactoringUtils.getReferencedElement(selectedObject);
+        assert selectedResolvedObject != null : "why unresolved element was used?";
+        if (CsmKindUtilities.isClass(selectedResolvedObject)) {
+            csmClassContainer = (CsmClass) selectedResolvedObject;
+        } else {
+            assert CsmKindUtilities.isField(selectedResolvedObject): "should be field";
+            csmClassContainer = ((CsmField)selectedResolvedObject).getContainingClass();
+        }
+        List<CsmField> result = new ArrayList<CsmField>();
+        for (CsmMember member : csmClassContainer.getMembers()) {
+            if (CsmKindUtilities.isField(member)) {
+                result.add((CsmField) member);
+            }
+        }
+
+        this.classname = csmClassContainer.getQualifiedName().toString();
+        final String title = " - " + classname; // NOI18N
+        setName(getName() + title);
+
+        return result;
+    }
     
 //    private void initInsertPoints(TreePath selectedField, CompilationInfo javac) {
 //        Element elm = javac.getTrees().getElement(selectedField);
@@ -664,8 +665,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return (SortBy) jComboSort.getSelectedItem();
     }
     
-    public Javadoc getJavadoc() {
-        return (Javadoc) jComboJavadoc.getSelectedItem();
+    public Documentation getDocumentation() {
+        return (Documentation) jComboJavadoc.getSelectedItem();
     }
 
     String getClassname() {
@@ -722,11 +723,11 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     private static final class AccessorInfo {
         String defaultName;
-        MemberInfo<CsmUID<CsmMember>> defaultAccessor;
+        MemberInfo<? extends CsmMember> defaultAccessor;
         String name;
         String accessorToolTip;
         String defaultAccessorToolTip;
-        MemberInfo<CsmUID<CsmMember>> accessor;
+        MemberInfo<? extends CsmMember> accessor;
         private CsmUID<CsmField> fieldHandle;
         private boolean isGetter;
 
@@ -812,7 +813,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
     }
     
-    public enum Javadoc implements Comparator<Javadoc> {
+    public enum Documentation implements Comparator<Documentation> {
         
         DEFAULT("EncapsulateFieldPanel.jComboJavadoc.createDefault"), // NOI18N
         NONE("EncapsulateFieldPanel.jComboJavadoc.none"), // NOI18N
@@ -820,7 +821,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         private final String displayName;
 
-        private Javadoc(String key) {
+        private Documentation(String key) {
             this.displayName = getString(key);
         }
 
@@ -829,7 +830,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
-        public int compare(Javadoc o1, Javadoc o2) {
+        public int compare(Documentation o1, Documentation o2) {
             if (o1 == o2) {
                 return 0;
             }
