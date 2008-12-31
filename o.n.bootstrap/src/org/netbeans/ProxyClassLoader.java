@@ -372,6 +372,9 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
 
         // uncovered package, go directly to SCL
         if (url == null && shouldDelegateResource(path, null)) url = systemCL.getResource(name);
+        if (url == null) {
+            url = findResource(name);
+        }
         
         return url;
     }
