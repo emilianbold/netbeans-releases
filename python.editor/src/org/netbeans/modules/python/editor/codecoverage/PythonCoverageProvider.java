@@ -262,9 +262,13 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
         String lines = hitCounts.get(path);
         if (lines == null) {
+            // Happens on some case insensitive file systems
+            lines = hitCounts.get(path.toLowerCase());
+        }
+        if (lines == null) {
             String name = fo.getNameExt();
-            String fullName = fullNames.get(name);
-            if (fullName != null && !fullName.equals(path)) {
+            String fullName = fullNames.get(name.toLowerCase());
+            if (fullName != null && !fullName.equalsIgnoreCase(path)) {
                 lines = hitCounts.get(fullName);
             }
         }
@@ -607,7 +611,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
                             base = file.substring(last + 1);
                         }
 
-                        fullNames.put(base, file);
+                        fullNames.put(base.toLowerCase(), file);
 
                         assert lines.startsWith("[");
                         assert lines.endsWith("]");
