@@ -264,6 +264,10 @@ public final class RubyCoverageProvider implements CoverageProvider {
 
         for (Map.Entry<String, String> entry : hitCounts.entrySet()) {
             String fileName = entry.getKey();
+            if ("fcntl".equals(fileName)) { // NOI18N
+                // Excluding this at the rcov level doesn't seem to work
+                continue;
+            }
             List<LineCount> counts = getLineCounts(entry.getValue());
 
             FileCoverageSummary result = createSummary(project, fileName, counts);
