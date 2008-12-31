@@ -262,16 +262,20 @@ public class ThreadsCache implements Executor {
             ThreadGroupReference group;
             try {
                 thread = ThreadDeathEventWrapper.thread((ThreadDeathEvent) event);
+            } catch (InternalExceptionWrapper ex) {
+                return true;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return true;
+            }
+            try {
                 group = ThreadReferenceWrapper.threadGroup(thread);
             } catch (InternalExceptionWrapper ex) {
                 return true;
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return true;
             } catch (IllegalThreadStateExceptionWrapper ex) {
-                thread = null; // I should not have to initialize this when this exception can not be thrown!
                 group = null;
             } catch (ObjectCollectedExceptionWrapper ocex) {
-                thread = null; // I should not have to initialize this when this exception can not be thrown!
                 group = null;
             }
             synchronized (this) {
