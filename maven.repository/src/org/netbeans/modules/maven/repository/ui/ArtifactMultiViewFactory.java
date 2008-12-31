@@ -43,8 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
@@ -56,15 +54,12 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -119,8 +114,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         });
         MultiViewDescription artDesc = new BasicArtifactMD(lookup);
         MultiViewDescription prjDesc = new BasicProjectMD(lookup);
+//        MultiViewDescription depDesc = new BasicDependencyMD(lookup);
         TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[]
-            { artDesc, prjDesc }, artDesc);
+            { artDesc, prjDesc, /*depDesc*/ }, artDesc);
         tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         return tc;

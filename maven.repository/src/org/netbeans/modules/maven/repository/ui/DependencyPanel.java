@@ -40,15 +40,44 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.awt.Component;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.windows.TopComponent;
+
 /**
  *
  * @author mkleint
  */
-public class DependencyPanel extends javax.swing.JPanel {
+public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
+    private MultiViewElementCallback callback;
+    private Result<MavenProject> result;
 
-    /** Creates new form DependencyPanel */
-    public DependencyPanel() {
+    DependencyPanel(Lookup lookup) {
+        super(lookup);
         initComponents();
+        Rend r = new Rend();
+        lstTest.setCellRenderer(r);
+        lstRuntime.setCellRenderer(r);
+        lstCompile.setCellRenderer(r);
     }
 
     /** This method is called from within the constructor to
@@ -60,20 +89,180 @@ public class DependencyPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        lblCompile = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        lstCompile = new javax.swing.JList();
+        lblRuntime = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lstRuntime = new javax.swing.JList();
+        lblTest = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        lstTest = new javax.swing.JList();
+
+        lblCompile.setText(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblCompile.text")); // NOI18N
+
+        jScrollPane1.setViewportView(lstCompile);
+
+        lblRuntime.setText(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblRuntime.text")); // NOI18N
+
+        jScrollPane2.setViewportView(lstRuntime);
+
+        lblTest.setText(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblTest.text")); // NOI18N
+
+        jScrollPane3.setViewportView(lstTest);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 826, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblCompile)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                    .add(lblRuntime))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblTest)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE))
+                .add(15, 15, 15))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 474, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblCompile)
+                    .add(lblRuntime)
+                    .add(lblTest))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JLabel lblCompile;
+    private javax.swing.JLabel lblRuntime;
+    private javax.swing.JLabel lblTest;
+    private javax.swing.JList lstCompile;
+    private javax.swing.JList lstRuntime;
+    private javax.swing.JList lstTest;
     // End of variables declaration//GEN-END:variables
+
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    public JComponent getToolbarRepresentation() {
+        return new JPanel();
+    }
+
+
+    @Override
+    public void componentOpened() {
+        super.componentOpened();
+        result = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        populateFields();
+        result.addLookupListener(this);
+    }
+
+    @Override
+    public void componentClosed() {
+        super.componentClosed();
+        result.removeLookupListener(this);
+    }
+
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+    }
+
+
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+        this.callback = callback;
+    }
+
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
+    }
+
+    private void populateFields() {
+        boolean loading = true;
+        Iterator<? extends MavenProject> iter = result.allInstances().iterator();
+        if (iter.hasNext()) {
+            loading = false;
+            MavenProject prj = iter.next();
+            @SuppressWarnings("unchecked")
+            List<Dependency> dep = prj.getDependencies();
+            setDepModel(lstCompile, dep, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));
+            setDepModel(lstRuntime, dep, Arrays.asList(new String[]{ Artifact.SCOPE_RUNTIME}));
+            setDepModel(lstTest, dep, Arrays.asList(new String[]{ Artifact.SCOPE_TEST}));
+        } else {
+
+        }
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                populateFields();
+            }
+        });
+
+    }
+
+    private void setDepModel(JList lst, List<Dependency> dep, List<String> scopes) {
+        DefaultListModel dlm = new DefaultListModel();
+        for (Dependency d : dep) {
+            String scope = d.getScope();
+            if (scope == null) {
+                scope = Artifact.SCOPE_COMPILE;
+            }
+            if (scopes.contains(scope)) {
+                dlm.addElement(d);
+            }
+        }
+        lst.setModel(dlm);
+    }
+
+    private static class Rend extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof Dependency) {
+                Dependency d = (Dependency)value;
+                ((JLabel)cmp).setText(d.getArtifactId() + ":" + d.getVersion());
+            }
+            return cmp;
+        }
+
+    }
 
 }
