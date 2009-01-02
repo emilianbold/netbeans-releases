@@ -1008,7 +1008,7 @@ public final class VirtualMachineWrapper {
         }
     }
 
-    public static com.sun.jdi.StringReference mirrorOf(com.sun.jdi.VirtualMachine a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.StringReference mirrorOf(com.sun.jdi.VirtualMachine a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper {
         try {
             return a.mirrorOf(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -1016,6 +1016,8 @@ public final class VirtualMachineWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (java.lang.UnsupportedOperationException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper(ex);
         }
     }
 
