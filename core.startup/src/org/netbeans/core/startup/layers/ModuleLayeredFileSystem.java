@@ -311,12 +311,14 @@ implements LookupListener {
 
         }
         Updater u = new Updater();
-        runAtomicAction(u);
+        try {
+            runAtomicAction(u);
         
-        this.urls = urls;
-        firePropertyChange ("layers", null, null); // NOI18N
-        
-        StartLog.logEnd("setURLs"); // NOI18N
+            this.urls = urls;
+            firePropertyChange ("layers", null, null); // NOI18N
+        } finally {
+            StartLog.logEnd("setURLs"); // NOI18N
+        }
     }
     
     /** Adds few URLs.
