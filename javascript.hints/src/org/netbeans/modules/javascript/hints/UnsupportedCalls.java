@@ -31,6 +31,7 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,22 +47,19 @@ import javax.swing.border.EmptyBorder;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.ElementUtilities;
 import org.netbeans.modules.javascript.editing.IndexedElement;
-import org.netbeans.modules.javascript.editing.JsIndex;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsTypeAnalyzer;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
@@ -140,12 +138,14 @@ public class UnsupportedCalls extends JsAstRule {
         // to go to the trouble and expense of computing the expression type - if 
         // we see the name, we know the forbidden method is being called. To determine
         // if the function is 
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         Boolean skipFqnCheck = MUST_CHECK_FQN.get(name);
         if (skipFqnCheck == null) {
             // Check index to see if 
-            JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-            Set<IndexedElement> elements = index.getAllNames(name, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+// XXX: parsingapi
+//            JsIndex index = /JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+//            Set<IndexedElement> elements = index.getAllNames(name, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = Collections.<IndexedElement>emptySet();
             if (elements.size() <= 1) {
                 // Exactly one match, or no such known element - don't bother looking
                 // up the fqn of calls, just assume this is the one
@@ -198,7 +198,7 @@ public class UnsupportedCalls extends JsAstRule {
         EnumSet<BrowserVersion> compat = COMPAT_MAP.get(fqn);
         if (!SupportedBrowsers.getInstance().isSupported(compat)) {
             // Quickfix!
-            OffsetRange astRange = AstUtilities.getRange(info, node);
+            OffsetRange astRange = AstUtilities.getRange(node);
             OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
             if (lexRange == OffsetRange.NONE) {
                 return;
@@ -209,7 +209,7 @@ public class UnsupportedCalls extends JsAstRule {
             fixList.add(new SkipFunction(context, fqn));
             fixList.add(new ChangeTargetFix());
             String displayName = NbBundle.getMessage(UnsupportedCalls.class, "UnsupportedCallFqn", fqn);
-            Hint desc = new Hint(this, displayName, info.getFileObject(), lexRange, fixList, 1450);
+            Hint desc = new Hint(this, displayName, info.getSnapshot().getSource().getFileObject(), lexRange, fixList, 1450);
             result.add(desc);
         }
     }
@@ -326,10 +326,10 @@ public class UnsupportedCalls extends JsAstRule {
 
     private static class ShowDetails implements HintFix {
         private EnumSet<BrowserVersion> compat;
-        private CompilationInfo info;
+        private JsParseResult info;
         private String fqn;
         
-        ShowDetails(CompilationInfo info, String fqn, EnumSet<BrowserVersion> compat) {
+        ShowDetails(JsParseResult info, String fqn, EnumSet<BrowserVersion> compat) {
             this.info = info;
             this.fqn = fqn;
             this.compat = compat;
@@ -350,7 +350,9 @@ public class UnsupportedCalls extends JsAstRule {
                 prefix = "";
                 type = fqn;
             }
-            Set<IndexedElement> elements = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE)).getElements(prefix, type, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+// XXX: parsingapi
+//            Set<IndexedElement> elements = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE)).getElements(prefix, type, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = Collections.<IndexedElement>emptySet();
             String html;
             if (elements.size() > 0) {
                 IndexedElement element = elements.iterator().next();

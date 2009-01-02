@@ -97,18 +97,19 @@ public final class NbCompilationUnit extends CompilationUnit {
                             }
                         }
                     };
-                    if (waitScanFinished) {
-                        javaSource.runWhenScanFinished(task, true).get();
-                    } else {
+//                    if (waitScanFinished) {
+//                        javaSource.runWhenScanFinished(task, true).get();
+//                    } else {
                         javaSource.runUserActionTask(task, true);
-                    }
+//                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
+//                catch (InterruptedException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                } catch (ExecutionException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
             }
             return classNodes[0];
         }

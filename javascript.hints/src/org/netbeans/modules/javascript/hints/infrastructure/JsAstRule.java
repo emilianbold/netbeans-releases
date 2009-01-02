@@ -41,8 +41,8 @@ package org.netbeans.modules.javascript.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.AstRule;
 
 public abstract class JsAstRule implements AstRule {
     /** 

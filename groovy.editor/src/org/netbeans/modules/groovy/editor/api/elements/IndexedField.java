@@ -27,8 +27,9 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements;
 
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 
 /**
@@ -45,17 +46,17 @@ public class IndexedField extends IndexedElement {
 
     private boolean smart;
 
-    private IndexedField(String name, String type, GroovyIndex index, String fileUrl, String classFqn,
+    private IndexedField(String name, String type, GroovyIndex index, IndexResult result, String classFqn,
             String attributes, int flags) {
-        super(index, fileUrl, classFqn, attributes, flags);
+        super(index, result, classFqn, attributes, flags);
         this.name = name;
         this.type = type;
     }
 
     public static IndexedField create(GroovyIndex index, String name, String type, String classFqn,
-            String fileUrl, String attributes, int flags) {
+            IndexResult result, String attributes, int flags) {
         
-        IndexedField m = new IndexedField(name, type, index, fileUrl, classFqn, attributes, flags);
+        IndexedField m = new IndexedField(name, type, index, result, classFqn, attributes, flags);
         return m;
     }
 

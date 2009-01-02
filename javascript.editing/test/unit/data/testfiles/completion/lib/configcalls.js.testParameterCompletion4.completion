@@ -1,5 +1,5 @@
 Code completion result for source line:
 somefunctio|n({}, {}, {});
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     somefunction(abc, def, ghi) :              configcalls.js

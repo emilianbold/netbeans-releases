@@ -136,6 +136,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jvi</friend>
                 <friend>org.netbeans.modules.languages</friend>
                 <friend>org.netbeans.modules.options.editor</friend>
+                <friend>org.netbeans.modules.csl.api</friend>
                 <package>org.netbeans.modules.editor.settings.storage.api</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi.support</package>

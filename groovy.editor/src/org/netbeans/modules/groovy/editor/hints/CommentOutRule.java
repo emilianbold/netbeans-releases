@@ -29,22 +29,21 @@ package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.Formatter;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovySelectionRule;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
 import org.openide.util.NbBundle;
 
 public class CommentOutRule extends GroovySelectionRule {
@@ -58,7 +57,7 @@ public class CommentOutRule extends GroovySelectionRule {
     };
 
     public void run(GroovyRuleContext context, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         int start = context.selectionStart;
         int end = context.selectionEnd;
 
@@ -99,7 +98,8 @@ public class CommentOutRule extends GroovySelectionRule {
 
         List<HintFix> fixList = new ArrayList<HintFix>(1);
         fixList.add(fixToApply);
-        Hint descriptor = new Hint(this, fixToApply.getDescription(), context.compilationInfo.getFileObject(), range,
+        // FIXME parsing API
+        Hint descriptor = new Hint(this, fixToApply.getDescription(), context.parserResult.getSnapshot().getSource().getFileObject(), range,
             fixList, DEFAULT_PRIORITY);
 
         return descriptor;

@@ -41,7 +41,22 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.groovy.editor.api.BracketCompleter;
 import org.netbeans.modules.groovy.editor.api.GroovyDeclarationFinder;
 import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
@@ -52,19 +67,8 @@ import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
 /**
  * Language/lexing configuration for Groovy
@@ -155,11 +159,6 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Indexer getIndexer() {
-        return new GroovyIndexer();
-    }
-
-    @Override
     public boolean hasHintsProvider() {
         return true;
     }
@@ -182,5 +181,27 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     @Override
     public IndexSearcher getIndexSearcher() {
         return new GroovyTypeSearcher();
+    }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new GroovyIndexer.Factory();
+    }
+
+    @Override
+    public Set<String> getBinaryPathIds() {
+        // We don't really have libraries in binary form. IDE bundled javascript
+        // libraries are simply extracted to a project among its original sources
+        // in a special folder.
+        return Collections.<String>emptySet();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        // We don't have our own source path id, because javascript files can be
+        // anywhere in a project. So, for index search we will use all available
+        // sourcepath ids.
+        // FIXME parsing API
+        return Collections.singleton(ClassPath.SOURCE);
     }
 }

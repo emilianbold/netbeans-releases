@@ -51,12 +51,13 @@ import java.util.StringTokenizer;
 import org.codehaus.groovy.ant.Groovyc;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.groovy.editor.api.Formatter;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -71,7 +72,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author Martin Adamek
  */
-public class GroovyTestBase extends GsfTestBase {
+public class GroovyTestBase extends CslTestBase {
 
     private static void setLookups(Object... instances) {
         Object[] allInstances = new Object[instances.length + 1];
@@ -109,7 +110,7 @@ public class GroovyTestBase extends GsfTestBase {
     }
 
     @Override
-    public org.netbeans.modules.gsf.api.Formatter getFormatter(IndentPrefs preferences) {
+    public org.netbeans.modules.csl.api.Formatter getFormatter(IndentPrefs preferences) {
         /* Findbugs-removed: 
         if (preferences == null) {
         preferences = new IndentPrefs(4,4);
@@ -125,7 +126,6 @@ public class GroovyTestBase extends GsfTestBase {
         return formatter;
     }
 
-    @Override
     protected FileObject getTestFileObject() {
         return testFO;
     }
@@ -136,15 +136,15 @@ public class GroovyTestBase extends GsfTestBase {
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
     // If anyone can figure this out, please let me know and simplify the
     // test infrastructure.
-    public static BaseDocument createDocument(String s) {
-        BaseDocument doc = GsfTestBase.createDocument(s);
+    public BaseDocument createDocument(String s) {
+        BaseDocument doc = super.getDocument(s);
         doc.putProperty(org.netbeans.api.lexer.Language.class, GroovyTokenId.language());
         doc.putProperty("mimeType", GroovyTokenId.GROOVY_MIME_TYPE);
 
         return doc;
     }
     
-    public static BaseDocument getDocumentFor(FileObject fo) {
+    public BaseDocument getDocumentFor(FileObject fo) {
         return createDocument(read(fo));
     }
 
@@ -185,11 +185,11 @@ public class GroovyTestBase extends GsfTestBase {
 
         public ClassPath findClassPath(FileObject file, String type) {
             try {
-                if (type == ClassPath.SOURCE) {
+                if (type.equals(ClassPath.SOURCE)) {
                     return createSourcePath();
-                } else if (type == ClassPath.BOOT) {
+                } else if (type.equals(ClassPath.BOOT)) {
                     return createBootClassPath();
-                } else if (type == ClassPath.COMPILE) {
+                } else if (type.equals(ClassPath.COMPILE)) {
                     return createCompilePath();
                 }
             } catch (IOException ioe) {

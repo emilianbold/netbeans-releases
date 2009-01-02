@@ -42,13 +42,13 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -66,7 +66,7 @@ public class CSSFormatter implements Formatter {
         return false;
     }
 
-    public void reformat(Context context, CompilationInfo info) {
+    public void reformat(Context context, ParserResult info) {
         reindent(context);
     }
 
