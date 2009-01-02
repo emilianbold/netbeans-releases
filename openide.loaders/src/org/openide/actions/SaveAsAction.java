@@ -175,21 +175,24 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
             FileUtil.preventFileChooserSymlinkTraversal( chooser, newFile.getParentFile() );
         }
         File origFile = newFile;
-        if( JFileChooser.APPROVE_OPTION != chooser.showSaveDialog( WindowManager.getDefault().getMainWindow() ) ) {
-            return null;
-        }
-        newFile = chooser.getSelectedFile();
-        if( null == newFile )
-            return null;
-        if( newFile.equals( origFile ) ) {
-            NotifyDescriptor nd = new NotifyDescriptor( 
-                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected"), //NOI18N
-                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected_Title"), //NOI18N
-                    NotifyDescriptor.DEFAULT_OPTION, 
-                    NotifyDescriptor.INFORMATION_MESSAGE, 
-                    new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
-            DialogDisplayer.getDefault().notifyLater( nd );
-            return null;
+        while( true ) {
+            if( JFileChooser.APPROVE_OPTION != chooser.showSaveDialog( WindowManager.getDefault().getMainWindow() ) ) {
+                return null;
+            }
+            newFile = chooser.getSelectedFile();
+            if( null == newFile )
+                break;
+            if( newFile.equals( origFile ) ) {
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected"), //NOI18N
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected_Title"), //NOI18N
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.INFORMATION_MESSAGE,
+                        new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
+                DialogDisplayer.getDefault().notify( nd );
+            } else {
+                break;
+            }
         }
 
         return newFile;

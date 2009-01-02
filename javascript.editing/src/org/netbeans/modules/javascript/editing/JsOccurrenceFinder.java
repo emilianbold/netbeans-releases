@@ -335,6 +335,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc != null) {
                 try {
+                    doc.readLock();
                     OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
                     if (lexRange != OffsetRange.NONE) {
                         int lineStart = Utilities.getRowStart(doc, Math.min(lexRange.getStart(), doc.getLength()));
@@ -346,6 +347,8 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
+                } finally {
+                    doc.readUnlock();
                 }
                 if (astRange != OffsetRange.NONE) {
                     highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);

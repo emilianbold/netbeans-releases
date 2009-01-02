@@ -129,10 +129,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     public void propertyChange (PropertyChangeEvent event) {
+        // The project name isn't very python'y
         if (NewPythonProjectWizardIterator.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
             String newProjectName = (String) event.getNewValue();            
             this.mainFileTextField.setText (MessageFormat.format(
-                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_MainFileName"), new Object[] {newProjectName}
+                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_MainFileName"), new Object[] {newProjectName.toLowerCase()}
             ));
         }
         if (NewPythonProjectWizardIterator.PROP_PROJECT_LOCATION.equals(event.getPropertyName())) {
@@ -158,7 +159,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
 
-        mainFileTextField.setText("Main");
+        mainFileTextField.setText("main");
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N

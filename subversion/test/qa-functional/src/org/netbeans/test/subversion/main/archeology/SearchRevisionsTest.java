@@ -102,7 +102,7 @@ public class SearchRevisionsTest extends JellyTestCase {
             sro.verify();
             sro.selectListItem(0);
             sro.ok();
-            assertEquals("Requested repository revision is not propagated!!!", "5", wdso.getRevisionNumber());
+            assertEquals("Requested repository revision is not propagated!!!", "4", wdso.getRevisionNumber());
             wdso.cancel();
 
             stream.flush();

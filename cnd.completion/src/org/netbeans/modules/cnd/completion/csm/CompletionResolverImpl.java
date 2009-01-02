@@ -102,6 +102,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
+    private int contextOffset = 0;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
     private final FileReferencesContext fileReferncesContext;
@@ -112,6 +113,10 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     public void setSortNeeded(boolean sort) {
         this.sort = sort;
+    }
+
+    public void setContextOffset(int offset) {
+        this.contextOffset = offset;
     }
 
     public void setResolveScope(QueryScope queryScope) {
@@ -175,6 +180,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     public boolean resolve(int offset, String strPrefix, boolean match) {
+        offset += contextOffset;
         if (file == null) {
             return false;
         }
@@ -819,12 +825,19 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     @SuppressWarnings("unchecked")
     private Collection<CsmNamespaceAlias> getProjectNamespaceAliases(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
+//        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0,false);
+//        LinkedHashSet<CsmNamespaceAlias> out = new LinkedHashSet<CsmNamespaceAlias>(1024);
+//        for (CsmNamespace ns : namespaces) {
+//            List<CsmNamespaceAlias> aliases = contResolver.getNamespaceAliases(ns, strPrefix, match, match);
+//            out.addAll(aliases);
+//        }
+//        return out;
         CsmProject inProject = (strPrefix.length() == 0) ? prj : null;
         Collection aliases = CsmUsingResolver.getDefault().findNamespaceAliases(this.file, offset, inProject);
         Collection out;
         if (strPrefix.length() > 0) {
             out = filterDeclarations(aliases, strPrefix, match,
-                    new CsmDeclaration.Kind[] { CsmDeclaration.Kind.NAMESPACE_ALIAS });
+                    new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS});
         } else {
             out = aliases;
         }

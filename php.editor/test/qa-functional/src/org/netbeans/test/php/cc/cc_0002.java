@@ -154,7 +154,7 @@ public class cc_0002 extends cc
   };
 
 
-  private void CheckCodeCompletion( EditorOperator eoPHP, CCompletionCase cc )
+  private boolean CheckCodeCompletion( EditorOperator eoPHP, CCompletionCase cc )
   {
     // Locate position
     eoPHP.setCaretPosition( cc.sInitialLocation, false );
@@ -186,7 +186,8 @@ public class cc_0002 extends cc
       {
         String sCode = eoPHP.getText( eoPHP.getLineNumber( ) - cc.iResultOffset + i );
         if( !sCode.matches( "^[ \t]*" + asResult[ i ] + "[ \t\r\n]*$" ) )
-          fail( "Unable to find required string." );
+          return false;
+          //fail( "Unable to find required string, found: \"" + sCode + "\", expected: \"" + asResult[ i ] + "\"" );
       }
     }
     else
@@ -197,6 +198,7 @@ public class cc_0002 extends cc
     int iLine = eoPHP.getLineNumber( ) + cc.iCleanupOffset;
     for( int i = 0; i < cc.iCleanupCount; i++ )
       eoPHP.deleteLine( iLine );
+    return true;
   }
 
   public void DetailedCodeCompletionTesting( )
@@ -244,9 +246,19 @@ public class cc_0002 extends cc
     };
 
     EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
+    String sFailed = "";
+    int iFailed = 0;
     for( CCompletionCase cc : accTests )
     {
-      CheckCodeCompletion( eoPHP, cc );
+      if( !CheckCodeCompletion( eoPHP, cc ) )
+      {
+        iFailed++;
+        sFailed = sFailed + "|" + cc.sResult;
+      }
+    }
+    if( 0 != iFailed )
+    {
+      fail( "" + iFailed + " test(s) failed, invalid results: \"" + sFailed + "\"" );
     }
 
     endTest( );

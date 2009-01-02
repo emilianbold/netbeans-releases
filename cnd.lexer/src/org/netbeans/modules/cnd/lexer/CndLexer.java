@@ -55,7 +55,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  * It handles escaped lines and delegate identifier to keyword recognition
  * to language-flavor specific filter
  *
- * @author Miloslav Metelka
+ * @author Vladimir Voskresensky
  * @version 1.00
  */
 public abstract class CndLexer implements Lexer<CppTokenId> {

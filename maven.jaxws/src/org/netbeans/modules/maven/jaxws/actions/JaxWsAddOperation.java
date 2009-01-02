@@ -41,36 +41,43 @@
 
 package org.netbeans.modules.maven.jaxws.actions;
 
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-/** JaxWsAddOperation.java
+/** JaxWsAddOperation.java.
  * Created on December 12, 2006, 4:36 PM
  *
  * @author mkuchtiak
  */
 public class JaxWsAddOperation implements AddOperationCookie {
     private FileObject implClassFo;
-    
-    /** Creates a new instance of JaxWsAddOperation */
+
+    /** Creates a new instance of JaxWsAddOperation.
+     */
     public JaxWsAddOperation(FileObject implClassFo) {
         this.implClassFo=implClassFo;
     }
-    
-    public void addOperation(final FileObject implementationClass) {
+
+    public void addOperation() {
         final AddWsOperationHelper strategy = new AddWsOperationHelper(
                 NbBundle.getMessage(JaxWsAddOperation.class, "TITLE_OperationAction"));  //NOI18N
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    String className = _RetoucheUtil.getMainClassName(implementationClass);
+                    String className = _RetoucheUtil.getMainClassName(implClassFo);
                     if (className != null) {
-                        strategy.addMethod(implementationClass, className);
+                        strategy.addMethod(implClassFo, className);
                     }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -78,15 +85,30 @@ public class JaxWsAddOperation implements AddOperationCookie {
             }
         });
     }
-    
-    public boolean isEnabled(FileObject implClass) {
-        return true;
+
+    @Override
+    public boolean isEnabledInEditor(Lookup nodeLookup) {
+        CompilationController controller = nodeLookup.lookup(CompilationController.class);
+        if (controller != null) {
+            TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+            return isJaxWsImplementationClass(classEl, controller);
+        }
+        return false;
     }
-//    
-//    private boolean isJaxWsImplementationClass() {
-//        return service != null;
-//    }
-//  
+
+    private boolean isJaxWsImplementationClass(TypeElement classEl, CompilationController controller) {
+        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+        if (wsElement != null) {
+            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+            for (AnnotationMirror anMirror : annotations) {
+                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+//
 //    private Service getService(){
 //        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(implClassFo);
 //        if (jaxWsSupport!=null) {
@@ -103,21 +125,21 @@ public class JaxWsAddOperation implements AddOperationCookie {
 //        }
 //        return null;
 //    }
-//    
+//
 //    private boolean isFromWSDL() {
 //        if(service != null){
 //            return service.getWsdlUrl()!=null;
 //        }
 //        return false;
 //    }
-//    
+//
 //    private boolean isProvider() {
 //        if(service != null){
 //            return service.isUseProvider();
 //        }
 //        return false;
 //    }
-//    
+//
 //    private String getPackageName(FileObject fo) {
 //        Project project = FileOwnerQuery.getOwner(fo);
 //        Sources sources = project.getLookup().lookup(Sources.class);
@@ -137,5 +159,5 @@ public class JaxWsAddOperation implements AddOperationCookie {
 //        }
 //        return null;
 //    }
-    
+
 }

@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ156061() throws Exception {
+        // IZ156061: structure typedefs are highlighted as error
+        performTest("iz156061.cc");
+    }
+    
     public void testIZ154276() throws Exception {
         // IZ154276: functions are creted instead of fields
         performTest("iz154276.cc");

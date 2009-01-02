@@ -750,18 +750,36 @@ final class Central implements ControllerHandler {
 
         // Validate the TopComponent was removed from other modes.
         removeTopComponentFromOtherModes(mode, tc);
-        
+
         model.addModeOpenedTopComponent(mode, tc);
-        
+
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(mode, View.CHANGE_MODE_TOPCOMPONENT_ADDED,
                 null, tc));
         }
-        
+
         if( !wasOpened ) { //make sure componentOpened() is called just once
             // Notify opened.
             WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        }
+    }
+
+    /** Adds opened TopComponent into model and requests view (if needed). */
+    void addModeOpenedTopComponentNoNotify(ModeImpl mode, TopComponent tc) {
+        if(getModeOpenedTopComponents(mode).contains(tc)) {
+            return;
+        }
+
+        // Validate the TopComponent was removed from other modes.
+        removeTopComponentFromOtherModes(mode, tc);
+
+        model.addModeOpenedTopComponent(mode, tc);
+
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(mode, View.CHANGE_MODE_TOPCOMPONENT_ADDED,
+                null, tc));
         }
     }
     

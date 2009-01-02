@@ -407,12 +407,17 @@ public class GdbDebugger implements PropertyChangeListener {
                             inFile = win2UnixPath(inFile);
                             outFile = win2UnixPath(outFile);
                         }
-                        // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                        String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
-                        if (shell != null && shell.endsWith("csh")) { // NOI18N
-                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
+                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
                         } else {
-                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+                            String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
+                            if (shell != null && shell.endsWith("csh")) { // NOI18N
+                                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                            } else {
+                                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                            }
                         }
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
@@ -2167,7 +2172,6 @@ public class GdbDebugger implements PropertyChangeListener {
             if (info.length() == 0 || !cb.isOK()) {
                 if (cb.isError()) {
                     log.fine("GD.requestWhatis Error[" + cb + "]"); // NOI18N
-//                    return '>' + cb.getError() + '<'; Show error in Value field...
                     return "";
                 } else {
                     log.fine("GD.requestWhatis Failure[" + cb + "]"); // NOI18N
@@ -2191,7 +2195,6 @@ public class GdbDebugger implements PropertyChangeListener {
             if (info.length() == 0 || !cb.isOK()) {
                 if (cb.isError()) {
                     log.fine("GD.requestSymbolType Error[" + cb + "]"); // NOI18N
-//                    return '>' + cb.getError() + '<';  Show error in Value field...
                     return "";
                 } else {
                     log.fine("GD.requestSymbolType Failure[" + cb + "]. Returning original type"); // NOI18N
@@ -2199,6 +2202,30 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             } else {
                 log.fine("GD.requestSymbolType[" + cb + "]: " + type + " --> [" + info + "]");
+                return info.substring(7, info.length() - 2);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    // TODO: unify with requestWhatis and requestValueEx
+    public String requestSymbolTypeFromName(String type) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+
+        if (state == State.STOPPED && type != null && type.length() > 0) {
+            CommandBuffer cb = gdb.symbol_type(type);
+            String info = cb.getResponse();
+            if (info.length() == 0 || !cb.isOK()) {
+                if (cb.isError()) {
+                    log.fine("GD.requestSymbolTypeFromName Error[" + cb + "]"); // NOI18N
+                    return "";
+                } else {
+                    log.fine("GD.requestSymbolTypeFromName Failure[" + cb + "]. Returning original type"); // NOI18N
+                    return "";
+                }
+            } else {
+                log.fine("GD.requestSymbolTypeFromName[" + cb + "]: " + type + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {

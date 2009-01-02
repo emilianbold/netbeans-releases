@@ -48,9 +48,10 @@ public class Comment extends ASTNode {
 
     public enum Type {
 
-        TYPE_SINGLE_LINE ("singleLine"),
-        TYPE_MULTILINE ("multiLine"),
-        TYPE_PHPDOC ("phpDoc");
+        TYPE_SINGLE_LINE ("singleLine"),    //NOI18N
+        TYPE_MULTILINE ("multiLine"),       //NOI18N
+        TYPE_PHPDOC ("phpDoc"),             //NOI18N
+        TYPE_VARTYPE("vartype");            //NOI18N
         
         private final String text;
         

@@ -98,7 +98,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (ts.language() == PHPTokenId.language()) {
                 Token<?> t = ts.token();
 
-                if (t.id() == PHPTokenId.PHP_VARIABLE || t.id() == PHPTokenId.PHP_STRING) {
+                if (t.id() == PHPTokenId.PHP_VARIABLE) {
+                    return new OffsetRange(ts.offset()+1, ts.offset() + t.length());
+                } else if (t.id() == PHPTokenId.PHP_STRING) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
 
@@ -218,7 +220,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         Occurence underCaret = occurencesSupport.getOccurence();
         if (underCaret != null) {
             ModelElement declaration = underCaret.gotoDeclaratin();
-            retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset());
+            retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset(),declaration.getPHPElement());
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
             if (info.getFileObject() == declaration.getFileObject()) {
                 return retval;
@@ -230,7 +232,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
                 for (ModelElement elem : alternativeDeclarations) {
 
-                    DeclarationLocation declLocation = new DeclarationLocation(elem.getFileObject(), elem.getOffset());
+                    DeclarationLocation declLocation = new DeclarationLocation(elem.getFileObject(), elem.getOffset(), elem.getPHPElement());
                     AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
                     if (retval == DeclarationLocation.NONE) {
                         retval = al.getLocation();

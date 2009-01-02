@@ -41,11 +41,9 @@
 package org.netbeans.test.syntax;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -58,14 +56,12 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import junit.framework.Test;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
@@ -469,22 +465,7 @@ public class CompletionTest extends J2eeTestCase {
                 TextGraphics2D g = new TextGraphics2D(comp.getSource());
                 Object next = items.next();
                 String dispText = null;
-                if (next instanceof ResultItem) {
-                    ResultItem resItem = (ResultItem) next;
-                    Component component = resItem.getPaintComponent((JList) comp.getSource(),
-                            false, true);
-                    // get display version of the component
-                    Method drawM = findMethod(component.getClass(), "draw", new Class[]{Graphics.class});
-                    if (drawM != null) {
-                        drawM.setAccessible(true);
-                        drawM.invoke(component, new Object[]{g});
-                    } else if (component instanceof JLabel) {
-                        // ??? use java.awt.Component.paint(Grraphics g) method instead?
-                        g.drawString(((JLabel) component).getText().trim(), 0, 0);
-                    } else {
-                        g.drawString(component.toString(), 0, 0);
-                    }
-                } else if (next instanceof CompletionItem) {
+                if (next instanceof CompletionItem) {
                     CompletionItem cItem = (CompletionItem) next;
                     Font default_font = new JLabel(cItem.getSortText().toString()).getFont();
                     FontMetrics fm = g.getFontMetrics(default_font);

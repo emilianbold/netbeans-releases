@@ -41,8 +41,11 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 
 /**
@@ -81,6 +84,17 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
 
     public List<? extends Identifier> getInterfaces() {
         return getOriginalNode().getInterfaes();
+    }
+
+    public PhpModifiers getAccessModifiers() {
+        Modifier modifier = getOriginalNode().getModifier();
+
+        if (modifier.equals(Modifier.ABSTRACT)) {
+            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.ABSTRACT);
+        } else if (modifier.equals(Modifier.FINAL)) {
+            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.FINAL);
+        }
+        return new PhpModifiers(PhpModifiers.PUBLIC);
     }
 
 }

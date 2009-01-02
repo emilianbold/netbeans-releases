@@ -12,7 +12,6 @@ Searchable Keys:
 
 Not Searchable Keys:
   attrs : |MODULE|
-  requires : rexml/rexml
 
 
 Document 1
@@ -25,4 +24,3 @@ Searchable Keys:
 Not Searchable Keys:
   attrs : |MODULE|
   in : Colors
-  requires : rexml/rexml

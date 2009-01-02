@@ -62,6 +62,7 @@ public class TestPropertiesStorage extends TestFileStorage {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         assertSame(new NbPreferencesFactory().userRoot(), Preferences.userRoot());
@@ -71,16 +72,19 @@ public class TestPropertiesStorage extends TestFileStorage {
         assertNotNull(storage);        
     }
     
+    @Override
     protected NbPreferences.FileStorage getInstance() {
         return PropertiesStorage.instanceReadOnly("/PropertiesStorageTest/" + getName());//NOI18N);
     }
     
+    @Override
     void noFileRepresentationAssertion() throws IOException {
         super.noFileRepresentationAssertion();
         assertNull(((PropertiesStorage)instance).toFolder());
         assertNull(((PropertiesStorage)instance).toPropertiesFile());
     }
     
+    @Override
     void fileRepresentationAssertion() throws IOException {
         super.fileRepresentationAssertion();
         assertNotNull(((PropertiesStorage)instance).toFolder());
@@ -227,7 +231,7 @@ public class TestPropertiesStorage extends TestFileStorage {
     }
     
     public void testInvalidChildrenNames() throws Exception {
-        NbPreferences subnode = (NbPreferences)pref;
+        NbPreferences subnode = pref;
         assertNotNull(subnode);
         PropertiesStorage ps = (PropertiesStorage)pref.fileStorage;        
         FileObject fold = ps.toFolder(true);

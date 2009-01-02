@@ -68,7 +68,7 @@ import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  *
@@ -310,7 +310,7 @@ public class PythonIndexer implements Indexer {
                     }
                 } else if (sym.isFunction()) {
                     if (sym.node instanceof Name) {
-                        assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                        assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                     }
                     assert sym.node instanceof FunctionDef : sym.node;
                     FunctionDef def = (FunctionDef)sym.node;
@@ -346,8 +346,9 @@ public class PythonIndexer implements Indexer {
             classDocument.addPair(FIELD_IN, module, true);
 
             // Superclass
-            if (clz.bases != null) {
-                for (exprType base : clz.bases) {
+            List<expr> bases = clz.getInternalBases();
+            if (bases != null) {
+                for (expr base : bases) {
                     String extendsName = PythonAstUtils.getExprName(base);
                     if (extendsName != null) {
                         classDocument.addPair(FIELD_EXTENDS_NAME, extendsName, true);
@@ -392,7 +393,7 @@ public class PythonIndexer implements Indexer {
 
                 } else if (sym.isFunction() && sym.node instanceof FunctionDef) {
                     if (sym.node instanceof Name) {
-                        assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                        assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                     }
                     FunctionDef def = (FunctionDef)sym.node;
                     String sig = computeFunctionSig(name, def, sym);
@@ -429,7 +430,7 @@ public class PythonIndexer implements Indexer {
 
                     } else if (sym.isFunction() && sym.node instanceof FunctionDef) {
                         if (sym.node instanceof Name) {
-                            assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                            assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                         }
                         FunctionDef def = (FunctionDef)sym.node;
                         String sig = computeFunctionSig(name, def, sym);
@@ -466,7 +467,7 @@ public class PythonIndexer implements Indexer {
 
     public static String computeClassSig(ClassDef def, SymInfo sym) {
         StringBuilder sig = new StringBuilder();
-        sig.append(def.name);
+        sig.append(def.getInternalName());
         appendFlags(sig, 'C', sym, 0);
 
         return sig.toString();

@@ -119,4 +119,9 @@ made subject to such option by the copyright holder.
     <fontcolor default="default" name="COMMENT_ITALIC">
         <font style="italic"/>
     </fontcolor>
+
+    <!-- Code Coverage -->
+    <fontcolor name="covered" bgColor="ff0d2622"/>
+    <fontcolor name="uncovered" bgColor="ff3b1622"/>
+    <fontcolor name="inferred" bgColor="ff0d1e22"/>
 </fontscolors>

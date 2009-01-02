@@ -153,7 +153,7 @@ public class PythonRefUtils {
         String simpleName = null;
 
         if (node instanceof Name) {
-            name = ((Name)node).id;
+            name = ((Name)node).getInternalId();
         } else {
             name = PythonAstUtils.getName(node);
         }

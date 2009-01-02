@@ -196,12 +196,12 @@ public class JsAnalyzer implements StructureScanner {
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codeblocks); // NOI18N
 
+        BaseDocument doc = (BaseDocument)info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
-            if (doc == null) {
-                return Collections.emptyMap();
-            }
-
+            doc.readLock(); // For Utilities.getRowStart access
             for (AstElement element : elements) {
                 ElementKind kind = element.getKind();
                 switch (kind) {
@@ -241,6 +241,8 @@ public class JsAnalyzer implements StructureScanner {
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            doc.readUnlock();
         }
         
         return folds;

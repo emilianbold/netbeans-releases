@@ -1,11 +1,41 @@
 /*
- * BreakpointAnnotationListener.java
-*
-* Copyright (C) 2003,2004,2005 Jean-Yves Mengant
-*
-*
-*/
-
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.python.debugger.breakpoints;
 
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -17,50 +47,52 @@ import org.netbeans.api.debugger.Breakpoint;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.python.debugger.DebuggerAnnotation;
 
-
 /**
  * Netbeans breakpoint semantics
  * Listens on {@org.netbeans.api.debugger.DebuggerManager} on
  * {@link org.netbeans.api.debugger.DebuggerManager#PROP_BREAKPOINTS} 
  * property and annotates JPDA Debugger line breakpoints in NetBeans editor.
- * @author jean-yves
+ * @author jean-yves Mengant
  */
-public class BreakpointAnnotationListener  
-extends DebuggerManagerAdapter 
-implements PropertyChangeListener 
-{
-  
-  private Map _breakpointToAnnotation = new HashMap ();
+public class BreakpointAnnotationListener
+        extends DebuggerManagerAdapter
+        implements PropertyChangeListener {
+
+  private Map _breakpointToAnnotation = new HashMap();
 
   /** Creates a new instance of BreakpointAnnotationListener */
-  public BreakpointAnnotationListener() 
-  {}
-  
-  public String[] getProperties () 
-  {
-    return new String[] {DebuggerManager.PROP_BREAKPOINTS};
+  public BreakpointAnnotationListener() {
+  }
+
+  @Override
+  public String[] getProperties() {
+    return new String[]{DebuggerManager.PROP_BREAKPOINTS};
   }
 
   /**
-  * Called when some breakpoint is added.
-  *
-  * @param b breakpoint
-  */
-  public void breakpointAdded (Breakpoint b) 
-  {
-    if (! (b instanceof PythonBreakpoint)) return;
-      addAnnotation (b);
+   * Called when some breakpoint is added.
+   *
+   * @param b breakpoint
+   */
+  @Override
+  public void breakpointAdded(Breakpoint b) {
+    if (!(b instanceof PythonBreakpoint)) {
+      return;
+    }
+    addAnnotation(b);
   }
 
   /**
-  * Called when some breakpoint is removed.
-  *
-  * @param breakpoint
-  */
-  public void breakpointRemoved (Breakpoint b) 
-  {
-    if (! (b instanceof PythonBreakpoint)) return;
-      removeAnnotation (b);
+   * Called when some breakpoint is removed.
+   *
+   * @param breakpoint
+   */
+  @Override
+  public void breakpointRemoved(Breakpoint b) {
+    if (!(b instanceof PythonBreakpoint)) {
+      return;
+    }
+    removeAnnotation(b);
   }
 
   /**
@@ -68,39 +100,34 @@ implements PropertyChangeListener
    * @param evt A PropertyChangeEvent object describing the event source 
    *   	and the property that has changed.
    */
-
-  public void propertyChange (PropertyChangeEvent evt) 
-  {
-    if (evt.getPropertyName () != Breakpoint.PROP_ENABLED) return;
-    removeAnnotation ((Breakpoint) evt.getSource ());
-    addAnnotation ((Breakpoint) evt.getSource ());
-  }
-    
-  private void addAnnotation (Breakpoint b) 
-  {
-    _breakpointToAnnotation.put (
-            b,
-            new DebuggerAnnotation (
-                b.isEnabled () ? 
-                    DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE :
-                    DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE, 
-                ((PythonBreakpoint) b).getLine ()
-            )
-     );
-     b.addPropertyChangeListener (
-       Breakpoint.PROP_ENABLED, 
-       this
-     );
-  }
-    
-  private void removeAnnotation (Breakpoint b) 
-  {
-  DebuggerAnnotation annotation = (DebuggerAnnotation) _breakpointToAnnotation.remove (b);
-        if (annotation == null) return;
-        annotation.detach ();
-        b.removePropertyChangeListener (
-            Breakpoint.PROP_ENABLED, 
-            this
-        );
+  @Override
+  public void propertyChange(PropertyChangeEvent evt) {
+    if (evt.getPropertyName() != Breakpoint.PROP_ENABLED) {
+      return;
     }
+    removeAnnotation((Breakpoint) evt.getSource());
+    addAnnotation((Breakpoint) evt.getSource());
+  }
+
+  private void addAnnotation(Breakpoint b) {
+    _breakpointToAnnotation.put(
+            b,
+            new DebuggerAnnotation(
+            b.isEnabled() ? DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
+            ((PythonBreakpoint) b).getLine()));
+    b.addPropertyChangeListener(
+            Breakpoint.PROP_ENABLED,
+            this);
+  }
+
+  private void removeAnnotation(Breakpoint b) {
+    DebuggerAnnotation annotation = (DebuggerAnnotation) _breakpointToAnnotation.remove(b);
+    if (annotation == null) {
+      return;
+    }
+    annotation.detach();
+    b.removePropertyChangeListener(
+            Breakpoint.PROP_ENABLED,
+            this);
+  }
 }

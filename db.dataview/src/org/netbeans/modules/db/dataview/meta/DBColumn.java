@@ -166,10 +166,10 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         this.displaySize = displaySize;
     }
 
-    public String getQualifiedName() {
+    public String getQualifiedName(boolean quoteAlways) {
         StringBuilder buf = new StringBuilder(50);
         DBTable table = this.getParentObject();
-        buf.append(table.getQuoter().quoteIfNeeded(columnName));
+        buf.append(quoteAlways ? table.getQuoter().quoteAlways(columnName) : table.getQuoter().quoteIfNeeded(columnName));
         return buf.toString();
     }
 

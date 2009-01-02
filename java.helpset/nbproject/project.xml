@@ -48,6 +48,14 @@ made subject to such option by the copyright holder.
             <module-dependencies>
                 </module-dependencies>
            <public-packages/>
+           <class-path-extension>
+                <runtime-relative-path>../javahelp/ext/jh-2.0_05.jar</runtime-relative-path>
+                <binary-origin>../javahelp/external/jh-2.0_05.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../apisupport.harness/ext/jsearch-2.0_05.jar</runtime-relative-path>
+                <binary-origin>../apisupport.harness/external/jsearch-2.0_05.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

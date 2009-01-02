@@ -1,123 +1,97 @@
-#API master signature file
-#Version 1.1
-CLSS public static final org.netbeans.spi.tasklist.FileTaskScanner$Callback
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public transient void org.netbeans.spi.tasklist.FileTaskScanner$Callback.refresh([Lorg.openide.filesystems.FileObject;)
-meth public void org.netbeans.spi.tasklist.FileTaskScanner$Callback.refreshAll()
-supr java.lang.Object
-CLSS public static final org.netbeans.spi.tasklist.PushTaskScanner$Callback
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.spi.tasklist.PushTaskScanner$Callback.clearAllTasks()
-meth public void org.netbeans.spi.tasklist.PushTaskScanner$Callback.finished()
-meth public void org.netbeans.spi.tasklist.PushTaskScanner$Callback.setTasks(org.openide.filesystems.FileObject,java.util.List)
-meth public void org.netbeans.spi.tasklist.PushTaskScanner$Callback.started()
-supr java.lang.Object
-CLSS public static final org.netbeans.spi.tasklist.TaskScanningScope$Callback
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.spi.tasklist.TaskScanningScope$Callback.refresh()
-supr java.lang.Object
-CLSS public static abstract interface org.openide.util.Lookup$Provider
-meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
-supr null
+#Signature file v4.0
+#Version 1.2.1
+
+CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
+meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
+
+CLSS public java.lang.Object
+cons public Object()
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected void finalize() throws java.lang.Throwable
+meth public boolean equals(java.lang.Object)
+meth public final java.lang.Class<?> getClass()
+meth public final void notify()
+meth public final void notifyAll()
+meth public final void wait() throws java.lang.InterruptedException
+meth public final void wait(long) throws java.lang.InterruptedException
+meth public final void wait(long,int) throws java.lang.InterruptedException
+meth public int hashCode()
+meth public java.lang.String toString()
+
 CLSS public abstract org.netbeans.spi.tasklist.FileTaskScanner
 cons public FileTaskScanner(java.lang.String,java.lang.String,java.lang.String)
-innr public static final org.netbeans.spi.tasklist.FileTaskScanner$Callback
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract java.util.List org.netbeans.spi.tasklist.FileTaskScanner.scan(org.openide.filesystems.FileObject)
-meth public abstract void org.netbeans.spi.tasklist.FileTaskScanner.attach(org.netbeans.spi.tasklist.FileTaskScanner$Callback)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.spi.tasklist.FileTaskScanner.notifyFinish()
-meth public void org.netbeans.spi.tasklist.FileTaskScanner.notifyPrepare()
+innr public final static Callback
+meth public abstract java.util.List<? extends org.netbeans.spi.tasklist.Task> scan(org.openide.filesystems.FileObject)
+meth public abstract void attach(org.netbeans.spi.tasklist.FileTaskScanner$Callback)
+meth public void notifyFinish()
+meth public void notifyPrepare()
 supr java.lang.Object
+hfds description,displayName,optionsPath
+
+CLSS public final static org.netbeans.spi.tasklist.FileTaskScanner$Callback
+meth public !varargs void refresh(org.openide.filesystems.FileObject[])
+meth public void refreshAll()
+supr java.lang.Object
+hfds scanner,tm
+
 CLSS public abstract org.netbeans.spi.tasklist.PushTaskScanner
 cons public PushTaskScanner(java.lang.String,java.lang.String,java.lang.String)
-innr public static final org.netbeans.spi.tasklist.PushTaskScanner$Callback
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract void org.netbeans.spi.tasklist.PushTaskScanner.setScope(org.netbeans.spi.tasklist.TaskScanningScope,org.netbeans.spi.tasklist.PushTaskScanner$Callback)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+innr public final static Callback
+meth public abstract void setScope(org.netbeans.spi.tasklist.TaskScanningScope,org.netbeans.spi.tasklist.PushTaskScanner$Callback)
 supr java.lang.Object
+hfds description,displayName,optionsPath
+
+CLSS public final static org.netbeans.spi.tasklist.PushTaskScanner$Callback
+meth public void clearAllTasks()
+meth public void finished()
+meth public void setTasks(org.openide.filesystems.FileObject,java.util.List<? extends org.netbeans.spi.tasklist.Task>)
+meth public void started()
+supr java.lang.Object
+hfds scanner,tm
+
 CLSS public final org.netbeans.spi.tasklist.Task
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean org.netbeans.spi.tasklist.Task.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.netbeans.spi.tasklist.Task.hashCode()
-meth public java.lang.String org.netbeans.spi.tasklist.Task.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static org.netbeans.spi.tasklist.Task org.netbeans.spi.tasklist.Task.create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,int)
-meth public static org.netbeans.spi.tasklist.Task org.netbeans.spi.tasklist.Task.create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,java.awt.event.ActionListener)
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String toString()
+meth public static org.netbeans.spi.tasklist.Task create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,int)
+meth public static org.netbeans.spi.tasklist.Task create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,java.awt.event.ActionListener)
 supr java.lang.Object
+hfds al,description,group,line,resource,unknownTaskGroups
+
 CLSS public abstract org.netbeans.spi.tasklist.TaskScanningScope
 cons public TaskScanningScope(java.lang.String,java.lang.String,java.awt.Image)
 cons public TaskScanningScope(java.lang.String,java.lang.String,java.awt.Image,boolean)
-innr public static final org.netbeans.spi.tasklist.TaskScanningScope$Callback
-intf java.lang.Iterable
+innr public final static Callback
+intf java.lang.Iterable<org.openide.filesystems.FileObject>
 intf org.openide.util.Lookup$Provider
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.netbeans.spi.tasklist.TaskScanningScope.isInScope(org.openide.filesystems.FileObject)
-meth public abstract java.util.Iterator java.lang.Iterable.iterator()
-meth public abstract org.openide.util.Lookup org.netbeans.spi.tasklist.TaskScanningScope.getLookup()
-meth public abstract void org.netbeans.spi.tasklist.TaskScanningScope.attach(org.netbeans.spi.tasklist.TaskScanningScope$Callback)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth public abstract boolean isInScope(org.openide.filesystems.FileObject)
+meth public abstract org.openide.util.Lookup getLookup()
+meth public abstract void attach(org.netbeans.spi.tasklist.TaskScanningScope$Callback)
 supr java.lang.Object
+hfds description,displayName,icon,isDefault
+
+CLSS public final static org.netbeans.spi.tasklist.TaskScanningScope$Callback
+meth public void refresh()
+supr java.lang.Object
+hfds scope,tm
+
+CLSS public abstract org.openide.util.Lookup
+cons public Lookup()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds defaultLookup
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+meth public abstract org.openide.util.Lookup getLookup()
+

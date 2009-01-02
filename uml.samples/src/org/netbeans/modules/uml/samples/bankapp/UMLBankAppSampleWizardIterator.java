@@ -43,26 +43,31 @@ package org.netbeans.modules.uml.samples.bankapp;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.project.UMLProjectGenerator;
-import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
 import org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -71,7 +76,12 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class UMLBankAppSampleWizardIterator 
     implements WizardDescriptor.InstantiatingIterator
@@ -80,8 +90,6 @@ public class UMLBankAppSampleWizardIterator
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
-
-    private FileObject umlProjectZipFO;
     private FileObject readmeFO;
     
     public UMLBankAppSampleWizardIterator()
@@ -117,14 +125,12 @@ public class UMLBankAppSampleWizardIterator
 
         File javaPrjDir = 
             FileUtil.normalizeFile((File)wiz.getProperty("projdir")); // NOI18N
-        
-        //javaPrjDir.mkdirs();
         FileObject template = Templates.getTemplate(wiz);
         FileObject javaPrjFO = FileUtil.createFolder(javaPrjDir);
-        unZipFile(template.getInputStream(), javaPrjFO, false);
+         unZipFile(template.getInputStream(), javaPrjFO);
+        UMLLogger.logMessage("Java path in sample wizard: "+wiz.getProperty("projdir")+"; Normalized path: "+javaPrjDir+"; Java Project Name: "+wiz.getProperty("name"), Level.INFO);
         
         renameJavaProjectTokens(javaPrjDir, wiz.getProperty("name").toString()); // NOI18N
-        
         // Always open top dir as a project:
         resultSet.add(javaPrjFO);
         
@@ -248,7 +254,7 @@ public class UMLBankAppSampleWizardIterator
     {}
     
     private void unZipFile(
-        InputStream source, FileObject projectRoot, boolean isUmlPrj)
+        InputStream source, FileObject projectRoot)
         throws IOException
     {
         try
@@ -273,15 +279,8 @@ public class UMLBankAppSampleWizardIterator
                         OutputStream out = fo.getOutputStream(lock);
                         try
                         {
-                            if (!isUmlPrj)
-                            {
-                                if (fo.getNameExt().equals("umlProject.zip")) // NOI18N
-                                    umlProjectZipFO = fo;
-
-                                else if (fo.getName().equals("README")) // NOI18N
+                            if (fo.getName().equals("README")) // NOI18N
                                     readmeFO = fo;
-                            }
-
                             FileUtil.copy(str, out);
                         }
                         
@@ -290,7 +289,6 @@ public class UMLBankAppSampleWizardIterator
                             out.close();
                         }
                     }
-                    
                     finally
                     {
                         lock.releaseLock();
@@ -305,47 +303,58 @@ public class UMLBankAppSampleWizardIterator
         }
     }
     
-    private final static String FILE_CONTENTS_JAVA_PROJECT_XML =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.getProperty("line.separator") + // NOI18N
-        "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" + System.getProperty("line.separator") + // NOI18N
-        "    <type>org.netbeans.modules.java.j2seproject</type>" + System.getProperty("line.separator") + // NOI18N
-        "    <configuration>" + System.getProperty("line.separator") + // NOI18N
-        "        <data xmlns=\"http://www.netbeans.org/ns/j2se-project/2\">" + System.getProperty("line.separator") + // NOI18N
-        "            <name>{0}</name>" + System.getProperty("line.separator") + // NOI18N
-        "            <minimum-ant-version>1.6</minimum-ant-version>" + System.getProperty("line.separator") + // NOI18N
-        "            <source-roots>" + System.getProperty("line.separator") + // NOI18N
-        "                <root id=\"src.dir\"/>" + System.getProperty("line.separator") + // NOI18N
-        "            </source-roots>" + System.getProperty("line.separator") + // NOI18N
-        "            <test-roots>" + System.getProperty("line.separator") + // NOI18N
-        "                <root id=\"test.src.dir\"/>" + System.getProperty("line.separator") + // NOI18N
-        "            </test-roots>" + System.getProperty("line.separator") + // NOI18N
-        "        </data>" + System.getProperty("line.separator") + // NOI18N
-        "    </configuration>" + System.getProperty("line.separator") + // NOI18N
-        "</project>" + System.getProperty("line.separator"); // NOI18N
-    
     private void renameJavaProjectTokens(
         File javaPrjDir, String javaPrjName)
     {
-        File[] files = javaPrjDir.listFiles();
-
-        String[] args = {javaPrjName};
-        
+        File[] files = javaPrjDir.listFiles();        
         for (int i=0; i < files.length; i++)
         {
             if (files[i].isDirectory() && 
                 files[i].getName().equals("nbproject")) // NOI18N
             {
                 FileWriter xml = null;
-
+                Document prXmlDoc= null;
                 try
                 {
-                    xml = new FileWriter(files[i].getAbsolutePath() + 
-                        File.separatorChar + "project.xml"); // NOI18N
-
-                    xml.flush();
-
-                    xml.write(MessageFormat.format(
-                        FILE_CONTENTS_JAVA_PROJECT_XML, args));
+                    File projectXml=new File(new File(javaPrjDir,files[i].getName()),"project.xml");//NOI18N
+                    FileObject projectXmlFo=FileUtil.toFileObject(projectXml);
+                    InputStream is=projectXmlFo.getInputStream();
+                    UMLLogger.logMessage("Project file for replacement: "+projectXml, Level.INFO);
+                    try {
+                            prXmlDoc=javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+                            NodeList names=prXmlDoc.getElementsByTagName("name");//NOI18N
+                            if(names.item(0)!=null)
+                            {
+                                Node name=names.item(0);
+                                name.setTextContent(javaPrjName);
+                            }
+                    } catch (ParserConfigurationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    catch (SAXException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    finally
+                    {
+                        if(is!=null)is.close();
+                    }
+                   OutputStream os=projectXmlFo.getOutputStream();
+                   DOMSource xmlSource=new DOMSource(prXmlDoc);
+                   StreamResult strRes=new StreamResult(os);
+                    try {
+                        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                        try {
+                            transformer.transform(xmlSource, strRes);
+                        } catch (TransformerException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } catch (TransformerConfigurationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                   finally
+                   {
+                       if(os!=null)os.close();
+                   }
                 }
                 
                 catch (IOException ex)
@@ -369,5 +378,4 @@ public class UMLBankAppSampleWizardIterator
             }
         }
     }
-
 }

@@ -165,22 +165,27 @@ public class NavigationSupport {
 
         ActionType target = actionToType(caller);
 
-        return getTargetPath(target, prj, targetName);
+        String ret = getTargetPath(target, prj, targetName);
+        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(ret)));
+        // do not navigate to itself
+        if (fo.equals(artifactFile)) {
+            return null;
+        }
+
+        return ret;
     }
 
     public static void openArtifact(AbstractAction caller, JTextComponent sourceComponent) {
         String fileName = getTargetFilename(caller, sourceComponent);
 
-        FileObject controllerFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
+        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
 
-        if (controllerFile != null && controllerFile.isValid()) {
-            LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(controllerFile)); // NOI18N
-            NbUtilities.open(controllerFile, 1, "");
+        if (artifactFile != null && artifactFile.isValid()) {
+            LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(artifactFile)); // NOI18N
+            NbUtilities.open(artifactFile, 1, "");
         } else {
             LOG.log(Level.FINEST, "File is either null or invalid : {0}", fileName); // NOI18N
         }
-
-
 
     }
 

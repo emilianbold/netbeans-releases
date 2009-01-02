@@ -38,6 +38,8 @@
         </token>
     </scanner>
     <Program start='0' end='48'>
+        <Comments>
+        </Comments>
         <Statements>
             <ExpressionStatement start='3' end='16'>
                 <Assignment start='3' end='15' operator='EQUAL'>

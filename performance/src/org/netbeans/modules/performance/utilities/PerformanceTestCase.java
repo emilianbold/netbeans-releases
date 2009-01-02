@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.Window;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,8 +129,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public double HEURISTIC_FACTOR = 1.25;
 
     /** Count of repeats */
-    //protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
-protected static int repeat = 4;
+    protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 4).intValue();
 
     /** Count of repeats for measure memory usage */
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
@@ -776,23 +774,9 @@ protected static int repeat = 4;
             }
         }
 
-        String suiteName="Unknown Test Suite";
-        try {
-            Field f=null;
-            f=this.getClass().getDeclaredField("suiteName");
-            suiteName=f.get(null).toString();
-        } catch (NoSuchFieldException ex) {
-            ex.printStackTrace(getLog());
-        } catch (SecurityException ex) {
-            ex.printStackTrace(getLog());
-        }catch (IllegalAccessException ex) {
-            ex.printStackTrace(getLog());        
-        }
-
-
         String suite_fqn="org.netbeans.performance.unknown";
         suite_fqn=System.getProperty("suitename");
-        suiteName="Unknown Test Suite";
+        String suiteName="Unknown Test Suite";
         suiteName=System.getProperty("suite");
 
 

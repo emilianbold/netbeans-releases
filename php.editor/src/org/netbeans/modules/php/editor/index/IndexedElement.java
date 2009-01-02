@@ -313,5 +313,9 @@ public abstract class IndexedElement extends PHPElement {
         hash = 53 * hash + getKind().hashCode();
         return hash;
     }
+
+    public int getFlags() {
+        return flags;
+    }
     
 }

@@ -17,7 +17,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="skipParams" min="-2" max="-2" attributes="0"/>
-          <Component id="skipReturnTuples" alignment="0" min="-2" max="-2" attributes="0"/>
+          <Component id="skipTupleAssignments" alignment="0" min="-2" max="-2" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="ignoredLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -30,7 +30,7 @@
           <Group type="102" attributes="0">
               <Component id="skipParams" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="skipReturnTuples" min="-2" max="-2" attributes="0"/>
+              <Component id="skipTupleAssignments" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="ignoredLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -52,10 +52,10 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="skipReturnTuples">
+    <Component class="javax.swing.JCheckBox" name="skipTupleAssignments">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/python/editor/hints/Bundle.properties" key="UnusedDetectorPrefs.skipReturnTuples.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/python/editor/hints/Bundle.properties" key="UnusedDetectorPrefs.skipTupleAssignments.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

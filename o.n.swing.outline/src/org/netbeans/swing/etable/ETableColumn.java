@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -226,6 +226,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      * we use our special renderer created by method 
      * createDefaultHeaderRenderer().
      */
+    @Override
     public void setHeaderRenderer(TableCellRenderer tcr) {
         headerRendererSetExternally = true;
         super.setHeaderRenderer(tcr);
@@ -235,6 +236,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      * Use a special renderer (result of calling createDefaultHeaderRenderer)
      * if it was not set by setHeaderRenderer.
      */
+    @Override
     public TableCellRenderer getHeaderRenderer() {
         if (headerRendererSetExternally) {
             return super.getHeaderRenderer();
@@ -604,6 +606,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         public RowComparator(int column) {
             this.column = column;
         }
+        @SuppressWarnings("unchecked")
         public int compare(ETable.RowMapping rm1, ETable.RowMapping rm2) {
             Object obj1 = rm1.getModelObject(column);
             Object obj2 = rm2.getModelObject(column);

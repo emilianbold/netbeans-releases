@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.elements;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 public final class IndexedConstant extends IndexedElement {
@@ -49,14 +50,14 @@ public final class IndexedConstant extends IndexedElement {
     private String in;
 
     private IndexedConstant(String name, RubyIndex index, String fileUrl, String classFQN,
-            String require, int flags, FileObject context, String type) {
+            String require, int flags, FileObject context, RubyType type) {
         super(index, fileUrl, classFQN, classFQN, require, null, flags, context, type);
         this.name = name;
     }
 
     public static IndexedConstant create(RubyIndex index, String name,
             String classFQn, String fileUrl, String require,
-            int flags, FileObject context, String type) {
+            int flags, FileObject context, RubyType type) {
         return new IndexedConstant(name, index, fileUrl, classFQn, require, flags, context, type);
     }
 

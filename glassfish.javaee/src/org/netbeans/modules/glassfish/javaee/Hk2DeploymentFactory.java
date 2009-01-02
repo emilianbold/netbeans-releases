@@ -89,21 +89,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         return false;
     }
 
-    private static File getServerLocationFromURI(String uri) throws DeploymentManagerCreationException{
-        if(uri.startsWith("[")) {//NOI18N
-            String loc = uri.substring(1,uri.indexOf("]"));
-            return  new File(loc);
-        }
-        return null;
-    }
-
-    private static String getRealURI(String uri) throws DeploymentManagerCreationException{
-        if(uri.startsWith("[")) {//NOI18N
-            return uri.substring(uri.indexOf("]")+1,uri.length());
-        }
-        return uri;// the old one.
-    }
-
     /**
      * 
      * @param uri 

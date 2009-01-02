@@ -394,14 +394,18 @@ public class GsfFoldManager implements FoldManager {
                             }
                         }
 
+                        BaseDocument baseDoc = (BaseDocument) doc;
                         try {
+                            baseDoc.readLock();
                             // Start the fold at the END of the line
-                            startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument)doc, startOffset);
+                            startOffset = org.netbeans.editor.Utilities.getRowEnd( baseDoc, startOffset);
                             if (startOffset >= endOffset) {
                                 return true;
                             }
                         } catch (BadLocationException ex) {
                             ErrorManager.getDefault().notify(ex);
+                        } finally {
+                            baseDoc.readUnlock();
                         }
                         
                         folds.add(new FoldInfo(doc, startOffset, endOffset, INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));

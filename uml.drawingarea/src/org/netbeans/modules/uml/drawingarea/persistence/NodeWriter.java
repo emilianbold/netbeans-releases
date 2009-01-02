@@ -60,6 +60,7 @@ public class NodeWriter extends Writer {
     protected String diagramNamespace;
     protected String projectID;
     protected String anchorType;
+    private String documentation;
     protected double zoom;
     protected Point viewport;
 //    private String xmiid; // a random ID
@@ -280,10 +281,14 @@ public class NodeWriter extends Writer {
 
     @SuppressWarnings(value = "unchecked")
     private HashMap getDiagramAttrs() {
-        diagramAttrs.put(XMIConstants.XMI_ID, PEID);
-        diagramAttrs.put(XMIConstants.ISVISIBLE, visible);
-        diagramAttrs.put(XMIConstants.NAME, diagramName);
-        diagramAttrs.put(XMIConstants.ZOOM, zoom);
+        if(diagramAttrs.size()==0)
+        {
+            diagramAttrs.put(XMIConstants.XMI_ID, PEID);
+            diagramAttrs.put(XMIConstants.ISVISIBLE, visible);
+            diagramAttrs.put(XMIConstants.NAME, diagramName);
+            diagramAttrs.put(XMIConstants.ZOOM, zoom);
+            diagramAttrs.put(XMIConstants.DOCUMENTATION,documentation);
+        }
         return diagramAttrs;
     }
    
@@ -291,5 +296,19 @@ public class NodeWriter extends Writer {
     HashMap getConnectorAttrs( Anchor anchor) {
         connectorAttrs.put(XMIConstants.XMI_ID, PersistenceUtil.findAnchor(anchor));
         return connectorAttrs;
+    }
+
+    /**
+     * @return the documentation
+     */
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    /**
+     * @param documentation the documentation to set
+     */
+    public void setDocumentation(String documentation) {
+        this.documentation = documentation;
     }
 }
