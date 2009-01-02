@@ -622,6 +622,17 @@ public final class GsfUtilities {
 
     private static final Map<Source, Integer> enforcedCaretOffsets = new WeakHashMap<Source, Integer>();
 
+    /**
+     * Gets classpath roots relevant for a file. This method tries to find
+     * classpath roots for a given files. It looks at classpaths specified by
+     * <code>sourcePathIds</code> and <code>binaryPathIds</code> parameters.
+     *
+     * @param f The file to find roots for.
+     * @param sourcePathIds The IDs of source classpath to look at.
+     * @param binaryPathIds The IDs of binary classpath to look at.
+     * 
+     * @return The collection of roots for a given file. It may be empty, but never <code>null</code>.
+     */
     public static Collection<FileObject> getRoots(FileObject f, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
         Collection<FileObject> roots = null;
 
@@ -664,6 +675,18 @@ public final class GsfUtilities {
         return roots != null ? roots : Collections.<FileObject>emptySet();
     }
 
+    /**
+     * Gets classpath roots relevant for a project. This method tries to find
+     * classpath with <code>sourcePathIds</code> and <code>binaryPathIds</code> supplied
+     * by the <code>project</code>.
+     *
+     * @param project The project to find the roots for. Can be <code>null</code> in
+     *   which case the method searches in all registered classpaths.
+     * @param sourcePathIds The IDs of source classpath to look at.
+     * @param binaryPathIds The IDs of binary classpath to look at.
+     *
+     * @return The collection of roots for a given project. It may be empty, but never <code>null</code>.
+     */
     public static Collection<FileObject> getRoots(Project project, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
         Set<FileObject> roots = new HashSet<FileObject>();
 
@@ -690,7 +713,7 @@ public final class GsfUtilities {
         return roots;
     }
 
-    public static void collectClasspathRoots(FileObject sourcesRoot, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
+    private static void collectClasspathRoots(FileObject sourcesRoot, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
         for(String id : pathIds) {
             Collection<FileObject> classpathRoots = getClasspathRoots(sourcesRoot, id);
             if (binaryPaths) {

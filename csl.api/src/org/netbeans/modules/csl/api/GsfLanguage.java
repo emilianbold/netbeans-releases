@@ -128,9 +128,34 @@ public interface GsfLanguage {
     @NonNull
     Map<String,String> getSourceGroupNames();
 
-    @NonNull
+    /**
+     * Gets IDs uniquely identifying source classpaths used by this language.
+     *
+     * <p>This method should return a list of classpath IDs where files of this language
+     * belong to. If your language support or its accompanying project support
+     * creates <code>Classpath</code> objects and registers them in <code>GlobalPathRegistry</code>
+     * then the IDs of you source classpath should be listed here.
+     * However, if you don't have your own classpath for sources and/or your files
+     * can live in different projects in various source roots you may
+     * return <code>null</code> here.
+     *
+     * <p>Please note that there is a semantic difference between <code>null</code>
+     * and <code>Collections.emptySet()</code> return values. The former one is used
+     * as a wildcard and means that your language files can live in any source
+     * classpath. In contrast to that <code>Collections.emptySet()</code> means
+     * <b>no</b> source classpath.
+     *
+     * @return The set of source classpath IDs, can be empty or even <code>null</code>.
+     */
     Set<String> getSourcePathIds();
 
-    @NonNull
+    /**
+     * Gets IDs uniquely identifying binary classpaths used by this language. This
+     * method is similar as {@link #getSourcePathIds()} except that it returns
+     * ids of classpath with binaries (eg. libraries, runtimes, etc).
+     *
+     * @return The set of binary classpath IDs, can be empty or even <code>null</code>.
+     *   Please see {@link #getSourcePathIds()} for the exact meaning of those values.
+     */
     Set<String> getBinaryPathIds();
 }
