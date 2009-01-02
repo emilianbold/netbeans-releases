@@ -292,6 +292,10 @@ public class GrailsActionsTest extends GrailsTestCase {
         jtfo.clearText();
         jtfo.typeText(port);
         ndo.ok();
+        //wait till project data are really saved
+        //Saving Project data
+        String saveDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.uiapi.Bundle", "LBL_Saving_Project_data");
+        new NbDialogOperator(saveDlgTitle).waitClosed();
     }
 
     private Node getDomainClassNode(String domainClass) {
