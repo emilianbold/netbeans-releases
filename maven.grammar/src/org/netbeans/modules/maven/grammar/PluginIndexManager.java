@@ -60,6 +60,7 @@ import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -73,10 +74,31 @@ public class PluginIndexManager {
 
     private static final String INDEX_PATH = "maven-plugins-index"; //NOI18N
     private static IndexReader indexReader;
-    private static String FIELD_ID = "id";
-    private static String FIELD_GOALS = "gls";
-    private static String FIELD_PREFIX = "prfx";
-    private static String PREFIX_FIELD_GOAL = "mj_";
+    
+    /**
+     * groupId + "|" + artifactId + "|" + version;
+     */
+    private static String FIELD_ID = "id";//NOI18N
+    /**
+     * 2.0.x or similar name of maven core. a document has either this or id field.
+     */
+    private static String FIELD_MVN_VERSION = "mvn";//NOI18N
+    /**
+     * space separated list of goal names
+     */
+    private static String FIELD_GOALS = "gls";//NOI18N
+    /**
+     * goal prefix
+     */
+    private static String FIELD_PREFIX = "prfx";//NOI18N
+    private static String PREFIX_FIELD_GOAL = "mj_";//NOI18N
+    /**
+     * space separated list of lifecycles/packagings
+     */
+    private static String FIELD_CYCLES = "ccls";//NOI18N
+    private static String PREFIX_FIELD_CYCLE = "ccl_";//NOI18N
+
+
     final static int BUFFER = 2048;
 
     private static synchronized IndexSearcher getIndexSearcher() throws Exception {
@@ -104,12 +126,70 @@ public class PluginIndexManager {
             //TODO shall we somehow pick just one version fom a given plugin here? how?
             String prefix = doc.getField(FIELD_PREFIX).stringValue();
             String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " ");
+            String[] gls = StringUtils.split(goals, " ");//NOI18N
             for (String goal : gls) {
-                toRet.add(prefix + ":" + goal);
+                toRet.add(prefix + ":" + goal); //NOI18N
             }
         }
         return toRet;
+    }
+
+    public static Set<String> getPluginGoals(String groupId, String artifactId, String version) throws Exception {
+        assert groupId != null && artifactId != null && version != null;
+        IndexSearcher searcher = getIndexSearcher();
+        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
+        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
+        Hits hits = searcher.search(tq);
+        if (hits.length() == 0) {
+            return null;
+        }
+        Iterator it = hits.iterator();
+        TreeSet<String> toRet = new TreeSet<String>();
+        while (it.hasNext()) { //well should be just one anyway..
+            Hit hit = (Hit) it.next();
+            Document doc = hit.getDocument();
+            String goals = doc.getField(FIELD_GOALS).stringValue();
+            String[] gls = StringUtils.split(goals, " "); //NOI18N
+            for (String goal : gls) {
+                toRet.add(goal);
+            }
+        }
+        return toRet;
+    }
+
+    public static Set<String> getPluginParameterNames(String groupId, String artifactId, String version, String mojo) throws Exception {
+        assert groupId != null && artifactId != null && version != null;
+        IndexSearcher searcher = getIndexSearcher();
+        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
+        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
+        Hits hits = searcher.search(tq);
+        if (hits.length() == 0) {
+            return null;
+        }
+        Iterator it = hits.iterator();
+        TreeSet<String> toRet = new TreeSet<String>();
+        while (it.hasNext()) { //well should be just one anyway..
+            Hit hit = (Hit) it.next();
+            Document doc = hit.getDocument();
+            String goals = doc.getField(FIELD_GOALS).stringValue();
+            String[] gls = StringUtils.split(goals, " "); //NOI18N
+            for (String goal : gls) {
+                if (mojo == null || mojo.equals(goal)) {
+                    String params = doc.getField(PREFIX_FIELD_GOAL + goal).stringValue();
+                    String[] lines = StringUtils.split(params, "\n"); //NOI18N
+                    for (String line : lines) {
+                        String[] paramDet = StringUtils.split(line, "|"); //NOI18N
+                        String name = paramDet[0];
+                        String editable = paramDet[1];
+                        if ("true".equals(editable)) { //NOI18N
+                            toRet.add(name);
+                        }
+                    }
+                }
+            }
+        }
+        return toRet;
+
     }
 
 
