@@ -3,8 +3,11 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
@@ -23,10 +26,22 @@ final class NetigsoModule extends Module {
 
     public NetigsoModule(File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
+        Attributes attr;
+        Dictionary dict;
+        Enumeration keys;
+        Object v;
         try {
             BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
             bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
             manifest = new Manifest();
+            attr = manifest.getMainAttributes();
+            dict = bundle.getHeaders();
+            keys = dict.keys();
+            while (keys.hasMoreElements()) {
+                Object k = keys.nextElement();
+                v = dict.get(k);
+                attr.put(new Attributes.Name((String)k), v);
+            }
         } catch (BundleException ex) {
             throw (IOException) new IOException(ex.getMessage()).initCause(ex);
         }
