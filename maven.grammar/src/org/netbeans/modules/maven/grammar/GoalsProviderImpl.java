@@ -39,22 +39,37 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import hidden.org.codehaus.plexus.util.FileUtils;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import hidden.org.codehaus.plexus.util.IOUtil;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
-import org.jdom.input.SAXBuilder;
-import org.openide.modules.InstalledFileLocator;
+import hidden.org.codehaus.plexus.util.StringUtils;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Hit;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.store.FSDirectory;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -62,80 +77,182 @@ import org.openide.modules.InstalledFileLocator;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.grammar.GoalsProvider.class)
 public class GoalsProviderImpl implements GoalsProvider {
+    private static final String INDEX_PATH = "maven-plugins-index"; //NOI18N
     
     /** Creates a new instance of GoalsProviderImpl */
     public GoalsProviderImpl() {
     }
     
     private WeakReference<Set<String>> goalsRef = null;
+    private IndexReader indexReader;
+
+    private static String FIELD_ID = "id";
+    private static String FIELD_GOALS = "gls";
+    private static String FIELD_PREFIX = "prfx";
+    private static String PREFIX_FIELD_GOAL = "mj_";
+
     
-    public Set<String> getAvailableGoals() {
-        Set<String> cached = goalsRef != null ? goalsRef.get() :null;
-        if (cached == null) {
-            File expandedPath = InstalledFileLocator.getDefault().locate("maven2/maven-plugins-xml", null, false); //NOI18N
-            assert expandedPath != null : "Shall have path expanded.."; //NOI18N
-            //TODO we should have a "resolved instance here with defaults injected correctly
-            List<String> groups = MavenSettingsSingleton.getInstance().getSettings().getPluginGroups();
-            groups.add("org.apache.maven.plugins"); //NOI18N
-            groups.add("org.codehaus.mojo"); //NOI18N
-            cached = new TreeSet<String>();
-            for (String group : groups) {
-                File folder = new File(expandedPath, group.replace('.', File.separatorChar));
-                checkFolder(folder, cached, false);
+    public synchronized Set<String> getAvailableGoals() {
+        try {
+            if (indexReader == null) {
+                FSDirectory dir = FSDirectory.getDirectory(getDefaultIndexLocation());
+                indexReader = IndexReader.open(dir);
             }
-            goalsRef = new WeakReference<Set<String>>(cached);
+            //TODO shall the searcher be stored as field??
+            IndexSearcher searcher = new IndexSearcher( indexReader );
+            //TODO we should have a "resolved instance here with defaults injected correctly
+            @SuppressWarnings("unchecked")
+            List<String> groups = MavenSettingsSingleton.getInstance().getSettings().getPluginGroups();
+            if (!groups.contains("org.apache.maven.plugins")) {//NOI18N
+                groups.add("org.apache.maven.plugins"); //NOI18N
+            }
+            if (!groups.contains("org.codehaus.mojo")) {//NOI18N
+                groups.add("org.codehaus.mojo"); //NOI18N
+            }
+            BooleanQuery bq = new BooleanQuery();
+            for (String grp : groups) {
+                PrefixQuery pq = new PrefixQuery(new Term(FIELD_ID, grp));
+                bq.add(new BooleanClause(pq, BooleanClause.Occur.SHOULD));
+            }
+            Hits hits = searcher.search(bq);
+            Iterator it = hits.iterator();
+            TreeSet<String> toRet = new TreeSet<String>();
+            while (it.hasNext()) {
+                Hit hit = (Hit) it.next();
+                Document doc = hit.getDocument();
+                //TODO shall we somehow pick just one version fom a given plugin here? how?
+                String prefix = doc.getField(FIELD_PREFIX).stringValue();
+                String goals = doc.getField(FIELD_GOALS).stringValue();
+                String[] gls = StringUtils.split(goals, " ");
+                for (String goal : gls) {
+                    toRet.add(prefix + ":" + goal);
+                }
+            }
+            return toRet;
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
-        return cached;
+        return new HashSet<String>();
         
     }
 
-    private void checkFolder(File parent, Set<String> list, boolean recurs) {
-        File[] files = parent.listFiles();
-        if (files == null) {
-            //fix for #100894, happens when a plugin group is defined but not in our list.
-            return;
+    private int checkLocalVersion(File[] fls) {
+        for (File fl : fls) {
+            try {
+                int intVersion = Integer.parseInt(fl.getName());
+                return intVersion;
+            } catch (NumberFormatException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
-        boolean hasFile = false;
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.isDirectory() && recurs) {
-                checkFolder(file, list, recurs);
-            }
-            if (file.isFile()) {
-                InputStream str = null;
-                try {
-                    str = new FileInputStream(file);
-                    SAXBuilder builder = new SAXBuilder();
-                    //TODO jdom document tree is probably not the most memory effective way of doing things..
-                    Document doc = builder.build(str);
-                    Iterator it = doc.getRootElement().getDescendants(new Filter() {
-                        public boolean matches(Object object) {
-                            if (object instanceof Element) {
-                                Element el = (Element)object;
-                                if ("goal".equals(el.getName()) &&  //NOI18N
-                                        el.getParentElement() != null && 
-                                        "mojo".equals(el.getParentElement().getName())) { //NOI18N
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    });
-                    String prefix = doc.getRootElement().getChildTextTrim("goalPrefix"); //NOI18N
-                    assert prefix != null : "No prefix for " + file.getAbsolutePath(); //NOI18N
-                    while (it.hasNext()) {
-                        Element goal = (Element)it.next();
-                        list.add(prefix + ":" + goal.getText());
+        //if there is a folder, but not a number, return max value to be sure
+        //we don't overwrite stuff..
+        return fls.length > 0 ? Integer.MAX_VALUE : 0;
+    }
+
+    private int checkZipVersion(File cacheDir) {
+        InputStream is = null;
+        try {
+            is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+            ZipInputStream zis = new ZipInputStream(is);
+            ZipEntry entry = zis.getNextEntry();
+            if (entry != null) {
+                File fl = new File(cacheDir, entry.getName());
+                if (!fl.getParentFile().equals(cacheDir)) {
+                    String version = fl.getParentFile().getName();
+                    try {
+                        int intVersion = Integer.parseInt(version);
+                        return intVersion;
+                    } catch (NumberFormatException e) {
+                        Exceptions.printStackTrace(e);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    IOUtil.close(str);
                 }
-                
             }
+        } catch (IOException io) {
+            Exceptions.printStackTrace(io);
+        } finally {
+            IOUtil.close(is);
+        }
+        return 0; //a fallback
+    }
+
+
+    private File getDefaultIndexLocation() {
+        String userdir = System.getProperty("netbeans.user"); //NOI18N
+        File cacheDir;
+        if (userdir != null) {
+            cacheDir = new File(new File(new File(userdir, "var"), "cache"), INDEX_PATH);//NOI18N
+        } else {
+            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            cacheDir = new File(root, INDEX_PATH);//NOI18N
+        }
+        cacheDir.mkdirs();
+        File[] fls = cacheDir.listFiles();
+        if (fls == null || fls.length == 0) {
+            //copy the preexisting index in module into place..
+            InputStream is = null;
+            try {
+                is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+                ZipInputStream zis = new ZipInputStream(is);
+                unzip(zis, cacheDir);
+            } finally {
+                IOUtil.close(is);
+            }
+        } else {
+            int zipped = checkZipVersion(cacheDir);
+            int local = checkLocalVersion(fls);
+            if (zipped > local && local > 0) {
+                try {
+                    FileUtils.deleteDirectory(new File(cacheDir, "" + local));
+                    //copy the preexisting index in module into place..
+                    InputStream is = null;
+                    try {
+                        is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+                        ZipInputStream zis = new ZipInputStream(is);
+                        unzip(zis, cacheDir);
+                    } finally {
+                        IOUtil.close(is);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        File[] files = cacheDir.listFiles();
+        assert files != null && files.length == 1;
+        cacheDir = files[0];
+        return cacheDir;
+    }
+
+    final int BUFFER = 2048;
+
+    private void unzip(ZipInputStream zis, File cacheDir) {
+        try {
+            BufferedOutputStream dest = null;
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                int count;
+                byte data[] = new byte[BUFFER];
+                File fl = new File(cacheDir, entry.getName());
+                fl.getParentFile().mkdirs();
+                FileOutputStream fos = new FileOutputStream(fl);
+                dest = new BufferedOutputStream(fos, BUFFER);
+                while ((count = zis.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, count);
+                }
+                dest.flush();
+                dest.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            IOUtil.close(zis);
         }
     }
-    
+
+
+
+
+
     
 }
