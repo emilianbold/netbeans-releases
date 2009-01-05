@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.AWTEvent;
+import java.awt.EventQueue;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -86,7 +88,33 @@ class InsertRecordDialog extends javax.swing.JDialog {
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
-        jTable1 = new InsertRecordTableUI(dataView);
+        jTable1 = new InsertRecordTableUI(dataView) {
+
+            @Override
+            public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+                if (rowIndex != -1 && columnIndex != -1) {
+                    removeBtn.setEnabled(true);
+                }
+                AWTEvent awtEvent = EventQueue.getCurrentEvent();
+                if (awtEvent instanceof KeyEvent) {
+                    KeyEvent keyEvt = (KeyEvent) awtEvent;
+                    if (keyEvt.getSource() != this) {
+                        return;
+                    }
+                    if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
+                        DefaultTableModel model = (DefaultTableModel) getModel();
+                        model.addRow(createNewRow());
+                        rowIndex = getRowCount() - 1; //Otherwise the selection switches to the first row
+                        editCellAt(rowIndex, 0);
+                    } else if (KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT + KeyEvent.VK_TAB, 0))) {
+                        editCellAt(rowIndex, columnIndex);
+                    } else {
+                        editCellAt(rowIndex, columnIndex);
+                    }
+                }
+                super.changeSelection(rowIndex, columnIndex, toggle, extend);
+            }
+        };
         initComponents();
         addInputFields();
         jTable1.addKeyListener(new TableKeyListener());
@@ -229,6 +257,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         removeBtn.setMnemonic('R');
         removeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
         removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.toolTipText")); // NOI18N
+        removeBtn.setEnabled(false);
         removeBtn.setMaximumSize(previewBtn.getMaximumSize());
         removeBtn.setMinimumSize(previewBtn.getMinimumSize());
         removeBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -283,6 +312,7 @@ private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 
 private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBtnActionPerformed
     jTable1.removeRows();
+    removeBtn.setEnabled(false);
 }//GEN-LAST:event_removeBtnActionPerformed
 
     private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -393,126 +423,145 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private class TableKeyListener implements KeyListener {
 
-        private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        ;
-        private String rowstring,  value;
-        private StringSelection stringSelection;
-
         public TableKeyListener() {
         }
 
         public void keyTyped(KeyEvent e) {
+            processKeyEvents(e);
         }
 
         public void keyPressed(KeyEvent e) {
-            KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
-            KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK, false);
-
-            if (KeyStroke.getKeyStrokeForEvent(e).equals(copy)) {
-                StringBuffer strBuffer = new StringBuffer();
-                int numcols = jTable1.getSelectedColumnCount();
-                int numrows = jTable1.getSelectedRowCount();
-                int[] rowsselected = jTable1.getSelectedRows();
-                int[] colsselected = jTable1.getSelectedColumns();
-                if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] &&
-                        numrows == rowsselected.length) &&
-                        (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] &&
-                        numcols == colsselected.length))) {
-                    JOptionPane.showMessageDialog(null, "Invalid Copy Selection", "Invalid Copy Selection", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                for (int i = 0; i < numrows; i++) {
-                    for (int j = 0; j < numcols; j++) {
-                        strBuffer.append(jTable1.getValueAt(rowsselected[i], colsselected[j]));
-                        if (j < numcols - 1) {
-                            strBuffer.append("\t");
-                        }
-                    }
-                    strBuffer.append("\n");
-                }
-                stringSelection = new StringSelection(strBuffer.toString());
-                clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipBoard.setContents(stringSelection, stringSelection);
-            } else if (KeyStroke.getKeyStrokeForEvent(e).equals(paste)) {
-                int startRow = (jTable1.getSelectedRows())[0];
-                int startCol = (jTable1.getSelectedColumns())[0];
-                try {
-                    String trstring = (String) (clipBoard.getContents(this).getTransferData(DataFlavor.stringFlavor));
-                    StringTokenizer st1 = new StringTokenizer(trstring, "\n");
-                    if (jTable1.getSelectedRows().length < st1.countTokens()) {
-                        int rowCnt = st1.countTokens() - jTable1.getSelectedRows().length;
-                        for (int cnt = 0; cnt < rowCnt; cnt++) {
-                            addBtnActionPerformed(null);
-                        }
-                    }
-                    for (int i = 0; st1.hasMoreTokens(); i++) {
-                        rowstring = st1.nextToken();
-                        StringTokenizer st2 = new StringTokenizer(rowstring, "\t");
-                        for (int j = 0; st2.hasMoreTokens(); j++) {
-                            value = st2.nextToken();
-                            if (startRow + i < jTable1.getRowCount() && startCol + j < jTable1.getColumnCount()) {
-                                jTable1.setValueAt(value, startRow + i, startCol + j);
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    java.util.logging.Logger.getLogger(InsertRecordDialog.class.getName()).info("Failed to paste the contents " + ex);
-                }
-            }
-            if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DELETE) {
-                jTable1.removeRows();
-            } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                setFocusable(false);
-            } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
-                int row = jTable1.getSelectedRow();
-                int col = jTable1.getSelectedColumn();
-                if (row == -1) {
-                    return;
-                }
-                jTable1.editCellAt(row, col);
-
-                TableCellEditor editor = jTable1.getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
-                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(jTable1, null, jTable1.isRowSelectionAllowed, row, col);
-                        jTable1.setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    }
-                    jTable1.setRowSelectionInterval(row, row);
-                }
-            } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
-                int row = jTable1.getSelectedRow();
-                int col = jTable1.getSelectedColumn();
-                if (row == -1) {
-                    return;
-                }
-                jTable1.editCellAt(row, col);
-                TableCellEditor editor = jTable1.getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
-                    Object val = jTable1.getValueAt(row, col);
-                    if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                        editor.getTableCellEditorComponent(jTable1, "", jTable1.isRowSelectionAllowed, row, col);
-                        jTable1.setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(jTable1, "<DEFAULT>", jTable1.isRowSelectionAllowed, row, col);
-                        jTable1.setValueAt("<DEFAULT>", row, col);
-                        editor.stopCellEditing();
-                    }
-                    jTable1.setRowSelectionInterval(row, row);
-                }
-            }
+            processKeyEvents(e);
         }
 
         public void keyReleased(KeyEvent e) {
+            processKeyEvents(e);
+        }
+    }
+
+    private void processKeyEvents(KeyEvent e) {
+        KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
+        KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK, false);
+
+        if (KeyStroke.getKeyStrokeForEvent(e).equals(copy)) {
+            copy();
+        } else if (KeyStroke.getKeyStrokeForEvent(e).equals(paste)) {
+            paste();
+        }
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DELETE) {
+            jTable1.removeRows();
+        } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            setFocusable(false);
+        } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
+            control0Event();
+        } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
+            control1Event();
+        }
+    }
+    private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    private void copy() {
+        StringBuffer strBuffer = new StringBuffer();
+        int numcols = jTable1.getSelectedColumnCount();
+        int numrows = jTable1.getSelectedRowCount();
+        int[] rowsselected = jTable1.getSelectedRows();
+        int[] colsselected = jTable1.getSelectedColumns();
+        if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] &&
+                numrows == rowsselected.length) &&
+                (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] &&
+                numcols == colsselected.length))) {
+            JOptionPane.showMessageDialog(null, "Invalid Copy Selection", "Invalid Copy Selection", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        for (int i = 0; i < numrows; i++) {
+            for (int j = 0; j < numcols; j++) {
+                strBuffer.append(jTable1.getValueAt(rowsselected[i], colsselected[j]));
+                if (j < numcols - 1) {
+                    strBuffer.append("\t");
+                }
+            }
+            strBuffer.append("\n");
+        }
+        StringSelection stringSelection = new StringSelection(strBuffer.toString());
+        clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipBoard.setContents(stringSelection, stringSelection);
+    }
+
+    private void paste() {
+        String rowstring, value;
+        int startRow = (jTable1.getSelectedRows())[0];
+        int startCol = (jTable1.getSelectedColumns())[0];
+        try {
+            String trstring = (String) (clipBoard.getContents(this).getTransferData(DataFlavor.stringFlavor));
+            StringTokenizer st1 = new StringTokenizer(trstring, "\n");
+            if (jTable1.getSelectedRows().length < st1.countTokens()) {
+                int rowCnt = st1.countTokens() - jTable1.getSelectedRows().length;
+                for (int cnt = 0; cnt < rowCnt; cnt++) {
+                    addBtnActionPerformed(null);
+                }
+            }
+            for (int i = 0; st1.hasMoreTokens(); i++) {
+                rowstring = st1.nextToken();
+                StringTokenizer st2 = new StringTokenizer(rowstring, "\t");
+                for (int j = 0; st2.hasMoreTokens(); j++) {
+                    value = st2.nextToken();
+                    if (startRow + i < jTable1.getRowCount() && startCol + j < jTable1.getColumnCount()) {
+                        jTable1.setValueAt(value, startRow + i, startCol + j);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(InsertRecordDialog.class.getName()).info("Failed to paste the contents " + ex);
+        }
+    }
+
+    private void control0Event() {
+        int row = jTable1.getSelectedRow();
+        int col = jTable1.getSelectedColumn();
+        if (row == -1) {
+            return;
+        }
+        jTable1.editCellAt(row, col);
+
+        TableCellEditor editor = jTable1.getCellEditor();
+        if (editor != null) {
+            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                Toolkit.getDefaultToolkit().beep();
+                editor.stopCellEditing();
+            } else {
+                editor.getTableCellEditorComponent(jTable1, null, jTable1.isRowSelectionAllowed, row, col);
+                jTable1.setValueAt(null, row, col);
+                editor.stopCellEditing();
+            }
+            jTable1.setRowSelectionInterval(row, row);
+        }
+    }
+
+    private void control1Event() {
+        int row = jTable1.getSelectedRow();
+        int col = jTable1.getSelectedColumn();
+        if (row == -1) {
+            return;
+        }
+        jTable1.editCellAt(row, col);
+        TableCellEditor editor = jTable1.getCellEditor();
+        if (editor != null) {
+            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            Object val = jTable1.getValueAt(row, col);
+            if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+                Toolkit.getDefaultToolkit().beep();
+                editor.stopCellEditing();
+            } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
+                editor.getTableCellEditorComponent(jTable1, "", jTable1.isRowSelectionAllowed, row, col);
+                jTable1.setValueAt(null, row, col);
+                editor.stopCellEditing();
+            } else {
+                editor.getTableCellEditorComponent(jTable1, "<DEFAULT>", jTable1.isRowSelectionAllowed, row, col);
+                jTable1.setValueAt("<DEFAULT>", row, col);
+                editor.stopCellEditing();
+            }
+            jTable1.setRowSelectionInterval(row, row);
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
