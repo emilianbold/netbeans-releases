@@ -76,6 +76,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -526,22 +527,22 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                 j2EEArchetypes = new Archetype[3];
 
                 j2EEArchetypes[0] = new Archetype();
-                j2EEArchetypes[0].setGroupId("org.codehaus.mojo.archetypes");
-                j2EEArchetypes[0].setArtifactId("webapp-jee5");
-                j2EEArchetypes[0].setVersion("1.0-SNAPSHOT");
-                j2EEArchetypes[0].setRepository("http://snapshots.repository.codehaus.org");
+                j2EEArchetypes[0].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+                j2EEArchetypes[0].setArtifactId("webapp-jee5"); //NOI18N
+                j2EEArchetypes[0].setVersion("1.0-SNAPSHOT"); //NOI18N
+                j2EEArchetypes[0].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
 
                 j2EEArchetypes[1] = new Archetype();
-                j2EEArchetypes[1].setGroupId("org.codehaus.mojo.archetypes");
-                j2EEArchetypes[1].setArtifactId("webapp-j2ee14");
-                j2EEArchetypes[1].setVersion("1.0-SNAPSHOT");
-                j2EEArchetypes[1].setRepository("http://snapshots.repository.codehaus.org");
+                j2EEArchetypes[1].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+                j2EEArchetypes[1].setArtifactId("webapp-j2ee14"); //NOI18N
+                j2EEArchetypes[1].setVersion("1.0-SNAPSHOT"); //NOI18N
+                j2EEArchetypes[1].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
 
                 j2EEArchetypes[2] = new Archetype();
-                j2EEArchetypes[2].setGroupId("org.codehaus.mojo.archetypes");
-                j2EEArchetypes[2].setArtifactId("webapp-j2ee13");
-                j2EEArchetypes[2].setVersion("1.0-SNAPSHOT");
-                j2EEArchetypes[2].setRepository("http://snapshots.repository.codehaus.org");
+                j2EEArchetypes[2].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+                j2EEArchetypes[2].setArtifactId("webapp-j2ee13"); //NOI18N
+                j2EEArchetypes[2].setVersion("1.0-SNAPSHOT"); //NOI18N
+                j2EEArchetypes[2].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
             }
 
             return j2EEArchetypes[Math.max(0, comboEEVersion.getSelectedIndex())];
@@ -671,7 +672,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         
         if (!changedPackage && (projectNameTextField.getDocument() == doc || txtGroupId.getDocument() == doc)) {
             txtPackage.getDocument().removeDocumentListener(this);
-            txtPackage.setText(txtGroupId.getText() + "." + projectNameTextField.getText()); //NOI18N
+            txtPackage.setText(getPackageName(txtGroupId.getText() + "." + projectNameTextField.getText())); //NOI18N
             txtPackage.getDocument().addDocumentListener(this);
         }
         
@@ -688,5 +689,29 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         return file.exists() ? null : name;
     }
     
-    
+
+
+    static String getPackageName (String displayName) {
+        StringBuffer builder = new StringBuffer ();
+        boolean firstLetter = true;
+        for (int i=0; i< displayName.length(); i++) {
+            char c = displayName.charAt(i);
+            if ((!firstLetter && Character.isJavaIdentifierPart (c))
+                    || (firstLetter && Character.isJavaIdentifierStart(c))) {
+                firstLetter = false;
+                if (Character.isUpperCase(c)) {
+                    c = Character.toLowerCase(c);
+                }
+                builder.append(c);
+                continue;
+            }
+            if (!firstLetter && c == '.') {
+                firstLetter = true;
+                builder.append(c);
+                continue;
+            }
+        }
+        String toRet =  builder.length() == 0 ? "pkg" : builder.toString(); //NOI18N
+        return toRet;
+    }
 }
