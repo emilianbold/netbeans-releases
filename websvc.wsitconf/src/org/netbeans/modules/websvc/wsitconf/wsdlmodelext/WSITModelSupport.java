@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
