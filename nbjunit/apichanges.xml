@@ -55,6 +55,23 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.enableClasspathModules">
+        <api name="nbjunit"/>
+        <summary>Ignore modules on classpath</summary>
+        <version major="1" minor="56"/>
+        <date day="5" month="1" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="compatible" binary="compatible" source="compatible" modification="no"/>
+        <description>
+            <p>
+            One can decide to <b>not</b> include modules on classpath in the test
+            by calling 
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#enableClasspathModules(boolean)">
+                Configuration.enableClasspathModules(false)</a>.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.enableModulesForCluster">
         <api name="nbjunit"/>
         <summary>Enable modules in a cluster</summary>
