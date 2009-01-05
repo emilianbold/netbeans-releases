@@ -66,7 +66,8 @@ public class DeletedIndexable implements IndexableImpl {
     }
 
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int index = this.relativePath.lastIndexOf('/');
+        return index == -1 ? relativePath : relativePath.substring(index+1);
     }
 
     public String getRelativePath() {
