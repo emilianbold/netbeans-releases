@@ -39,11 +39,7 @@
 package org.netbeans.modules.db.dataview.output;
 
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
-import java.awt.AWTEvent;
-import java.awt.EventQueue;
-import java.awt.event.KeyEvent;
 import java.sql.Types;
-import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.swingx.JXTable;
 import org.netbeans.modules.db.dataview.meta.DBColumn;

@@ -398,9 +398,9 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         rows.add(jTable1.createNewRow());
         jScrollPane1.setViewportView(jTable1);
         rowHeader = new JXTableRowHeader(jTable1);
+
         jScrollPane1.setRowHeaderView(rowHeader);
         jScrollPane1.setCorner(JScrollPane.UPPER_LEFT_CORNER, rowHeader.getTableHeader());
-
         jTable1.createTableModel(rows, rowHeader);
     }
 
@@ -417,6 +417,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             } else { // ELSE literals
                 insertData[i] = DBReadWriteHelper.validate(val, col);
             }
+
         }
         return insertData;
     }
@@ -457,6 +458,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
             control1Event();
         }
+
     }
     private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -466,10 +468,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         int numrows = jTable1.getSelectedRowCount();
         int[] rowsselected = jTable1.getSelectedRows();
         int[] colsselected = jTable1.getSelectedColumns();
-        if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] &&
-                numrows == rowsselected.length) &&
-                (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] &&
-                numcols == colsselected.length))) {
+        if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] && numrows == rowsselected.length) &&
+                (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] && numcols == colsselected.length))) {
             JOptionPane.showMessageDialog(null, "Invalid Copy Selection", "Invalid Copy Selection", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -522,7 +522,6 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return;
         }
         jTable1.editCellAt(row, col);
-
         TableCellEditor editor = jTable1.getCellEditor();
         if (editor != null) {
             DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
@@ -564,6 +563,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             jTable1.setRowSelectionInterval(row, row);
         }
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
     private javax.swing.JPanel btnPanel;
