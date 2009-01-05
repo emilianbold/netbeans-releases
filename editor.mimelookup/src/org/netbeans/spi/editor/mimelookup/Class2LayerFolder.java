@@ -48,8 +48,7 @@ package org.netbeans.spi.editor.mimelookup;
  * look for instances of a certain class and how to create them.
  *
  * <p>The implementations of this interface should be registered among the services
- * in the default lookup, for details look at
- * <a href="http://openide.netbeans.org/lookup/index.html"> META-INF/services registration</a>.
+ * in the default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *
  * <p>The default <code>MimeDataProvider</code> allowes to register instances
  * in a hierarchy of folders on the system filesystem (modules XML layers). The

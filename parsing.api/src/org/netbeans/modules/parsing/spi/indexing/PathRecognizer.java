@@ -43,7 +43,7 @@ import java.util.Set;
 
 /**
  * Enumeration of important path types for given language.
- * Instances of this class are registered in META-INF/services
+ * Instances of this class are registered in {@link org.openide.util.lookup.ServiceProvider}.
  * @author Tomas Zezula
  */
 public abstract class PathRecognizer {

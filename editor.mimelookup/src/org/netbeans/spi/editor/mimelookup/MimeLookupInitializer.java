@@ -47,8 +47,7 @@ import org.openide.util.Lookup;
  *  Provides an initialization of MimeLookup on either global or mime-type
  *  specific level.
  *  <br>
- *  The implementations of this class should be registed to default lookup by
- *  <a href="http://openide.netbeans.org/lookup/index.html"> META-INF/services registration</a>.
+ *  The implementations of this class should be registed to default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *  <br>
  *  Such registered instance serves as a global level initializer
  *  which can further be asked for children by {@link #child(String)}

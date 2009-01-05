@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
 /**
  * Provides capabilities of searching and refactoring usages of a certain 
  * class of components in a certain set of models.  Refactoring manager will
- * lookup of the service through entries declared in META-INF/services files.
+ * lookup of the service through entries declared via {@link org.openide.util.lookup.ServiceProvider}.
  *
  * @author Nam Nguyen
  */
