@@ -2092,12 +2092,14 @@ public class AstUtilities {
      * @param defNode {@link MethodDefNode method definition node}
      * @param exits accumulator for found exit points
      */
-    static void findExitPoints(final MethodDefNode defNode, final Set<? super Node> exits) {
+    public static void findExitPoints(final MethodDefNode defNode, final Set<? super Node> exits) {
         Node body = defNode.getBodyNode();
-        findNonLastExitPoints(body, exits);
-        Node last = findLastNode(body);
-        if (last != null) {
-            exits.add(last);
+        if (body != null) { // method with empty body
+            findNonLastExitPoints(body, exits);
+            Node last = findLastNode(body);
+            if (last != null) {
+                exits.add(last);
+            }
         }
     }
 
