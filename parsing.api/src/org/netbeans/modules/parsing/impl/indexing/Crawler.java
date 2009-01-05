@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -55,20 +58,39 @@ public abstract class Crawler {
     private String digest;
 
     private Map<String, Collection<Indexable>> cache;
+    private Collection<Indexable> deleted;
+    protected final TimeStamps timeStamps;
+    protected final URL root;
 
+    protected Crawler (final URL root) throws IOException {
+        this.root = root;
+        this.timeStamps = TimeStamps.forRoot(root);
+    }
 
-    public synchronized final String getDigest () {
-        if (this.cache == null) {
-            this.cache = collectResources(new HashSet<String>(Arrays.asList(PathRecognizerRegistry.getDefault().getMimeTypes())));
-        }
+    public synchronized final String getDigest () throws IOException {
+        init ();
         return this.digest;
     }
 
-    public final synchronized Map<String, Collection<Indexable>> getResources() {
+    public final synchronized Map<String, Collection<Indexable>> getResources() throws IOException {
+        init ();
+        return cache;
+    }
+
+    public final Collection<Indexable> getDeletedResources () throws IOException {
+        init ();
+        return deleted;
+    }
+
+    private void init () throws IOException {
         if (this.cache == null) {
             this.cache = collectResources(new HashSet<String>(Arrays.asList(PathRecognizerRegistry.getDefault().getMimeTypes())));
+            final Set<String> unseen = timeStamps.store();
+            deleted = new ArrayList<Indexable>(unseen.size());
+            for (String u : unseen) {
+                deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
+            }
         }
-        return cache;
     }
 
     protected final void addToDigest () {

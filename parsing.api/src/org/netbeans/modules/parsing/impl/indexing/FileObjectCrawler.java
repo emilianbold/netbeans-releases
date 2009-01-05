@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,8 +56,8 @@ public class FileObjectCrawler extends Crawler {
     
     private final FileObject root;
 
-    public FileObjectCrawler (final FileObject root) {
-        assert root != null;
+    public FileObjectCrawler (final FileObject root) throws IOException {
+        super (root.getURL());
         this.root = root;
     }
 
@@ -67,7 +68,7 @@ public class FileObjectCrawler extends Crawler {
         return result;
     }
 
-    private static void collect(final FileObject dir, final FileObject root,
+    private void collect(final FileObject dir, final FileObject root,
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes) {
         final FileObject[] fos = dir.getChildren();
@@ -83,7 +84,9 @@ public class FileObjectCrawler extends Crawler {
                         indexable = new LinkedList<Indexable>();
                         cache.put(mime, indexable);
                     }
-                    indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
+                    if (!timeStamps.isUpToDate(fo)) {
+                        indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
+                    }
                 }
             }
         }
