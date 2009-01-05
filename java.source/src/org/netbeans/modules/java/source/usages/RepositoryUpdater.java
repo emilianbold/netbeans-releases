@@ -618,6 +618,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (!noscan) {
             synchronized (this) {
                 this.noSubmited++;
+                LOGGER.finest("submit()+: " + this.noSubmited);
             }
             final CompileWorker cw = new CompileWorker (work);
             JavaSource.Priority p;
@@ -772,8 +773,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
         Task t = taskRef != null ? taskRef.get() : null;
         Collection<File> storedFiles;
+        Boolean can = null;
+
+        LOGGER.finest("t: " + t);
         
-        if (t == null || !t.cancel()) {
+        if (t == null || (can = !t.cancel())) {
+            if (can != null) {
+                 LOGGER.finest("canceling: " + System.identityHashCode(t) + ", " + can);
+            }
             if (lockRU == 0 || t != null) {
                 storedFiles = new LinkedHashSet<File>();
                 url2CompileWithDeps.put(root, storedFiles);
@@ -789,6 +796,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 //the task either does not exist, or has been already started - create new one:
                 LOGGER.log(Level.FINER, "creating a new task for root: {0}", root.toExternalForm());
                 final Collection<File> storedFilesFin = storedFiles;
+                final Task[] tt = new Task[1];
                 t = WORKER.create(new Runnable() {
                     public void run() {
                         synchronized (RepositoryUpdater.this) {
@@ -796,25 +804,50 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         submit(Work.compileWithDeps(root, storedFilesFin));
                         noSubmited--;
+                        LOGGER.finest("assureCompiledWithDeps()-: " + noSubmited + ":" + System.identityHashCode(tt[0]));
                     }
                 });
-                url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+                tt[0] = t;
+                class WR extends WeakReference<Task> implements Runnable {
+
+                    long l;
+                    public WR(Task t) {
+                        super(t, Utilities.activeReferenceQueue());
+                        l = System.identityHashCode(t);
+                    }
+
+                    public void run() {
+                         LOGGER.finest("GCing: " + l);
+                    }
+
+                }
+                url2CompileWithDepsTask.put(root, new WR(t));
                 compileScheduled++;
-                noSubmited++;
+                LOGGER.finest("assureCompiledWithDeps()+: " + noSubmited + ":" + System.identityHashCode(t));
             } else {
                 url2CompileWithDepsTask.remove(root);
             }
         } else {
             storedFiles = url2CompileWithDeps.get(root);
+            if (can != null) {
+                 LOGGER.finest("2. canceling: " + System.identityHashCode(t) + ", " + can);
+            }
+            if (t != null) {
+                noSubmited--;
+            }
         }
         
         assert storedFiles != null;
 
         storedFiles.add(file);
-        
+
+        LOGGER.finest("lockRU: " + lockRU);
+
         if (lockRU > 0) {
             compileWithDepsToBeScheduled = true;
         } else {
+            LOGGER.finest("scheduling: " + System.identityHashCode(t));
+            noSubmited++;
             t.schedule(DELAY);
         }
     }
@@ -915,9 +948,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         public void run() {
                             submit(Work.compileWithDeps(root, storedFilesFin));
                             noSubmited--;
+                            LOGGER.finest("unlockRU()-: " + noSubmited);
                         }
                     });
                     noSubmited++;
+                    LOGGER.finest("unlockRU()+: " + noSubmited);
                     url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 }
 
@@ -1613,6 +1648,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (!continuation) {
                         synchronized (RepositoryUpdater.this) {
                             RepositoryUpdater.this.noSubmited--;
+                            LOGGER.finest("compileWorker.run()-: " + noSubmited);
                             if (RepositoryUpdater.this.noSubmited == 0) {
                                 RepositoryUpdater.this.notifyAll();
                             }
