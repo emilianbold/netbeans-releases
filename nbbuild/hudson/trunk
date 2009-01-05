@@ -46,9 +46,9 @@ find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENA
 
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|ergonomics)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovyergonomics)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovyergonomics)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommonergonomics)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|ergonomics)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|ergonomics)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|ergonomics)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
 
 cd netbeans
 expat='extra|testtools'
