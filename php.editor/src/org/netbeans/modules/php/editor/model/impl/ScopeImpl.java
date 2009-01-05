@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -142,6 +143,9 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         if (block != null) {
             this.blockRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
         }
+    }
+    void setBlockRange(Program program) {
+        this.blockRange = new OffsetRange(program.getStartOffset(), program.getEndOffset());
     }
 
     public OffsetRange getBlockRange() {

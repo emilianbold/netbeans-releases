@@ -150,7 +150,7 @@ public class PhpStructureScanner implements StructureScanner {
     }
 
     public Configuration getConfiguration() {
-        return null;
+        return new Configuration(true, true);
     }
 
     private class StructureVisitor extends DefaultVisitor {
