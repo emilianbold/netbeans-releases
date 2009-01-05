@@ -122,6 +122,7 @@ class VarAssignmentImpl extends ScopeImpl implements VarAssignment {
     }*/
 
     public List<? extends TypeScope> getTypes() {
+        String name = var.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
         ModelScope topScope = ModelUtils.getModelScope(this);
         //TODO: cache the value
@@ -131,8 +132,11 @@ class VarAssignmentImpl extends ScopeImpl implements VarAssignment {
         }
         String tName = typeNameFromUnion();
         if (tName != null) {
-            types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
-                    tName, getOffset(), false);
+            //StackOverflow prevention
+            if (tName.indexOf(name) == -1) {
+                types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
+                        tName, getOffset(), false);
+            }
         }
         if (types != null) {
             typeName = Union2.<String, List<? extends TypeScope>>createSecond(types);

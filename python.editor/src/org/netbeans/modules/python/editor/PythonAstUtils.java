@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Finder;
+import org.netbeans.editor.FinderFactory;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
@@ -179,13 +183,55 @@ public class PythonAstUtils {
             FunctionDef def = (FunctionDef)node;
             //node.getType();
 
+            int defStart = def.getCharStartIndex();
+
+            // Turns out that when you have decorators, the function start offset
+            // -includes- the decorators which precede the "def" keyword, thus we
+            // have to scan forwards to find the true beginning.
+            List<expr> decorators = def.getInternalDecorator_list();
+            if (decorators != null && decorators.size() > 0) {
+                int maxEnd = 0;
+                for (expr expr : decorators) {
+                    int exprEnd = expr.getCharStopIndex();
+                    if (exprEnd > maxEnd) {
+                        maxEnd = exprEnd;
+                    }
+                }
+                if (decorators.size() > 1) {
+                    maxEnd++;
+                }
+                defStart = maxEnd;
+
+                // At first I was justlooking for the largest end offset of the decorators,
+                // but if you have additional comments etc. that won't work right, so
+                // in this case, go and look at the actual document
+                if (info != null) {
+                    BaseDocument doc = (BaseDocument)info.getDocument();
+                    if (doc != null) {
+                        int lexOffset = PythonLexerUtils.getLexerOffset(info, defStart);
+                        int limitOffset = PythonLexerUtils.getLexerOffset(info, def.getCharStopIndex());
+                        if (lexOffset != -1 && limitOffset != -1) {
+                            Finder finder = new FinderFactory.StringFwdFinder("def ", true);
+                            try {
+                                int foundOffset = doc.find(finder, lexOffset, limitOffset);
+                                if (foundOffset != -1) {
+                                    defStart = foundOffset;
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+
             // HACK: There's no separate node for the name offset itself, so I need
             // to figure it out. For now assume that it's exactly 4 characters away
             // from the beginning of "def" - def plus space. If there are multiple spaces
             // this won't work. I ought to look in the document and ensure that the character
             // there in fact is the start of the name, and if not, search forwards for it.
             int DELTA = 4; // HACK:
-            int start = def.getCharStartIndex() + DELTA;
+            int start = defStart + DELTA;
             int end = start + def.getInternalName().length();
 
             // TODO - look up offset
