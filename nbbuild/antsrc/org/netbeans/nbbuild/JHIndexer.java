@@ -102,7 +102,7 @@ public class JHIndexer extends MatchingTask {
     public void setLocale (String locale) {
         this.locale = locale;
     }
-    
+
     /**
      * A set of additional files forming a branding variant.
      * @see #addBrandedFileSet
@@ -113,7 +113,7 @@ public class JHIndexer extends MatchingTask {
             this.branding = b;
         }
     }
-    
+
     /**
      * Add a set of branded files to be indexed.
      * For example, you may have in <samp>/the/base/dir</samp>
@@ -174,7 +174,7 @@ public class JHIndexer extends MatchingTask {
     public void addBrandedFileSet(BrandedFileSet s) {
         brandings.add(s);
     }
-    
+
     /** @deprecated Use {@link #createClasspath} instead. */
     @Deprecated
     public void setJhall(File f) {
@@ -182,13 +182,13 @@ public class JHIndexer extends MatchingTask {
         createClasspath().setLocation(f);
     }
 
-    /**  
+    /**
      *
      */
     public void setClassPath(Path cp) {
         classpath = cp;
     }
-    
+
     public void execute () throws BuildException {
         if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar or jsearch.jar");
         if (db == null) throw new BuildException ("Must specify the db attribute");

@@ -310,8 +310,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <fileset dir="${netbeans.dest.dir}">
                     <include name="harness/jsearch*.jar"/>
                 </fileset>
-		<fileset dir="${netbeans.dest.dir}">
-                    <include name="platform9\modules\org-netbeans-modules-javahelp.jar"/>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="harness/tasks*.jar"/>
                 </fileset>
             </classpath>
             <include name="**/*.html"/>
