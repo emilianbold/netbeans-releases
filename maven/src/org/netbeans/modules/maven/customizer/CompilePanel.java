@@ -39,14 +39,25 @@
 
 package org.netbeans.modules.maven.customizer;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -64,12 +75,13 @@ import org.netbeans.modules.maven.options.MavenExecutionSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author mkleint
  */
-public class CompilePanel extends javax.swing.JPanel {
+public class CompilePanel extends javax.swing.JPanel implements WindowFocusListener {
     private ModelHandle handle;
     private static final String[] LABELS = new String[] {
         NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
@@ -93,6 +105,8 @@ public class CompilePanel extends javax.swing.JPanel {
     private CheckBoxUpdater debugUpdater;
     private CheckBoxUpdater deprecateUpdater;
 
+    private Color origComPlatformFore;
+
     /** Creates new form CompilePanel */
     public CompilePanel(ModelHandle handle, Project prj) {
         initComponents();
@@ -100,9 +114,9 @@ public class CompilePanel extends javax.swing.JPanel {
         project = prj;
         ComboBoxModel mdl = new DefaultComboBoxModel(LABELS);
         comCompileOnSave.setModel(mdl);
-        ComboBoxModel platformModel = new DefaultComboBoxModel(
-                JavaPlatformManager.getDefault().getInstalledPlatforms());
-        comJavaPlatform.setModel(platformModel);
+        /*ComboBoxModel platformModel = new DefaultComboBoxModel(
+                JavaPlatformManager.getDefault().getInstalledPlatforms());*/
+        comJavaPlatform.setModel(new PlatformsModel());
 
         comJavaPlatform.setRenderer(new DefaultListCellRenderer() {
 
@@ -115,7 +129,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
         });
 
-        lblWarnPlatform.setVisible(false);
+        origComPlatformFore = comJavaPlatform.getForeground();
 
         initValues();
     }
@@ -280,14 +294,20 @@ public class CompilePanel extends javax.swing.JPanel {
             public void setValue(JavaPlatform value) {
                 JavaPlatform platf = value == null ? getDefaultValue() : value;
                 String platformId = platf.getProperties().get("platform.ant.name");
-                System.out.println("platform ID: " + platformId);
                 project.getLookup().lookup(AuxiliaryProperties.class).
                         put(Constants.HINT_JDK_PLATFORM, platformId, true);
             }
         };
 
-        checkPlatform();
+        checkExternalMaven();
+        
+    }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // for external maven availability checking
+        SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
     }
 
     private JavaPlatform getSelPlatform () {
@@ -296,13 +316,20 @@ public class CompilePanel extends javax.swing.JPanel {
         return BootClassPathImpl.getActivePlatform(platformId);
     }
 
-    private void checkPlatform () {
+    private void checkExternalMaven () {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         String val = props.get(Constants.HINT_USE_EXTERNAL, true);
         boolean useEmbedded = "false".equalsIgnoreCase(val);
         if (useEmbedded || !MavenExecutionSettings.canFindExternalMaven()) {
             comJavaPlatform.setEnabled(false);
+            comJavaPlatform.setForeground(java.awt.SystemColor.textInactiveText);
             lblWarnPlatform.setVisible(true);
+            btnSetupHome.setVisible(true);
+        } else {
+            lblWarnPlatform.setVisible(false);
+            btnSetupHome.setVisible(false);
+            comJavaPlatform.setForeground(origComPlatformFore);
+            comJavaPlatform.setEnabled(true);
         }
 
     }
@@ -326,6 +353,7 @@ public class CompilePanel extends javax.swing.JPanel {
         comJavaPlatform = new javax.swing.JComboBox();
         btnMngPlatform = new javax.swing.JButton();
         lblWarnPlatform = new javax.swing.JLabel();
+        btnSetupHome = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(576, 303));
 
@@ -351,6 +379,13 @@ public class CompilePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblWarnPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblWarnPlatform.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnSetupHome, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnSetupHome.text")); // NOI18N
+        btnSetupHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSetupHomeActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -366,12 +401,15 @@ public class CompilePanel extends javax.swing.JPanel {
                             .add(lblCompileOnSave)
                             .add(lblJavaPlatform))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(comJavaPlatform, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(comJavaPlatform, 0, 266, Short.MAX_VALUE)
                             .add(comCompileOnSave, 0, 266, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(16, 16, 16)
                         .add(btnMngPlatform))
-                    .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 578, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnSetupHome)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -393,8 +431,10 @@ public class CompilePanel extends javax.swing.JPanel {
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 111, Short.MAX_VALUE)
-                .add(lblWarnPlatform)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 72, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btnSetupHome)
+                    .add(lblWarnPlatform))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -404,9 +444,15 @@ public class CompilePanel extends javax.swing.JPanel {
         PlatformsCustomizer.showCustomizer(getSelPlatform());
 }//GEN-LAST:event_btnMngPlatformActionPerformed
 
+    private void btnSetupHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupHomeActionPerformed
+        // TODO add your handling code here:
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+}//GEN-LAST:event_btnSetupHomeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnMngPlatform;
+    private javax.swing.JButton btnSetupHome;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbDeprecate;
     private javax.swing.JComboBox comCompileOnSave;
@@ -484,4 +530,50 @@ public class CompilePanel extends javax.swing.JPanel {
         }
         return null;
     }
+
+    public void windowGainedFocus(WindowEvent e) {
+        checkExternalMaven();
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+        // no op
+    }
+
+    private static class PlatformsModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
+
+        private JavaPlatform[] data;
+        private Object sel;
+
+        public PlatformsModel() {
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            data = jpm.getInstalledPlatforms();
+            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+        }
+
+        public int getSize() {
+            return data.length;
+        }
+
+        public Object getElementAt(int index) {
+            return data[index];
+        }
+
+        public void setSelectedItem(Object anItem) {
+            sel = anItem;
+            fireContentsChanged(this, 0, data.length);
+        }
+
+        public Object getSelectedItem() {
+            return sel;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            data = jpm.getInstalledPlatforms();
+            fireContentsChanged(this, 0, data.length);
+        }
+
+    }
+
+
 }
