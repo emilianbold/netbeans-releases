@@ -324,9 +324,6 @@ made subject to such option by the copyright holder.
         <mkdir dir="build"/>
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->
         <property name="license.file.override" value="${license.file}"/>
-        <pathfileset property="updater.jar.path" include="modules/ext/updater.jar">
-            <path refid="cluster.path.id"/>
-        </pathfileset>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -340,7 +337,10 @@ made subject to such option by the copyright holder.
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>
-                <path location="${updater.jar.path}"/>
+                <clusterpathset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="**/modules/ext/updater.jar"/>
+                </clusterpathset>
             </updaterjar>
         </makenbm>
     </target>

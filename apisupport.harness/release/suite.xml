@@ -124,10 +124,9 @@ made subject to such option by the copyright holder.
         <condition property="help.target.cluster" value="${nbm.target.cluster}" >
             <isset property="nbm.target.cluster"/>
         </condition>
-        <!-- TODO - test this -->
         <pathfileset property="updater.jar">
             <path refid="cluster.path.id"/>
-            <filename name="*platform*/modules/ext/updater.jar"/>
+            <filename name="modules/ext/updater.jar"/>
         </pathfileset>
         <!-- reads app.name if exists -->
         <condition property="help.target.cluster" value="${app.name}" >
@@ -168,6 +167,7 @@ made subject to such option by the copyright holder.
         <selector id="zip.platform.included.files">
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                 <param name="excludeModules" value="${disabled.modules}"/>
+                <!-- XXX inc/exc clusters -->
                 <param name="includeClusters" value="${enabled.clusters}"/>
                 <param name="excludeClusters" value="${disabled.clusters}"/>
                 <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
@@ -179,10 +179,6 @@ made subject to such option by the copyright holder.
                 <path refid="cluster.path.id"/>
                 <selector refid="zip.platform.included.files"/>
             </clusterpathset>
-                <!-- XXX fileset dir="${netbeans.dest.dir}">
-                    <selector refid="zip.platform.included.files"/>
-                </fileset-->
-            <!-- XXX mapper type="regexp" from="[/\\]([^/\\]+)[/\\]config[/\\]Modules[/\\]" to="\1"/--> <!-- #71849 -->
             <chainedmapper>
                 <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
                 <filtermapper>
@@ -194,17 +190,8 @@ made subject to such option by the copyright holder.
         </pathconvert>
         <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
         <echo file="${zip.platform.clusters.duplicates.file}" message="${zip.platform.clusters.duplicates}"/>
-        <!-- XXX pathfileset property="zip.platform.clusters">
-            <path refid="cluster.path.id"/>
-            <and>
-                <filename name="${zip.platform.clusters.duplicates}"/>
-                <filename name="platform*" negate="true"/>
-                <type type="dir"/>
-            </and>
-        </pathfileset -->
-        <!-- dirset id="zip.platform.clusters" dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}" excludes="platform*"/ -->
 
-        <union id="zip.platform.clusters">
+        <union id="zip.platform.clusters"> <!-- union removes duplicates -->
             <files includesfile="${zip.platform.clusters.duplicates.file}"/>
         </union>
         <pathconvert property="zip.platform.clusters.bare" pathsep="&#10;"> <!-- #71128: \n OK on Win but \r\n bad on Unix -->
@@ -244,13 +231,6 @@ made subject to such option by the copyright holder.
         <!-- clusterpathset does not support 'prefix' and 'filemode' parameters,
              we have to copy them to temp location -->
         <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true"/>
-        <!--copy todir="${temp.dir.nbexec}">
-            <clusterpathset>
-                <path refid="cluster.path.id"/>
-                <filename name="**/lib/nbexec*"/>
-            </clusterpathset>
-        </copy-->
-        
         <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete"/>
         <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
             <property name="dest.dir" value="${temp.dir.rest}"/>
@@ -258,17 +238,6 @@ made subject to such option by the copyright holder.
             <property name="build.dir" value="${basedir}/build"/>
             <resources refid="zip.platform.clusters"/>
         </subant>
-        <!-- copy todir="${temp.dir.rest}">
-            <clusterpathset>
-                <path refid="cluster.path.id"/>
-                <and>
-                    <not>
-                        <filename name="**/lib/nbexec*"/>
-                    </not>
-                    <selector refid="zip.platform.included.files"/>
-                </and>
-            </clusterpathset>
-        </copy -->
         <zip destfile="${dist.dir}/${app.name}.zip">
             <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
             <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
@@ -304,7 +273,7 @@ made subject to such option by the copyright holder.
         <antcall target="copy-nbexec"/>
     </target>
 
-    <target name="copy-nbexec" description="Copies nbexec from given cluster to specified location">
+    <target name="copy-nbexec" if="copy.nbexec" description="Copies nbexec from given cluster to specified location">
         <copy todir="${nbexec.dir}/${cluster.name}">
             <fileset dir="${basedir}">
                 <filename name="**/lib/nbexec*"/>
@@ -332,24 +301,13 @@ made subject to such option by the copyright holder.
         <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/etc">
             <fileset dir="${build.launcher.dir}/etc/" />
         </copy>
-        <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}">
-            <!-- XXX fileset dir="${netbeans.dest.dir}" -->
-            <clusterpathset>
-                <path refid="cluster.path.id"/>
-                <filename name="**/lib/nbexec*"/>
-            </clusterpathset>
-                
-            <!-- fileset dir="${netbeans.dest.dir}" -->
-            <clusterpathset>
-                <path refid="cluster.path.id"/>
-                <and>
-                    <not>
-                        <filename name="**/lib/nbexec*"/>
-                    </not>
-                    <selector refid="zip.platform.included.files"/>
-                </and>
-            </clusterpathset>
-        </copy>
+        <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
+            <property name="dest.dir" value="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}"/>
+            <property name="nbexec.dir" value="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}"/>
+            <property name="build.dir" value="${basedir}/build"/>
+            <resources refid="zip.platform.clusters"/>
+        </subant>
+
         <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/${app.name}">
             
             <fileset dir="${cluster}"/>
@@ -431,15 +389,21 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     </target>
     
     <target name="build-jnlp" depends="build,-jdk-init" description="Packages this suite as a JNLP application.">
-        <ant antfile="${harness.dir}/jnlp.xml" target="build"/>
+        <ant antfile="${harness.dir}/jnlp.xml" target="build">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
     
     <target name="run-jnlp" depends="build,-jdk-init" description="Runs this suite as a JNLP application.">
-        <ant antfile="${harness.dir}/jnlp.xml" target="run"/>
+        <ant antfile="${harness.dir}/jnlp.xml" target="run">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
     
     <target name="debug-jnlp" depends="build,-jdk-init,-jdk-presetdef-nbjpdastart" description="Runs this suite as a JNLP application in the debugger.">
-        <ant antfile="${harness.dir}/jnlp.xml" target="debug"/>
+        <ant antfile="${harness.dir}/jnlp.xml" target="debug">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
     
     <target name="test" depends="build" description="Runs tests for all modules in the suite.">

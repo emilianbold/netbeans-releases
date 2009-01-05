@@ -114,6 +114,8 @@ made subject to such option by the copyright holder.
     <taskdef name="convertclusterpath"
          classname="org.netbeans.nbbuild.ConvertClusterPath"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <typedef name="clusterpathset" classname="org.netbeans.nbbuild.ClusterPathSet"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
@@ -142,7 +144,7 @@ made subject to such option by the copyright holder.
             <dirset dir="${netbeans.dest.dir}" includesfile="${netbeans.dest.dir}/etc/netbeans.clusters"/>
         </path>
     </pathconvert>
-    <convertclusterpath from="cluster.path.evaluated" to="cluster.path" id="cluster.path.id"/>
+    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
   </target>
   
 </project>
