@@ -44,8 +44,6 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestResult;
