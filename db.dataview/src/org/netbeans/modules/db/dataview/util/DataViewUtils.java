@@ -121,6 +121,8 @@ public class DataViewUtils {
             case Types.FLOAT:
             case Types.REAL:
             case Types.DOUBLE:
+            case Types.DECIMAL:
+            case Types.NUMERIC:
                 return true;
 
             default:

@@ -152,8 +152,16 @@ class SQLExecutionHelper {
                 try {
                     int pos = 1;
                     for (int i = 0; i < insertedRow.length; i++) {
-                        if (insertedRow[i] != null && !insertedRow[i].equals("<DEFAULT>")) {
-                            DBReadWriteHelper.setAttributeValue(pstmt, pos++, dataView.getDataViewDBTable().getColumnType(i), insertedRow[i]);
+                        Object val = insertedRow[i];
+
+                        // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
+                        boolean isSQLConstant = false;
+                        if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
+                            isSQLConstant = true;
+                        }
+
+                        if (!isSQLConstant) { // literals
+                            DBReadWriteHelper.setAttributeValue(pstmt, pos++, dataView.getDataViewDBTable().getColumnType(i), val);
                         }
                     }
 

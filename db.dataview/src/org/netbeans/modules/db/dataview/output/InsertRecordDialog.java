@@ -435,12 +435,22 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_0) {
                     if (col.isGenerated() || !col.isNullable()) {
                         Toolkit.getDefaultToolkit().beep();
-                    } else if (colValueTextField[index].isEditable()) {
-                        colValueTextField[index].setText("<NULL>"); // NOI18N
-                        colValueTextField[index].setEditable(false);
-                    } else if (!colValueTextField[index].isEditable()) {
+                    } else if (!colValueTextField[index].isEditable() && colValueTextField[index].getText().equals("<NULL>")) {
                         colValueTextField[index].setText(""); // NOI18N
                         colValueTextField[index].setEditable(true);
+                    } else {
+                        colValueTextField[index].setText("<NULL>"); // NOI18N
+                        colValueTextField[index].setEditable(false);
+                    }
+                 } else if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_1) {
+                     if (col.isGenerated() || !col.isNullable()) {
+                         Toolkit.getDefaultToolkit().beep();
+                    }else if (!colValueTextField[index].isEditable() && colValueTextField[index].getText().equals("<DEFAULT>")) {
+                        colValueTextField[index].setText(""); // NOI18N
+                        colValueTextField[index].setEditable(true);
+                    } else {
+                         colValueTextField[index].setText("<DEFAULT>"); // NOI18N
+                         colValueTextField[index].setEditable(false);
                     }
                 }
             }
