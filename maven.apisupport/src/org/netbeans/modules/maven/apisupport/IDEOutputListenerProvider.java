@@ -70,7 +70,6 @@ public class IDEOutputListenerProvider implements OutputProcessor {
     /** Creates a new instance of TestOutputListenerProvider */
     public IDEOutputListenerProvider(Project proj) {
         project = proj;
-        classpath = createCP(project, new HashSet<Project>());
     }
     
     private ClassPath createCP(Project prj, HashSet<Project> parents) {
@@ -114,12 +113,15 @@ public class IDEOutputListenerProvider implements OutputProcessor {
     }
 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
+        classpath = createCP(project, new HashSet<Project>());
     }
 
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
+        classpath = null;
     }
     
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
+        classpath = null;
     }
     
 }

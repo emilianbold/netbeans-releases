@@ -291,6 +291,7 @@ public final class NbMavenProjectImpl implements Project {
                 // that will not be used in current pom anyway..
                 // #135070
                 req.setRecursive(false);
+                req.setProperty("netbeans.execution", "true"); //NOI18N
                 MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
                 project = res.getProject();
                 if (res.hasExceptions()) {

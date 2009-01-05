@@ -78,7 +78,7 @@ public class TaskListBridge extends FileTaskScanner {
                 && "pom.xml".equals(resource.getNameExt())) { //NOI18N
             Project prj = FileOwnerQuery.getOwner(resource);
             if (prj != null && prj.getLookup().lookup(NbMavenProject.class) != null) {
-                ModelSource ms = Utilities.createModelSource(resource, true);
+                ModelSource ms = Utilities.createModelSource(resource);
                 POMModel model = POMModelFactory.getDefault().getModel(ms);
                 model.setAutoSyncActive(false);
                 List<ErrorDescription> errs = StatusProvider.StatusProviderImpl.findHints(model, prj);
