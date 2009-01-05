@@ -74,4 +74,13 @@ public class GoalsProviderImpl implements GoalsProvider {
         return Collections.<String>emptySet();
     }
 
+    public Set<String[]> getPluginPropertyExpression(String groupId, String artifactId, String version, String goal) {
+        try {
+            return PluginIndexManager.getPluginParameterExpressions(groupId, artifactId, version, goal);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.<String[]>emptySet();
+    }
+
 }

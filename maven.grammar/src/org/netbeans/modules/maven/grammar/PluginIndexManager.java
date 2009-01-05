@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -91,6 +92,15 @@ public class PluginIndexManager {
      * goal prefix
      */
     private static String FIELD_PREFIX = "prfx";//NOI18N
+    
+    /**
+     * | is the separator
+     * [0] - name
+     * [1] - editable
+     * [2] - required
+     * [3] - expression or "null"
+     * [4] - default value or "null"
+     */
     private static String PREFIX_FIELD_GOAL = "mj_";//NOI18N
     /**
      * space separated list of lifecycles/packagings
@@ -192,6 +202,42 @@ public class PluginIndexManager {
 
     }
 
+    public static Set<String[]> getPluginParameterExpressions(String groupId, String artifactId, String version, String mojo) throws Exception {
+        assert groupId != null && artifactId != null && version != null;
+        IndexSearcher searcher = getIndexSearcher();
+        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
+        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
+        Hits hits = searcher.search(tq);
+        if (hits.length() == 0) {
+            return null;
+        }
+        Iterator it = hits.iterator();
+        TreeSet<String[]> toRet = new TreeSet<String[]>(new SComparator());
+        while (it.hasNext()) { //well should be just one anyway..
+            Hit hit = (Hit) it.next();
+            Document doc = hit.getDocument();
+            String goals = doc.getField(FIELD_GOALS).stringValue();
+            String[] gls = StringUtils.split(goals, " "); //NOI18N
+            for (String goal : gls) {
+                if (mojo == null || mojo.equals(goal)) {
+                    String params = doc.getField(PREFIX_FIELD_GOAL + goal).stringValue();
+                    String[] lines = StringUtils.split(params, "\n"); //NOI18N
+                    for (String line : lines) {
+                        String[] paramDet = StringUtils.split(line, "|"); //NOI18N
+                        String name = paramDet[0];
+                        String editable = paramDet[1];
+                        if ("true".equals(editable)) { //NOI18N
+                            String expr = paramDet[3];
+                            if (expr != null && !"null".equals(expr)) {
+                                toRet.add(new String[] {name, expr});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
 
     private static int checkLocalVersion(File[] fls) {
         for (File fl : fls) {
@@ -303,4 +349,11 @@ public class PluginIndexManager {
             IOUtil.close(zis);
         }
     }
+
+    private static class SComparator implements Comparator<String[]> {
+        public int compare(String[] o1, String[] o2) {
+            return o1[0].compareTo(o2[0]);
+        }
+    }
+
 }
