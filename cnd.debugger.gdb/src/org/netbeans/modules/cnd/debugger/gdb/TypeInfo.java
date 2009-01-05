@@ -136,6 +136,7 @@ public class TypeInfo {
             // Reset type info because a watch can change its type from stop to stop
             resolvedType = null;
             rawInfo = null;
+            map = null;
         }
         if (resolvedType == null) {
             if (rawInfo == null) {
