@@ -46,6 +46,8 @@ import org.openide.filesystems.FileObject;
  * Create in-memory projects from disk directories.
  * Instances should be registered into default lookup as ProjectFactory instances.
  * @author mkleint
+ * @since org.netbeans.modules.projectapi 1.22
+ *
  */
 public interface ProjectFactory2 extends ProjectFactory {
 
