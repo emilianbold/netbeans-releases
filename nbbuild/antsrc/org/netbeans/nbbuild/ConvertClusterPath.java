@@ -57,6 +57,15 @@ public class ConvertClusterPath extends Task {
     private String from;
     private String id;
     private String basedir;
+    private String to;
+
+    /**
+     * Name of property to which stores
+     * @param to
+     */
+    public void setTo(String to) {
+        this.to = to;
+    }
 
     public void setBasedir(String basedir) {
         this.basedir = basedir;
@@ -79,8 +88,9 @@ public class ConvertClusterPath extends Task {
         try {
             if (from == null || from.length() == 0)
                 throw new BuildException("From parameter not specified.");
-            if (id == null || id.length() == 0)
-                throw new BuildException("Id for converted path not specified.");
+            if ((id == null || id.length() == 0)
+                    && (to == null && to.length() == 0))
+                throw new BuildException("Either 'to' or 'id' parameter for converted path must be specified.");
             if (basedir == null || basedir.length() == 0)
                 basedir = getProject().getBaseDir().getAbsolutePath();
 
@@ -90,7 +100,10 @@ public class ConvertClusterPath extends Task {
             fakeproj.setBasedir(basedir);
             Path convPath = new Path(fakeproj, from);
             log("Converted path: '" + convPath.toString() + "'.", Project.MSG_VERBOSE);
-            getProject().addReference(id, convPath);
+            if (id != null && id.length() > 0)
+                getProject().addReference(id, convPath);
+            if (to != null && to.length() > 0)
+                getProject().setProperty(to, convPath.toString());
         } catch (Exception e) {
             throw new BuildException(e);
         }

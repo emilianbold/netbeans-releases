@@ -48,12 +48,14 @@ made subject to such option by the copyright holder.
     <target name="taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${harness.file}"/>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <typedef name="clusterpathset" classname="org.netbeans.nbbuild.ClusterPathSet"
+                 classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
     </target>
 
     <target name="common-init" depends="taskdefs">
         <property name="netbeans.javadoc.dir" location="build/javadoc"/>
-        <convertclusterpath from="${cluster.path}" id="cluster.path.id" basedir="${suite.dir}"/>
+        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id" basedir="${suite.dir}"/>
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">
@@ -202,20 +204,27 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="netbeans">
-        <ant antfile="${harness.dir}/run.xml" target="run"/>
+        <ant antfile="${harness.dir}/run.xml" target="run">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="profile" depends="netbeans,-jdk-presetdef-nbprofiledirect">
-        <ant antfile="${harness.dir}/run.xml" target="profile"/>
+        <ant antfile="${harness.dir}/run.xml" target="profile">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="debug" depends="netbeans,-jdk-presetdef-nbjpdastart">
-        <ant antfile="${harness.dir}/run.xml" target="debug"/>
+        <ant antfile="${harness.dir}/run.xml" target="debug">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="reload" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <property name="run.args" value='--reload "${cluster}/${module.jar}"'/>
+            <reference refid="cluster.path.id"/>
         </ant>
     </target>
 

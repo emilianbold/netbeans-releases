@@ -43,10 +43,10 @@ made subject to such option by the copyright holder.
 <project name="run" basedir=".">
 
     <target name="-taskdefs" unless="harness.taskdefs.done">
-        <dirname property="harness.dir" file="${suite.file}"/>
+        <!-- dirname property="harness.dir" file="${suite.file}"/>
         <echo level="verbose">Using build harness in ${harness.dir}</echo>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <property name="harness.taskdefs.done" value="true"/>
+        <property name="harness.taskdefs.done" value="true"/ -->
     </target>
 
     <target name="-init" depends="-taskdefs">
@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
         <property file="${suite.dir}/nbproject/platform.properties"/>
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
-       <convertclusterpath from="${cluster.path}" id="cluster.path.id" basedir="${suite.dir}"/>
+        <!-- CP with id="cluster.path.id" is expected to be passed as parameter to run.xml -->
         <pathconvert property="install">
             <path refid="cluster.path.id"/>
             <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
@@ -140,6 +140,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">
+        <fail if="netbeans.dest.dir" message="APISupport module or suite should not set netbeans.dest.dir (= ${netbeans.dest.dir})."/>
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
         <property name="run.args.extra" value=""/>
@@ -192,6 +193,7 @@ You must shut it down before trying to run it again.
         <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
         <antcall target="run">
             <param name="run.args" value="${debug.args}"/>
+            <reference refid="cluster.path.id"/>
         </antcall>
     </target>
     
@@ -220,6 +222,7 @@ You must shut it down before trying to run it again.
         
         <antcall target="run">
             <param name="run.args" value='"${profiler.jvmargs}"'/>
+            <reference refid="cluster.path.id"/>
         </antcall>
     </target>
     

@@ -325,7 +325,7 @@ made subject to such option by the copyright holder.
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->
         <property name="license.file.override" value="${license.file}"/>
         <pathfileset property="updater.jar.path" include="modules/ext/updater.jar">
-            <path path="${cluster.path}"/>
+            <path refid="cluster.path.id"/>
         </pathfileset>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
