@@ -209,7 +209,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         dialog.ok();
         try {
             //slow down a bit
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         } catch (InterruptedException ex) {
             //ignore
         }
