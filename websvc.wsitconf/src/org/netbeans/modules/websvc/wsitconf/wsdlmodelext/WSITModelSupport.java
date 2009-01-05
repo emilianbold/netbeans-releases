@@ -191,8 +191,8 @@ public class WSITModelSupport {
             if (model != null) {
                 model.sync();
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) { // we need this, as we can't rely on wsdl model at all
+            logger.log(Level.INFO, null, ex);
         }
         return model;
     }
