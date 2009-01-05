@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -86,6 +88,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -109,7 +112,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScope fileScope;
     private Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
-    private Map<String, String> var2DefaultType;
+    private Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
+    //private Map<String, String> var2TypeName;
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
     private ModelBuilder modelBuilder;
@@ -121,7 +125,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public ModelVisitor(CompilationInfo info, int offset) {
         this.fileScope = new FileScope(info);
-        var2DefaultType = new HashMap<String, String>();
+        varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
+        //var2TypeName = new HashMap<String, String>();
         occurencesBuilder = new OccurenceBuilder(offset);
         markerBuilder = new CodeMarkerBuilder(offset);
         this.modelBuilder = new ModelBuilder(this.fileScope, occurencesBuilder.getOffset());
@@ -146,16 +151,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(Program program) {
         modelBuilder.setProgram(program);
+        fileScope.setBlockRange(program);
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
         try {
-            List<Comment> comments = program.getComments();
-            for (Comment comment : comments) {
-                Comment.Type type = comment.getCommentType();
-                if (type.equals(Comment.Type.TYPE_VARTYPE)) {
-                    checkComments(comment);
-                }
-            }
+            prepareVarComments(program);
             super.visit(program);
+            handleVarComments();
         } finally {
             program = null;
             vars = null;
@@ -328,27 +329,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Variable node) {
-        //TODO: hack
         String varName = CodeUtils.extractVariableName(node);
         if (varName == null) {
             return;
         }
-
-        //ScopeImpl scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
 
         if (scope instanceof VariableContainerImpl) {
-            VariableContainerImpl ps = (VariableContainerImpl) scope;
-            Map<String, VariableNameImpl> map = vars.get(ps);
+            VariableContainerImpl varContainer = (VariableContainerImpl) scope;
+            Map<String, VariableNameImpl> map = vars.get(varContainer);
             if (map == null) {
                 map = new HashMap<String, VariableNameImpl>();
-                vars.put(ps, map);
+                vars.put(varContainer, map);
             }
             String name = VariableNameImpl.toName(node);
             VariableName original = map.get(name);
             if (original == null) {
-                map.put(name, ps.createElement(modelBuilder.getProgram(), node, var2DefaultType.get(name)));
+                VariableNameImpl varInstance = varContainer.createElement(modelBuilder.getProgram(), node);
+                map.put(name, varInstance);
             }
         } else {
             assert scope instanceof ClassScopeImpl : scope;
@@ -439,8 +438,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         String typeName = parameterType != null ? parameterType.getName() : null;
         //FunctionScopeImpl scope = (FunctionScopeImpl) currentScope.peek();
         FunctionScopeImpl scope = (FunctionScopeImpl) modelBuilder.getCurrentScope();
+        while(parameterName instanceof Reference) {
+            Reference ref = (Reference)parameterName;
+            Expression expression = ref.getExpression();
+            if (expression instanceof Variable || expression instanceof Reference) {
+                parameterName = expression;
+            }
+        }
         if (typeName != null && parameterName instanceof Variable) {
-            VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), (Variable) parameterName, typeName);
+            VariableNameImpl varNameImpl = scope.createElement(modelBuilder.getProgram(), (Variable) parameterName);
             varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, scope.getBlockRange(),
                     new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
         }
@@ -466,8 +472,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 map = new HashMap<String, VariableNameImpl>();
                 vars.put(ps, map);
             }
-            ASTNodeInfo<Variable> nodeInfo = ASTNodeInfo.create(variable);
-            VariableNameImpl varNameImpl = varContainer.createElement(modelBuilder.getProgram(), variable, var2DefaultType.get(nodeInfo.getName()));
+            VariableNameImpl varNameImpl = varContainer.createElement(modelBuilder.getProgram(), variable);
             String name = varNameImpl.getName();
             varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scopeImpl,new OffsetRange(node.getStartOffset(), node.getEndOffset()),
                     VariableNameImpl.toOffsetRange(variable), className.getName()));
@@ -614,11 +619,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             for (PhpDocTypeTagInfo tagInfo : tagInfos) {
                 if (tagInfo.getKind().equals(ASTNodeInfo.Kind.VARIABLE)) {
                     String name = tagInfo.getName();
-                    String typeName = tagInfo.getTypeName();
-                    var2DefaultType.put(name, typeName);
+                    List<PhpDocTypeTagInfo> infos = varTypeComments.get(name);
+                    if (infos == null) {
+                        infos = new ArrayList<PhpDocTypeTagInfo>();
+                        varTypeComments.put(name, infos);
+                    }
+                    infos.add(tagInfo);
                 }
-            }
-            scan(typeTag);
+            }            
         }
     }
 
@@ -663,6 +671,36 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public VariableScope getNearestVariableScope(int offset) {
         return findNearestVarScope((FileScope) getModelScope(), offset, null);
+    }
+
+    public VariableScope getVariableScope(int offset) {
+        VariableScope retval = null;
+        List<ModelElement> elements = new ArrayList<ModelElement>();
+        elements.add(getModelScope());
+        elements.addAll(getModelScope().getElements());
+        for (ModelElement modelElement : elements) {
+            if (modelElement instanceof VariableScope) {
+                VariableScope varScope = (VariableScope) modelElement;
+                if (varScope.getBlockRange().containsInclusive(offset)) {
+                    if (retval == null ||
+                            retval.getBlockRange().overlaps(varScope.getBlockRange())) {
+                        retval = varScope;
+                    }
+                }
+            } else if (modelElement instanceof ClassScope) {
+                ClassScope clsScope = (ClassScope) modelElement;
+                List<? extends MethodScope> allMethods = clsScope.getAllMethods();
+                for (MethodScope methodScope : allMethods) {
+                    if (methodScope.getBlockRange().containsInclusive(offset)) {
+                        if (retval == null ||
+                                retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
+                            retval = methodScope;
+                        }
+                    }
+                }
+            }
+        }
+        return retval;
     }
 
     static List<Occurence> getAllOccurences(ModelScope modelScope, Occurence occurence) {
@@ -762,9 +800,62 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return varN;
     }
 
-    private OffsetRange getBlockRange(ScopeImpl currentScope) {
+    private OffsetRange getBlockRange(Scope currentScope) {
         ASTNode conditionalNode = findConditionalStatement(getPath());
         OffsetRange scopeRange = (conditionalNode != null) ? new OffsetRange(conditionalNode.getStartOffset(), conditionalNode.getEndOffset()) : currentScope.getBlockRange();
         return scopeRange;
     }
+
+    private void handleVarComments() {
+        Set<String> varCommentNames = varTypeComments.keySet();
+        for (String name : varCommentNames) {
+            List<PhpDocTypeTagInfo> varComments = varTypeComments.get(name); //varComments.size() varTypeComments.size()
+            if (varComments != null) {
+                for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+                    VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
+                    VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(varScope.getVariables(name));
+                    if (varInstance == null) {
+                        if (varScope instanceof ScopeImpl) {
+                            ScopeImpl scp = (ScopeImpl) varScope;
+                            varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof FileScope);
+                            scp.addElement(varInstance);
+                        }
+                    }
+                    if (varInstance != null) {
+                        VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance, (ScopeImpl) varScope, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
+                        varInstance.addElement(vAssignment);
+                    }
+                    //scan(phpDocTypeTagInfo.getTypeTag());
+                    occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
+
+                }
+            }
+        }
+    }
+
+    private void prepareVarComments(Program program) {
+        List<Comment> comments = program.getComments();
+        for (Comment comment : comments) {
+            Comment.Type type = comment.getCommentType();
+            if (type.equals(Comment.Type.TYPE_VARTYPE)) {
+                checkComments(comment);
+            }
+        }
+    }
+
+    /*private String getVarTypeName(String name, ScopeImpl scopeImpl) {
+        String typeName = var2TypeName.get(name);
+        if (typeName == null) {
+            PhpDocTypeTagInfo typeTag = var2DefaultType.get(name);
+            if (typeTag != null) {
+                OffsetRange scopeRange = scopeImpl.getBlockRange();
+                if (scopeRange != null && scopeRange.overlaps(typeTag.getRange())) {
+                    typeName = typeTag.getTypeName();
+                    var2TypeName.put(name, typeName);
+                    scan(typeTag.getTypeTag());
+                } 
+            }
+        }
+        return typeName;
+    }*/
 }

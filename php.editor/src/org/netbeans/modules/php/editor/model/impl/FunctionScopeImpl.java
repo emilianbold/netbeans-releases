@@ -108,19 +108,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
 
     //old contructors
 
-    public VariableNameImpl createElement(Program program, Variable node, String typeName) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, false, typeName);
+    public VariableNameImpl createElement(Program program, Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
         addElement(retval);
         return retval;
     }
     
-    /*FunctionScopeImpl(ScopeImpl inScope, String name, Union2<String,FileObject> file,
-            OffsetRange offsetRange, PhpKind kind, List<? extends String> paremeters, PhpModifiers modifiers, String returnType) {
-        super(inScope, name, file, offsetRange, kind, modifiers);
-        this.paremeters = paremeters;
-        this.returnType = returnType;
-        assert paremeters != null;
-    }*/
 
     public final List<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?

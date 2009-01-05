@@ -68,10 +68,9 @@ public final class Model {
         return new ParameterInfoSupport(getModelVisitor(-1), info.getDocument(), offset);
     }
 
-
-    /*private ModelVisitor getModelVisitor() {
-        return getModelVisitor(-1);
-    }*/
+    public VariableScope getVariableScope(final int offset) {
+        return getModelVisitor(-1).getVariableScope(offset);
+    }
 
     /**
      * @return the modelVisitor
