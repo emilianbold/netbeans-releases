@@ -64,5 +64,7 @@ public interface GoalsProvider {
      * the first element in array is the property name,
      * the second element in array is the property expression
      */
+
+    //TODO remove this and move the whole PluginIndexManager to maven.indexer module
     public Set<String[]> getPluginPropertyExpression(String groupId, String artifactId, String version, String goal);
 }
