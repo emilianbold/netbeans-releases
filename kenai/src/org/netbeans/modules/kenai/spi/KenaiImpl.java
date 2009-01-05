@@ -49,15 +49,51 @@ import org.netbeans.modules.kenai.api.KenaiException;
  */
 public abstract class KenaiImpl {
 
-    public abstract KenaiProjectImpl createProject(String name, String displayName, String username, char [] password) throws KenaiException;
 
+    /**
+     * Searches kenai for projects.
+     *
+     * @param pattern pattern to search for. Currenlty only substring match is supported.
+     * @param username
+     * @param password
+     * @return list of Kenai projects
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
     public abstract Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException;
 
+    /**
+     * Retrieves all available information about a Kenai project.
+     *
+     * @param name name of the proejct to query
+     * @param username
+     * @param password
+     * @return KenaiProjectImpl or null if the project does not exist
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
     public abstract KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException;
 
+    /**
+     * Asks whether a person is authorized to perform an activity on a particular project.
+     *
+     * @param projectName name of a project
+     * @param feature feature to check
+     * @param activity activity to check
+     * @param username
+     * @param password
+     * @return true if the person is authorized to perform the activity on the project, false otherwise
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
     public abstract boolean isAuthorized(String projectName, String feature, String activity, String username, char [] password) throws KenaiException;
 
+    /**
+     * Verifies that the supplied credentials are valid.
+     *
+     * @param username
+     * @param password
+     * @throws org.netbeans.modules.kenai.api.KenaiException if credentials are not valid or some other error occurrs
+     */
     public abstract void verify(String username, char[] password) throws KenaiException;
 
     public abstract void register(String username, char[] password) throws KenaiException ;
+    public abstract KenaiProjectImpl createProject(String name, String displayName, String username, char [] password) throws KenaiException;
 }

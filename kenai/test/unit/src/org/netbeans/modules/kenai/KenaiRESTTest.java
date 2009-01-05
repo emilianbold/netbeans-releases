@@ -80,6 +80,16 @@ public class KenaiRESTTest {
         // TODO: verify all fields
     }
 
+    @Test
+    public void testParseProjectList() throws Exception {
+        PojsonLoad pl = PojsonLoad.create();
+        JsonListProjects plist = pl.load(project_list_json, JsonListProjects.class);
+        assertNull(plist.prev);
+        assertNotNull(plist.next);
+        assertEquals(plist.projects.length, 10);
+        // TODO: verify all fields
+    }
+
     private static final String project_json = "" +
             "{\n" +
             "\"href\": \"http://testkenai.com/api/projects/java-inline\", \n" +
@@ -193,6 +203,28 @@ public class KenaiRESTTest {
             "\t\"created_at\": \"2008-10-14T04:31:41Z\", \n" +
             "\t\"updated_at\": \"2008-10-14T04:31:41Z\"}\n" +
             "\t]\n" +
+            "}\n" +
+            "";
+
+    private static final String project_list_json = "" +
+            "{\n" +
+            "\"prev\":null,\n" +
+            "\"next\":\"http:\\/\\/testkenai.com\\/api\\/projects?page=2\",\n" +
+            "\"projects\":[\n" +
+            "\t{\n" +
+            "\t\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/activerecord-jdbc\",\n" +
+            "\t\"name\":\"activerecord-jdbc\",\n" +
+            "\t\"display_name\":\"ActiveRecord JDBC\",\n" +
+            "\t\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},\n" +
+            "\t{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\",\"name\":\"alice\",\"display_name\":\"Alice\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/nbandroid\",\"name\":\"nbandroid\",\"display_name\":\"Android plugin for NetBeans\",\"image\":\"http:\\/\\/testkenai.com\\/attachments\\/images\\/project\\/nbandroid.png\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/bluebird\",\"name\":\"bluebird\",\"display_name\":\"Bluebird\",\"image\":\"http:\\/\\/testkenai.com\\/attachments\\/images\\/project\\/bluebird.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/bz-5052\",\"name\":\"bz-5052\",\"display_name\":\"bz 5052\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/ccadministrator\",\"name\":\"ccadministrator\",\"display_name\":\"CCAdministrator\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/chromeupdater\",\"name\":\"chromeupdater\",\"display_name\":\"Chrome Updater\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/comic-tracker\",\"name\":\"comic-tracker\",\"display_name\":\"Comic Release tracker\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/clv\",\"name\":\"clv\",\"display_name\":\"compilation log visualizer\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},\n" +
+            "\n" +
+            "\t{\n" +
+            "\t\t\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/csearch\",\n" +
+            "\t\t\"name\":\"csearch\",\n" +
+            "\t\t\"display_name\":\"Conceptual Search\",\n" +
+            "\t\t\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"\n" +
+            "\t}\n" +
+            "]\n" +
             "}\n" +
             "";
 }
