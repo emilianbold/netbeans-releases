@@ -5,11 +5,13 @@
 #include "stdafx.h"
 #include "HttpMonitoringApp.h"
 #include <wininet.h>
-#include <atlstr.h>
 #include "XMLTag.h"
 #include "DbgpResponse.h"
 #include <time.h>
 #include <cstdlib> // for rand()
+#include <atlstr.h>
+
+char* gPostText = NULL;
 
 STDMETHODIMP CTestSink::BeginningTransaction(
     /* [in] */ LPCWSTR szURL,
@@ -103,7 +105,7 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     }
 
     // id - TODO
-    msg.addChildTagWithValue(_T("id"), 100);
+    msg.addChildTagWithValue(_T("id"), 200);
 
     // method - Fill in whether this request was a GET or POST request
     size = 0; //reset buffer size
@@ -117,25 +119,46 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     tstring getOrPostString = A2CT(getOrPostStrBuf);
     msg.addChildTagWithValue(_T("method"), getOrPostString); 
 
-    // urlParams
-    msg.addChildTagWithValue(_T("urlParams"), _T("null"));
 
-    if (getOrPostString.find(_T("POST")) != tstring::npos) {
-        // todo - should this be case-insensitive?
-        // post request
-        msg.addChildTagWithValue(_T("postText"), _T("undefined"));
+    if ((getOrPostString.find(_T("POST")) != tstring::npos) ||
+        (getOrPostString.find(_T("post")) != tstring::npos)) { // post request
+        if (gPostText != NULL) {
+            // Output in the Netbeans window is tokenized for readability
+            // so here we replace "&" with " " (whitespace) in the post 
+            // parameters string
+            std::string postText2 = gPostText;
+            int idx;
+            while( (idx=postText2.find_first_of('&')) >= 0 ) {
+                postText2.replace( idx, 1, " " );
+            }
+
+            msg.addChildTagWithValue(_T("postText"), A2CT(postText2.c_str()));
+            delete[] gPostText;
+            gPostText = NULL;
+        } else {
+            msg.addChildTagWithValue(_T("postText"), _T("undefined"));
+        }
     }
-    else {
-        // postText - only applicable for POST requests, undefined otherwise
-        msg.addChildTagWithValue(_T("postText"), _T("undefined"));
-    }
-    // loadInit - ???
+    else { // get request
+        int splitPos = url.find('?');
+        if (splitPos != tstring::npos) {
+            std::wstring params = url.substr(splitPos + 1);
+            int idx;
+            while( (idx=params.find_first_of('&')) >= 0 ) {
+                params.replace( idx, 1, L" " );
+            }
+            msg.addChildTagWithValue(_T("urlParams"), params.c_str());
+
+        } else {
+            msg.addChildTagWithValue(_T("urlParams"), _T("undefined"));
+        }
+}
+    // loadInit - ??? (or sometimes load_init)
     msg.addChildTagWithValue(_T("loadInit"), rand()); 
 
     // timestamp - current time when the request was made
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
 
-    // TODO: this could crash if lastInstance isn't valid
     if (DbgpConnection::lastInstance != NULL) {
         DbgpConnection::lastInstance->sendResponse(msg.toString());
     }
@@ -316,7 +339,7 @@ STDMETHODIMP CTestSink::OnResponse(
 
     msg.addChildTagWithValue(_T("url"), _T("http://www.example.com"));
     
-    msg.addChildTagWithValue(_T("id"), 100);
+    msg.addChildTagWithValue(_T("id"), 200);
 
     msg.addChildTagWithValue(_T("name"),_T("FOO"));
 
