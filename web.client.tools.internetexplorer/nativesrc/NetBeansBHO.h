@@ -75,6 +75,7 @@ END_COM_MAP()
 BEGIN_SINK_MAP(CNetBeansBHO)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2, OnNavigateComplete)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
+	SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, OnBeforeNavigate2)
 END_SINK_MAP()
 
     DECLARE_PROTECT_FINAL_CONSTRUCT()
@@ -90,6 +91,9 @@ public:
     //Browser events
     void STDMETHODCALLTYPE OnNavigateComplete(IDispatch *pDisp, VARIANT *pvarURL);
     void STDMETHODCALLTYPE OnDocumentComplete(IDispatch *pDisp, VARIANT *pvarURL);
+	void STDMETHODCALLTYPE OnBeforeNavigate2(IDispatch *pDisp,
+		VARIANT *pUrl, VARIANT *pFlags, VARIANT *pTargetFrameName,
+		VARIANT *pPostData, VARIANT *pHeaders, VARIANT_BOOL *pCancel);
     void OpenURI(string url);
     DbgpConnection *getDbgpConnection() {
         return m_pDbgpConnection;
