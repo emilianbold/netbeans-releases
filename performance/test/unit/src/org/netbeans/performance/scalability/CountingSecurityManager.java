@@ -169,7 +169,6 @@ public final class CountingSecurityManager extends SecurityManager {
         private static final boolean streamCreation = false;
         /** singleton instance */
         private static Statistics INSTANCE;
-        private static int absoluteStacks;
         private Map<String, Integer> isDirInvoc = new HashMap<String, Integer>();
         private Map<String, Integer> stacks = new HashMap<String, Integer>();
 
@@ -232,11 +231,18 @@ public final class CountingSecurityManager extends SecurityManager {
                 out.printf("%4d", isDirInvoc.get(s));
                 out.println("; " + s);
             }
+            int absoluteStacks = 0;
             for (String s : stacks.keySet()) {
                 int value = stacks.get(s);
                 absoluteStacks += value;
-                out.printf("count %5d; Stack:\n", value);
-                out.println(s);
+            }
+            int min = absoluteStacks / 50;
+            for (String s : stacks.keySet()) {
+                int value = stacks.get(s);
+                if (value > min) {
+                    out.printf("count %5d; Stack:\n", value);
+                    out.println(s);
+                }
             }
             out.println("Total stacks recorded: " + absoluteStacks);
         }

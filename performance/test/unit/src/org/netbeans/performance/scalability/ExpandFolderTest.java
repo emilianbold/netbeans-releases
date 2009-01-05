@@ -51,6 +51,7 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbModuleSuite.Configuration;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
@@ -69,11 +70,19 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         CountingSecurityManager.register();
         
         NbTestSuite s = new NbTestSuite();
-        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, null, ".*"));
-        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, "ide[0-9]*|java[0-9]*", ".*"));
-        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, ".*", ".*"));
+        s.addTest(create(null, ".*"));
+        s.addTest(create("ide[0-9]*|java[0-9]*", ".*"));
+        s.addTest(create(".*", ".*"));
         s.addTest(new CompareResults(s));
         return s;
+    }
+
+    private static Test create(String clusters, String modules) {
+        Configuration config = NbModuleSuite.createConfiguration(ExpandFolderTest.class)
+            .clusters(clusters)
+            .enableModules(modules)
+            .gui(false);
+        return NbModuleSuite.create(config);
     }
     
 
