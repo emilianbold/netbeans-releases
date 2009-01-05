@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.NbBundle;
@@ -131,6 +132,11 @@ public class TypeInfo {
     }
     
     public String getResolvedType(AbstractVariable var) {
+        if (var instanceof GdbWatchVariable) {
+            // Reset type info because a watch can change its type from stop to stop
+            resolvedType = null;
+            rawInfo = null;
+        }
         if (resolvedType == null) {
             if (rawInfo == null) {
                 rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
