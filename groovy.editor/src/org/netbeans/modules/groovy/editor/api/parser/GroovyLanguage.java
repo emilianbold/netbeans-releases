@@ -42,7 +42,6 @@
 package org.netbeans.modules.groovy.editor.api.parser;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;

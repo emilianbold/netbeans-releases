@@ -46,7 +46,6 @@ import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
 import java.util.Stack;
-import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
