@@ -44,8 +44,7 @@ package org.netbeans.modules.web.jsf.api.editor;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 
 /**
- *This factory creates the MultiViewDescriptors. The factory has to be registered as 
- * a servicein META-INF/services folder.
+ *This factory creates the MultiViewDescriptors. The factory has to be registered using {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @author Petr Pisl
  */
