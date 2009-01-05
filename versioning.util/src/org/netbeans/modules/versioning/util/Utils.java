@@ -87,7 +87,9 @@ import org.openide.util.Utilities;
  * @author Maros Sandor
  */
 public final class Utils {
-    
+
+    private static final Logger log = Logger.getLogger("debug.mimetypes");
+
     /**
      * Request processor for quick tasks.
      */
@@ -218,10 +220,23 @@ public final class Utils {
      */
     public static boolean isFileContentText(File file) {
         FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return false;        
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N  
-            return true;            
-        }        
+        if (fo == null) return false;
+        String mimeType = fo.getMIMEType();
+        log.log(Level.FINE, "MIME type for file '"+fo.getNameExt()+"' is '"+mimeType+"'");
+        if (mimeType.startsWith("text")) { // NOI18N
+             return true;
+        }
+        // BEGIN: fix for 6777516
+        // This is hot fix for NB 6.1 only!!!
+        // (The MIME type registration was rewritten in NB 6.5 and this fix is not
+        // required there -- the issue is not reproducible on NB 6.5)
+        if (mimeType.equals("application/xslt+xml") ||
+                mimeType.equals("application/x-schema+xml")) {
+            log.log(Level.FINE, "Applying workaround for #6777516...");
+            return true;
+        }
+        // END: fix for 6777516
+
         try {
             DataObject dao = DataObject.find(fo); 
             return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null; 
