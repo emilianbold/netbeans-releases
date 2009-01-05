@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +73,7 @@ import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.SymbolNode;
@@ -102,6 +105,7 @@ import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -125,6 +129,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private CompilationInfo info;
+    private RubyIndex index;
+    private RubyTypeInferencer typeInferencer;
     private boolean isTestFile;
 
     private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
@@ -133,7 +139,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     public RubyStructureAnalyzer() {
     }
 
-    public List<?extends StructureItem> scan(CompilationInfo info) {
+    public List<?extends StructureItem> scan(final CompilationInfo info) {
         if (RubyUtils.isRhtmlOrYamlFile(info.getFileObject())) {
             return scanRhtml(info);
         }
@@ -153,6 +159,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
     public static class AnalysisResult {
+        
         private List<?extends AstElement> elements;
         private Map<AstClassElement, Set<AstAttributeElement>> attributes;
         private Set<String> requires;
@@ -218,7 +225,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
 
-    private AnalysisResult scan(RubyParseResult result) {
+    private AnalysisResult scan(final RubyParseResult result) {
         AnalysisResult analysisResult = new AnalysisResult();
 
         Node root = AstUtilities.getRoot(result);
@@ -249,6 +256,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
         
         AstPath path = new AstPath();
         path.descend(root);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root);
+        this.typeInferencer = new RubyTypeInferencer(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
         path.ascend();
@@ -362,7 +371,27 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return analysisResult;
     }
 
-    public Map<String,List<OffsetRange>> folds(CompilationInfo info) {
+    private static final Map<File, AnalysisResult> cache = new HashMap<File, AnalysisResult>();
+
+    private AnalysisResult getCachedAnalysis(final RubyParseResult result) {
+        // TODO: implement together with #cacheAnalysis
+        return null;
+//        File file = result.getFile().getFile();
+//        AnalysisResult cachedRestul = cache.get(file);
+//        if (cachedRestul == null) {
+//            return null;
+//        } else {
+//            return cachedRestul;
+//        }
+    }
+
+    private void cacheAnalysis(RubyParseResult result, AnalysisResult scan) {
+        // TODO: store in the cache, prune old result and/or time-out old results, ...
+//        File file = result.getFile().getFile();
+//        cache.put(file, scan);
+    }
+
+    public Map<String, List<OffsetRange>> folds(final CompilationInfo info) {
         if (RubyUtils.isRhtmlFile(info.getFileObject())) {
             return Collections.emptyMap();
         }
@@ -397,8 +426,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return folds;
     }
     
-    private void addFolds(BaseDocument doc, List<? extends AstElement> elements, 
-            Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
+    private void addFolds(
+            final BaseDocument doc,
+            final List<? extends AstElement> elements,
+            final Map<String,List<OffsetRange>> folds,
+            final List<OffsetRange> codeblocks) throws BadLocationException {
         for (AstElement element : elements) {
             ElementKind kind = element.getKind();
             switch (kind) {
@@ -447,7 +479,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
 
-    private void scan(Node node, AstPath path, String in, Set<String> includes, AstElement parent) {
+    private void scan(
+            final Node node,
+            final AstPath path,
+            String in,
+            Set<String> includes,
+            AstElement parent) {
         // Recursively search for methods or method calls that match the name and arity
         switch (node.nodeId) {
         case CLASSNODE: {
@@ -547,6 +584,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
+            if (node instanceof DefnNode) {
+                DefnNode defNode = (DefnNode) node;
+                Set<Node> exits = new LinkedHashSet<Node>();
+                AstUtilities.findExitPoints(defNode, exits);
+                RubyType type = new RubyType();
+                for (Node exitPoint : exits) {
+                    if (exitPoint.nodeId != NodeType.FCALLNODE) {
+                        type.append(typeInferencer.inferType(exitPoint));
+                    }
+                }
+                co.setType(type);
+            }
+
             // TODO - don't add this to the top level! Make a nested list
             if (parent != null) {
                 parent.addChild(co);
@@ -562,7 +612,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             AstElement co = new AstNameElement(info, node, AstUtilities.getName(node),
                     ElementKind.CONSTANT);
 
-            co.setType(RubyTypeInferencer.inferTypesOfRHS(constNode, null));
+            co.setType(typeInferencer.inferTypesOfRHS(constNode));
             co.setIn(in);
 
             if (parent != null) {
@@ -643,7 +693,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
                     assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
-                    co.setType(RubyTypeInferencer.inferTypesOfRHS(node, null));
+                    co.setType(typeInferencer.inferTypesOfRHS(node));
                     co.setIn(in);
                     structure.add(co);
                 }
@@ -855,7 +905,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
      * If it does, return the class whose methods is added - e.g. "ClassMethods"
      * in the above example.
      */
-    private String getExtendWith(MethodDefNode node) {
+    private String getExtendWith(final MethodDefNode node) {
         // TODO Check that we have a single parameter,
         // and that the same parameter is the name of a single method
         // call; a CallNode, whose name is extend and whose single
@@ -907,7 +957,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return null;
     }
     
-    private CallNode findExtendCall(Node node) {
+    private CallNode findExtendCall(final Node node) {
         if (node instanceof CallNode) {
             CallNode call = (CallNode)node;
             
@@ -931,14 +981,35 @@ public class RubyStructureAnalyzer implements StructureScanner {
         
         return null;
     }
-    
-    AnalysisResult analyze(RubyParseResult result, CompilationInfo info) {
-        this.info = info;
-        return scan(result);
+
+    private static Set<FileObject> currentlyAnalyzingWithIndex = new HashSet<FileObject>();
+
+    AnalysisResult analyze(final RubyParseResult result, final CompilationInfo info) {
+        AnalysisResult scan = getCachedAnalysis(result);
+        if (scan != null) {
+            return scan;
+        }
+        boolean addedWithIndex = false; // prevent stack-overflow
+        FileObject toAnalyze = result.getFile().getFileObject();
+        try {
+            addedWithIndex = currentlyAnalyzingWithIndex.add(toAnalyze);
+            if (addedWithIndex && info != null) {
+                this.index = RubyIndex.get(info);
+            }
+            this.info = info;
+            scan = scan(result);
+            cacheAnalysis(result, scan);
+            return scan;
+        } finally {
+            if (addedWithIndex) {
+                boolean removed = currentlyAnalyzingWithIndex.remove(toAnalyze);
+                assert removed : "consistent state";
+            }
+        }
     }
 
     /** Look through the comment nodes and associate them with the AST nodes */
-    public void addComments(RubyParseResult result) {
+    public void addComments(final RubyParseResult result) {
         Node root = result.getRootNode();
 
         if (root == null) {
@@ -961,7 +1032,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
 
-    private Node findClosest(Node node, int start, int end) {
+    private Node findClosest(final Node node, final int start, final int end) {
         List<Node> list = node.childNodes();
 
         ISourcePosition pos = node.getPosition();
@@ -1036,11 +1107,23 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             RubyType type = node.getType();
             if (type.isKnown()) {
-                formatter.appendHtml(" : ");
-                formatter.appendText(type.asIndexedString());
+                formatter.appendHtml("<font color='#777777'>"); // NOI18N
+                formatter.appendHtml(" : "); // NOI18N
+                formatter.appendText(typeAsString(type));
+                formatter.appendHtml("</font>"); // NOI18N
             }
 
             return formatter.getText();
+        }
+
+        private String typeAsString(final RubyType type) {
+            String types = type.asString(", "); // NOI18N
+            // TODO, should we really show the information about the type we are
+            // not able to fully infer? Does it bother users or do they like it?
+            if (type.hasUnknownMember()) {
+                types += ", _unknown_"; // NOI18N
+            }
+            return types;
         }
 
         public ElementHandle getElementHandle() {
@@ -1082,7 +1165,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
         }
 
-        public List<?extends StructureItem> getNestedItems() {
+        public List<? extends StructureItem> getNestedItems() {
             List<AstElement> nested = node.getChildren();
 
             if ((nested != null) && (nested.size() > 0)) {
