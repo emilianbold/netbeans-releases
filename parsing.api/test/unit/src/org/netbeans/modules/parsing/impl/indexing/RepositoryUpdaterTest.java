@@ -99,6 +99,7 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -376,6 +377,39 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
+
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0]);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertEquals(0, indexerFactory.indexer.getCount());
+        assertEquals(0, eindexerFactory.indexer.getCount());
+
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        Thread.sleep(5000); //Wait for file system time
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0]);
+        File file = new File (embeddedFiles[0].toURI());
+        file.setLastModified(System.currentTimeMillis());
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertEquals(0, indexerFactory.indexer.getCount());
+        assertEquals(1, eindexerFactory.indexer.getCount());
     }
 
 
@@ -731,10 +765,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         private Set<URL> expectedFiles = new HashSet<URL>();
         private CountDownLatch latch;
+        private volatile int counter;
 
         public void setExpectedFile (URL... files) {
             expectedFiles.clear();
             expectedFiles.addAll(Arrays.asList(files));
+            counter = 0;
             latch = new CountDownLatch(expectedFiles.size());
         }
 
@@ -742,9 +778,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return this.latch.await(TIME, TimeUnit.MILLISECONDS);
         }
 
+        public int getCount () {
+            return this.counter;
+        }
+
         @Override
         protected void index(Iterable<? extends Indexable> files, Context context) {
             for (Indexable i : files) {
+                counter++;
                 if (expectedFiles.remove(i.getURL())) {
                     latch.countDown();
                 }
@@ -779,10 +820,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         private Set<URL> expectedFiles = new HashSet<URL>();
         private CountDownLatch latch;
+        private volatile int counter;
 
         public void setExpectedFile (URL... files) {
             expectedFiles.clear();
             expectedFiles.addAll(Arrays.asList(files));
+            counter = 0;
             latch = new CountDownLatch(expectedFiles.size());
         }
 
@@ -790,11 +833,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return this.latch.await(TIME, TimeUnit.MILLISECONDS);
         }
 
+        public int getCount () {
+            return this.counter;
+        }
+
 
         @Override
         protected void index(Indexable indexable, Result parserResult, Context context) {
             try {
                 final URL url = parserResult.getSnapshot().getSource().getFileObject().getURL();
+                counter++;
                 if (expectedFiles.remove(url)) {
                     latch.countDown();
                 }

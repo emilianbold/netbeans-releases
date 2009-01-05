@@ -393,8 +393,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void scanSources  (final DependenciesContext ctx) {
-            assert ctx != null;
-            TEST_LEGGER.log(Level.FINEST, "scanSources", ctx.newRoots);         //NOI18N
+            assert ctx != null;            
             for (URL source : ctx.newRoots) {
                 try {
                     scanSource (source);
@@ -404,6 +403,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 }
                 
             }
+            TEST_LEGGER.log(Level.FINEST, "scanSources", ctx.newRoots);         //NOI18N
         }
 
         private void scanSource (URL root) throws IOException {

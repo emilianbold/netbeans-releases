@@ -40,14 +40,17 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -58,22 +61,29 @@ public class TimeStamps {
     private static String TIME_STAMPS_FILE = "timestamps.properties";           //NOI18N
 
     private Properties props = new Properties();
+    private Set<String> unseen = new HashSet<String>();
+    private final URL root;
+    private FileObject rootFoCache;
 
-    private TimeStamps (final URL root) {
+    private TimeStamps (final URL root) throws IOException {
         assert root != null;
+        this.root = root;
         load ();
     }
     //where
-    private void load () {
-        File cacheDir = getCacheDir();
-        File f = new File (cacheDir,TIME_STAMPS_FILE);
-        if (f.canRead()) {
+    private void load () throws IOException {
+        FileObject cacheDir = getCacheDir();
+        FileObject f = cacheDir.getFileObject(TIME_STAMPS_FILE);
+        if (f != null) {
             try {
-                final InputStream in = new FileInputStream(f);
+                final InputStream in = f.getInputStream();
                 try {
                     props.load(in);
                 } finally {
                     in.close();
+                }
+                for (Object k : props.keySet()) {
+                    unseen.add((String)k);
                 }
             } catch (IOException e) {
                 //In case of IOException props are empty, everything is scanned
@@ -82,12 +92,14 @@ public class TimeStamps {
         }
     }
 
-    public void store () {
-        File cacheDir = getCacheDir();
-        File f = new File (cacheDir,TIME_STAMPS_FILE);
+    public Set<String> store () throws IOException {
+        FileObject cacheDir = getCacheDir();
+        FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
+        assert f != null;
         try {
-            OutputStream out = new FileOutputStream(f);
+            final OutputStream out = f.getOutputStream();
             try {
+                props.keySet().removeAll(unseen);
                 props.store(out, "");
             } finally {
                 out.close();
@@ -96,10 +108,11 @@ public class TimeStamps {
             //In case of IOException props are not stored, everything is scanned next time
             e.printStackTrace();
         }
+        return this.unseen;
     }
 
-    private File getCacheDir () {
-        return null;
+    private FileObject getCacheDir () throws IOException {
+        return CacheFolder.getDataFolder(root);
     }
 
     public boolean isUpToDate (final File f) {
@@ -109,22 +122,27 @@ public class TimeStamps {
         if (value == null) {
             return false;
         }
+        unseen.remove(relative);
         long lts = Long.parseLong(value);        
         return lts >= fts;
     }
 
     public boolean isUpToDate (final FileObject f) {
-        String relative = null;
+        if (rootFoCache == null) {
+            rootFoCache = URLMapper.findFileObject(root);
+        }
+        String relative = FileUtil.getRelativePath(rootFoCache, f);
         long fts = f.lastModified().getTime();
         String value = (String) props.setProperty(relative,Long.toString(fts));
         if (value == null) {
             return false;
         }
+        unseen.remove(relative);
         long lts = Long.parseLong(value);        
         return lts >= fts;
-    }
+    }    
 
-    public TimeStamps forRoot (final URL root) {
+    public static TimeStamps forRoot (final URL root) throws IOException {
         assert root != null;
         return new TimeStamps(root);
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FileCrawler extends Crawler {
-    
-    private final File root;
+public class DeletedIndexable implements IndexableImpl {
 
-    public FileCrawler (final File root) throws IOException {
-        super (root.toURL());
+    private final URL root;
+    private final String relativePath;
+
+    public DeletedIndexable (final URL root, final String relativePath) {
+        assert root != null;
+        assert relativePath != null;
         this.root = root;
+        this.relativePath = relativePath;
     }
 
-    @Override
-    protected  Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
-        final Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
-        collect (root, result);
-        return result;
+    public long getLastModified() {
+        return -1;
     }
 
-    private static void collect (final File dir, final Map<String,Collection<Indexable>> result) {
-        final File[] ch = dir.listFiles();
-        if (ch != null) {
-            for (File c : ch) {
-                if (c.isDirectory()) {
-                    collect (c, result);
-                }
-                else {
-                    
-                }
-            }
+    public String getName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public URL getURL() {
+        try {
+            return new URL(root.toString() + relativePath);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
     }
 
-    
+    public InputStream openInputStream() throws IOException {
+        throw new IOException();
+    }
 
 }
