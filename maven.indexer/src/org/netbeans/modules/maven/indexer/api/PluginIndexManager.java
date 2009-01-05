@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.grammar;
+package org.netbeans.modules.maven.indexer.api;
 
 import hidden.org.codehaus.plexus.util.FileUtils;
 import hidden.org.codehaus.plexus.util.IOUtil;
@@ -294,7 +294,7 @@ public class PluginIndexManager {
             //copy the preexisting index in module into place..
             InputStream is = null;
             try {
-                is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+                is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/indexer/pluginz.zip"); //NOI18N
                 ZipInputStream zis = new ZipInputStream(is);
                 unzip(zis, cacheDir);
             } finally {
@@ -309,7 +309,7 @@ public class PluginIndexManager {
                     //copy the preexisting index in module into place..
                     InputStream is = null;
                     try {
-                        is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+                        is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/indexer/pluginz.zip"); //NOI18N
                         ZipInputStream zis = new ZipInputStream(is);
                         unzip(zis, cacheDir);
                     } finally {

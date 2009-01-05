@@ -41,20 +41,20 @@ package org.netbeans.modules.maven.customizer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -156,17 +156,22 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
 
     private class Loader implements Runnable {
         public void run() {
-            GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             Children.Array rootChilds = new Children.Array();
             @SuppressWarnings("unchecked")
             List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
             for (Plugin plg : plgns) {
                 Children.Array pluginChilds = new Children.Array();
-                Set<String[]> exprs = provider.getPluginPropertyExpression(plg.getGroupId(), plg.getArtifactId(), plg.getVersion(), null);
-                for (String[] el : exprs) {
-                    AbstractNode param = new AbstractNode(Children.LEAF, Lookups.singleton(el[1]));
-                    param.setDisplayName(el[0] + "->" + el[1]);
-                    pluginChilds.add(new Node[] {param});
+                try {
+                    Set<String[]> exprs = PluginIndexManager.getPluginParameterExpressions(plg.getGroupId(), plg.getArtifactId(), plg.getVersion(), null);
+                    if (exprs != null) {
+                        for (String[] el : exprs) {
+                            AbstractNode param = new AbstractNode(Children.LEAF, Lookups.singleton(el[1]));
+                            param.setDisplayName(el[1] + " (" + el[0] + ")");
+                            pluginChilds.add(new Node[]{param});
+                        }
+                    }
+                } catch (Exception exception) {
+                    Logger.getLogger(AddPropertyDialog.class.getName()).log(Level.INFO, "Error while retrieving list of expressions", exception); //NOI18N
                 }
                 AbstractNode plugin = new AbstractNode(pluginChilds);
                 plugin.setDisplayName(plg.getKey());
