@@ -50,13 +50,29 @@ public class FileCoverageSummary implements Comparable<FileCoverageSummary> {
     private final String displayName;
     private final int lineCount;
     private final int executedLineCount;
+    private final int inferredCount;
+    private final int partialCount;
     //private final int executableLines;
 
-    public FileCoverageSummary(FileObject file, String displayName, int lineCount, int executedLineCount) {
+    /**
+     * Create a code coverage summary for a file.
+     *
+     * @param file The file we collected data from
+     * @param displayName A display name for the file (often the path itself)
+     * @param lineCount The total number of lines in the file
+     * @param executedLineCount The total number of lines that were executed (including inferred and partial)
+     * @param inferredCount The lines not recorded but inferred to be executed (such as comments and whitespace
+     *   between executed statements) Return -1 for "unknown/not recorded".
+     * @param partialCount The lines that were partially executed. Return -1 for "unknown/not recorded".
+     */
+    public FileCoverageSummary(FileObject file, String displayName, int lineCount, int executedLineCount,
+            int inferredCount, int partialCount) {
         this.file = file;
         this.displayName = displayName;
         this.lineCount = lineCount;
         this.executedLineCount = executedLineCount;
+        this.inferredCount = inferredCount;
+        this.partialCount = partialCount;
     }
 
     public float getCoveragePercentage() {
@@ -88,7 +104,20 @@ public class FileCoverageSummary implements Comparable<FileCoverageSummary> {
         return lineCount;
     }
 
+    public int getInferredCount() {
+        return inferredCount;
+    }
+
+    public int getPartialCount() {
+        return partialCount;
+    }
+
     public String getDisplayName() {
         return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName + ": " + getCoveragePercentage() + "%";
     }
 }

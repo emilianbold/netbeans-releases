@@ -78,4 +78,9 @@
     </fontcolor>
     <fontcolor name="mod-abstract"/>
     <fontcolor default="number" foreColor="ff66cc00" name="LONG_LITERAL"/>
+
+    <!-- Code Coverage -->
+    <fontcolor name="covered" bgColor="ff2b492b"/>
+    <fontcolor name="uncovered" bgColor="ff672b2b"/>
+    <fontcolor name="inferred" bgColor="ff2b3a2b"/>
 </fontscolors>

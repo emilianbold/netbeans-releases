@@ -68,7 +68,7 @@ public final class CsmMacroExpansion {
     /** default provider */
     private static CsmMacroExpansionProvider defaultProvider;
 
-    protected CsmMacroExpansion() {
+    private CsmMacroExpansion() {
     }
     
     /** Static method to obtain the provider.

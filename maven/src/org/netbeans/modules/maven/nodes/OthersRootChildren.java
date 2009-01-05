@@ -41,21 +41,26 @@ package org.netbeans.modules.maven.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.model.Resource;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.VisibilityQueryDataFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -116,11 +121,53 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
         DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
-        Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
-        toReturn[0] = new FilterNode(dobj.getNodeDelegate().cloneNode(), childs);
+        if (grp instanceof MavenSourcesImpl.OtherGroup) {
+            MavenSourcesImpl.OtherGroup resgrp = (MavenSourcesImpl.OtherGroup)grp;
+            if (resgrp.getResource() != null) {
+                toReturn[0] = new OGFilterNode(PackageView.createPackageView(grp), resgrp);
+            } else {
+                Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
+                toReturn[0] = new OGFilterNode(dobj.getNodeDelegate().cloneNode(), childs, resgrp);
+            }
+        } else {
+            assert false : "Group is not a MavenSourcesImpl.OtherGroup instance"; //NOI18N
+        }
         return toReturn;
     }
     
 
+    private static class OGFilterNode extends FilterNode {
+        private MavenSourcesImpl.OtherGroup group;
+
+        OGFilterNode(Node orig, MavenSourcesImpl.OtherGroup grp) {
+            super(orig);
+            group = grp;
+        }
+
+        OGFilterNode(Node orig, org.openide.nodes.Children childs, MavenSourcesImpl.OtherGroup grp) {
+            super(orig, childs);
+            group = grp;
+        }
+
+        @Override
+        public String getShortDescription() {
+            if (group.getResource() != null) {
+                Resource rs = group.getResource();
+                String str = NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource1", rs.getDirectory());
+                if (rs.getTargetPath() != null) {
+                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource2", rs.getTargetPath());
+                }
+                if (rs.getIncludes() != null && rs.getIncludes().size() > 0) {
+                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource3", Arrays.toString(rs.getIncludes().toArray()));
+                }
+                if (rs.getExcludes() != null && rs.getExcludes().size() > 0) {
+                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource4", Arrays.toString(rs.getExcludes().toArray()));
+                }
+                return str;
+            } else {
+                return  NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource5", FileUtil.getFileDisplayName(group.getRootFolder()));
+             }
+        }
+    }
    
 }

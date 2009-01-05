@@ -67,21 +67,28 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return CsmStatement.Kind.COMPOUND;
     }
 
-    public List<CsmStatement> getStatements() {
+    public final List<CsmStatement> getStatements() {
         if (statements == null) {
-            statements = new ArrayList<CsmStatement>();
-            renderStatements(getAst());
+            renderStatements(getStartRenderingAst());
         }
         return statements;
     }
 
-    protected void renderStatements(AST ast) {
-        for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
-            CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
-            if (stmt != null) {
-                statements.add(stmt);
+    protected AST getStartRenderingAst() {
+        return getAst();
+    }
+
+    private void renderStatements(AST ast) {
+        List<CsmStatement> out = new ArrayList<CsmStatement>();
+        if (ast != null) {
+            for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
+                CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
+                if (stmt != null) {
+                    out.add(stmt);
+                }
             }
         }
+        statements = out;
     }
 
     public Collection<CsmScopeElement> getScopeElements() {

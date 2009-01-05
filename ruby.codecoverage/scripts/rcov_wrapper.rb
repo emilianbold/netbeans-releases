@@ -68,7 +68,20 @@ END {
 
       old_cov, old_counts = prev_state[filename].values_at(:coverage, :counts)
 
-      for i in 0..old_counts.length-1
+      def dump_line(my_file, first, last, count)
+          if count == -999
+            return
+          end
+          if first < last
+            my_file.print "#{first}>"
+          end
+          my_file.print "#{last}:#{count}, "
+
+      end
+      first = -1
+      prevcount = -999
+      max = old_counts.length-1
+      for i in 0..max
         type = old_cov.at(i)
         count = old_counts.at(i)
         if (type == :inferred)
@@ -76,8 +89,13 @@ END {
         elsif !type
           count = -2
         end
-        my_file.print "#{i}:#{count}, "
+        if (count != prevcount)
+          dump_line(my_file, first, i-1, prevcount)
+          first = i
+          prevcount = count
+        end
       end
+      dump_line(my_file, first, max, prevcount)
       my_file.print "\n"
     end
     my_file.close

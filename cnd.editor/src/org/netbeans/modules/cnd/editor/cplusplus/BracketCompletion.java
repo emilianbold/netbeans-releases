@@ -218,6 +218,9 @@ public class BracketCompletion {
             Caret caret,
             char ch) throws BadLocationException {
         if (completionSettingEnabled(doc)) {
+            if (doc.getLength() == 0) {
+                return;
+            }
             if (ch == '(' || ch == '[') {
                 TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, dotPos, true);
                 if ((token.id() == CppTokenId.RBRACKET && tokenBalance(doc, CppTokenId.LBRACKET, CppTokenId.RBRACKET, dotPos) != 0)

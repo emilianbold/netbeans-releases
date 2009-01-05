@@ -93,16 +93,20 @@ public class PythonCoverageProviderTest extends PythonTestBase {
     }
 
     private void checkCoverage(String projectPath, String exeFile) throws Exception {
+        checkCoverage(projectPath, exeFile, exeFile);
+    }
+
+    private void checkCoverage(String projectPath, String exeFile, String checkFile) throws Exception {
         recordCoverage(projectPath, exeFile);
         // TODO - assert that we have coverage data run at this point... might be delayed..
         // Perhaps add a little delay
         try {
-            Thread.sleep(4000);
+            Thread.sleep(1000);
         } catch (InterruptedException ire) {
             fail();
         }
 
-        CodeCoverageTestHelper.checkCoverage(this, projectPath, exeFile);
+        CodeCoverageTestHelper.checkCoverage(this, projectPath, checkFile);
     }
 
     public void testCoverage1() throws Exception {
@@ -119,6 +123,10 @@ public class PythonCoverageProviderTest extends PythonTestBase {
 
     public void testCoverage4() throws Exception {
         checkCoverage("testfiles/codecoverage/CoveragePrj", "src/coverageprj3.py");
+    }
+
+    public void testCoverage5() throws Exception {
+        checkCoverage("testfiles/codecoverage/CoveragePrj2", "src/romantest9.py", "src/roman9.py");
     }
 
 }

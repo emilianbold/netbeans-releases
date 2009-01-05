@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.beans.PropertyChangeListener;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /** 
@@ -153,6 +154,13 @@ public abstract class EditorContext {
      * @return URL of source currently selected in editor or empty string
      */
     public abstract String getCurrentURL();
+
+    /**
+     * Returns file object of source currently selected in editor or null
+     *
+     * @return file object of source currently selected in editor or null
+     */
+    public abstract FileObject getCurrentFileObject();
     
     /**
      *  Return the most recent URL or empty string. The difference between this and getCurrentURL()

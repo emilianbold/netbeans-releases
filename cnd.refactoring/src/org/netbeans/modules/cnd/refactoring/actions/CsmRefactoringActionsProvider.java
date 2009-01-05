@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
+import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -108,7 +109,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             return CsmRefactoringUtils.isSupportedReference(ref);
         } else {
-            return CsmKindUtilities.isField(ref);
+            return CsmKindUtilities.isField(ref) || CsmKindUtilities.isClass(ref);
         }
     }
 
@@ -119,14 +120,14 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
-                    return null; // new EncapsulateFieldUI(selectedElement);
+                    return EncapsulateFieldUI.create(selectedElement);
                 }
             };
         } else {
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    throw null; //new EncapsulateFieldUI(selectedElement);
+                    return EncapsulateFieldUI.create(selectedElement);
                 }
             };
         }

@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.python.project.spi.TestRunner;
+import org.netbeans.modules.python.project.ui.actions.CleanCommand;
 import org.netbeans.modules.python.project.ui.actions.Command;
 import org.netbeans.modules.python.project.ui.actions.CopyCommand;
 import org.netbeans.modules.python.project.ui.actions.DebugCommand;
@@ -43,6 +44,7 @@ public class PythonActionProvider implements ActionProvider {
             new CopyCommand(project),
             new MoveCommand(project),
             new RenameCommand(project),
+            new CleanCommand(project),
             new RunSingleCommand(project, false),
             new RunSingleCommand(project, true), // Run as Test
             new RunCommand(project, false),

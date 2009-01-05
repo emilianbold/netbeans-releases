@@ -205,6 +205,12 @@ public final class NbMavenProjectImpl implements Project {
         auxprops = new MavenProjectPropsImpl(this, auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            //#155766 sor of ugly, as not all (but the majority for sure) projects need
+            // a loaded maven project. But will protect from accidental loading in AWT
+            // thread.
+            getOriginalMavenProject();
+        }
     }
 
     public File getPOMFile() {
@@ -291,6 +297,7 @@ public final class NbMavenProjectImpl implements Project {
                 // that will not be used in current pom anyway..
                 // #135070
                 req.setRecursive(false);
+                req.setProperty("netbeans.execution", "true"); //NOI18N
                 MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
                 project = res.getProject();
                 if (res.hasExceptions()) {
@@ -636,18 +643,26 @@ public final class NbMavenProjectImpl implements Project {
 
     public File[] getOtherRoots(boolean test) {
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "src/test" : "src/main"); //NOI18N
-
+        Set<File> toRet = new HashSet<File>();
         File fil = new File(uri);
         if (fil.exists()) {
-            return fil.listFiles(new FilenameFilter() {
-
+            toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && !("webapp".equalsIgnoreCase(name)) /*NOI18N*/ && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
-            });
+            })));
         }
-        return new File[0];
+        URI[] res = getResources(test);
+        for (URI rs : res) {
+            File fl = new File(rs);
+            //in node view we need only the existing ones, if anything else needs all,
+            // a new method is probably necessary..
+            if (fl.exists()) {
+                toRet.add(fl);
+            }
+        }
+        return toRet.toArray(new File[0]);
     }
 
 
