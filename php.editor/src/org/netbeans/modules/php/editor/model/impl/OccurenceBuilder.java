@@ -741,65 +741,65 @@ class OccurenceBuilder {
             String name = currentNodeInfo.getName();
             currentNodeInfo =
                     null;
-            switch (kind) {
-                case FUNCTION:
-                    buildFunctionInvocations(name, fileScope);
-                    buildFunctionDeclarations(name, fileScope);
-                    break;
+            if (name != null && name.trim().length() > 0) {
+                switch (kind) {
+                    case FUNCTION:
+                        buildFunctionInvocations(name, fileScope);
+                        buildFunctionDeclarations(name, fileScope);
+                        break;
 
-                case VARIABLE:
-                    buildVariables(name, fileScope);
-                    buildDocTagsForVars(name, fileScope);
-                    break;
+                    case VARIABLE:
+                        buildVariables(name, fileScope);
+                        buildDocTagsForVars(name, fileScope);
+                        break;
 
-                case STATIC_METHOD:
-                    buildStaticMethodInvocations(name, fileScope);
-                    buildMethodDeclarations(name, fileScope);
-                    break;
+                    case STATIC_METHOD:
+                        buildStaticMethodInvocations(name, fileScope);
+                        buildMethodDeclarations(name, fileScope);
+                        break;
 
-                case FIELD:
-                case STATIC_FIELD:
-                    buildFieldDeclarations(name, fileScope);
-                    buildFieldInvocations(name, fileScope);
-                    buildStaticFieldInvocations(name, fileScope);
-                    buildDocTagsForFields(name, fileScope);
-                    break;
+                    case FIELD:
+                    case STATIC_FIELD:
+                        buildFieldDeclarations(name, fileScope);
+                        buildFieldInvocations(name, fileScope);
+                        buildStaticFieldInvocations(name, fileScope);
+                        buildDocTagsForFields(name, fileScope);
+                        break;
 
-                case CONSTANT:
-                    buildConstantInvocations(name, fileScope);
-                    buildConstantDeclarations(name, fileScope);
-                    break;
+                    case CONSTANT:
+                        buildConstantInvocations(name, fileScope);
+                        buildConstantDeclarations(name, fileScope);
+                        break;
 
-                case CLASS_CONSTANT:
-                case STATIC_CLASS_CONSTANT:
-                    buildStaticConstantInvocations(name, fileScope);
-                    buildStaticConstantDeclarations(name, fileScope);
-                    break;
+                    case CLASS_CONSTANT:
+                    case STATIC_CLASS_CONSTANT:
+                        buildStaticConstantInvocations(name, fileScope);
+                        buildStaticConstantDeclarations(name, fileScope);
+                        break;
 
-                case CLASS_INSTANCE_CREATION:
-                case CLASS:
-                case IFACE:
-                    buildClassNames(name, fileScope);
-                    buildClassIDs(name, fileScope);
-                    buildClassDeclarations(name, fileScope);
-                    buildDocTagsForClasses(name, fileScope);
-                    buildClassInstanceCreation(name, fileScope);
-                    buildInterfaceIDs(name, fileScope);
-                    buildInterfaceDeclarations(name, fileScope);
-                    break;
-                case METHOD:
-                    buildMethodInvocations(name, fileScope);
-                    buildMethodDeclarations(name, fileScope);
-                    break;
-                case INCLUDE:
-                    buildIncludes(name, fileScope);
-                    break;
-                default:
-                    throw new IllegalStateException();
+                    case CLASS_INSTANCE_CREATION:
+                    case CLASS:
+                    case IFACE:
+                        buildClassNames(name, fileScope);
+                        buildClassIDs(name, fileScope);
+                        buildClassDeclarations(name, fileScope);
+                        buildDocTagsForClasses(name, fileScope);
+                        buildClassInstanceCreation(name, fileScope);
+                        buildInterfaceIDs(name, fileScope);
+                        buildInterfaceDeclarations(name, fileScope);
+                        break;
+                    case METHOD:
+                        buildMethodInvocations(name, fileScope);
+                        buildMethodDeclarations(name, fileScope);
+                        break;
+                    case INCLUDE:
+                        buildIncludes(name, fileScope);
+                        break;
+                    default:
+                        throw new IllegalStateException();
 
-            }
-
-
+                }
+            } 
         }
     }
 
