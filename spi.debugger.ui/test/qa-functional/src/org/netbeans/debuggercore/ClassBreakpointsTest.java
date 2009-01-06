@@ -302,15 +302,15 @@ public class ClassBreakpointsTest extends JellyTestCase {
                 }
             }
             new ContinueAction().perform();
-            try {
-                
-                Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1", 10000);
+            /* try {
+                 //Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
+               Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1", 10000);
             } catch (Throwable e) {
                 if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1")) {
                     System.err.println(e.getMessage());
                     throw e;
                 }
-            }
+            } */
             //Class breakpoint hit for class examples.advanced.MemoryView$1
             try {
                 Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
