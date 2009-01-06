@@ -249,8 +249,10 @@ public class MethodChooser implements KeyListener, MouseListener,
             String name = operations[selectedIndex].getMethodName();
             RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
         }
-        releaseListener.actionPerformed(null);
-        releaseListener = null;
+        if (releaseListener != null) {
+            releaseListener.actionPerformed(null);
+            releaseListener = null;
+        }
         isInSelectMode = false;
     }
 
