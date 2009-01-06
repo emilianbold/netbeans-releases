@@ -49,8 +49,7 @@ import org.netbeans.api.project.Project;
 /**
  * Provider of component that will be added to Run customizer panel that will
  * be used for additional customization of set of properties affected by given
- * run configuration. Implementation of the interface should be registered to
- * default lookup (e.g. META-INF/services).
+ * run configuration. Implementation of the interface should be registered using {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @author Milan Kubec
  * @since 1.10
