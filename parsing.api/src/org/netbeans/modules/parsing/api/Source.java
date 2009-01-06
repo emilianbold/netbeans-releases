@@ -158,7 +158,8 @@ public final class Source {
         
         String mimeType = NbEditorUtilities.getMimeType(document);
         if (mimeType == null) {
-            throw new NullPointerException("Netbeans documents must have 'mimeType' property"); //NOI18N
+            throw new NullPointerException("Netbeans documents must have 'mimeType' property: " //NOI18N
+                + document.getClass() + "@" + Integer.toHexString(System.identityHashCode(document))); //NOI18N
         }
 
         synchronized (Source.class) {
