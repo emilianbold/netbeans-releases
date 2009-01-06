@@ -74,19 +74,19 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     
     private FileObject scratch;
     private FileObject projdir;
-    private FileObject extension1;
     private ProjectManager pm;
     private Project p;
     private AntProjectHelper h;
     private GeneratedFilesHelper gfh;
     private ExtImpl extenderImpl;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
-        extension1 = TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
+        TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
         extenderImpl = new ExtImpl();
         MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(extenderImpl));
         pm = ProjectManager.getDefault();
