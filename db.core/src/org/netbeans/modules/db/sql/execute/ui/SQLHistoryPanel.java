@@ -249,7 +249,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         connectionUrlComboBox.setRenderer(new ConnectionUrlRenderer());
 
         jLabel2.setLabelFor(searchTextField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
 
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
