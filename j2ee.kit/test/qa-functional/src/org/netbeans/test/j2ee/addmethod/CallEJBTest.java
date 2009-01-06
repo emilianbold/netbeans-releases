@@ -43,6 +43,8 @@ package org.netbeans.test.j2ee.addmethod;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -50,6 +52,9 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.test.j2ee.*;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
@@ -217,7 +222,7 @@ public class CallEJBTest extends AddMethodBase {
             dialog.clearReferenceName();
             dialog.typeReferenceName(referenceName);
         }
-        
+
         dialog.ok();
         
         if (saveFile) 

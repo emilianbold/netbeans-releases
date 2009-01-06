@@ -41,6 +41,7 @@
 package org.netbeans.test.j2ee.addmethod;
 
 import java.io.IOException;
+import javax.swing.JTextArea;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -128,7 +129,9 @@ public class AddFinderMethodTest extends AddMethodTest {
         fillParameters(dialog);
         setRemoteLocalCheckBox(dialog);
         if (ejbql != null) {
-            new JTextAreaOperator(dialog).setText(ejbql);
+            lblOper = new JLabelOperator(dialog, "EJB QL:");
+            new JTextAreaOperator((JTextArea)lblOper.getLabelFor()).setText(ejbql);
+            //new JTextAreaOperator(dialog).setText(ejbql);
         }
         dialog.ok();
         if (saveFile) {
