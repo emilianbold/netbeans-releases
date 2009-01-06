@@ -66,14 +66,15 @@ public final class DiffViewAction extends AbstractAction {
 
     private final Trouble.ComparisonFailure comparisonFailure;
 
-    public DiffViewAction(Testcase testcase) {
-        Trouble trouble = testcase.getTrouble();
-        if (trouble == null || trouble.getComparisonFailure() == null) {
-            this.comparisonFailure = null;
+    public DiffViewAction(Trouble.ComparisonFailure comparisonFailure) {
+        this.comparisonFailure = comparisonFailure;
+        if (this.comparisonFailure == null) {
             setEnabled(false);
-        } else {
-            this.comparisonFailure = trouble.getComparisonFailure();
         }
+    }
+
+    public DiffViewAction(Testcase testcase) {
+        this(testcase.getTrouble() != null ? testcase.getTrouble().getComparisonFailure() : null);
     }
 
     @Override
