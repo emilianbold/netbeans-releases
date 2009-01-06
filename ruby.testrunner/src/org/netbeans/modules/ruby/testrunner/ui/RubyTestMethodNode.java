@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -128,9 +129,9 @@ public final class RubyTestMethodNode extends TestMethodNode {
         actions.add(getPreferredAction());
         actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_RerunTest"), false));
         actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_DebugTest"), true));
+        actions.add(new DiffViewAction(testcase));
 //        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
         return actions.toArray(new Action[actions.size()]);
     }
-    
-    
+
 }
