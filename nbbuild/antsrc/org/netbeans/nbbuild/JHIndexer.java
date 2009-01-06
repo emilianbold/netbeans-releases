@@ -354,6 +354,7 @@ public class JHIndexer extends MatchingTask {
                     os.close ();
                 }
                 AntClassLoader loader = new AntClassLoader(getProject(), classpath);
+                loader.addLoaderPackageRoot("com.sun.java.help.search");
                 try {
                     Class<?> clazz = loader.loadClass("com.sun.java.help.search.ModifiedIndexer");
                     Method main = clazz.getMethod("main", String[].class);
@@ -368,9 +369,9 @@ public class JHIndexer extends MatchingTask {
                     }
                     main.invoke(null, new Object[] {args.toArray(new String[args.size()])});
                 } catch (InvocationTargetException ite) {
-                    throw new BuildException("Could not run indexer", ite.getTargetException(), getLocation());
+                    throw new BuildException(ite.getTargetException(), getLocation());
                 } catch (Exception e) { // ClassNotFoundException, NoSuchMethodException, ...
-                    throw new BuildException("Could not run indexer", e, getLocation());
+                    throw new BuildException(e, getLocation());
                 }
             } finally {
                 config.delete ();

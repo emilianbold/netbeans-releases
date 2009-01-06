@@ -304,14 +304,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
+                <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
                 <fileset dir="${nb_all}">
                     <include name="apisupport.harness/external/jsearch*.jar"/>
                 </fileset>
                 <fileset dir="${netbeans.dest.dir}">
                     <include name="harness/jsearch*.jar"/>
-                </fileset>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="harness/tasks*.jar"/>
                 </fileset>
             </classpath>
             <include name="**/*.html"/>
