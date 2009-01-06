@@ -103,7 +103,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public boolean isValid() {
-        boolean ok = ( gui != null && gui.getTargetName() != null &&
+        boolean ok = ( gui != null && gui.getTargetName() != null && gui.getTargetGroup() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
         if (!ok) {
