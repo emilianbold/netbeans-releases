@@ -361,7 +361,7 @@ public class FileUtilTest extends NbTestCase {
         FileUtil.setMIMEType("g2", bmpMIMEType);
         assertEquals("Wrong MIME type.", bmpMIMEType, g1FO.getMIMEType());
         assertEquals("Wrong MIME type.", bmpMIMEType, g2FO.getMIMEType());
-        assertEquals("Wrong list of extensions.", Arrays.asList("g1", "g2"), FileUtil.getMIMETypeExtensions(bmpMIMEType));
+        assertTrue("Wrong list of extensions.", Arrays.asList("g1", "g2").containsAll(FileUtil.getMIMETypeExtensions(bmpMIMEType)));
          // {image/bmp=[g2], image/gif=[g1]}
         FileUtil.setMIMEType("g1", gifMIMEType);
         assertEquals("Wrong MIME type.", gifMIMEType, g1FO.getMIMEType());
