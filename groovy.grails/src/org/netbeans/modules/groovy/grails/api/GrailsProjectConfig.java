@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
@@ -50,11 +57,31 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
  */
 public final class GrailsProjectConfig {
 
+    public static final String GRAILS_PORT_PROPERTY = "grails.port"; // NOI18N
+
+    public static final String GRAILS_ENVIRONMENT_PROPERTY = "grails.environment"; // NOI18N
+
+    public static final String GRAILS_DEPLOY_DIR_PROPERTY = "grails.deploy.dir"; // NOI18N
+
+    public static final String GRAILS_AUTODEPLOY_PROPERTY = "grails.deploy.auto"; // NOI18N
+
+    public static final String GRAILS_JAVA_PLATFORM_PROPERTY = "grails.java.platform"; // NOI18N
+
+    public static final String GRAILS_DEBUG_BROWSER_PROPERTY = "grails.debug.browser"; // NOI18N
+
+    public static final String GRAILS_DISPLAY_BROWSER_PROPERTY = "grails.display.browser"; // NOI18N
+
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
     private final Project prj;
 
     private final GrailsSettings settings = GrailsSettings.getInstance();
+
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
+
+    private static final JavaPlatformManager PLATFORM_MANAGER  = JavaPlatformManager.getDefault();
 
     private GrailsProjectConfig(Project prj) {
         this.prj = prj;
@@ -66,8 +93,13 @@ public final class GrailsProjectConfig {
      * @param project project for which the returned configuration will serve
      * @return the configuration of the given project
      */
-    public static GrailsProjectConfig forProject(Project project) {
-        return new GrailsProjectConfig(project);
+    public static synchronized GrailsProjectConfig forProject(Project project) {
+        GrailsProjectConfig config = CONFIG_CACHE.get(project);
+        if (config == null) {
+            config = new GrailsProjectConfig(project);
+            CONFIG_CACHE.put(project, config);
+        }
+        return config;
     }
 
     /**
@@ -79,17 +111,27 @@ public final class GrailsProjectConfig {
         return prj;
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     /**
      * Returns the port configured for the project.
      *
      * @return the port configured for the project
      */
     public String getPort() {
-        String port = settings.getPortForProject(prj);
-        if (port == null) {
-            port = DEFAULT_PORT;
+        synchronized (settings) {
+            String port = settings.getPortForProject(prj);
+            if (port == null) {
+                port = DEFAULT_PORT;
+            }
+            return port;
         }
-        return port;
     }
 
     /**
@@ -99,7 +141,12 @@ public final class GrailsProjectConfig {
      */
     public void setPort(String port) {
         assert port != null;
-        settings.setPortForProject(prj, port);
+        String oldValue;
+        synchronized (settings) {
+            oldValue = getPort();
+            settings.setPortForProject(prj, port);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_PORT_PROPERTY, oldValue, port);
     }
 
     /**
@@ -109,7 +156,9 @@ public final class GrailsProjectConfig {
      *             if no environment has been configured yet
      */
     public GrailsEnvironment getEnvironment() {
-        return settings.getEnvForProject(prj);
+        synchronized (settings) {
+            return settings.getEnvForProject(prj);
+        }
     }
 
     /**
@@ -119,7 +168,12 @@ public final class GrailsProjectConfig {
      */
     public void setEnvironment(GrailsEnvironment env) {
         assert env != null;
-        settings.setEnvForProject(prj, env);
+        GrailsEnvironment oldValue;
+        synchronized (settings) {
+            oldValue = getEnvironment();
+            settings.setEnvForProject(prj, env);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_ENVIRONMENT_PROPERTY, oldValue, env);
     }
 
     /**
@@ -129,7 +183,9 @@ public final class GrailsProjectConfig {
      *             if no deployment dir has been configured yet
      */
     public String getDeployDir() {
-        return settings.getDeployDirForProject(prj);
+        synchronized (settings) {
+            return settings.getDeployDirForProject(prj);
+        }
     }
 
     /**
@@ -139,7 +195,12 @@ public final class GrailsProjectConfig {
      */
     public void setDeployDir(String dir) {
         assert dir != null;
-        settings.setDeployDirForProject(prj, dir);
+        String oldValue;
+        synchronized (settings) {
+            oldValue = getDeployDir();
+            settings.setDeployDirForProject(prj, dir);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_DEPLOY_DIR_PROPERTY, oldValue, dir);
     }
 
     /**
@@ -148,7 +209,9 @@ public final class GrailsProjectConfig {
      * @return the autodeploy flag of the project
      */
     public boolean getAutoDeployFlag() {
-        return settings.getAutoDeployFlagForProject(prj);
+        synchronized (settings) {
+            return settings.getAutoDeployFlagForProject(prj);
+        }
     }
 
     /**
@@ -157,7 +220,12 @@ public final class GrailsProjectConfig {
      * @param flag the autodeploy flag to set
      */
     public void setAutoDeployFlag(boolean flag) {
-        settings.setAutoDeployFlagForProject(prj, flag);
+        boolean oldValue;
+        synchronized (this) {
+            oldValue = getAutoDeployFlag();
+            settings.setAutoDeployFlagForProject(prj, flag);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_AUTODEPLOY_PROPERTY, oldValue, flag);
     }
 
     /**
@@ -167,7 +235,9 @@ public final class GrailsProjectConfig {
      *             if no browser has been configured yet
      */
     public String getDebugBrowser() {
-        return settings.getDebugBrowserForProject(prj);
+        synchronized (settings) {
+            return settings.getDebugBrowserForProject(prj);
+        }
     }
 
     /**
@@ -177,7 +247,68 @@ public final class GrailsProjectConfig {
      */
     public void setDebugBrowser(String browser) {
         assert browser != null;
-        settings.setDebugBrowserProject(prj, browser);
+        String oldValue;
+        synchronized (settings) {
+            oldValue = getDebugBrowser();
+            settings.setDebugBrowserProject(prj, browser);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_DEBUG_BROWSER_PROPERTY, oldValue, browser);
     }
-        
+
+    public JavaPlatform getJavaPlatform() {
+        String platformId;
+        synchronized (settings) {
+            platformId = settings.getJavaPlatformForProject(prj);
+        }
+
+        if (platformId == null) {
+            return JavaPlatform.getDefault();
+        }
+
+        JavaPlatform[] platforms = PLATFORM_MANAGER.getPlatforms(null, new Specification("j2se", null)); //NOI18N
+        for (JavaPlatform platform : platforms) {
+            if (platform.getInstallFolders().size() > 0) {
+                String antName = platform.getProperties().get("platform.ant.name"); //NOI18N
+                if (platformId.equals(antName)) {
+                    return platform;
+                }
+            }
+        }
+        return JavaPlatform.getDefault();
+    }
+
+    public void setJavaPlatform(JavaPlatform platform) {
+        assert platform != null;
+        JavaPlatform oldValue;
+        synchronized (settings) {
+            oldValue = getJavaPlatform();
+            settings.setJavaPlatformForProject(prj, platform.getProperties().get("platform.ant.name"));
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_JAVA_PLATFORM_PROPERTY, oldValue, platform);
+    }
+
+    /**
+     * Returns the display browser flag of the project.
+     *
+     * @return the display browser flag of the project
+     */
+    public boolean getDisplayBrowser() {
+        synchronized (settings) {
+            return settings.getDisplayBrowserForProject(prj);
+        }
+    }
+
+    /**
+     * Sets the display browser flag of the project.
+     *
+     * @param displayBrowser display browser flag to set
+     */
+    public void setDisplayBrowser(boolean displayBrowser) {
+        boolean oldValue;
+        synchronized (this) {
+            oldValue = getDisplayBrowser();
+            settings.setDisplayBrowserForProject(prj, displayBrowser);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
+    }
 }

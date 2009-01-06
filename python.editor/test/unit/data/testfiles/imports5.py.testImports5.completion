@@ -1,0 +1,22 @@
+Code completion result for source line:
+import i|m
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    ---ic                      ---             
+KEYWORD    ---icopen                  ---             
+KEYWORD    ihooks                                     
+KEYWORD    ---imageop                 ---             
+KEYWORD    imaplib                                    
+KEYWORD    imghdr                                     
+KEYWORD    imp                                        
+KEYWORD    imports3                                   
+KEYWORD    imports4                                   
+KEYWORD    imports5                                   
+KEYWORD    imports7                                   
+KEYWORD    imports8                                   
+KEYWORD    imports9                                   
+KEYWORD    ---imputil                 ---             
+KEYWORD    inspect                                    
+KEYWORD    io                                         
+KEYWORD    isql                                       
+KEYWORD    itertools                                  

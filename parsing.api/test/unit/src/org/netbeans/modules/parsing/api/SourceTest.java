@@ -51,6 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 /**
@@ -130,7 +131,7 @@ public class SourceTest extends NbTestCase {
 
         source = null;
         assertGC("Source can't be GCed", sourceRef);
-        
+
         doc = null;
         assertGC("Document can't be GCed", docRef);
     }
@@ -194,7 +195,7 @@ public class SourceTest extends NbTestCase {
         assertNotNull("No Source for " + file, source);
         assertSame("Wrong FileObject", file, source.getFileObject());
         assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
-        
+
         Document doc = openDocument(file);
         assertNotNull("Can't open document for " + file, doc);
         assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
@@ -249,9 +250,29 @@ public class SourceTest extends NbTestCase {
         assertEquals("Wrong mimetype", "text/x-testtesttest", source.getMimeType());
     }
 
+    public void testDOMove154813() throws IOException {
+        FileObject file = createFileObject("test1/empty.txt", "", "\n");
+        DataObject dfile = DataObject.find(file);
+        Document doc = createDocument("text/x-testtesttest", "");
+        doc.putProperty(Document.StreamDescriptionProperty, dfile);
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        FileObject wd = file.getParent().getParent();
+        FileObject nueParent = wd.getFileObject("test2");
+
+        if (nueParent == null) {
+            nueParent = wd.createFolder("test2");
+        }
+        
+        dfile.move(DataFolder.findFolder(nueParent));
+        source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        assertEquals("Correct FileObject", dfile.getPrimaryFile(), source.getFileObject());
+    }
+    
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        FileObject f = workDir.createData(name);
+        FileObject f = FileUtil.createData(workDir, name);
         writeToFileObject(f, documentContent, eol);
         
         return f;

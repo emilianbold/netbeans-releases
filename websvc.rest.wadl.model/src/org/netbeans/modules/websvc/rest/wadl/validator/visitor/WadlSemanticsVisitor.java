@@ -61,7 +61,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  *
  * @author  Ayub Khan
  */
-public class WadlSemanticsVisitor  implements WadlVisitor {
+public class WadlSemanticsVisitor implements WadlVisitor {
     
     private ValidateSupport mValidateSupport = null;
     /** Validate configuration singleton. */
@@ -275,74 +275,65 @@ public class WadlSemanticsVisitor  implements WadlVisitor {
     }
 
     public void visit(Doc doc) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(Grammars grammars) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitChildren(grammars);
     }
 
-    public void visit(HttpMethods message) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Include include) {
+        visitChildren(include);
     }
 
-    public void visit(Include part) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Link link) {
+        visitChildren(link);
     }
 
-    public void visit(Link portType) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Method method) {
+        visitChildren(method);
     }
 
-    public void visit(Method op) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Option option) {
+        visitChildren(option);
     }
 
-    public void visit(Option op) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Param param) {
+        visitChildren(param);
     }
 
-    public void visit(Param op) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Representation rep) {
+        visitChildren(rep);
     }
 
-    public void visit(ParamStyle op) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Request req) {
+        visitChildren(req);
     }
 
-    public void visit(Representation in) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Resource resource) {
+        visitChildren(resource);
     }
 
-    public void visit(Request out) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Resources resources) {
+        visitChildren(resources);
     }
 
-    public void visit(Resource binding) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Response response) {
+        visitChildren(response);
     }
 
-    public void visit(Resources bi) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void visit(Response bo) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void visit(Application application) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(Application app) {
+        visitChildren(app);
     }
 
     public void visit(Fault fault) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitChildren(fault);
     }
     
-    public void visit(ResourceType binding) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(ResourceType resourceType) {
+        visitChildren(resourceType);
     }
 
     public void visit(ExtensibilityElement ee) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitChildren(ee);
     }
 }

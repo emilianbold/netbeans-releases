@@ -177,3 +177,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-spi-actions" value="${javadoc.web.root}/org-netbeans-modules-spi-actions"/>
 <property name="javadoc.docs.org-netbeans-modules-extexecution" value="${javadoc.web.root}/org-netbeans-modules-extexecution"/>
 <property name="javadoc.docs.org-netbeans-modules-gsf-api" value="${javadoc.web.root}/org-netbeans-modules-gsf-api"/>
+<property name="javadoc.docs.org-netbeans-modules-mobility-project" value="${javadoc.web.root}/org-netbeans-modules-mobility-project"/>

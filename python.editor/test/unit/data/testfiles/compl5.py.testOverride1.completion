@@ -1,0 +1,38 @@
+Code completion result for source line:
+class MyTest(unittest.TestCase):
+  |  
+    def f(self)
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTRUCTO __init__(methodName) - overrid             
+METHOD     __call__(args, kwds) - overrid             
+METHOD     __repr__() - override                      
+METHOD     __str__() - override                       
+METHOD     _exc_info() - override          [PRIVATE]  
+METHOD     assertAlmostEqual(first, secon             
+METHOD     assertAlmostEquals(first, seco             
+METHOD     assertEqual(first, second, msg             
+METHOD     assertEquals(first, second, ms             
+METHOD     assertFalse(expr, msg) - overr             
+METHOD     assertNotAlmostEqual(first, se             
+METHOD     assertNotAlmostEquals(first, s             
+METHOD     assertNotEqual(first, second,              
+METHOD     assertNotEquals(first, second,             
+METHOD     assertRaises(excClass, callabl             
+METHOD     assertTrue(expr, msg) - overri             
+METHOD     assert_(expr, msg) - override              
+METHOD     countTestCases() - override                
+METHOD     debug() - override                         
+METHOD     defaultTestResult() - override             
+METHOD     fail(msg) - override                       
+METHOD     failIf(expr, msg) - override               
+METHOD     failIfAlmostEqual(first, secon             
+METHOD     failIfEqual(first, second, msg             
+METHOD     failUnless(expr, msg) - overri             
+METHOD     failUnlessAlmostEqual(first, s             
+METHOD     failUnlessEqual(first, second,             
+METHOD     failUnlessRaises(excClass, cal             
+METHOD     id() - override                            
+METHOD     run(result) - override                     
+METHOD     setUp() - override                         
+METHOD     shortDescription() - override              
+METHOD     tearDown() - override                      

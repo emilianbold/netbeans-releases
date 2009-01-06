@@ -90,8 +90,8 @@ public class APTBracketRecoveryFilter implements TokenStream {
     }     
 
     private Token checkToken(Token last) {
-        int matchedBracket = APTUtils.getMatchBracket(last.getType());
-        int topToken = peek().getType();
+        //int matchedBracket = APTUtils.getMatchBracket(last.getType());
+        //int topToken = peek().getType();
         return null;
     }
     

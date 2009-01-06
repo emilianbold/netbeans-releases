@@ -108,7 +108,7 @@ is the proper place.
   <changes>
      <change id="Toolbars.DnD">
         <api name="awt"/>
-        <summary>Faster Filtering based on FileObjects</summary>
+        <summary>Deprecation of Toolbar drag and drop API</summary>
         <version major="7" minor="5"/>
         <date day="28" month="11" year="2008"/>
         <author login="saubrecht"/>

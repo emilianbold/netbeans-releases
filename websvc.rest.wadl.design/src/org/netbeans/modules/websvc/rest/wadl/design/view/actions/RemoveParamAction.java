@@ -94,7 +94,7 @@ public class RemoveParamAction<T extends WadlComponent> extends AbstractAction{
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if(params.size()<1) return;
+        if(params == null || params.isEmpty()) return;
         boolean singleSelection = params.size()==1;
         String paramName = singleSelection?params.iterator().next().getName():""+params.size();
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation

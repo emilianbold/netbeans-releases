@@ -42,12 +42,15 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
@@ -126,6 +129,7 @@ public class RailsProject extends RubyBaseProject {
             evaluator(),
             new RailsServerManager(this),
             new RailsFileLocator(null, this),
+            new RubyCoverageProvider(this),
             new RubyPlatformProvider(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
@@ -157,7 +161,19 @@ public class RailsProject extends RubyBaseProject {
 
     @Override
     public FileObject[] getTestSourceRootFiles() {
-        return getTestSourceRoots().getRoots();
+        // in a rails project there are no other test roots, and ATM these
+        // are not customizable by the user.
+        // see #151667
+        List<FileObject> result = new ArrayList(2);
+        addIfNotNull(getProjectDirectory().getFileObject("test/"), result); //NOI18N
+        addIfNotNull(getProjectDirectory().getFileObject("spec/"), result); //NOI18N
+        return result.toArray(new FileObject[result.size()]);
+    }
+    
+    private void addIfNotNull(FileObject fo, List<FileObject> result) {
+        if (fo != null) {
+            result.add(fo);
+        }
     }
 
     /**
@@ -172,6 +188,7 @@ public class RailsProject extends RubyBaseProject {
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
+        //XXX: why does this need to return the same roots as for sources?
         if (this.testRoots == null) { //Local caching, no project metadata access
             this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }

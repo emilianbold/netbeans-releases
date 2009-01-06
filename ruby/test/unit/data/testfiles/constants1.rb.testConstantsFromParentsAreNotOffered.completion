@@ -1,0 +1,17 @@
+Code completion result for source line:
+Fcntl::F|
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   FD_CLOEXEC                                 null
+CONSTANT   F_DUPFD                                    null
+CONSTANT   F_GETFD                                    null
+CONSTANT   F_GETFL                                    null
+CONSTANT   F_GETLK                                    null
+CONSTANT   F_RDLCK                                    null
+CONSTANT   F_SETFD                                    null
+CONSTANT   F_SETFL                                    null
+CONSTANT   F_SETLK                                    null
+CONSTANT   F_SETLKW                                   null
+CONSTANT   F_UNLCK                                    null
+CONSTANT   F_WRLCK                                    null
+------------------------------------
+KEYWORD    FALSE                                      null

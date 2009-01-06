@@ -61,13 +61,14 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public class LogReader {
-    private static boolean TRACE = false;
+    private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
     
     private String workingDir;
     private String baseWorkingDir;
@@ -76,7 +77,11 @@ public class LogReader {
     private List<SourceFileProperties> result;
     
     public LogReader(String fileName, String root){
-        this.root = root;
+        if (root.length()>0) {
+            this.root = FileUtil.normalizeFile(new File(root)).getAbsolutePath();
+        } else {
+            this.root = root;
+        }
         this.fileName = fileName;
        
         // XXX
@@ -182,6 +187,10 @@ public class LogReader {
             return false;
         }
 
+        if (Utilities.isWindows() && workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
+            workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
+        }
+
         if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
             if (TRACE) {System.err.print(message);}
             setWorkingDir(workDir);
@@ -192,6 +201,16 @@ public class LogReader {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
+            }
+            if (Utilities.isWindows() && workDir.length()>3 &&
+                workDir.charAt(0)=='/' &&
+                workDir.charAt(2)=='/'){
+                String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
+                if (new File(d).exists()) {
+                    if (TRACE) {System.err.print(message);}
+                    setWorkingDir(d);
+                    return true;
+                }
             }
             if (baseWorkingDir != null) {
                 dir = baseWorkingDir + File.separator + workDir;
@@ -282,23 +301,21 @@ public class LogReader {
             if (end >= line.length() || line.charAt(end)!='-') {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
-            } 
-            
-            else if (start > 0 && line.charAt(start-1)!='/') {
-                // suspected compiler invocation is not first command in line?? -- noway
-                String prefix = line.substring(0, start - 1).trim();
-                // wait! maybe it's called in condition?
-                if (!(line.charAt(start - 1) == ' ' && 
-                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
-                    // or it's a lib compiled by libtool? 
-                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
-                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
-                        // no, it's not a compile line
-                        li.compilerType = CompilerType.UNKNOWN;
-                        // I hope
-                        if (TRACE) {System.err.println("Suspicious line: " + line);}
-                    }
-                }
+//            } else if (start > 0 && line.charAt(start-1)!='/') {
+//                // suspected compiler invocation is not first command in line?? -- noway
+//                String prefix = line.substring(0, start - 1).trim();
+//                // wait! maybe it's called in condition?
+//                if (!(line.charAt(start - 1) == ' ' &&
+//                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
+//                    // or it's a lib compiled by libtool?
+//                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
+//                        if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
+//                            // no, it's not a compile line
+//                            li.compilerType = CompilerType.UNKNOWN;
+//                            // I hope
+//                            if (TRACE) {System.err.println("Suspicious line: " + line);}
+//                        }
+//                    }
             }
         }
         return li;
@@ -306,7 +323,7 @@ public class LogReader {
     
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
-        this.workingDir = workingDir;
+        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
     
     private boolean parseLine(String line){
@@ -342,7 +359,10 @@ public class LogReader {
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
-            StringBuilder out = new StringBuilder(line.substring(0, i-1));
+            StringBuilder out = new StringBuilder();
+            if (i > 0) {
+                out.append(line.substring(0, i-1));
+            }
             line = line.substring(i+1);
             int j = line.indexOf('`'); //NOI18N
             if (j < 0) {

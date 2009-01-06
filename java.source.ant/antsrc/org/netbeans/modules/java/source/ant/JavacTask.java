@@ -104,7 +104,7 @@ public class JavacTask extends Javac {
                 super.execute();
             }
         } else {
-            if (HideOverrideTaskWarning.cleanBuild.get() && getSrcdir() != null) {
+            if (CheckForCleanBuilds.cleanBuild.get() && getSrcdir() != null) {
                 for (String path : getSrcdir().list()) {
                     File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
 

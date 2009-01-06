@@ -62,8 +62,8 @@ public class WriteLockUtils {
 
     private WriteLockUtils(){}
 
-    public static synchronized boolean hasActiveLockFileSigns(final String filePath) {
-        return filePath.indexOf(WriteLockUtils.PREFIX) != -1 && filePath.indexOf(WriteLockUtils.SUFFIX) != -1;
+    public static synchronized boolean hasActiveLockFileSigns(final String filename) {
+        return filename.startsWith(WriteLockUtils.PREFIX) && filename.endsWith(WriteLockUtils.SUFFIX);
     }
     
     public static synchronized boolean isActiveLockFile(final File file) {

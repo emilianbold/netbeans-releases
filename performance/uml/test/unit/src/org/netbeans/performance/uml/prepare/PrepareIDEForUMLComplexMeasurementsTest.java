@@ -100,7 +100,6 @@ public class PrepareIDEForUMLComplexMeasurementsTest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite("Prepare IDE for startup suite for UML Pack");
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(PrepareIDEForUMLComplexMeasurementsTest.class)
-            .addTest("closeWelcome")
             .addTest("closeAllDocuments")
             .addTest("closeMemoryToolbar")
             .addTest("openProjects")
@@ -118,20 +117,6 @@ public class PrepareIDEForUMLComplexMeasurementsTest extends JellyTestCase {
 //        err = System.out;
         err = getLog();
         log = getRef();
-    }
-    
-    /**
-     * Close Welcome.
-     */
-    public void closeWelcome(){
-        try {
-            TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
-            new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-            tComponent.close();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
     }
     
     /**

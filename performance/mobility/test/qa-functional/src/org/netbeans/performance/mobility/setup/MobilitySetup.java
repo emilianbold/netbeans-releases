@@ -62,14 +62,6 @@ public class MobilitySetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
-    public void testCloseAllDocuments() {
-        CommonUtilities.closeAllDocuments();
-    }
-
     public void testCleanTempDir() throws IOException {
         CommonUtilities.cleanTempDir();
     }

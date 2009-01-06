@@ -1,0 +1,2 @@
+|>MARK_OCCURRENCES:toplevelv^ar2<| = 2
+        print |>MARK_OCCURRENCES:toplevelvar2<|

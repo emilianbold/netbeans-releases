@@ -41,7 +41,6 @@
 
 package org.netbeans.performance.enterprise;
 
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -63,10 +62,11 @@ public class MeasureEnterpriseActions2Test {
 
         // EPMeasureActions2
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchemaTest.class)
-                .addTest(BuildComplexProjectTest.class)
+                // needs to be removed and tracked only as regression (no UI resp time) .addTest(BuildComplexProjectTest.class)
                 .addTest(SwitchToDesignViewTest.class)
                 .addTest(SwitchToSchemaViewTest.class)
                 .addTest(SchemaNavigatorDesignViewTest.class)
+                .addTest(SchemaViewSwitchTest.class)
                 .addTest(ApplyDesignPatternTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 

@@ -159,7 +159,6 @@ public final class TestKit {
     
     public static void finalRemove() throws Exception {
         closeProject("JavaApp");
-        closeProject("SVNApplication");
         RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
         RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }

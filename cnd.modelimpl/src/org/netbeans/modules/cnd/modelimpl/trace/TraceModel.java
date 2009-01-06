@@ -109,7 +109,7 @@ public class TraceModel extends TraceModelBase {
 
 	public String getLPS() {
 	    if (time == 0 || lineCount <= 0) {
-		return "N/A"; // NOI18N
+		return "N/A";  // NOI18N
 	    } else {
 		return "" + (lineCount * 1000 / time);
 	    }

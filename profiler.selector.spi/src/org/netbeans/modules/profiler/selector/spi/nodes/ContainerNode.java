@@ -40,56 +40,95 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.lib.profiler.client.ClientUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.openide.util.Lookup;
 
 
 /**
- *
+ * A {@linkplain SelectorNode} with children
  * @author Jaroslav Bachorik
  */
 public abstract class ContainerNode extends SelectorNode {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
     private static final Icon NO_ICON = new ImageIcon();
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /**
      * Creates a new instance of ContainerNode
+     * @param displayName A human readable display name
+     * @param name An internal name
+     * @param icon {@link Icon} to show in the tree
+     * @param parent A parent {@linkplain ContainerNode}
      */
-    public ContainerNode(String displayName, String name, Icon icon, ContainerNode parent) {
-        super(displayName, name, icon, null, parent);
+    public ContainerNode(String name, String displayName, Icon icon, ContainerNode parent) {
+        super(name ,displayName, icon, null, parent);
         setChildren(getChildren());
     }
 
-    public ContainerNode(String displayName, String name, Icon icon) {
-        super(displayName, name, icon, null);
+    public ContainerNode(String name, String displayName, Icon icon, ContainerNode parent, Lookup lookup) {
+        super(name ,displayName, icon, null, parent, lookup);
         setChildren(getChildren());
     }
 
+    public ContainerNode(String name, String displayName, Icon icon, Lookup lookup) {
+        super(name, displayName, icon, null, lookup);
+        setChildren(getChildren());
+    }
+
+    /**
+     * Creates a new instance of ContainerNode without parent
+     * @param displayName A human readable display name
+     * @param name An internal name
+     * @param icon {@link Icon} to show in the tree
+     */
+    public ContainerNode(String name, String displayName, Icon icon) {
+        super(name, displayName, icon, null);
+        setChildren(getChildren());
+    }
+
+    /**
+     * Creates a new instance of ContainerNode without parent and having
+     * the same displayName and name
+     * @param name An internal name - will be used as displayName as well
+     * @param icon {@link Icon} to show in the tree
+     */
     public ContainerNode(String name, Icon icon) {
         this(name, name, icon);
     }
 
+    public ContainerNode(String name, Icon icon, Lookup lookup) {
+        this(name, name, icon, lookup);
+    }
+
+    /**
+     * Creates a new instance of ContainerNode having
+     * the same displayName and name
+     * @param name An internal name - will be used as displayName as well
+     * @param icon {@link Icon} to show in the tree
+     * @param parent A parent {@linkplain ContainerNode}
+     */
     public ContainerNode(String name, Icon icon, ContainerNode parent) {
         this(name, name, icon, parent);
     }
 
+    public ContainerNode(String name, Icon icon, ContainerNode parent, Lookup lookup) {
+        this(name, name, icon, parent, lookup);
+    }
+
+    /**
+     * Creates a default ContainerNode with no parent, no name and no icon
+     */
     public ContainerNode() {
         this("", NO_ICON);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
     @Override
-    public Collection<ClientUtils.SourceCodeSelection> getRootMethods(boolean all) {
-        Collection<ClientUtils.SourceCodeSelection> roots = new ArrayList<ClientUtils.SourceCodeSelection>();
-        ClientUtils.SourceCodeSelection signature = getSignature();
+    public Collection<SourceCodeSelection> getRootMethods(boolean all) {
+        Collection<SourceCodeSelection> roots = new ArrayList<SourceCodeSelection>();
+        SourceCodeSelection signature = getSignature();
 
         if ((all || isFullyChecked()) && (signature != null)) {
             roots.add(signature);
@@ -104,22 +143,19 @@ public abstract class ContainerNode extends SelectorNode {
         return roots;
     }
 
+    /**
+     * Returns the nodes children
+     * @return Returns a {@linkplain SelectorChildren} instance
+     */
     protected abstract SelectorChildren getChildren();
 
-    private boolean getChildrenRootMethods(final Collection<ClientUtils.SourceCodeSelection> roots, boolean all) {
-        boolean foundRmethods = false;
-        Enumeration children = children();
-
-        while (children.hasMoreElements()) {
-            Collection<ClientUtils.SourceCodeSelection> rmethods = ((SelectorNode) children.nextElement()).getRootMethods(all);
-
-            if (!rmethods.isEmpty()) {
-                foundRmethods = true;
-            }
-
-            roots.addAll(rmethods);
-        }
-
-        return foundRmethods;
+    @Override
+    /**
+     * Has no signature - so returning NULL
+     */
+    public SourceCodeSelection getSignature() {
+        return null;
     }
+
+
 }

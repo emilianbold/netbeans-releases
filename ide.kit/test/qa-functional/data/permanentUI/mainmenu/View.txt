@@ -11,5 +11,6 @@
 [ ] Show Line Numbers          S
 [x] Show Diff Sidebar          D
 [ ] Show Versioning Labels     V
+[ ] Synchronize Editor with Views      y
 ============================
 [ ] Full Screen                F

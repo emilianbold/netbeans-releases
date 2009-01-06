@@ -1,0 +1,374 @@
+.t.e.s.t. Keywords
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_KEYWORD     "del", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+FROM            "from", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_KEYWORD     "not", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_KEYWORD     "while", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+ANY_KEYWORD     "as", la=1, st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+ELIF            "elif", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_KEYWORD     "global", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+ANY_KEYWORD     "or", la=1, st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+ANY_KEYWORD     "with", la=1, st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+ANY_KEYWORD     "assert", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+ELSE            "else", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+IF              "if", la=1, st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+PASS            "pass", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_KEYWORD     "yield", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+ANY_KEYWORD     "break", la=1, st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+EXCEPT          "except", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+IMPORT          "import", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+ANY_KEYWORD     "print", la=1, st=INIT
+WHITESPACE      "              ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+CLASS           "class", la=1, st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+ANY_KEYWORD     "exec", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_KEYWORD     "in", la=1, st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+RAISE           "raise", la=1, st=INIT
+WHITESPACE      "              ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+ANY_KEYWORD     "continue", la=1, st=INIT
+WHITESPACE      "  ", la=1, st=INIT
+FINALLY         "finally", la=1, st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+ANY_KEYWORD     "is", la=1, st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+RETURN          "return", la=1, st=INIT
+WHITESPACE      "             ", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+DEF             "def", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_KEYWORD     "for", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_KEYWORD     "lambda", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+TRY             "try", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Decorators
+DECORATOR       "@staticmethod", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+DECORATOR       "@classmethod", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Strings
+STRING_BEGIN    "r'", la=1, st=BEGIN_SHORTSTRING_SINGLE
+STRING_LITERAL  "foo", la=1, st=END_SHORTSTRING_SINGLE
+STRING_END      "'", st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    "UR'", la=1, st=BEGIN_SHORTSTRING_SINGLE
+STRING_LITERAL  "foo", la=1, st=END_SHORTSTRING_SINGLE
+STRING_END      "'", st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    "u"", la=1, st=BEGIN_SHORTSTRING_DOUBLE
+STRING_LITERAL  "foo", la=1, st=END_SHORTSTRING_DOUBLE
+STRING_END      """, st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    "'", la=1, st=BEGIN_SHORTSTRING_SINGLE
+STRING_LITERAL  "foo\\bbar", la=1, st=END_SHORTSTRING_SINGLE
+STRING_END      "'", st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    """, la=1, st=BEGIN_SHORTSTRING_DOUBLE
+STRING_LITERAL  "foo\\nbar", la=1, st=END_SHORTSTRING_DOUBLE
+STRING_END      """, st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    "'''", st=BEGIN_LONGSTRING_SINGLE
+STRING_LITERAL  "triple", la=3, st=END_LONGSTRING_SINGLE
+STRING_END      "'''", st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    """"", st=BEGIN_LONGSTRING_DOUBLE
+STRING_LITERAL  "when no section matches a requested option.", la=3, st=END_LONGSTRING_DOUBLE
+STRING_END      """"", st=INIT
+NEWLINE         "\n", st=INIT
+STRING_BEGIN    """"", st=BEGIN_LONGSTRING_DOUBLE
+STRING_LITERAL  "triple", la=3, st=END_LONGSTRING_DOUBLE
+STRING_END      """"", st=INIT
+----- EOF -----
+
+.t.e.s.t. Integers and Long Integers
+INT_LITERAL     "7", la=1, st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+INT_LITERAL     "2147483647", la=1, st=INIT
+WHITESPACE      "                        ", la=1, st=INIT
+INT_LITERAL     "0177", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+INT_LITERAL     "3L", st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+INT_LITERAL     "79228162514264337593543950336L", st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+INT_LITERAL     "0377L", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+INT_LITERAL     "0x100000000L", st=INIT
+NEWLINE         "\n", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+INT_LITERAL     "79228162514264337593543950336", la=1, st=INIT
+WHITESPACE      "             ", la=1, st=INIT
+INT_LITERAL     "0xdeadbeef", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Floating point numbers
+FLOAT_LITERAL   "3.14", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   "10.", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   ".001", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   "1e100", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   "3.14e-10", la=1, st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   "0e0", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Imaginary literals
+FLOAT_LITERAL   "3.14j", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+FLOAT_LITERAL   "10.j", st=INIT
+WHITESPACE      "    ", la=1, st=INIT
+FLOAT_LITERAL   "10j", st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+FLOAT_LITERAL   ".001j", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+FLOAT_LITERAL   "1e100j", st=INIT
+WHITESPACE      "  ", la=1, st=INIT
+FLOAT_LITERAL   "3.14e-10j", st=INIT
+----- EOF -----
+
+.t.e.s.t. Operators
+ANY_OPERATOR    "+", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "-", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "*", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "**", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "/", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "//", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "%", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+ANY_OPERATOR    "<<", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    ">>", la=1, st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "&", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "|", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "^", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "~", st=INIT
+NEWLINE         "\n", st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    ">", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    ">=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "==", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "!=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "<>", st=INIT
+----- EOF -----
+
+.t.e.s.t. Delimiters
+LPAREN          "(", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+RPAREN          ")", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+LBRACKET        "[", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+RBRACKET        "]", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+LBRACE          "{", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+RBRACE          "}", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+DECORATOR       "@", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+COMMA           ",", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+COLON           ":", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+DOT             ".", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "`", st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    "=", la=1, st=INIT
+WHITESPACE      "       ", la=1, st=INIT
+ANY_OPERATOR    ";", st=INIT
+NEWLINE         "\n", st=INIT
+ANY_OPERATOR    "+=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "-=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "*=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "/=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "//=", st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+ANY_OPERATOR    "%=", st=INIT
+NEWLINE         "\n", st=INIT
+ANY_OPERATOR    "&=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "|=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    "^=", st=INIT
+WHITESPACE      "      ", la=1, st=INIT
+ANY_OPERATOR    ">>=", st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+ANY_OPERATOR    "<<=", st=INIT
+WHITESPACE      "     ", la=1, st=INIT
+ANY_OPERATOR    "**=", st=INIT
+----- EOF -----
+
+.t.e.s.t. Comments
+COMMENT         "# This is a line comment", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+IDENTIFIER      "code", la=1, st=INIT
+LPAREN          "(", st=INIT
+RPAREN          ")", st=INIT
+COMMENT         "#More comments", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Identifiers
+IDENTIFIER      "a", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "ab", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "aB2", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "x", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+IDENTIFIER      "yZ_", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+IDENTIFIER      "z", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Joined Lines
+IF              "if", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "1900", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "year", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "2100", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "1", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "month", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "12", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ESC             "\\", st=INIT
+NEWLINE         "\n", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "1", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "day", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "31", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "0", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "hour", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "24", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ESC             "\\", st=INIT
+NEWLINE         "\n", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "0", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "minute", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "60", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_KEYWORD     "and", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "0", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<=", st=INIT
+WHITESPACE      " ", la=1, st=INIT
+IDENTIFIER      "second", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+ANY_OPERATOR    "<", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "60", la=1, st=INIT
+COLON           ":", st=INIT
+WHITESPACE      "   ", la=1, st=INIT
+COMMENT         "# Looks like a valid date", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+WHITESPACE      "        ", la=1, st=INIT
+RETURN          "return", la=1, st=INIT
+WHITESPACE      " ", la=1, st=INIT
+INT_LITERAL     "1", la=1, st=INIT
+----- EOF -----
+
+.t.e.s.t. Not an identifier, not a keyword
+INT_LITERAL     "2", la=1, st=INIT
+IDENTIFIER      "a", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+IDENTIFIER      "None", la=1, st=INIT
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

@@ -60,7 +60,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.SearchHistory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -80,7 +80,9 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     
             
     private FileDescription.Renderer renderer;
-    
+
+    private final SearchHistory searchHistory;
+
     public FileSearchPanel(FileSearchAction action) {
         this.action = action;
         this.search = new FileSearch( this );
@@ -137,7 +139,14 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                 updateFileName();
             }
         });
-        
+
+        searchHistory = new SearchHistory(FileSearchPanel.class, fileNameTextField);
+    }
+
+    @Override
+    public void removeNotify() {
+        searchHistory.saveHistory();
+        super.removeNotify();
     }
   
     //Good for setting model form any thread  

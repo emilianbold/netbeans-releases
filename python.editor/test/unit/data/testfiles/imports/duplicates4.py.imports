@@ -1,0 +1,11 @@
+Requires user interaction: No
+Unused imports:
+    definitions:Bar
+    definitions:Foo
+    unused1
+Duplicate imports:
+    definitions:Bar
+    definitions:Foo
+Unresolved Symbols:
+    otherMethodInClass
+        *definitions

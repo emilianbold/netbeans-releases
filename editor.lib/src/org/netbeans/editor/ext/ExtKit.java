@@ -66,6 +66,7 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -920,6 +921,7 @@ public class ExtKit extends BaseKit {
                             } else {
                                 uncomment(doc, startPos, lineCount);
                             }
+                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
                         } catch (BadLocationException e) {
                             target.getToolkit().beep();
                         }

@@ -92,7 +92,7 @@ public class ListenersNode extends ContainerNode {
             final Set<SelectorNode> listeners = new HashSet<SelectorNode>();
 
             try {
-                Project project = parent.getProject();
+                Project project = parent.getLookup().lookup(Project.class);
                 final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
 
                 Collection<FileObject> dds = WebProjectUtils.getDeploymentDescriptorFileObjects(project, true);

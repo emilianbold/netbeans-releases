@@ -60,7 +60,8 @@ public class JUnitReportWriter {
 
     /**
      * Possibly write out a report.
-     * @param task the Ant task doing the work (will be used as a class name for the "test", among other purposes)
+     * @param task the Ant task doing the work
+     * @param suiteName name for the reported test (defaults to class name of {@code task}
      * @param reportFile an XML file to create with the report; if null, and there were some failures,
      *                   throw a {@link BuildException} instead
      * @param pseudoTests the results of the "tests", as a map from test name (e.g. <samp>testSomething</samp>)
@@ -69,7 +70,7 @@ public class JUnitReportWriter {
      * @throws BuildException in case <code>reportFile</code> was null
      *                        and <code>pseudoTests</code> contained some non-null values
      */
-    public static void writeReport(Task task, File reportFile, Map<String,String> pseudoTests) throws BuildException {
+    public static void writeReport(Task task, String suiteName, File reportFile, Map<String,String> pseudoTests) throws BuildException {
         if (reportFile == null) {
             StringBuilder errors = new StringBuilder();
             for (Map.Entry<String,String> entry : pseudoTests.entrySet()) {
@@ -89,11 +90,12 @@ public class JUnitReportWriter {
             int failures = 0;
             testsuite.setAttribute("errors", "0");
             testsuite.setAttribute("time", "0.0");
-            testsuite.setAttribute("name", task.getClass().getName()); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+            String name = suiteName != null ? suiteName : task.getClass().getName();
+            testsuite.setAttribute("name", name); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
             for (Map.Entry<String,String> entry : pseudoTests.entrySet()) {
                 Element testcase = reportDoc.createElement("testcase");
                 testsuite.appendChild(testcase);
-                testcase.setAttribute("classname", task.getClass().getName());
+                testcase.setAttribute("classname", name);
                 testcase.setAttribute("name", entry.getKey());
                 testcase.setAttribute("time", "0.0");
                 String msg = entry.getValue();

@@ -124,7 +124,7 @@ final class NodeListener implements MouseListener, KeyListener,
             if (clickCount == 1) {
                 if (insideCheckBox) {
                     assert path != null;
-                    toggleSelection(tree, path);
+                     toggleSelection(tree, path);
                 }
             }
             if (clickCount == 2) {
@@ -765,21 +765,27 @@ final class NodeListener implements MouseListener, KeyListener,
     }
     
     public void keyPressed(KeyEvent e) {
+        final JTree tree = (JTree) e.getSource();
+        ResultModel resultModel = getResultModel(tree);
         if (e.getKeyChar() == ' ') {
-            JTree tree = (JTree) e.getSource();
             TreePath path = tree.getSelectionPath();
             if (path != null) {
-                toggleSelection(tree, path);
+                if (resultModel.searchAndReplace)
+                    toggleSelection(tree, path);
+                else {
+                    if (tree.isCollapsed(path))
+                        tree.expandPath(path);
+                    else
+                        tree.collapsePath(path);
+                }
             }
-        } else if ((e.getKeyCode() == KeyEvent.VK_ENTER)
-                   && (e.getModifiersEx() == 0)) {
-            final JTree tree = (JTree) e.getSource();
+         } else if ((e.getKeyCode() == KeyEvent.VK_ENTER)
+                   && (e.getModifiersEx() == 0))  {
             final TreeSelectionModel selectionModel = tree.getSelectionModel();
             if (selectionModel.getSelectionCount() == 0) {
                 return;
             }
 
-            ResultModel resultModel = getResultModel(tree);
             List<TreePath> mainNodes;
             if (selectionModel.getSelectionCount() == 1) {
                 final TreePath selectedPath = selectionModel.getLeadSelectionPath();
@@ -806,10 +812,8 @@ final class NodeListener implements MouseListener, KeyListener,
         } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
                    && (e.getModifiersEx() == 0)) {
             e.consume();
-            JTree tree = (JTree) e.getSource();
             int selCount = tree.getSelectionCount();
             if (selCount >= 1) {
-                ResultModel resultModel = getResultModel(tree);
                 if (selCount > 1) {
                     showPopup(tree, null, resultModel, null);
                 } else {

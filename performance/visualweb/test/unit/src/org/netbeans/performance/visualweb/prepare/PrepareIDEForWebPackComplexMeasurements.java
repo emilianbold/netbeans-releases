@@ -96,7 +96,6 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
      */
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("openFiles"));
@@ -109,21 +108,6 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
         //        err = System.out;
         err = getLog();
         log = getRef();
-    }
-    
-    /**
-     * Close Welcome.
-     */
-    public void closeWelcome(){
-        try {
-            String TCOName = Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
-            TopComponentOperator tComponent = new TopComponentOperator("Start Page");
-            new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-            tComponent.close();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
     }
     
     /**

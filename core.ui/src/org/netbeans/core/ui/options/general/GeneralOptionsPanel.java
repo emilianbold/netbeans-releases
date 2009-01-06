@@ -504,11 +504,22 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         cbWebBrowser.removeAllItems ();
         String[] tags = editor.getTags ();
-        int i, k = tags.length;
-        for (i = 0; i < k; i++) {
-            cbWebBrowser.addItem (tags [i]);
+        if (tags.length > 0) {
+            for (String tag : tags) {
+                cbWebBrowser.addItem(tag);
+            }
+            cbWebBrowser.setSelectedItem(editor.getAsText());
+            lWebBrowser.setVisible(true);
+            cbWebBrowser.setVisible(true);
+            editBrowserButton.setVisible(true);
+            jSeparator2.setVisible(true);
+        } else {
+            // #153747 hide web browser settings for platform
+            lWebBrowser.setVisible(false);
+            cbWebBrowser.setVisible(false);
+            editBrowserButton.setVisible(false);
+            jSeparator2.setVisible(false);
         }
-        cbWebBrowser.setSelectedItem (editor.getAsText ());
     }
     
     void applyChanges () {

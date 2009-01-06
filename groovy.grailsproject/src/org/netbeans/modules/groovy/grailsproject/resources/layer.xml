@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Build">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.instance"/>
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.instance"/>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
         </folder>
         <folder name="Groovy">
@@ -16,8 +16,8 @@
         <folder name="text">
             <folder name="x-groovy">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.instance"/>
+                    <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.instance"/>
                         <attr name="position" intvalue="0"/>
                     </file>
                     <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.shadow">
@@ -135,11 +135,15 @@
         <folder name="org-netbeans-modules-groovy-grailsproject">
             <folder name="Customizer">
                 <file name="General.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createGeneral"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider.createGeneral"/>
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="Libraries.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider.createLibraries"/>
+                    <attr name="position" intvalue="150"/>
+                </file>
                 <file name="Debugging.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createDebugging"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider.createDebugging"/>
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="Formatting.instance">
@@ -152,6 +156,41 @@
 
             <folder name="Lookup"/>
             
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-gsp">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 

@@ -432,7 +432,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             try
             {
                 dialog.setVisible(true);
-                if (dialogDescriptor.getValue() == DialogDescriptor.YES_OPTION)
+                if (dialogDescriptor.getValue() == confirm)
                 {
                     mProject.removeUMLProjectMetaListener();
 

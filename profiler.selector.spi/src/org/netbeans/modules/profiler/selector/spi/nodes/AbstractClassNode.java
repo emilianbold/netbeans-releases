@@ -40,11 +40,6 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import javax.lang.model.element.NestingKind;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 
 
@@ -53,40 +48,14 @@ import javax.swing.Icon;
  * @author Jaroslav Bachorik
  */
 public abstract class AbstractClassNode extends ContainerNode {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private ClasspathInfo cpInfo;
-    private ElementHandle<TypeElement> classHandle;
     private boolean anonymous;
 
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of AbstractClassNode */
-    public AbstractClassNode(ClasspathInfo cpInfo, Icon icon, TypeElement classElement, ContainerNode parent) {
-        this(cpInfo, icon, classElement, classElement.getSimpleName().toString(), parent);
-        this.cpInfo = cpInfo;
-        this.classHandle = ElementHandle.create(classElement);
-        this.anonymous = classElement.getNestingKind().compareTo(NestingKind.ANONYMOUS) == 0;
-    }
-
-    public AbstractClassNode(ClasspathInfo cpInfo, Icon icon, TypeElement classElement, String className, ContainerNode parent) {
+    public AbstractClassNode(String className, Icon icon, boolean isAnonymous, ContainerNode parent) {
         super(className, icon, parent);
-        this.cpInfo = cpInfo;
-        this.classHandle = ElementHandle.create(classElement);
-        this.anonymous = classElement.getNestingKind().compareTo(NestingKind.ANONYMOUS) == 0;
+        this.anonymous = isAnonymous;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public boolean isAnonymous() {
+    final public boolean isAnonymous() {
         return anonymous;
-    }
-
-    public ElementHandle<TypeElement> getClassHandle() {
-        return classHandle;
-    }
-
-    public ClasspathInfo getCpInfo() {
-        return cpInfo;
     }
 }

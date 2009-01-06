@@ -67,7 +67,7 @@ class TracingTypeDescriptor extends TypeDescriptor {
     }
 
     public String getOuterName() {
-	System.err.printf("TypeDescriptor.(getOuterName)\n", name);
+	System.err.printf("TypeDescriptor.getOuterName(%s)\n", name);
 	return delegate.getOuterName();
     }
 

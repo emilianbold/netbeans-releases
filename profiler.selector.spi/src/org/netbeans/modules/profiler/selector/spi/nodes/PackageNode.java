@@ -40,40 +40,24 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import static org.netbeans.api.java.source.ClassIndex.*;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.modules.profiler.selector.spi.nodes.IconResource;
-import org.openide.filesystems.FileObject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 
 
 /**
- *
+ * A base class for a package node
+ * Concrete subclasses must take care of providing the list of contained packages
+ * and classes
  * @author Jaroslav Bachorik
  */
-public class PackageNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
+public abstract class PackageNode extends ContainerNode {
+    /**
+     * A private implementation of package children
+     */
     private static class PackageChildren extends SelectorChildren<PackageNode> {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
         protected List<SelectorNode> prepareChildren(PackageNode parent) {
             List<SelectorNode> nodes = new ArrayList<SelectorNode>();
             List<PackageNode> subs = getSubpackages(parent);
@@ -84,48 +68,26 @@ public class PackageNode extends ContainerNode {
             return nodes;
         }
 
+        /**
+         *
+         * @param parent Parent package
+         * @return Returns a list of class nodes belonging to the parent package
+         */
         private List<ClassNode> getClasses(final PackageNode parent) {
-            final List<ClassNode> nodes = new ArrayList<ClassNode>();
-            JavaSource source = JavaSource.create(parent.cpInfo, new FileObject[0]);
-
-            try {
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationController controller)
-                                 throws Exception {
-                            controller.toPhase(JavaSource.Phase.PARSED);
-
-                            PackageElement pelem = controller.getElements().getPackageElement(parent.getName());
-
-                            if (pelem != null) {
-                                for (TypeElement type : ElementFilter.typesIn(pelem.getEnclosedElements())) {
-                                    if ((type.getKind() == ElementKind.CLASS) || (type.getKind() == ElementKind.ENUM)) {
-                                        nodes.add(new ClassNode(parent.cpInfo, IconResource.CLASS_ICON, type, parent));
-                                    }
-                                }
-                            } else {
-                                LOGGER.log(Level.FINEST, "Package name {0} resulted into a NULL element", parent.getName()); // NOI18N
-                            }
-                        }
-                    }, true);
-            } catch (IOException ex) {
-                LOGGER.severe(ex.getLocalizedMessage());
-            }
+            List<ClassNode> nodes = parent.getContainedClasses();
 
             Collections.sort(nodes, ClassNode.COMPARATOR);
 
             return nodes;
         }
 
+        /**
+         *
+         * @param parent Parent package
+         * @return Returns a list fo package nodes belonging to the parent package
+         */
         private List<PackageNode> getSubpackages(final PackageNode parent) {
-            ClassIndex index = parent.cpInfo.getClassIndex();
-            List<PackageNode> nodes = new ArrayList<PackageNode>();
-
-            for (String pkgName : index.getPackageNames(parent.getName() + ".", true, parent.scope)) { // NOI18N
-                nodes.add(new PackageNode(parent.cpInfo, pkgName, parent, parent.scope));
-            }
+            List<PackageNode> nodes = parent.getContainedPackages();
 
             Collections.sort(nodes, COMPARATOR);
 
@@ -133,10 +95,14 @@ public class PackageNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
+    /**
+     * Default package name
+     */
     public static final String DEFAULT_NAME = "<default>"; // NOI18N
-    static final Comparator COMPARATOR = new Comparator<PackageNode>() {
+    /**
+     * A {@linkplain Comparator} able to compare {@linkplain PackageNode} instances
+     */
+    public static final Comparator COMPARATOR = new Comparator<PackageNode>() {
         public int compare(PackageNode o1, PackageNode o2) {
             if (o1.getNodeName().equals(PackageNode.DEFAULT_NAME)) {
                 return -1;
@@ -146,44 +112,19 @@ public class PackageNode extends ContainerNode {
         }
     };
 
-    private static final Logger LOGGER = Logger.getLogger(PackageNode.class.getName());
-
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final ClientUtils.SourceCodeSelection signature;
-    private final ClasspathInfo cpInfo;
-    private final Set<SearchScope> scope;
-    private final String name;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
+    protected static final Logger LOGGER = Logger.getLogger(PackageNode.class.getName());
 
     /** Creates a new instance of PackageNode */
-    public PackageNode(final ClasspathInfo cpInfo, final String name, final ContainerNode parent, final Set<SearchScope> scope) {
-        super(stripName(defaultizeName(name)), IconResource.PACKAGE_ICON, parent);
-        this.name = name;
-        this.cpInfo = cpInfo;
-        this.signature = new ClientUtils.SourceCodeSelection(name + ".**", null, null); // NOI18N
-        this.scope = scope;
+    public PackageNode(final String name, final ContainerNode parent) {
+        super(name, stripName(defaultizeName(name)), IconResource.PACKAGE_ICON, parent);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public ClientUtils.SourceCodeSelection getSignature() {
-        return signature;
-    }
-
-    protected SelectorChildren getChildren() {
+    final protected SelectorChildren getChildren() {
         return new PackageChildren();
     }
 
-    ClasspathInfo getCpInfo() {
-        return cpInfo;
-    }
+    abstract protected List<ClassNode> getContainedClasses();
+    abstract protected List<PackageNode> getContainedPackages();
 
     private static String defaultizeName(String name) {
         return ((name == null) || (name.length() == 0)) ? DEFAULT_NAME : name;

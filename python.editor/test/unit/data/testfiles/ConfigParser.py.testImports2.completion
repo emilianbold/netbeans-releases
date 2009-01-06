@@ -1,0 +1,14 @@
+Code completion result for source line:
+import r|e
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    random                                     
+KEYWORD    re                                         
+KEYWORD    readline                                   
+KEYWORD    repr                                       
+KEYWORD    resource                                   
+KEYWORD    ---rexec                   ---             
+KEYWORD    ---rfc822                  ---             
+KEYWORD    rlcompleter                                
+KEYWORD    robotparser                                
+KEYWORD    runpy                                      

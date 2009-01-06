@@ -171,7 +171,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             registerInProject();
         }
         if (this.parameterList == null) {
-            System.err.println("not created list for " + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
+            System.err.println("NO PARAM LIST FOR FUNC:" + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
         }
     }
 

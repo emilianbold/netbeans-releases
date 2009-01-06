@@ -2,7 +2,6 @@ package org.netbeans.modules.groovy.grails.settings;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
@@ -15,7 +14,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel.class)
 public final class GrailsRuntimePanel extends javax.swing.JPanel implements GroovyOptionsSubpanel {
@@ -49,7 +47,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         linkLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Choose")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.chooseDir.text")); // NOI18N
         chooseDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooseDirActionPerformed(evt);
@@ -81,7 +79,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel5)
-                    .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE))
+                    .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooseDir))
             .add(layout.createSequentialGroup()
@@ -103,6 +101,11 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
                     .add(jLabel2)
                     .add(linkLabel)))
         );
+
+        grailsHomeLocation.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.grailsHomeLocation.accessibleName")); // NOI18N
+        grailsHomeLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.grailsHomeLocation.accessibleDescription")); // NOI18N
+        chooseDir.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.chooseDir.accessibleName")); // NOI18N
+        chooseDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.chooseDir.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooseDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDirActionPerformed

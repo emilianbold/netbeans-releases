@@ -1,3 +1,9 @@
+'include', tokenID=preprocessor_include, offset=2163 [44:2/2163-44:9/2170]
+--OWNER:
+    INCLUDE "system.h" [44:1/2162-44:20/2181]
+--RESOLVED TO:
+    INCLUDE "system.h" [44:1/2162-44:20/2181]
+==============================================================
 '"system.h"', tokenID=preprocessor_user_include, offset=2171 [44:10/2171-44:20/2181]
 --OWNER:
     INCLUDE "system.h" [44:1/2162-44:20/2181]

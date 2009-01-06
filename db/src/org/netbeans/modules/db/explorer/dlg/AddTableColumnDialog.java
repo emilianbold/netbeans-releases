@@ -41,33 +41,66 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.sql.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.beans.*;
+import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.ResultSet;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
-import org.openide.*;
-import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.util.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.node.CatalogNode;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
+import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.util.TextFieldValidator;
+import org.netbeans.modules.db.util.ValidableTextField;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+
 
 public class AddTableColumnDialog {
-    static final Logger LOGGER = 
-            Logger.getLogger(AddTableColumnDialog.class.getName());
+    static final Logger LOGGER = Logger.getLogger(AddTableColumnDialog.class.getName());
     boolean result = false;
+    private DialogDescriptor descriptor = null;
+    private NotificationLineSupport statusLine;
     Dialog dialog = null;
     Specification spec;
     AddTableColumnDDL ddl;
@@ -82,13 +115,22 @@ public class AddTableColumnDialog {
     DataModel dmodel = new DataModel();
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) throws DatabaseException {
+    public AddTableColumnDialog(final Specification spe, final TableNode nfo) throws DatabaseException {
         spec = spe;
         try {
-            String table = (String)nfo.get(DatabaseNode.TABLE);
-            String schema = (String)nfo.get(DatabaseNodeInfo.SCHEMA);
-            DriverSpecification drvSpec = nfo.getDriverSpecification();
-            ddl = new AddTableColumnDDL(spec, drvSpec, schema, table);
+            String tableName = nfo.getName();
+            String schemaName = nfo.getSchemaName();
+            String catName = nfo.getCatalogName();
+
+            if (schemaName == null) {
+                schemaName = catName;
+            } else if (catName == null) {
+                catName = schemaName;
+            }
+
+            DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification(catName);
+            
+            ddl = new AddTableColumnDDL(spec, drvSpec, schemaName, tableName);
 
             JLabel label;
             JPanel pane = new JPanel();
@@ -132,6 +174,17 @@ public class AddTableColumnDialog {
             colnamefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnNameTextFieldA11yName"));
             label.setLabelFor(colnamefield);
             pane.add(colnamefield, con);
+            colnamefield.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    validate();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    validate();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    validate();
+                }
+            });
 
             // Column type
 
@@ -352,7 +405,8 @@ public class AddTableColumnDialog {
             // are there primary keys?
             boolean isPK = false;
             try {
-                drvSpec.getPrimaryKeys(table);
+                drvSpec.getPrimaryKeys(tableName);
+
                 ResultSet rs = drvSpec.getResultSet();
 
                 if( rs != null ) {
@@ -528,13 +582,15 @@ public class AddTableColumnDialog {
 
             pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnDialogA11yDesc"));
                   
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener); //NOI18N
+            descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener); //NOI18N
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
+            statusLine = descriptor.createNotificationLineSupport();
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
+            validate();
         } catch (MissingResourceException e) {
             e.printStackTrace();
         }
@@ -546,19 +602,37 @@ public class AddTableColumnDialog {
     }
 
     private boolean validate() {
-        Vector cols = dmodel.getData();
         String colname = colnamefield.getText();
-        if (colname == null || colname.length()<1)
+        if (colname == null || colname.length() < 1) {
+            statusLine.setInformationMessage(bundle.getString("AddTableColumn_EmptyColName"));
+            updateOK(false);
             return false;
+        }
 
-        Enumeration colse = cols.elements();
-        while(colse.hasMoreElements())
-            if (!((ColumnItem)colse.nextElement()).validate())
+        statusLine.clearMessages();
+        updateOK(true);
+
+        Enumeration colse = dmodel.getData().elements();
+        while(colse.hasMoreElements()) {
+            ColumnItem ci = (ColumnItem)colse.nextElement();
+            if (!ci.validate()) {
+                // Model is updated only after focus from a field is lost...
+                // ... so we cannot test this here ...
+                // statusLine.setErrorMessage(bundle.getString("AddTableColumn_InvalidColInfo")+ci.getName());
+                // updateOK(false);
                 return false;
+            }
+        }
 
         return true;
     }
 
+    private void updateOK(boolean valid) {
+        if (descriptor != null) {
+            descriptor.setValid(valid);
+        }
+    }
+    
     public String getColumnName() {
         return colname;
     }

@@ -89,6 +89,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            return null;
+        }
         if (inner.equals(getCurrentElement())) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);

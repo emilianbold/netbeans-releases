@@ -1,0 +1,5 @@
+    def set^up(self):
+        -----
+HINT:Create document comment
+FIX:Add a one-liner docstring
+FIX:Add a multi-line docstring

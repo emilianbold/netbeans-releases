@@ -48,13 +48,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -206,6 +206,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
+                error = validateProjectDirectory();
+                if (error != null) {
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
+                    return false;
+                }
                 break;
             case EXISTING:
                 String sourcesFolder = configureProjectPanelVisual.getSourcesFolder();
@@ -222,6 +227,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 error = validateProject();
                 if (error != null) {
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    return false;
+                }
+                error = validateProjectDirectory();
+                if (error != null) {
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
                 break;
@@ -408,20 +418,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             if (!sources.isDirectory()) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
-            String[] files = sources.list();
-            if (files == null || files.length == 0) {
-                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesEmpty");
-            }
         }
 
-        if (configureProjectPanelVisual.isProjectFolderUsed()) {
-            // project folder used => validate relativity of sources and project folder
-            File projectFolder = getProjectFolderFile();
-            if (projectFolder != null
-                    && PropertyUtils.relativizeFile(FileUtil.normalizeFile(projectFolder), sources) == null) {
-                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAndProjectCannotBeRelativized");
-            }
-        } else {
+        if (!configureProjectPanelVisual.isProjectFolderUsed()) {
             // project folder not used => validate sources as project folder
             if (isProjectAlready(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
@@ -436,6 +435,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         switch (wizardType) {
             case NEW:
                 warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
+                break;
+            case EXISTING:
+                warnIfEmptySources(sourcesLocation);
                 break;
         }
 
@@ -460,6 +462,21 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
     }
 
+    // #154874
+    private String validateProjectDirectory() {
+        File[] fsRoots = File.listRoots();
+        if (fsRoots == null || fsRoots.length == 0) {
+            // definitely should not happen
+            return null;
+        }
+        File projectDirectory = configureProjectPanelVisual.isProjectFolderUsed() ? getProjectFolderFile() : getSourcesFolder();
+        assert projectDirectory != null;
+        if (Arrays.asList(fsRoots).contains(projectDirectory)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderIsRoot");
+        }
+        return null;
+    }
+
     private boolean isRunConfigurationStepValid() {
         Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
         if (isValid != null) {
@@ -477,6 +494,17 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // folder exists and is not empty - but just warning
             String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "NotEmpty");
             descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
+        }
+    }
+
+    private void warnIfEmptySources(String location) {
+        File destFolder = new File(location);
+        assert destFolder.isDirectory() : "Sources directory must exist: " + location;
+        File[] kids = destFolder.listFiles();
+        assert kids != null : "Sources directory should have children: " + location;
+        if (kids.length == 0) {
+            // folder is empty - but just warning
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesEmpty"));
         }
     }
 

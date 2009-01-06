@@ -50,7 +50,6 @@ import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import java.util.Arrays;
 import java.util.List;
 import org.openide.util.NbBundle;

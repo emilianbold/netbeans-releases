@@ -1,4 +1,5 @@
 [usersubs]
+nbpython-commits@netbeans.org=o.jython/*,o.antlr3/*,python.console/*,python.core/*,python.debugger/*,python.editor/*,python.help/*,python.platform/*,python.project/*,python.options/*,python.tests/*
 cvs@ant.netbeans.org=o.apache.tools.ant.module*/*,ant.*/*,project.ant/*
 cvs@apisupport.netbeans.org=apisupport.*/*,timers/*
 cvs@autoupdate.netbeans.org=autoupdate.*/*
@@ -51,7 +52,7 @@ cvs@profiler.netbeans.org=lib.profiler*/*,profiler*/*
 cvs@projects.netbeans.org=project.libraries/*,projectapi/*,projectui/*,projectuiapi/*,queries/*,tasklist.projectint/*
 cvs@properties.netbeans.org=properties/*,properties.syntax/*
 cvs@refactoring.netbeans.org=refactoring.api/*,refactoring.java/*
-cvs@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,gsf/*,gsf.api/*,gsfpath.api/*,o.jruby/*,o.kxml2/*,languages.yaml/*
+cvs@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,gsf/*,gsf.api/*,gsfpath.api/*,gsf.testrunner/*,o.jruby/*,o.kxml2/*,languages.yaml/*
 cvs@schema2beans.netbeans.org=schema2beans/*
 cvs@scripting.netbeans.org=languages.bat/*,languages.javascript/*,languages.sh/*,javascript.editing/*,javascript.refactoring/*,javascript.hints/*,o.mozilla.rhino.patched/*
 cvs@serverplugins.netbeans.org=j2ee.jboss4/*,server/*,j2ee.sun.appsrv/*,j2ee.sun.appsrv81/*,j2ee.sun.dd/*,j2ee.sun.ddui/*,j2ee.weblogic9/*,j2ee.websphere6/*

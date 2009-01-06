@@ -64,7 +64,6 @@ public class LocalHistoryTestSuite extends JellyTestCase {
                 .addTest(LocalHistoryViewTest.class, 
                 "testLocalHistoryInvoke",
                 "testLocalHistoryRevertFromHistory",
-//                "testLocalHistoryDeleteFromHistory",
 //                "testLocalHistoryRevisionCountAfterModification",
                 "testLocalHistoryNewFileInNewPackage",
                 "testLocalHistoryRevertDeleted",

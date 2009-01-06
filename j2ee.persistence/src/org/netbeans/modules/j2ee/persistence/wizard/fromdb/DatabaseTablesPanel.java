@@ -289,6 +289,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 datasource = each;
             }
         }
+        
+        // The datasource can be null if the dsProvider.getDataSources() is empty 
+        // or the jndiName can not be found. See issue 154641
+        if(datasource == null) {
+            return false;
+        }
 
         List<DatabaseConnection> dbconns = findDatabaseConnections(datasource);
         if (dbconns.size() == 0) {

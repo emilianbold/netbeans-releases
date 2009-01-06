@@ -1,0 +1,6 @@
+    |>MARK_OCCURRENCES:newformat<| = []
+    push = |>MARK_OCCURRENCES:newformat<|.append
+                    |>MARK_OCCURRENCES:new^format<|.append(zreplace)
+                    |>MARK_OCCURRENCES:newformat<|.append(Zreplace)
+    |>MARK_OCCURRENCES:newformat<| = "".join(|>MARK_OCCURRENCES:newformat<|)
+    return _time.strftime(|>MARK_OCCURRENCES:newformat<|, timetuple)

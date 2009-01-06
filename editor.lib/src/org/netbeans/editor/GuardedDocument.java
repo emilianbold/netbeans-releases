@@ -46,6 +46,8 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Style;
@@ -80,6 +82,9 @@ public class GuardedDocument extends BaseDocument
 
     private static final boolean debugAtomic = Boolean.getBoolean("netbeans.debug.editor.atomic"); // NOI18N
     private static final boolean debugAtomicStack = Boolean.getBoolean("netbeans.debug.editor.atomic.stack"); // NOI18N
+
+    // -J-Dorg.netbeans.editor.GuardedDocument.level=FINEST
+    private static final Logger LOG = Logger.getLogger(GuardedDocument.class.getName());
 
     // Add the attributes to sets
     static {
@@ -211,22 +216,31 @@ public class GuardedDocument extends BaseDocument
             }
         }
 
-        if (text.length() > 0
-                && (rel & MarkBlock.OVERLAP) != 0
+        boolean guarded = (rel & MarkBlock.OVERLAP) != 0
                 && rel != MarkBlock.INSIDE_END // guarded blocks have insertAfter endMark
-                && !(text.charAt(text.length() - 1) == '\n'
-                     && rel == MarkBlock.INSIDE_BEGIN)
-           ) {
+                && !(text.charAt(text.length() - 1) == '\n' && rel == MarkBlock.INSIDE_BEGIN);
+        if (guarded) {
             if (!breakGuarded || atomicAsUser) {
-                throw new GuardedException(
-                    MessageFormat.format(
-                        NbBundle.getBundle(BaseKit.class).getString(FMT_GUARDED_INSERT_LOCALE),
-                        new Object [] {
-                            new Integer(offset)
-                        }
-                    ),
-                    offset
-                );
+                CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+                // Allow mod when inserting "inside" line and right at the begining of the guarded block
+                boolean insertAtLineBegin = (offset == 0 || docText.charAt(offset - 1) == '\n');
+                guarded = (rel != MarkBlock.INSIDE_BEGIN) || insertAtLineBegin;
+                if (guarded) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("GuardedDocument.preInsertCheck(): offset:" + Utilities.debugPosition(this, offset) +
+                                ", relation: " + rel + "; guardedBlockChain:\n" + guardedBlockChain + "\n");
+                    }
+
+                    throw new GuardedException(
+                        MessageFormat.format(
+                            NbBundle.getBundle(BaseKit.class).getString(FMT_GUARDED_INSERT_LOCALE),
+                            new Object [] {
+                                new Integer(offset)
+                            }
+                        ),
+                        offset
+                    );
+                }
             }
         }
     }
@@ -248,11 +262,27 @@ public class GuardedDocument extends BaseDocument
             }
         }
 
-        if ((rel & MarkBlock.OVERLAP) != 0
-                || (rel == MarkBlock.CONTINUE_BEGIN
-                    && !(offset == 0 || getChars(offset - 1, 1)[0] == '\n'))
-           ) {
+        // Check if removed block overlaps any guarded block(s)
+        // Also check that if an area right before GB gets removed (including ending newline)
+        // that the area does not start in the middle of the line (GB would then start in the middle of line
+        // after the removal).
+        // For GBs that already start in the middle of a line this does not apply
+        boolean guarded = ((rel & MarkBlock.OVERLAP) != 0);
+        if (!guarded && (rel == MarkBlock.CONTINUE_BEGIN)) { // GB starts right after removed area
+            CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+            int gbStartOffset = offset + len;
+            // To allow removal either GB starts in a middle of line
+            // or (if starts at line begining) check that a character in front of first removed char is newline
+            boolean gbStartsAtLineBegin = (gbStartOffset == 0 || docText.charAt(gbStartOffset - 1) == '\n');
+            guarded = gbStartsAtLineBegin && (offset != 0 && docText.charAt(offset - 1) != '\n');
+        }
+        if (guarded) {
             if (!breakGuarded || atomicAsUser) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("GuardedDocument.preRemoveCheck(): offset:" + Utilities.debugPosition(this, offset) +
+                            ", relation: " + rel + "; guardedBlockChain:\n" + guardedBlockChain + "\n");
+                }
+
                 // test whether the previous char before removed text is '\n'
                 throw new GuardedException(
                     MessageFormat.format(

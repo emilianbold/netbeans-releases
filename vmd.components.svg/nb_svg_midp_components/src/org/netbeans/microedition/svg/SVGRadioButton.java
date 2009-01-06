@@ -44,7 +44,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *          &lt;text display="none">type=text&lt;/text>
  *       &lt;/g>
  *
- *       &lt;g id="radio_female" transform="translate(7,33)">
+ *       &lt;g> id="radio_female" transform="translate(7,33)">
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=radio&lt;/text>
  *

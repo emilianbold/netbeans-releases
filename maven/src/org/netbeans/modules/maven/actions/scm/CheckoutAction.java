@@ -40,8 +40,10 @@ package org.netbeans.modules.maven.actions.scm;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.AbstractAction;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.actions.ActionsUtil;
 import org.netbeans.modules.maven.actions.scm.ui.CheckoutUI;
@@ -68,16 +70,17 @@ import org.openide.util.TaskListener;
 public class CheckoutAction extends AbstractAction {
 
     private Artifact artifact;
+    private List<ArtifactRepository> repos;
 
-    public CheckoutAction(Artifact artifact) {
+    public CheckoutAction(Artifact artifact, List<ArtifactRepository> repos) {
         putValue(NAME, NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
         this.artifact = artifact;
-
+        this.repos = repos;
 
     }
 
     public void actionPerformed(ActionEvent e) {
-        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact);
+        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
 
         CheckoutUI checkoutUI = new CheckoutUI(artifact, readMavenProject.getScm());
         DialogDescriptor dd = new DialogDescriptor(checkoutUI,  NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
@@ -120,7 +123,7 @@ public class CheckoutAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-         MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact);
+        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
         return readMavenProject!=null && readMavenProject.getScm() != null;
     }
 }

@@ -49,15 +49,21 @@ import org.netbeans.modules.php.editor.model.Occurence;
  *
  * @author Radek Matous
  */
-class OccurenceImpl<TDeclaration extends ModelElement> implements Occurence<TDeclaration> {
+class OccurenceImpl implements Occurence {
     private OffsetRange occurenceRange;
-    private TDeclaration declaration;
-    private List<? extends TDeclaration> allDeclarations;
+    private ModelElement declaration;
+    private List<? extends ModelElement> allDeclarations;
     private FileScope fileScope;
+    private ModelElement gotDeclaration;
 
-    public OccurenceImpl(List<? extends TDeclaration> allDeclarations, OffsetRange occurenceRange,FileScope fileScope) {
+
+    public OccurenceImpl(List<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScope fileScope) {
+        this(allDeclarations, ModelUtils.getFirst(allDeclarations), occurenceRange, fileScope);
+    }
+
+    public OccurenceImpl(List<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScope fileScope) {
         this.allDeclarations = allDeclarations;
-        this.declaration = ModelUtils.getFirst(allDeclarations);
+        this.declaration = declaration;
         //TODO: wrong bugfix when sometimes is offered just one declaration
         if (this.allDeclarations.size() == 1) {
             this.allDeclarations = null;
@@ -66,65 +72,80 @@ class OccurenceImpl<TDeclaration extends ModelElement> implements Occurence<TDec
         this.fileScope = fileScope;
     }
 
-    public OccurenceImpl(TDeclaration declaration, OffsetRange occurenceRange, FileScope fileScope) {
+    public OccurenceImpl(ModelElement declaration, OffsetRange occurenceRange, FileScope fileScope) {
         this.occurenceRange = occurenceRange;
         this.declaration = declaration;
         this.fileScope = fileScope;
     }
 
-    public TDeclaration getDeclaration() {
+    public ModelElement geModelElement() {
         return declaration;
     }
 
-    public OffsetRange getOffsetRange() {
+    public OffsetRange getOccurenceRange() {
         return occurenceRange;
     }
 
     public int getOffset() {
-        return getOffsetRange().getStart();
+        return getOccurenceRange().getStart();
     }
 
     @SuppressWarnings("unchecked")
-    public List<? extends TDeclaration> getAllDeclarations() {
+    public List<? extends ModelElement> getAllDeclarations() {
+        if ((gotDeclaration != null)) {
+            return Collections.<ModelElement>emptyList();
+        }
         if (allDeclarations == null) {
-            allDeclarations = Collections.<TDeclaration>emptyList();
-            ModelScopeImpl modelScope = (ModelScopeImpl) ModelUtils.getModelScope(getDeclaration());
+            allDeclarations = Collections.<ModelElement>emptyList();
+            ModelScopeImpl modelScope = (ModelScopeImpl) ModelUtils.getModelScope(geModelElement());
             IndexScopeImpl indexScope = modelScope.getIndexScope();
-            switch (getDeclaration().getPhpKind()) {
+            switch (geModelElement().getPhpKind()) {
                 case CONSTANT:
-                    allDeclarations = (List<TDeclaration>) indexScope.getConstants(getDeclaration().getName());
+                    allDeclarations = indexScope.getConstants(geModelElement().getName());
                     break;
                 case FUNCTION:
-                    allDeclarations = (List<TDeclaration>) indexScope.getFunctions(getDeclaration().getName());
+                    allDeclarations = indexScope.getFunctions(geModelElement().getName());
                     break;
                 case CLASS:
-                    allDeclarations = (List<TDeclaration>) indexScope.getClasses(getDeclaration().getName());
+                    allDeclarations = indexScope.getClasses(geModelElement().getName());
                     break;
                 case IFACE:
-                    allDeclarations = (List<TDeclaration>) indexScope.getInterfaces(getDeclaration().getName());
+                    allDeclarations = indexScope.getInterfaces(geModelElement().getName());
                     break;
                 case METHOD:
-                    allDeclarations = (List<TDeclaration>) indexScope.getMethods((ClassScopeImpl) getDeclaration().getInScope(),
-                            getDeclaration().getName());
+                    allDeclarations = indexScope.getMethods((ClassScopeImpl) geModelElement().getInScope(),
+                            geModelElement().getName());
                     break;
                 case FIELD:
-                    allDeclarations = (List<TDeclaration>) indexScope.getFields((ClassScopeImpl) getDeclaration().getInScope(),
-                            getDeclaration().getName());
+                    allDeclarations = indexScope.getFields((ClassScopeImpl) geModelElement().getInScope(),
+                            geModelElement().getName());
                     break;
                 case CLASS_CONSTANT:
                     //TODO: not implemented yet
                 case VARIABLE:
                 case INCLUDE:
-                    allDeclarations = Collections.<TDeclaration>singletonList(declaration);
+                    allDeclarations = Collections.<ModelElement>singletonList(declaration);
                     break;
                 default:
-                    throw new UnsupportedOperationException(getDeclaration().getPhpKind().toString());
+                    throw new UnsupportedOperationException(geModelElement().getPhpKind().toString());
             }
         }
         return this.allDeclarations;
     }
 
-    public List<Occurence<? extends ModelElement>> getAllOccurences() {
+    public List<Occurence> getAllOccurences() {
         return ModelVisitor.getAllOccurences(fileScope,this);
+    }
+
+    public ModelElement getDeclaration() {
+        return geModelElement();
+    }
+
+    public void setGotoDeclaratin(ModelElement gotDeclaration) {
+        this.gotDeclaration = gotDeclaration;
+    }
+
+    public ModelElement gotoDeclaratin() {
+        return (gotDeclaration != null) ? gotDeclaration : getDeclaration();
     }
 }

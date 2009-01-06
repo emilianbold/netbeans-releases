@@ -139,6 +139,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
     }
 
+    public void testTypesInPHPDOC4() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|^", false);
+    }
+
+    public void testTypesInPHPDOC5() throws Exception {
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|   text|^", false);
+    }
+
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
@@ -367,10 +375,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     // #132294 [cc] cc for variables in strings not working if there are non-ws chars preceding the variablle
     public void test132294() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $ts^", false);
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $tst13229^", false);
     }
     public void test132294_1() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$tst13229^", false);
     }
     // #142234 $t->| shouldn't propose __construct()
     public void test142234() throws Exception {
@@ -438,6 +446,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void test149519() throws Exception {
         checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
+    }
+    public void test154055() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue154055.php", "$book->^", false);
     }
     // tests for class declaration until '{' like "class name extends MyClass  "
     public void testClsDeclaration() throws Exception {
@@ -585,9 +596,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarAssignment_16() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarA2->^", false);
     }
-    public void testVarAssignment_17() throws Exception {
+    /*public void testVarAssignment_17() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarCErr->^", false);
-    }
+    }*/
     public void testVarAssignment_18() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$aParam2->^", false);
     }
@@ -623,6 +634,32 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testTypeInCatch() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);
+    }
+
+    public void testMixedType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBookMagazine()->^", false);
+    }
+    public void testMixedType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "$bm->^", false);
+    }
+    public void testMixedType03() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
+    }
+
+    public void testVarTypeCommentVariable01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $^", false);
+    }
+
+    public void testVarTypeCommentVariable02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hell^", false);
+    }
+
+    public void testVarTypeCommentType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello ^", false);
+    }
+
+    public void testVarTypeCommentType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello Te^", false);
     }
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {

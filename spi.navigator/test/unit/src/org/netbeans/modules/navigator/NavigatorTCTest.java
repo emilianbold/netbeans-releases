@@ -322,6 +322,8 @@ public class NavigatorTCTest extends NbTestCase {
             // change provider's lookup content and check again, to test infrastructure
             // ability to listen to client's lookup content change
             provider.changeLookup();
+            waitForChange();
+            
             actNodes = navTC.getActivatedNodes();
             realContent = provider.getCurLookupContent();
             tcDisplayName = navTC.getDisplayName();

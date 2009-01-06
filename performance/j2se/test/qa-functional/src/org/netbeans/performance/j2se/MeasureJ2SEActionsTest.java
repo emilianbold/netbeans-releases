@@ -86,6 +86,7 @@ public class MeasureJ2SEActionsTest {
         .addTest(SwitchViewTest.class)
         .addTest(TypingInEditorTest.class)
         .addTest(RefactorFindUsagesTest.class)
+        .addTest(SearchTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
  
         return suite;

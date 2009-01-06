@@ -30,7 +30,7 @@ public class ParamImpl extends NamedImpl implements Param {
     }
 
     public void addOption(Option option) {
-        addAfter(OPTION_PROPERTY, option, TypeCollection.FOR_PARAM.types());
+        addAfter(OPTION_PROPERTY, option, TypeCollection.FOR_OPTION.types());
     }
 
     public void removeOption(Option option) {
@@ -42,7 +42,7 @@ public class ParamImpl extends NamedImpl implements Param {
     }
 
     public void addLink(Link option) {
-        addAfter(LINK_PROPERTY, option, TypeCollection.FOR_PARAM.types());
+        addAfter(LINK_PROPERTY, option, TypeCollection.FOR_LINK.types());
     }
 
     public void removeLink(Link option) {

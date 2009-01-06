@@ -40,15 +40,13 @@
 
 package org.netbeans.modules.profiler.j2ee.selector;
 
+import java.util.Collections;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.openide.util.NbBundle;
-import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
+import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
 
@@ -56,67 +54,23 @@ import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder.class)
-public class PlainWebSelectionTreeBuilder implements SelectionTreeBuilder {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String DISPLAY_NAME = NbBundle.getMessage(PlainWebSelectionTreeBuilder.class,
-                                                                   "PlainWebSelectionTreeBuilder_DisplayName"); // NOI18N
-                                                                                                                // -----
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of PlainWebSelectionTreeBuilder */
-    public PlainWebSelectionTreeBuilder() {
+public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
+    public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
+        super(new Type("web-application", "Web Applications View"), isPreferred, project);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    public List<SelectorNode> buildSelectionTree() {
+        SelectorNode projectNode = new ProjectNode(project) {
 
-    public boolean isDefault() {
-        return false;
-    }
-
-    public String getDisplayName() {
-        return DISPLAY_NAME;
-    }
-
-    public String getID() {
-        return "J2EE/WEB"; // NOI18N
-    }
-
-    public boolean isPreferred(Project project) {
-        return isWebProject(project);
-    }
-
-    public List<SelectorNode> buildSelectionTree(final Project project, final boolean includeSubprojects) {
-        List<SelectorNode> nodes = new ArrayList<SelectorNode>();
-        SelectorNode root = new ProjectNode(project, includeSubprojects) {
-            @Override
             protected SelectorChildren getChildren() {
                 return new WebProjectChildren(project);
             }
         };
-
-        nodes.add(root);
-
-        return nodes;
+        return Collections.singletonList(projectNode);
     }
 
-    public boolean supports(Project project) {
-        return isWebProject(project);
-    }
-
-    public String toString() {
-        return getDisplayName();
-    }
-
-    private boolean isWebProject(Project project) {
-        if (project == null) {
-            return false;
-        }
-
-        return !WebProjectUtils.getDeploymentDescriptorFileObjects(project, true).isEmpty();
+    @Override
+    public int estimatedNodeCount() {
+        return 1;
     }
 }

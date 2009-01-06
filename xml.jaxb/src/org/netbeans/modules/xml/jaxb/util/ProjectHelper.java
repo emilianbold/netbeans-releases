@@ -892,6 +892,13 @@ public class ProjectHelper {
                         JAXBWizModuleConstants.JAXB_COMPILE_TARGET_DEPENDS,
                         JAXBWizModuleConstants.JAXB_COMPILE_TARGET);
                 ProjectManager.getDefault().saveProject(project);
+                String buildDir = getProjectBuildDir(project);
+                if (project.getProjectDirectory() != null){
+                    FileObject buildFo = project.getProjectDirectory().getFileObject(buildDir);
+                    if (buildFo != null){
+                        buildFo.refresh();
+                    }
+                }
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);

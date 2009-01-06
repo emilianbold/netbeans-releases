@@ -78,6 +78,7 @@ import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.rave.designtime.faces.FacesDesignProperty;
 import org.netbeans.modules.visualweb.propertyeditors.binding.data.TabbedDataBindingPanel;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
+import org.openide.awt.Mnemonics;
 
 public class ValueBindingPropertyEditor implements PropertyEditor, ExPropertyEditor, FacesBindingPropertyEditor, BindingTargetCallback,
         com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor {
@@ -138,8 +139,8 @@ public class ValueBindingPropertyEditor implements PropertyEditor, ExPropertyEdi
             
             useValueUseBindingGroup = new ButtonGroup();
             
-            useBindingButton = new JRadioButton(bundle.getMessage("LBL_UseBindingRadionButton")); // NOI18N
-            useBindingButton.setMnemonic(bundle.getMessage("LBL_UseBindingRadionButton_Mnemonic").charAt(0)); // NOI18N
+            useBindingButton = new JRadioButton(); // NOI18N
+            Mnemonics.setLocalizedText(useBindingButton, bundle.getMessage("LBL_UseBindingRadionButton"));
             useBindingButton.getAccessibleContext().setAccessibleName(bundle.getMessage("LBL_UseBindingRadionButton")); // NOI18N
             useBindingButton.getAccessibleContext().setAccessibleDescription(bundle.getMessage("LBL_UseBindingRadionButton_A11YDescription")); // NOI18N
             useValueUseBindingGroup.add(useBindingButton);
@@ -151,8 +152,8 @@ public class ValueBindingPropertyEditor implements PropertyEditor, ExPropertyEdi
             gridBagConstraints.gridy = 0;
             add(useBindingButton, gridBagConstraints);
             
-            useValueButton = new JRadioButton(bundle.getMessage("LBL_UseValueRadionButton")); // NOI18N
-            useValueButton.setMnemonic(bundle.getMessage("LBL_UseValueRadionButton_Mnemonic").charAt(0)); // NOI18N
+            useValueButton = new JRadioButton(); // NOI18N
+            Mnemonics.setLocalizedText(useValueButton, bundle.getMessage("LBL_UseValueRadionButton"));
             useValueButton.getAccessibleContext().setAccessibleName(bundle.getMessage("LBL_UseValueRadionButton")); // NOI18N
             useValueButton.getAccessibleContext().setAccessibleDescription(bundle.getMessage("LBL_UseValueRadionButton_A11YDescription")); // NOI18N
             useValueUseBindingGroup.add(useValueButton);

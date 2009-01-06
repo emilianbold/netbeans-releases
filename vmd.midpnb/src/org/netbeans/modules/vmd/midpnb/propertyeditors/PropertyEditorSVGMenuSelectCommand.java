@@ -42,6 +42,7 @@
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
     private TypeID typeID;
     private String noneItem;
     private String defaultItem;
+    private String mnemonic;
 
     public static PropertyEditorSVGMenuSelectCommand createInstanceMenuSelect() {
         String mnemonic = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
@@ -96,18 +98,10 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
 
     private PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem, String userCodeLabel) {
         super(userCodeLabel);
-        initComponents();
+        this.mnemonic = mnemonic;
         this.typeID = typeID;
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
-        Mnemonics.setLocalizedText(radioButton, mnemonic);
-        
-        radioButton.getAccessibleContext().setAccessibleName( 
-                radioButton.getText());
-        radioButton.getAccessibleContext().setAccessibleDescription(
-                radioButton.getText());
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     @Override
@@ -242,6 +236,24 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
     private DesignComponent getListSelectCommand(DesignDocument document) {
         return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+        Mnemonics.setLocalizedText(radioButton, mnemonic);
+
+        radioButton.getAccessibleContext().setAccessibleName(
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
+
+        initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
+
 
     private String getComponentDisplayName(DesignComponent component) {
         return MidpValueSupport.getHumanReadableString(component);

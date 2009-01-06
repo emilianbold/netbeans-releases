@@ -143,7 +143,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String CLASS_KEYWORD = "class"; //NOI18N
         private static final String CONTINUE_KEYWORD = "continue"; //NOI18N
         private static final String DEFAULT_KEYWORD = "default"; //NOI18N
+        private static final String DO_KEYWORD = "do"; //NOI18N
         private static final String DOUBLE_KEYWORD = "double"; //NOI18N
+        private static final String ELSE_KEYWORD = "else"; //NOI18N
         private static final String ENUM_KEYWORD = "enum"; //NOI18N
         private static final String EXTENDS_KEYWORD = "extends"; //NOI18N
         private static final String FALSE_KEYWORD = "false"; //NOI18N
@@ -191,7 +193,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         };
         
         private static final String[] STATEMENT_KEYWORDS = new String[] {
-            FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
+            DO_KEYWORD, IF_KEYWORD, FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
             VOID_KEYWORD, WHILE_KEYWORD
         };
         
@@ -378,7 +380,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
         }
-        
+
         private UserTask getTask() {
             return new Task();
         }
@@ -611,6 +613,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case WHILE_LOOP:
                     insideWhile(env);
                     break;
+                case DO_WHILE_LOOP:
+                    insideDoWhile(env);
+                    break;
                 case FOR_LOOP:
                     insideFor(env);
                     break;
@@ -688,6 +693,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     break;
                 case EXPRESSION_STATEMENT:
                     insideExpressionStatement(env);
+                    break;
+                case BREAK:
+                    insideBreak(env);
                     break;
             }
         }
@@ -1207,6 +1215,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (((TryTree)last).getCatches().size() == 0)
                         return;
                 }
+            } else if (last.getKind() == Tree.Kind.IF) {
+                if (((IfTree)last).getElseStatement() == null)
+                    addKeyword(env, ELSE_KEYWORD, null, false);
             }
             localResult(env);
             addKeywordsForBlock(env);
@@ -1597,19 +1608,35 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void insideIf(Env env) throws IOException {
             IfTree iff = (IfTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), iff.getCondition()) <= env.getOffset()) {
-                localResult(env);
-                addKeywordsForStatement(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, iff, env.getOffset());
+                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                    localResult(env);
+                    addKeywordsForStatement(env);
+                }
             }
         }
         
         private void insideWhile(Env env) throws IOException {
             WhileLoopTree wlt = (WhileLoopTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), wlt.getCondition()) <= env.getOffset()) {
-                localResult(env);
-                addKeywordsForStatement(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, wlt, env.getOffset());
+                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                    localResult(env);
+                    addKeywordsForStatement(env);
+                }
             }
         }
         
+        private void insideDoWhile(Env env) throws IOException {
+            DoWhileLoopTree dwlt = (DoWhileLoopTree)env.getPath().getLeaf();
+            if (env.getSourcePositions().getEndPosition(env.getRoot(), dwlt.getStatement()) <= env.getOffset()) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, dwlt, env.getOffset());
+                if (last != null && (last.token().id() == JavaTokenId.RBRACE || last.token().id() == JavaTokenId.SEMICOLON)) {
+                    addKeyword(env, WHILE_KEYWORD, null, false);
+                }
+            }
+        }
+
         private void insideFor(Env env) throws IOException {
             int offset = env.getOffset();
             TreePath path = env.getPath();
@@ -1642,9 +1669,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             if (lastTree == null) {
-                addLocalFieldsAndVars(env);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
-                addPrimitiveTypeKeywords(env);
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, fl, offset);
+                if (last != null && last.token().id() == JavaTokenId.LPAREN) {
+                    addLocalFieldsAndVars(env);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
+                    addPrimitiveTypeKeywords(env);
+                }
             } else {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, lastTreePos, offset);
                 if (last != null && last.token().id() == JavaTokenId.SEMICOLON) {
@@ -1956,16 +1986,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (it.hasNext()) {
                     t = it.next();
                 } else {
-                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                    ts.move((int)env.getSourcePositions().getStartPosition(env.getRoot(), est));
-                    ts.movePrevious();
-                    switch (ts.token().id()) {
-                        case FOR:
-                        case IF:
-                        case SWITCH:
-                        case WHILE:
-                            return;
-                    }
                     localResult(env);
                     Tree parentTree = path.getParentPath().getLeaf();
                     switch (parentTree.getKind()) {
@@ -2228,6 +2248,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
             }
         }
+
+        private void insideBreak(Env env) throws IOException {
+            TreePath path = env.getPath();
+            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, path.getLeaf(), env.getOffset());
+            if (ts != null && ts.token().id() == JavaTokenId.BREAK) {
+                while (path != null) {
+                    if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
+                        results.add(JavaCompletionItem.createVariableItem(((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false));
+                    path = path.getParentPath();
+                }
+            }
+        }
         
         private void localResult(Env env) throws IOException {
             addLocalMembersAndVars(env);
@@ -2358,12 +2390,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             final TypeElement enclClass = scope.getEnclosingClass();
-            final boolean isStatic = enclClass == null ? false :
-                (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
+            final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
+            final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
             final ExecutableElement method = scope.getEnclosingMethod();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
+                    boolean isStatic = ctxStatic || (t != null && t.getKind() == TypeKind.DECLARED && ((DeclaredType)t).asElement() != enclClass && enclStatic);
                     switch (e.getKind()) {
                         case CONSTRUCTOR:
                             return false;
@@ -2530,8 +2563,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
+            final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
+            if ((isThisCall || isSuperCall) && tu.isStaticContext(scope))
+                return;
             final boolean[] ctorSeen = {false};
             final TypeElement enclClass = scope.getEnclosingClass();
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
@@ -3095,7 +3131,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (!breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                     case DO_WHILE_LOOP:
@@ -3104,11 +3140,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         if (! breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         if (!continueAdded && Utilities.startsWith(CONTINUE_KEYWORD, prefix)) {
                             continueAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, anchorOffset, false));                            
+                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                 }
@@ -4188,6 +4224,16 @@ public class JavaCompletionProvider implements CompletionProvider {
             for (Element encl = env.getScope().getEnclosingClass(); encl != null; encl = encl.getEnclosingElement()) {
                 if (e == encl)
                     return true;
+            }
+            return false;
+        }
+
+        private boolean withinLabeledStatement(Env env) {
+            TreePath path = env.getPath();
+            while (path != null) {
+                if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
+                    return true;
+                path = path.getParentPath();
             }
             return false;
         }

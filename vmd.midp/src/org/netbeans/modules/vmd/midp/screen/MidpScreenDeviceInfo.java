@@ -54,7 +54,6 @@ import org.netbeans.modules.vmd.api.screen.display.DeviceBorder;
 import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * Main class hodling bas device info for the device.

@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -64,6 +65,13 @@ class FieldElementImpl extends ModelElementImpl implements FieldElement {
     private String className;
 
     FieldElementImpl(ScopeImpl inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers());
+        this.returnType = returnType;
+        assert inScope instanceof TypeScope;
+        className = inScope.getName();
+    }
+
+    FieldElementImpl(ScopeImpl inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers());
         this.returnType = returnType;
         assert inScope instanceof TypeScope;

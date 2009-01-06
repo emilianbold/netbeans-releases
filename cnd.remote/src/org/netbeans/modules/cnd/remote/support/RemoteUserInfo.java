@@ -76,13 +76,30 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private Component parent;
     private final String host;
     private final Encrypter crypter;
+    private final boolean avoidUI;
     
     private RemoteUserInfo(String host) {
+        this(host, false);
+    }
+
+    RemoteUserInfo(String host, boolean avoidUI) {
         this.host = host;
         this.crypter = new Encrypter(host);
+        this.avoidUI = avoidUI;
         String hostKey = encrypt(REMOTE_USER_INFO + host);
         this.passwd = decrypt(NbPreferences.forModule(RemoteUserInfo.class).get(hostKey, null));
-        setParentComponent(this);
+        if (!this.avoidUI) {
+            setParentComponent(this);
+        }
+    }
+
+    static synchronized RemoteUserInfo getTestUserInfo(String hkey) {
+        if (map == null) {
+            map = new HashMap<String, RemoteUserInfo>();
+        }
+        RemoteUserInfo ui = new RemoteUserInfo(hkey, true);
+        map.put(hkey, ui);
+        return ui;
     }
     /**
      * Get the UserInfo for the remote host.
@@ -143,6 +160,9 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
     
     public synchronized boolean promptYesNo(String str) {
+        if (avoidUI) {
+            return true;
+        }
         Object[] options = { "yes", "no" }; // NOI18N
         int foo;
         
@@ -151,7 +171,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
         }
-       return foo == 0;
+       return foo == JOptionPane.YES_OPTION;
     }
 
     public String getPassphrase() {
@@ -163,7 +183,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     public synchronized boolean promptPassword(String message) {
-        if (!isCancelled()) {
+        if (!isCancelled()/* && !avoidUI*/) {
             if (passwd != null) {
                 return true;
             } else {

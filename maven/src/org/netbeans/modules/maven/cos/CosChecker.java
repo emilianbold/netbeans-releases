@@ -393,10 +393,10 @@ public class CosChecker implements PrerequisitesChecker {
             jvmPropNames.add("basedir"); //NOI18N
             if (dir != null) {
                 params.put(JavaRunner.PROP_WORK_DIR, dir);
-                jvmProps.add("-Dbasedir=" + dir); //NOI18N
+                jvmProps.add("-Dbasedir=\"" + dir + "\""); //NOI18N
             } else {
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                jvmProps.add("-Dbasedir=" + config.getExecutionDirectory().getAbsolutePath()); //NOI18N
+                jvmProps.add("-Dbasedir=\"" + config.getExecutionDirectory().getAbsolutePath()+ "\""); //NOI18N
             }
             //add properties defined in surefire plugin
             Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,

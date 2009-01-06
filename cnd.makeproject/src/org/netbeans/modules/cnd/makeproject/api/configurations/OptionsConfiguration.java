@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 
 public class OptionsConfiguration {
@@ -117,18 +115,19 @@ public class OptionsConfiguration {
     // Clone and assign
     public void assign(OptionsConfiguration conf) {
         setDirty(!conf.getValue().equals(getValue()));
-	setValue(conf.getValue());
-	setModified(conf.getModified());
-	//setDirty(conf.getDirty());
-	setPreDefined(conf.getPreDefined());
+        setValue(conf.getValue());
+        setModified(conf.getModified());
+        //setDirty(conf.getDirty());
+        setPreDefined(conf.getPreDefined());
     }
 
-    public Object clone() {
-	OptionsConfiguration clone = new OptionsConfiguration();
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	clone.setDirty(getDirty());
-	clone.setPreDefined(getPreDefined());
-	return clone;
+    @Override
+    public OptionsConfiguration clone() {
+        OptionsConfiguration clone = new OptionsConfiguration();
+        clone.setValue(getValue());
+        clone.setModified(getModified());
+        clone.setDirty(getDirty());
+        clone.setPreDefined(getPreDefined());
+        return clone;
     }
 }

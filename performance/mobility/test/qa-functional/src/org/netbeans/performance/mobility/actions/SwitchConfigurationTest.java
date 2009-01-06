@@ -38,9 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
 
 import javax.swing.JComponent;
+
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 
@@ -50,14 +55,11 @@ import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mmirilovic@netbeans.org
@@ -78,6 +80,7 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
     public SwitchConfigurationTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
 
     /**
@@ -88,6 +91,7 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
     public SwitchConfigurationTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -104,14 +108,9 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        log(":: initialize");
+        EditorOperator.closeDiscardAll();
         targetProject = "MobileApplicationSwitchConfiguration";
         midletName = "Midlet.java";
-        EditorOperator.closeDiscardAll();
-    }
-
-    public void prepare() {
-        log(":: prepare");
         String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "switchit" + "|" + midletName;
         projectNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
         openNode = new Node(projectNode, documentPath);
@@ -121,16 +120,12 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
         }
 
         new OpenAction().perform(openNode);
-        editor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
 
-        projectNode.properties();
-        propertiesWindow = new WizardOperator(targetProject);
-
-        filter = new LoggingRepaintManager.RegionFilter() {
+     /*   filter = new LoggingRepaintManager.RegionFilter() {
             boolean done = false;
 
             public boolean accept(JComponent comp) {
-                if (done) { 
+                if (done) {
                     return false;
                 }
                 if (comp.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView")) {
@@ -144,43 +139,42 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
                 return "Filters out all Regions starting with org.netbeans.modules.editor.errorstripe.AnnotationView";
             }
         };
-        repaintManager().addRegionFilter(filter);
+        repaintManager().addRegionFilter(filter);*/
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+    }
+
+    public void prepare() {
+        editor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
+        projectNode.properties();
+        propertiesWindow = new WizardOperator(targetProject);
     }
 
     public ComponentOperator open() {
-        log(":: open");
         JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow);
         combo.selectItem(1); // NotDefaultConfiguration
-
         propertiesWindow.ok();
-        return MIDletEditorOperator.findMIDletEditorOperator(midletName);
+        return null;
+        //return MIDletEditorOperator.findMIDletEditorOperator(midletName);
     }
 
     @Override
     public void close() {
-        log(":: close");
-        repaintManager().removeRegionFilter(filter);
+        //repaintManager().resetRegionFilters();
         if (projectNode != null) {
             projectNode.properties();
             propertiesWindow = new WizardOperator(targetProject);
-
-            // switch back to default config
             JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow, 0);
             combo.selectItem(0); //DefaultConfiguration
-
             propertiesWindow.ok();
         }
     }
 
     @Override
     public void shutdown() {
-        log("::shutdown");
+        repaintManager().resetRegionFilters();
         if (editor != null) {
             editor.close();
         }
     }
 
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new SwitchConfiguration("measureTime"));
-//    }
 }

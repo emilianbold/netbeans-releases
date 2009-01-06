@@ -152,9 +152,8 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
         }
     }
     
-    /** Default activated Node strategy is enough for now */
     public Lookup getLookup() {
-        return null;
+        return this.panelUI.getLookup();
     }
     
     // ModelBusyListener impl - sets wait cursor on content during computing

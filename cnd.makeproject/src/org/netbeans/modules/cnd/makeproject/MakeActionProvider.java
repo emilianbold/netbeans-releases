@@ -498,11 +498,12 @@ public class MakeActionProvider implements ActionProvider {
                     // Should never get here...
                     assert false;
                     return;
-                } else if (conf.isCompileConfiguration()) {
+                } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
                     RunProfile runProfile = null;
-                    if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                    int platform = conf.getPlatform().getValue();
+                    if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().cloneProfile();
+                        runProfile = conf.getProfile().clone();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
                         // Add paths from subprojetcs
@@ -524,7 +525,7 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
-                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
+                    } else if (platform == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
                         StringBuffer path = new StringBuffer();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -548,7 +549,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
@@ -558,9 +559,9 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
-                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_INTEL ||
-                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_SPARC ||
-                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_LINUX) {
+                    } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                            platform == Platform.PLATFORM_LINUX) {
                         // Add paths from -L option
                         StringBuffer path = new StringBuffer();
                         List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
@@ -573,7 +574,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
@@ -583,11 +584,17 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                    }
+
+                    if (platform == Platform.PLATFORM_MACOSX ||
+                            platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                            platform == Platform.PLATFORM_LINUX) {
                         // Make sure DISPLAY variable has been set
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
-                                runProfile = conf.getProfile().cloneProfile();
+                                runProfile = conf.getProfile().clone();
                             }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }
@@ -622,8 +629,6 @@ public class MakeActionProvider implements ActionProvider {
                             false);
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
-                } else if (conf.isQmakeConfiguration()) {
-                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
                 } else {
                     assert false;
                 }

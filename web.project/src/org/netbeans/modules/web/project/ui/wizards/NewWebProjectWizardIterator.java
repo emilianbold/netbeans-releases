@@ -113,8 +113,11 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
-        
+
+    boolean isIstantiating = false;
+
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        isIstantiating = true;
         handle.start(4);
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
@@ -257,7 +260,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
                         true, false, true, false, false, true),
-		new PanelSupportedFrameworks()
+		new PanelSupportedFrameworks(this)
 	    };
 	else
 	    //no framework available, don't show framework panel

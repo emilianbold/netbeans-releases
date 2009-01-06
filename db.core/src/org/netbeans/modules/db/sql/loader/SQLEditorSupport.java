@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -78,8 +79,11 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Exceptions;
@@ -287,7 +291,25 @@ public class SQLEditorSupport extends DataEditorSupport
         }
         execute(sql, 0, sql.length());
     }
-    
+
+    @Override
+    public void saveAs( FileObject folder, String fileName ) throws IOException {
+        String fn = FileUtil.getFileDisplayName(folder) + File.separator + fileName; 
+        File existingFile = FileUtil.normalizeFile(new File(fn));
+        if (existingFile.exists()) {
+            NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplace", fileName),
+                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"),
+                    NotifyDescriptor.YES_NO_OPTION);
+            DialogDisplayer.getDefault().notify(confirm);
+            if (confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                super.saveAs(folder, fileName);
+            }
+        } else {
+            super.saveAs(folder, fileName);
+        }
+    }
+
     /**
      * Executes either all or a part of the given sql string (which can contain
      * zero or more SQL statements). If startOffset &lt; endOffset, the part of

@@ -41,11 +41,11 @@
 
 package org.netbeans.performance.mobility;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.mobility.actions.*;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.performance.mobility.actions.*;
+
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -63,17 +63,11 @@ public class MeasureMobilityActionsTest  {
 
         // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateMobilityProjectTest.class)
-                .addTest(CreateMobilityProjectTest.class) // Create Mobile Application
                 .addTest(OpenMIDletEditorTest.class) // Open a visual MIDlet
-/* Strange results in switch tests, will check it later
-                .addTest(MIDletViewsSwitch.class, "testFlowToDesignSwitch") // Flow To Design Switch
-                .addTest(MIDletViewsSwitch.class, "testDesignToFlowSwitch") // Design To Flow Switch
-                .addTest(MIDletViewsSwitch.class, "testFlowToSourceSwitch") // Flow To Source Switch
-                .addTest(MIDletViewsSwitch.class, "testSourceToFlowSwitch") // Source To Flow Switch
-*/
+                .addTest(MIDletViewsSwitchTest.class) // Flow To Design Switch
                 .addTest(CreateVisualMIDletTest.class) // Create Visual MIDlet
                 .addTest(CreateMIDletTest.class) // Create MIDlet
-                .addTest(SwitchConfigurationTest.class) // Switch Configuration
+                // needs to be fixed .addTest(SwitchConfigurationTest.class) // Switch Configuration
                 .addTest(OpenMobileProjectTest.class) // Open Mobile CLDC project
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 

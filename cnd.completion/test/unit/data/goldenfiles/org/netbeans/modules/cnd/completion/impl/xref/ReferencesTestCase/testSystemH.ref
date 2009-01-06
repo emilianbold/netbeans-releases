@@ -10,6 +10,12 @@
 --RESOLVED TO:
     MACROS #define 'SYSTEM_H' [43:1/2127-43:17/2143]
 ==============================================================
+'include', tokenID=preprocessor_include, offset=2146 [45:2/2146-45:9/2153]
+--OWNER:
+    INCLUDE "module.h" [45:1/2145-45:20/2164]
+--RESOLVED TO:
+    INCLUDE "module.h" [45:1/2145-45:20/2164]
+==============================================================
 '"module.h"', tokenID=preprocessor_user_include, offset=2154 [45:10/2154-45:20/2164]
 --OWNER:
     INCLUDE "module.h" [45:1/2145-45:20/2164]

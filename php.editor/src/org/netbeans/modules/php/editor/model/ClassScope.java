@@ -53,10 +53,6 @@ public interface ClassScope extends TypeScope {
     List<? extends FieldElement> getFields(final String queryName, final int... modifiers);
     List<? extends FieldElement> getFields(final NameKind nameKind, final String queryName, final int... modifiers);
     List<? extends FieldElement> getInheritedFields(String fieldName);
-    List<? extends ClassConstantElement> getAllConstants();
-    List<? extends ClassConstantElement> getConstants(final String... queryName);
-    List<? extends ClassConstantElement> getConstants(final NameKind nameKind, final String... queryName);
-    List<? extends ClassConstantElement> getInheritedConstants(String constName);
 
     //TODO: add getAllInheritedSuperClasses()
     //TODO: add getAllInheritedInterfaces()

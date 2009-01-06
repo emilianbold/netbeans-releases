@@ -109,7 +109,6 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
      */
     public static Test suite() {
 //        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeWelcome"));
 //        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeAllDocuments"));
 //        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeMemoryToolbar"));
 //        //FIXME: Remove manual addition of Application Server
@@ -123,7 +122,6 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
 
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(PrepareIDEForEnterpriseComplexMeasurements.class)
-            .addTest("closeWelcome")
             .addTest("closeAllDocuments")
             .addTest("closeMemoryToolbar")
 
@@ -185,20 +183,6 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
         new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
         
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-    }
-    
-    /**
-     * Close Welcome.
-     */
-    public void closeWelcome(){
-        try {
-            TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
-            new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-            tComponent.close();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
     }
     
     /**

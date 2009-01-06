@@ -85,10 +85,12 @@ public class ProgressPanel extends javax.swing.JPanel {
     }
     
     public void close() {
-	if (dialog != null) {
-	    dialog.setVisible(false);
-	    dialog.dispose();
-	}
+        if (dialog != null) {
+            if (dialog.isVisible()) {
+                setVisible(false);
+            }
+            dialog.dispose();
+        }
     }
     
     public void setText(String text) {

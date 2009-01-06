@@ -1,0 +1,20 @@
+
+
+Document 0
+Searchable Keys:
+  class : Error
+  class-ig : error
+  extends : Exception
+  in : doc
+  member : get;F;;self,section,option;
+  member : readfp;F;;self,fp,filename;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  item : Error;C;;
+  module : doc
+
+Not Searchable Keys:

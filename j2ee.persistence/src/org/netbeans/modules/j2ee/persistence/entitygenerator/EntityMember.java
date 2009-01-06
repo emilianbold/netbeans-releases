@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.openide.util.*;
 
 //TODO move static methods into a separate util class or into code generator
@@ -103,6 +104,23 @@ public abstract class EntityMember {
             fieldName += "Collection";  // NOI18N
         }
         return makeFieldName(fieldName);
+    }
+    
+    /**
+     * Fix the relationship field name to be more related to the collection type.
+     *
+     * @param orgName The original name
+     * @param colType The collection type, such as, java.util.List, java.util.Set
+     * @return The nicer name
+     */
+    public static String fixRelationshipFieldName(String orgName, CollectionType colType) {
+        String newName = orgName;
+        if (orgName.endsWith("Collection")) { // NOI18N
+            int ix = orgName.lastIndexOf("Collection"); // NOI18N
+            newName = orgName.substring(0, ix) + colType.getShortName();
+        }
+        
+        return newName;
     }
 
     private static StringBuilder makeName(String fieldName) {

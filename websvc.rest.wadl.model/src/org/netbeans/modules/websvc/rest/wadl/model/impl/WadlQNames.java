@@ -64,6 +64,7 @@ public enum WadlQNames {
     GRAMMARS(createWSDLQName("grammars")),
     RESOURCES(createWSDLQName("resources")),
     RESOURCE(createWSDLQName("resource")),
+    RESOURCE_TYPE(createWSDLQName("resource_type")),
     METHOD(createWSDLQName("method")),
     REQUEST(createWSDLQName("request")),
     RESPONSE(createWSDLQName("response")),

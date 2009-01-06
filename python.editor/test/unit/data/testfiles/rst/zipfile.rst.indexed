@@ -1,0 +1,113 @@
+
+
+Document 0
+Searchable Keys:
+  class : BadZipfile
+  class-ig : badzipfile
+  extends : Exception
+  in : zipfile
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : LargeZipFile
+  class-ig : largezipfile
+  extends : Exception
+  in : zipfile
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  class : PyZipFile
+  class-ig : pyzipfile
+  in : zipfile
+  member : writepy;F;|DOCUMENTED|DOC_ONLY|;pathname,basename;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 3
+Searchable Keys:
+  class : ZipFile
+  class-ig : zipfile
+  in : zipfile
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  class : ZipFile
+  class-ig : zipfile
+  in : zipfile
+  member : ZipFile;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;file,mode,compression,allowZip64;
+  member : close;F;|DOCUMENTED|DOC_ONLY|;;
+  member : comment;A;|DOCUMENTED|DOC_ONLY|;
+  member : debug;A;|DOCUMENTED|DOC_ONLY|;
+  member : extract;F;|DOCUMENTED|DOC_ONLY|;member,path,pwd;
+  member : extractall;F;|DOCUMENTED|DOC_ONLY|;path,members,pwd;
+  member : getinfo;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : infolist;F;|DOCUMENTED|DOC_ONLY|;;
+  member : namelist;F;|DOCUMENTED|DOC_ONLY|;;
+  member : open;F;|DOCUMENTED|DOC_ONLY|;name,mode,pwd;
+  member : printdir;F;|DOCUMENTED|DOC_ONLY|;;
+  member : read;F;|DOCUMENTED|DOC_ONLY|;name,pwd;
+  member : setpassword;F;|DOCUMENTED|DOC_ONLY|;pwd;
+  member : testzip;F;|DOCUMENTED|DOC_ONLY|;;
+  member : write;F;|DOCUMENTED|DOC_ONLY|;filename,arcname,compress_type;
+  member : writestr;F;|DOCUMENTED|DOC_ONLY|;zinfo_or_arcname,bytes;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 5
+Searchable Keys:
+  class : ZipInfo
+  class-ig : zipinfo
+  in : zipfile
+  member : CRC;A;|DOCUMENTED|DOC_ONLY|;
+  member : ZipInfo;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,date_time;
+  member : comment;A;|DOCUMENTED|DOC_ONLY|;
+  member : compress_size;A;|DOCUMENTED|DOC_ONLY|;
+  member : compress_type;A;|DOCUMENTED|DOC_ONLY|;
+  member : create_system;A;|DOCUMENTED|DOC_ONLY|;
+  member : create_version;A;|DOCUMENTED|DOC_ONLY|;
+  member : date_time;A;|DOCUMENTED|DOC_ONLY|;
+  member : external_attr;A;|DOCUMENTED|DOC_ONLY|;
+  member : extra;A;|DOCUMENTED|DOC_ONLY|;
+  member : extract_version;A;|DOCUMENTED|DOC_ONLY|;
+  member : file_size;A;|DOCUMENTED|DOC_ONLY|;
+  member : filename;A;|DOCUMENTED|DOC_ONLY|;
+  member : flag_bits;A;|DOCUMENTED|DOC_ONLY|;
+  member : header_offset;A;|DOCUMENTED|DOC_ONLY|;
+  member : internal_attr;A;|DOCUMENTED|DOC_ONLY|;
+  member : reserved;A;|DOCUMENTED|DOC_ONLY|;
+  member : volume;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 6
+Searchable Keys:
+  item : BadZipfile;C;|DOCUMENTED|DOC_ONLY|;
+  item : LargeZipFile;C;|DOCUMENTED|DOC_ONLY|;
+  item : PyZipFile;C;|DOCUMENTED|DOC_ONLY|;
+  item : ZIP_DEFLATED;D;|DOCUMENTED|DOC_ONLY|;
+  item : ZIP_STORED;D;|DOCUMENTED|DOC_ONLY|;
+  item : ZipFile;C;|DOCUMENTED|DOC_ONLY|;
+  item : ZipInfo;C;|DOCUMENTED|DOC_ONLY|;
+  item : is_zipfile;F;|DOCUMENTED|DOC_ONLY|;filename;
+  module : zipfile
+
+Not Searchable Keys:
+  modattrs : S

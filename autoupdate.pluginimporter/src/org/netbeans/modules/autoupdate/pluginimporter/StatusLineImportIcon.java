@@ -40,18 +40,8 @@
 package org.netbeans.modules.autoupdate.pluginimporter;
 
 import java.awt.Component;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
+import javax.swing.JPanel;
 import org.openide.awt.StatusLineElementProvider;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,47 +49,10 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=590)
 public class StatusLineImportIcon implements StatusLineElementProvider {
-    public static JComponent icon = null;
+    public static JPanel statusPanel = new JPanel ();
 
     public Component getStatusLineElement () {
-        if (icon == null) {
-            ImageIcon img = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false)); // NOI18N
-            final JButton bRemindLater = new JButton ();
-            final JButton bImport = new JButton ();
-            final JButton bNo = new JButton ();
-            Mnemonics.setLocalizedText (bRemindLater, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bRemindLater"));
-            Mnemonics.setLocalizedText (bImport, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bImport"));
-            Mnemonics.setLocalizedText (bNo, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bNo"));
-            Runnable onMouseClick = new Runnable () {
-                public void run () {
-                    ImportManager ui = ImportManager.getInstance ();
-                    ui.attachButtons (bImport, bNo);
-                    DialogDescriptor dd = new DialogDescriptor (
-                            ui,
-                            NbBundle.getMessage (Installer.class, "Installer_DialogTitle"),
-                            true,
-                            new Object[] {bImport, bNo, bRemindLater},
-                            NotifyDescriptor.OK_OPTION,
-                            DialogDescriptor.BOTTOM_ALIGN,
-                            null,
-                            null);
-                    dd.setClosingOptions (new Object[] {bNo, bRemindLater});
-                    DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
-                    if (bImport.equals (dd.getValue ()) || bNo.equals (dd.getValue ())) {
-                        ui.dontRemind ();
-                        SwingUtilities.invokeLater (new Runnable () {
-                            public void run () {
-                                PluginManager.setStatusLineIconVisible (icon, null, false);
-                            }
-                        });
-                    } else if (bRemindLater.equals (dd.getValue ())) {
-                        ui.remindLater ();
-                    }
-                }
-            };
-            icon = PluginManager.createStatusLineIcon (img, onMouseClick);
-        }
-        return icon;
+        return statusPanel;
 
     }
 

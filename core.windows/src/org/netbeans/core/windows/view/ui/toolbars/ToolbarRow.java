@@ -61,6 +61,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * Panel which holds one row of toolbars. The order of toolbars is defined
@@ -472,10 +473,15 @@ class ToolbarRow extends JPanel {
         return res;
     }
 
+    private static final boolean isMetalLaF = "Metal".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isNimbusLaF = "Nimbus".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isGTKLaF = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isAquaLaF = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     /**
      * Layout of a single toolbar row.
      */
     private class ToolbarLayout implements LayoutManager {
+
 
         public ToolbarLayout() {
         }
@@ -579,6 +585,16 @@ class ToolbarRow extends JPanel {
             int x = 0;
             for( Component c : leftBars ) {
                 int barWidth = bar2width.get(c);
+                if( (isMetalLaF || isNimbusLaF || isGTKLaF || isAquaLaF)
+                        && leftBars.indexOf(c) == leftBars.size()-1 ) {
+                    //stretch the last left bar across the remaining free space
+                    //up to the first right bar / right border of the toolbar row
+                    int rightBarsWidth = 0;
+                    for( Component rb : rightBars ) {
+                        rightBarsWidth += bar2width.get(rb);
+                    }
+                    barWidth = w - x - rightBarsWidth;
+                }
                 c.setBounds(x, top, barWidth, h);
                 x += barWidth;
             }

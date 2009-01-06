@@ -58,7 +58,6 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanProper
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
@@ -93,7 +92,7 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     private JPanel view;
     private JLabel state;
     private JLabel image;
-    private JLabel label;
+    private WrappedLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
 
@@ -106,10 +105,20 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         view.add(state);
         image = new JLabel();
         view.add(image);
-        label = new JLabel();
+        label = new WrappedLabel(){
+
+            @Override
+            protected int getLabelWidth() {
+                return (int)(view.getSize().getWidth() -
+                        image.getSize().getWidth() - state.getSize().getWidth());
+            }
+        };
         view.add(label);
 
         view.add(Box.createHorizontalGlue());
+
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
     }
 
     public boolean isTopLevelDisplay() {
@@ -176,12 +185,15 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
         label.setText(text);
+        label.setMode( WrappedLabel.Mode.forInt( getFitPolicy()));
 
         value = getComponent().readProperty(ChoiceElementCD.PROP_FONT);
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
             DesignComponent font = value.getComponent();
             label.setFont(ScreenSupport.getFont(deviceInfo, font));
         }
+        label.repaint();
+        label.invalidate();
     }
 
     public Shape getSelectionShape() {
@@ -226,5 +238,16 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         }
         imageFileObject = null;
         imageFileListener = null;
+    }
+    
+    private int getFitPolicy() {
+        DesignComponent component = getRelatedComponent().
+                getParentComponent();
+        if (component != null) {
+            return Integer.parseInt(
+                    component.readProperty(ChoiceGroupCD.PROP_FIT_POLICY).
+                    getPrimitiveValue().toString());
+        }
+        return 0;
     }
 }

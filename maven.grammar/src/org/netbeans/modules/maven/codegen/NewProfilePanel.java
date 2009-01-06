@@ -39,8 +39,14 @@
 
 package org.netbeans.modules.maven.codegen;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -48,6 +54,7 @@ import org.openide.awt.Mnemonics;
  */
 public class NewProfilePanel extends javax.swing.JPanel {
     private POMModel model;
+    private NotificationLineSupport nls;
 
     public NewProfilePanel(POMModel model) {
         initComponents();
@@ -57,7 +64,43 @@ public class NewProfilePanel extends javax.swing.JPanel {
             Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbPlugins.text2")); // NOI18N
             Mnemonics.setLocalizedText(cbDependencies, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbDependencies.text2")); // NOI18N
         }
-        lblHint.setText(""); //NOI18N
+        txtId.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkId();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                checkId();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                checkId();
+            }
+        });
+    }
+
+    /** For gaining access to DialogDisplayer instance to manage
+     * warning messages
+     */
+    public void attachDialogDisplayer(DialogDescriptor dd) {
+        nls = dd.getNotificationLineSupport();
+        if (nls == null) {
+            nls = dd.createNotificationLineSupport();
+        }
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        assert nls != null : " The notificationLineSupport was not attached to the panel."; //NOI18N
+    }
+
+    private void checkId() {
+        String id = txtId.getText().trim();
+        Profile existing = model.getProject().findProfileById(id);
+        if (existing != null) {
+            nls.setErrorMessage(NbBundle.getMessage(NewProfilePanel.class, "ERR_SameProfileId"));
+        } else {
+            nls.clearMessages();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -76,7 +119,6 @@ public class NewProfilePanel extends javax.swing.JPanel {
         cbActFile = new javax.swing.JCheckBox();
         cbPlugins = new javax.swing.JCheckBox();
         cbDependencies = new javax.swing.JCheckBox();
-        lblHint = new javax.swing.JLabel();
 
         lblId.setLabelFor(txtId);
         org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.lblId.text")); // NOI18N
@@ -91,8 +133,6 @@ public class NewProfilePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDependencies, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbDependencies.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.lblHint.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -100,7 +140,6 @@ public class NewProfilePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                     .add(cbDependencies)
                     .add(cbPlugins)
                     .add(cbActFile)
@@ -129,8 +168,7 @@ public class NewProfilePanel extends javax.swing.JPanel {
                 .add(cbPlugins)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDependencies)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 49, Short.MAX_VALUE)
-                .add(lblHint))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -141,7 +179,6 @@ public class NewProfilePanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbActProperty;
     private javax.swing.JCheckBox cbDependencies;
     private javax.swing.JCheckBox cbPlugins;
-    private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblId;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables

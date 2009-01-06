@@ -1,0 +1,69 @@
+<html><body>
+<h2><a href="mod:smtpd">smtpd</a> --- SMTP Server
+</h2>
+<a href="module:smtpd">smtpd</a><br>
+   A SMTP server implementation in Python.
+
+<br><br>
+<br>Module Author:</b> Barry Warsaw &lt;barry@zope.com>
+<br>Section Author:</b> Moshe Zadka &lt;moshez@moshez.org>
+
+<br><br>
+This module offers several classes to implement SMTP servers.  One is a generic
+do-nothing implementation, which can be overridden, while the other two offer
+specific mail-sending strategies.
+
+<br><br>
+<h3>SMTPServer Objects
+</h3>
+<a href="class:SMTPServer(localaddr, remoteaddr)">SMTPServer(localaddr, remoteaddr)</a>
+
+<br><br>
+   Create a new <a href="class:SMTPServer">SMTPServer</a> object, which binds to local address
+   <b>localaddr</b>.  It will treat <b>remoteaddr</b> as an upstream SMTP relayer.  It
+   inherits from <a href="class:asyncore.dispatcher">asyncore.dispatcher</a>, and so will insert itself into
+   <a href="mod:asyncore">asyncore</a>'s event loop on instantiation.
+
+<br><br>
+<a href="meth:process_message(peer, mailfrom, rcpttos, data)">process_message(peer, mailfrom, rcpttos, data)</a>
+
+<br><br>
+      Raise <a href="exc:NotImplementedError">NotImplementedError</a> exception. Override this in subclasses to
+      do something useful with this message. Whatever was passed in the
+      constructor as <b>remoteaddr</b> will be available as the <code>_remoteaddr</code>
+      attribute. <b>peer</b> is the remote host's address, <b>mailfrom</b> is the envelope
+      originator, <b>rcpttos</b> are the envelope recipients and <b>data</b> is a string
+      containing the contents of the e-mail (which should be in :rfc:<code>2822</code>
+      format).
+
+<br><br>
+<h3>DebuggingServer Objects
+</h3>
+<a href="class:DebuggingServer(localaddr, remoteaddr)">DebuggingServer(localaddr, remoteaddr)</a>
+
+<br><br>
+   Create a new debugging server.  Arguments are as per <a href="class:SMTPServer">SMTPServer</a>.
+   Messages will be discarded, and printed on stdout.
+
+<br><br>
+<h3>PureProxy Objects
+</h3>
+<a href="class:PureProxy(localaddr, remoteaddr)">PureProxy(localaddr, remoteaddr)</a>
+
+<br><br>
+   Create a new pure proxy server. Arguments are as per <a href="class:SMTPServer">SMTPServer</a>.
+   Everything will be relayed to <b>remoteaddr</b>.  Note that running this has a good
+   chance to make you into an open relay, so please be careful.
+
+<br><br>
+<h3>MailmanProxy Objects
+</h3>
+<a href="class:MailmanProxy(localaddr, remoteaddr)">MailmanProxy(localaddr, remoteaddr)</a>
+
+<br><br>
+   Create a new pure proxy server. Arguments are as per <a href="class:SMTPServer">SMTPServer</a>.
+   Everything will be relayed to <b>remoteaddr</b>, unless local mailman configurations
+   knows about an address, in which case it will be handled via mailman.  Note that
+   running this has a good chance to make you into an open relay, so please be
+   careful.
+</body></html>

@@ -38,24 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -104,16 +98,11 @@ public class CreateMIDletTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        //ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
-        new CloseAllDocumentsAction().performAPI();
-        
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
 
     public void prepare() {
-
+ 
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
 
@@ -124,8 +113,6 @@ public class CreateMIDletTest extends PerformanceTestCase {
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("MIDlet"); //NOI18N
         wizard.next();
-
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("MIDlet_" + System.currentTimeMillis());
     }
@@ -137,7 +124,7 @@ public class CreateMIDletTest extends PerformanceTestCase {
 
     @Override
     protected void shutdown() {
-        //ProjectSupport.closeProject(testProjectName);
+        repaintManager().resetRegionFilters();
     }
 
 }

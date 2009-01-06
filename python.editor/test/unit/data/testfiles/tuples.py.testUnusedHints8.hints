@@ -1,0 +1,6 @@
+    for z in None:
+        -
+HINT:Unused Variable z
+    c = None
+    -
+HINT:Unused Variable c

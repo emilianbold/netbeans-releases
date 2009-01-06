@@ -65,6 +65,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedConstant;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.IndexedVariable;
@@ -398,6 +399,18 @@ public final class RubyIndex {
         return classes;
     }
     
+    Set<? extends IndexedMethod> getMethods(final String name, final RubyType clz, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : clz.getRealTypes()) {
+            methods.addAll(getMethods(name, realType, kind, ALL_SCOPE));
+        }
+        return methods;
+    }
+
+    Set<IndexedMethod> getMethods(String name, NameKind kind) {
+        return getMethods(name, (String) null, kind);
+    }
+
     /**
      * Return a set of methods that match the given name prefix, and are in the given
      * class and module. If no class is specified, match methods across all classes.
@@ -405,7 +418,6 @@ public final class RubyIndex {
      * you must call this method on each superclass as well as the mixin modules.
      */
     @SuppressWarnings("unchecked") // unchecked - lucene has source 1.4
-
     Set<IndexedMethod> getMethods(final String name, final String clz, NameKind kind) {
         return getMethods(name, clz, kind, ALL_SCOPE);
     }
@@ -575,8 +587,8 @@ public final class RubyIndex {
             signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedMethod m =
-            IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
+        IndexedMethod m = IndexedMethod.create(this, signature, fqn, clz,
+                fileUrl, require, attributes, flags, context);
 
         m.setInherited(inherited);
         return m;
@@ -618,7 +630,26 @@ public final class RubyIndex {
 
         return m;
     }
-    
+
+    public IndexedConstant createConstant(String signature, SearchResult map) {
+        String fileUrl = map.getPersistentUrl();
+
+        String classFQN = map.getValue(RubyIndexer.FIELD_FQN_NAME);
+        String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
+
+        int typeIndex = signature.indexOf(';');
+        String name = typeIndex == -1 ? signature : signature.substring(0, typeIndex);
+        int flags = 0;
+
+        // TODO parse possibly multiple types
+        String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
+
+        IndexedConstant m = IndexedConstant.create(
+                this, name, classFQN, fileUrl, require, flags, context, RubyType.create(type));
+
+        return m;
+    }
+
     public IndexedClass createClass(String fqn, String clz, SearchResult map) {
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -856,6 +887,14 @@ public final class RubyIndex {
         }
         
         return null;
+    }
+
+    Set<IndexedMethod> getInheritedMethods(RubyType receiverType, String prefix, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : receiverType.getRealTypes()) {
+            methods.addAll(getInheritedMethods(realType, prefix, kind));
+        }
+        return methods;
     }
 
     /**
@@ -1348,7 +1387,7 @@ public final class RubyIndex {
 
     public Set<IndexedVariable> getGlobals(String prefix, NameKind kind) {
         // Query index for database related properties
-        
+
         String searchField = RubyIndexer.FIELD_GLOBAL_NAME;
         Set<SearchResult> result = new HashSet<SearchResult>();
         // Only include globals from the user's sources, not in the libraries!
@@ -1368,10 +1407,80 @@ public final class RubyIndex {
                 }
             }
         }
-        
+
         return globals;
     }
-    
+
+    public Set<? extends IndexedConstant> getConstants(final String constantFqn) {
+        String[] parts = RubyUtils.parseConstantName(constantFqn);
+        return getConstants(parts[0], parts[1]);
+    }
+
+    public Set<? extends IndexedConstant> getConstants(RubyType classFqn, String prefix) {
+        Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
+        for (String realType : classFqn.getRealTypes()) {
+            constants.addAll(getConstants(realType, prefix));
+        }
+        return constants;
+    }
+
+    public Set<? extends IndexedConstant> getConstants(String classFqn, String prefix) {
+        boolean haveRedirected = false;
+
+        if ((classFqn == null) || classFqn.equals(OBJECT)) {
+            // Redirect inheritance tree to Class to pick up methods in Class and Module
+            classFqn = CLASS;
+            haveRedirected = true;
+        } else if (MODULE.equals(classFqn) || CLASS.equals(classFqn)) {
+            haveRedirected = true;
+        }
+
+        //String field = RubyIndexer.FIELD_FQN_NAME;
+        Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
+
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        addConstantsFromClass(prefix, classFqn, constants, haveRedirected);
+
+        return constants;
+    }
+
+    private boolean addConstantsFromClass(
+            final String prefix,
+            final String classFqn,
+            final Set<? super IndexedConstant> constants,
+            final boolean haveRedirected) {
+
+        String searchField = RubyIndexer.FIELD_FQN_NAME;
+        Set<SearchResult> result = new HashSet<SearchResult>();
+        search(searchField, classFqn, NameKind.EXACT_NAME, result);
+
+        // If this is a bogus class entry (no search rsults) don't continue
+        if (result.size() <= 0) {
+            return false;
+        }
+
+        for (SearchResult map : result) {
+            assert map != null;
+
+            String[] indexedConstants = map.getValues(RubyIndexer.FIELD_CONSTANT_NAME);
+
+            if (indexedConstants != null) {
+                for (String constant : indexedConstants) {
+                    if (prefix.length() == 0 || constant.startsWith(prefix)) {
+                        IndexedConstant c = createConstant(constant, map);
+                        c.setSmart(!haveRedirected);
+                        constants.add(c);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     public Set<IndexedField> getInheritedFields(String classFqn, String prefix, NameKind kind, boolean inherited) {
         boolean haveRedirected = false;
 
@@ -1757,7 +1866,7 @@ public final class RubyIndex {
         return getPreindexUrl(url, null);
     }
     static String getPreindexUrl(String url, FileObject context) {
-        if (RubyIndexer.PREINDEXING) {
+        if (RubyIndexer.isPreindexing()) {
             Iterator<RubyPlatform> it = null;
             if (context != null && context.isValid()) {
                 Project project = FileOwnerQuery.getOwner(context);

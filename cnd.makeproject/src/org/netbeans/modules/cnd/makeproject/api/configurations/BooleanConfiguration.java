@@ -53,19 +53,19 @@ public class BooleanConfiguration {
     private boolean dirty = false;
 
     public BooleanConfiguration(BooleanConfiguration master, boolean def) {
-	this.master = master;
-	this.def = def;
-	falseValue = ""; // NOI18N
-	trueValue = ""; // NOI18N
-	reset();
+        this.master = master;
+        this.def = def;
+        falseValue = ""; // NOI18N
+        trueValue = ""; // NOI18N
+        reset();
     }
 
     public BooleanConfiguration(BooleanConfiguration master, boolean def, String falseValue, String trueValue) {
-	this.master = master;
-	this.def = def;
-	this.falseValue = falseValue;
-	this.trueValue = trueValue;
-	reset();
+        this.master = master;
+        this.def = def;
+        this.falseValue = falseValue;
+        this.trueValue = trueValue;
+        reset();
     }
 
     protected BooleanConfiguration getMaster() {
@@ -73,62 +73,73 @@ public class BooleanConfiguration {
     }
 
     public void setValue(boolean b) {
-	this.value = b;
-	if (master != null)
-	    setModified(true);
-	else
-	    setModified(b != getDefault());
+        this.value = b;
+        if (master != null) {
+            setModified(true);
+        } else {
+            setModified(b != getDefault());
+        }
     }
+
     public boolean getValue() {
-	if (master != null && !getModified())
-	    return master.getValue();
-	else
-	    return value;
+        if (master != null && !getModified()) {
+            return master.getValue();
+        } else {
+            return value;
+        }
     }
-    
+
     public void setModified(boolean b) {
-	this.modified = b;
+        this.modified = b;
     }
+
     public boolean getModified() {
-	return modified;
+        return modified;
     }
-    
+
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
+
     public boolean getDirty() {
         return dirty;
     }
-    
+
     public boolean getDefault() {
-	return def;
+        return def;
     }
+
     public void setDefault(boolean b) {
         def = b;
         setModified(value != def);
     }
+
     public void reset() {
-	value = getDefault();
-	setModified(false);
+        value = getDefault();
+        setModified(false);
     }
+
     public String getOption() {
-	if (getValue())
-	    return trueValue;
-	else
-	    return falseValue;
+        if (getValue()) {
+            return trueValue;
+        } else {
+            return falseValue;
+        }
     }
 
     // Clone and Assign
     public void assign(BooleanConfiguration conf) {
-        dirty |= conf.getValue()^getValue();
-	setValue(conf.getValue());
-	setModified(conf.getModified());
+        dirty |= conf.getValue() ^ getValue();
+        setValue(conf.getValue());
+        setModified(conf.getModified());
     }
 
-    public Object clone() {
-	BooleanConfiguration clone = new BooleanConfiguration(master, def, falseValue, trueValue);
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	return clone;
+    @Override
+    public BooleanConfiguration clone() {
+        BooleanConfiguration clone = new BooleanConfiguration(master, def, falseValue, trueValue);
+        clone.setValue(getValue());
+        clone.setModified(getModified());
+        return clone;
     }
+
 }

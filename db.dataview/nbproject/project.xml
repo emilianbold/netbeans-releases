@@ -76,24 +76,20 @@
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.etl.editor</friend>
                 <friend>org.netbeans.modules.db.core</friend>
-				<friend>org.netbeans.modules.dm.virtual.db</friend>
+                <friend>org.netbeans.modules.dm.virtual.db</friend>
                 <friend>org.netbeans.modules.edm.editor</friend>
                 <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/db/dataview/swingx-0.9.4.jar</runtime-relative-path>
+                <binary-origin>external/swingx-0.9.4.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

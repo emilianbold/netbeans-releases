@@ -94,8 +94,11 @@ public class PHPIndex {
     private static final Set<String> TERMS_CLASS = Collections.singleton(PHPIndexer.FIELD_CLASS);
     private static final Set<String> TERMS_VAR = Collections.singleton(PHPIndexer.FIELD_VAR);
     private static final Set<String> TERMS_ALL = new HashSet<String>();
+    private static final Set<String> TERMS_CONSTRUCTOR = new HashSet<String>();
 
-    {
+    {        
+        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CLASS);
+        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CONSTRUCTOR);
         TERMS_ALL.add(PHPIndexer.FIELD_BASE);
         TERMS_ALL.add(PHPIndexer.FIELD_CONST);
         TERMS_ALL.add(PHPIndexer.FIELD_CLASS);
@@ -523,6 +526,42 @@ public class PHPIndex {
         return constants;
     }
 
+    public Collection<IndexedFunction> getConstructors(PHPParseResult result, String typeName) {
+        NameKind kind = NameKind.CASE_INSENSITIVE_PREFIX;
+        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        String name = typeName;//NOI18N
+        int attrMask = PHPIndex.ANY_ATTR;
+        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, ALL_SCOPE, true);
+
+        for (String signature : signaturesMap.keySet()) {
+            //items are not indexed, no case insensitive search key user
+            Signature sig = Signature.get(signature);
+            int flags = sig.integer(5);
+
+            if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
+                flags |= Modifier.PUBLIC; // default modifier
+            }
+
+            if ((flags & attrMask) != 0) {
+                String funcName = sig.string(0);
+                String args = sig.string(1);
+                int offset = sig.integer(2);
+
+                IndexedFunction func = new IndexedFunction(funcName, funcName,
+                        this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+
+                int optionalArgs[] = extractOptionalArgs(sig.string(3));
+                func.setOptionalArgs(optionalArgs);
+                String retType = sig.string(4);
+                retType = retType.length() == 0 ? null : retType;
+                func.setReturnType(retType);
+                methods.add(func);
+            }
+        }
+
+        return methods;
+    }
+
     /** returns methods of a class. */
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
@@ -591,10 +630,18 @@ public class PHPIndex {
     }
 
     private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope) {
+        return getTypeSpecificSignatures(typeName, fieldName, name, kind, scope, false);
+    }
+
+    private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope, boolean forConstructor) {
         final Set<SearchResult> searchResult = new HashSet<SearchResult>();
         Map<String, String> signatures = new HashMap<String, String>();
-        for (String indexField : new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE}) {
-            search(indexField, typeName.toLowerCase(), NameKind.PREFIX, searchResult, scope, TERMS_BASE);
+        String[] fields = forConstructor ? new String[]{PHPIndexer.FIELD_CLASS} :
+            new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE};
+
+        for (String indexField : fields) {
+                search(indexField, typeName.toLowerCase(), NameKind.PREFIX,
+                        searchResult, scope, forConstructor ? TERMS_CONSTRUCTOR : TERMS_BASE);
 
             for (SearchResult typeMap : searchResult) {
                 String[] typeSignatures = typeMap.getValues(indexField);
@@ -609,8 +656,14 @@ public class PHPIndex {
                 foundTypeName = (foundTypeName != null) ? foundTypeName.toLowerCase() : null;
                 String persistentURL = typeMap.getPersistentUrl();
 
-                if (!typeName.toLowerCase().equals(foundTypeName)) {
-                    continue;
+                if (forConstructor) {
+                    if (!foundTypeName.startsWith(typeName.toLowerCase())) {
+                        continue;
+                    }
+                } else {
+                    if (!typeName.toLowerCase().equals(foundTypeName)) {
+                        continue;
+                    }
                 }
 
                 for (String signature : rawSignatures) {

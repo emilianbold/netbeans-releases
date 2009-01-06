@@ -41,22 +41,16 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import java.awt.Container;
-import javax.swing.JComponent;
-import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -68,12 +62,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class CreateCompositeApplicationTest extends PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
-    
     private String category, project, project_name;
-    
-    public void testCreateCompositeApplication() {
-        doMeasurement();
-    }
     
     /**
      * Creates a new instance of CreateCompositeApplication
@@ -83,14 +72,6 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN=10000;
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
-             .addTest(CreateCompositeApplicationTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
     }
 
     /**
@@ -103,14 +84,24 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
         expectedTime = 10000;
         WAIT_AFTER_OPEN=10000;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
+             .addTest(CreateCompositeApplicationTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testCreateCompositeApplication() {
+        doMeasurement();
+    }
+
     @Override
     public void initialize(){
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = "Composite Application"; // NOI18N
-
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
-        
         closeAllModal();
     }
     
@@ -123,17 +114,10 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-        log("================= Destination directory={"+directory+"}");
-      //  wizard_location.txtProjectLocation().setText("");
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
-        
         project_name = "CompositeApp_" + System.currentTimeMillis();
-        log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
-        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
     
@@ -144,7 +128,11 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
     
     @Override
     public void close(){
-//        ProjectSupport.closeProject(project_name);
+        CommonUtilities.actionOnProject(project_name, "Close");
+    }
+
+    public void shutdown() {
+        repaintManager().resetRegionFilters();
     }
     
-   }
+}

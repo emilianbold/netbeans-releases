@@ -60,7 +60,6 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author David Kaspar

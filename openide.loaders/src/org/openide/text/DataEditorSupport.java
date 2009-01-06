@@ -824,6 +824,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Called from the <code>EnvListener</code>.
          */
         final void fileRenamed () {
+            //#151787: Sync timestamp when svn client changes timestamp externally during rename.
+            firePropertyChange("expectedTime", null, getTime()); // NOI18N
         }
         
         @Override
@@ -951,6 +953,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             Env myEnv = this.env.get();
             if (myEnv != null) {
                 myEnv.updateDocumentProperty();
+                myEnv.fileRenamed();
             }
         }
         

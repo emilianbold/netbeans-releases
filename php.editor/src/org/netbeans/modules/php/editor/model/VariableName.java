@@ -46,5 +46,6 @@ import java.util.List;
  */
 public interface VariableName extends ModelElement {
     List<? extends TypeScope> getTypes(int offset);
+    boolean representsThis();
     boolean isGloballyVisible();
 }

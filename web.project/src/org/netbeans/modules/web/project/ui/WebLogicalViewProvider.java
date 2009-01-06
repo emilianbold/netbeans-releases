@@ -109,6 +109,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.openide.loaders.DataFolder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
@@ -180,19 +181,37 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
         if (relPath == null) {
             return null;
         }
-        int idx = relPath.lastIndexOf('.'); //NOI18N
+        int idx = relPath.lastIndexOf('/'); //NOI18N
         if (idx != -1)
+        {
             relPath = relPath.substring(0, idx);
+        }
+        else
+        {
+            relPath = "";
+        }
+
         StringTokenizer st = new StringTokenizer(relPath, "/"); //NOI18N
         Node result = NodeOp.findChild(root,rootfo.getName());
         if (result == null) {
             return null;
         }
+
         while (st.hasMoreTokens()) {
             result = NodeOp.findChild(result, st.nextToken());
             if (result == null) {
                 return null;
             }
+        }
+
+        for (Node child : result.getChildren().getNodes(true))
+        {
+           DataObject dobj = child.getLookup().lookup(DataObject.class);
+           if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt()))
+           {
+               result = child;
+               break;
+           }
         }
         
         return result;

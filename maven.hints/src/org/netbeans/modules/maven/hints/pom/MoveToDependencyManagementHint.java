@@ -133,7 +133,6 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         }
 
         public ChangeInfo implement() throws Exception {
-            System.out.println("running the hint");
 
             ChangeInfo info = new ChangeInfo();
             if (!mdl.getState().equals(Model.State.VALID)) {
@@ -178,7 +177,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                 if (fo.equals(current)) {
                     depMdl = mdl;
                 } else {
-                    ModelSource depSource = Utilities.createModelSource(fo, true);
+                    ModelSource depSource = Utilities.createModelSource(fo);
                     depMdl = POMModelFactory.getDefault().getModel(depSource);
                 }
                 int oldpos = -1;

@@ -301,67 +301,77 @@ public class JsIndexer implements Indexer {
             }
 
             try {
-                url = fo.getURL().toExternalForm();
+                if (doc != null) {
+                    doc.readLock(); // For Utilities.getRowStart() access
+                }
 
-                // Make relative URLs for urls in the libraries
-                url = JsIndex.getPreindexUrl(url);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+                try {
+                    url = fo.getURL().toExternalForm();
 
-            if (file.getExtension().equals("sdoc")) { // NOI18N
-                indexScriptDoc(doc, null);
-                return;
-            }
-            
-            AnalysisResult ar = result.getStructure();
-            List<?extends AstElement> children = ar.getElements();
+                    // Make relative URLs for urls in the libraries
+                    url = JsIndex.getPreindexUrl(url);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
 
-            if ((children == null) || (children.size() == 0)) {
-                return;
-            }
-            
-            if (url.endsWith(".js")) {
-                boolean done = indexRelatedScriptDocs();
-                if (done) {
+                if (file.getExtension().equals("sdoc")) { // NOI18N
+                    indexScriptDoc(doc, null);
                     return;
                 }
-            }
 
-            IndexDocument document = factory.createDocument(40); // TODO - measure!
-            documents.add(document);
-            
-            // Add the fields, etc.. Recursively add the children classes or modules if any
-            for (AstElement child : children) {
-                ElementKind childKind = child.getKind();
-                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
-                    String signature = computeSignature(child);
-                    indexFuncOrProperty(child, document, signature);
-                    String name = child.getName();
-                    if (Character.isUpperCase(name.charAt(0))) {
-                        indexClass(child, document, signature);
+                AnalysisResult ar = result.getStructure();
+                List<?extends AstElement> children = ar.getElements();
+
+                if ((children == null) || (children.size() == 0)) {
+                    return;
+                }
+
+                if (url.endsWith(".js")) {
+                    boolean done = indexRelatedScriptDocs();
+                    if (done) {
+                        return;
                     }
-                } else if (childKind == ElementKind.GLOBAL || 
-                        childKind == ElementKind.PROPERTY || 
-                        childKind == ElementKind.CLASS) {
-                    indexFuncOrProperty(child, document, computeSignature(child));
-                } else {
-                    assert false : childKind;
                 }
-                // XXX what about fields, constants, attributes?
-                
-                assert child.getChildren().size() == 0;
-            }
 
-            Map<String,String> classExtends = ar.getExtendsMap();
-            if (classExtends != null && classExtends.size() > 0) {
-                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
-                    String clz = entry.getKey();
-                    String superClz = entry.getValue();
-                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
+                IndexDocument document = factory.createDocument(40); // TODO - measure!
+                documents.add(document);
+
+                // Add the fields, etc.. Recursively add the children classes or modules if any
+                for (AstElement child : children) {
+                    ElementKind childKind = child.getKind();
+                    if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
+                        String signature = computeSignature(child);
+                        indexFuncOrProperty(child, document, signature);
+                        String name = child.getName();
+                        if (Character.isUpperCase(name.charAt(0))) {
+                            indexClass(child, document, signature);
+                        }
+                    } else if (childKind == ElementKind.GLOBAL ||
+                            childKind == ElementKind.PROPERTY ||
+                            childKind == ElementKind.CLASS) {
+                        indexFuncOrProperty(child, document, computeSignature(child));
+                    } else {
+                        assert false : childKind;
+                    }
+                    // XXX what about fields, constants, attributes?
+
+                    assert child.getChildren().size() == 0;
                 }
-                
-                ClassCache.INSTANCE.refresh();
+
+                Map<String,String> classExtends = ar.getExtendsMap();
+                if (classExtends != null && classExtends.size() > 0) {
+                    for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                        String clz = entry.getKey();
+                        String superClz = entry.getValue();
+                        document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
+                    }
+
+                    ClassCache.INSTANCE.refresh();
+                }
+            } finally {
+                if (doc != null) {
+                    doc.readUnlock();
+                }
             }
         }
 

@@ -42,10 +42,10 @@
 package org.netbeans.modules.cnd.api.execution;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +64,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 public class NativeExecutor implements Runnable {
     private final ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
@@ -88,6 +90,7 @@ public class NativeExecutor implements Runnable {
     private InputOutput io;
     private PrintWriter out;
     private PrintWriter err;
+    private Writer outputListener;
     
     /**
      * The real constructor. This class is used to manage native execution, but run and build.
@@ -177,6 +180,10 @@ public class NativeExecutor implements Runnable {
     public String getTabeName() {
         return tabName;
     }
+
+    public void setOutputListener(Writer outputListener) {
+        this.outputListener = outputListener;
+    }
     
     public void setExitValueOverride(String rcfile) {
         this.rcfile = rcfile;
@@ -219,10 +226,14 @@ public class NativeExecutor implements Runnable {
         }
         
         File runDirFile = new File(runDir);
+        OutputWriter originalWriter = io.getOut();
+        if (outputListener != null) {
+            originalWriter = new OutputWriterProxy(originalWriter, outputListener);
+        }
         if (parseOutputForErrors) {
-            out = new PrintWriter(new OutputWindowWriter(hkey, io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(hkey, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         } else {
-            out = io.getOut();
+            out = originalWriter;
         }
         err = io.getErr();
         
@@ -393,10 +404,11 @@ public class NativeExecutor implements Runnable {
     private String exePlusArgsQuoted(String exe, String args) {
         String ret = exe;
         // add quoted arguments
-        if (args == null || args.length() == 0)
-            ret =  "\"" + ret + "\""; // NOI18N
-        else
-            ret =  "\"" + ret + " " + args + "\""; // NOI18N
+        if (args == null || args.length() == 0) {
+            ret = "\"" + ret + "\""; // NOI18N
+        } else {
+            ret = "\"" + ret + " " + args + "\""; // NOI18N
+        }
         
         return ret;
     }
@@ -407,5 +419,84 @@ public class NativeExecutor implements Runnable {
             bundle = NbBundle.getBundle(NativeExecutor.class);
         }
         return bundle.getString(s);
+    }
+
+    private static class OutputWriterProxy extends OutputWriter {
+        private final OutputWriter original;
+        private final Writer duplicate;
+
+        private OutputWriterProxy(OutputWriter original, Writer duplicate) {
+            super(original);
+            this.original = original;
+            this.duplicate = duplicate;
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) {
+            original.write(cbuf, off, len);
+            doWrite(cbuf, off, len);
+        }
+
+        @Override
+        public void println(String s) {
+            original.println(s);
+            doWrite(s.toCharArray(), 0, s.length());
+            doWrite(new char[]{'\n'}, 0, 1);
+        }
+
+        @Override
+        public void write(String s, int off, int len) {
+            original.write(s, off, len);
+            doWrite(s.toCharArray(), off, len);
+        }
+
+        @Override
+        public void write(int c) {
+            original.write(c);
+            doWrite(new char[]{(char)c}, 0, 1);
+        }
+
+        @Override
+        public void write(char data[]) {
+            original.write(data);
+            doWrite(data, 0, data.length);
+        }
+
+        @Override
+        public void flush() {
+            original.flush();
+            try {
+                duplicate.flush();
+            } catch (IOException ex) {
+            }
+        }
+
+        @Override
+        public void close() {
+            original.close();
+            try {
+                duplicate.close();
+            } catch (IOException ex) {
+            }
+        }
+
+        @Override
+        public void reset() throws IOException {
+            original.reset();
+        }
+
+        @Override
+        public void println(String s, OutputListener l) throws IOException {
+            original.println(s,l);
+            doWrite(s.toCharArray(), 0, s.length());
+            doWrite(new char[]{'\n'}, 0, 1);
+        }
+
+        private void doWrite(char[] cbuf, int off, int len){
+            try {
+                duplicate.write(cbuf, off, len);
+            } catch (IOException ex) {
+            }
+        }
     }
 }

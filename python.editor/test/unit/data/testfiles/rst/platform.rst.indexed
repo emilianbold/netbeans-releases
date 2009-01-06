@@ -1,0 +1,32 @@
+
+
+Document 0
+Searchable Keys:
+  item : architecture;F;|DOCUMENTED|DOC_ONLY|;executable,bits,linkage;
+  item : dist;F;|DOCUMENTED|DOC_ONLY|;distname,version,id,supported_dists;
+  item : java_ver;F;|DOCUMENTED|DOC_ONLY|;release,vendor,vminfo,osinfo;
+  item : libc_ver;F;|DOCUMENTED|DOC_ONLY|;executable,lib,version,chunksize;
+  item : linux_distribution;F;|DOCUMENTED|DOC_ONLY|;distname,version,id,supported_dists,full_distribution_name;
+  item : mac_ver;F;|DOCUMENTED|DOC_ONLY|;release,versioninfo,machine;
+  item : machine;F;|DOCUMENTED|DOC_ONLY|;;
+  item : node;F;|DOCUMENTED|DOC_ONLY|;;
+  item : platform;F;|DOCUMENTED|DOC_ONLY|;aliased,terse;
+  item : popen;F;|DOCUMENTED|DOC_ONLY|;cmd,mode,bufsize;
+  item : processor;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_branch;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_build;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_compiler;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_implementation;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_revision;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_version;F;|DOCUMENTED|DOC_ONLY|;;
+  item : python_version_tuple;F;|DOCUMENTED|DOC_ONLY|;;
+  item : release;F;|DOCUMENTED|DOC_ONLY|;;
+  item : system;F;|DOCUMENTED|DOC_ONLY|;;
+  item : system_alias;F;|DOCUMENTED|DOC_ONLY|;system,release,version;
+  item : uname;F;|DOCUMENTED|DOC_ONLY|;;
+  item : version;F;|DOCUMENTED|DOC_ONLY|;;
+  item : win32_ver;F;|DOCUMENTED|DOC_ONLY|;release,version,csd,ptype;
+  module : platform
+
+Not Searchable Keys:
+  modattrs : S

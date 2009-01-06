@@ -86,7 +86,7 @@ public final class DBForeignKey extends DBObject<DBTable> {
         Map<String, DBForeignKey> fkColumns = new HashMap<String, DBForeignKey>();
         while (rs.next()) {
             String fk_name = rs.getString(RS_FK_NAME);
-            DBForeignKey fk = (DBForeignKey) fkColumns.get(fk_name);
+            DBForeignKey fk = fkColumns.get(fk_name);
             if (fk != null) {
                 fk.addColumnNames(rs);
             } else {

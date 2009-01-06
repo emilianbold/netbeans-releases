@@ -44,7 +44,7 @@ package org.netbeans.microedition.svg;
 
 import java.util.Vector;
 
-import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
+import org.netbeans.microedition.svg.SVGList.DefaultListModel;
 import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.PointerEvent;
@@ -179,6 +179,8 @@ public class SVGComboBox extends SVGComponent implements
         myInputHandler = new ComboBoxInputHandler();
         
         initEditor();
+        
+        setModel( new DefaultModel( new Vector()) );
     }
 
     public void focusGained() {
@@ -404,11 +406,13 @@ public class SVGComboBox extends SVGComponent implements
         }
     }
     
-    private void setItem(){
+    private void setItem() {
         int index = getModel().getSelectedIndex();
-        Object selected = index <getModel().getSize() ? 
-                getModel().getElementAt(index) : null ;
-        checkedGetEditor().setItem( selected );
+        if (index >= 0) {
+            Object selected = index < getModel().getSize() ? getModel()
+                    .getElementAt(index) : null;
+            checkedGetEditor().setItem(selected);
+        }
     }
     
     private SVGList getList(){
@@ -428,7 +432,7 @@ public class SVGComboBox extends SVGComponent implements
         void removeActionListener(SVGActionListener listener);
     }
     
-    public static class DefaultModel extends DefaultListMoldel 
+    public static class DefaultModel extends DefaultListModel 
         implements ComboBoxModel 
     {
         
@@ -698,7 +702,7 @@ public class SVGComboBox extends SVGComponent implements
                 setText( "null" );                           // NOI18N
             }
         }
-        
+
     }
     
     private ComboBoxModel myModel;

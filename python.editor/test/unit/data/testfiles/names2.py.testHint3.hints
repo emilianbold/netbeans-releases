@@ -1,0 +1,17 @@
+    def foo():
+           -
+HINT:First argument should be 'self' or 'cls'
+FIX:Insert a new first parameter "self"
+    def noargs():
+              -
+HINT:First argument should be 'self' or 'cls'
+FIX:Insert a new first parameter "self"
+    def bad1():
+            -
+HINT:First argument should be 'self' or 'cls'
+FIX:Insert a new first parameter "self"
+    def bad2(filename):
+             --------
+HINT:First argument (filename) should be self or cls
+FIX:Insert a new first parameter "self"
+FIX:Rename first parameter "filename" to self

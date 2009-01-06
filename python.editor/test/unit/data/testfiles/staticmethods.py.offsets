@@ -1,0 +1,15 @@
+
+<Module><ClassDef>class Page(<Name>object</Name>):
+  <FunctionDef>def __init__(<Name>self</Name>, <Name>name</Name>, <Name>entity</Name>=<Name>None</Name>):
+    <Assign><Attribute><Name>self</Name>.name</Attribute> = <Name>name</Name></Assign>
+    <Assign><Attribute><Name>self</Name>.entity</Attribute> = <Name>entity</Name></Assign>
+
+ </FunctionDef> <FunctionDef><Name>@staticmethod
+</Name>  def load(<Name>name</Name>):
+    <Pass>pass</Pass>
+
+ </FunctionDef> <FunctionDef><Name>@staticmethod
+</Name>  def exists(<Name>name</Name>):
+    <Pass>pass</Pass>
+
+</FunctionDef></ClassDef></Module>

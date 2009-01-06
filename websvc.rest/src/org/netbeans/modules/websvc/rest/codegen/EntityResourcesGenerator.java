@@ -653,7 +653,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
             EntityResourceBean subBean = resource.getResourceBean();
 
             if (subBean.isContainer()) {
-                classes.add(Constants.COLLECTION_TYPE);
+                classes.add(resource.getFieldInfo().getType());
             } else {
                 //Only add non java.lang types.
                 String type = getIdFieldType(subBean);
@@ -1990,7 +1990,24 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 EntityResourceBean foreignBean = model.getContainerResourceBean(fieldInfo.getTypeArg());
                 String relatedEntityName = model.getItemResourceBean(fieldInfo.getTypeArg()).getName();
                 argType = getConverterType(foreignBean);
-                bodyText = "{entity.$SETTER$((value != null) ? value.getEntities() : null);}";     //NOI18N    
+                bodyText = "{entity.$SETTER$((value != null) ? ";   //NOI18N
+
+                String collectionType = Constants.COLLECTION_TYPE;
+
+                String type = fieldInfo.getType();
+
+                if (type.equals(Constants.LIST_TYPE)) {
+                    collectionType = Constants.ARRAY_LIST_TYPE;
+                } else if (type.equals(Constants.SET_TYPE)) {
+                    collectionType = Constants.HASH_SET_TYPE;
+                }
+
+                if (collectionType.equals(Constants.COLLECTION_TYPE)) {
+                    bodyText += "value.getEntities() : null);}";     //NOI18N
+                } else {
+                    bodyText += "new " + collectionType + "<" + fieldInfo.getSimpleTypeArgName() + ">" +
+                            "(value.getEntities()) : null);}";
+                }
 
                 bodyText = bodyText.replace("$CLASS$", relatedEntityName). //NOI18N
                         replace("$SETTER$", setterName);        //NOI18N
@@ -2079,13 +2096,22 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                         getGetterName(getEntityClassInfo(f.getType()).getIdFieldInfo()));
                 bodyText += template;
             } else if (f.isManyToMany() || f.isOneToMany()) {
-                template = "Collection<$CLASS$> $FIELD$ = entity.$GETTER$();" +
-                        "Collection<$CLASS$> new$FIELD$ = new java.util.ArrayList<$CLASS$>();" +
+                String colType = f.getType();
+                String concreteColType = Constants.ARRAY_LIST_TYPE;
+
+                if (colType.equals(Constants.SET_TYPE)) {
+                    concreteColType = Constants.HASH_SET_TYPE;
+                }
+                
+                template = "$COL_TYPE$<$CLASS$> $FIELD$ = entity.$GETTER$();" +
+                        "$COL_TYPE$<$CLASS$> new$FIELD$ = new $CONCRETE_COL_TYPE$<$CLASS$>();" +
                         "for ($CLASS$ item : $FIELD$) {" +
                         "new$FIELD$.add(em.getReference($CLASS$.class, item.$ID_GETTER$()));" +
                         "}" +
                         "entity.$SETTER$(new$FIELD$);";
-                template = template.replace("$CLASS$", f.getSimpleTypeArgName()).
+                template = template.replace("$COL_TYPE$", f.getSimpleTypeName()).
+                        replace("$CLASS$", f.getSimpleTypeArgName()).
+                        replace("$CONCRETE_COL_TYPE$", concreteColType).
                         replace("$FIELD$", f.getName()).replace("$GETTER$", getGetterName(f)).
                         replace("$ID_GETTER$", getGetterName(getEntityClassInfo(f.getTypeArg()).getIdFieldInfo())).
                         replace("$SETTER$", getSetterName(f));

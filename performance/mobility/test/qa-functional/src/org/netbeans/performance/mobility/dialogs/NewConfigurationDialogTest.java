@@ -41,13 +41,14 @@
 
 package org.netbeans.performance.mobility.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -58,14 +59,14 @@ import org.netbeans.junit.NbModuleSuite;
 public class NewConfigurationDialogTest  extends PerformanceTestCase {
 
     private Node testNode;    
-    private String targetProject, TITLE;
+    private String targetProject;
     
     public NewConfigurationDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         targetProject = "MobileApplicationVisualMIDlet";              
-        
     }
+
     public NewConfigurationDialogTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -86,28 +87,23 @@ public class NewConfigurationDialogTest  extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        log(":: initialize");
         String projectConfNodeName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.Bundle", "LBL_ProjectConfigurations");
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject),projectConfNodeName);
         testNode.select();
-        
     }
+
     public void prepare() {
-        log(":: prepare");
         testNode.select();
     }
 
     public ComponentOperator open() {
-        log(":: open");
         String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.customizer.Bundle", "LBL_VCS_AddConfiguration");
-        log(" Invoking '"+cmdName+"' command");
         new ActionNoBlock(null,cmdName).performPopup(testNode);
         return new NbDialogOperator(cmdName);
     }
     
     @Override
     public void close() {
-        log(":: close");
         if(testedComponentOperator != null) {
             ((NbDialogOperator)testedComponentOperator).close();
         }

@@ -335,7 +335,7 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">sourcepath</xsl:attribute>
-                        <xsl:attribute name="default"/>
+                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>

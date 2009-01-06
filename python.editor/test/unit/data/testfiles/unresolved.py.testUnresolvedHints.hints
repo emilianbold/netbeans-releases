@@ -1,0 +1,12 @@
+putenv("hehe", "hoho")
+------
+HINT:Undefined name "putenv"
+FIX:Import os: putenv(key,value)
+sys.displayhook("value")
+---
+HINT:Undefined name "sys"
+FIX:Import sys
+zip = ZipFile()
+      -------
+HINT:Undefined name "ZipFile"
+FIX:Import zipfile: ZipFile

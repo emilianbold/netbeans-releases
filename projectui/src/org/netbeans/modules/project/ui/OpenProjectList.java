@@ -683,13 +683,22 @@ public final class OpenProjectList {
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
-                if ( !openProjects.contains( projects[i] ) ) {
+                Iterator<Project> it = openProjects.iterator();
+                boolean found = false;
+                while (it.hasNext()) {
+                    if (it.next().equals(projects[i])) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
                     continue; // Nothing to remove
                 }
                 if ( !mainClosed ) {
                     mainClosed = isMainProject( projects[i] );
                 }
-                openProjects.remove( projects[i] );
+                // remove the project from openProjects
+                it.remove();
                 removeModuleInfo(projects[i]);
                 
                 projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);

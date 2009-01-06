@@ -29,7 +29,7 @@ public class GrammarsImpl extends NamedImpl implements Grammars {
     }
 
     public void addInclude(Include grammars) {
-        addAfter(INCLUDE_PROPERTY, grammars, TypeCollection.FOR_GRAMMARS.types());
+        addAfter(INCLUDE_PROPERTY, grammars, TypeCollection.FOR_INCLUDE.types());
     }
 
     public void removeInclude(Include grammars) {

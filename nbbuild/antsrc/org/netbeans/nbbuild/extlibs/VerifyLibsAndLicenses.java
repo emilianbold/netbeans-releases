@@ -109,7 +109,7 @@ public class VerifyLibsAndLicenses extends Task {
         } catch (IOException x) {
             throw new BuildException(x, getLocation());
         }
-        JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+        JUnitReportWriter.writeReport(this, null, reportFile, pseudoTests);
         } catch (NullPointerException x) {x.printStackTrace(); throw x;}
     }
 

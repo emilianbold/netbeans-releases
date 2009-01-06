@@ -43,8 +43,8 @@ package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -76,7 +76,7 @@ public class JspParserImpl implements JspParserAPI {
     private final TldChangeSupport tldChangeSupport;
     
     private static final Logger LOGGER = Logger.getLogger(JspParserImpl.class.getName());
-    private static Constructor webAppParserImplConstructor;
+    private static Method webAppParserImplFactoryMethod;
     
     private static final JspParserAPI.JspOpenInfo DEFAULT_OPENINFO =
             new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
@@ -90,7 +90,7 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     private static void initReflection() {
-        if (webAppParserImplConstructor == null) {
+        if (webAppParserImplFactoryMethod == null) {
             File[] files = new File[5];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false); // NOI18N
             files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser-2.0.jar", null, false); // NOI18N
@@ -107,7 +107,7 @@ public class JspParserImpl implements JspParserAPI {
                 }
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class<?> cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport"); // NOI18N
-                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {JspParserImpl.class, WebModule.class});
+                webAppParserImplFactoryMethod = cl.getDeclaredMethod("create", JspParserImpl.class, WebModule.class); // NOI18N
             } catch (NoSuchMethodException e) {
                 LOGGER.log(Level.INFO, null, e);
             } catch (MalformedURLException e) {
@@ -190,10 +190,8 @@ public class JspParserImpl implements JspParserAPI {
         // PENDING - do caching for individual JSPs
         try {
             initReflection();
-            return (WebAppParseProxy) webAppParserImplConstructor.newInstance(new Object[] {this, wm});
+            return (WebAppParseProxy) webAppParserImplFactoryMethod.invoke(null, this, wm);
         } catch (IllegalAccessException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (InstantiationException e) {
             LOGGER.log(Level.INFO, null, e);
         } catch (InvocationTargetException e) {
             LOGGER.log(Level.INFO, null, e);

@@ -98,7 +98,7 @@ public final class ResultModel {
      */
     private ResultTreeModel treeModel;
     /** */
-    private ResultView resultView;
+    private ResultViewPanel resultView;
     
     /**
      * limit (number of found files or matches) reached during search
@@ -164,7 +164,7 @@ public final class ResultModel {
      *
      * @param  observer  observer or <code>null</code>
      */
-    void setObserver(ResultView observer) {
+    void setObserver(ResultViewPanel observer) {
         this.resultView = observer;
     }
 
@@ -511,4 +511,7 @@ public final class ResultModel {
         return finishMessage;
     }
 
+    ResultViewPanel getResultView(){
+        return resultView;
+    }
 }

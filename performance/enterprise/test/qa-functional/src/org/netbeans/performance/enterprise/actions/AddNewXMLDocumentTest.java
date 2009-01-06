@@ -41,21 +41,17 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test Add New XML Document
  *
@@ -64,8 +60,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class AddNewXMLDocumentTest extends PerformanceTestCase {
     
     private NewFileNameLocationStepOperator location;
-    
-    private int index;
     
     /**
      * Creates a new instance of AddNewXMLDocument
@@ -98,8 +92,6 @@ public class AddNewXMLDocumentTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-        index=1;
-//        new CloseAllDocumentsAction().performAPI();
     }
 
     public void testAddNewXMLDocumentTest() {
@@ -107,19 +99,14 @@ public class AddNewXMLDocumentTest extends PerformanceTestCase {
     }
 
     public void prepare(){
-        new EventTool().waitNoEvent(2500);
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
-        
         // Workaround for issue 143497
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("XML Document"); //NOI18N
-        
         wizard.next();
-        
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("XMLDoc_"+System.currentTimeMillis());
         wizard.next();
@@ -133,6 +120,5 @@ public class AddNewXMLDocumentTest extends PerformanceTestCase {
     @Override
     public void close(){
     }
-    
 
 }

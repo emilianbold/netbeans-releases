@@ -20,6 +20,7 @@ STRUCT S2 (S2 ) [6:1/40-8:2/81] lcurly=67 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC i [7:5/73-7:11/79]  TYPE: int TEXT=int  [7:5/73-7:8/76]  INIT: null  SCOPE: S2 
+TYPEDEF ts1  [8:3/82-8:6/85] TYPE: S2 TEXT=S2  [6:1/40-8:7/86] SCOPE: $Global$ 
 STRUCT S3 (S3 ) [10:1/88-12:2/128] lcurly=114 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -34,6 +35,7 @@ CLASS C2 (C2 ) [18:1/172-20:2/212] lcurly=198 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE i [19:5/204-19:11/210]  TYPE: int TEXT=int  [19:5/204-19:8/207]  INIT: null  SCOPE: C2 
+TYPEDEF tc1  [20:3/213-20:6/216] TYPE: C2 TEXT=C2  [18:1/172-20:7/217] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 STRUCT S1 (S1 ) [2:1/1-4:2/34] lcurly=20 SCOPE: $Global$ 
@@ -45,6 +47,7 @@ STRUCT S2 (S2 ) [6:1/40-8:2/81] lcurly=67 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC i [7:5/73-7:11/79]  TYPE: int TEXT=int  [7:5/73-7:8/76]  INIT: null  SCOPE: S2 
+TYPEDEF ts1  [8:3/82-8:6/85] TYPE: S2 TEXT=S2  [6:1/40-8:7/86] SCOPE: $Global$ 
 STRUCT S3 (S3 ) [10:1/88-12:2/128] lcurly=114 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -59,4 +62,5 @@ CLASS C2 (C2 ) [18:1/172-20:2/212] lcurly=198 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE i [19:5/204-19:11/210]  TYPE: int TEXT=int  [19:5/204-19:8/207]  INIT: null  SCOPE: C2 
+TYPEDEF tc1  [20:3/213-20:6/216] TYPE: C2 TEXT=C2  [18:1/172-20:7/217] SCOPE: $Global$ 
 

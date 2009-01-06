@@ -141,8 +141,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         }
     }
 
-    @Override
-    public boolean isValid() {
+    boolean hasValidData() {
         boolean result = isServerValid() && isDisplayNameValid();
         if (result) {
             wizard.setErrorMessage(null);
@@ -255,6 +254,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         });
 
         serverListBox.setModel(new WizardListModel());
+        serverListBox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         serverListBox.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 serverListBoxValueChanged(evt);

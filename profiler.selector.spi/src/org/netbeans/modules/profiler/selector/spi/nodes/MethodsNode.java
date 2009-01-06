@@ -40,101 +40,35 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class MethodsNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
+abstract public class MethodsNode extends ContainerNode {
     private static class Children extends GreedySelectorChildren<MethodsNode> {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
         protected List<?extends SelectorNode> prepareChildren(final MethodsNode parent) {
-            final List<MethodNode> methodNodes = new ArrayList<MethodNode>();
-
-            try {
-                ClasspathInfo cpInfo = parent.cpInfo;
-
-                if (parent.isShowingInheritedMethods()) {
-                    // we need to have a complete project classpath to be able to show also inherited methods
-                    cpInfo = ProjectUtilities.getClasspathInfo(parent.getProject(), true, true, true);
-                }
-
-                JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationController controller)
-                                 throws Exception {
-                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
-
-                            TypeElement classElement = SourceUtils.resolveClassByName(parent.getClassHandle().getBinaryName(),
-                                                                                      controller);
-                            List<ExecutableElement> methods = ElementFilter.methodsIn(parent.isShowingInheritedMethods()
-                                                                                      ? controller.getElements()
-                                                                                                  .getAllMembers(classElement)
-                                                                                      : classElement.getEnclosedElements());
-
-                            for (ExecutableElement method : methods) {
-                                MethodNode methodNode = new MethodNode(parent.cpInfo, method, parent);
-
-                                if (methodNode.getSignature() != null) {
-                                    methodNodes.add(methodNode);
-                                }
-                            }
-                        }
-                    }, true);
-                Collections.sort(methodNodes, MethodNode.COMPARATOR);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            final List<MethodNode> methodNodes = parent.getMethodNodes(parent);
 
             return methodNodes;
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final ClasspathInfo cpInfo;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
     /** Creates a new instance of MethodsNode */
-    public MethodsNode(final ClasspathInfo cpInfo, final ClassNode parent) {
+    public MethodsNode(final ClassNode parent) {
         super(NbBundle.getMessage(MethodsNode.class, "Methods_DisplayName"), IconResource.METHODS_ICON, parent); // NOI18N
-        this.cpInfo = cpInfo;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public ElementHandle<TypeElement> getClassHandle() {
-        return ((ClassNode) getParent()).getClassHandle();
     }
 
     protected SelectorChildren getChildren() {
         return new Children();
+    }
+
+    abstract protected List<MethodNode> getMethodNodes(MethodsNode parent);
+
+    final protected ClassNode getParentClass() {
+        return (ClassNode)getParent();
     }
 }

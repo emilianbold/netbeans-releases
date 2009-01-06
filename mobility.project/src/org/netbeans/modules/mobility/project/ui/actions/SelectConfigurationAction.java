@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
-public class SelectConfigurationAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
+public final class SelectConfigurationAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
     private final Lookup context;
 
@@ -91,7 +91,6 @@ public class SelectConfigurationAction extends AbstractAction implements Context
         assert project != null;
         ProjectConfigurationsHelper helper = project.getConfigurationHelper();
         JMenu result = new JMenu(NbBundle.getMessage(SelectConfigurationAction.class, "LBL_SelConfigurationAction")); //NO18N
-        //NOI18N
         ProjectConfiguration active = helper.getActiveConfiguration();
         for (ProjectConfiguration c : helper.getConfigurations()) {
             OneConfigurationAction cfgAction = new OneConfigurationAction(c);

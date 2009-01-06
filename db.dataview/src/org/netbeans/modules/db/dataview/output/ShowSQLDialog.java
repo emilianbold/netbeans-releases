@@ -50,7 +50,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.WindowManager;
 
@@ -60,7 +59,6 @@ import org.openide.windows.WindowManager;
  */
 class ShowSQLDialog extends javax.swing.JDialog {
 
-    /** Creates new form ShowSQLDialog */
     public ShowSQLDialog() {
         super(WindowManager.getDefault().getMainWindow(), true);
         initComponents();

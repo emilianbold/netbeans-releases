@@ -66,8 +66,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     private Map<String, String> oldNameMap = new HashMap<String, String>();
 
     private CompilerSet2Configuration(CompilerSet2Configuration other) {
-        this.dhconf = (DevelopmentHostConfiguration) other.dhconf.clone();
-        this.compilerSetName = (StringConfiguration) other.compilerSetName.clone();
+        this.dhconf = other.dhconf.clone();
+        this.compilerSetName = other.compilerSetName.clone();
         this.flavor = other.flavor;
         this.compilerSetNodeProp = null;        
     }
@@ -80,10 +80,11 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
                 csName = getCompilerSetManager().getCompilerSet(0).getName();
             } else {
-                if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
+                if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     csName = "Sun"; // NOI18N
-                else
+                } else {
                     csName = "GNU"; // NOI18N
+                }
             }
         }
         compilerSetName = new StringConfiguration(null, csName);
@@ -196,10 +197,11 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         if (displayName != null && dhconf.isOnline()) {
             return displayName;
         } else {
-            if (displayIfNotFound)
+            if (displayIfNotFound) {
                 return createNotFoundName(getCompilerSetName().getValue());
-            else
-                return "";
+            } else {
+                return ""; // NOI18N
+            }
         }
     }
 
@@ -225,7 +227,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     @Override
-    public Object clone() {
+    public CompilerSet2Configuration clone() {
         CompilerSet2Configuration clone = new CompilerSet2Configuration(this);
         return clone;
     }
@@ -274,9 +276,9 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public String getFlavor() {
         if (flavor == null) {
             CompilerSet cs = getCompilerSet();
-            if (cs != null)
+            if (cs != null) {
                 this.flavor = cs.getCompilerFlavor().toString();
-
+            }
         }
         return flavor;
     }

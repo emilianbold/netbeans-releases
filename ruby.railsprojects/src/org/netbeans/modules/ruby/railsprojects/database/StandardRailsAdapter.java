@@ -49,7 +49,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  *
  * @author Erno Mononen
  */
-class StandardRailsAdapter implements RailsDatabaseConfiguration {
+class StandardRailsAdapter extends RailsDatabaseConfiguration {
     
     private final String database;
 

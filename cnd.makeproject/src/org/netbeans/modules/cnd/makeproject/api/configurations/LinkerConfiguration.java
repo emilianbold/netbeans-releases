@@ -224,20 +224,20 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     @Override
-    public Object clone() {
+    public LinkerConfiguration clone() {
         LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
         // LinkerConfiguration
-        clone.setOutput((StringConfiguration) getOutput().clone());
+        clone.setOutput(getOutput().clone());
         clone.setAdditionalLibs(getAdditionalLibs().cloneConf());
         clone.setDynamicSearch(getDynamicSearch().cloneConf());
-        clone.setCommandLineConfiguration((OptionsConfiguration) getCommandLineConfiguration().clone());
-        clone.setAdditionalDependencies((OptionsConfiguration) getAdditionalDependencies().clone());
-        clone.setStripOption((BooleanConfiguration) getStripOption().clone());
-        clone.setPICOption((BooleanConfiguration) getPICOption().clone());
-        clone.setNorunpathOption((BooleanConfiguration) getNorunpathOption().clone());
-        clone.setNameassignOption((BooleanConfiguration) getNameassignOption().clone());
+        clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
+        clone.setAdditionalDependencies(getAdditionalDependencies().clone());
+        clone.setStripOption(getStripOption().clone());
+        clone.setPICOption(getPICOption().clone());
+        clone.setNorunpathOption(getNorunpathOption().clone());
+        clone.setNameassignOption(getNameassignOption().clone());
         clone.setLibrariesConfiguration(getLibrariesConfiguration().cloneConf());
-        clone.setTool((StringConfiguration) getTool().clone());
+        clone.setTool(getTool().clone());
         return clone;
     }
 
@@ -419,7 +419,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     private String getOutputDefault() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
-        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
+        if (getMakeConfiguration().isApplicationConfiguration() || getMakeConfiguration().isQmakeConfiguration()) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());

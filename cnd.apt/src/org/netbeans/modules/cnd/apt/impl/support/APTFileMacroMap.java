@@ -206,13 +206,11 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     public void popExpanding() {
-        Object curMacro = null;
         try {
-            curMacro = expandingMacros.pop();
+            expandingMacros.pop();
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why pop from empty stack?"; // NOI18N
         }
-//        return curMacro;
     }
 
     public boolean isExpanding(APTToken token) {

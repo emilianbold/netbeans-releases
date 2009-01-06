@@ -38,92 +38,115 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.openide.util.NbPreferences;
 
 public class FileChooser extends JFileChooser {
+
     private static File currectChooserFile = null;
-    public FileChooser(String titleText, String buttonText, int mode, FileFilter[] filters, String feed, boolean useParent) {
-	super();
-	setFileHidingEnabled(false);
-	setFileSelectionMode(mode);
-	setDialogTitle(titleText); // NOI18N
-        if (buttonText != null)
-            setApproveButtonText(buttonText); // NOI18N
 
-	if (filters != null) {
-	    for (int i = 0; i < filters.length; i++) {
-		addChoosableFileFilter(filters[i]);
-	    }
-	    setFileFilter(filters[0]);
-	}
-	//System.out.println("A - currectChooserFile " + currectChooserFile);
+    public FileChooser(String titleText, String buttonText, int mode, FileFilter[] filters, String feedFilePath, boolean useParent) {
+        super();
+        setFileHidingEnabled(false);
+        setFileSelectionMode(mode);
+        setDialogTitle(titleText);
+        if (buttonText != null) {
+            setApproveButtonText(buttonText);
+        }
+        if (filters != null) {
+            for (int i = 0; i < filters.length; i++) {
+                addChoosableFileFilter(filters[i]);
+            }
+            setFileFilter(filters[0]);
+        }
+        //System.out.println("A - currectChooserFile " + currectChooserFile);
 
-	String feedFilePath = feed;
-	File feedFilePathFile = null;
+        File feedFilePathFile = null;
+        if (feedFilePath != null && feedFilePath.length() > 0) {
+            feedFilePathFile = new File(feedFilePath);
+            try {
+                feedFilePathFile = feedFilePathFile.getCanonicalFile();
+            } catch (IOException e) {
+            }
+        }
 
-	if (feedFilePath != null && feedFilePath.length() > 0) {
-	    feedFilePathFile = new File(feedFilePath);
-	    try {
-		feedFilePathFile = feedFilePathFile.getCanonicalFile();
-	    }
-	    catch (IOException e) {
-	    }
-	}
+        if (feedFilePathFile != null && feedFilePathFile.exists()) {
+            FileChooser.setCurrectChooserFile(feedFilePathFile);
+        }
 
-	if (feedFilePathFile != null && feedFilePathFile.exists()) {
-	    currectChooserFile = feedFilePathFile;
-	}
+        if (FileChooser.getCurrectChooserFile() == null && feedFilePathFile == null) {
+            feedFilePathFile = new File(getLastPath());
+        }
+        if (FileChooser.getCurrectChooserFile() == null && feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
+            FileChooser.setCurrectChooserFile(feedFilePathFile.getParentFile());
+            useParent = false;
+        }
 
-        if (currectChooserFile == null && feedFilePathFile == null)
-            feedFilePathFile = new File(System.getProperty("user.home")); // NOI18N
-        
-	if (currectChooserFile == null && feedFilePathFile.getParentFile().exists()) {
-	    currectChooserFile = feedFilePathFile.getParentFile();
-	    useParent = false;
-	}
-	    
 
-	// Set currect directory
-	if (currectChooserFile != null) {
-	    if (useParent) {
-		if (currectChooserFile != null && currectChooserFile.exists()) {
-		    setSelectedFile(currectChooserFile);
-		}
-	    }
-	    else {
-		if (currectChooserFile != null && currectChooserFile.exists()) {
-		    setCurrentDirectory(currectChooserFile);
-		}
-	    }
-	}
-	else {
-	    String sd = System.getProperty("spro.pwd"); // NOI18N
-	    if (sd != null) {
-		File sdFile = new File(sd);
-		if (sdFile.exists()) {
-		    setCurrentDirectory(sdFile);
-		}
-	    }
-	}
+        // Set currect directory
+        if (FileChooser.getCurrectChooserFile() != null) {
+            if (useParent) {
+                if (FileChooser.getCurrectChooserFile() != null && FileChooser.getCurrectChooserFile().exists()) {
+                    setSelectedFile(FileChooser.getCurrectChooserFile());
+                }
+            } else {
+                if (FileChooser.getCurrectChooserFile() != null && FileChooser.getCurrectChooserFile().exists()) {
+                    setCurrentDirectory(FileChooser.getCurrectChooserFile());
+                }
+            }
+        } else {
+            String sd = System.getProperty("spro.pwd"); // NOI18N
+            if (sd != null) {
+                File sdFile = new File(sd);
+                if (sdFile.exists()) {
+                    setCurrentDirectory(sdFile);
+                }
+            }
+        }
     }
 
+    private String getLastPath(){
+        String feed = System.getProperty("user.home"); // NOI18N
+        if (feed == null) {
+            feed = ""; // NOI18N
+        }
+        Preferences pref = NbPreferences.forModule(FileChooser.class);
+        String res = pref.get("last-file", feed); // NOI18N
+        File file = new File(res);
+        if (!file.exists()) {
+            if (!res.equals(feed)){
+                res = feed;
+            }
+        }
+        return res;
+    }
+
+
+    @Override
     public int showOpenDialog(Component parent) {
-	int ret = super.showOpenDialog(parent);
-	if (ret != CANCEL_OPTION) {
-	    if (getSelectedFile().exists())
-		currectChooserFile = getSelectedFile();
-	}
-	return ret;
+        int ret = super.showOpenDialog(parent);
+        if (ret != CANCEL_OPTION) {
+            if (getSelectedFile().exists()) {
+                setCurrectChooserFile(getSelectedFile());
+                Preferences pref = NbPreferences.forModule(FileChooser.class);
+                pref.put("last-file", getCurrectChooserFile().getAbsolutePath()); // NOI18N
+            }
+        }
+        return ret;
     }
 
     public static File getCurrectChooserFile() {
-	return currectChooserFile;
+        return currectChooserFile;
+    }
+
+    private static void setCurrectChooserFile(File aCurrectChooserFile) {
+        currectChooserFile = aCurrectChooserFile;
     }
 }

@@ -183,26 +183,43 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     private final RequestProcessor.Task tldChangeTask;
 
-    /** Creates a new instance of WebAppParseSupport */
-    public WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
+    // #152482 - this escaped from constructor
+    public static WebAppParseProxy create(JspParserImpl jspParser, WebModule wm) {
+        WebAppParseSupport instance = new WebAppParseSupport(jspParser, wm);
+
+        // register file listener (listen to changes of tld files, web.xml)
+        try {
+            FileSystem fs = wm.getDocumentBase().getFileSystem();
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(instance.fileSystemListener, fs));
+        } catch (FileStateInvalidException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+
+        // register weak class path listeners
+        if (instance.wmRoot != null) { // in fact should not happen, see #154892 for more information
+            ClassPath compileCP = ClassPath.getClassPath(instance.wmRoot, ClassPath.COMPILE);
+            if (compileCP != null) {
+                compileCP.addPropertyChangeListener(WeakListeners.propertyChange(instance, compileCP));
+            }
+            ClassPath executeCP = ClassPath.getClassPath(instance.wmRoot, ClassPath.EXECUTE);
+            if (executeCP != null) {
+                executeCP.addPropertyChangeListener(WeakListeners.propertyChange(instance, executeCP));
+            }
+        }
+
+        return instance;
+    }
+
+    private WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
         this.jspParser = jspParser;
         this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
-        fileSystemListener = new FileSystemListener();
-        initOptions(true);
-        // register file listener (listen to changes of tld files, web.xml)
-        try {
-            FileSystem fs = wm.getDocumentBase().getFileSystem();
-            fs.addFileChangeListener(FileUtil.weakFileChangeListener(fileSystemListener, fs));
-        } catch (FileStateInvalidException ex) {
-            LOG.log(Level.INFO, null, ex);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Web pages: " + wmRoot);
+            LOG.fine("WEB-INF: " + webInf);
         }
-        // register weak class path listeners
-        ClassPath compileCP = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
-        compileCP.addPropertyChangeListener(WeakListeners.propertyChange(this, compileCP));
-        ClassPath executeCP = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-        executeCP.addPropertyChangeListener(WeakListeners.propertyChange(this, executeCP));
+        fileSystemListener = new FileSystemListener();
 
         // request procesor tasks
         RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
@@ -213,6 +230,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         // init tag library cache
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
+
+        initOptions(true);
     }
 
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor
@@ -245,7 +264,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         long start = 0;
         if (LOG.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
-            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initializing for WM " + FileUtil.toFile(wmRoot));
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initializing for WM " + (wmRoot != null ? FileUtil.toFile(wmRoot) : "<null>"));
         }
         WebModule webModule = wm.get();
         if (webModule == null) {
@@ -284,24 +303,26 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         // issue 54845. On the class loader we must put the java sources as well. It's in the case, when there are a
         // tag hendler, which is added in a tld, which is used in the jsp file.
-        ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
-        if (cp != null) {
-            for (FileObject root : cp.getRoots()) {
-                helpurl = findInternalURL(root);
-                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
-                    loadingTable.put(helpurl, helpurl);
-                    tomcatTable.put(helpurl, findExternalURL(root));
+        if (wmRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
+            if (cp != null) {
+                for (FileObject root : cp.getRoots()) {
+                    helpurl = findInternalURL(root);
+                    if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
+                        loadingTable.put(helpurl, helpurl);
+                        tomcatTable.put(helpurl, findExternalURL(root));
+                    }
                 }
             }
-        }
-        // libraries and built classes are on the execution classpath
-        cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-        if (cp != null) {
-            for (FileObject root : cp.getRoots()) {
-                helpurl = findInternalURL(root);
-                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
-                    loadingTable.put(helpurl, helpurl);
-                    tomcatTable.put(helpurl, findExternalURL(root));
+            // libraries and built classes are on the execution classpath
+            cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
+            if (cp != null) {
+                for (FileObject root : cp.getRoots()) {
+                    helpurl = findInternalURL(root);
+                    if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
+                        loadingTable.put(helpurl, helpurl);
+                        tomcatTable.put(helpurl, findExternalURL(root));
+                    }
                 }
             }
         }
@@ -334,8 +355,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
      }
 
-    // #127379
+    // #127379 - XXX review after listening on a web module is possible
     private FileObject getWebInf() {
+        if (wmRoot == null) {
+            return null;
+        }
         WebModule webModule = WebModule.getWebModule(wmRoot);
         if (webModule != null) {
             return webModule.getWebInf();
@@ -423,6 +447,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
 
     private String getJSPUri(FileObject jsp) {
+        // #154892
+        if (wmRoot == null) {
+            // what to return???
+            return "/"; // NOI18N
+        }
         return ContextUtil.findRelativeContextPath(wmRoot, jsp);
     }
 
@@ -726,7 +755,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 fo = en.nextElement();
                 if (fo.getExt().equals("tld")) { // NOI18N
                     String path;
-                    if (ContextUtil.isInSubTree(wmRoot, fo)) {
+                    if (wmRoot != null && ContextUtil.isInSubTree(wmRoot, fo)) {
                         path = "/" + ContextUtil.findRelativePath(wmRoot, fo); // NOI18N
                     } else {
                         // the web-inf folder is mapped somewhere else
@@ -1055,8 +1084,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             if (fo.getExt().equals("tld") // NOI18N
                     || fo.getNameExt().equals("web.xml") // NOI18N
                     || determineIsTagFile(fo)) { // #109478
-                if (FileUtil.isParentOf(wmRoot, fo)
-                        || (FileUtil.isParentOf(webInf, fo))) {
+                if ((wmRoot != null && FileUtil.isParentOf(wmRoot, fo))
+                        || (webInf != null && FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
                     // our file => process caches
                     // #133702

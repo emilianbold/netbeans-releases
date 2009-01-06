@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
     </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -65,19 +67,16 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="cbVerify" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="tServletName" alignment="0" pref="345" max="32767" attributes="2"/>
-                                          <Component id="tURLPattern" alignment="0" pref="345" max="32767" attributes="2"/>
-                                          <Component id="beanPackageTextField" alignment="0" pref="345" max="32767" attributes="2"/>
+                                          <Component id="cbVerify" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="tServletName" alignment="0" pref="324" max="32767" attributes="2"/>
+                                          <Component id="tURLPattern" alignment="0" pref="324" max="32767" attributes="2"/>
+                                          <Component id="beanPackageTextField" alignment="0" pref="324" max="32767" attributes="2"/>
                                       </Group>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -115,16 +114,16 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="beanPackageLabel">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="MNE_DefaultBackingPackageLabelMnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="beanPackageTextField"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="LBL_DefaultBackingPackageLabel" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="LBL_DefaultBackingPackageLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="beanPackageTextField">
               <AccessibilityProperties>
@@ -141,9 +140,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="lServletName">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="MNE_lServletName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="tServletName"/>
                 </Property>
@@ -151,6 +147,9 @@
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="LBL_Servlet_Name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="tServletName">
               <Properties>
@@ -165,9 +164,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="lURLPattern">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="MNE_lURLPattern" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="tURLPattern"/>
                 </Property>
@@ -175,6 +171,9 @@
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="LBL_URL_Pattern" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="tURLPattern">
               <Properties>
@@ -188,9 +187,6 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbValidate">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="MNE_cbValidate" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="CB_Validate_XML" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -209,12 +205,12 @@
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="ACSD_ValidateXML" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbVerify">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="MNE_cbVerify" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="CB_Verify_Objects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -232,6 +228,9 @@
                   <ResourceString bundle="org/netbeans/modules/visualweb/project/jsf/framework/Bundle.properties" key="ACSD_VerifyObjects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbPackageJars">
               <Properties>
@@ -289,7 +288,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="cbLibraries" pref="332" max="32767" attributes="0"/>
+                              <Component id="cbLibraries" pref="328" max="32767" attributes="0"/>
                           </Group>
                           <Component id="rbNewLibrary" alignment="0" pref="478" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -300,8 +299,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jtVersion" pref="282" max="32767" attributes="1"/>
-                                  <Component id="jtFolder" alignment="1" pref="282" max="32767" attributes="1"/>
+                                  <Component id="jtVersion" pref="271" max="32767" attributes="1"/>
+                                  <Component id="jtFolder" alignment="1" pref="271" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
@@ -335,7 +334,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="125" max="32767" attributes="0"/>
+                      <EmptySpace pref="138" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

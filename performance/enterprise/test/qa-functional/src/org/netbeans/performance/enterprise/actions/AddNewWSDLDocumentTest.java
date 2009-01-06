@@ -41,21 +41,17 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test Add New WSDL Document
  *
@@ -64,8 +60,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class AddNewWSDLDocumentTest extends PerformanceTestCase {
     
     private NewFileNameLocationStepOperator location;
-    
-    private int index;
     
     /**
      * Creates a new instance of AddNewWSDLDocument
@@ -102,19 +96,10 @@ public class AddNewWSDLDocumentTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-        index=1;
-//        new CloseAllDocumentsAction().performAPI();
-    }
-
-    @Override
-    protected void shutdown() {
-        super.shutdown();
-        new EventTool().waitNoEvent(1000);
     }
     
     public void prepare(){
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
-
         // Workaround for issue 143497
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
@@ -122,8 +107,6 @@ public class AddNewWSDLDocumentTest extends PerformanceTestCase {
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("WSDL Document"); //NOI18N
         wizard.next();
-        
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("WSDLDoc_"+System.currentTimeMillis());
     }
@@ -136,6 +119,5 @@ public class AddNewWSDLDocumentTest extends PerformanceTestCase {
     @Override
     public void close(){
     }
-    
 
 }

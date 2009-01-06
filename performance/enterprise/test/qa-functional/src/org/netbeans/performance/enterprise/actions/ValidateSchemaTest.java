@@ -41,23 +41,19 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-
-import junit.framework.Test;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
@@ -67,20 +63,19 @@ import org.netbeans.junit.NbModuleSuite;
 public class ValidateSchemaTest extends PerformanceTestCase {
     
     private Node schemaNode;
+    private OutputOperator oot;
     
     /** Creates a new instance of ValidateSchema */
     public ValidateSchemaTest(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public ValidateSchemaTest(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public void testValidateSchema() {
@@ -97,34 +92,25 @@ public class ValidateSchemaTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
-        log(":: initialize");
         schemaNode = new Node(new EPUtilities().getProcessFilesNode("TravelReservationService"),"OTA_TravelItinerary.xsd");
         schemaNode.select();
         new OpenAction().perform(schemaNode);
     }
     
     public void prepare() {
-        log(":: prepare");
+        oot = OutputOperator.invoke();
     }
     
     public ComponentOperator open() {
-        log("::open");
-        
         schemaNode.performPopupAction("Validate XML"); // NOI18N
-        
-        OutputOperator oot = new OutputOperator();
         OutputTabOperator asot = oot.getOutputTab("XML check"); // NOI18N
         asot.waitText("XML validation finished"); // NOI18N
-        return oot;
+        return null;
     }
     
     @Override
     protected void shutdown() {
-        log("::shutdown");        
-        new TopComponentOperator("OTA_TravelItinerary.xsd").getFocus(); // workaround issue 120762
-        new CloseAllDocumentsAction().perform();
+        EditorOperator.closeDiscardAll();
     }
 
-
-    
 }

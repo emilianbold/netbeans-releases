@@ -92,6 +92,7 @@ import java.util.ResourceBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 
 /**
  * @deprecated
@@ -116,9 +117,8 @@ public class StandardUrlPanel extends JPanel implements PropertyChangeListener, 
     GridBagLayout gridBagLayout1 = new GridBagLayout();
     JLabel valueLabel = new JLabel();
 
-    JRadioButton copyButton = new JRadioButton(bundle.getString("copy")); //NOI18N
-    JRadioButton linkButton = new JRadioButton(bundle.getString("link")); //NOI18N
-    
+    JRadioButton copyButton = new JRadioButton();
+    JRadioButton linkButton = new JRadioButton();
 
     ButtonGroup group = new ButtonGroup();
 
@@ -143,11 +143,11 @@ public class StandardUrlPanel extends JPanel implements PropertyChangeListener, 
 
     public StandardUrlPanel() {
         try {
+            Mnemonics.setLocalizedText(copyButton, bundle.getString("copy"));
+            Mnemonics.setLocalizedText(linkButton, bundle.getString("link"));
             jbInit();
             copyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "COPY_BUTTON_ACCESS_DESC"));
             linkButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "LINK_BUTTON_ACCESS_DESC"));
-            copyButton.setMnemonic(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "COPY_BUTTON_MNEMONIC").charAt(0));
-            linkButton.setMnemonic(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "LINK_BUTTON_MNEMONIC").charAt(0));
             valueTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "VALUE_TEXTFIELD_ACCESS_NAME"));
             valueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "VALUE_TEXTFIELD_ACCESS_DESC"));
             tabs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "TAB_PANE_ACCESS_NAME"));

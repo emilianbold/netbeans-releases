@@ -67,7 +67,7 @@ public final class StopBuildingAction extends CallableSystemAction implements Ch
     
    public StopBuildingAction()  {
        super();
-        BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImplementation.class));
+       BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImpl.getInstance()));
    }
 
     @Override

@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
@@ -131,7 +132,7 @@ implements CloneableEditorSupport.Env {
         }
 
         Document doc = support.openDocument();
-        assertNotNull("Document is opened", support.getDocument());
+        assertNotNull("Document is opened", doc);
 
         Object o = new Object();
         R r = new R(o);
@@ -142,14 +143,15 @@ implements CloneableEditorSupport.Env {
             Thread.sleep(100);
         }
 
+        Reference<?> ref = new WeakReference<Object>(doc);
         doc = null;
-        System.gc();
+        assertGC("Document can disappear",ref);
 
         doc = support.getDocument();
-        assertNull("No document is opened", support.getDocument());
+        assertNull("No document is opened", doc);
         
         doc = support.openDocument();
-        assertNotNull("Document is opened", support.getDocument());
+        assertNotNull("Document is opened", doc);
 
         //Unblock active reference queue thread
         synchronized(LOCK) {

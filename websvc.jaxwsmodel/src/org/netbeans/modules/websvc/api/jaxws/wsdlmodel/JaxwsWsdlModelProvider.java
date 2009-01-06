@@ -74,6 +74,12 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
         WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(url);
         modeler.setCatalog(catalog);
         WsdlModel model = modeler.getAndWaitForWsdlModel();
+        if(this.packageName == null || this.packageName.trim().length()== 0){
+            if(model.getServices().size() > 0)
+                this.packageName = model.getServices().get(0).getJavaName();
+            else
+                this.packageName = "defaultPackage";
+        }
         return model;
     }
 

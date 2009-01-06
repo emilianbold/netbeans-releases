@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -93,19 +95,19 @@ public class EntityClassInfo {
             extractPKFields(project);
         }
     }
-    
+
     protected void setPackageName(String packageName) {
         this.packageName = packageName;
     }
-    
+
     protected void setName(String name) {
         this.name = name;
     }
-    
+
     protected void setType(String type) {
         this.type = type;
     }
-    
+
     protected void extractFields(Project project) {
         try {
             final JavaSource source = entitySource;
@@ -121,7 +123,7 @@ public class EntityClassInfo {
                     type = packageName + "." + name;
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-                    
+
                     if (useFieldAccess(classElement)) {
                         extractFields(classElement);
                     } else {
@@ -144,35 +146,23 @@ public class EntityClassInfo {
             }
 
             FieldInfo fieldInfo = new FieldInfo();
-            
-            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
-                fieldInfo.addAnnotation(annotation.toString());
+
+            fieldInfo.parseAnnotations(field.getAnnotationMirrors());
+
+            if (!fieldInfo.isPersistent()) {
+                continue;
             }
 
-            if (!fieldInfo.isPersistent()) continue;
-            
             fieldInfos.add(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
-
-            TypeMirror fieldType = field.asType();
-
-            if (fieldType.getKind() == TypeKind.DECLARED) {
-                DeclaredType declType = (DeclaredType) fieldType;
-                fieldInfo.setType(declType.asElement().toString());
-               
-                for (TypeMirror arg : declType.getTypeArguments()) {
-                    fieldInfo.setTypeArg(arg.toString());
-                }
-            } else {
-                fieldInfo.setType(fieldType.toString());
-            }
+            fieldInfo.setType(field.asType());
 
             if (fieldInfo.isId()) {
                 idFieldInfo = fieldInfo;
             }
         }
     }
-    
+
     protected void extractFieldsFromMethods(TypeElement typeElement) {
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
 
@@ -184,45 +174,33 @@ public class EntityClassInfo {
 
             FieldInfo fieldInfo = new FieldInfo();
 
-             for (AnnotationMirror annotation : method.getAnnotationMirrors()) {
-                fieldInfo.addAnnotation(annotation.toString());
+            fieldInfo.parseAnnotations(method.getAnnotationMirrors());
+
+            if (!fieldInfo.isPersistent() || !fieldInfo.hasPersistenceAnnotation()) {
+                continue;
             }
-             
-            if (!fieldInfo.isPersistent() || !fieldInfo.hasPersistenceAnnotation()) continue;
-                
+
             fieldInfos.add(fieldInfo);
             String name = method.getSimpleName().toString();
             if (name.startsWith("get")) {       //NOI18N
                 name = name.substring(3);
                 name = Util.lowerFirstChar(name);
             }
+
             fieldInfo.setName(name);
-
-            TypeMirror returnType = method.getReturnType();
-
-            if (returnType.getKind() == TypeKind.DECLARED) {
-                DeclaredType declType = (DeclaredType) returnType;
-
-                fieldInfo.setType(declType.asElement().toString());
-
-                for (TypeMirror arg : declType.getTypeArguments()) {
-                    fieldInfo.setTypeArg(arg.toString());
-                }
-            } else {
-                fieldInfo.setType(returnType.toString());
-            }
+            fieldInfo.setType(method.getReturnType());
 
             if (fieldInfo.isId()) {
                 idFieldInfo = fieldInfo;
             }
         }
     }
-    
+
     protected void extractPKFields(Project project) {
         try {
             JavaSource pkSource = SourceGroupSupport.getJavaSourceFromClassName(idFieldInfo.getType(), project);
             if (pkSource == null) {
-                throw new IllegalArgumentException("No java source for "+idFieldInfo.getType());
+                throw new IllegalArgumentException("No java source for " + idFieldInfo.getType());
             }
             pkSource.runUserActionTask(new AbstractTask<CompilationController>() {
 
@@ -251,25 +229,12 @@ public class EntityClassInfo {
 
             idFieldInfo.addFieldInfo(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
-
-            TypeMirror fieldType = field.asType();
-
-            if (fieldType.getKind() == TypeKind.DECLARED) {
-                DeclaredType declType = (DeclaredType) fieldType;
-
-                fieldInfo.setType(declType.asElement().toString());
-
-                for (TypeMirror arg : declType.getTypeArguments()) {
-                    fieldInfo.setTypeArg(arg.toString());
-                }
-            } else {
-                fieldInfo.setType(fieldType.toString());
-            }
+            fieldInfo.setType(field.asType());
         }
     }
-    
+
     private boolean useFieldAccess(TypeElement typeElement) {
-         List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+        List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
 
         for (VariableElement field : fields) {
             Set<Modifier> modifiers = field.getModifiers();
@@ -278,18 +243,17 @@ public class EntityClassInfo {
             }
 
             FieldInfo fieldInfo = new FieldInfo();
-            
-            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
-                fieldInfo.addAnnotation(annotation.toString());
-            }
 
-            if (fieldInfo.isPersistent() && fieldInfo.hasPersistenceAnnotation()) 
+            fieldInfo.parseAnnotations(field.getAnnotationMirrors());
+
+            if (fieldInfo.isPersistent() && fieldInfo.hasPersistenceAnnotation()) {
                 return true;
+            }
         }
-        
+
         return false;
     }
-    
+
     public Entity getEntity() {
         return entity;
     }
@@ -312,6 +276,15 @@ public class EntityClassInfo {
 
     public Collection<FieldInfo> getFieldInfos() {
         return fieldInfos;
+    }
+
+    public FieldInfo getFieldInfoByName(String name) {
+        for (FieldInfo f : fieldInfos) {
+            if (f.getName().equals(name))
+                return f;
+        }
+
+        return null;
     }
     
     @Override
@@ -370,19 +343,25 @@ public class EntityClassInfo {
         return relatedEntities;
     }
 
-    public class FieldInfo {
+    public static class FieldInfo {
 
+        private enum Relationship {
+
+            OneToOne, OneToMany, ManyToOne, ManyToMany
+        };
         private String name;
         private String type;
         private String simpleTypeName;
         private String typeArg;
         private String simpleTypeArgName;
-        private List<String> annotations;
+        private Relationship relationship;
+        private boolean isPersistent = true;
+        private boolean hasPersistenceAnnotation = false;
+        private boolean isId = false;
+        private boolean isEmbeddedId = false;
+        private boolean isGeneratedValue = false;
+        private String mappedBy = null;
         private Collection<FieldInfo> fieldInfos;
-
-        public FieldInfo() {
-            annotations = new ArrayList<String>();
-        }
 
         public void setName(String name) {
             this.name = name;
@@ -392,9 +371,22 @@ public class EntityClassInfo {
             return name;
         }
 
-        public void setType(String type) {
+        public void setType(TypeMirror type) {
+            if (type.getKind() == TypeKind.DECLARED) {
+                DeclaredType declType = (DeclaredType) type;
+                setType(declType.asElement().toString());
+
+                for (TypeMirror arg : declType.getTypeArguments()) {
+                    setTypeArg(arg.toString());
+                }
+            } else {
+                setType(type.toString());
+            }
+        }
+
+        private void setType(String type) {
             Class primitiveType = Util.getPrimitiveType(type);
-          
+
             if (primitiveType != null) {
                 this.type = primitiveType.getSimpleName();
                 this.simpleTypeName = primitiveType.getSimpleName();
@@ -402,6 +394,11 @@ public class EntityClassInfo {
                 this.type = type;
                 this.simpleTypeName = type.substring(type.lastIndexOf(".") + 1);
             }
+        }
+
+        private void setTypeArg(String typeArg) {
+            this.typeArg = typeArg;
+            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
         }
 
         public String getType() {
@@ -412,76 +409,108 @@ public class EntityClassInfo {
             return simpleTypeName;
         }
 
-        public void setTypeArg(String typeArg) {
-            this.typeArg = typeArg;
-            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
-        }
-
         public String getTypeArg() {
             return typeArg;
         }
-        
+
         public String getSimpleTypeArgName() {
             return simpleTypeArgName;
         }
 
-        public void addAnnotation(String annotation) {
-            this.annotations.add(annotation);
+        public String getEntityClassName() {
+            return (simpleTypeArgName != null) ? simpleTypeArgName : simpleTypeName;
+        }
+
+        public void parseAnnotations(List<? extends AnnotationMirror> annotationMirrors) {
+            for (AnnotationMirror annotation : annotationMirrors) {
+                String annotationType = annotation.getAnnotationType().toString();
+              
+                if (!annotationType.startsWith("javax.persistence.")) { //NOI18N
+                    continue;     
+                }
+                hasPersistenceAnnotation = true;
+
+                if (annotationType.contains("EmbeddedId")) { //NOI18N
+                    isEmbeddedId = true;
+                    isId = true;
+                } else if (annotationType.contains("Id")) { //NOI18N
+                    isId = true;
+                } else if (annotationType.contains("OneToOne")) { //NOI18N
+                    relationship = Relationship.OneToOne;
+                    parseRelationship(annotation);
+                } else if (annotationType.contains("OneToMany")) { //NOI18N
+                    relationship = Relationship.OneToMany;
+                    parseRelationship(annotation);
+                } else if (annotationType.contains("ManyToOne")) { //NOI18N
+                    relationship = Relationship.ManyToOne;
+                } else if (annotationType.contains("ManyToMany")) { //NOI18N
+                    relationship = Relationship.ManyToMany;
+                    parseRelationship(annotation);
+                } else if (annotationType.contains("Transient")) { //NOI18N
+                    isPersistent = false;
+                } else if (annotationType.contains("GeneratedValue")) { //NOI18N
+                    isGeneratedValue = true;
+                }
+            }
+        }
+
+        private void parseRelationship(AnnotationMirror annotation) {
+            Map<? extends ExecutableElement, ? extends AnnotationValue> map = annotation.getElementValues();
+
+            for (ExecutableElement e : map.keySet()) {
+                if (e.getSimpleName().toString().equals("mappedBy")) {      //NOI18N
+                    mappedBy = map.get(e).getValue().toString();
+                    return;
+                }
+            }
         }
 
         public boolean isPersistent() {
-            return !matchAnnotation("@javax.persistence.Transient");
+            return isPersistent;
         }
-        
+
         public boolean hasPersistenceAnnotation() {
-            return matchAnnotation("@javax.persistence.");
+            return hasPersistenceAnnotation;
         }
-        
+
         public boolean isId() {
-            return matchAnnotation("@javax.persistence.Id") || matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
+            return isId;
         }
-        
+
         public boolean isGeneratedValue() {
-            return matchAnnotation("@javax.persistence.GeneratedValue");        //NOI18N
+            return isGeneratedValue;
         }
 
         public boolean isEmbeddedId() {
-            return matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
+            return isEmbeddedId;
 
         }
 
         public boolean isRelationship() {
-            return isOneToOne() || isOneToMany() || isManyToOne() || isManyToMany();
+            return relationship != null;
         }
 
         public boolean isOneToOne() {
-            return matchAnnotation("@javax.persistence.OneToOne"); //NOI18N
+            return relationship == Relationship.OneToOne;
 
         }
 
         public boolean isOneToMany() {
-            return matchAnnotation("@javax.persistence.OneToMany"); //NOI18N
+            return relationship == Relationship.OneToMany;
 
         }
 
         public boolean isManyToOne() {
-            return matchAnnotation("@javax.persistence.ManyToOne"); //NOI18N
+            return relationship == Relationship.ManyToOne;
 
         }
 
         public boolean isManyToMany() {
-            return matchAnnotation("@javax.persistence.ManyToMany"); //NOI18N
-
+            return relationship == Relationship.ManyToMany;
         }
 
-        private boolean matchAnnotation(String annotation) {
-            for (String a : annotations) {
-                if (a.startsWith(annotation)) {
-                    return true;
-                }
-            }
-
-            return false;
+        public String getMappedByField() {
+            return mappedBy;
         }
 
         public void addFieldInfo(FieldInfo info) {

@@ -64,6 +64,7 @@ import javax.swing.JButton;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -102,13 +103,13 @@ public class ExportEjbDataSourceDialog implements ActionListener {
         DialogDescriptor dialogDescriptor = new DialogDescriptor( exportPanel, NbBundle.getMessage(ExportEjbDataSourceDialog.class, "EXPORT_EJB_DATASOURCES"), 
                                                  true, (ActionListener)this );
         
-        okButton = new JButton( NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK_BUTTON_LABEL") );
-        
+        okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK_BUTTON_LABEL"));
         okButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("OK_BUTTON_DESC"));
-        okButton.setMnemonic(NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK_BUTTON_MNEMONIC").charAt(0));
-        cancelButton = new JButton( NbBundle.getMessage(ExportEjbDataSourceDialog.class, "CANCEL_BUTTON_LABEL") );
+
+        cancelButton = new JButton();
+        Mnemonics.setLocalizedText(cancelButton,  NbBundle.getMessage(ExportEjbDataSourceDialog.class, "CANCEL_BUTTON_LABEL"));
         cancelButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CANCEL_BUTTON_DESC"));
-        cancelButton.setMnemonic(NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "CANCEL_BUTTON_MNEMONIC").charAt(0));
         dialogDescriptor.setOptions(new Object[] { okButton, cancelButton });
         dialogDescriptor.setClosingOptions(new Object[] {cancelButton});
         

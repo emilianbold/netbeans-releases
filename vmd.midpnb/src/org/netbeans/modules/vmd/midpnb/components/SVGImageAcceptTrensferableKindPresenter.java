@@ -41,15 +41,11 @@
 package org.netbeans.modules.vmd.midpnb.components;
 
 import java.awt.datatransfer.Transferable;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -63,9 +59,6 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.openide.filesystems.FileObject;
 
 /**

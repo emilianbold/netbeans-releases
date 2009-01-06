@@ -86,11 +86,11 @@ public class Installer extends ModuleInstall {
         WindowManager.getDefault ().invokeWhenUIReady (new Runnable () {
 
             public void run () {
-                RequestProcessor.getDefault ().post (doCheck, 50000); // XXX: Need to wait until UC downloaded&parsed
+                RequestProcessor.getDefault ().post (doCheck, getImportDelay ()); // XXX: Need to wait until UC downloaded&parsed
             }
         });
     }
-    private UpdateUnitProvider clusterUpdateProvider = null;
+
     private Runnable doCheck = new Runnable () {
         public void run () {
             // check user wants to import previous userdir
@@ -131,6 +131,7 @@ public class Installer extends ModuleInstall {
                 LOG.log (Level.INFO, ex.getLocalizedMessage (), ex);
                 return ;
             }
+            UpdateUnitProvider clusterUpdateProvider = null;
             for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false)) {
                 if (CODE_NAME.contains (p.getName ())) {
                     clusterUpdateProvider = p;
@@ -205,5 +206,16 @@ public class Installer extends ModuleInstall {
             }
         }
         return null;
+    }
+
+    private int getImportDelay () {
+        int delay = 50000; // the defalut value
+        String delay_prop = System.getProperty ("plugin.managet.import.delay");
+        try {
+            delay = Integer.parseInt (delay_prop);
+        } catch (NumberFormatException x) {
+            // ignore, use the default value
+        }
+        return delay;
     }
 }

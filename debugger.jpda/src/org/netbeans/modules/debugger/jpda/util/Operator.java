@@ -60,8 +60,28 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ClassPrepareEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ClassUnloadEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventQueueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventSetWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -119,7 +139,14 @@ public class Operator {
         Runnable finalizer,
         final Object resumeLock
     ) {
-        EventQueue eventQueue = virtualMachine.eventQueue ();
+        EventQueue eventQueue;
+        try {
+            eventQueue = VirtualMachineWrapper.eventQueue(virtualMachine);
+        } catch (InternalExceptionWrapper ex) {
+            eventQueue = null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            eventQueue = null;
+        }
         if (eventQueue == null)
             throw new NullPointerException ();
         this.debugger = debugger;
@@ -145,7 +172,9 @@ public class Operator {
                                 eventSet = staledEvents.remove(0);
                                 while (staledRequests.size() > 0) {
                                     EventRequest request = staledRequests.remove(0);
-                                    request.virtualMachine().eventRequestManager().deleteEventRequest(request);
+                                    EventRequestManagerWrapper.deleteEventRequest(
+                                            VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(request)),
+                                            request);
                                 }
                                 //eventSet.virtualMachine.suspend();
                              }
@@ -157,7 +186,7 @@ public class Operator {
                                 if (stop) break;
                                 canInterrupt = true;
                             }
-                            eventSet = eventQueue.remove ();
+                            eventSet = EventQueueWrapper.remove (eventQueue);
                             if (logger.isLoggable(Level.FINE)) {
                                 try {
                                     logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
@@ -180,8 +209,8 @@ public class Operator {
                      }
                      boolean silent = eventSet.size() > 0;
                      for (Event e: eventSet) {
-                         EventRequest r = e.request();
-                         if (r == null || !Boolean.TRUE.equals(r.getProperty (SILENT_EVENT_PROPERTY))) {
+                         EventRequest r = EventWrapper.request(e);
+                         if (r == null || !Boolean.TRUE.equals(EventRequestWrapper.getProperty (r, SILENT_EVENT_PROPERTY))) {
                              silent = false;
                              break;
                          }
@@ -189,9 +218,9 @@ public class Operator {
                      if (!silent) {
                          synchronized (Operator.this) {
                              if (breakpointsDisabled) {
-                                 if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                                 if (EventSetWrapper.suspendPolicy(eventSet) == EventRequest.SUSPEND_ALL) {
                                     staledEvents.add(eventSet);
-                                    eventSet.resume();
+                                    EventSetWrapper.resume(eventSet);
                                     if (logger.isLoggable(Level.FINE)) {
                                         logger.fine("RESUMING "+eventSet);
                                     }
@@ -202,8 +231,8 @@ public class Operator {
                      }
                      Map<Event, Executor> eventsToProcess = new HashMap<Event, Executor>();
                      for (Event e: eventSet) {
-                         EventRequest r = e.request();
-                         Executor exec = (r != null) ? (Executor) r.getProperty ("executor") : null;
+                         EventRequest r = EventWrapper.request(e);
+                         Executor exec = (r != null) ? (Executor) EventRequestWrapper.getProperty (r, "executor") : null;
                          if (exec instanceof ConditionedExecutor) {
                              boolean success = ((ConditionedExecutor) exec).processCondition(e);
                              if (success) {
@@ -214,11 +243,11 @@ public class Operator {
                          }
                      }
                      if (eventsToProcess.size() == 0) {
-                         eventSet.resume();
+                         EventSetWrapper.resume(eventSet);
                          continue;
                      }
                      boolean resume = true, startEventOnly = true;
-                     int suspendPolicy = eventSet.suspendPolicy();
+                     int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
                      if (!silent && suspendedAll) debugger.notifySuspendAll();
@@ -279,7 +308,7 @@ public class Operator {
                              continue;
                          }
                          Executor exec = null;
-                         if (e.request () == null) {
+                         if (EventWrapper.request(e) == null) {
                              if (logger.isLoggable(Level.FINE)) {
                                  logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
                              }
@@ -322,7 +351,7 @@ public class Operator {
                                  suspendedThread.notifyToBeResumed();
                              }
                              synchronized (resumeLock) {
-                                eventSet.resume ();
+                                EventSetWrapper.resume(eventSet);
                              }
                          } else if (!silent && (suspendedAll || suspendedThread != null)) {
                             Session session = debugger.getSession();
@@ -341,17 +370,21 @@ public class Operator {
                      }
                      if (!silent && !resume) { // Check for multiply-suspended threads
                          synchronized (resumeLock) {
-                             List<ThreadReference> threads = eventSet.virtualMachine().allThreads();
+                             List<ThreadReference> threads = VirtualMachineWrapper.allThreads(MirrorWrapper.virtualMachine(eventSet));
                              for (ThreadReference t : threads) {
                                  try {
                                      JPDAThreadImpl jt = (JPDAThreadImpl) debugger.getExistingThread(t);
-                                     while (t.suspendCount() > 1) {
+                                     while (ThreadReferenceWrapper.suspendCount(t) > 1) {
                                          if (jt != null) {
                                              jt.notifyToBeResumed();
                                          }
-                                         t.resume();
+                                         ThreadReferenceWrapper.resume(t);
                                      } // while
-                                 } catch (ObjectCollectedException e) {
+                                 } catch (ObjectCollectedExceptionWrapper e) {
+                                 } catch (IllegalThreadStateExceptionWrapper e) {
+                                     // ignore mobility VM defects
+                                 } catch (InternalExceptionWrapper e) {
+                                     // ignore mobility VM defects
                                  }
                              } // for
                          }
@@ -372,19 +405,19 @@ public class Operator {
      }, "Debugger operator thread"); // NOI18N
     }
 
-    private static final ThreadReference getEventThread(Event e) {
+    private static final ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         ThreadReference tref = null;
         if (e instanceof LocatableEvent) {
-            tref = ((LocatableEvent) e).thread();
+            tref = LocatableEventWrapper.thread((LocatableEvent) e);
         } else
         if (e instanceof ClassPrepareEvent) {
-            tref = ((ClassPrepareEvent) e).thread();
+            tref = ClassPrepareEventWrapper.thread((ClassPrepareEvent) e);
         } else
         if (e instanceof ThreadStartEvent) {
-            tref = ((ThreadStartEvent) e).thread();
+            tref = ThreadStartEventWrapper.thread((ThreadStartEvent) e);
         } else
         if (e instanceof ThreadDeathEvent) {
-            tref = ((ThreadDeathEvent) e).thread();
+            tref = ThreadDeathEventWrapper.thread((ThreadDeathEvent) e);
         }
         return tref;
     }
@@ -406,25 +439,30 @@ public class Operator {
      *            (if <TT>null</TT>, the binding is removed - the same as <TT>unregister()</TT>)
      * @see  #unregister
      */
-    public synchronized void register (EventRequest req, Executor e) {
-        req.putProperty ("executor", e); // NOI18N
+    public synchronized void register (EventRequest req, Executor e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        EventRequestWrapper.putProperty(req, "executor", e); // NOI18N
         if (staledEvents.size() > 0 && req instanceof StepRequest) {
             boolean addAsStaled = false;
             for (Iterator<EventSet> it = staledEvents.iterator(); it.hasNext(); ) {
                 EventSet evSet = it.next();
                 for (Iterator<Event> itSet = evSet.iterator(); itSet.hasNext(); ) {
                     Event ev = itSet.next();
-                    EventRequest evReq = ev.request();
-                    if (!(evReq instanceof StepRequest)) {
-                        addAsStaled = true;
-                        break;
-                    } else {
-                        ThreadReference evThread = ((StepRequest) evReq).thread();
-                        ThreadReference reqThread = ((StepRequest) req).thread();
-                        if (reqThread.equals(evThread)) {
+                    try {
+                        EventRequest evReq = EventWrapper.request(ev);
+                        if (!(evReq instanceof StepRequest)) {
                             addAsStaled = true;
                             break;
+                        } else {
+                            ThreadReference evThread = StepRequestWrapper.thread((StepRequest) evReq);
+                            ThreadReference reqThread = StepRequestWrapper.thread((StepRequest) req);
+                            if (reqThread.equals(evThread)) {
+                                addAsStaled = true;
+                                break;
+                            }
                         }
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    } catch (InternalExceptionWrapper ex) {
                     }
                 }
                 if (addAsStaled) break;
@@ -443,15 +481,15 @@ public class Operator {
      * @param  req  request
      * @see  #register
      */
-    public synchronized void unregister (EventRequest req) {
-        Executor e = (Executor) req.getProperty("executor");
-        req.putProperty ("executor", null); // NOI18N
+    public synchronized void unregister (EventRequest req) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        Executor e = (Executor) EventRequestWrapper.getProperty(req, "executor");
+        EventRequestWrapper.putProperty (req, "executor", null); // NOI18N
         if (e != null) {
             e.removed(req);
         }
         staledRequests.remove(req);
         if (req instanceof StepRequest) {
-            ThreadReference tr = ((StepRequest) req).thread();
+            ThreadReference tr = StepRequestWrapper.thread((StepRequest) req);
             ((JPDAThreadImpl) debugger.getThread(tr)).setInStep(false, null);
         }
     }
@@ -500,21 +538,21 @@ public class Operator {
     private void printEvent (Event e, Executor exec) {
         try {
             if (e instanceof ClassPrepareEvent) {
-                logger.fine("JDI EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
+                logger.fine("JDI EVENT: ClassPrepareEvent " + ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) e)); // NOI18N
             } else
             if (e instanceof ClassUnloadEvent) {
-                logger.fine("JDI EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
+                logger.fine("JDI EVENT: ClassUnloadEvent " + ClassUnloadEventWrapper.className((ClassUnloadEvent) e)); // NOI18N
             } else
             if (e instanceof ThreadStartEvent) {
                 try {
-                    logger.fine("JDI EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
+                    logger.fine("JDI EVENT: ThreadStartEvent " + ThreadStartEventWrapper.thread((ThreadStartEvent) e)); // NOI18N
                 } catch (Exception ex) {
                     logger.fine("JDI EVENT: ThreadStartEvent1 " + e); // NOI18N
                 }
             } else
             if (e instanceof ThreadDeathEvent) {
                 try {
-                    logger.fine("JDI EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
+                    logger.fine("JDI EVENT: ThreadDeathEvent " + ThreadDeathEventWrapper.thread((ThreadDeathEvent) e)); // NOI18N
                 } catch (Exception ex) {
                     logger.fine("JDI EVENT: ThreadDeathEvent1 " + e); // NOI18N
                 }
@@ -527,13 +565,14 @@ public class Operator {
                 }
             } else
             if (e instanceof BreakpointEvent) {
-                logger.fine("JDI EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
+                logger.fine("JDI EVENT: BreakpointEvent " + LocatableEventWrapper.thread((BreakpointEvent) e) + " : " + LocatableWrapper.location((BreakpointEvent) e)); // NOI18N
             } else
             if (e instanceof StepEvent) {
-                logger.fine("JDI EVENT: StepEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
+                logger.fine("JDI EVENT: StepEvent " + LocatableEventWrapper.thread((StepEvent) e) + " : " + LocatableWrapper.location((StepEvent) e)); // NOI18N
             } else
                 logger.fine("JDI EVENT: " + e + " : " + exec); // NOI18N
         } catch (Exception ex) {
+            logger.fine(ex.getLocalizedMessage());
         }
     }
 }

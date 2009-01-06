@@ -1,4 +1,13 @@
 ================================================================================
+nobugid (Options support and UI)
+        - lib.termsupport.TermOptions contains options information for a Term.
+        - lib.termsupport.TermOptionsPanel is a generic JPanel for viewing the
+          above.
+        - org.netbeans.modules.terminal uses TermAdvancedOption to provide
+          UI for options in NB under Tools->Options->Miscellaneous->Terminal.
+        - TermApp (nbterm) has An Options context menu action and brings up an
+          options dialog which is persisted in ~/.java/.userPrefs/nbterm.
+================================================================================
 nobugid (get working on Windows again)
 	- richexecution
 	  - build.xml now recognizes windows (XP) as a platform

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.jython</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.jython.distro</code-name-base>
+                    <build-prerequisite/>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <subpackages>org.python</subpackages>
+                <subpackages>com.sun.jna</subpackages>
+                <subpackages>org.antlr.runtime</subpackages>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jython.jar</runtime-relative-path>
+                <binary-origin>build/jython.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jarjar.jar</runtime-relative-path>
+                <binary-origin>build/jarjar.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

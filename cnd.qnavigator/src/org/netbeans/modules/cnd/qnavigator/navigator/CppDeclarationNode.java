@@ -69,8 +69,11 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Navigator Tree node.
@@ -89,7 +92,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier, List<IndexOffsetNode> lineNumberIndex) {
-        super(new NavigatorChildren(element, model, classifier, lineNumberIndex));
+        super(new NavigatorChildren(element, model, classifier, lineNumberIndex), Lookups.fixed(element));
         object = element;
         file = element.getContainingFile();
         this.model = model;
@@ -97,7 +100,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
     
     private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
-        super(children);
+        super(children, Lookups.fixed(element));
         object = element;
         file = element.getContainingFile();
         this.model = model;
@@ -213,6 +216,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
+            list.add(RefactoringActionsFactory.whereUsedAction());
+            CsmObject obj = this.getCsmObject();
+            if (CsmKindUtilities.isField(obj)) {
+                list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+            } else if (CsmKindUtilities.isFunction(obj)) {
+                list.add(CsmRefactoringActionsFactory.changeParametersAction());
+            }
             list.add(null);
             for (Action a : model.getActions()){
                 list.add(a);

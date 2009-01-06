@@ -77,6 +77,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
@@ -588,12 +589,10 @@ public final class ProjectSelectionPanel extends JPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int ret = chooser.showOpenDialog(this);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            destination.setText(chooser.getSelectedFile().getAbsolutePath());
+    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        File dest = new FileChooserBuilder(ProjectSelectionPanel.class).setDirectoriesOnly(true).showOpenDialog();
+        if (dest != null) {
+            destination.setText (dest.getAbsolutePath());
         }
     }                                                     
 

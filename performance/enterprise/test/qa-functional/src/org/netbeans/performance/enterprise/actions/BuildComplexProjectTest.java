@@ -41,20 +41,18 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -75,7 +73,7 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 10000;
-        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
+        //MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
     
     /**
@@ -87,7 +85,7 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 10000;
-        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
+        //MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
 
     public void testBuildComplexProject() {
@@ -104,7 +102,6 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        super.close();
         if (projectNode != null) {
             new CleanProjectAction().performPopup(projectNode);
             MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
@@ -113,7 +110,6 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
     }
     
     public void prepare(){
-//        new CloseAllDocumentsAction().performAPI();
     }
     
     public ComponentOperator open(){
@@ -125,6 +121,5 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
         JemmyProperties.setCurrentTimeouts(temp);
         return null;
     }
-    
  
 }

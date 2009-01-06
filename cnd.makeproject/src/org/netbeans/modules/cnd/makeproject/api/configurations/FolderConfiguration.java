@@ -151,12 +151,12 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         copy.assign(this);
         return copy;
     }
-    
-    public Object clone() {
+
+    @Override
+    public FolderConfiguration clone() {
         FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration)getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration)getCCCompilerConfiguration().getMaster(), getFolder());
-        
-        i.setCCompilerConfiguration((CCompilerConfiguration)getCCompilerConfiguration().clone());
-        i.setCCCompilerConfiguration((CCCompilerConfiguration)getCCCompilerConfiguration().clone());
+        i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
         return i;
     }
     

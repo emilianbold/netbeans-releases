@@ -1,0 +1,6 @@
+Requires user interaction: No
+Unused imports:
+    definitions:Foo
+    unused1
+Duplicate imports:
+    definitions

@@ -10,6 +10,12 @@
 --RESOLVED TO:
     MACROS #define 'CPU_H' [43:1/2124-43:14/2137]
 ==============================================================
+'include', tokenID=preprocessor_include, offset=2140 [45:2/2140-45:9/2147]
+--OWNER:
+    INCLUDE "module.h" [45:1/2139-45:20/2158]
+--RESOLVED TO:
+    INCLUDE "module.h" [45:1/2139-45:20/2158]
+==============================================================
 '"module.h"', tokenID=preprocessor_user_include, offset=2148 [45:10/2148-45:20/2158]
 --OWNER:
     INCLUDE "module.h" [45:1/2139-45:20/2158]

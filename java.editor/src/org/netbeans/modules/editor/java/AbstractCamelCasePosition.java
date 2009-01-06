@@ -90,7 +90,7 @@ import org.openide.util.NbPreferences;
             } else {
                 final BaseDocument bdoc = org.netbeans.editor.Utilities.getDocument(target);
                 if (bdoc != null) {
-                    bdoc.runAtomic (new Runnable () {
+                    bdoc.runAtomicAsUser(new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(bdoc, true);
                             try {

@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -63,6 +64,8 @@ public class DeleteUpdateTest extends JellyTestCase {
     
     public void testDeleteUpdate() throws Exception {
         try {
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
 

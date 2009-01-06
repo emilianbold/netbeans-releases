@@ -133,7 +133,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // #140346
         // first, create sources
         FileObject sourceDir = createSourceRoot();
-        boolean existingSources = sourceDir.getChildren(false).hasMoreElements();
+        boolean existingSources = wizardType == WizardType.EXISTING || sourceDir.getChildren(false).hasMoreElements();
 
         // project
         File projectDirectory = null;
@@ -316,7 +316,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
+        if (srcPath == null) {
+            // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+            srcPath = srcDir.getAbsolutePath();
+        }
         projectProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
         projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, "."); // NOI18N
     }

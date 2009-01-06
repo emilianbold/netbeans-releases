@@ -45,20 +45,26 @@ import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.OutputWriter;
-import org.openidex.search.SearchType;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
-import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCOUNTERED;
 
 /**
  * Manager of the Search module's activities.
@@ -67,6 +73,7 @@ import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCO
  *
  * @see <a href="doc-files/manager-state-diagram.png">State diagram</a>
  * @author  Marian Petras
+ * @author  kaktus
  */
 final class Manager {
     
@@ -76,17 +83,17 @@ final class Manager {
      */
     private static final int CLEANUP_TIMEOUT_MILLIS = 3000;
     
-
+/*
     static final int NO_TASK          = 0;
-    
+*/
     static final int SEARCHING        = 0x01;
-    
+/*
     static final int CLEANING_RESULT  = 0x02;
 
     static final int PRINTING_DETAILS = 0x04;
-    
+*/
     static final int REPLACING        = 0x08;
-    
+
     static final int EVENT_SEARCH_STARTED = 1;
     
     static final int EVENT_SEARCH_FINISHED = 2;
@@ -97,46 +104,21 @@ final class Manager {
     
     private static final Manager instance = new Manager();
     
-    
     private boolean moduleBeingUninstalled = false;
 
-
-    private final Object lock = new Object();
-
-    private int state = NO_TASK;
-
-    private int pendingTasks = 0;
+    private List<Runnable> pendingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
     
     private TaskListener taskListener;
     
-    private SearchTask currentSearchTask;
-    
-    private SearchTask pendingSearchTask;
+    private List<Runnable> currentTasks = Collections.synchronizedList(new LinkedList<Runnable>());
 
-    private SearchTask lastSearchTask;
-    
-    private ReplaceTask currentReplaceTask;
-    
-    private ReplaceTask pendingReplaceTask;
-
-    private PrintDetailsTask currentPrintDetailsTask;
-    
-    private PrintDetailsTask pendingPrintDetailsTask;
-
-    private Task searchTask;
-    
-    private Task replaceTask;
-
-    private Task cleanResultTask;
-    
-    private Task printDetailsTask;
-
-    private ResultModel resultModelToClean;
+    private List<Runnable> stoppingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
 
     private boolean searchWindowOpen = false;
     
     private Reference<OutputWriter> outputWriterRef;
-    
+
+    private Map<Task, Runnable> tasksMap = new HashMap<Task, Runnable>();
 
     /**
      */
@@ -165,23 +147,12 @@ final class Manager {
     void scheduleSearchTask(SearchTask task) {
         assert EventQueue.isDispatchThread();
         
-        synchronized (lock) {
-            ResultView.getInstance().setResultModel(null);
-            if (currentSearchTask != null) {
-                currentSearchTask.stop(false);
-            }
-            if (resultModelToClean != null) {
-                pendingTasks |= CLEANING_RESULT;
-            }
-            pendingTasks |= SEARCHING;
-            pendingSearchTask = task;
-            lastSearchTask = task;
-            if (state == NO_TASK) {
-                processNextPendingTask();
-            } else {
-                notifySearchPending(state);                     //invariant #1
-            }
-        }
+        ResultViewPanel viewPanel = ResultView.getInstance().initiateResultView(task);
+        ResultModel resultModel = task.getResultModel();
+        viewPanel.setResultModel(resultModel);
+
+        pendingTasks.add(task);
+        processNextPendingTask();
     }
     
     /**
@@ -189,40 +160,26 @@ final class Manager {
     void scheduleReplaceTask(ReplaceTask task) {
         assert EventQueue.isDispatchThread();
         
-        synchronized (lock) {
-            assert (state == NO_TASK) && (pendingTasks == 0);
-            
-            pendingTasks |= REPLACING;
-            pendingReplaceTask = task;
-            processNextPendingTask();
-        }
+        pendingTasks.add(task);
+        processNextPendingTask();
     }
-    
+
     /**
      */
-    void scheduleSearchTaskRerun() {
+    void schedulePrintTask(PrintDetailsTask task) {
         assert EventQueue.isDispatchThread();
-        
-        synchronized (lock) {
-            SearchTask newSearchTask = lastSearchTask.createNewGeneration();
-            lastSearchTask = null;
-            scheduleSearchTask(newSearchTask);
-        }
+
+        pendingTasks.add(task);
+        processNextPendingTask();
     }
-    
+
     /**
      */
-    void schedulePrintingDetails(Object[] matchingObjects,
-                                 BasicSearchCriteria basicCriteria,
-                                 List<SearchType> searchTypes) {
-        synchronized (lock) {
-            assert state == NO_TASK;
-            pendingTasks |= PRINTING_DETAILS;
-            
-            pendingPrintDetailsTask = new PrintDetailsTask(
-                    matchingObjects, basicCriteria, searchTypes);
-            processNextPendingTask();
-        }
+    void scheduleCleanTask(CleanTask task) {
+        assert EventQueue.isDispatchThread();
+
+        pendingTasks.add(task);
+        processNextPendingTask();
     }
     
     /**
@@ -235,102 +192,111 @@ final class Manager {
      *          (i.e. if a new search may be started)
      */
     String mayStartSearching() {
-        boolean replacing;
-        
-        synchronized (lock) {
-            replacing = (state == REPLACING);
-        }
-        
-        String msgKey = replacing ? "MSG_Cannot_start_search__replacing"//NOI18N
-                                  : null;
-        return (msgKey != null) ? NbBundle.getMessage(getClass(), msgKey)
+        String msgKey = haveRunningReplaceTask() ? "MSG_Cannot_start_search__replacing"//NOI18N
                                 : null;
+        return (msgKey != null) ? NbBundle.getMessage(getClass(), msgKey)
+                                    : null;
     }
     
     /**
      */
-    private void notifySearchStarted() {
-        notifySearchTaskStateChange(EVENT_SEARCH_STARTED);
+    private void notifySearchStarted(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_STARTED);
     }
     
     /**
      */
-    private void notifySearchFinished() {
-        notifySearchTaskStateChange(EVENT_SEARCH_FINISHED);
+    private void notifySearchFinished(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_FINISHED);
     }
     
     /**
      */
-    private void notifySearchInterrupted() {
-        notifySearchTaskStateChange(EVENT_SEARCH_INTERRUPTED);
+    private void notifySearchInterrupted(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_INTERRUPTED);
     }
     
     /**
      */
-    private void notifySearchCancelled() {
-        notifySearchTaskStateChange(EVENT_SEARCH_CANCELLED);
+    private void notifySearchCancelled(SearchTask task) {
+        notifySearchTaskStateChange(task, EVENT_SEARCH_CANCELLED);
     }
     
     /**
      * Notifies the result window of a search task's state change.
      *
+     * @param
      * @param  changeType  constant describing what happened
      *                     - one of the EVENT_xxx constants
      */
-    private void notifySearchTaskStateChange(final int changeType) {
-        synchronized (lock) {
-            if (!searchWindowOpen) {
-                return;
-            }
+    private void notifySearchTaskStateChange(final SearchTask task, final int changeType) {
+        if (!searchWindowOpen) {
+            return;
         }
-        callOnWindowFromAWT("searchTaskStateChanged",                   //NOI18N
-                          new Integer(changeType));
+        Method theMethod;
+        try {
+            theMethod = ResultView.class.getDeclaredMethod(
+                                                "searchTaskStateChanged",  //NOI18N
+                                                SearchTask.class,
+                                                Integer.TYPE);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        callOnWindowFromAWT(theMethod, new Object[]{task ,new Integer(changeType)});
     }
 
     /**
      */
-    private void notifySearchPending(final int blockingTask) {
+    private void notifySearchPending(SearchTask sTask, final int blockingTask) {
         if (!searchWindowOpen) {
             return;
         }
-        callOnWindowFromAWT("notifySearchPending",                      //NOI18N
-                          new Integer(blockingTask));
+        Method theMethod;
+        try {
+            theMethod = ResultView.class.getDeclaredMethod(
+                                                "notifySearchPending",  //NOI18N
+                                                SearchTask.class,
+                                                Integer.TYPE);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+        callOnWindowFromAWT(theMethod, new Object[]{sTask, new Integer(blockingTask)});
     }
     
     /**
      */
-    private void notifyReplaceFinished() {
-        assert Thread.holdsLock(lock);
-        assert currentReplaceTask != null;
-        
-        ReplaceTask.ResultStatus resultStatus
-                = currentReplaceTask.getResultStatus();
+    private void notifyReplaceFinished(ReplaceTask task) {
+        ReplaceTask.ResultStatus resultStatus = task.getResultStatus();
         if (resultStatus == SUCCESS) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(getClass(), "MSG_Success"));    //NOI18N
             if (searchWindowOpen) {
-                callOnWindowFromAWT("closeAndSendFocusToEditor", false);//NOI18N
+                Method theMethod;
+                try {
+                    theMethod = ResultView.class.getDeclaredMethod(
+                                                        "closeAndSendFocusToEditor",  //NOI18N
+                                                        ReplaceTask.class);
+                } catch (NoSuchMethodException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                callOnWindowFromAWT(theMethod, new Object[]{task} , false);//NOI18N
             }
         } else {
             String msgKey = (resultStatus == PRE_CHECK_FAILED)
                             ? "MSG_Issues_found_during_precheck"        //NOI18N
                             : "MSG_Issues_found_during_replace";        //NOI18N
             String title = NbBundle.getMessage(getClass(), msgKey);
-            displayIssuesFromAWT(title,
-                                 currentReplaceTask.getProblems(),
-                                 resultStatus != PRE_CHECK_FAILED);
+            displayIssuesFromAWT(task, title, resultStatus != PRE_CHECK_FAILED);
             if (resultStatus == PRE_CHECK_FAILED) {
-                offerRescanAfterIssuesFound();
+                offerRescanAfterIssuesFound(task);
             }
         }
     }
     
     /**
      */
-    private void offerRescanAfterIssuesFound() {
-        assert Thread.holdsLock(lock);
-        assert currentReplaceTask != null;
-        
+    private void offerRescanAfterIssuesFound(ReplaceTask task) {
         String msg = NbBundle.getMessage(getClass(),
                                          "MSG_IssuesFound_Rescan_");    //NOI18N
         NotifyDescriptor nd = new NotifyDescriptor.Message(
@@ -351,7 +317,16 @@ final class Manager {
              * to the EventQueue thread, we use invokeLater(...) and not
              * invokeAndWait(...).
              */
-            callOnWindowFromAWT("rescan", false);                       //NOI18N
+            Method theMethod;
+            try {
+                theMethod = ResultView.class.getDeclaredMethod(
+                                                    "rescan",  //NOI18N
+                                                    ReplaceTask.class);
+            } catch (NoSuchMethodException ex) {
+                throw new IllegalStateException(ex);
+            }
+
+            callOnWindowFromAWT(theMethod, new Object[]{task}, false);
         }
     }
     
@@ -379,13 +354,14 @@ final class Manager {
     
     /**
      */
-    private void displayIssuesFromAWT(String title,
-                                      String[] issues,
+    private void displayIssuesFromAWT(ReplaceTask task,
+                                      String title,
                                       boolean att) {
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
                                                 "displayIssuesToUser",  //NOI18N
+                                                ReplaceTask.class,
                                                 String.class,
                                                 String[].class,
                                                 Boolean.TYPE);
@@ -393,7 +369,7 @@ final class Manager {
             throw new IllegalStateException(ex);
         }
         callOnWindowFromAWT(theMethod,
-                            new Object[] {title, issues, Boolean.valueOf(att)},
+                            new Object[] {task, title, task.getProblems(), Boolean.valueOf(att)},
                             false);
     }
     
@@ -502,9 +478,7 @@ final class Manager {
     /**
      */
     void searchWindowOpened() {
-        synchronized (lock) {
-            searchWindowOpen = true;
-        }
+        searchWindowOpen = true;
     }
 
     /**
@@ -512,214 +486,158 @@ final class Manager {
     void searchWindowClosed() {
         assert EventQueue.isDispatchThread();
         
-        synchronized (lock) {
-            searchWindowOpen = false;
-            
-            if (moduleBeingUninstalled) {
-                return;
-            }
-            
-            if (currentSearchTask != null) {
-                currentSearchTask.stop(false);
-            }
-            if (resultModelToClean != null) {
-                pendingTasks |= CLEANING_RESULT;
-            }
-            pendingTasks &= ~SEARCHING;
-            pendingSearchTask = null;
-            lastSearchTask = null;
-            if (state == NO_TASK) {
-                processNextPendingTask();
+        searchWindowOpen = false;
+        if (moduleBeingUninstalled) {
+            return;
+        }
+        for(ListIterator<Runnable> iter = currentTasks.listIterator(); iter.hasNext();){
+            Runnable task = iter.next();
+            if (task instanceof SearchTask){
+                SearchTask sTask = (SearchTask)task;
+                sTask.stop(false);
+                scheduleCleanTask(new CleanTask(sTask.getResultModel()));
             }
         }
+        processNextPendingTask();
     }
     
     /**
      */
     private void processNextPendingTask() {
-        synchronized (lock) {
-            assert state == NO_TASK;
-            if (resultModelToClean == null) {
-                pendingTasks &= ~CLEANING_RESULT;
-            }
-            if ((pendingTasks & PRINTING_DETAILS) != 0) {
-                if ((pendingTasks & SEARCHING) != 0) {
-                    notifySearchPending(PRINTING_DETAILS);      //invariant #1
+        Runnable[] pTasks = pendingTasks.toArray(new Runnable[pendingTasks.size()]);
+        for(int i=0; i<pTasks.length ;i++){
+            boolean haveReplaceRunning = haveRunningReplaceTask();
+            if (pTasks[i] instanceof SearchTask){
+                if (!stoppingTasks.isEmpty()){
+                    notifySearchPending((SearchTask)pTasks[i], SEARCHING);
+                } else if (haveReplaceRunning)
+                    notifySearchPending((SearchTask)pTasks[i], REPLACING);
+                else{
+                    startSearching((SearchTask)pTasks[i]);
                 }
-                startPrintingDetails();
-            } else if ((pendingTasks & CLEANING_RESULT) != 0) {
-                if ((pendingTasks & SEARCHING) != 0) {
-                    notifySearchPending(CLEANING_RESULT);       //invariant #1
-                }
-                startCleaning();
-            } else if ((pendingTasks & SEARCHING) != 0) {
-                startSearching();
-            } else if ((pendingTasks & REPLACING) != 0) {
-                startReplacing();
-            } else {
-                assert pendingTasks == 0;
+            }else if (pTasks[i] instanceof ReplaceTask){
+                if (!haveReplaceRunning && !haveRunningSearchTask())
+                    startReplacing((ReplaceTask)pTasks[i]);
+//                else
+//                    notifySearchPending((SearchTask)pTasks[i], REPLACING);
+            }else if (pTasks[i] instanceof PrintDetailsTask){
+                startPrintingDetails((PrintDetailsTask)pTasks[i]);
+            }else if (pTasks[i] instanceof CleanTask){
+                startCleaning((CleanTask)pTasks[i]);
+            }else{
+                assert false; //only 4 task types described above can be here
             }
         }
     }
 
+    private boolean haveRunningReplaceTask(){
+        for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
+            if (iter.next() instanceof ReplaceTask)
+                return true;
+        }
+        return false;
+    }
+
+    private boolean haveRunningSearchTask(){
+        for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
+            if (iter.next() instanceof SearchTask)
+                return true;
+        }
+        return false;
+    }
+
     /**
      */
-    private void startSearching() {
-        synchronized (lock) {
-            assert pendingSearchTask != null;
-            
-            notifySearchStarted();
-            
-            ResultModel resultModel = pendingSearchTask.getResultModel();
-            callOnWindowFromAWT("setResultModel",                       //NOI18N
-                                resultModel);
-            resultModelToClean = resultModel;
+    private void startSearching(SearchTask sTask) {
+        notifySearchStarted(sTask);
 
-            if (outputWriterRef != null) {
-                SearchDisplayer.clearOldOutput(outputWriterRef);
-                outputWriterRef = null;
+        if (outputWriterRef != null) {
+            SearchDisplayer.clearOldOutput(outputWriterRef);
+            outputWriterRef = null;
 
-                /*
-                 * The following is necessary because clearing the output window
-                 * activates the output window:
-                 */
-                activateResultWindow();
-            }
-            
-            RequestProcessor.Task task;
-            task = RequestProcessor.getDefault().create(pendingSearchTask);
-            task.addTaskListener(getTaskListener());
-            task.schedule(0);
-            
-            currentSearchTask = pendingSearchTask;
-            pendingSearchTask = null;
-
-            searchTask = task;
-            pendingTasks &= ~SEARCHING;
-            state = SEARCHING;
+            /*
+             * The following is necessary because clearing the output window
+             * activates the output window:
+             */
+            activateResultWindow();
         }
+        runTask(sTask);
     }
     
     /**
      */
-    private void startReplacing() {
-        synchronized (lock) {
-            assert pendingReplaceTask != null;
-            
-            RequestProcessor.Task task;
-            task = RequestProcessor.getDefault().create(pendingReplaceTask);
-            task.addTaskListener(getTaskListener());
-            task.schedule(0);
-            
-            currentReplaceTask = pendingReplaceTask;
-            pendingReplaceTask = null;
-
-            replaceTask = task;
-            pendingTasks &= ~REPLACING;
-            state = REPLACING;
-        }
+    private void startReplacing(ReplaceTask rTask) {
+        runTask(rTask);
     }
     
     /**
      */
-    private void startPrintingDetails() {
-        synchronized (lock) {
-            if (outputWriterRef != null) {
-                SearchDisplayer.clearOldOutput(outputWriterRef);
-                outputWriterRef = null;
-            }
-
-            RequestProcessor.Task task;
-            task = RequestProcessor.getDefault()
-                   .create(pendingPrintDetailsTask);
-            task.addTaskListener(getTaskListener());
-            task.schedule(0);
-            
-            printDetailsTask = task;
-            pendingTasks &= ~PRINTING_DETAILS;
-            currentPrintDetailsTask = pendingPrintDetailsTask;
-            pendingPrintDetailsTask = null;
-            
-            state = PRINTING_DETAILS;
+    private void startPrintingDetails(PrintDetailsTask pTask) {
+        if (outputWriterRef != null) {
+            SearchDisplayer.clearOldOutput(outputWriterRef);
+            outputWriterRef = null;
         }
+        runTask(pTask);
     }
     
     /**
      */
-    private void startCleaning() {
-        synchronized (lock) {
-            Runnable cleaner = new CleanTask(resultModelToClean);
-            resultModelToClean = null;
-            
-            RequestProcessor.Task task;
-            task = RequestProcessor.getDefault().create(cleaner);
-            task.addTaskListener(getTaskListener());
-            task.schedule(0);
-            
-            cleanResultTask = task;
-            pendingTasks &= ~CLEANING_RESULT;
-            state = CLEANING_RESULT;
+    private void startCleaning(CleanTask cTask) {
+        runTask(cTask);
+    }
+
+    private void runTask(Runnable task){
+        pendingTasks.remove(task);
+        currentTasks.add(task);
+
+        RequestProcessor.Task pTask;
+        pTask = RequestProcessor.getDefault().create(task);
+        pTask.addTaskListener(getTaskListener());
+        pTask.schedule(0);
+
+        tasksMap.put(pTask, task);
+    }
+
+    /**
+     */
+    void stopSearching(SearchTask sTask) {
+        if (pendingTasks.remove(sTask)){
+            notifySearchCancelled(sTask);
+        } else if (currentTasks.contains(sTask)){
+            stoppingTasks.add(sTask);
+            sTask.stop();
         }
     }
 
     /**
      */
-    void stopSearching() {
-        synchronized (lock) {
-            if ((pendingTasks & SEARCHING) != 0) {
-                pendingTasks &= ~SEARCHING;
-                pendingSearchTask = null;
-                notifySearchCancelled();
-            } else if (currentSearchTask != null) {
-                currentSearchTask.stop();
-            }
+    private void taskFinished(Runnable task) {
+        if (moduleBeingUninstalled) {
+            allTasksFinished();
+            return;
         }
-    }
 
-    /**
-     */
-    private void taskFinished(Task task) {
-        synchronized (lock) {
-            if (moduleBeingUninstalled) {
-                allTasksFinished();
-                return;
-            }
-            
-            if (task == searchTask) {
-                assert state == SEARCHING;
-                if (currentSearchTask.notifyWhenFinished()) {
-                    if (currentSearchTask.wasInterrupted()) {
-                        notifySearchInterrupted();
-                    } else {
-                        notifySearchFinished();
-                    }
+        if (task instanceof SearchTask){
+            SearchTask sTask = (SearchTask)task;
+            stoppingTasks.remove(task);
+            if (sTask.notifyWhenFinished()) {
+                if (sTask.wasInterrupted()) {
+                    notifySearchInterrupted(sTask);
+                } else {
+                    notifySearchFinished(sTask);
                 }
-                currentSearchTask = null;
-                searchTask = null;
-                state = NO_TASK;
-            } else if (task == replaceTask) {
-                assert state == REPLACING;
-                notifyReplaceFinished();
-                currentReplaceTask = null;
-                replaceTask = null;
-                state = NO_TASK;
-            } else if (task == cleanResultTask) {
-                assert state == CLEANING_RESULT;
-                cleanResultTask = null;
-                state = NO_TASK;
-            } else if (task == printDetailsTask) {
-                assert state == PRINTING_DETAILS;
-                notifyPrintingDetailsFinished();
-
-                outputWriterRef = currentPrintDetailsTask.getOutputWriterRef();
-                currentPrintDetailsTask = null;
-                printDetailsTask = null;
-                state = NO_TASK;
-            } else {
-                assert false;
             }
-            processNextPendingTask();
+        } else if (task instanceof ReplaceTask){
+            ReplaceTask rTask = (ReplaceTask)task;
+            notifyReplaceFinished(rTask);
+        } else if (task instanceof PrintDetailsTask){
+            PrintDetailsTask pTask = (PrintDetailsTask)task;
+            notifyPrintingDetailsFinished();
+            outputWriterRef = pTask.getOutputWriterRef();
         }
+        currentTasks.remove(task);
+
+        processNextPendingTask();
     }
     
     /**
@@ -729,9 +647,9 @@ final class Manager {
      * final cleanup.
      */
     private void allTasksFinished() {
-        synchronized (lock) {
-            lock.notifyAll();
-        }
+//        synchronized (lock) {
+//            lock.notifyAll();
+//        }
     }
     
     /**
@@ -745,25 +663,18 @@ final class Manager {
      * the window until the currently active task(s) finish.
      */
     void doCleanup() {
-        synchronized (lock) {
-            moduleBeingUninstalled = true;
-            if (state != NO_TASK) {
-                if (currentSearchTask != null) {
-                    currentSearchTask.stop(false);
-                }
-                if (currentPrintDetailsTask != null) {
-                    currentPrintDetailsTask.stop();
-                }
-                try {
-                    lock.wait(CLEANUP_TIMEOUT_MILLIS);
-                } catch (InterruptedException ex) {
-                    ErrorManager.getDefault().notify(
-                            ErrorManager.EXCEPTION,
-                            ex);
-                }
+        moduleBeingUninstalled = true;
+        pendingTasks.clear();
+        for(ListIterator<Runnable> iter = currentTasks.listIterator(); iter.hasNext();){
+            Runnable task = iter.next();
+            if (task instanceof SearchTask){
+                ((SearchTask)task).stop();
+            } else if (task instanceof PrintDetailsTask){
+                ((PrintDetailsTask)task).stop();
             }
-            callOnWindowFromAWT("closeResults");                        //NOI18N
+
         }
+        callOnWindowFromAWT("closeResults");                        //NOI18N
     }
     
     /**
@@ -789,9 +700,9 @@ final class Manager {
         /**
          */
         public void taskFinished(Task task) {
-            synchronized (lock) {
-                Manager.this.taskFinished(task);
-            }
+            Runnable rTask = Manager.this.tasksMap.remove(task);
+            assert rTask != null;
+            Manager.this.taskFinished(rTask);
         }
 
     }

@@ -8,26 +8,26 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 
 class ClzConstantElementImpl extends ModelElementImpl implements ClassConstantElement {
-    private String className;
-    static ClzConstantElementImpl createClzConstantElementImpl(ClassScopeImpl inScope,
+    private String typeName;
+    static ClzConstantElementImpl createClzConstantElementImpl(TypeScopeImpl inScope,
             ClassConstantDeclarationInfo clsConst) {
         return new ClzConstantElementImpl(inScope, clsConst);
     }
 
-    ClzConstantElementImpl(ClassScopeImpl inScope, IndexedConstant indexedConstant) {
+    ClzConstantElementImpl(TypeScopeImpl inScope, IndexedConstant indexedConstant) {
         super(inScope, indexedConstant, PhpKind.CLASS_CONSTANT);
         assert inScope instanceof TypeScope;
         String in = indexedConstant.getIn();
         if (in != null) {
-            className = in;
+            typeName = in;
         } else {
-            className = inScope.getName();
+            typeName = inScope.getName();
         }
     }
 
-    ClzConstantElementImpl(ClassScopeImpl inScope, ClassConstantDeclarationInfo clsConst) {
+    ClzConstantElementImpl(TypeScopeImpl inScope, ClassConstantDeclarationInfo clsConst) {
         super(inScope, clsConst, PhpModifiers.EMPTY);
-        className = inScope.getName();
+        typeName = inScope.getName();
     }
 
     @Override
@@ -45,6 +45,6 @@ class ClzConstantElementImpl extends ModelElementImpl implements ClassConstantEl
     }
     @Override
     public String getNormalizedName() {
-        return className+super.getNormalizedName();
+        return typeName+super.getNormalizedName();
     }
 }

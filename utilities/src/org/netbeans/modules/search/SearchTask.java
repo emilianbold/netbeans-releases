@@ -55,6 +55,7 @@ import org.openidex.search.SearchType;
  *
  * @author  Peter Zavadsky
  * @author  Marian Petras
+ * @author  kaktus
  */
 final class SearchTask implements Runnable, Cancellable {
 
@@ -76,7 +77,8 @@ final class SearchTask implements Runnable, Cancellable {
     private volatile boolean finished = false;
     /** */
     private final String replaceString;
-    
+
+    private ProgressHandle progressHandle;
     
     /**
      * Creates a new <code>SearchTask</code>.
@@ -109,10 +111,10 @@ final class SearchTask implements Runnable, Cancellable {
             LifecycleManager.getDefault().saveAll();
         }
         
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"), this);
+        progressHandle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ResultView.class,"TEXT_PREPARE_SEARCH___"), this); // NOI18N
         progressHandle.start();
-        
+
         /* Start the actual search: */
         ensureResultModelExists();
         if (searchGroup == null) {
@@ -129,6 +131,7 @@ final class SearchTask implements Runnable, Cancellable {
             searchGroup.setListeningSearchTask(null);
             finished = true;
             progressHandle.finish();
+            progressHandle = null;
         }
     }
     
@@ -136,6 +139,12 @@ final class SearchTask implements Runnable, Cancellable {
         return new SearchTask(searchScope,
                               basicSearchCriteria,
                               customizedSearchTypes);
+    }
+
+    /**
+     */
+    BasicSearchCriteria getSearchCriteria() {
+        return basicSearchCriteria;
     }
 
     /**
@@ -172,7 +181,18 @@ final class SearchTask implements Runnable, Cancellable {
             searchGroup.stopSearch();
         }
     }
-    
+
+    void searchStarted(int searchUnitsCount) {
+        progressHandle.finish();
+        progressHandle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"), this); // NOI18N
+        progressHandle.start(searchUnitsCount);
+    }
+
+    void progress(int progress) {
+        progressHandle.progress(progress);
+    }
+
     /**
      * Stops this search task.
      * This method also sets a value of attribute

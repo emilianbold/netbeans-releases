@@ -159,7 +159,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private void updateTemplateBasedOnCatchers() {
         for (CodeTemplateParameter parameter : request.getAllParameters()) {
             for (String hint : parameter.getHints().keySet()) {
-                if (UNCAUGHT_EXCEPTION_CATCH_STATEMENTS.equals(hint) && isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+                if (UNCAUGHT_EXCEPTION_CATCH_STATEMENTS.equals(hint) && initParsing()) {
                     SourcePositions[] sourcePositions = new SourcePositions[1];
                     TreeUtilities tu = cInfo.getTreeUtilities();
                     StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -192,7 +192,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             if (CodeTemplateParameter.SELECTION_PARAMETER_NAME.equals(parameter.getName())) {
                 JTextComponent component = request.getComponent();
                 if (component.getSelectionStart() != component.getSelectionEnd()) {
-                    if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+                    if (initParsing()) {
                         TreeUtilities tu = cInfo.getTreeUtilities();
                         StatementTree stat = tu.parseStatement(request.getInsertText(), null);
                         EnumSet<Tree.Kind> kinds = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.DO_WHILE_LOOP,
@@ -546,7 +546,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror iterableElementType(int caretOffset) {
         try {            
-            if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+            if (initParsing()) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -576,7 +576,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror assignmentSideType(int caretOffset, boolean left) {
         try {
-            if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+            if (initParsing()) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -603,7 +603,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror cast(int caretOffset) {
         try {
-            if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+            if (initParsing()) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -648,7 +648,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private String newVarName(int caretOffset) {
         try {
-            if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+            if (initParsing()) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -685,7 +685,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror uncaughtExceptionType(int caretOffset) {
         try {
-            if (isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+            if (initParsing()) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
@@ -714,18 +714,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         default:
             return false;
         }
-    }
-    
-    private boolean isBlockContext(List<String> contexts) {
-        if (contexts != null) {
-            for (String ctx : contexts) {
-                Tree.Kind kind = Tree.Kind.valueOf(ctx);
-                if (kind != null && Tree.Kind.BLOCK == kind) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
     
     private synchronized boolean initParsing() {

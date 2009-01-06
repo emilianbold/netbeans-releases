@@ -85,6 +85,7 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.BindingTargetCallb
 import org.netbeans.modules.visualweb.propertyeditors.binding.PropertyBindingHelper;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 
 // Modified to support Add Data Provider from this panel- Winston
 // Lots of duplication between BindOptionsToDataProviderPanel & BindValueToDataProviderPanel
@@ -205,7 +206,7 @@ public class BindOptionsToDataProviderPanel extends DataBindingPanel implements 
     }
     
     protected void updateDataProvider(DesignProperty prop){
-        dpLabel.setText(bundle.getMessage("chooseDpToBind", prop.getDesignBean().getInstanceName())); //NOI18N
+        Mnemonics.setLocalizedText(dpLabel, bundle.getMessage("chooseDpToBind", prop.getDesignBean().getInstanceName()));
         
         if (prop != null) {
             //contexts = prop.getDesignBean().getDesignContext().getProject().getDesignContexts();
@@ -442,15 +443,12 @@ public class BindOptionsToDataProviderPanel extends DataBindingPanel implements 
         noneText.setBorder(UIManager.getBorder("TextField.border")); //NOI18N
         noneText.setText(bundle.getMessage("noDps")); //NOI18N
         
-        valueListLabel.setText(bundle.getMessage("valField")); //NOI18N
-        valueListLabel.setDisplayedMnemonic(bundle.getMessage("valFieldDisplayedMnemonic").charAt(0)); //NOI18N
+        Mnemonics.setLocalizedText(valueListLabel, bundle.getMessage("valField"));
         valueListLabel.setLabelFor(valueList);        
-        displayListLabel.setText(bundle.getMessage("displayField")); //NOI18N        
-        displayListLabel.setDisplayedMnemonic(bundle.getMessage("displayFieldDisplayedMnemonic").charAt(0)); //NOI18N        
+        Mnemonics.setLocalizedText(displayListLabel, bundle.getMessage("displayField"));
         displayListLabel.setLabelFor(displayList);
         valueListScroll.setPreferredSize(new Dimension(200, 200));
         
-        dpLabel.setDisplayedMnemonic(bundle.getMessage("chooseDpToBindSimpleDisplayedMnemonic").charAt(0)); //NOI18N
         dpLabel.setLabelFor(dpCombo);
         
         dpCombo.getAccessibleContext().setAccessibleName(bundle.getMessage("DP_COMBO_ACCESS_NAME"));

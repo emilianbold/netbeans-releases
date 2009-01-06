@@ -55,7 +55,7 @@ final class SourcePathImplementation implements ClassPathImplementation {
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List<PathResourceImplementation> resources;
     private SourceRoots sourceRoots;
-    
+
     /**
      * Construct the implementation.
      * @param sourceRoots used to get the roots information and events
@@ -69,16 +69,16 @@ final class SourcePathImplementation implements ClassPathImplementation {
         synchronized (this) {
             this.resources = null;
         }
-        this.support.firePropertyChange (PROP_RESOURCES,null,null);        
-    } 
-    
+        this.support.firePropertyChange (PROP_RESOURCES,null,null);
+    }
+
     public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (this.resources != null) {
                 return this.resources;
             }
-        }        
-        List<URL> roots = this.sourceRoots.getRootURLs();                                
+        }
+        List<URL> roots = this.sourceRoots.getRootURLs();
         synchronized (this) {
             if (this.resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.size());
@@ -99,5 +99,5 @@ final class SourcePathImplementation implements ClassPathImplementation {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener (listener);
     }
-    
+
 }

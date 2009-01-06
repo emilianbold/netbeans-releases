@@ -57,7 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class RemoveConfigurationAction extends ContextAction<Node> {
+public final class RemoveConfigurationAction extends ContextAction<Node> {
 
     private RemoveConfigurationAction() {
         super(Node.class);

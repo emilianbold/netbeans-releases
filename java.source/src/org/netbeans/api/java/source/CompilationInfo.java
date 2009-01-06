@@ -291,7 +291,7 @@ public class CompilationInfo {
         checkConfinement();
         return javaSource;
     }
-    
+
     void setJavaSource (final JavaSource javaSource) {
         this.javaSource = javaSource;
     }
@@ -321,7 +321,9 @@ public class CompilationInfo {
      * 
      * @return PositionConverter binding the virtual Java source and the real source.
      * @since 0.21
+     * @deprecated as of 0.42, this is superseded by Parsing API.
      */
+    @Deprecated
     public PositionConverter getPositionConverter() {
         checkConfinement();
         if (this.impl.getFileObject() == null) {

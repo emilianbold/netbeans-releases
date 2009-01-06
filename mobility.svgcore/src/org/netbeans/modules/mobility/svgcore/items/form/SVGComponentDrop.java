@@ -40,6 +40,7 @@
 package org.netbeans.modules.mobility.svgcore.items.form;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,25 +48,46 @@ import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteItemDataObject;
 import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author avk
+ * @author akorostelev
  */
 public abstract class SVGComponentDrop implements  ActiveEditorDrop{
 
     protected static final String PATTERN = "%%";//NOI18N
     private static final String X_COORDINATE_PATTERN = PATTERN + "COORDINATE_X" + PATTERN;//NOI18N
     private static final String Y_COORDINATE_PATTERN = PATTERN + "COORDINATE_Y" + PATTERN;//NOI18N
-    
-    protected abstract boolean doTransfer();
-    
+
+    /**
+     * Should implement real adding component snippet into SVG specified as SVGDataObject
+     * @param svgDataObject SVGDataObject to add component snippet to
+     * @return
+     */
+    protected abstract boolean doTransfer(SVGDataObject svgDataObject);
+
+    /**
+     * Should implement real adding component snippet into SVG opened in
+     * specified JTextComponent
+     * @param target JTextComponent with svg to which component snippet should be added
+     * @return
+     */
+    protected abstract boolean doTransfer(JTextComponent target);
+
+    /**
+     * Is used to create SVGComponentDrop instance for editor-palette-items
+     * with snipped specificed in <body> tag. In this case Snippet string is
+     * already known at the moment of SVGComponentDrop creation.
+     * @param snippet String with snippet text
+     * @return SVGComponentDrop instance
+     */
     public static SVGComponentDrop getDefault(String snippet){
         return new Default(snippet);
     }
     
-    protected static String getSnippetString(Class clazz, String relatedSnippetPath) throws IOException{
+    protected static String loadSnippetString(Class clazz, String relatedSnippetPath) throws IOException{
         InputStream is = clazz.getResourceAsStream(relatedSnippetPath);
         assert is != null : relatedSnippetPath + " resource Input Stream is null";//NOI18N
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
@@ -77,6 +99,10 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         return buffer.toString();
     }
 
+    protected static void insertToTextComponent( final String text, final JTextComponent target) {
+        SVGPaletteItemDataObject.insertToTextComponent(text, target);
+    }
+    
     public boolean handleTransfer(SVGDataObject svgDataObject, float[] point) {
         if (svgDataObject == null){
             SceneManager.log(Level.INFO, "SVGDataObject not found."); //NOI18N
@@ -84,11 +110,13 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         }
         mySvgDataObject = svgDataObject;
         myPoint = point;
-        return doTransfer();
+        return doTransfer(svgDataObject);
     }
 
-    public boolean handleTransfer(JTextComponent targetComponent) {
-        return false;
+    public boolean handleTransfer(JTextComponent target) {
+        //SVGDataObject svgDO = SVGDataObject.getActiveDataObject(target);
+        myPoint = new float[]{0, 0};
+        return doTransfer(target);
     }
 
     protected float[] getDropPoint(){
@@ -96,13 +124,9 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
     }
     
     protected void setSelection(String id){
-        if (getSVGDataObject() != null){
-            getSVGDataObject().getSceneManager().setSelection(id, true);
+        if (mySvgDataObject != null){
+            mySvgDataObject.getSceneManager().setSelection(id, true);
         }
-    }
-    
-    protected SVGDataObject getSVGDataObject(){
-        return mySvgDataObject;
     }
     
     protected String replaceCoordinates(String text){
@@ -117,11 +141,11 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         }
         
         @Override
-        protected boolean doTransfer() {
+        protected boolean doTransfer(SVGDataObject svgDataObject) {
             try {
                 if (mySnippet != null) {
                     String text = replaceCoordinates(mySnippet);
-                    String id = getSVGDataObject().getModel().mergeImage(text, false);
+                    String id = svgDataObject.getModel().mergeImage(text, false);
                     setSelection(id);
                 }
                 return true;
@@ -131,9 +155,20 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
             return false;
         }
 
+        @Override
+        protected boolean doTransfer(JTextComponent target) {
+            if (mySnippet != null) {
+                String text = replaceCoordinates(mySnippet);
+                insertToTextComponent(text, target);
+            }
+            return true;
+        }
+
         private String mySnippet;
+
     }
     
     private SVGDataObject mySvgDataObject;
     private float[] myPoint;
+
 }

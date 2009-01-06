@@ -47,7 +47,6 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;

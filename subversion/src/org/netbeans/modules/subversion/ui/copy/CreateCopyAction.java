@@ -95,7 +95,8 @@ public class CreateCopyAction extends ContextAction {
         
         Context ctx = getContext(nodes);
 
-        final File root = ctx.getRootFiles()[0];
+        File root = SvnUtils.getActionRoot(ctx);
+        if(root == null) return;
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
         final boolean hasChanges = files.length > 0; 

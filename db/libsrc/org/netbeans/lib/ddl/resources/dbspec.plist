@@ -1340,7 +1340,7 @@
 
     DropIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.DropIndex;
-      Format = "drop index {object.name} on {table.name}";
+      Format = "drop index {object.name} on {object.owner}.{table.name}";
     };
   };
 

@@ -37,99 +37,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.j2ee.selector;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.openide.util.NbBundle;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.ProjectChildren;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
+import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
-
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder.class)
-public class EJBSelectionTreeBuilder implements SelectionTreeBuilder {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String DISPLAY_NAME = NbBundle.getMessage(EJBSelectionTreeBuilder.class,
-                                                                   "EJBSelectionTreeBuilder_DisplayName"); // NOI18N
-                                                                                                           // -----
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public boolean isDefault() {
-        return false;
+public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
+    public EJBSelectionTreeBuilder(Project project, boolean isPreferred) {
+        super(new Type("ejb-application", "EJB View"), isPreferred, project);
     }
 
-    public String getDisplayName() {
-        return DISPLAY_NAME;
-    }
+    public List<SelectorNode> buildSelectionTree() {
+        SelectorNode projectNode = new ProjectNode(project) {
 
-    public String getID() {
-        return "EJB"; // NOI18N
-    }
-
-    public boolean isPreferred(Project project) {
-        return isEjbProject(project);
-    }
-
-    public List<SelectorNode> buildSelectionTree(final Project project, final boolean includeSubprojects) {
-        final List<SelectorNode> nodes = new ArrayList<SelectorNode>();
-
-        nodes.add(new ProjectNode(project, includeSubprojects) {
-                protected SelectorChildren getChildren() {
-                    return new ProjectChildren(project);
-                }
-            });
-
-        return nodes;
-    }
-
-    public boolean supports(Project project) {
-        return isEjbProject(project);
+            protected SelectorChildren getChildren() {
+                return new ProjectChildren(project);
+            }
+        };
+        return Collections.singletonList(projectNode);
     }
 
     @Override
-    public String toString() {
-        return getDisplayName();
-    }
-
-    private boolean isEjbProject(Project project) {
-        if (project == null) {
-            return false;
-        }
-
-        EjbJarImplementation jar = project.getLookup().lookup(EjbJarImplementation.class);
-
-        if (jar != null) {
-            return true;
-        }
-
-        Set<Project> subprojects = new HashSet<Project>();
-        ProjectUtilities.fetchSubprojects(project, subprojects);
-
-        for (Project subp : subprojects) {
-            jar = subp.getLookup().lookup(EjbJarImplementation.class);
-
-            if (jar != null) {
-                return true;
-            }
-        }
-
-        return false;
+    public int estimatedNodeCount() {
+        return 1;
     }
 }

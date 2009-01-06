@@ -178,25 +178,17 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     }
     
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return false;
     }
     
     public boolean hasPrevious() {
-        return index > 0;
+        return false;
     }
     
     public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        index++;
     }
     
     public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        index--;
     }
     
     public WizardDescriptor.Panel current() {

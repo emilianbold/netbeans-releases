@@ -98,7 +98,7 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
     }
 
     @Override
-    public Object clone() {
+    public PlatformConfiguration clone() {
         PlatformConfiguration clone = new PlatformConfiguration(this);
         return clone;
     }

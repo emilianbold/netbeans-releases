@@ -60,13 +60,14 @@ import org.apache.tools.ant.module.spi.AntSession;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
 
 /**
  * Standard logger for producing Ant output messages.
  * @author Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=100)
+@ServiceProvider(service=AntLogger.class, position=100)
 public final class StandardLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());
@@ -321,8 +322,10 @@ public final class StandardLogger extends AntLogger {
         event.consume();
         AntSession session = event.getSession();
         String line = event.getMessage();
-        if (line.equals("Trying to override old definition of task java") && event.getLogLevel() == AntEvent.LOG_WARN) { // NOI18N
-            return; // #56341
+        if (line.startsWith("Trying to override old definition of ") && event.getLogLevel() == AntEvent.LOG_WARN) { // NOI18N
+            // #56341, #43968, and many other things in the IDE.
+            session.deliverMessageLogged(event, line, AntEvent.LOG_VERBOSE);
+            return;
         }
         ERR.log(Level.FINE, "Received message: {0}", line);
         if (line.indexOf('\n') != -1) {

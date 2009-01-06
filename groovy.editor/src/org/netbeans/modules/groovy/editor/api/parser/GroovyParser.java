@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -85,7 +86,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 
@@ -95,12 +95,16 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
  */
 class GroovyParser implements Parser {
 
+    private static final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
+
+    private static final AtomicLong PARSING_TIME = new AtomicLong(0);
+    
     private final PositionManager positions = createPositionManager();
-    private final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
+    
     private boolean waitJavaScanFinished = true;
 
     public GroovyParser() {
-        // LOG.setLevel(Level.FINEST);
+        super();
     }
 
     public void parseFiles(Job job) {
@@ -430,8 +434,10 @@ class GroovyParser implements Parser {
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
                 // but for now it is faster to use javac only for sources
-                ClassPathSupport.createClassPath(new FileObject[] {}),
-                ClassPathSupport.createClassPath(new FileObject[] {}),
+
+                // null happens in GSP
+                bootPath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : bootPath,
+                compilePath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : compilePath,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
@@ -439,12 +445,26 @@ class GroovyParser implements Parser {
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
-//        long start = System.currentTimeMillis();
+        long start = 0;
+        if (LOG.isLoggable(Level.FINEST)) {
+            start = System.currentTimeMillis();
+        }
+        
         try {
             compilationUnit.compile(Phases.CLASS_GENERATION);
-//            System.out.println("### compilation success in " + (System.currentTimeMillis() - start));
+
+            if (LOG.isLoggable(Level.FINEST)) {
+                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
+                LOG.log(Level.FINEST, "Compilation success in {0}; total time spent {1}",
+                        new Object[] {(System.currentTimeMillis() - start), full});
+            }
         } catch (Throwable e) {
-//            System.out.println("### compilation failure in " + (System.currentTimeMillis() - start));
+            if (LOG.isLoggable(Level.FINEST)) {
+                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
+                LOG.log(Level.FINEST, "Compilation failure in {0}; total time spent {1}",
+                        new Object[] {(System.currentTimeMillis() - start), full});
+            }
+
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();

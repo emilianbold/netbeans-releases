@@ -56,7 +56,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 public class AddMethodPanel extends javax.swing.JPanel {
 
     /** Creates new form NewJPanel */
-    public AddMethodPanel(Resource resource) {
+    public AddMethodPanel(ResourceType resource, String resourcePath) {
         initComponents();
         
         //Find unique name
@@ -68,7 +68,7 @@ public class AddMethodPanel extends javax.swing.JPanel {
                     existingNames.add(id);
             }
         }
-        tfMethodName.setText(Util.generateUniqueName("newMethod", existingNames));
+        tfMethodName.setText(Util.generateUniqueName(resourcePath+"."+"newMethod", existingNames));
         MethodTypesModel methodTypesModel = new MethodTypesModel();
         cbMethodType.setModel(methodTypesModel);
         cbMethodType.setSelectedItem(MethodType.GET.value());

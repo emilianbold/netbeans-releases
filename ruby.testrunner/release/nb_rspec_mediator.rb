@@ -1,8 +1,8 @@
-# 
+#
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-# 
+#
 # Copyright 2008 Sun Microsystems, Inc. All rights reserved.
-# 
+#
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
 # Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
 # "Portions Copyrighted [year] [name of copyright owner]"
-# 
+#
 # If you wish your version of this file to be governed by only the CDDL
 # or only the GPL Version 2, indicate your decision by adding
 # "[Contributor] elects to include this software in this distribution
@@ -31,13 +31,24 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
-# 
+#
 # Contributor(s):
-# 
+#
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
 
 
 class NbRspecMediator < Spec::Runner::ExampleGroupRunner
+
+  # default example groups that should be excluded from test results
+  EXCLUDE = ["Spec::Rails::Example::ViewExampleGroup",
+    "Spec::Rails::Example::HelperExampleGroup",
+    "Spec::Rails::Example::ControllerExampleGroup",
+    "Spec::Rails::Example::FunctionalExampleGroup",
+    "Spec::Rails::Example::ModelExampleGroup",
+    "Spec::Rails::Example::RailsExampleGroup",
+    "ActionController::IntegrationTest",
+    "ActionController::TestCase",
+    "ActiveSupport::TestCase"]
 
   def initialize(options, args)
     super(options)
@@ -54,10 +65,9 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
       @spec_parser = NbSpecParser.new
       @spec_parser.spec_name_for(@options.files[0], @options.line_number)
     end
-
     overall_start_time = Time.now
     example_groups.each do |example_group|
-      if (@spec_parser != nil && example_group.description != @spec_parser.example_group_description)
+      if exclude?(example_group)
         next
       end
       example_group_start_time = Time.now
@@ -71,6 +81,14 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
   ensure
     reporter.duration = @duration
     finish
+  end
+
+  private
+  def exclude?(example_group)
+    if (@spec_parser != nil && example_group.description != @spec_parser.example_group_description)
+      return true
+    end
+    EXCLUDE.include?(example_group.name)
   end
 
   protected
@@ -90,13 +108,13 @@ class Reporter < Spec::Runner::Reporter
   def duration
     @duration
   end
-  
+
   def example_started(example)
     start_timer
     puts "%RSPEC_TEST_STARTED% #{example.description}"
     super
   end
-      
+
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
     error_msg = error.message != nil ? error.message : ""
@@ -119,7 +137,7 @@ class Reporter < Spec::Runner::Reporter
     elsif args.size == 2 && args[1] == nil
       args[1] = msg
     end
-    
+
     case args[1]
     when String
       # 1.1.4
@@ -133,7 +151,7 @@ class Reporter < Spec::Runner::Reporter
   def start_timer
     @start_time = Time.now
   end
-  
+
   def elapsed_time
     Time.now - @start_time
   end
@@ -151,9 +169,9 @@ class Reporter < Spec::Runner::Reporter
 end
 
 class NbSpecParser < Spec::Runner::SpecParser
-  
+
   attr_reader :example_group_description, :example_description
-  
+
   def spec_name_for(file, line_number)
     best_match.clear
     file = File.expand_path(file)
@@ -175,7 +193,7 @@ class NbSpecParser < Spec::Runner::SpecParser
       nil
     end
   end
-  
+
   def safe_get_options
     # there's no 'rspec_options' method in rspec 1.1.11
     respond_to?(:rspec_options, true) ? rspec_options : Spec::Runner.options

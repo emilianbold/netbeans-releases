@@ -86,7 +86,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = RubyCodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
+        boolean ok = RubyMethodCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
 
         if (expectSuccess) {
             assertTrue(ok);
@@ -342,10 +342,55 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/unknown_in_the_block.rb", "Huh.err^");
     }
 
-    public void testConstant() throws Exception {
-        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^");
+    public void testConstantMethods() throws Exception {
+        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^s");
     }
 
+    public void testConstantAssignedToVariableMethods() throws Exception {
+        checkCompletion("testfiles/constants.rb", "puts b.down^case");
+    }
+
+    public void testConstants() throws Exception {
+        checkCompletion("testfiles/constants1.rb", "Fcntl::O_A^");
+    }
+
+    public void testConstantsNonPrefixed() throws Exception {
+        checkCompletion("testfiles/constants1.rb", "Fcntl::^O_A");
+    }
+
+    public void testConstantsFromParentsAreNotOffered() throws Exception {
+        // must not offer FALSE from Object
+        checkCompletion("testfiles/constants1.rb", "Fcntl::F^");
+    }
+
+    public void testConstantsForDotAreNotOffered() throws Exception {
+        checkCompletion("testfiles/constants1.rb", "File.S^");
+    }
+
+    public void testCoreMethodWithMultiTypes() throws Exception {
+        checkCompletion("testfiles/core_methods.rb", "puts has_one.t^");
+    }
+
+    public void testMethodsChainingAssignment() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
+    }
+
+    public void testMethodsChainingDirect() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.empty?.to_^s");
+    }
+
+    public void testMethodsChainingDirectLiterals() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts 1.even?.to^_s");
+    }
+
+    public void testMethodsChainingParenthesised() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
+    }
+
+    // TODO uncomment when reindexed
+//    public void testIndexedConstantMethods() throws Exception {
+//        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");
+//    }
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

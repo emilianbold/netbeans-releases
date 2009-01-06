@@ -54,6 +54,12 @@ made subject to such option by the copyright holder.
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="ff6f3757" foreColor="white">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="nbeditor-bracesMatching-match-multichar" bgColor="ff386f4c" foreColor="white">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="nbeditor-bracesMatching-mismatch-multichar" bgColor="ff6f3757" foreColor="white">
+        <font style="bold" />
+    </fontcolor>
     <fontcolor name="highlight-search" bgColor="38566F"/>
     <fontcolor name="inc-search" bgColor="38566F"/>
     <fontcolor name="line-number" foreColor="white"/>

@@ -97,7 +97,7 @@ public class CRUDTest extends RestTestBase {
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
-        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel));
+        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel), true);
         //Finish
         //new JButtonOperator(wo, 7).pushNoBlock();
         //only finish the wizard
@@ -231,21 +231,25 @@ public class CRUDTest extends RestTestBase {
      * @param wo wizard to go through
      * @return last step in the wizard
      */
-    protected WizardOperator prepareEntityClasses(WizardOperator wo) {
+    protected WizardOperator prepareEntityClasses(WizardOperator wo, boolean createPU) {
         //Add all >>
         new JButtonOperator(wo, 4).pushNoBlock();
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
-        //Create persistence unit
-        new JButtonOperator(wo, 4).pushNoBlock();
-        //Create Persistence Unit
-        String puDlgTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "LBL_CreatePersistenceUnit");
-        NbDialogOperator ndo = new NbDialogOperator(puDlgTitle);
-        //Create
-        new JButtonOperator(ndo, 2).pushNoBlock();
-        //end create pu dialog
+        if (createPU) {
+            //Create persistence unit
+            String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.Bundle", "LBL_CreatePersistenceUnit");
+            new JButtonOperator(wo, btnLabel).pushNoBlock();
+            //Create Persistence Unit
+            String puDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "LBL_CreatePersistenceUnit");
+            NbDialogOperator ndo = new NbDialogOperator(puDlgTitle);
+            //Create
+            btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "LBL_Create");
+            new JButtonOperator(ndo, btnLabel).pushNoBlock();
+            //end create pu dialog
+        }
         return wo;
     }
 

@@ -70,10 +70,10 @@ public class ResendIntervalImpl extends RMSunClientComponentImpl implements Rese
     }
 
     public void setResendInterval(String milliseconds) {
-        setText(RESENDINTERVAL_CONTENT_PROPERTY, milliseconds);
+        setAttribute(RESENDINTERVAL_CONTENT_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);
     }
 
     public String getResendInterval() {
-        return getText();
+        return getAttribute(RMAttribute.MILLISECONDS);
     }
 }

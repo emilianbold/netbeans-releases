@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,8 +53,12 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
+import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -818,6 +822,7 @@ public class SvnUtils {
      */
     public static List<String> getMatchinIgnoreParterns(List<String> patterns, String value, boolean onlyFirstMatch)  {
         List<String> ret = new ArrayList<String>();
+        if(patterns == null) return ret;
         for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
             try {
                 // may contain shell patterns (almost identical to RegExp)
@@ -963,14 +968,29 @@ public class SvnUtils {
     public static ISVNLogMessage[] getLogMessages(ISVNClientAdapter client, SVNUrl rootUrl, String[] paths, SVNRevision fromRevision, SVNRevision toRevision, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
         Set<Long> alreadyHere = new HashSet<Long>();
         List<ISVNLogMessage> ret = new ArrayList<ISVNLogMessage>();
+        boolean sorted = true;
+        long lastRevNum = -1;
         for (String path : paths) {
             ISVNLogMessage[] logs = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, stopOnCopy, fetchChangePath, 0);
             for (ISVNLogMessage log : logs) {
-                if(!alreadyHere.contains(log.getRevision().getNumber())) {
+                long revNum = log.getRevision().getNumber();
+                if(!alreadyHere.contains(revNum)) {
                     ret.add(log);
-                    alreadyHere.add(log.getRevision().getNumber());
+                    alreadyHere.add(revNum);
+                    sorted &= (revNum > lastRevNum);
+                    lastRevNum = revNum;
                 }
             }
+        }
+        if (!sorted) {
+            Collections.sort(ret, new Comparator<ISVNLogMessage>() {
+                public int compare(ISVNLogMessage m1, ISVNLogMessage m2) {
+                    long revNum1 = m1.getRevision().getNumber();
+                    long revNum2 = m2.getRevision().getNumber();
+                    return (revNum1 == revNum2) ? 0
+                                                : (revNum1 > revNum2) ? 1 : -1;
+                }
+            });
         }
         return ret.toArray(new ISVNLogMessage[ret.size()]);
     }
@@ -980,4 +1000,41 @@ public class SvnUtils {
         if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
         TY9_LOG.log(Level.FINEST, msg);
     }
+
+    public static File getActionRoot(Context ctx) {
+        File[] roots = ctx.getRootFiles();
+        List<File> l = new ArrayList<File>();
+        for (File file : roots) {
+            if(isManaged(file)) {
+                l.add(file);
+            }
+        }
+        roots = l.toArray(new File[l.size()]);
+        if(roots.length > 1) {
+            FileSelector fs = new FileSelector();
+            if(fs.show(roots)) {
+                return fs.getSelectedFile();
+            } else {
+                return null;
+            }
+        } else {
+            return roots[0];
+        }
+    }
+
+    public static String getHash(String alg, byte[] encoded) throws NoSuchAlgorithmException {
+        MessageDigest md5 = MessageDigest.getInstance(alg);
+        md5.update(encoded);
+        byte[] md5digest = md5.digest();
+        String ret = ""; // NOI18N
+        for (int i = 0; i < md5digest.length; i++) {
+            String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
+            if (hex.length() == 1) {
+                hex = "0" + hex; // NOI18N
+            }
+            ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
+        }
+        return ret;
+    }
+
  }

@@ -1,0 +1,4 @@
+def |>MARK_OCCURRENCES:_bu^ild_struct_time<|(y, m, d, hh, mm, ss, dstflag):
+        return |>MARK_OCCURRENCES:_build_struct_time<|(self.__year, self.__month, self.__day,
+        return |>MARK_OCCURRENCES:_build_struct_time<|(self.year, self.month, self.day,
+        return |>MARK_OCCURRENCES:_build_struct_time<|(y, m, d, hh, mm, ss, 0)

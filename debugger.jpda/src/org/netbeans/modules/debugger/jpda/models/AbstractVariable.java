@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanType;
+import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteType;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharType;
@@ -74,6 +75,7 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VoidValue;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 
@@ -88,6 +90,22 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -137,16 +155,24 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             return "\'" + v.toString () + "\'";
         if (v instanceof PrimitiveValue)
             return v.toString ();
-        if (v instanceof StringReference)
-            return "\"" +
-                ((StringReference) v).value ()
-                + "\"";
-        if (v instanceof ClassObjectReference)
-            return "class " + ((ClassObjectReference) v).reflectedType ().name ();
-        if (v instanceof ArrayReference)
-            return "#" + ((ArrayReference) v).uniqueID () + 
-                "(length=" + ((ArrayReference) v).length () + ")";
-        return "#" + ((ObjectReference) v).uniqueID ();
+        try {
+            if (v instanceof StringReference)
+                return "\"" +
+                    StringReferenceWrapper.value((StringReference) v)
+                    + "\"";
+            if (v instanceof ClassObjectReference)
+                return "class " + ReferenceTypeWrapper.name(ClassObjectReferenceWrapper.reflectedType((ClassObjectReference) v));
+            if (v instanceof ArrayReference)
+                return "#" + ObjectReferenceWrapper.uniqueID((ArrayReference) v) +
+                    "(length=" + ArrayReferenceWrapper.length((ArrayReference) v) + ")";
+            return "#" + ObjectReferenceWrapper.uniqueID((ObjectReference) v);
+        } catch (InternalExceptionWrapper iex) {
+            return "";
+        } catch (ObjectCollectedExceptionWrapper oex) {
+            return "";
+        } catch (VMDisconnectedExceptionWrapper dex) {
+            return "";
+        }
     }
 
     /**
@@ -161,33 +187,45 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         }
         Value value;
         Value oldV = getInnerValue();
-        if (oldV instanceof CharValue && expression.startsWith("'") && expression.endsWith("'") && expression.length() > 1) {
-            value = oldV.virtualMachine().mirrorOf(expression.charAt(1));
-        } else if ((oldV instanceof StringReference || oldV == null) &&
-                   expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
-            value = debugger.getVirtualMachine().mirrorOf(expression.substring(1, expression.length() - 1));
-        } else if (oldV instanceof ObjectReference &&
-                   ((ObjectReference) oldV).referenceType() instanceof ClassType &&
-                   ((ClassType) ((ObjectReference) oldV).referenceType()).isEnum()) {
-            ClassType enumType = (ClassType) ((ObjectReference) oldV).referenceType();
-            Field enumValue = enumType.fieldByName(expression);
-            if (enumValue != null) {
-                value = enumType.getValue(enumValue);
-            } else {
-                throw new InvalidExpressionException(expression);
-            }
-        } else if ("null".equals(expression)) {
-            value = null;
-        } else {
-            // evaluate expression to Value
-            Value evaluatedValue = debugger.evaluateIn (expression);
-            if (oldV != null && evaluatedValue != null) {
-                Type type = oldV.type();
-                if (!type.equals(evaluatedValue.type())) {
-                    evaluatedValue = convertValue(evaluatedValue, type);
+        try {
+            if (oldV instanceof CharValue && expression.startsWith("'") && expression.endsWith("'") && expression.length() > 1) {
+                value = VirtualMachineWrapper.mirrorOf(MirrorWrapper.virtualMachine(oldV), expression.charAt(1));
+            } else if ((oldV instanceof StringReference || oldV == null) &&
+                       expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
+                value = VirtualMachineWrapper.mirrorOf(
+                        debugger.getVirtualMachine(),
+                        expression.substring(1, expression.length() - 1));
+            } else if (oldV instanceof ObjectReference &&
+                       ObjectReferenceWrapper.referenceType((ObjectReference) oldV) instanceof ClassType &&
+                       ClassTypeWrapper.isEnum((ClassType) ObjectReferenceWrapper.referenceType((ObjectReference) oldV))) {
+                ClassType enumType = (ClassType) ObjectReferenceWrapper.referenceType((ObjectReference) oldV);
+                Field enumValue = ReferenceTypeWrapper.fieldByName(enumType, expression);
+                if (enumValue != null) {
+                    value = ReferenceTypeWrapper.getValue(enumType, enumValue);
+                } else {
+                    throw new InvalidExpressionException(expression);
                 }
+            } else if ("null".equals(expression)) {
+                value = null;
+            } else {
+                // evaluate expression to Value
+                Value evaluatedValue = debugger.evaluateIn (expression);
+                if (oldV != null && evaluatedValue != null) {
+                    Type type = ValueWrapper.type(oldV);
+                    if (!type.equals(ValueWrapper.type(evaluatedValue))) {
+                        evaluatedValue = convertValue(evaluatedValue, type);
+                    }
+                }
+                value = evaluatedValue;
             }
-            value = evaluatedValue;
+        } catch (InternalExceptionWrapper e) {
+            throw new InvalidExpressionException(e);
+        } catch (ClassNotPreparedExceptionWrapper e) {
+            throw new InvalidExpressionException(e);
+        } catch (ObjectCollectedExceptionWrapper e) {
+            throw new InvalidExpressionException(e);
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return ;
         }
         // set new value to remote veriable
         setValue (value);
@@ -210,49 +248,65 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                     } catch (InvocationException ex) {
                     }
                 }
-                if (value.type().equals(type)) {
+                boolean equalsType;
+                try {
+                    equalsType = ValueWrapper.type(value).equals(type);
+                } catch (InternalExceptionWrapper ex) {
+                    equalsType = true;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    equalsType = true;
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    equalsType = true;
+                }
+                if (equalsType) {
                     return value;
                 }
             }
             if (value instanceof PrimitiveValue) {
                 PrimitiveValue pv = (PrimitiveValue) value;
-                if (type instanceof BooleanType) return pv.virtualMachine().mirrorOf(pv.booleanValue());
-                if (type instanceof ByteType) return pv.virtualMachine().mirrorOf(pv.byteValue());
-                if (type instanceof CharType) return pv.virtualMachine().mirrorOf(pv.charValue());
-                if (type instanceof ShortType) return pv.virtualMachine().mirrorOf(pv.shortValue());
-                if (type instanceof IntegerType) return pv.virtualMachine().mirrorOf(pv.intValue());
-                if (type instanceof LongType) return pv.virtualMachine().mirrorOf(pv.longValue());
-                if (type instanceof FloatType) return pv.virtualMachine().mirrorOf(pv.floatValue());
-                if (type instanceof DoubleType) return pv.virtualMachine().mirrorOf(pv.doubleValue());
+                try {
+                    VirtualMachine vm = MirrorWrapper.virtualMachine(pv);
+                    if (type instanceof BooleanType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.booleanValue(pv));
+                    if (type instanceof ByteType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.byteValue(pv));
+                    if (type instanceof CharType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.charValue(pv));
+                    if (type instanceof ShortType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.shortValue(pv));
+                    if (type instanceof IntegerType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.intValue(pv));
+                    if (type instanceof LongType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.longValue(pv));
+                    if (type instanceof FloatType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.floatValue(pv));
+                    if (type instanceof DoubleType) return VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.doubleValue(pv));
+                } catch (InternalExceptionWrapper e) {
+                } catch (VMDisconnectedExceptionWrapper e) {
+                }
             }
         }
         if (type instanceof ClassType && value instanceof PrimitiveValue) {
             JPDAThread ct = getDebugger().getCurrentThread();
             if (ct != null) {
                 PrimitiveValue pv = (PrimitiveValue) value;
-                String classType = type.name();
-                if (classType.equals("java.lang.Byte") && !(pv instanceof ByteValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.byteValue());
-                }
-                if (classType.equals("java.lang.Character") && !(pv instanceof CharValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.charValue());
-                }
-                if (classType.equals("java.lang.Short") && !(pv instanceof ShortValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.shortValue());
-                }
-                if (classType.equals("java.lang.Integer") && !(pv instanceof IntegerValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.intValue());
-                }
-                if (classType.equals("java.lang.Long") && !(pv instanceof LongValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.longValue());
-                }
-                if (classType.equals("java.lang.Float") && !(pv instanceof FloatValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.floatValue());
-                }
-                if (classType.equals("java.lang.Double") && !(pv instanceof DoubleValue)) {
-                    pv = pv.virtualMachine().mirrorOf(pv.doubleValue());
-                }
                 try {
+                    String classType = TypeWrapper.name(type);
+                    VirtualMachine vm = MirrorWrapper.virtualMachine(pv);
+                    if (classType.equals("java.lang.Byte") && !(pv instanceof ByteValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.byteValue(pv));
+                    }
+                    if (classType.equals("java.lang.Character") && !(pv instanceof CharValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.charValue(pv));
+                    }
+                    if (classType.equals("java.lang.Short") && !(pv instanceof ShortValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.shortValue(pv));
+                    }
+                    if (classType.equals("java.lang.Integer") && !(pv instanceof IntegerValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.intValue(pv));
+                    }
+                    if (classType.equals("java.lang.Long") && !(pv instanceof LongValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.longValue(pv));
+                    }
+                    if (classType.equals("java.lang.Float") && !(pv instanceof FloatValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.floatValue(pv));
+                    }
+                    if (classType.equals("java.lang.Double") && !(pv instanceof DoubleValue)) {
+                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.doubleValue(pv));
+                    }
                     value = EvaluatorVisitor.box(pv,
                                                  (ReferenceType) type,
                                                  ((JPDAThreadImpl) ct).getThreadReference());
@@ -260,6 +314,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                 } catch (ClassNotLoadedException ex) {
                 } catch (IncompatibleThreadStateException ex) {
                 } catch (InvocationException ex) {
+                } catch (InternalExceptionWrapper ex) {
+                } catch (VMDisconnectedExceptionWrapper ex) {
                 }
             }
         }
@@ -297,11 +353,13 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     public String getType () {
         if (getInnerValue () == null) return "";
         try {
-            return this.getInnerValue().type().name ();
-        } catch (VMDisconnectedException vmdex) {
+            return TypeWrapper.name(ValueWrapper.type(this.getInnerValue()));
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
             // The session is gone.
             return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
-        } catch (ObjectCollectedException ocex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
             // The object is gone.
             return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
         }
@@ -310,7 +368,16 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     public JPDAClassType getClassType() {
         Value value = getInnerValue();
         if (value == null) return null;
-        com.sun.jdi.Type type = value.type();
+        com.sun.jdi.Type type;
+        try {
+            type = ValueWrapper.type(value);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return null;
+        }
         if (type instanceof ReferenceType) {
             return new JPDAClassTypeImpl(debugger, (ReferenceType) type);
         } else {

@@ -125,6 +125,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
 
         if (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT){
             if (isMultiLineComment(token)) {
+                if (caretOffset == token.getTokenSequence().offset()){
+                    return findIndent(token);
+                }
                 // Indent the inner lines of the multi-line comment by one
                 if (!getFormatLeadingStarInComment()) {
                     return findIndent(token) + 1;
@@ -347,6 +350,15 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 case PROTECTED:
                                     indent = getTokenIndent(tt) + getShiftWidth();
                                     break;
+                                case FOR:
+                                    if (alignMultilineFor()) {
+                                        TokenItem lparen = getLeftParen(t, tt);
+                                        if (lparen != null){
+                                            return getTokenColumn(lparen)+1;
+                                        }
+                                    }
+                                    indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
+                                    break;
                                 default:
                                     indent = getTokenIndent(tt);
                                     break;
@@ -514,6 +526,15 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 return getTokenColumn(lparen)+1;
                             }
                         }
+                    }
+                }
+            } else if ( (stmtStart.getTokenID() == CppTokenId.IF && alignMultilineIf()) ||
+                        (stmtStart.getTokenID() == CppTokenId.WHILE && alignMultilineWhile()) ||
+                        (stmtStart.getTokenID() == CppTokenId.FOR && alignMultilineFor())) {
+                if (t != null){
+                    TokenItem lparen = getLeftParen(t, stmtStart);
+                    if (lparen != null){
+                        return getTokenColumn(lparen)+1;
                     }
                 }
             } else if (!isStatement(stmtStart)){

@@ -105,6 +105,7 @@ public class ProfileGenerator implements CodeGenerator {
         }
         NewProfilePanel panel = new NewProfilePanel(model);
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ProfileGenerator.class, "TIT_Add_profile"));
+        panel.attachDialogDisplayer(dd);
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             String id = panel.getProfileId();
@@ -163,7 +164,7 @@ public class ProfileGenerator implements CodeGenerator {
                         } else if (Utilities.isUnix()) {
                             os.setFamily("Linux");//NOI18N
                         } else {
-                            os.setFamily("Windows");
+                            os.setFamily("Windows"); //NOI18N
                         }
                         act.setActivationOS(os);
                     }

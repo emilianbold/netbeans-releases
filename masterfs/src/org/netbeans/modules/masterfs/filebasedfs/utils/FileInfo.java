@@ -179,7 +179,7 @@ public final class FileInfo {
 
     public boolean isSupportedFile() {
         return (!getFile().getName().equals(".nbattrs") &&
-                !WriteLockUtils.hasActiveLockFileSigns(getFile().getAbsolutePath()) && 
+                !WriteLockUtils.hasActiveLockFileSigns(getFile().getName()) &&
                 (getFile().getParent() != null || !isWindowsFloppy())) ;
     }
     

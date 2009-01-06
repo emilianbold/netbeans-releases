@@ -377,4 +377,8 @@ public class DefaultVisitor implements Visitor {
         scan(node.getClassName());
         scan(node.getConstant());
     }
+
+    public void visit(PHPVarComment node) {
+        scan(node.getVariable());
+    }
 }

@@ -177,3 +177,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-spi-actions@" value="${javadoc.docs.org-netbeans-modules-spi-actions}"/>
 <replacefilter token="@org-netbeans-modules-extexecution@" value="${javadoc.docs.org-netbeans-modules-extexecution}"/>
 <replacefilter token="@org-netbeans-modules-gsf-api@" value="${javadoc.docs.org-netbeans-modules-gsf-api}"/>
+<replacefilter token="@org-netbeans-modules-mobility-project@" value="${javadoc.docs.org-netbeans-modules-mobility-project}"/>

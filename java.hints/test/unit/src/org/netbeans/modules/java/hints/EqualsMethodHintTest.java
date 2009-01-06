@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,9 +111,29 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
                              
     }
     
+    public void test153642() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean e|quals(Object o) { return this == o; }\n" +
+                       "}\n",
+                       "2:19-2:25:verifier:ENC",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    @SuppressWarnings(\"EqualsWhichDoesntCheckParameterClass\")\n" +
+                       "    public boolean equals(Object o) { return this == o; }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         return new EqualsMethodHint().run(info, path);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return "FixImpl";
     }
 
     static {

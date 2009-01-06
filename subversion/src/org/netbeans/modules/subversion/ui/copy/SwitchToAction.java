@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.FileSelector;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
@@ -103,8 +104,9 @@ public class SwitchToAction extends ContextAction {
         }
         
         Context ctx = getContext(nodes);        
-        
-        final File root = ctx.getRootFiles()[0];
+
+        File root = SvnUtils.getActionRoot(ctx);
+        if(root == null) return;
         SVNUrl rootUrl;
 
         try {            
@@ -198,7 +200,9 @@ public class SwitchToAction extends ContextAction {
             // the cache fires status change events to trigger the annotation refresh
             // unfortunatelly - we have to call the refresh explicitly for each file also 
             // from this place as the branch label was changed evern if the files status didn't
-            Subversion.getInstance().refreshAnnotations(fileArray); 
+            Subversion.getInstance().refreshAnnotations(fileArray);
+            // refresh the inline diff
+            Subversion.getInstance().versionedFilesChanged();
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }

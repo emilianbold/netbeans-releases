@@ -87,14 +87,12 @@ public interface TokenItem<T extends TokenId> {
         private final T id;
         private final CharSequence text;
         private final int offset;
-        private final int index;
         private final PartType partType;
         
-        public AbstractItem(T tokenID, PartType partType, int index, int offset, CharSequence image) {
+        public AbstractItem(T tokenID, PartType partType, int offset, CharSequence image) {
             this.id = tokenID;
             this.offset = offset;
             this.text = image;
-            this.index = index;
             this.partType = partType;
         }
 
@@ -119,7 +117,7 @@ public interface TokenItem<T extends TokenId> {
         }
 
         public int index() {
-            return index;
+            return -1;
         }
 
         public int length() {

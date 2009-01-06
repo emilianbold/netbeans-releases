@@ -41,18 +41,17 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author  rashid@netbeans.org, mmirilovic@netbeans.org
@@ -89,9 +88,6 @@ public class NavigatorSchemaViewModeTest  extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
-        log(":: initialize");
-//        new CloseAllDocumentsAction().performAPI();
-        
         processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         Node doc1 = new Node(processNode,"OTA_TravelItinerary_1.xsd");
         doc1.select();
@@ -101,29 +97,18 @@ public class NavigatorSchemaViewModeTest  extends PerformanceTestCase {
     }
     
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log(":: open");
         Node doc = new Node(processNode,"OTA_TravelItinerary.xsd");
         doc.select();
-        
         return new TopComponentOperator("OTA_TravelItinerary.xsd");
     }
     
     @Override
     public void close() {
-        log("::close");
         Node doc1 = new Node(processNode,"OTA_TravelItinerary_1.xsd");
         doc1.select();
     }
-    
-    @Override
-    protected void shutdown() {
-        log(":: shutdown");
-    }
-    
-
-    
+  
 }

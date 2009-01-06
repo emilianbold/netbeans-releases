@@ -127,8 +127,8 @@ final class CopyHandler implements OperationListener {
         if (js == null) {
             return;
         }
-        if ("application/x-class-file".equals(FileUtil.getMIMEType(copyFO)) //NOI18N
-                || "class".equals(copyFO.getExt())) { //NOI18N
+        if (!"text/x-java".equals(FileUtil.getMIMEType(copyFO))  //NOI18N
+                && !"java".equals(copyFO.getExt())) {  //NOI18N
             // #151288: JavaSource may exist even for .class file
             return;
         }

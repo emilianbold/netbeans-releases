@@ -93,7 +93,7 @@ public class DuplicateDetector {
 
         if (startNode.nodeId == NodeType.ARRAYNODE) {
             if (startNode.childNodes().size() == 1) {
-                startNode = (Node) startNode.childNodes().get(0);
+                startNode = startNode.childNodes().get(0);
             } else {
                 return Collections.emptyList();
             }

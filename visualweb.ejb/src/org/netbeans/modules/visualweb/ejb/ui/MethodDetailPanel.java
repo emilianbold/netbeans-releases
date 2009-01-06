@@ -174,10 +174,8 @@ public class MethodDetailPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        returnTypeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("RETURN_TYPE_LABEL_MNEMONIC").charAt(0));
         returnTypeLabel.setLabelFor(returnTypeTextField);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle"); // NOI18N
-        returnTypeLabel.setText(bundle.getString("RETURN_TYPE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(returnTypeLabel, org.openide.util.NbBundle.getMessage(MethodDetailPanel.class, "RETURN_TYPE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -185,11 +183,11 @@ public class MethodDetailPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(returnTypeLabel, gridBagConstraints);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle"); // NOI18N
         returnTypeLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("RETURN_TYPE_DESC")); // NOI18N
 
-        paramLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("METHOD_PARAMETERS_LABEL_MNEMONIC").charAt(0));
         paramLabel.setLabelFor(paramTable);
-        paramLabel.setText(bundle.getString("PARAMETER")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(paramLabel, org.openide.util.NbBundle.getMessage(MethodDetailPanel.class, "PARAMETER")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -268,9 +266,8 @@ public class MethodDetailPanel extends javax.swing.JPanel {
         returnTypeTextField.getAccessibleContext().setAccessibleName(bundle.getString("RETURN_TYPE_DESC")); // NOI18N
         returnTypeTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("RETURN_TYPE_DESC")); // NOI18N
 
-        elemClassTypeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("ELEMENT_CLASS_LABEL_MNEMONIC").charAt(0));
         elemClassTypeLabel.setLabelFor(classNameTextField);
-        elemClassTypeLabel.setText(bundle.getString("ELEMENT_CLASS_TYPE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(elemClassTypeLabel, org.openide.util.NbBundle.getMessage(MethodDetailPanel.class, "ELEMENT_CLASS_TYPE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

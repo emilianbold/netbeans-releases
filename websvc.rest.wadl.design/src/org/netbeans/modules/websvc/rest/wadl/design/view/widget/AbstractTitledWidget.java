@@ -240,18 +240,18 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
     
     protected void notifyAdded() {
         super.notifyAdded();
-        final Object key = hashKey();
-        if(key!=null) {
-            getObjectScene().addObject(key, this);
-        }
+//        final Object key = hashKey();
+//        if(key!=null) {
+//            getObjectScene().addObject(key, this);
+//        }
     }
     
     protected void notifyRemoved() {
         super.notifyRemoved();
-        Object key = hashKey();
-        if(key!=null&&getObjectScene().isObject(key)) {
-            getObjectScene().removeObject(key);
-        }
+//        Object key = hashKey();
+//        if(key!=null&&getObjectScene().isObject(key)) {
+//            getObjectScene().removeObject(key);
+//        }
     }
     
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {

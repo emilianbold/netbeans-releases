@@ -86,7 +86,6 @@ public final class ConfigurationsSelectionPanelGUI extends JPanel implements Exp
     private final TreeTableView treeView;
     private final Set<String> bannedNames;
     private Set<ConfigurationTemplateDescriptor> selection = new HashSet();
-    private HashSet<ChangeListener> listeners = new HashSet();
     
     /** Creates new form ConfigurationsSelectionPanelGUI */
     public ConfigurationsSelectionPanelGUI() {

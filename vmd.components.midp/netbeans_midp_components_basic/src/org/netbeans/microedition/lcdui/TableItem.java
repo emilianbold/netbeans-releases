@@ -56,6 +56,7 @@ import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import org.netbeans.microedition.lcdui.laf.ColorSchema;
 import org.netbeans.microedition.lcdui.laf.SystemColorSchema;
+import org.netbeans.microedition.lcdui.laf.TableColorSchema;
 
 /**
  * An item that visualizes a table from <code>TableModel</code>.
@@ -65,7 +66,9 @@ import org.netbeans.microedition.lcdui.laf.SystemColorSchema;
  * @author breh
  */
 public class TableItem extends CustomItem implements TableModelListener {
-	
+
+    public static final int VERTICAL_SELECTION_MODE = 1;
+    public static final int HORIZONTAL_SELECTION_MODE = 2;
     
     private static final boolean DEBUG = false;
     
@@ -127,9 +130,12 @@ public class TableItem extends CustomItem implements TableModelListener {
     private int sizeWidth = 0;   // current size assigned to this item - some implementations (Nokia) still
     private int sizeHeight = 0;  // keeps calling sizeChanged() with the same size, so I keep these values
     // to not call repaint() when it is not neccessary
+
+    private int selectionMode = HORIZONTAL_SELECTION_MODE | VERTICAL_SELECTION_MODE;
     
     
     private ColorSchema colorSchema; // color schema in use
+    private TablePaintStrategy paintStrategy;
     
     /**
      * Creates a new instance of <code>TableItem</code> without any model.
@@ -184,13 +190,15 @@ public class TableItem extends CustomItem implements TableModelListener {
 
     /**
      * Sets color schema to be used with this component. If set to null
-     * SystemColorSchema will be used
+     * SystemColorSchema will be used.
+     * <code>colorSchema</code> argument could have TableColorSchema type.
+     * In the latter case fucntionality of TableColorSchema will be applied.
+     * @param colorSchema  color schema
      */
     public void setColorSchema(ColorSchema colorSchema) {
         setColorSchemaImpl(display,colorSchema);
         repaint();
-    }
-    
+    }    
     
     /**
      * Gets color schema currently in use
@@ -368,8 +376,23 @@ public class TableItem extends CustomItem implements TableModelListener {
     public int getSelectedCellColumn() {
         return cursorCellX;
     }
-    
-    
+
+    /**
+     * Gets the currunt selection mode.
+     * @return current selection mode
+     */
+    public int getSelectionMode(){
+        return selectionMode;
+    }
+
+    /**
+     * Sets selection mode.
+     * @param  selection mode.
+     */
+    public void setSelectionMode( int mode){
+        selectionMode = mode;
+        repaint();
+    }
         /*
         private static Font getSafeFont(Font font) {
                 return font == null ? Font.getDefaultFont() : font;
@@ -521,24 +544,39 @@ public class TableItem extends CustomItem implements TableModelListener {
             
             // paint cursor
             if (cursorOn) {
-                final int x = getCursorX();
-                int y = getCursorY() + BORDER_LINE_WIDTH;
+                int x = getCursorX();
+                int y = getCursorY();
                 
+                int yAddon = 0;
                 // add title height if to be drawn
                 if (title != null) {
-                    y += titleHeight + BORDER_LINE_WIDTH;
+                    yAddon+= titleHeight + BORDER_LINE_WIDTH;
                 }
                 // add headers height if to be drawn
                 if (usingHeaders) {
-                    y += headersHeight + BORDER_LINE_WIDTH;
+                    yAddon += headersHeight + BORDER_LINE_WIDTH;
                 }
                 
-                final int w = colWidths[cursorCellX];
-                final int h = defaultCellHeight;
+                y+=yAddon;
+                
+                int w = colWidths[cursorCellX];
+                int h = defaultCellHeight;
+                if ( selectionMode == VERTICAL_SELECTION_MODE ){
+                    x= BORDER_LINE_WIDTH;
+                    w = getCellX(model.getColumnCount()) -BORDER_LINE_WIDTH;
+                }
+                else if ( selectionMode == HORIZONTAL_SELECTION_MODE ){
+                    y = BORDER_LINE_WIDTH +yAddon;
+                    h = getCellY( model.getRowCount() )-BORDER_LINE_WIDTH;
+                }
                 //g.setColor(cursorColor);
                 // draw cursor ...
                 g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_BACKGROUND));
-                g.fillRect(x, y,  w, h);
+                
+                if ( (selectionMode & VERTICAL_SELECTION_MODE) != 0 || 
+                        (selectionMode & HORIZONTAL_SELECTION_MODE) != 0){
+                    g.fillRect(x, y,  w, h);
+                }
             }
             
             
@@ -551,16 +589,36 @@ public class TableItem extends CustomItem implements TableModelListener {
             
             // draw headers
             if (usingHeaders) {
-                g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
+                //g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
                 g.setFont(getHeadersFont());
                 
                 int x = BORDER_LINE_WIDTH;
                 final int gy = y + CELL_PADDING + BORDER_LINE_WIDTH; // actual y used to be draw the text (icludes padding)
+                int heightCell = headersHeight;
+                int yCell = y;
+                if ( !isBorders() ){
+                    heightCell = heightCell +BORDER_LINE_WIDTH;
+                    yCell-=BORDER_LINE_WIDTH;
+                }
+                
                 for (int j=viewCellX; j < model.getColumnCount(); j++) {
                     viewCellX2 = j;
                     
                     final Object value = model.getColumnName(j);
                     final int colWidth = colWidths[j];
+
+                    int xCell = x;
+                    int widthCell = colWidth;
+                    
+                    if ( !isBorders() ){
+                        xCell = x - BORDER_LINE_WIDTH;
+                        widthCell = widthCell + BORDER_LINE_WIDTH;
+                    }
+                    getPaintStrategy().drawHeaderBackground( g , j , 
+                            xCell, yCell , widthCell, heightCell );
+                    int headerColor = getPaintStrategy().getForegroundHeaderColor( j );
+                    g.setColor( headerColor );
+                   
                     
                     if (value != null) {
                         g.drawString(value.toString(), x+colWidth/2, gy, Graphics.TOP | Graphics.HCENTER);
@@ -575,33 +633,76 @@ public class TableItem extends CustomItem implements TableModelListener {
             }
             
             //  draw values
-            g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
+            //g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
             g.setFont(getValuesFont());
             
+            int heightCell = defaultCellHeight;
+            if ( !isBorders() ){
+                heightCell = heightCell +BORDER_LINE_WIDTH;
+            }
             for (int i=0; (i < model.getRowCount()); i++) {
                 
                 int x = BORDER_LINE_WIDTH + CELL_PADDING;
                 final int gy = y + CELL_PADDING + BORDER_LINE_WIDTH; // actual y used to be draw the text (icludes padding)
+                int xCell = BORDER_LINE_WIDTH;
+                int yCell = y;
+                if ( !isBorders() ){
+                    yCell-=BORDER_LINE_WIDTH;
+                }
                 
                 for (int j=viewCellX; j < model.getColumnCount(); j++) {
                     viewCellX2 = j;
                     Object value = model.getValue(j,i);
+                    
                     if (value != null) {
-                        if ( cursorOn && (j==cursorCellX) && (i == cursorCellY)) {
-                            g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_FOREGROUND));
-                            g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
-                            g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
-                        } else {
+                        int widthCell = colWidths[j];
+                        
+                        if ( !isBorders() ){
+                            xCell = xCell - BORDER_LINE_WIDTH;
+                            widthCell = widthCell + BORDER_LINE_WIDTH;
+                        }
+                        boolean highlightBg = false;
+                        if ( cursorOn ) {
+                            if ( selectionMode == (VERTICAL_SELECTION_MODE |HORIZONTAL_SELECTION_MODE)
+                                    && i == cursorCellY && j == cursorCellX )
+                            {
+                                //g.setColor(getColorSchema().getColor(Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                //g.setColor(getColorSchema().getColor(Display.COLOR_FOREGROUND));
+                                highlightBg = true;
+                            }
+                            else if ( selectionMode == VERTICAL_SELECTION_MODE && 
+                                    i==cursorCellY )
+                            {
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                highlightBg = true;
+                            }
+                            else if ( selectionMode == HORIZONTAL_SELECTION_MODE && 
+                                    j==cursorCellX )
+                            {
+                                g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_HIGHLIGHTED_FOREGROUND));
+                                g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
+                                highlightBg = true;
+                            }
+                        }
+                        if ( !highlightBg ) {
+                            getPaintStrategy().drawCell( g, j, i , xCell, yCell , widthCell, 
+                                    heightCell , Display.COLOR_BACKGROUND);
+                            g.setColor( getPaintStrategy().getColor( j, i , Display.COLOR_FOREGROUND));
                             g.drawString(value.toString(), x, gy, Graphics.TOP | Graphics.LEFT);
                         }
                     }
                     x += colWidths[j] + BORDER_LINE_WIDTH;
+                    xCell = x - CELL_PADDING;
                     if (x > width) {
                         rightmostColumnFullyVisible = false;
                         break;
                     }
                 }
                 y += defaultCellHeight + BORDER_LINE_WIDTH;
+                yCell = y- CELL_PADDING;
             }
             
             
@@ -716,7 +817,7 @@ public class TableItem extends CustomItem implements TableModelListener {
         } // else
         boolean retValue = false; // what should be returned - traversal occured (true), did not occured (false)
         boolean repaint = false; // should be the component repainted?
-        if (cursorOn == false) {
+        if ( !cursorOn) {
             if (DEBUG) System.out.println("traverse: cusorOn was false, entering item ..., dir = "+dir);
             //cursorCellX = 0;
             if (dir == Canvas.UP) {
@@ -872,16 +973,28 @@ public class TableItem extends CustomItem implements TableModelListener {
      ******/
     
     private int getCursorX() {
+        return getCellX(cursorCellX);
+    }
+    
+    private int getCellX( int column) {
         int x = BORDER_LINE_WIDTH;
-        for (int i=viewCellX; i < cursorCellX; i++) {
+        for (int i=viewCellX; i < column; i++) {
             x += colWidths[i] + BORDER_LINE_WIDTH;
         }
         return x;
     }
     
+    private TablePaintStrategy getPaintStrategy(){
+        return paintStrategy;
+    }
+    
     
     private int getCursorY() {
-        return cursorCellY * (defaultCellHeight + BORDER_LINE_WIDTH);
+        return getCellY(cursorCellY);
+    }
+    
+    private int getCellY( int row ) {
+        return row * (defaultCellHeight + BORDER_LINE_WIDTH);
     }
     
     /**
@@ -957,6 +1070,15 @@ public class TableItem extends CustomItem implements TableModelListener {
         } else {
             this.colorSchema = SystemColorSchema.getForDisplay(display);
         }
+        if ( this.colorSchema instanceof TableColorSchema ){
+            paintStrategy = new TableColorSchemaStrategy( 
+                    (TableColorSchema)this.colorSchema );
+        }
+        else {
+            paintStrategy = new BaseColorSchemaStrategy( this.colorSchema );
+        }
+        
+        
     }
     
     /**

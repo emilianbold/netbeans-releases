@@ -238,6 +238,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return <code>true</code> if permissions should be preserved; default is <code>false</code>.
+     */
+    public static boolean areRemotePermissionsPreserved(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.REMOTE_PERMISSIONS, false);
+    }
+
+    /**
      * @return remote upload or <code>null</code>.
      */
     public static PhpProjectProperties.UploadFiles getRemoteUpload(PhpProject project) {

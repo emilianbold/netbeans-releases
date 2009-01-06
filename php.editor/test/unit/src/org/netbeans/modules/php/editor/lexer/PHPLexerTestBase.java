@@ -65,7 +65,7 @@ public class PHPLexerTestBase extends ParserTestBase {
         super.tearDown();
     }
       
-    private String createResult (TokenSequence<?> ts) throws Exception {
+    protected String createResult (TokenSequence<?> ts) throws Exception {
         StringBuffer result = new StringBuffer ();
         
         while (ts.moveNext()) {

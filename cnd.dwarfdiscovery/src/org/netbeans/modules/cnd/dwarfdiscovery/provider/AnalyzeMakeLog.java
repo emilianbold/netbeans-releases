@@ -203,6 +203,9 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
+            if (set != null && set.length() > 0){
+                getProperty(MAKE_LOG_KEY).setValue(set);
+            }
         }
         if (set == null || set.length() == 0) {
             return 0;
@@ -259,8 +262,6 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     }
                     return myFileProperties;
                 }
-                
-                
                 
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {

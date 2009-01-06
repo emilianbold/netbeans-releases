@@ -45,6 +45,7 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.JTextField;
+import org.netbeans.jellytools.NbDialogOperator;
 
 /** Class implementing all necessary methods for handling "Add CMP Field..." NbPresenter.
  *

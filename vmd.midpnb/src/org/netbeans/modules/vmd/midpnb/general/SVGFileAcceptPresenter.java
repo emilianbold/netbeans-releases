@@ -56,8 +56,6 @@ import org.openide.filesystems.FileObject;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashSet;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.TypeID;

@@ -56,8 +56,6 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 /**
  *
@@ -66,20 +64,22 @@ import org.openide.util.Task;
 public class AddMethodAction extends AbstractAction implements Node.Cookie {
     public static final String ADD_METHOD = "ADD_METHOD";
     
-    private Resource resource;
+    private ResourceType resource;
     private WadlModel model;
+    private String resourcePath;
 
     /**
      * Creates a new instance of AddMethodAction
      * @param implementationClass fileobject of service implementation class
      */
-    public AddMethodAction(Resource resource, WadlModel model) {
+    public AddMethodAction(ResourceType resource, String resourcePath, WadlModel model) {
         super(getName());
         putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
             ("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png")));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddMethodAction.class, "Hint_AddMethod"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddMethodAction.class, "LBL_AddMethod_mnem_pos")));
         this.resource=resource;
+        this.resourcePath = resourcePath;
         this.model = model;
     }
     
@@ -88,7 +88,7 @@ public class AddMethodAction extends AbstractAction implements Node.Cookie {
     }
     
     public void actionPerformed(ActionEvent arg0) {
-        final AddMethodPanel panel = new AddMethodPanel(resource);
+        final AddMethodPanel panel = new AddMethodPanel(resource, resourcePath);
         boolean closeDialog = false;
         DialogDescriptor desc = new DialogDescriptor(panel,
                 NbBundle.getMessage(AddMethodAction.class, "TTL_AddMethod"));

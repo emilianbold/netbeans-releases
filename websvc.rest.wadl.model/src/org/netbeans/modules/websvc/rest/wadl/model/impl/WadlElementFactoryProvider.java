@@ -127,6 +127,21 @@ public class WadlElementFactoryProvider {
             return new ResourceImpl(context.getModel(), el);
         }
     }
+
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.rest.wadl.model.spi.ElementFactory.class)
+    public static class ResourceTypeFactory extends ElementFactory {
+
+        public ResourceTypeFactory() {
+        }
+
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(WadlQNames.RESOURCE_TYPE.getQName());
+        }
+        public WadlComponent create(WadlComponent context, Element el) {
+            checkArgument(getElementQNames(), Util.getQName(el, (WadlComponentBase) context));
+            return new ResourceTypeImpl(context.getModel(), el);
+        }
+    }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.rest.wadl.model.spi.ElementFactory.class)
     public static class MethodFactory extends ElementFactory {

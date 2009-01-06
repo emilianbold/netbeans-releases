@@ -68,7 +68,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -128,7 +127,7 @@ public class Utilities {
         Document result = null;
         try {
             DataObject dObject = DataObject.find(modelSourceFileObject);
-            EditorCookie ec = (EditorCookie)dObject.getCookie(EditorCookie.class);
+            EditorCookie ec = dObject.getCookie(EditorCookie.class);
             Document doc = ec.openDocument();
             if(doc instanceof BaseDocument)
                 return doc;
@@ -149,8 +148,7 @@ public class Utilities {
     throws IOException {
         Document result = null;
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
-            EditorCookie ec = (EditorCookie)
-            modelSourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);
             assert ec != null : "Data object "+modelSourceDataObject.getPrimaryFile().getPath()+" has no editor cookies.";
             Document doc = null;
             try {
@@ -179,7 +177,7 @@ public class Utilities {
     
     
     public static FileObject getFileObject(ModelSource ms) {
-        return (FileObject) ms.getLookup().lookup(FileObject.class);
+        return ms.getLookup().lookup(FileObject.class);
     }
     
     public static CatalogModel getCatalogModel(ModelSource ms) throws CatalogModelException{
@@ -191,11 +189,10 @@ public class Utilities {
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
      */
-    public static ModelSource createModelSource(FileObject thisFileObj,
-            boolean editable) {
+    public static ModelSource createModelSource(FileObject thisFileObj) {
         assert thisFileObj != null : "Null file object.";
 
-
+        boolean editable = true;
         DataObject dobj = null;
         try {
             dobj = DataObject.find(thisFileObj);
@@ -208,7 +205,14 @@ public class Utilities {
             ic.add(dobj);
         }
         ic.add(thisFileObj);
-        ic.add(FileUtil.toFile(thisFileObj));
+        File fl = FileUtil.toFile(thisFileObj);
+        if (fl != null) {
+            ic.add(fl);
+        } else {
+            editable = false;
+            assert false : "Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."; //NOI18N
+            Logger.getLogger(Utilities.class.getName()).warning("Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."); //NOI18N
+        }
 
         ModelSource ms = new ModelSource(lookup, editable);
         final CatalogModel catalogModel;
@@ -303,7 +307,7 @@ public class Utilities {
     public static void performPOMModelOperations(FileObject pomFileObject, List<ModelOperation<POMModel>> operations) {
         assert pomFileObject != null;
         assert operations != null;
-        ModelSource source = Utilities.createModelSource(pomFileObject, true);
+        ModelSource source = Utilities.createModelSource(pomFileObject);
         POMModel model = POMModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
@@ -334,7 +338,7 @@ public class Utilities {
     public static void performProfilesModelOperations(FileObject profilesFileObject, List<ModelOperation<ProfilesModel>> operations) {
         assert profilesFileObject != null;
         assert operations != null;
-        ModelSource source = Utilities.createModelSource(profilesFileObject, true);
+        ModelSource source = Utilities.createModelSource(profilesFileObject);
         ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
@@ -366,7 +370,7 @@ public class Utilities {
     public static void performSettingsModelOperations(FileObject settingsFileObject, List<ModelOperation<SettingsModel>> operations) {
         assert settingsFileObject != null;
         assert operations != null;
-        ModelSource source = Utilities.createModelSource(settingsFileObject, true);
+        ModelSource source = Utilities.createModelSource(settingsFileObject);
         SettingsModel model = SettingsModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {

@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Erno Mononen
  */
-public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration {
+public class RailsJdbcAsAdapterConnection extends RailsDatabaseConfiguration {
 
     /**
      * The pattern used for capturing the adapter name, host name, port and database name.

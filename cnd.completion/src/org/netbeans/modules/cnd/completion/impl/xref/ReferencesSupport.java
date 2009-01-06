@@ -180,15 +180,21 @@ public final class ReferencesSupport {
         }
         if (jumpToken != null) {
             switch (jumpToken.id()) {
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                    // look for include directive
+                    csmItem = findInclude(csmFile, offset);
+                    break;
                 case PREPROCESSOR_SYS_INCLUDE:
                 case PREPROCESSOR_USER_INCLUDE:
-                    // look for include directive
-                    incl = findInclude(csmFile, offset);
+                    // look for include file
+                    csmItem = findInclude(csmFile, offset);
+                    if (csmItem != null) {
+                        csmItem = ((CsmInclude)csmItem).getIncludeFile();
+                    }
                     break;
             }
         }
-
-        csmItem = incl == null ? null : incl.getIncludeFile();
 
         // if failed => ask declarations handler
         if (csmItem == null) {

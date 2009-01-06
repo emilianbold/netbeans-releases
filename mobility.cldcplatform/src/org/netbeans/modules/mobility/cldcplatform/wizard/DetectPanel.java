@@ -57,6 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -104,8 +105,6 @@ public class DetectPanel extends javax.swing.JPanel {
     
     protected static final Color COLOR_GRAY = UIManager.getColor("Label.disabledForeground"); //NOI18N
     protected static final Color COLOR_RED = new Color(192, 0, 0);
-    
-    private String fileChooserValue;
     
     protected DetectWizardPanel wizardPanel;
     private WizardDescriptor wizardDescriptor;
@@ -694,26 +693,24 @@ public class DetectPanel extends javax.swing.JPanel {
             sb.append(NbBundle.getMessage(DetectPanel.class, "Msg_DetectPanel_None")); //NOI18N
         }
     }
+
+    private static final class BrowseFilter extends FileFilter {
+        public boolean accept(File f) {
+            return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar")))); //NOI18N
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(DetectPanel.class, "TXT_ZipFilter"); // NOI18N
+        }
+    }
     
     private String browse(final String title) {
-        final String oldValue = fileChooserValue;
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar")))); //NOI18N
-            }
+        File f;
+        if ((f = new FileChooserBuilder(DetectPanel.class).
+                setFileFilter(new BrowseFilter()).
+                setTitle(title).showOpenDialog()) != null) {
             
-            public String getDescription() {
-                return NbBundle.getMessage(DetectPanel.class, "TXT_ZipFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            fileChooserValue = chooser.getSelectedFile().getAbsolutePath();
-            return fileChooserValue;
+            return f.getAbsolutePath();
         }
         return null;
     }

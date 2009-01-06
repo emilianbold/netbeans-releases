@@ -201,8 +201,8 @@ public class ConfigurationFactory {
         }
         for(FileConfiguration f : folder.getFiles()){
             FileConfigurationImpl file =((FileConfigurationImpl)f);
-            file.setOverrideIncludes(true);
-            file.setOverrideMacros(true);
+            file.setOverrideIncludes(false);
+            file.setOverrideMacros(false);
             file.setUserInludePaths(file.getUserInludePaths());
             file.setUserMacros(file.getUserMacros());
         }

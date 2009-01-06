@@ -198,7 +198,7 @@ public abstract class Completor {
 
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
+                    ClassIndex ci = cc.getClasspathInfo().getClassIndex();
                     int index = substitutionOffset;
                     String packName = typedPrefix;
                     String classPrefix = "";
@@ -239,7 +239,7 @@ public abstract class Completor {
 
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
+                    ClassIndex ci = cc.getClasspathInfo().getClassIndex();
                     // add packages
                     addPackages(ci, results, typedPrefix, substitutionOffset);
 

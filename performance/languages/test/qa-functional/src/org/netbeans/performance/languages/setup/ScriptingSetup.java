@@ -57,10 +57,6 @@ public class ScriptingSetup extends JellyTestCase {
         super(testName);
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }

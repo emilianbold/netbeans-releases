@@ -94,7 +94,7 @@ public class RemoveMethodAction extends AbstractAction{
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        if(methods.size()<1) return;
+        if(methods == null || methods.isEmpty()) return;
         boolean singleSelection = methods.size()==1;
         String methodName = singleSelection?methods.iterator().next().getName():""+methods.size();
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation

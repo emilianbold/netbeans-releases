@@ -66,7 +66,6 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
             NbModuleSuite.createConfiguration(EnterpriseSetup.class)
             .addTest("cleanTempDir")
             .addTest("closeMemoryToolbar")
-            .addTest("closeWelcome")
 
             .addTest("addApplicationServer")
             .addTest("addTomcatServer")

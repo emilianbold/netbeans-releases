@@ -1,0 +1,33 @@
+    =============================================
+    class AttributeTest: ClassDef : OffsetRange[1,361>
+    __init__ [bound][function][def][node=FunctionDef]
+    notconstructor [bound][function][def][node=FunctionDef]
+    usage [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    _private : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    notokay : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    okay : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+=============================================
+<file-top>: Module : OffsetRange[1,361>
+AttributeTest [bound][class][def][node=ClassDef]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[26,106>
+        self [bound][param][data][read][node=Name]
+        true [free][read][node=Name]
+
+        =============================================
+        notconstructor: FunctionDef : OffsetRange[107,244>
+        self [bound][param][data][read][node=Name]
+        true [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        notokay : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        okay : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        usage: FunctionDef : OffsetRange[245,361>
+        other [free][read][node=Name]
+        self [bound][param][data][unused][node=Name]
+        true [free][read][node=Name]
+

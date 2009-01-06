@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -79,6 +80,10 @@ public class ProjectGenerator {
 	return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
     }
 
+    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems) throws IOException {
+    	return MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, importantItems);
+    }
+    
     public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
 	 MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder + "/" + projectName), projectName); // NOI18N
     }

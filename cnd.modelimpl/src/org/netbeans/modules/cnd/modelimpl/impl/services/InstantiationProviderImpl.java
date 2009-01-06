@@ -51,8 +51,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -67,8 +70,17 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 public class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override
-    public CsmClass instantiateClass(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
-        return new Instantiation.Class(clazz, mapping);
+    public CsmObject instantiate(CsmTemplate template, List<CsmType> params) {
+        List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
+        Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
+        for (int i = 0; i < templateParams.size() && i < params.size(); i++) {
+            CsmTemplateParameter templateParam = templateParams.get(i);
+            CsmType paramValue = params.get(i);
+            if(templateParam != null && paramValue != null) {
+                mapping.put(templateParam, paramValue);
+            }
+        }
+        return Instantiation.create(template, mapping);
     }
 
 }

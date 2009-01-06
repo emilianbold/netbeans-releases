@@ -41,7 +41,7 @@ package org.netbeans.modules.mobility.project.ui.actions;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 
-public class BuildConfigurationAction extends AntAction {
+public final class BuildConfigurationAction extends AntAction {
 
     private BuildConfigurationAction() {
         super(NbBundle.getMessage(BuildConfigurationAction.class, "Title_CfgSelection_build-all"), "build-all"); //NO18N

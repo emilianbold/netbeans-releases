@@ -359,7 +359,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 // FIXUP: should do a deep clone of the list
                 // col 2
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
-                    MakeArtifact newMakeArtifact = (MakeArtifact) ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().clone();
+                    MakeArtifact newMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().clone();
                     newMakeArtifact.setBuild(!newMakeArtifact.getBuild());
                     listData.removeElementAt(row);
                     listData.add(row, new LibraryItem.ProjectItem(newMakeArtifact));

@@ -189,12 +189,7 @@ public class IDEValidation extends JellyTestCase {
     
     
     public void testWriteAccess() throws Exception {
-//stupid test for commit validation,
-// feel free to reanable and run somehwere else but please do not
-// use this as a mechanism to prevent pushing to main-golden        
-// thanks.        
-//        - mkleint
-//        CountingSecurityManager.assertCounts("No writes during startup", 0);
+        CountingSecurityManager.assertCounts("No writes during startup", 0);
     }
 
     /** Test creation of java project. 
@@ -454,15 +449,10 @@ public class IDEValidation extends JellyTestCase {
     }
     
    /** Test Main Menu 
-     * - close Welcome screen to not harm menu actions
      * - open and close New Project wizard (main menu item File|New Project...)
      * - open and close Javadoc Index Search top component (main menu item Tools|Javadoc Index Search)
      */
     public void testMainMenu() {
-        // close Welcome screen to not harm menu actions
-        // "Welcome
-        String welcomeTitle = Bundle.getString("org.netbeans.modules.welcome.Bundle", "LBL_Tab_Title");
-        new TopComponentOperator(welcomeTitle).close();
         // open and close New Project wizard
         int oldDispatchingModel = JemmyProperties.getCurrentDispatchingModel();
         try {

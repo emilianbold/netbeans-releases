@@ -113,6 +113,10 @@ public abstract class SaasBean extends GenericResourceBean {
         this.groupName = Util.normailizeName(g.getName());
         this.displayName = Util.normailizeName(saas.getDisplayName());
     }
+
+    public Saas getSaas() {
+        return this.saas;
+    }
     
     public String getGroupName() {
         return groupName;

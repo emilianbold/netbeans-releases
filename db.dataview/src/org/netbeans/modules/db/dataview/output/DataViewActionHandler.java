@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Dimension;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -69,19 +70,38 @@ class DataViewActionHandler {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_commit_changes");
-            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation"))).equals(NotifyDescriptor.NO_OPTION)){
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_navigation"))).equals(NotifyDescriptor.NO_OPTION)) {
                 doCalculation = false;
             }
         }
         return doCalculation;
     }
 
-    void cancelEditPerformed() {
+    void cancelEditPerformed(boolean selectedOnly) {
+
         synchronized (dataView) {
-            dataView.getUpdatedRowContext().resetUpdateState();
-            dataView.setRowsInTableModel();
-            dataViewUI.setCancelEnabled(false);
-            dataViewUI.setCommitEnabled(false);
+            if (selectedOnly) {
+                DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
+                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                int[] rows = rsTable.getSelectedRows();
+                for (int i = 0; i < rows.length; i++) {
+                    int row = rows[i];
+                    for (int col = 0, CNT = rsTable.getColumnCount(); col < CNT; col++) {
+                        dataViewUI.resetValueAt(row, col);
+                    }
+                    updatedRowCtx.removeUpdateForSelectedRow(row);
+                }
+
+                if (updatedRowCtx.getUpdateKeys().isEmpty()) {
+                    dataViewUI.setCancelEnabled(false);
+                    dataViewUI.setCommitEnabled(false);
+                }
+            } else {
+                dataView.getUpdatedRowContext().removeAllUpdates();
+                dataView.setRowsInTableModel();
+                dataViewUI.setCancelEnabled(false);
+                dataViewUI.setCommitEnabled(false);
+            }
         }
     }
 
@@ -132,12 +152,14 @@ class DataViewActionHandler {
     void insertActionPerformed() {
         InsertRecordDialog dialog = new InsertRecordDialog(dataView);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setMinimumSize(new Dimension((screenSize.width - 50) / 2, (screenSize.height - 50) / 2));
         dialog.setVisible(true);
     }
 
     void truncateActionPerformed() {
         String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
-        if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)){
+        if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
             execHelper.executeTruncate();
         }
     }
@@ -149,10 +171,8 @@ class DataViewActionHandler {
             dataView.setInfoStatusText(msg);
         } else {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
-            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)){
+            if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)) {
                 execHelper.executeDeleteRow(rsTable);
-             }else{                
-                dataViewUI.enableDeleteBtn(false);
             }
         }
     }
@@ -163,7 +183,7 @@ class DataViewActionHandler {
     }
 
     private static Object showYesAllDialog(Object msg, String title) {
-        NotifyDescriptor nd = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,null,NotifyDescriptor.NO_OPTION);
+        NotifyDescriptor nd = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.NO_OPTION);
         DialogDisplayer.getDefault().notify(nd);
         return nd.getValue();
     }

@@ -1,0 +1,5 @@
+ParsingError:CLASS:[]:ESCAPED{ParsingError}:
+  __i_am_private:METHOD:[PRIVATE]:ESCAPED{__i_am_private}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{lineno}ESCAPED{,}ESCAPED{line}}):
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{filename}}):
+  errors:ATTRIBUTE:[]:ESCAPED{errors}:
+  filename:ATTRIBUTE:[]:ESCAPED{filename}:

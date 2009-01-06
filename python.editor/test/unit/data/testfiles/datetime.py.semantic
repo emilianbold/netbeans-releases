@@ -1,0 +1,2008 @@
+"""Concrete date/time and related types -- prototype implemented in Python.
+
+See http://www.zope.org/Members/fdrake/DateTimeWiki/FrontPage
+
+See also http://dir.yahoo.com/Reference/calendars/
+
+For a primer on DST, including many current DST rules, see
+http://webexhibits.org/daylightsaving/
+
+For more about DST than you ever wanted to know, see
+ftp://elsie.nci.nih.gov/pub/
+
+Sources for time zone and DST data: http://www.twinsun.com/tz/tz-link.htm
+
+"""
+
+import time as _time
+import math as _math
+
+MINYEAR = 1
+MAXYEAR = 9999
+
+# Utility functions, adapted from Python's Demo/classes/Dates.py, which
+# also assumes the current Gregorian calendar indefinitely extended in
+# both directions.  Difference:  Dates.py calls January 1 of year 0 day
+# number 1.  The code here calls January 1 of year 1 day number 1.  This is
+# to match the definition of the "proleptic Gregorian" calendar in Dershowitz
+# and Reingold's "Calendrical Calculations", where it's the base calendar
+# for all computations.  See the book for algorithms for converting between
+# proleptic Gregorian ordinals and many other calendar systems.
+
+_DAYS_IN_MONTH = [None, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+_DAYS_BEFORE_MONTH = [None]
+dbm = 0
+for dim in _DAYS_IN_MONTH[1:]:
+    _DAYS_BEFORE_MONTH.append(dbm)
+    dbm += dim
+del dbm, dim
+
+def |>METHOD:_is_leap<|(|>PARAMETER:year<|):
+    "year -> 1 if leap year, else 0."
+    return |>PARAMETER:year<| % 4 == 0 and (|>PARAMETER:year<| % 100 != 0 or |>PARAMETER:year<| % 400 == 0)
+
+def |>METHOD:_days_in_year<|(|>PARAMETER:year<|):
+    "year -> number of days in year (366 if a leap year, else 365)."
+    return 365 + _is_leap(|>PARAMETER:year<|)
+
+def |>METHOD:_days_before_year<|(|>PARAMETER:year<|):
+    "year -> number of days before January 1st of year."
+    y = |>PARAMETER:year<| - 1
+    return y*365 + y//4 - y//100 + y//400
+
+def |>METHOD:_days_in_month<|(|>PARAMETER:year<|, |>PARAMETER:month<|):
+    "year, month -> number of days in that month in that year."
+    assert 1 <= |>PARAMETER:month<| <= 12, |>PARAMETER:month<|
+    if |>PARAMETER:month<| == 2 and _is_leap(|>PARAMETER:year<|):
+        return 29
+    return _DAYS_IN_MONTH[|>PARAMETER:month<|]
+
+def |>METHOD:_days_before_month<|(|>PARAMETER:year<|, |>PARAMETER:month<|):
+    "year, month -> number of days in year preceeding first day of month."
+    if not 1 <= |>PARAMETER:month<| <= 12:
+        raise ValueError('month must be in 1..12', |>PARAMETER:month<|)
+    return _DAYS_BEFORE_MONTH[|>PARAMETER:month<|] + (|>PARAMETER:month<| > 2 and _is_leap(|>PARAMETER:year<|))
+
+def |>METHOD:_ymd2ord<|(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|):
+    "year, month, day -> ordinal, considering 01-Jan-0001 as day 1."
+    if not 1 <= |>PARAMETER:month<| <= 12:
+        raise ValueError('month must be in 1..12', |>PARAMETER:month<|)
+    dim = _days_in_month(|>PARAMETER:year<|, |>PARAMETER:month<|)
+    if not 1 <= |>PARAMETER:day<| <= dim:
+        raise ValueError('day must be in 1..%d' % dim, |>PARAMETER:day<|)
+    return (_days_before_year(|>PARAMETER:year<|) +
+            _days_before_month(|>PARAMETER:year<|, |>PARAMETER:month<|) +
+            |>PARAMETER:day<|)
+
+_DI400Y = _days_before_year(401)    # number of days in 400 years
+_DI100Y = _days_before_year(101)    #    "    "   "   " 100   "
+_DI4Y   = _days_before_year(5)      #    "    "   "   "   4   "
+
+# A 4-year cycle has an extra leap day over what we'd get from pasting
+# together 4 single years.
+assert _DI4Y == 4 * 365 + 1
+
+# Similarly, a 400-year cycle has an extra leap day over what we'd get from
+# pasting together 4 100-year cycles.
+assert _DI400Y == 4 * _DI100Y + 1
+
+# OTOH, a 100-year cycle has one fewer leap day than we'd get from
+# pasting together 25 4-year cycles.
+assert _DI100Y == 25 * _DI4Y - 1
+
+def |>METHOD:_ord2ymd<|(|>PARAMETER:n<|):
+    "ordinal -> (year, month, day), considering 01-Jan-0001 as day 1."
+
+    # n is a 1-based index, starting at 1-Jan-1.  The pattern of leap years
+    # repeats exactly every 400 years.  The basic strategy is to find the
+    # closest 400-year boundary at or before n, then work with the offset
+    # from that boundary to n.  Life is much clearer if we subtract 1 from
+    # n first -- then the values of n at 400-year boundaries are exactly
+    # those divisible by _DI400Y:
+    #
+    #     D  M   Y            n              n-1
+    #     -- --- ----        ----------     ----------------
+    #     31 Dec -400        -_DI400Y       -_DI400Y -1
+    #      1 Jan -399         -_DI400Y +1   -_DI400Y      400-year boundary
+    #     ...
+    #     30 Dec  000        -1             -2
+    #     31 Dec  000         0             -1
+    #      1 Jan  001         1              0            400-year boundary
+    #      2 Jan  001         2              1
+    #      3 Jan  001         3              2
+    #     ...
+    #     31 Dec  400         _DI400Y        _DI400Y -1
+    #      1 Jan  401         _DI400Y +1     _DI400Y      400-year boundary
+    |>PARAMETER:n<| -= 1
+    n400, |>PARAMETER:n<| = divmod(|>PARAMETER:n<|, _DI400Y)
+    year = n400 * 400 + 1   # ..., -399, 1, 401, ...
+
+    # Now n is the (non-negative) offset, in days, from January 1 of year, to
+    # the desired date.  Now compute how many 100-year cycles precede n.
+    # Note that it's possible for n100 to equal 4!  In that case 4 full
+    # 100-year cycles precede the desired day, which implies the desired
+    # day is December 31 at the end of a 400-year cycle.
+    n100, |>PARAMETER:n<| = divmod(|>PARAMETER:n<|, _DI100Y)
+
+    # Now compute how many 4-year cycles precede it.
+    n4, |>PARAMETER:n<| = divmod(|>PARAMETER:n<|, _DI4Y)
+
+    # And now how many single years.  Again n1 can be 4, and again meaning
+    # that the desired day is December 31 at the end of the 4-year cycle.
+    n1, |>PARAMETER:n<| = divmod(|>PARAMETER:n<|, 365)
+
+    year += n100 * 100 + n4 * 4 + n1
+    if n1 == 4 or n100 == 4:
+        assert |>PARAMETER:n<| == 0
+        return year-1, 12, 31
+
+    # Now the year is correct, and n is the offset from January 1.  We find
+    # the month via an estimate that's either exact or one too large.
+    leapyear = n1 == 3 and (n4 != 24 or n100 == 3)
+    assert leapyear == _is_leap(year)
+    month = (|>PARAMETER:n<| + 50) >> 5
+    preceding = _DAYS_BEFORE_MONTH[month] + (month > 2 and leapyear)
+    if preceding > |>PARAMETER:n<|:  # estimate is too large
+        month -= 1
+        preceding -= _DAYS_IN_MONTH[month] + (month == 2 and leapyear)
+    |>PARAMETER:n<| -= preceding
+    assert 0 <= |>PARAMETER:n<| < _days_in_month(year, month)
+
+    # Now the year and month are correct, and n is the offset from the
+    # start of that month:  we're done!
+    return year, month, |>PARAMETER:n<|+1
+
+# Month and day names.  For localized versions, see the calendar module.
+_MONTHNAMES = [None, "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+_DAYNAMES = [None, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def |>METHOD:_build_struct_time<|(|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:hh<|, |>PARAMETER:mm<|, |>PARAMETER:ss<|, |>PARAMETER:dstflag<|):
+    wday = (_ymd2ord(|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|) + 6) % 7
+    dnum = _days_before_month(|>PARAMETER:y<|, |>PARAMETER:m<|) + |>PARAMETER:d<|
+    return _time.struct_time((|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:hh<|, |>PARAMETER:mm<|, |>PARAMETER:ss<|, wday, dnum, |>PARAMETER:dstflag<|))
+
+def |>METHOD:_format_time<|(|>PARAMETER:hh<|, |>PARAMETER:mm<|, |>PARAMETER:ss<|, |>PARAMETER:us<|):
+    # Skip trailing microseconds when us==0.
+    result = "%02d:%02d:%02d" % (|>PARAMETER:hh<|, |>PARAMETER:mm<|, |>PARAMETER:ss<|)
+    if |>PARAMETER:us<|:
+        result += ".%06d" % |>PARAMETER:us<|
+    return result
+
+# Correctly substitute for %z and %Z escapes in strftime formats.
+def |>METHOD:_wrap_strftime<|(|>PARAMETER:object<|, |>PARAMETER:format<|, |>PARAMETER:timetuple<|):
+    year = |>PARAMETER:timetuple<|[0]
+    if year < 1900:
+        raise ValueError("year=%d is before 1900; the datetime strftime() "
+                         "methods require year >= 1900" % year)
+    # Don't call _utcoffset() or tzname() unless actually needed.
+    zreplace = None # the string to use for %z
+    Zreplace = None # the string to use for %Z
+
+    # Scan format for %z and %Z escapes, replacing as needed.
+    newformat = []
+    push = newformat.append
+    i, n = 0, len(|>PARAMETER:format<|)
+    while i < n:
+        ch = |>PARAMETER:format<|[i]
+        i += 1
+        if ch == '%':
+            if i < n:
+                ch = |>PARAMETER:format<|[i]
+                i += 1
+                if ch == 'z':
+                    if zreplace is None:
+                        zreplace = ""
+                        if hasattr(|>PARAMETER:object<|, "_utcoffset"):
+                            offset = |>PARAMETER:object<|._utcoffset()
+                            if offset is not None:
+                                sign = '+'
+                                if offset < 0:
+                                    offset = -offset
+                                    sign = '-'
+                                h, m = divmod(offset, 60)
+                                zreplace = '%c%02d%02d' % (sign, h, m)
+                    assert '%' not in zreplace
+                    newformat.append(zreplace)
+                elif ch == 'Z':
+                    if Zreplace is None:
+                        Zreplace = ""
+                        if hasattr(|>PARAMETER:object<|, "tzname"):
+                            s = |>PARAMETER:object<|.tzname()
+                            if s is not None:
+                                # strftime is going to have at this: escape %
+                                Zreplace = s.replace('%', '%%')
+                    newformat.append(Zreplace)
+                else:
+                    push('%')
+                    push(ch)
+            else:
+                push('%')
+        else:
+            push(ch)
+    newformat = "".join(newformat)
+    return _time.strftime(newformat, |>PARAMETER:timetuple<|)
+
+def |>METHOD:_call_tzinfo_method<|(|>PARAMETER:tzinfo<|, |>PARAMETER:methname<|, |>PARAMETER:tzinfoarg<|):
+    if |>PARAMETER:tzinfo<| is None:
+        return None
+    return getattr(|>PARAMETER:tzinfo<|, |>PARAMETER:methname<|)(|>PARAMETER:tzinfoarg<|)
+
+# Just raise TypeError if the arg isn't None or a string.
+def |>METHOD:_check_tzname<|(|>PARAMETER:name<|):
+    if |>PARAMETER:name<| is not None and not isinstance(|>PARAMETER:name<|, str):
+        raise TypeError("tzinfo.tzname() must return None or string, "
+                        "not '%s'" % type(|>PARAMETER:name<|))
+
+# name is the offset-producing method, "utcoffset" or "dst".
+# offset is what it returned.
+# If offset isn't None or timedelta, raises TypeError.
+# If offset is None, returns None.
+# Else offset is checked for being in range, and a whole # of minutes.
+# If it is, its integer value is returned.  Else ValueError is raised.
+def |>METHOD:_check_utc_offset<|(|>PARAMETER:name<|, |>PARAMETER:offset<|):
+    assert |>PARAMETER:name<| in ("utcoffset", "dst")
+    if |>PARAMETER:offset<| is None:
+        return None
+    if not isinstance(|>PARAMETER:offset<|, timedelta):
+        raise TypeError("tzinfo.%s() must return None "
+                        "or timedelta, not '%s'" % (|>PARAMETER:name<|, type(|>PARAMETER:offset<|)))
+    days = |>PARAMETER:offset<|.days
+    if days < -1 or days > 0:
+        |>PARAMETER:offset<| = 1440  # trigger out-of-range
+    else:
+        seconds = days * 86400 + |>PARAMETER:offset<|.seconds
+        minutes, seconds = divmod(seconds, 60)
+        if seconds or |>PARAMETER:offset<|.microseconds:
+            raise ValueError("tzinfo.%s() must return a whole number "
+                             "of minutes" % |>PARAMETER:name<|)
+        |>PARAMETER:offset<| = minutes
+    if -1440 < |>PARAMETER:offset<| < 1440:
+        return |>PARAMETER:offset<|
+    raise ValueError("%s()=%d, must be in -1439..1439" % (|>PARAMETER:name<|, |>PARAMETER:offset<|))
+
+def |>METHOD:_check_date_fields<|(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|):
+    if not MINYEAR <= |>PARAMETER:year<| <= MAXYEAR:
+        raise ValueError('year must be in %d..%d' % (MINYEAR, MAXYEAR), |>PARAMETER:year<|)
+    if not 1 <= |>PARAMETER:month<| <= 12:
+        raise ValueError('month must be in 1..12', |>PARAMETER:month<|)
+    dim = _days_in_month(|>PARAMETER:year<|, |>PARAMETER:month<|)
+    if not 1 <= |>PARAMETER:day<| <= dim:
+        raise ValueError('day must be in 1..%d' % dim, |>PARAMETER:day<|)
+
+def |>METHOD:_check_time_fields<|(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|):
+    if not 0 <= |>PARAMETER:hour<| <= 23:
+        raise ValueError('hour must be in 0..23', |>PARAMETER:hour<|)
+    if not 0 <= |>PARAMETER:minute<| <= 59:
+        raise ValueError('minute must be in 0..59', |>PARAMETER:minute<|)
+    if not 0 <= |>PARAMETER:second<| <= 59:
+        raise ValueError('second must be in 0..59', |>PARAMETER:second<|)
+    if not 0 <= |>PARAMETER:microsecond<| <= 999999:
+        raise ValueError('microsecond must be in 0..999999', |>PARAMETER:microsecond<|)
+
+def |>METHOD:_check_tzinfo_arg<|(|>PARAMETER:tz<|):
+    if |>PARAMETER:tz<| is not None and not isinstance(|>PARAMETER:tz<|, tzinfo):
+        raise TypeError("tzinfo argument must be None or of a tzinfo subclass")
+
+
+# Notes on comparison:  In general, datetime module comparison operators raise
+# TypeError when they don't know how to do a comparison themself.  If they
+# returned NotImplemented instead, comparison could (silently) fall back to
+# the default compare-objects-by-comparing-their-memory-addresses strategy,
+# and that's not helpful.  There are two exceptions:
+#
+# 1. For date and datetime, if the other object has a "timetuple" attr,
+#    NotImplemented is returned.  This is a hook to allow other kinds of
+#    datetime-like objects a chance to intercept the comparison.
+#
+# 2. Else __eq__ and __ne__ return False and True, respectively.  This is
+#    so opertaions like
+#
+#        x == y
+#        x != y
+#        x in sequence
+#        x not in sequence
+#        dict[x] = y
+#
+#    don't raise annoying TypeErrors just because a datetime object
+#    is part of a heterogeneous collection.  If there's no known way to
+#    compare X to a datetime, saying they're not equal is reasonable.
+
+def |>METHOD:_cmperror<|(|>PARAMETER:x<|, |>PARAMETER:y<|):
+    raise TypeError("can't compare '%s' to '%s'" % (
+                    type(|>PARAMETER:x<|).__name__, type(|>PARAMETER:y<|).__name__))
+
+# This is a start at a struct tm workalike.  Goals:
+#
+# + Works the same way across platforms.
+# + Handles all the fields datetime needs handled, without 1970-2038 glitches.
+#
+# Note:  I suspect it's best if this flavor of tm does *not* try to
+# second-guess timezones or DST.  Instead fold whatever adjustments you want
+# into the minutes argument (and the constructor will normalize).
+
+_ORD1970 = _ymd2ord(1970, 1, 1) # base ordinal for UNIX epoch
+
+class tmxxx:
+
+    ordinal = None
+
+    def |>METHOD:__init__<|(|>PARAMETER:self<|, |>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|, |>PARAMETER:hour<|=0, |>PARAMETER:minute<|=0, |>PARAMETER:second<|=0,
+                 |>PARAMETER:microsecond<|=0):
+        # Normalize all the inputs, and store the normalized values.
+        if not 0 <= |>PARAMETER:microsecond<| <= 999999:
+            carry, |>PARAMETER:microsecond<| = divmod(|>PARAMETER:microsecond<|, 1000000)
+            |>PARAMETER:second<| += carry
+        if not 0 <= |>PARAMETER:second<| <= 59:
+            carry, |>PARAMETER:second<| = divmod(|>PARAMETER:second<|, 60)
+            |>PARAMETER:minute<| += carry
+        if not 0 <= |>PARAMETER:minute<| <= 59:
+            carry, |>PARAMETER:minute<| = divmod(|>PARAMETER:minute<|, 60)
+            |>PARAMETER:hour<| += carry
+        if not 0 <= |>PARAMETER:hour<| <= 23:
+            carry, |>PARAMETER:hour<| = divmod(|>PARAMETER:hour<|, 24)
+            |>PARAMETER:day<| += carry
+
+        # That was easy.  Now it gets muddy:  the proper range for day
+        # can't be determined without knowing the correct month and year,
+        # but if day is, e.g., plus or minus a million, the current month
+        # and year values make no sense (and may also be out of bounds
+        # themselves).
+        # Saying 12 months == 1 year should be non-controversial.
+        if not 1 <= |>PARAMETER:month<| <= 12:
+            carry, |>PARAMETER:month<| = divmod(|>PARAMETER:month<|-1, 12)
+            |>PARAMETER:year<| += carry
+            |>PARAMETER:month<| += 1
+            assert 1 <= |>PARAMETER:month<| <= 12
+
+        # Now only day can be out of bounds (year may also be out of bounds
+        # for a datetime object, but we don't care about that here).
+        # If day is out of bounds, what to do is arguable, but at least the
+        # method here is principled and explainable.
+        dim = _days_in_month(|>PARAMETER:year<|, |>PARAMETER:month<|)
+        if not 1 <= |>PARAMETER:day<| <= dim:
+            # Move day-1 days from the first of the month.  First try to
+            # get off cheap if we're only one day out of range (adjustments
+            # for timezone alone can't be worse than that).
+            if |>PARAMETER:day<| == 0:    # move back a day
+                |>PARAMETER:month<| -= 1
+                if |>PARAMETER:month<| > 0:
+                    |>PARAMETER:day<| = _days_in_month(|>PARAMETER:year<|, |>PARAMETER:month<|)
+                else:
+                    |>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<| = |>PARAMETER:year<|-1, 12, 31
+            elif |>PARAMETER:day<| == dim + 1:    # move forward a day
+                |>PARAMETER:month<| += 1
+                |>PARAMETER:day<| = 1
+                if |>PARAMETER:month<| > 12:
+                    |>PARAMETER:month<| = 1
+                    |>PARAMETER:year<| += 1
+            else:
+                |>PARAMETER:self<|.ordinal = _ymd2ord(|>PARAMETER:year<|, |>PARAMETER:month<|, 1) + (|>PARAMETER:day<| - 1)
+                |>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<| = _ord2ymd(|>PARAMETER:self<|.ordinal)
+
+        |>PARAMETER:self<|.year, |>PARAMETER:self<|.month, |>PARAMETER:self<|.day = |>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|
+        |>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second = |>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|
+        |>PARAMETER:self<|.microsecond = |>PARAMETER:microsecond<|
+
+    def |>METHOD:toordinal<|(|>PARAMETER:self<|):
+        """Return proleptic Gregorian ordinal for the year, month and day.
+
+        January 1 of year 1 is day 1.  Only the year, month and day values
+        contribute to the result.
+        """
+        if |>PARAMETER:self<|.ordinal is None:
+            |>PARAMETER:self<|.ordinal = _ymd2ord(|>PARAMETER:self<|.year, |>PARAMETER:self<|.month, |>PARAMETER:self<|.day)
+        return |>PARAMETER:self<|.ordinal
+
+    def |>METHOD:time<|(|>PARAMETER:self<|):
+        "Return Unixish timestamp, as a float (assuming UTC)."
+        days = |>PARAMETER:self<|.toordinal() - _ORD1970   # convert to UNIX epoch
+        seconds = ((days * 24. + |>PARAMETER:self<|.hour)*60. + |>PARAMETER:self<|.minute)*60.
+        return seconds + |>PARAMETER:self<|.second + |>PARAMETER:self<|.microsecond / 1e6
+
+    def |>METHOD:ctime<|(|>PARAMETER:self<|):
+        "Return ctime() style string."
+        weekday = |>PARAMETER:self<|.toordinal() % 7 or 7
+        return "%s %s %2d %02d:%02d:%02d %04d" % (
+            _DAYNAMES[weekday],
+            _MONTHNAMES[|>PARAMETER:self<|.month],
+            |>PARAMETER:self<|.day,
+            |>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second,
+            |>PARAMETER:self<|.year)
+
+class timedelta(object):
+    """Represent the difference between two datetime objects.
+
+    Supported operators:
+
+    - add, subtract timedelta
+    - unary plus, minus, abs
+    - compare to timedelta
+    - multiply, divide by int/long
+
+    In addition, datetime supports subtraction of two datetime objects
+    returning a timedelta, and addition or subtraction of a datetime
+    and a timedelta giving a datetime.
+
+    Representation: (days, seconds, microseconds).  Why?  Because I
+    felt like it.
+    """
+
+    def |>METHOD:__new__<|(|>PARAMETER:cls<|, |>PARAMETER:days<|=0, |>PARAMETER:seconds<|=0, |>PARAMETER:microseconds<|=0,
+                # XXX The following should only be used as keyword args:
+                |>PARAMETER:milliseconds<|=0, |>PARAMETER:minutes<|=0, |>PARAMETER:hours<|=0, |>PARAMETER:weeks<|=0):
+        # Doing this efficiently and accurately in C is going to be difficult
+        # and error-prone, due to ubiquitous overflow possibilities, and that
+        # C double doesn't have enough bits of precision to represent
+        # microseconds over 10K years faithfully.  The code here tries to make
+        # explicit where go-fast assumptions can be relied on, in order to
+        # guide the C implementation; it's way more convoluted than speed-
+        # ignoring auto-overflow-to-long idiomatic Python could be.
+
+        # XXX Check that all inputs are ints, longs or floats.
+
+        # Final values, all integer.
+        # s and us fit in 32-bit signed ints; d isn't bounded.
+        d = s = us = 0
+
+        # Normalize everything to days, seconds, microseconds.
+        |>PARAMETER:days<| += |>PARAMETER:weeks<|*7
+        |>PARAMETER:seconds<| += |>PARAMETER:minutes<|*60 + |>PARAMETER:hours<|*3600
+        |>PARAMETER:microseconds<| += |>PARAMETER:milliseconds<|*1000
+
+        # Get rid of all fractions, and normalize s and us.
+        # Take a deep breath <wink>.
+        if isinstance(|>PARAMETER:days<|, float):
+            dayfrac, |>PARAMETER:days<| = _math.modf(|>PARAMETER:days<|)
+            daysecondsfrac, daysecondswhole = _math.modf(dayfrac * (24.*3600.))
+            assert daysecondswhole == int(daysecondswhole)  # can't overflow
+            s = int(daysecondswhole)
+            assert |>PARAMETER:days<| == long(|>PARAMETER:days<|)
+            d = long(|>PARAMETER:days<|)
+        else:
+            daysecondsfrac = 0.0
+            d = |>PARAMETER:days<|
+        assert isinstance(daysecondsfrac, float)
+        assert abs(daysecondsfrac) <= 1.0
+        assert isinstance(d, (int, long))
+        assert abs(s) <= 24 * 3600
+        # days isn't referenced again before redefinition
+
+        if isinstance(|>PARAMETER:seconds<|, float):
+            secondsfrac, |>PARAMETER:seconds<| = _math.modf(|>PARAMETER:seconds<|)
+            assert |>PARAMETER:seconds<| == long(|>PARAMETER:seconds<|)
+            |>PARAMETER:seconds<| = long(|>PARAMETER:seconds<|)
+            secondsfrac += daysecondsfrac
+            assert abs(secondsfrac) <= 2.0
+        else:
+            secondsfrac = daysecondsfrac
+        # daysecondsfrac isn't referenced again
+        assert isinstance(secondsfrac, float)
+        assert abs(secondsfrac) <= 2.0
+
+        assert isinstance(|>PARAMETER:seconds<|, (int, long))
+        |>PARAMETER:days<|, |>PARAMETER:seconds<| = divmod(|>PARAMETER:seconds<|, 24*3600)
+        d += |>PARAMETER:days<|
+        s += int(|>PARAMETER:seconds<|)    # can't overflow
+        assert isinstance(s, int)
+        assert abs(s) <= 2 * 24 * 3600
+        # seconds isn't referenced again before redefinition
+
+        usdouble = secondsfrac * 1e6
+        assert abs(usdouble) < 2.1e6    # exact value not critical
+        # secondsfrac isn't referenced again
+
+        if isinstance(|>PARAMETER:microseconds<|, float):
+            |>PARAMETER:microseconds<| += usdouble
+            |>PARAMETER:microseconds<| = round(|>PARAMETER:microseconds<|)
+            |>PARAMETER:seconds<|, |>PARAMETER:microseconds<| = divmod(|>PARAMETER:microseconds<|, 1e6)
+            assert |>PARAMETER:microseconds<| == int(|>PARAMETER:microseconds<|)
+            assert |>PARAMETER:seconds<| == long(|>PARAMETER:seconds<|)
+            |>PARAMETER:days<|, |>PARAMETER:seconds<| = divmod(|>PARAMETER:seconds<|, 24.*3600.)
+            assert |>PARAMETER:days<| == long(|>PARAMETER:days<|)
+            assert |>PARAMETER:seconds<| == int(|>PARAMETER:seconds<|)
+            d += long(|>PARAMETER:days<|)
+            s += int(|>PARAMETER:seconds<|)   # can't overflow
+            assert isinstance(s, int)
+            assert abs(s) <= 3 * 24 * 3600
+        else:
+            |>PARAMETER:seconds<|, |>PARAMETER:microseconds<| = divmod(|>PARAMETER:microseconds<|, 1000000)
+            |>PARAMETER:days<|, |>PARAMETER:seconds<| = divmod(|>PARAMETER:seconds<|, 24*3600)
+            d += |>PARAMETER:days<|
+            s += int(|>PARAMETER:seconds<|)    # can't overflow
+            assert isinstance(s, int)
+            assert abs(s) <= 3 * 24 * 3600
+            |>PARAMETER:microseconds<| = float(|>PARAMETER:microseconds<|)
+            |>PARAMETER:microseconds<| += usdouble
+            |>PARAMETER:microseconds<| = round(|>PARAMETER:microseconds<|)
+        assert abs(s) <= 3 * 24 * 3600
+        assert abs(|>PARAMETER:microseconds<|) < 3.1e6
+
+        # Just a little bit of carrying possible for microseconds and seconds.
+        assert isinstance(|>PARAMETER:microseconds<|, float)
+        assert int(|>PARAMETER:microseconds<|) == |>PARAMETER:microseconds<|
+        us = int(|>PARAMETER:microseconds<|)
+        |>PARAMETER:seconds<|, us = divmod(us, 1000000)
+        s += |>PARAMETER:seconds<|    # cant't overflow
+        assert isinstance(s, int)
+        |>PARAMETER:days<|, s = divmod(s, 24*3600)
+        d += |>PARAMETER:days<|
+
+        assert isinstance(d, (int, long))
+        assert isinstance(s, int) and 0 <= s < 24*3600
+        assert isinstance(us, int) and 0 <= us < 1000000
+
+        self = object.__new__(|>PARAMETER:cls<|)
+
+        self.__days = d
+        self.__seconds = s
+        self.__microseconds = us
+        if abs(d) > 999999999:
+            raise OverflowError("timedelta # of days is too large: %d" % d)
+
+        return self
+
+    def |>METHOD:__repr__<|(|>PARAMETER:self<|):
+        if |>PARAMETER:self<|.__microseconds:
+            return "%s(%d, %d, %d)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__,
+                                       |>PARAMETER:self<|.__days,
+                                       |>PARAMETER:self<|.__seconds,
+                                       |>PARAMETER:self<|.__microseconds)
+        if |>PARAMETER:self<|.__seconds:
+            return "%s(%d, %d)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__,
+                                   |>PARAMETER:self<|.__days,
+                                   |>PARAMETER:self<|.__seconds)
+        return "%s(%d)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__, |>PARAMETER:self<|.__days)
+
+    def |>METHOD:__str__<|(|>PARAMETER:self<|):
+        mm, ss = divmod(|>PARAMETER:self<|.__seconds, 60)
+        hh, mm = divmod(mm, 60)
+        s = "%d:%02d:%02d" % (hh, mm, ss)
+        if |>PARAMETER:self<|.__days:
+            def |>METHOD:plural<|(|>PARAMETER:n<|):
+                return |>PARAMETER:n<|, abs(|>PARAMETER:n<|) != 1 and "s" or ""
+            s = ("%d day%s, " % plural(|>PARAMETER:self<|.__days)) + s
+        if |>PARAMETER:self<|.__microseconds:
+            s = s + ".%06d" % |>PARAMETER:self<|.__microseconds
+        return s
+
+    days = property(lambda self: self.__days, doc="days")
+    seconds = property(lambda self: self.__seconds, doc="seconds")
+    microseconds = property(lambda self: self.__microseconds,
+                            doc="microseconds")
+
+    def |>METHOD:__add__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return timedelta(|>PARAMETER:self<|.__days + |>PARAMETER:other<|.__days,
+                             |>PARAMETER:self<|.__seconds + |>PARAMETER:other<|.__seconds,
+                             |>PARAMETER:self<|.__microseconds + |>PARAMETER:other<|.__microseconds)
+        return NotImplemented
+
+    __radd__ = __add__
+
+    def |>METHOD:__sub__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<| + -|>PARAMETER:other<|
+        return NotImplemented
+
+    def |>METHOD:__rsub__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return -|>PARAMETER:self<| + |>PARAMETER:other<|
+        return NotImplemented
+
+    def |>METHOD:__neg__<|(|>PARAMETER:self<|):
+        return |>PARAMETER:self<|.__class__(-|>PARAMETER:self<|.__days,
+                              -|>PARAMETER:self<|.__seconds,
+                              -|>PARAMETER:self<|.__microseconds)
+
+    def |>METHOD:__pos__<|(|>PARAMETER:self<|):
+        return |>PARAMETER:self<|
+
+    def |>METHOD:__abs__<|(|>PARAMETER:self<|):
+        if |>PARAMETER:self<|.__days < 0:
+            return -|>PARAMETER:self<|
+        else:
+            return |>PARAMETER:self<|
+
+    def |>METHOD:__mul__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, (int, long)):
+            return |>PARAMETER:self<|.__class__(|>PARAMETER:self<|.__days * |>PARAMETER:other<|,
+                                  |>PARAMETER:self<|.__seconds * |>PARAMETER:other<|,
+                                  |>PARAMETER:self<|.__microseconds * |>PARAMETER:other<|)
+        return NotImplemented
+
+    __rmul__ = __mul__
+
+    def |>METHOD:__div__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, (int, long)):
+            usec = ((|>PARAMETER:self<|.__days * (24*3600L) + |>PARAMETER:self<|.__seconds) * 1000000 +
+                    |>PARAMETER:self<|.__microseconds)
+            return |>PARAMETER:self<|.__class__(0, 0, usec // |>PARAMETER:other<|)
+        return NotImplemented
+
+    __floordiv__ = __div__
+
+    # Comparisons.
+
+    def |>METHOD:__eq__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) == 0
+        else:
+            return False
+
+    def |>METHOD:__ne__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) != 0
+        else:
+            return True
+
+    def |>METHOD:__le__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) <= 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__lt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) < 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__ge__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) >= 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__gt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) > 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__cmp<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        assert isinstance(|>PARAMETER:other<|, timedelta)
+        return cmp(|>PARAMETER:self<|.__getstate(), |>PARAMETER:other<|.__getstate())
+
+    def |>METHOD:__hash__<|(|>PARAMETER:self<|):
+        return hash(|>PARAMETER:self<|.__getstate())
+
+    def |>METHOD:__nonzero__<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__days != 0 or
+                |>PARAMETER:self<|.__seconds != 0 or
+                |>PARAMETER:self<|.__microseconds != 0)
+
+    # Pickle support.
+
+    __safe_for_unpickling__ = True      # For Python 2.2
+
+    def |>METHOD:__getstate<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__days, |>PARAMETER:self<|.__seconds, |>PARAMETER:self<|.__microseconds)
+
+    def |>METHOD:__reduce__<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__class__, |>PARAMETER:self<|.__getstate())
+
+timedelta.min = timedelta(-999999999)
+timedelta.max = timedelta(days=999999999, hours=23, minutes=59, seconds=59,
+                          microseconds=999999)
+timedelta.resolution = timedelta(microseconds=1)
+
+class date(object):
+    """Concrete date type.
+
+    Constructors:
+
+    __new__()
+    fromtimestamp()
+    today()
+    fromordinal()
+
+    Operators:
+
+    __repr__, __str__
+    __cmp__, __hash__
+    __add__, __radd__, __sub__ (add/radd only with timedelta arg)
+
+    Methods:
+
+    timetuple()
+    toordinal()
+    weekday()
+    isoweekday(), isocalendar(), isoformat()
+    ctime()
+    strftime()
+
+    Properties (readonly):
+    year, month, day
+    """
+
+    def |>METHOD:__new__<|(|>PARAMETER:cls<|, |>PARAMETER:year<|, |>PARAMETER:month<|=None, |>PARAMETER:day<|=None):
+        """Constructor.
+
+        Arguments:
+
+        year, month, day (required, base 1)
+        """
+        if isinstance(|>PARAMETER:year<|, str):
+            # Pickle support
+            self = object.__new__(|>PARAMETER:cls<|)
+            self.__setstate((|>PARAMETER:year<|,))
+            return self
+        _check_date_fields(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|)
+        self = object.__new__(|>PARAMETER:cls<|)
+        self.__year = |>PARAMETER:year<|
+        self.__month = |>PARAMETER:month<|
+        self.__day = |>PARAMETER:day<|
+        return self
+
+    # Additional constructors
+
+    def |>METHOD:fromtimestamp<|(|>PARAMETER:cls<|, |>PARAMETER:t<|):
+        "Construct a date from a POSIX timestamp (like time.time())."
+        y, m, d, |>UNUSED:hh<|, |>UNUSED:mm<|, |>UNUSED:ss<|, |>UNUSED:weekday<|, |>UNUSED:jday<|, |>UNUSED:dst<| = _time.localtime(|>PARAMETER:t<|)
+        return |>PARAMETER:cls<|(y, m, d)
+    fromtimestamp = classmethod(fromtimestamp)
+
+    def |>METHOD:today<|(|>PARAMETER:cls<|):
+        "Construct a date from time.time()."
+        t = _time.time()
+        return |>PARAMETER:cls<|.fromtimestamp(t)
+    today = classmethod(today)
+
+    def |>METHOD:fromordinal<|(|>PARAMETER:cls<|, |>PARAMETER:n<|):
+        """Contruct a date from a proleptic Gregorian ordinal.
+
+        January 1 of year 1 is day 1.  Only the year, month and day are
+        non-zero in the result.
+        """
+        y, m, d = _ord2ymd(|>PARAMETER:n<|)
+        return |>PARAMETER:cls<|(y, m, d)
+    fromordinal = classmethod(fromordinal)
+
+    # Conversions to string
+
+    def |>METHOD:__repr__<|(|>PARAMETER:self<|):
+        "Convert to formal string, for repr()."
+        return "%s(%d, %d, %d)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__,
+                                   |>PARAMETER:self<|.__year,
+                                   |>PARAMETER:self<|.__month,
+                                   |>PARAMETER:self<|.__day)
+    # XXX These shouldn't depend on time.localtime(), because that
+    # clips the usable dates to [1970 .. 2038).  At least ctime() is
+    # easily done without using strftime() -- that's better too because
+    # strftime("%c", ...) is locale specific.
+
+    def |>METHOD:ctime<|(|>PARAMETER:self<|):
+        "Format a la ctime()."
+        return tmxxx(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day).ctime()
+
+    def |>METHOD:strftime<|(|>PARAMETER:self<|, |>PARAMETER:fmt<|):
+        "Format using strftime()."
+        return _wrap_strftime(|>PARAMETER:self<|, |>PARAMETER:fmt<|, |>PARAMETER:self<|.timetuple())
+
+    def |>METHOD:isoformat<|(|>PARAMETER:self<|):
+        """Return the date formatted according to ISO.
+
+        This is 'YYYY-MM-DD'.
+
+        References:
+        - http://www.w3.org/TR/NOTE-datetime
+        - http://www.cl.cam.ac.uk/~mgk25/iso-time.html
+        """
+        return "%04d-%02d-%02d" % (|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day)
+
+    __str__ = isoformat
+
+    # Read-only field accessors
+    year = property(lambda self: self.__year,
+                    doc="year (%d-%d)" % (MINYEAR, MAXYEAR))
+    month = property(lambda self: self.__month, doc="month (1-12)")
+    day = property(lambda self: self.__day, doc="day (1-31)")
+
+    # Standard conversions, __cmp__, __hash__ (and helpers)
+
+    def |>METHOD:timetuple<|(|>PARAMETER:self<|):
+        "Return local time tuple compatible with time.localtime()."
+        return _build_struct_time(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day,
+                                  0, 0, 0, -1)
+
+    def |>METHOD:toordinal<|(|>PARAMETER:self<|):
+        """Return proleptic Gregorian ordinal for the year, month and day.
+
+        January 1 of year 1 is day 1.  Only the year, month and day values
+        contribute to the result.
+        """
+        return _ymd2ord(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day)
+
+    def |>METHOD:replace<|(|>PARAMETER:self<|, |>PARAMETER:year<|=None, |>PARAMETER:month<|=None, |>PARAMETER:day<|=None):
+        """Return a new date with new values for the specified fields."""
+        if |>PARAMETER:year<| is None:
+            |>PARAMETER:year<| = |>PARAMETER:self<|.__year
+        if |>PARAMETER:month<| is None:
+            |>PARAMETER:month<| = |>PARAMETER:self<|.__month
+        if |>PARAMETER:day<| is None:
+            |>PARAMETER:day<| = |>PARAMETER:self<|.__day
+        _check_date_fields(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|)
+        return date(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|)
+
+    # Comparisons.
+
+    def |>METHOD:__eq__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) == 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            return False
+
+    def |>METHOD:__ne__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) != 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            return True
+
+    def |>METHOD:__le__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) <= 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__lt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) < 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__ge__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) >= 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__gt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, date):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) > 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__cmp<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        assert isinstance(|>PARAMETER:other<|, date)
+        y, m, d = |>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day
+        y2, m2, d2 = |>PARAMETER:other<|.__year, |>PARAMETER:other<|.__month, |>PARAMETER:other<|.__day
+        return cmp((y, m, d), (y2, m2, d2))
+
+    def |>METHOD:__hash__<|(|>PARAMETER:self<|):
+        "Hash."
+        return hash(|>PARAMETER:self<|.__getstate())
+
+    # Computations
+
+    def |>METHOD:_checkOverflow<|(|>PARAMETER,UNUSED:self<|, |>PARAMETER:year<|):
+        if not MINYEAR <= |>PARAMETER:year<| <= MAXYEAR:
+            raise OverflowError("date +/-: result year %d not in %d..%d" %
+                                (|>PARAMETER:year<|, MINYEAR, MAXYEAR))
+
+    def |>METHOD:__add__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        "Add a date to a timedelta."
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            t = tmxxx(|>PARAMETER:self<|.__year,
+                      |>PARAMETER:self<|.__month,
+                      |>PARAMETER:self<|.__day + |>PARAMETER:other<|.days)
+            |>PARAMETER:self<|._checkOverflow(t.year)
+            result = |>PARAMETER:self<|.__class__(t.year, t.month, t.day)
+            return result
+        return NotImplemented
+
+    __radd__ = __add__
+
+    def |>METHOD:__sub__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        """Subtract two dates, or a date and a timedelta."""
+        if isinstance(|>PARAMETER:other<|, timedelta):
+            return |>PARAMETER:self<| + timedelta(-|>PARAMETER:other<|.days)
+        if isinstance(|>PARAMETER:other<|, date):
+            days1 = |>PARAMETER:self<|.toordinal()
+            days2 = |>PARAMETER:other<|.toordinal()
+            return timedelta(days1 - days2)
+        return NotImplemented
+
+    def |>METHOD:weekday<|(|>PARAMETER:self<|):
+        "Return day of the week, where Monday == 0 ... Sunday == 6."
+        return (|>PARAMETER:self<|.toordinal() + 6) % 7
+
+    # Day-of-the-week and week-of-the-year, according to ISO
+
+    def |>METHOD:isoweekday<|(|>PARAMETER:self<|):
+        "Return day of the week, where Monday == 1 ... Sunday == 7."
+        # 1-Jan-0001 is a Monday
+        return |>PARAMETER:self<|.toordinal() % 7 or 7
+
+    def |>METHOD:isocalendar<|(|>PARAMETER:self<|):
+        """Return a 3-tuple containing ISO year, week number, and weekday.
+
+        The first ISO week of the year is the (Mon-Sun) week
+        containing the year's first Thursday; everything else derives
+        from that.
+
+        The first week is 1; Monday is 1 ... Sunday is 7.
+
+        ISO calendar algorithm taken from
+        http://www.phys.uu.nl/~vgent/calendar/isocalendar.htm
+        """
+        year = |>PARAMETER:self<|.__year
+        week1monday = _isoweek1monday(year)
+        today = _ymd2ord(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day)
+        # Internally, week and day have origin 0
+        week, day = divmod(today - week1monday, 7)
+        if week < 0:
+            year -= 1
+            week1monday = _isoweek1monday(year)
+            week, day = divmod(today - week1monday, 7)
+        elif week >= 52:
+            if today >= _isoweek1monday(year+1):
+                year += 1
+                week = 0
+        return year, week+1, day+1
+
+    # Pickle support.
+
+    __safe_for_unpickling__ = True      # For Python 2.2
+
+    def |>METHOD:__getstate<|(|>PARAMETER:self<|):
+        yhi, ylo = divmod(|>PARAMETER:self<|.__year, 256)
+        return ("%c%c%c%c" % (yhi, ylo, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day), )
+
+    def |>METHOD:__setstate<|(|>PARAMETER:self<|, |>PARAMETER:t<|):
+        assert isinstance(|>PARAMETER:t<|, tuple) and len(|>PARAMETER:t<|) == 1, `|>PARAMETER:t<|`
+        string = |>PARAMETER:t<|[0]
+        assert len(string) == 4
+        yhi, ylo, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day = map(ord, string)
+        |>PARAMETER:self<|.__year = yhi * 256 + ylo
+
+    def |>METHOD:__reduce__<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__class__, |>PARAMETER:self<|.__getstate())
+
+_date_class = date  # so functions w/ args named "date" can get at the class
+
+date.min = date(1, 1, 1)
+date.max = date(9999, 12, 31)
+date.resolution = timedelta(days=1)
+
+class tzinfo(object):
+    """Abstract base class for time zone info classes.
+
+    Subclasses must override the name(), utcoffset() and dst() methods.
+    """
+
+    def |>METHOD:tzname<|(|>PARAMETER,UNUSED:self<|, |>PARAMETER,UNUSED:dt<|):
+        "datetime -> string name of time zone."
+        raise NotImplementedError("tzinfo subclass must override tzname()")
+
+    def |>METHOD:utcoffset<|(|>PARAMETER,UNUSED:self<|, |>PARAMETER,UNUSED:dt<|):
+        "datetime -> minutes east of UTC (negative for west of UTC)"
+        raise NotImplementedError("tzinfo subclass must override utcoffset()")
+
+    def |>METHOD:dst<|(|>PARAMETER,UNUSED:self<|, |>PARAMETER,UNUSED:dt<|):
+        """datetime -> DST offset in minutes east of UTC.
+
+        Return 0 if DST not in effect.  utcoffset() must include the DST
+        offset.
+        """
+        raise NotImplementedError("tzinfo subclass must override dst()")
+
+    def |>METHOD:fromutc<|(|>PARAMETER:self<|, |>PARAMETER:dt<|):
+        "datetime in UTC -> datetime in local time."
+
+        if not isinstance(|>PARAMETER:dt<|, datetime):
+            raise TypeError("fromutc() requires a datetime argument")
+        if |>PARAMETER:dt<|.tzinfo is not |>PARAMETER:self<|:
+            raise ValueError("dt.tzinfo is not self")
+
+        dtoff = |>PARAMETER:dt<|.utcoffset()
+        if dtoff is None:
+            raise ValueError("fromutc() requires a non-None utcoffset() "
+                             "result")
+
+        # See the long comment block at the end of this file for an
+        # explanation of this algorithm.
+        dtdst = |>PARAMETER:dt<|.dst()
+        if dtdst is None:
+            raise ValueError("fromutc() requires a non-None dst() result")
+        delta = dtoff - dtdst
+        if delta:
+            |>PARAMETER:dt<| += delta
+            dtdst = |>PARAMETER:dt<|.dst()
+            if dtdst is None:
+                raise ValueError("fromutc(): dt.dst gave inconsistent "
+                                 "results; cannot convert")
+        if dtdst:
+            return |>PARAMETER:dt<| + dtdst
+        else:
+            return |>PARAMETER:dt<|
+
+    # Pickle support.
+
+    __safe_for_unpickling__ = True      # For Python 2.2
+
+    def |>METHOD:__reduce__<|(|>PARAMETER:self<|):
+        getinitargs = getattr(|>PARAMETER:self<|, "__getinitargs__", None)
+        if getinitargs:
+            args = getinitargs()
+        else:
+            args = ()
+        getstate = getattr(|>PARAMETER:self<|, "__getstate__", None)
+        if getstate:
+            state = getstate()
+        else:
+            state = getattr(|>PARAMETER:self<|, "__dict__", None) or None
+        if state is None:
+            return (|>PARAMETER:self<|.__class__, args)
+        else:
+            return (|>PARAMETER:self<|.__class__, args, state)
+
+_tzinfo_class = tzinfo   # so functions w/ args named "tinfo" can get at it
+
+class time(object):
+    """Time with time zone.
+
+    Constructors:
+
+    __new__()
+
+    Operators:
+
+    __repr__, __str__
+    __cmp__, __hash__
+
+    Methods:
+
+    strftime()
+    isoformat()
+    utcoffset()
+    tzname()
+    dst()
+
+    Properties (readonly):
+    hour, minute, second, microsecond, tzinfo
+    """
+
+    def |>METHOD:__new__<|(|>PARAMETER:cls<|, |>PARAMETER:hour<|=0, |>PARAMETER:minute<|=0, |>PARAMETER:second<|=0, |>PARAMETER:microsecond<|=0, |>PARAMETER:tzinfo<|=None):
+        """Constructor.
+
+        Arguments:
+
+        hour, minute (required)
+        second, microsecond (default to zero)
+        tzinfo (default to None)
+        """
+        self = object.__new__(|>PARAMETER:cls<|)
+        if isinstance(|>PARAMETER:hour<|, str):
+            # Pickle support
+            self.__setstate((|>PARAMETER:hour<|, |>PARAMETER:minute<| or None))
+            return self
+        _check_tzinfo_arg(|>PARAMETER:tzinfo<|)
+        _check_time_fields(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|)
+        self.__hour = |>PARAMETER:hour<|
+        self.__minute = |>PARAMETER:minute<|
+        self.__second = |>PARAMETER:second<|
+        self.__microsecond = |>PARAMETER:microsecond<|
+        self._tzinfo = |>PARAMETER:tzinfo<|
+        return self
+
+    # Read-only field accessors
+    hour = property(lambda self: self.__hour, doc="hour (0-23)")
+    minute = property(lambda self: self.__minute, doc="minute (0-59)")
+    second = property(lambda self: self.__second, doc="second (0-59)")
+    microsecond = property(lambda self: self.__microsecond,
+                           doc="microsecond (0-999999)")
+    tzinfo = property(lambda self: self._tzinfo, doc="timezone info object")
+
+    # Standard conversions, __hash__ (and helpers)
+
+    # Comparisons.
+
+    def |>METHOD:__eq__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) == 0
+        else:
+            return False
+
+    def |>METHOD:__ne__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) != 0
+        else:
+            return True
+
+    def |>METHOD:__le__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) <= 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__lt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) < 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__ge__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) >= 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__gt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, time):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) > 0
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__cmp<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        assert isinstance(|>PARAMETER:other<|, time)
+        mytz = |>PARAMETER:self<|._tzinfo
+        ottz = |>PARAMETER:other<|._tzinfo
+        myoff = otoff = None
+
+        if mytz is ottz:
+            base_compare = True
+        else:
+            myoff = |>PARAMETER:self<|._utcoffset()
+            otoff = |>PARAMETER:other<|._utcoffset()
+            base_compare = myoff == otoff
+
+        if base_compare:
+            return cmp((|>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                        |>PARAMETER:self<|.__microsecond),
+                       (|>PARAMETER:other<|.__hour, |>PARAMETER:other<|.__minute, |>PARAMETER:other<|.__second,
+                        |>PARAMETER:other<|.__microsecond))
+        if myoff is None or otoff is None:
+            # XXX Buggy in 2.2.2.
+            raise TypeError("cannot compare naive and aware times")
+        myhhmm = |>PARAMETER:self<|.__hour * 60 + |>PARAMETER:self<|.__minute - myoff
+        othhmm = |>PARAMETER:other<|.__hour * 60 + |>PARAMETER:other<|.__minute - otoff
+        return cmp((myhhmm, |>PARAMETER:self<|.__second, |>PARAMETER:self<|.__microsecond),
+                   (othhmm, |>PARAMETER:other<|.__second, |>PARAMETER:other<|.__microsecond))
+
+    def |>METHOD:__hash__<|(|>PARAMETER:self<|):
+        """Hash."""
+        tzoff = |>PARAMETER:self<|._utcoffset()
+        if not tzoff: # zero or None
+            return hash(|>PARAMETER:self<|.__getstate()[0])
+        h, m = divmod(|>PARAMETER:self<|.hour * 60 + |>PARAMETER:self<|.minute - tzoff, 60)
+        if 0 <= h < 24:
+            return hash(time(h, m, |>PARAMETER:self<|.second, |>PARAMETER:self<|.microsecond))
+        return hash((h, m, |>PARAMETER:self<|.second, |>PARAMETER:self<|.microsecond))
+
+    # Conversion to string
+
+    def |>METHOD:_tzstr<|(|>PARAMETER:self<|, |>PARAMETER:sep<|=":"):
+        """Return formatted timezone offset (+xx:xx) or None."""
+        off = |>PARAMETER:self<|._utcoffset()
+        if off is not None:
+            if off < 0:
+                sign = "-"
+                off = -off
+            else:
+                sign = "+"
+            hh, mm = divmod(off, 60)
+            assert 0 <= hh < 24
+            off = "%s%02d%s%02d" % (sign, hh, |>PARAMETER:sep<|, mm)
+        return off
+
+    def |>METHOD:__repr__<|(|>PARAMETER:self<|):
+        """Convert to formal string, for repr()."""
+        if |>PARAMETER:self<|.__microsecond != 0:
+            s = ", %d, %d" % (|>PARAMETER:self<|.__second, |>PARAMETER:self<|.__microsecond)
+        elif |>PARAMETER:self<|.__second != 0:
+            s = ", %d" % |>PARAMETER:self<|.__second
+        else:
+            s = ""
+        s= "%s(%d, %d%s)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__,
+                             |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, s)
+        if |>PARAMETER:self<|._tzinfo is not None:
+            assert s[-1:] == ")"
+            s = s[:-1] + ", tzinfo=%r" % |>PARAMETER:self<|._tzinfo + ")"
+        return s
+
+    def |>METHOD:isoformat<|(|>PARAMETER:self<|):
+        """Return the time formatted according to ISO.
+
+        This is 'HH:MM:SS.mmmmmm+zz:zz', or 'HH:MM:SS+zz:zz' if
+        self.microsecond == 0.
+        """
+        s = _format_time(|>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                         |>PARAMETER:self<|.__microsecond)
+        tz = |>PARAMETER:self<|._tzstr()
+        if tz:
+            s += tz
+        return s
+
+    __str__ = isoformat
+
+    def |>METHOD:strftime<|(|>PARAMETER:self<|, |>PARAMETER:fmt<|):
+        """Format using strftime().  The date part of the timestamp passed
+        to underlying strftime should not be used.
+        """
+        # The year must be >= 1900 else Python's strftime implementation
+        # can raise a bogus exception.
+        timetuple = (1900, 1, 1,
+                     |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                     0, 1, -1)
+        return _wrap_strftime(|>PARAMETER:self<|, |>PARAMETER:fmt<|, timetuple)
+
+    # Timezone functions
+
+    def |>METHOD:utcoffset<|(|>PARAMETER:self<|):
+        """Return the timezone offset in minutes east of UTC (negative west of
+        UTC)."""
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "utcoffset", None)
+        offset = _check_utc_offset("utcoffset", offset)
+        if offset is not None:
+            offset = timedelta(minutes=offset)
+        return offset
+
+    # Return an integer (or None) instead of a timedelta (or None).
+    def |>METHOD:_utcoffset<|(|>PARAMETER:self<|):
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "utcoffset", None)
+        offset = _check_utc_offset("utcoffset", offset)
+        return offset
+
+    def |>METHOD:tzname<|(|>PARAMETER:self<|):
+        """Return the timezone name.
+
+        Note that the name is 100% informational -- there's no requirement that
+        it mean anything in particular. For example, "GMT", "UTC", "-500",
+        "-5:00", "EDT", "US/Eastern", "America/New York" are all valid replies.
+        """
+        name = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "tzname", None)
+        _check_tzname(name)
+        return name
+
+    def |>METHOD:dst<|(|>PARAMETER:self<|):
+        """Return 0 if DST is not in effect, or the DST offset (in minutes
+        eastward) if DST is in effect.
+
+        This is purely informational; the DST offset has already been added to
+        the UTC offset returned by utcoffset() if applicable, so there's no
+        need to consult dst() unless you're interested in displaying the DST
+        info.
+        """
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "dst", None)
+        offset = _check_utc_offset("dst", offset)
+        if offset is not None:
+            offset = timedelta(minutes=offset)
+        return offset
+
+    def |>METHOD:replace<|(|>PARAMETER:self<|, |>PARAMETER:hour<|=None, |>PARAMETER:minute<|=None, |>PARAMETER:second<|=None, |>PARAMETER:microsecond<|=None,
+                |>PARAMETER:tzinfo<|=True):
+        """Return a new time with new values for the specified fields."""
+        if |>PARAMETER:hour<| is None:
+            |>PARAMETER:hour<| = |>PARAMETER:self<|.hour
+        if |>PARAMETER:minute<| is None:
+            |>PARAMETER:minute<| = |>PARAMETER:self<|.minute
+        if |>PARAMETER:second<| is None:
+            |>PARAMETER:second<| = |>PARAMETER:self<|.second
+        if |>PARAMETER:microsecond<| is None:
+            |>PARAMETER:microsecond<| = |>PARAMETER:self<|.microsecond
+        if |>PARAMETER:tzinfo<| is True:
+            |>PARAMETER:tzinfo<| = |>PARAMETER:self<|.tzinfo
+        _check_time_fields(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|)
+        _check_tzinfo_arg(|>PARAMETER:tzinfo<|)
+        return time(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|, |>PARAMETER:tzinfo<|)
+
+    # Return an integer (or None) instead of a timedelta (or None).
+    def |>METHOD:_dst<|(|>PARAMETER:self<|):
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "dst", None)
+        offset = _check_utc_offset("dst", offset)
+        return offset
+
+    def |>METHOD:__nonzero__<|(|>PARAMETER:self<|):
+        if |>PARAMETER:self<|.second or |>PARAMETER:self<|.microsecond:
+            return 1
+        offset = |>PARAMETER:self<|._utcoffset() or 0
+        return |>PARAMETER:self<|.hour * 60 + |>PARAMETER:self<|.minute - offset != 0
+
+    # Pickle support.
+
+    __safe_for_unpickling__ = True      # For Python 2.2
+
+    def |>METHOD:__getstate<|(|>PARAMETER:self<|):
+        us2, us3 = divmod(|>PARAMETER:self<|.__microsecond, 256)
+        us1, us2 = divmod(us2, 256)
+        basestate = ("%c" * 6) % (|>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                                  us1, us2, us3)
+        if |>PARAMETER:self<|._tzinfo is None:
+            return (basestate,)
+        else:
+            return (basestate, |>PARAMETER:self<|._tzinfo)
+
+    def |>METHOD:__setstate<|(|>PARAMETER:self<|, |>PARAMETER:state<|):
+        assert isinstance(|>PARAMETER:state<|, tuple)
+        assert 1 <= len(|>PARAMETER:state<|) <= 2
+        string = |>PARAMETER:state<|[0]
+        assert len(string) == 6
+        |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second, us1, us2, us3 = \
+                                                            map(ord, string)
+        |>PARAMETER:self<|.__microsecond = (((us1 << 8) | us2) << 8) | us3
+        if len(|>PARAMETER:state<|) == 1:
+            |>PARAMETER:self<|._tzinfo = None
+        else:
+            |>PARAMETER:self<|._tzinfo = |>PARAMETER:state<|[1]
+
+    def |>METHOD:__reduce__<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__class__, |>PARAMETER:self<|.__getstate())
+
+_time_class = time  # so functions w/ args named "time" can get at the class
+
+time.min = time(0, 0, 0)
+time.max = time(23, 59, 59, 999999)
+time.resolution = timedelta(microseconds=1)
+
+class datetime(date):
+
+    # XXX needs docstrings
+    # See http://www.zope.org/Members/fdrake/DateTimeWiki/TimeZoneInfo
+
+    def |>METHOD:__new__<|(|>PARAMETER:cls<|, |>PARAMETER:year<|, |>PARAMETER:month<|=None, |>PARAMETER:day<|=None, |>PARAMETER:hour<|=0, |>PARAMETER:minute<|=0, |>PARAMETER:second<|=0,
+                |>PARAMETER:microsecond<|=0, |>PARAMETER:tzinfo<|=None):
+        if isinstance(|>PARAMETER:year<|, str):
+            # Pickle support
+            self = date.__new__(|>PARAMETER:cls<|, |>PARAMETER:year<|[:4])
+            self.__setstate((|>PARAMETER:year<|, |>PARAMETER:month<|))
+            return self
+        _check_tzinfo_arg(|>PARAMETER:tzinfo<|)
+        _check_time_fields(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|)
+        self = date.__new__(|>PARAMETER:cls<|, |>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|)
+        # XXX This duplicates __year, __month, __day for convenience :-(
+        self.__year = |>PARAMETER:year<|
+        self.__month = |>PARAMETER:month<|
+        self.__day = |>PARAMETER:day<|
+        self.__hour = |>PARAMETER:hour<|
+        self.__minute = |>PARAMETER:minute<|
+        self.__second = |>PARAMETER:second<|
+        self.__microsecond = |>PARAMETER:microsecond<|
+        self._tzinfo = |>PARAMETER:tzinfo<|
+        return self
+
+    # Read-only field accessors
+    hour = property(lambda self: self.__hour, doc="hour (0-23)")
+    minute = property(lambda self: self.__minute, doc="minute (0-59)")
+    second = property(lambda self: self.__second, doc="second (0-59)")
+    microsecond = property(lambda self: self.__microsecond,
+                           doc="microsecond (0-999999)")
+    tzinfo = property(lambda self: self._tzinfo, doc="timezone info object")
+
+    def |>METHOD:fromtimestamp<|(|>PARAMETER:cls<|, |>PARAMETER:t<|, |>PARAMETER:tz<|=None):
+        """Construct a datetime from a POSIX timestamp (like time.time()).
+
+        A timezone info object may be passed in as well.
+        """
+
+        _check_tzinfo_arg(|>PARAMETER:tz<|)
+        if |>PARAMETER:tz<| is None:
+            converter = _time.localtime
+        else:
+            converter = _time.gmtime
+        y, m, d, hh, mm, ss, |>UNUSED:weekday<|, |>UNUSED:jday<|, |>UNUSED:dst<| = converter(|>PARAMETER:t<|)
+        us = int((|>PARAMETER:t<| % 1.0) * 1000000)
+        ss = min(ss, 59)    # clamp out leap seconds if the platform has them
+        result = |>PARAMETER:cls<|(y, m, d, hh, mm, ss, us, |>PARAMETER:tz<|)
+        if |>PARAMETER:tz<| is not None:
+            result = |>PARAMETER:tz<|.fromutc(result)
+        return result
+    fromtimestamp = classmethod(fromtimestamp)
+
+    def |>METHOD:utcfromtimestamp<|(|>PARAMETER:cls<|, |>PARAMETER:t<|):
+        "Construct a UTC datetime from a POSIX timestamp (like time.time())."
+        y, m, d, hh, mm, ss, |>UNUSED:weekday<|, |>UNUSED:jday<|, |>UNUSED:dst<| = _time.gmtime(|>PARAMETER:t<|)
+        us = int((|>PARAMETER:t<| % 1.0) * 1000000)
+        ss = min(ss, 59)    # clamp out leap seconds if the platform has them
+        return |>PARAMETER:cls<|(y, m, d, hh, mm, ss, us)
+    utcfromtimestamp = classmethod(utcfromtimestamp)
+
+    # XXX This is supposed to do better than we *can* do by using time.time(),
+    # XXX if the platform supports a more accurate way.  The C implementation
+    # XXX uses gettimeofday on platforms that have it, but that isn't
+    # XXX available from Python.  So now() may return different results
+    # XXX across the implementations.
+    def |>METHOD:now<|(|>PARAMETER:cls<|, |>PARAMETER:tz<|=None):
+        "Construct a datetime from time.time() and optional time zone info."
+        t = _time.time()
+        return |>PARAMETER:cls<|.fromtimestamp(t, |>PARAMETER:tz<|)
+    now = classmethod(now)
+
+    def |>METHOD:utcnow<|(|>PARAMETER:cls<|):
+        "Construct a UTC datetime from time.time()."
+        t = _time.time()
+        return |>PARAMETER:cls<|.utcfromtimestamp(t)
+    utcnow = classmethod(utcnow)
+
+    def |>METHOD:combine<|(|>PARAMETER:cls<|, |>PARAMETER:date<|, |>PARAMETER:time<|):
+        "Construct a datetime from a given date and a given time."
+        if not isinstance(|>PARAMETER:date<|, _date_class):
+            raise TypeError("date argument must be a date instance")
+        if not isinstance(|>PARAMETER:time<|, _time_class):
+            raise TypeError("time argument must be a time instance")
+        return |>PARAMETER:cls<|(|>PARAMETER:date<|.year, |>PARAMETER:date<|.month, |>PARAMETER:date<|.day,
+                   |>PARAMETER:time<|.hour, |>PARAMETER:time<|.minute, |>PARAMETER:time<|.second, |>PARAMETER:time<|.microsecond,
+                   |>PARAMETER:time<|.tzinfo)
+    combine = classmethod(combine)
+
+    def |>METHOD:timetuple<|(|>PARAMETER:self<|):
+        "Return local time tuple compatible with time.localtime()."
+        dst = |>PARAMETER:self<|._dst()
+        if dst is None:
+            dst = -1
+        elif dst:
+            dst = 1
+        return _build_struct_time(|>PARAMETER:self<|.year, |>PARAMETER:self<|.month, |>PARAMETER:self<|.day,
+                                  |>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second,
+                                  dst)
+
+    def |>METHOD:utctimetuple<|(|>PARAMETER:self<|):
+        "Return UTC time tuple compatible with time.gmtime()."
+        y, m, d = |>PARAMETER:self<|.year, |>PARAMETER:self<|.month, |>PARAMETER:self<|.day
+        hh, mm, ss = |>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second
+        offset = |>PARAMETER:self<|._utcoffset()
+        if offset:  # neither None nor 0
+            tm = tmxxx(y, m, d, hh, mm - offset)
+            y, m, d = tm.year, tm.month, tm.day
+            hh, mm = tm.hour, tm.minute
+        return _build_struct_time(y, m, d, hh, mm, ss, 0)
+
+    def |>METHOD:date<|(|>PARAMETER:self<|):
+        "Return the date part."
+        return date(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day)
+
+    def |>METHOD:time<|(|>PARAMETER:self<|):
+        "Return the time part, with tzinfo None."
+        return time(|>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second, |>PARAMETER:self<|.microsecond)
+
+    def |>METHOD:timetz<|(|>PARAMETER:self<|):
+        "Return the time part, with same tzinfo."
+        return time(|>PARAMETER:self<|.hour, |>PARAMETER:self<|.minute, |>PARAMETER:self<|.second, |>PARAMETER:self<|.microsecond,
+                    |>PARAMETER:self<|._tzinfo)
+
+    def |>METHOD:replace<|(|>PARAMETER:self<|, |>PARAMETER:year<|=None, |>PARAMETER:month<|=None, |>PARAMETER:day<|=None, |>PARAMETER:hour<|=None,
+                |>PARAMETER:minute<|=None, |>PARAMETER:second<|=None, |>PARAMETER:microsecond<|=None, |>PARAMETER:tzinfo<|=True):
+        """Return a new datetime with new values for the specified fields."""
+        if |>PARAMETER:year<| is None:
+            |>PARAMETER:year<| = |>PARAMETER:self<|.year
+        if |>PARAMETER:month<| is None:
+            |>PARAMETER:month<| = |>PARAMETER:self<|.month
+        if |>PARAMETER:day<| is None:
+            |>PARAMETER:day<| = |>PARAMETER:self<|.day
+        if |>PARAMETER:hour<| is None:
+            |>PARAMETER:hour<| = |>PARAMETER:self<|.hour
+        if |>PARAMETER:minute<| is None:
+            |>PARAMETER:minute<| = |>PARAMETER:self<|.minute
+        if |>PARAMETER:second<| is None:
+            |>PARAMETER:second<| = |>PARAMETER:self<|.second
+        if |>PARAMETER:microsecond<| is None:
+            |>PARAMETER:microsecond<| = |>PARAMETER:self<|.microsecond
+        if |>PARAMETER:tzinfo<| is True:
+            |>PARAMETER:tzinfo<| = |>PARAMETER:self<|.tzinfo
+        _check_date_fields(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|)
+        _check_time_fields(|>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|, |>PARAMETER:microsecond<|)
+        _check_tzinfo_arg(|>PARAMETER:tzinfo<|)
+        return datetime(|>PARAMETER:year<|, |>PARAMETER:month<|, |>PARAMETER:day<|, |>PARAMETER:hour<|, |>PARAMETER:minute<|, |>PARAMETER:second<|,
+                          |>PARAMETER:microsecond<|, |>PARAMETER:tzinfo<|)
+
+    def |>METHOD:astimezone<|(|>PARAMETER:self<|, |>PARAMETER:tz<|):
+        if not isinstance(|>PARAMETER:tz<|, tzinfo):
+            raise TypeError("tz argument must be an instance of tzinfo")
+
+        mytz = |>PARAMETER:self<|.tzinfo
+        if mytz is None:
+            raise ValueError("astimezone() requires an aware datetime")
+
+        if |>PARAMETER:tz<| is mytz:
+            return |>PARAMETER:self<|
+
+        # Convert self to UTC, and attach the new time zone object.
+        myoffset = |>PARAMETER:self<|.utcoffset()
+        if myoffset is None:
+            raise ValuError("astimezone() requires an aware datetime")
+        utc = (|>PARAMETER:self<| - myoffset).replace(tzinfo=|>PARAMETER:tz<|)
+
+        # Convert from UTC to tz's local time.
+        return |>PARAMETER:tz<|.fromutc(utc)
+
+    # Ways to produce a string.
+
+    def |>METHOD:ctime<|(|>PARAMETER:self<|):
+        "Format a la ctime()."
+        t = tmxxx(|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day, |>PARAMETER:self<|.__hour,
+                  |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second)
+        return t.ctime()
+
+    def |>METHOD:isoformat<|(|>PARAMETER:self<|, |>PARAMETER:sep<|='T'):
+        """Return the time formatted according to ISO.
+
+        This is 'YYYY-MM-DD HH:MM:SS.mmmmmm', or 'YYYY-MM-DD HH:MM:SS' if
+        self.microsecond == 0.
+
+        If self.tzinfo is not None, the UTC offset is also attached, giving
+        'YYYY-MM-DD HH:MM:SS.mmmmmm+HH:MM' or 'YYYY-MM-DD HH:MM:SS+HH:MM'.
+
+        Optional argument sep specifies the separator between date and
+        time, default 'T'.
+        """
+        s = ("%04d-%02d-%02d%c" % (|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day,
+                                  |>PARAMETER:sep<|) +
+                _format_time(|>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                             |>PARAMETER:self<|.__microsecond))
+        off = |>PARAMETER:self<|._utcoffset()
+        if off is not None:
+            if off < 0:
+                sign = "-"
+                off = -off
+            else:
+                sign = "+"
+            hh, mm = divmod(off, 60)
+            s += "%s%02d:%02d" % (sign, hh, mm)
+        return s
+
+    def |>METHOD:__repr__<|(|>PARAMETER:self<|):
+        "Convert to formal string, for repr()."
+        L = [|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day, # These are never zero
+             |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second, |>PARAMETER:self<|.__microsecond]
+        if L[-1] == 0:
+            del L[-1]
+        if L[-1] == 0:
+            del L[-1]
+        s = ", ".join(map(str, L))
+        s = "%s(%s)" % ('datetime.' + |>PARAMETER:self<|.__class__.__name__, s)
+        if |>PARAMETER:self<|._tzinfo is not None:
+            assert s[-1:] == ")"
+            s = s[:-1] + ", tzinfo=%r" % |>PARAMETER:self<|._tzinfo + ")"
+        return s
+
+    def |>METHOD:__str__<|(|>PARAMETER:self<|):
+        "Convert to string, for str()."
+        return |>PARAMETER:self<|.isoformat(sep=' ')
+
+    def |>METHOD:utcoffset<|(|>PARAMETER:self<|):
+        """Return the timezone offset in minutes east of UTC (negative west of
+        UTC)."""
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "utcoffset", |>PARAMETER:self<|)
+        offset = _check_utc_offset("utcoffset", offset)
+        if offset is not None:
+            offset = timedelta(minutes=offset)
+        return offset
+
+    # Return an integer (or None) instead of a timedelta (or None).
+    def |>METHOD:_utcoffset<|(|>PARAMETER:self<|):
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "utcoffset", |>PARAMETER:self<|)
+        offset = _check_utc_offset("utcoffset", offset)
+        return offset
+
+    def |>METHOD:tzname<|(|>PARAMETER:self<|):
+        """Return the timezone name.
+
+        Note that the name is 100% informational -- there's no requirement that
+        it mean anything in particular. For example, "GMT", "UTC", "-500",
+        "-5:00", "EDT", "US/Eastern", "America/New York" are all valid replies.
+        """
+        name = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "tzname", |>PARAMETER:self<|)
+        _check_tzname(name)
+        return name
+
+    def |>METHOD:dst<|(|>PARAMETER:self<|):
+        """Return 0 if DST is not in effect, or the DST offset (in minutes
+        eastward) if DST is in effect.
+
+        This is purely informational; the DST offset has already been added to
+        the UTC offset returned by utcoffset() if applicable, so there's no
+        need to consult dst() unless you're interested in displaying the DST
+        info.
+        """
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "dst", |>PARAMETER:self<|)
+        offset = _check_utc_offset("dst", offset)
+        if offset is not None:
+            offset = timedelta(minutes=offset)
+        return offset
+
+    # Return an integer (or None) instead of a timedelta (or None).1573
+    def |>METHOD:_dst<|(|>PARAMETER:self<|):
+        offset = _call_tzinfo_method(|>PARAMETER:self<|._tzinfo, "dst", |>PARAMETER:self<|)
+        offset = _check_utc_offset("dst", offset)
+        return offset
+
+    # Comparisons.
+
+    def |>METHOD:__eq__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) == 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            return False
+
+    def |>METHOD:__ne__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) != 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            return True
+
+    def |>METHOD:__le__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) <= 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__lt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) < 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__ge__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) >= 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__gt__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        if isinstance(|>PARAMETER:other<|, datetime):
+            return |>PARAMETER:self<|.__cmp(|>PARAMETER:other<|) > 0
+        elif hasattr(|>PARAMETER:other<|, "timetuple"):
+            return NotImplemented
+        else:
+            _cmperror(|>PARAMETER:self<|, |>PARAMETER:other<|)
+
+    def |>METHOD:__cmp<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        assert isinstance(|>PARAMETER:other<|, datetime)
+        mytz = |>PARAMETER:self<|._tzinfo
+        ottz = |>PARAMETER:other<|._tzinfo
+        myoff = otoff = None
+
+        if mytz is ottz:
+            base_compare = True
+        else:
+            if mytz is not None:
+                myoff = |>PARAMETER:self<|._utcoffset()
+            if ottz is not None:
+                otoff = |>PARAMETER:other<|._utcoffset()
+            base_compare = myoff == otoff
+
+        if base_compare:
+            return cmp((|>PARAMETER:self<|.__year, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day,
+                        |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                        |>PARAMETER:self<|.__microsecond),
+                       (|>PARAMETER:other<|.__year, |>PARAMETER:other<|.__month, |>PARAMETER:other<|.__day,
+                        |>PARAMETER:other<|.__hour, |>PARAMETER:other<|.__minute, |>PARAMETER:other<|.__second,
+                        |>PARAMETER:other<|.__microsecond))
+        if myoff is None or otoff is None:
+            # XXX Buggy in 2.2.2.
+            raise TypeError("cannot compare naive and aware datetimes")
+        # XXX What follows could be done more efficiently...
+        diff = |>PARAMETER:self<| - |>PARAMETER:other<|     # this will take offsets into account
+        if diff.days < 0:
+            return -1
+        return diff and 1 or 0
+
+    def |>METHOD:__add__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        "Add a datetime and a timedelta."
+        if not isinstance(|>PARAMETER:other<|, timedelta):
+            return NotImplemented
+        t = tmxxx(|>PARAMETER:self<|.__year,
+                  |>PARAMETER:self<|.__month,
+                  |>PARAMETER:self<|.__day + |>PARAMETER:other<|.days,
+                  |>PARAMETER:self<|.__hour,
+                  |>PARAMETER:self<|.__minute,
+                  |>PARAMETER:self<|.__second + |>PARAMETER:other<|.seconds,
+                  |>PARAMETER:self<|.__microsecond + |>PARAMETER:other<|.microseconds)
+        |>PARAMETER:self<|._checkOverflow(t.year)
+        result = |>PARAMETER:self<|.__class__(t.year, t.month, t.day,
+                                t.hour, t.minute, t.second,
+                                t.microsecond, tzinfo=|>PARAMETER:self<|._tzinfo)
+        return result
+
+    __radd__ = __add__
+
+    def |>METHOD:__sub__<|(|>PARAMETER:self<|, |>PARAMETER:other<|):
+        "Subtract two datetimes, or a datetime and a timedelta."
+        if not isinstance(|>PARAMETER:other<|, datetime):
+            if isinstance(|>PARAMETER:other<|, timedelta):
+                return |>PARAMETER:self<| + -|>PARAMETER:other<|
+            return NotImplemented
+
+        days1 = |>PARAMETER:self<|.toordinal()
+        days2 = |>PARAMETER:other<|.toordinal()
+        secs1 = |>PARAMETER:self<|.__second + |>PARAMETER:self<|.__minute * 60 + |>PARAMETER:self<|.__hour * 3600
+        secs2 = |>PARAMETER:other<|.__second + |>PARAMETER:other<|.__minute * 60 + |>PARAMETER:other<|.__hour * 3600
+        base = timedelta(days1 - days2,
+                         secs1 - secs2,
+                         |>PARAMETER:self<|.__microsecond - |>PARAMETER:other<|.__microsecond)
+        if |>PARAMETER:self<|._tzinfo is |>PARAMETER:other<|._tzinfo:
+            return base
+        myoff = |>PARAMETER:self<|._utcoffset()
+        otoff = |>PARAMETER:other<|._utcoffset()
+        if myoff == otoff:
+            return base
+        if myoff is None or otoff is None:
+            raise TypeError, "cannot mix naive and timezone-aware time"
+        return base + timedelta(minutes = otoff-myoff)
+
+    def |>METHOD:__hash__<|(|>PARAMETER:self<|):
+        tzoff = |>PARAMETER:self<|._utcoffset()
+        if tzoff is None:
+            return hash(|>PARAMETER:self<|.__getstate()[0])
+        days = _ymd2ord(|>PARAMETER:self<|.year, |>PARAMETER:self<|.month, |>PARAMETER:self<|.day)
+        seconds = |>PARAMETER:self<|.hour * 3600 + (|>PARAMETER:self<|.minute - tzoff) * 60 + |>PARAMETER:self<|.second
+        return hash(timedelta(days, seconds, |>PARAMETER:self<|.microsecond))
+
+    # Pickle support.
+
+    __safe_for_unpickling__ = True      # For Python 2.2
+
+    def |>METHOD:__getstate<|(|>PARAMETER:self<|):
+        yhi, ylo = divmod(|>PARAMETER:self<|.__year, 256)
+        us2, us3 = divmod(|>PARAMETER:self<|.__microsecond, 256)
+        us1, us2 = divmod(us2, 256)
+        basestate = ("%c" * 10) % (yhi, ylo, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day,
+                                   |>PARAMETER:self<|.__hour, |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second,
+                                   us1, us2, us3)
+        if |>PARAMETER:self<|._tzinfo is None:
+            return (basestate,)
+        else:
+            return (basestate, |>PARAMETER:self<|._tzinfo)
+
+    def |>METHOD:__setstate<|(|>PARAMETER:self<|, |>PARAMETER:state<|):
+        assert isinstance(|>PARAMETER:state<|, tuple)
+        assert 1 <= len(|>PARAMETER:state<|) <= 2
+        string = |>PARAMETER:state<|[0]
+        assert len(string) == 10
+        (yhi, ylo, |>PARAMETER:self<|.__month, |>PARAMETER:self<|.__day, |>PARAMETER:self<|.__hour,
+         |>PARAMETER:self<|.__minute, |>PARAMETER:self<|.__second, us1, us2, us3) = map(ord, string)
+        |>PARAMETER:self<|.__year = yhi * 256 + ylo
+        |>PARAMETER:self<|.__microsecond = (((us1 << 8) | us2) << 8) | us3
+        if len(|>PARAMETER:state<|) == 1:
+            |>PARAMETER:self<|._tzinfo = None
+        else:
+            |>PARAMETER:self<|._tzinfo = |>PARAMETER:state<|[1]
+
+    def |>METHOD:__reduce__<|(|>PARAMETER:self<|):
+        return (|>PARAMETER:self<|.__class__, |>PARAMETER:self<|.__getstate())
+
+
+datetime.min = datetime(1, 1, 1)
+datetime.max = datetime(9999, 12, 31, 23, 59, 59, 999999)
+datetime.resolution = timedelta(microseconds=1)
+
+
+def |>METHOD:_isoweek1monday<|(|>PARAMETER:year<|):
+    # Helper to calculate the day number of the Monday starting week 1
+    # XXX This could be done more efficiently
+    THURSDAY = 3
+    firstday = _ymd2ord(|>PARAMETER:year<|, 1, 1)
+    firstweekday = (firstday + 6) % 7 # See weekday() above
+    week1monday = firstday - firstweekday
+    if firstweekday > THURSDAY:
+        week1monday += 7
+    return week1monday
+
+"""
+Some time zone algebra.  For a datetime x, let
+    x.n = x stripped of its timezone -- its naive time.
+    x.o = x.utcoffset(), and assuming that doesn't raise an exception or
+          return None
+    x.d = x.dst(), and assuming that doesn't raise an exception or
+          return None
+    x.s = x's standard offset, x.o - x.d
+
+Now some derived rules, where k is a duration (timedelta).
+
+1. x.o = x.s + x.d
+   This follows from the definition of x.s.
+
+2. If x and y have the same tzinfo member, x.s = y.s.
+   This is actually a requirement, an assumption we need to make about
+   sane tzinfo classes.
+
+3. The naive UTC time corresponding to x is x.n - x.o.
+   This is again a requirement for a sane tzinfo class.
+
+4. (x+k).s = x.s
+   This follows from #2, and that datimetimetz+timedelta preserves tzinfo.
+
+5. (x+k).n = x.n + k
+   Again follows from how arithmetic is defined.
+
+Now we can explain tz.fromutc(x).  Let's assume it's an interesting case
+(meaning that the various tzinfo methods exist, and don't blow up or return
+None when called).
+
+The function wants to return a datetime y with timezone tz, equivalent to x.
+x is already in UTC.
+
+By #3, we want
+
+    y.n - y.o = x.n                             [1]
+
+The algorithm starts by attaching tz to x.n, and calling that y.  So
+x.n = y.n at the start.  Then it wants to add a duration k to y, so that [1]
+becomes true; in effect, we want to solve [2] for k:
+
+   (y+k).n - (y+k).o = x.n                      [2]
+
+By #1, this is the same as
+
+   (y+k).n - ((y+k).s + (y+k).d) = x.n          [3]
+
+By #5, (y+k).n = y.n + k, which equals x.n + k because x.n=y.n at the start.
+Substituting that into [3],
+
+   x.n + k - (y+k).s - (y+k).d = x.n; the x.n terms cancel, leaving
+   k - (y+k).s - (y+k).d = 0; rearranging,
+   k = (y+k).s - (y+k).d; by #4, (y+k).s == y.s, so
+   k = y.s - (y+k).d
+
+On the RHS, (y+k).d can't be computed directly, but y.s can be, and we
+approximate k by ignoring the (y+k).d term at first.  Note that k can't be
+very large, since all offset-returning methods return a duration of magnitude
+less than 24 hours.  For that reason, if y is firmly in std time, (y+k).d must
+be 0, so ignoring it has no consequence then.
+
+In any case, the new value is
+
+    z = y + y.s                                 [4]
+
+It's helpful to step back at look at [4] from a higher level:  it's simply
+mapping from UTC to tz's standard time.
+
+At this point, if
+
+    z.n - z.o = x.n                             [5]
+
+we have an equivalent time, and are almost done.  The insecurity here is
+at the start of daylight time.  Picture US Eastern for concreteness.  The wall
+time jumps from 1:59 to 3:00, and wall hours of the form 2:MM don't make good
+sense then.  The docs ask that an Eastern tzinfo class consider such a time to
+be EDT (because it's "after 2"), which is a redundant spelling of 1:MM EST
+on the day DST starts.  We want to return the 1:MM EST spelling because that's
+the only spelling that makes sense on the local wall clock.
+
+In fact, if [5] holds at this point, we do have the standard-time spelling,
+but that takes a bit of proof.  We first prove a stronger result.  What's the
+difference between the LHS and RHS of [5]?  Let
+
+    diff = x.n - (z.n - z.o)                    [6]
+
+Now
+    z.n =                       by [4]
+    (y + y.s).n =               by #5
+    y.n + y.s =                 since y.n = x.n
+    x.n + y.s =                 since z and y are have the same tzinfo member,
+                                    y.s = z.s by #2
+    x.n + z.s
+
+Plugging that back into [6] gives
+
+    diff =
+    x.n - ((x.n + z.s) - z.o) =     expanding
+    x.n - x.n - z.s + z.o =         cancelling
+    - z.s + z.o =                   by #2
+    z.d
+
+So diff = z.d.
+
+If [5] is true now, diff = 0, so z.d = 0 too, and we have the standard-time
+spelling we wanted in the endcase described above.  We're done.  Contrarily,
+if z.d = 0, then we have a UTC equivalent, and are also done.
+
+If [5] is not true now, diff = z.d != 0, and z.d is the offset we need to
+add to z (in effect, z is in tz's standard time, and we need to shift the
+local clock into tz's daylight time).
+
+Let
+
+    z' = z + z.d = z + diff                     [7]
+
+and we can again ask whether
+
+    z'.n - z'.o = x.n                           [8]
+
+If so, we're done.  If not, the tzinfo class is insane, according to the
+assumptions we've made.  This also requires a bit of proof.  As before, let's
+compute the difference between the LHS and RHS of [8] (and skipping some of
+the justifications for the kinds of substitutions we've done several times
+already):
+
+    diff' = x.n - (z'.n - z'.o) =           replacing z'.n via [7]
+            x.n  - (z.n + diff - z'.o) =    replacing diff via [6]
+            x.n - (z.n + x.n - (z.n - z.o) - z'.o) =
+            x.n - z.n - x.n + z.n - z.o + z'.o =    cancel x.n
+            - z.n + z.n - z.o + z'.o =              cancel z.n
+            - z.o + z'.o =                      #1 twice
+            -z.s - z.d + z'.s + z'.d =          z and z' have same tzinfo
+            z'.d - z.d
+
+So z' is UTC-equivalent to x iff z'.d = z.d at this point.  If they are equal,
+we've found the UTC-equivalent so are done.  In fact, we stop with [7] and
+return z', not bothering to compute z'.d.
+
+How could z.d and z'd differ?  z' = z + z.d [7], so merely moving z' by
+a dst() offset, and starting *from* a time already in DST (we know z.d != 0),
+would have to change the result dst() returns:  we start in DST, and moving
+a little further into it takes us out of DST.
+
+There isn't a sane case where this can happen.  The closest it gets is at
+the end of DST, where there's an hour in UTC with no spelling in a hybrid
+tzinfo class.  In US Eastern, that's 5:MM UTC = 0:MM EST = 1:MM EDT.  During
+that hour, on an Eastern clock 1:MM is taken as being in standard time (6:MM
+UTC) because the docs insist on that, but 0:MM is taken as being in daylight
+time (4:MM UTC).  There is no local time mapping to 5:MM UTC.  The local
+clock jumps from 1:59 back to 1:00 again, and repeats the 1:MM hour in
+standard time.  Since that's what the local clock *does*, we want to map both
+UTC hours 5:MM and 6:MM to 1:MM Eastern.  The result is ambiguous
+in local time, but so it goes -- it's the way the local clock works.
+
+When x = 5:MM UTC is the input to this algorithm, x.o=0, y.o=-5 and y.d=0,
+so z=0:MM.  z.d=60 (minutes) then, so [5] doesn't hold and we keep going.
+z' = z + z.d = 1:MM then, and z'.d=0, and z'.d - z.d = -60 != 0 so [8]
+(correctly) concludes that z' is not UTC-equivalent to x.
+
+Because we know z.d said z was in daylight time (else [5] would have held and
+we would have stopped then), and we know z.d != z'.d (else [8] would have held
+and we we have stopped then), and there are only 2 possible values dst() can
+return in Eastern, it follows that z'.d must be 0 (which it is in the example,
+but the reasoning doesn't depend on the example -- it depends on there being
+two possible dst() outcomes, one zero and the other non-zero).  Therefore
+z' must be in standard time, and is the spelling we want in this case.
+
+Note again that z' is not UTC-equivalent as far as the hybrid tzinfo class is
+concerned (because it takes z' as being in standard time rather than the
+daylight time we intend here), but returning it gives the real-life "local
+clock repeats an hour" behavior when mapping the "unspellable" UTC hour into
+tz.
+
+When the input is 6:MM, z=1:MM and z.d=0, and we stop at once, again with
+the 1:MM standard time spelling we want.
+
+So how can this break?  One of the assumptions must be violated.  Two
+possibilities:
+
+1) [2] effectively says that y.s is invariant across all y belong to a given
+   time zone.  This isn't true if, for political reasons or continental drift,
+   a region decides to change its base offset from UTC.
+
+2) There may be versions of "double daylight" time where the tail end of
+   the analysis gives up a step too early.  I haven't thought about that
+   enough to say.
+
+In any case, it's clear that the default fromutc() is strong enough to handle
+"almost all" time zones:  so long as the standard offset is invariant, it
+doesn't matter if daylight time transition points change from year to year, or
+if daylight time is skipped in some years; it doesn't matter how large or
+small dst() may get within its bounds; and it doesn't even matter if some
+perverse time zone returns a negative dst()).  So a breaking case must be
+pretty bizarre, and a tzinfo subclass can override fromutc() if it is.
+"""
+
+def |>METHOD:_test<|():
+    import test_datetime
+    test_datetime.test_main()
+
+if __name__ == "__main__":
+    _test()

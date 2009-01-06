@@ -3,9 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-	<![CDATA[ <path transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" d="M100,200 C0,150 0,0 100,50 C200,0 200,150 100, 200" stroke="black" stroke-width="2" fill="red"/> ]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.ClosedCurve" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/closed_curve_16.png" />
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/closed_curve_32.png" />
      

@@ -73,6 +73,10 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -91,6 +95,7 @@ public class ImportManager extends java.awt.Panel {
     private List<Boolean> checkedToImport = Collections.emptyList ();
     private List<UpdateElement> toInstall = Collections.emptyList ();
     private List<UpdateElement> toImport = Collections.emptyList ();
+    private JComponent statusLineIcon = null;
     private JButton bImport;
     private JButton bNo;
 
@@ -135,8 +140,8 @@ public class ImportManager extends java.awt.Panel {
     }
 
     public void notifyAvailable () {
-        assert StatusLineImportIcon.icon != null : "StatusLineIcon is not null!";
-        if (StatusLineImportIcon.icon == null) {
+        assert StatusLineImportIcon.statusPanel != null : "StatusLineIcon is not null!";
+        if (StatusLineImportIcon.statusPanel == null) {
             return ;
         }
         remindLater ();
@@ -146,9 +151,51 @@ public class ImportManager extends java.awt.Panel {
         String details = NbBundle.getMessage (ImportManager.class,
                 "ImportNotifier_PluginAvailableForImport_Details", // NOI18N
                 srcCluster);
-        PluginManager.setStatusLineIconVisible (StatusLineImportIcon.icon, createBalloonContent (msg, details), true);
+        if (statusLineIcon == null) {
+            attachRealFlashingIcon (StatusLineImportIcon.statusPanel);
+        }
+        PluginManager.setStatusLineIconVisible (StatusLineImportIcon.statusPanel, createBalloonContent (msg, details), true);
     }
 
+    private void attachRealFlashingIcon (final JPanel p) {
+        ImageIcon img = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false)); // NOI18N
+        final JButton bRemindLaterButton = new JButton ();
+        final JButton bImportButton = new JButton ();
+        final JButton bNoButton = new JButton ();
+        Mnemonics.setLocalizedText (bRemindLaterButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bRemindLater"));
+        Mnemonics.setLocalizedText (bImportButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bImport"));
+        Mnemonics.setLocalizedText (bNoButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bNo"));
+        Runnable onMouseClick = new Runnable () {
+            public void run () {
+                ImportManager ui = ImportManager.getInstance ();
+                ui.attachButtons (bImportButton, bNoButton);
+                DialogDescriptor dd = new DialogDescriptor (
+                        ui,
+                        NbBundle.getMessage (Installer.class, "Installer_DialogTitle"),
+                        true,
+                        new Object[] {bImportButton, bNoButton, bRemindLaterButton},
+                        NotifyDescriptor.OK_OPTION,
+                        DialogDescriptor.BOTTOM_ALIGN,
+                        null,
+                        null);
+                dd.setClosingOptions (new Object[] {bNoButton, bRemindLaterButton});
+                DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+                if (bImportButton.equals (dd.getValue ()) || bNoButton.equals (dd.getValue ())) {
+                    ui.dontRemind ();
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            PluginManager.setStatusLineIconVisible (p, null, false);
+                        }
+                    });
+                } else if (bRemindLaterButton.equals (dd.getValue ())) {
+                    ui.remindLater ();
+                }
+            }
+        };
+        statusLineIcon = PluginManager.createStatusLineIcon (img, onMouseClick);
+        p.removeAll ();
+        p.add (statusLineIcon);
+    }
     private static JComponent createBalloonContent (String msg, String details) {
         JPanel panel = new JPanel (new GridBagLayout ());
         panel.setOpaque (false);

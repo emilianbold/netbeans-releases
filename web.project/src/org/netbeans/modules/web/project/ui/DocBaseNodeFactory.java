@@ -57,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -69,6 +70,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -122,8 +125,19 @@ public final class DocBaseNodeFactory implements NodeFactory {
             helper = project.getUpdateHelper();
             Sources s = project.getLookup().lookup(Sources.class);
             assert s != null;
-            assert s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT).length > 0;
-            webDocRoot = s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT)[0];
+//            assert s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT).length > 0;
+
+            if(s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT).length > 0)
+            {
+                webDocRoot = s.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT)[0];
+            }
+            else
+            {
+                String name = ProjectUtils.getInformation( proj ).getDisplayName();
+
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(DocBaseNodeList.class, "LBL_No_Source_Groups_Found", name), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+            }
         }
         
         public List<String> keys() {

@@ -44,6 +44,7 @@ import org.netbeans.lib.termsupport.LineFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -52,10 +53,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
@@ -73,6 +77,8 @@ import org.netbeans.lib.termsupport.FindBar;
 import org.netbeans.lib.termsupport.FindState;
 import org.netbeans.lib.richexecution.Program;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.termsupport.TermOptions;
+import org.netbeans.lib.termsupport.TermOptionsPanel;
 
 class Terminal extends JFrame implements Runnable {
 
@@ -82,6 +88,10 @@ class Terminal extends JFrame implements Runnable {
     private final FindState findState;
     private final FindBar findBar;
     private PtyProcess ptyProcess;
+
+    private static final Preferences prefs =
+        Preferences.userNodeForPackage(Terminal.class);
+    private static final TermOptions termOptions = TermOptions.getDefault(prefs);
 
     private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";
     private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";
@@ -115,6 +125,8 @@ class Terminal extends JFrame implements Runnable {
         term.setEmulation("dtterm");
         term.setBackground(Color.white);
         term.setHistorySize(4000);
+
+        applyTermOptions(true);
 
         if (processErrors) {
             term.setActionListener(new ActiveTermListener() {
@@ -163,6 +175,39 @@ class Terminal extends JFrame implements Runnable {
         return term;
     }
 
+    private void applyTermOptions(boolean initial) {
+        Font font = term.getFont();
+        if (font != null) {
+            Font newFont = new Font(font.getName(),
+                                    font.getStyle(),
+                                    termOptions.getFontSize());
+            term.setFont(newFont);
+        } else {
+            Font newFont = new Font("monospaced",
+                                    java.awt.Font.PLAIN,
+                                    termOptions.getFontSize());
+            term.setFont(newFont);
+        }
+
+        term.setBackground(termOptions.getBackground());
+        term.setForeground(termOptions.getForeground());
+        term.setHighlightColor(termOptions.getSelectionBackground());
+        term.setHistorySize(termOptions.getHistorySize());
+        term.setTabSize(termOptions.getTabSize());
+
+        term.setClickToType(termOptions.getClickToType());
+        term.setScrollOnInput(termOptions.getScrollOnInput());
+        term.setScrollOnOutput(termOptions.getScrollOnOutput());
+        if (initial)
+            term.setHorizontallyScrollable(!termOptions.getLineWrap());
+
+        // If we change the font from smaller to bigger, the size
+        // calculations go awry and the last few lines are forever hidden.
+        setSize(getPreferredSize());
+        validate();
+
+    }
+
     private final class NewAction extends AbstractAction {
 
         public NewAction() {
@@ -193,6 +238,54 @@ class Terminal extends JFrame implements Runnable {
             if (!isEnabled())
                 return;
             term.clear();
+        }
+    }
+
+    private final class OptionsAction extends AbstractAction {
+
+        public OptionsAction() {
+            super("Options");
+            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_MASK);
+            putValue(ACCELERATOR_KEY, accelerator);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled())
+                return;
+
+            TermOptions clonedTermOptions = termOptions.makeCopy();
+            TermOptionsPanel subPanel = new TermOptionsPanel();
+            subPanel.setTermOptions(clonedTermOptions);
+
+            JOptionPane optionPane = new JOptionPane(subPanel,
+                                                     JOptionPane.PLAIN_MESSAGE,
+                                                     JOptionPane.OK_CANCEL_OPTION
+                                                     );
+                JDialog dialog = optionPane.createDialog(Terminal.this,
+                                                         "NBTerm Options");
+                dialog.setVisible(true);      // WILL BLOCK!
+
+                if (optionPane.getValue() == null)
+                    return;     // was closed at the window level
+
+                switch ((Integer) optionPane.getValue()) {
+                    case JOptionPane.OK_OPTION:
+                        System.out.printf("Dialog returned OK\n");
+                        termOptions.assign(clonedTermOptions);
+                        applyTermOptions(false);
+                        termOptions.storeTo(prefs);
+                        break;
+                    case JOptionPane.CANCEL_OPTION:
+                        System.out.printf("Dialog returned CANCEL\n");
+                        break;
+                    case JOptionPane.CLOSED_OPTION:
+                        System.out.printf("Dialog returned CLOSED\n");
+                        break;
+                    default:
+                        System.out.printf("Dialog returned OTHER: %s\n",
+                                          optionPane.getValue());
+                        break;
+                }
         }
     }
 
@@ -307,6 +400,8 @@ class Terminal extends JFrame implements Runnable {
         addMenuItem(menu, wrapAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
+        addMenuItem(menu, new JSeparator());
+        addMenuItem(menu, optionsAction);
 
         findAction.setEnabled(!findState.isVisible());
 
@@ -332,6 +427,7 @@ class Terminal extends JFrame implements Runnable {
     private final Action findAction = new FindAction();
     private final Action wrapAction = new WrapAction();
     private final Action clearAction = new ClearAction();
+    private final Action optionsAction = new OptionsAction();
 
     public void run() {
         try {

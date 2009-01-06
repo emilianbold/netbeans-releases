@@ -40,8 +40,6 @@
 
 package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.ui.components.tree.CheckTreeNode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,46 +47,74 @@ import java.util.Collections;
 import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.tree.TreeNode;
+import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.openide.util.Lookup;
 
 
 /**
+ * A subclass of {@linkplain CheckTreeNode} used in the {@linkplain org.netbeans.modules.profiler.selector.ui.RootSelectorTree}
  *
  * @author Jaroslav Bachorik
  */
-public class SelectorNode extends CheckTreeNode {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
+abstract public class SelectorNode extends CheckTreeNode {
     private SelectorChildren children;
     private String nodeName;
+    private String displayName;
     private boolean valid = true;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
+    private Lookup lookup = null;
 
     /** Creates a new instance of SelectorNode */
-    public SelectorNode(String displayName, String name, Icon icon, SelectorChildren children) {
-        this(displayName, name, icon, children, null);
+    public SelectorNode(String name, String displayName, Icon icon, SelectorChildren children) {
+        super(displayName, icon);
+        init(displayName, name, children);
     }
 
-    public SelectorNode(String displayName, String name, Icon icon, SelectorChildren children, ContainerNode parent) {
+    public SelectorNode(String name, String displayName, Icon icon, SelectorChildren children, Lookup lookup) {
         super(displayName, icon);
-        this.nodeName = name;
-        this.children = children;
+        init(displayName, name, children);
+        this.lookup = lookup;
+    }
 
-        if (this.children != null) {
-            this.children.setParent(this);
-        }
-
+    public SelectorNode(String name, String displayName, Icon icon, SelectorChildren children, ContainerNode parent) {
+        super(displayName, icon);
+        init(displayName, name, children);
+        
         setParent(parent);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    public SelectorNode(String name, String displayName, Icon icon, SelectorChildren children, ContainerNode parent, Lookup lookup) {
+        this(name, displayName, icon, children, parent);
+        this.lookup = lookup;
+    }
 
-    public TreeNode getChildAt(int childIndex) {
+    private void init(String displayName, String name, SelectorChildren children) {
+        this.nodeName = name;
+        this.children = children;
+        this.displayName = displayName;
+        if (this.children != null) {
+            this.children.setParent(this);
+        }
+    }
+
+    final public Lookup getLookup() {
+        if (lookup == null) {
+            if (getParent() != null) {
+                return getParent().getLookup();
+            } else {
+                return Lookup.EMPTY;
+            }
+        }
+        return lookup;
+    }
+
+    @Override
+    final public TreeNode getChildAt(int childIndex) {
         int size = children.getNodes().size();
 
         return (TreeNode) (((childIndex <= size) && (childIndex >= 0)) ? children.getNodes().get(childIndex) : null);
     }
 
+    @Override
     public int getChildCount() {
         return children.getNodeCount();
     }
@@ -97,19 +123,28 @@ public class SelectorNode extends CheckTreeNode {
         return children.getNodeCount(forceRefresh);
     }
 
-    public int getIndex(TreeNode node) {
+    @Override
+    final public int getIndex(TreeNode node) {
         return children.getNodes().indexOf(node);
     }
 
+    @Override
     public boolean isLeaf() {
         return getChildCount() == 0;
     }
 
-    public Collection<ClientUtils.SourceCodeSelection> getRootMethods(boolean all) {
-        Collection<ClientUtils.SourceCodeSelection> roots = new ArrayList<ClientUtils.SourceCodeSelection>();
+    /**
+     * This method calculates all root-methods presented by this {@linkplain SelectorNode}
+     * @param all A flag to indicate that we are interested in all root-methods regardless
+     *            of the "checked" status.
+     * @return Will return node's root-methods if the node is checked or "all" is true. 
+     *         Otherwise it will return an empty collection
+     */
+    public Collection<SourceCodeSelection> getRootMethods(boolean all) {
+        Collection<SourceCodeSelection> roots = new ArrayList<SourceCodeSelection>();
 
         if (all || isFullyChecked()) {
-            ClientUtils.SourceCodeSelection signature = getSignature();
+            SourceCodeSelection signature = getSignature();
 
             if (signature != null) {
                 roots.add(signature);
@@ -119,15 +154,33 @@ public class SelectorNode extends CheckTreeNode {
         return roots;
     }
 
-    public final Collection<ClientUtils.SourceCodeSelection> getRootMethods() {
+    /**
+     * A shortcut to {@linkplain SelectorNode#getRootMethods(boolean)} with FALSE
+     * @return Will return node's root-methods if the node is checked.
+     *         Otherwise it will return an empty collection
+     */
+    final public Collection<SourceCodeSelection> getRootMethods() {
         return getRootMethods(false);
     }
 
-    public String getNodeName() {
+    /**
+     * Node-name property
+     * @return Returns a node internal name
+     */
+    final public String getNodeName() {
         return nodeName;
     }
 
-    public ContainerNode getParent() {
+    /**
+     * Display name property
+     * @return Returns a human readable node name
+     */
+    final public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    final public ContainerNode getParent() {
         TreeNode parent = super.getParent();
 
         if ((parent == null) || (!(parent instanceof ContainerNode))) {
@@ -137,31 +190,29 @@ public class SelectorNode extends CheckTreeNode {
         return (ContainerNode) parent;
     }
 
-    public Project getProject() {
-        ContainerNode parent = getParent();
+    /**
+     * This method gives access to the assigned VM signature
+     * @return Returns a VM signature representing this node or NULL
+     */
+    abstract public SourceCodeSelection getSignature();
 
-        return (parent != null) ? parent.getProject() : null;
-    }
-
-    public boolean isShowingInheritedMethods() {
-        ContainerNode parent = getParent();
-
-        return (parent != null) ? parent.isShowingInheritedMethods() : false;
-    }
-
-    public ClientUtils.SourceCodeSelection getSignature() {
-        return null;
-    }
-
-    public boolean isValid() {
+    /**
+     * The validity flag
+     * @return Returns TRUE if the node is safe to be displayed, FALSE otherwise
+     */
+    final public boolean isValid() {
         return valid;
     }
 
-    public Enumeration children() {
+    @Override
+    final public Enumeration children() {
         return Collections.enumeration(children.getNodes());
     }
 
-    public void detach() {
+    /**
+     * Will detach the node from its parent
+     */
+    final public void detach() {
         this.parent = null;
     }
 
@@ -187,16 +238,25 @@ public class SelectorNode extends CheckTreeNode {
         return getNodeName().hashCode() + ((getSignature() != null) ? getSignature().hashCode() : 0);
     }
 
+    @Override
     public String toString() {
         return getUserObject().toString();
     }
 
-    protected void setChildren(SelectorChildren children) {
+    /**
+     * Call this method to programatically set the node's children
+     * @param children The {@linkplain SelectorChildren} instance to be used
+     */
+    final protected void setChildren(SelectorChildren children) {
         this.children = children;
         this.children.setParent(this);
     }
 
-    protected void setValid(boolean value) {
+    /**
+     * Sets the validity flag
+     * @param value The validity flag; when set to FALSE the node will not be displayed
+     */
+    final protected void setValid(boolean value) {
         valid = value;
     }
 }

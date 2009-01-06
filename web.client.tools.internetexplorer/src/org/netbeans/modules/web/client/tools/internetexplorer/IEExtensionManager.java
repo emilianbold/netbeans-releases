@@ -138,7 +138,7 @@ public class IEExtensionManager {
         //Query for BHO registry key and then check the path
         if(queryRegistry(BHO_REGISTRY_KEY)) {
             String result = execute(new String[]{REG_EXE, REG_OPERATION, BHO_PROC32_REGISTRY_KEY, REG_OPTION});
-            if(result.contains(bhoFilePath)){
+            if(result != null && result.contains(bhoFilePath)){
                 return true;
             }
         }

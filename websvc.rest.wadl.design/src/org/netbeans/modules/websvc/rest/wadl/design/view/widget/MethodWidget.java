@@ -74,6 +74,7 @@ public class MethodWidget extends WadlComponentWidget {
     private ResponseWidget responseWidget;
     private Widget containerWidget;
     private boolean showServiceUrl;
+    private Method methodRef;
     
     /**
      * Creates a new instance of MethodWidget
@@ -82,7 +83,7 @@ public class MethodWidget extends WadlComponentWidget {
      */
     public MethodWidget(ObjectScene scene, Widget containerWidget, Method method, 
             WadlModel model) throws IOException {
-        this(scene, containerWidget, method, model, false);
+        this(scene, containerWidget, method, model, true);
     }
     
     /**
@@ -95,17 +96,18 @@ public class MethodWidget extends WadlComponentWidget {
         super(scene, method, model);
         this.containerWidget = containerWidget;
         this.showServiceUrl = showServiceUrl;
-//        if(this.getMethod().getHref() != null) {
-//            String href = this.getMethod().getHref();
-//            if(href.startsWith("#"))
-//                href = href.substring(1);
-//            for(Resource child:model.getApplication().getResource()) {
-//                if(child instanceof Method && href.equals(
-//                        ((Method)child).getId())) {
-//                    this.getMethod() = WadlFactory.createMethod((Method) child, model.getApplication(), model);
-//                }
-//            }
-//        }
+
+        String href = method.getHref();
+        if(href != null) {
+            if(href.indexOf("#") != -1)
+                href = href.substring(href.indexOf("#")+1);
+            for(Method child:model.getApplication().getMethod()) {
+                if(href.equals(child.getId())) {
+                    this.methodRef = child;
+                }
+            }
+        }
+
         initUI();
     }
     
@@ -117,8 +119,11 @@ public class MethodWidget extends WadlComponentWidget {
         if (this.showServiceUrl) {
             StringBuffer sb = new StringBuffer();
             findPath(getMethod(), sb);
-            String serviceUrl = sb.toString();
-            return serviceUrl + "?"+getId();
+            if(getMethodRef() != null)
+                sb.append("?"+getMethodRef().getId());
+            else
+                sb.append("?"+getId());
+            return sb.toString();
         } else {
             String name = "";
             if (getMethod().getId() != null) {
@@ -128,8 +133,26 @@ public class MethodWidget extends WadlComponentWidget {
         }
     }
 
+    public String getMethodName() {
+        if(getMethodRef() != null)
+            return getMethodRef().getName();
+        else
+            return getMethod().getName();
+    }
+
+    public void setMethodName(String name) {
+        if(getMethodRef() != null)
+            getMethodRef().setName(name);
+        else
+            getMethod().setName(name);
+    }
+
     public Method getMethod() {
         return (Method) getWadlComponent();
+    }
+
+    public Method getMethodRef() {
+        return this.methodRef;
     }
 
     @Override
@@ -139,13 +162,21 @@ public class MethodWidget extends WadlComponentWidget {
         
         //Display Methods combobox
         JComboBox cb = new JComboBox(MethodType.values(true));
-        cb.setSelectedItem(getMethod().getName().toUpperCase());
+        if (getMethodName() == null) {
+            try {
+                getModel().startTransaction();
+                setMethodName(MethodType.GET.value().toUpperCase());
+            } finally {
+                getModel().endTransaction();
+            }
+        }
+        cb.setSelectedItem(getMethodName());
         cb.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JComboBox tf = (JComboBox) e.getSource();
                 try {
                     getModel().startTransaction();
-                    getMethod().setName((String) tf.getSelectedItem());
+                    setMethodName((String) tf.getSelectedItem());
                 } finally {
                     getModel().endTransaction();
                 }
@@ -159,26 +190,28 @@ public class MethodWidget extends WadlComponentWidget {
         final String serviceBase = serviceUrl.substring(0, skipLen);
         headerLabelWidget = new ImageLabelWidget(getScene(), null, serviceUrl);
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
-        headerLabelWidget.setLabelEditor(new TextFieldInplaceEditor() {
+        if(getMethodRef() == null) {
+            headerLabelWidget.setLabelEditor(new TextFieldInplaceEditor() {
 
-            public boolean isEnabled(Widget widget) {
-                return true;
-            }
-
-            public String getText(Widget widget) {
-                return headerLabelWidget.getLabel().substring(skipLen);
-            }
-
-            public void setText(Widget widget, String text) {
-                headerLabelWidget.setLabel(serviceBase+text);
-                try {
-                    getModel().startTransaction();
-                    getMethod().setId(text);
-                } finally {
-                    getModel().endTransaction();
+                public boolean isEnabled(Widget widget) {
+                    return true;
                 }
-            }
-        });
+
+                public String getText(Widget widget) {
+                    return headerLabelWidget.getLabel().substring(skipLen);
+                }
+
+                public void setText(Widget widget, String text) {
+                    headerLabelWidget.setLabel(serviceBase+text);
+                    try {
+                        getModel().startTransaction();
+                        getMethod().setId(text);
+                    } finally {
+                        getModel().endTransaction();
+                    }
+                }
+            });
+        }
         headerLabelWidget.setToolTipText(getDisplayName());
         getHeaderWidget().addChild(imageLabelWidget);
         getHeaderWidget().addChild(mNameWidget);
@@ -218,8 +251,8 @@ public class MethodWidget extends WadlComponentWidget {
         super.createContent();
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, RADIUS/2));
-        requestWidget = new RequestWidget(getObjectScene(), getMethod().getRequest().iterator().next(), getModel());
-        responseWidget = new ResponseWidget(getObjectScene(), getMethod().getResponse().iterator().next(), getModel());
+        requestWidget = new RequestWidget(getObjectScene(), getMethodRef()!=null?getMethodRef():getMethod(), getModel());
+        responseWidget = new ResponseWidget(getObjectScene(), getMethodRef()!=null?getMethodRef():getMethod(), getModel());
         listWidget.addChild(requestWidget);
         listWidget.addChild(responseWidget);
 
@@ -228,36 +261,6 @@ public class MethodWidget extends WadlComponentWidget {
         tabbedWidget.addTab(responseWidget);
         
         setTabbedView(!viewButton.isSelected());
-    }
-
-    protected void collapseWidget() {
-        if(buttons!=null && buttons.getParentWidget()!=null) {
-            getHeaderWidget().revalidate(true);
-            buttons.removeChild(getExpanderWidget());
-            getHeaderWidget().removeChild(buttons);
-            getHeaderWidget().addChild(getExpanderWidget());
-        }
-        super.collapseWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
-    }
-
-    protected void expandWidget() {
-        if(buttons!=null && buttons.getParentWidget()==null) {
-            getHeaderWidget().revalidate(true);
-            getHeaderWidget().removeChild(getExpanderWidget());
-            buttons.addChild(getExpanderWidget());
-            getHeaderWidget().addChild(buttons);
-        }
-        super.expandWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
     }
 
     public Object hashKey() {

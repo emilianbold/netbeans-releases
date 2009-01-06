@@ -80,7 +80,7 @@ public class EntityBeansNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(final EntityBeansNode parent) {
             final List<SelectorNode> entityBeans = new ArrayList<SelectorNode>();
 
-            Project project = parent.getProject();
+            Project project = parent.getLookup().lookup(Project.class);
 
             final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
@@ -103,7 +103,7 @@ public class EntityBeansNode extends ContainerNode {
                                                      throws Exception {
                                                 TypeElement type = controller.getElements()
                                                                              .getTypeElement(entityBean.getEjbClass());
-                                                beanList.add(new EntityBeanNode(cpInfo, Utils.CLASS_ICON, type, parent));
+                                                beanList.add(new EntityBeanNode(cpInfo, entityBean.getDefaultDisplayName(), Utils.CLASS_ICON, type, parent));
                                             }
                                         }, true);
                                 }

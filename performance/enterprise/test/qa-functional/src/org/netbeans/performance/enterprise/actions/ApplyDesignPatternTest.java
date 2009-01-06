@@ -41,18 +41,14 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
-import junit.framework.Test;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
+
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -69,14 +65,14 @@ public class ApplyDesignPatternTest  extends PerformanceTestCase {
     public ApplyDesignPatternTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public ApplyDesignPatternTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public void testApplyDesignPattern() {
@@ -93,34 +89,23 @@ public class ApplyDesignPatternTest  extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
-        log(":: initialize");
-        System.gc();
-        new EventTool().waitNoEvent(3000);
         processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
-        
         schemaName = "OTA_TravelItinerary.xsd";
         schemaNode = new Node(processNode, schemaName);
-
         String open = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         schemaNode.callPopup().pushMenuNoBlock(open);
-        
         XMLSchemaComponentOperator.findXMLSchemaComponentOperator(schemaName);
-        new EventTool().waitNoEvent(1000);
     }
     
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log(":: open");
-        
         // "Apply Design Pattern...";
         String applyDesignPattern
                 = org.netbeans.jellytools.Bundle.getStringTrimmed(
                 "org.netbeans.modules.xml.schema.abe.wizard.Bundle", "TITLE_SchemaTransform");
         schemaNode.callPopup().pushMenuNoBlock(applyDesignPattern);
-        
         applyDesignPattern = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.xml.schema.abe.wizard.Bundle", "TITLE_SchemaTransform");
         return new WizardOperator(applyDesignPattern);
     }
@@ -128,9 +113,6 @@ public class ApplyDesignPatternTest  extends PerformanceTestCase {
     @Override
     public void close() {
         closeAllModal();
-        System.gc();
-        new EventTool().waitNoEvent(1000);
     }
-    
  
 }

@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 public class CCSourceFileFilter extends SourceFileFilter{
@@ -62,7 +63,7 @@ public class CCSourceFileFilter extends SourceFileFilter{
     
     public String[] getSuffixes() {
         if (suffixList == null) {
-            suffixList = getSuffixList(CCDataLoader.getInstance().getExtensions());
+            suffixList = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues().toArray(new String[]{});
         }
         return suffixList;
     }

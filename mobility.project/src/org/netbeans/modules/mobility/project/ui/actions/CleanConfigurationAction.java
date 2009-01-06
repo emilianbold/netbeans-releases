@@ -41,7 +41,7 @@ package org.netbeans.modules.mobility.project.ui.actions;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 
-public class CleanConfigurationAction extends AntAction {
+public final class CleanConfigurationAction extends AntAction {
 
     private CleanConfigurationAction() {
         super(NbBundle.getMessage(CleanConfigurationAction.class, "Title_CfgSelection_clean-all"), "clean-all"); //NO18N

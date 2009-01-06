@@ -41,17 +41,13 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-
-import junit.framework.Test;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -67,14 +63,14 @@ public class SchemaNavigatorDesignViewTest  extends PerformanceTestCase {
     public SchemaNavigatorDesignViewTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorDesignViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public void testSchemaNavigatorDesignView() {
@@ -91,23 +87,16 @@ public class SchemaNavigatorDesignViewTest  extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
-        log(":: initialize");
-        System.gc();
-        new EventTool().waitNoEvent(3000);
         processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
-        
         schemaNode = new Node(processNode, "OTA_TravelItinerary.xsd");
         tempNode = new Node(processNode, "OTA_TravelItinerary_1.xsd");
-        
         tempNode.select();
     }
     
     public void prepare() {
-        log(":: prepare");
     }
     
     public ComponentOperator open() {
-        log(":: open");
         schemaNode.select();
         return new TopComponentOperator("Navigator"); // NOI18N
     }
@@ -115,8 +104,6 @@ public class SchemaNavigatorDesignViewTest  extends PerformanceTestCase {
     @Override
     public void close() {
         tempNode.select();
-        System.gc();
-        new EventTool().waitNoEvent(1000);
     }
 
 }

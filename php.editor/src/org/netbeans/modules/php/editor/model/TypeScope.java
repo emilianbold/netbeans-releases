@@ -46,6 +46,7 @@ import org.netbeans.modules.gsf.api.NameKind;
  * @author Radek Matous
  */
 public interface TypeScope extends Scope {
+    PhpModifiers getPhpModifiers();
     List<? extends InterfaceScope> getInterfaces();
     List<? extends MethodScope> getAllMethods();
     List<? extends MethodScope> getMethods(final int... modifiers);
@@ -53,6 +54,11 @@ public interface TypeScope extends Scope {
     List<? extends MethodScope> getMethods(final NameKind nameKind, final String queryName, final int... modifiers);
     List<? extends MethodScope> getAllInheritedMethods();
     List<? extends MethodScope> getInheritedMethods(final String queryName);
+    List<? extends ClassConstantElement> getAllConstants();
+    List<? extends ClassConstantElement> getConstants(final String... queryName);
+    List<? extends ClassConstantElement> getConstants(final NameKind nameKind, final String... queryName);
+    List<? extends ClassConstantElement> getInheritedConstants(String constName);
+
     //List<? extends MethodScope> getTopInheritedMethods(final String queryName, final int... modifiers);
 
     //TODO: ...

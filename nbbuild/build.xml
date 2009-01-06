@@ -156,11 +156,21 @@ made subject to such option by the copyright holder.
 
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
-    	<format property="buildnumber" pattern="yyMMdd"/>
+    	<format property="buildstamp" pattern="yyMMdd"/>
     </tstamp>
     <tstamp>
     	<format property="buildday" pattern="d MMM yyyy" locale="en" />
     </tstamp>
+
+    <property environment="hudson"/>
+    <condition property="buildnumber" value="${hudson.JOB_NAME}-${hudson.BUILD_NUMBER}-on-${buildstamp}">
+      <and>
+        <isset property="hudson.JOB_NAME"/>
+        <isset property="hudson.BUILD_NUMBER"/>
+      </and>
+    </condition>
+    <property name="buildnumber" value="${buildstamp}"/>
+    <echo message="${buildnumber}"/>
   </target>
 
   <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
@@ -262,9 +272,15 @@ made subject to such option by the copyright holder.
       <property name="jnlp.dest.dir" location="build/jnlp" />
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
-      <for-each startdir=".." target="jnlp" locations="${config.modules.jnlp}"/>
+      <property name="jnlp.fail.on.error" value="true"/>
+      <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
+      <subant-junit target="jnlp" failonerror="${jnlp.fail.on.error}" report="build/build-all-jnlp.xml">
+          <buildpath>
+              <dirset dir=".." includes="${config.modules.jnlp}"/>
+          </buildpath>
+      </subant-junit>
       <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="nbantext.jar"/>
-      <verifyjnlp>
+      <verifyjnlp report="build/verify-jnlp.xml" failonerror="jnlp.fail.on.error">
           <fileset dir="${jnlp.dest.dir}" includes="*.jnlp"/>
       </verifyjnlp>
   </target>
@@ -1660,19 +1676,23 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
     <property name="build.test.results.dir" location="build/test/results"/>
+    <property name="test.type" value="test"/>
+    <delete dir="${build.test.results.dir}"/>
     <mkdir dir="${build.test.results.dir}"/>
-    <subant target="test" >
+
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist list="${nb.clusters.list}" name="nb.clusters.validation.list">
+       <mapper type="regexp" from="(.*)" to="validation.\1"/>
+    </resolvelist>
+    
+    <subant target="${test.type}" >
         <property name="test.config" value="commit"/>
         <property name="continue.after.failing.tests" value="true"/>
         <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
         <property name="build.test.qa-functional.results.dir" location="${build.test.results.dir}"/>
-        <dirset dir="..">
-            <include name="o.n.core"/>
-            <include name="core.windows"/>
-            <include name="javahelp"/>
-            <include name="ide.kit"/>
-        </dirset>
+        <dirset dir=".." includes="${nb.clusters.validation.list}"/>
     </subant>
+    
     <pathconvert property="failed.tests" pathsep="${line.separator}">
         <fileset dir="${build.test.results.dir}">
             <include name="TEST-*.xml"/>
@@ -1690,6 +1710,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </fileset>
             <report format="frames" todir="${build.test.results.dir}/html"/>
     </junitreport>
+    <echo message="Report generated to ${build.test.results.dir}/html/index.html"/>
     <fail message="There were failed tests:${line.separator}${failed.tests} ${line.separator}${line.separator}Test report html: ${build.test.results.dir}/html/index.html">
         <condition>
             <not>
@@ -1831,9 +1852,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.apisupport.dir}/**/*.jar" />
         </jars>
       </input>
-      <input name="j2ee" >
+      <input name="enterprise" >
         <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.j2ee.dir}/**/*.jar" />
+          <include name="${nb.cluster.enterprise.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="nb" >

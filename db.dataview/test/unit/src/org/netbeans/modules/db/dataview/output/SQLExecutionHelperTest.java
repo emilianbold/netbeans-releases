@@ -95,7 +95,6 @@ public class SQLExecutionHelperTest extends NbTestCase {
     }
 
     public void testLoadDataFrom() throws Exception {
-        System.out.println("loadDataFrom");
         int pageSize = 5;
         ResultSet rs = conn.createStatement().executeQuery(context.getSqlSelect());
         DataView dv = DataView.create(dbconn, context.getSqlSelect(), pageSize);

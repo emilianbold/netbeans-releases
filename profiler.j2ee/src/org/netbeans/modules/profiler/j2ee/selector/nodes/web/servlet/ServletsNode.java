@@ -95,7 +95,7 @@ public class ServletsNode extends ContainerNode {
             final Set<SelectorNode> servlets = new HashSet<SelectorNode>();
 
             try {
-                Project project = parent.getProject();
+                Project project = parent.getLookup().lookup(Project.class);
                 final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
 
                 Collection<FileObject> dds = WebProjectUtils.getDeploymentDescriptorFileObjects(project, true);

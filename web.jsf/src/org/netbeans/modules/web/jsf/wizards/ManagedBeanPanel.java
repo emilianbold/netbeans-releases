@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -86,8 +87,17 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
     }
 
     public void updateManagedBeanName(WizardDescriptor.Panel panel) {
-        panel.storeSettings(wizard);
-        String targetName = wizard.getTargetName();
+        String targetName = null;
+        Component gui = panel.getComponent();
+        try {
+            // XXX JavaTargetChooserPanel should introduce new API to get current contents
+            // of its component JavaTargetChooserPanelGUI (see Issue#154655)
+            Method getTargetName = gui.getClass().getMethod("getTargetName", (Class[]) null); // NOI18N
+            targetName = (String) getTargetName.invoke(gui, (Object[]) null);
+        } catch (Exception ex) {
+            return;
+        }
+
         if ((targetName == null) || targetName.trim().equals("")) {
             return;
         }

@@ -78,7 +78,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         super(testName);
     }
 
-    public void testFindbySignature1() throws Exception {
+    public void testFindBySignature1() throws Exception {
         // Test top level methods
         Node root = getRootNode("testfiles/top_level.rb");
         Node node = AstUtilities.findBySignature(root, "Object#bar(baz)");
@@ -86,21 +86,35 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("bar", ((INameNode)node).getName());
     }
 
-    public void testFindbySignature2() throws Exception {
+    public void testFindBySignature2() throws Exception {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#test_sorting(coll)");
         assertNotNull(node);
         assertEquals("test_sorting", ((INameNode)node).getName());
     }
 
-    public void testFindbySignatureNested() throws Exception {
+    public void testFindMethodBySignatureNested() throws Exception {
         Node root = getRootNode("testfiles/resolv.rb");
         Node node = AstUtilities.findBySignature(root, "Resolv::DNS#lazy_initialize");
         assertNotNull(node);
         assertEquals("lazy_initialize", ((INameNode)node).getName());
     }
 
-    public void testFindbySignatureInstance() throws Exception {
+    public void testFindConstantBySignatureNested() throws Exception {
+        Node root = getRootNode("testfiles/constants.rb");
+        Node node = AstUtilities.findBySignature(root, "Colors::Converter#VERSION");
+        assertNotNull(node);
+        assertEquals("VERSION", ((INameNode)node).getName());
+    }
+
+    public void testFindConstantBySignature() throws Exception {
+        Node root = getRootNode("testfiles/constants.rb");
+        Node node = AstUtilities.findBySignature(root, "Colors#RED");
+        assertNotNull(node);
+        assertEquals("RED", ((INameNode)node).getName());
+    }
+
+    public void testFindBySignatureInstance() throws Exception {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
         assertNotNull(node);
@@ -108,7 +122,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("@dialogs", ((INameNode)node).getName());
     }
 
-    public void testFindbySignatureClassVar() throws Exception {
+    public void testFindBySignatureClassVar() throws Exception {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@@debugging");
         assertNotNull(node);

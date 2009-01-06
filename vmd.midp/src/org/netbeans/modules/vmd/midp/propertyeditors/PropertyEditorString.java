@@ -313,6 +313,11 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return (String) value.getPrimitiveValue();
     }
 
+    @Override
+    public void setAsText(String text) {
+        saveValue(text);
+    }
+
     /*
      * Sets PropertyValue according to given text. This method invoked when user
      * sets new value in the inplace editor.

@@ -141,9 +141,12 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
 
     private Map<String, String> collectManaged(Project prj) {
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
+        Map<String, String> toRet = new HashMap<String, String>();
+        if (project == null) { //#154462
+            return toRet;
+        }
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = project.getMavenProject().getPluginManagement().getPlugins();
-        Map<String, String> toRet = new HashMap<String, String>();
         for (org.apache.maven.model.Plugin plg : plugins) {
             toRet.put(plg.getKey(), plg.getVersion());
         }

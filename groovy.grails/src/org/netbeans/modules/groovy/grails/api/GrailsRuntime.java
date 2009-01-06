@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,6 +68,7 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -279,33 +282,16 @@ public final class GrailsRuntime {
 
         private final File directory;
 
-        private final GrailsEnvironment environment;
+        private final GrailsProjectConfig config;
 
         private final String[] arguments;
 
         private final Properties props;
 
-        /**
-         * Creates the minimal descriptor.
-         *
-         * @param name command name
-         * @param directory working directory
-         * @param env grails environment
-         */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env) {
-            this(name, directory, env, new String[] {}, new Properties());
-        }
+        public static CommandDescriptor forProject(String name, File directory,
+                GrailsProjectConfig config, String[] arguments, Properties props) {
 
-        /**
-         * Creates the descriptor including arguments.
-         *
-         * @param name command name
-         * @param directory working directory
-         * @param env grails environment
-         * @param arguments command arguments
-         */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments) {
-            this(name, directory, env, arguments, new Properties());
+            return new CommandDescriptor(name, directory, config, arguments, props);
         }
 
         /**
@@ -317,12 +303,12 @@ public final class GrailsRuntime {
          * @param arguments command arguments
          * @param props environment properties
          */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments, Properties props) {
+        private CommandDescriptor(String name, File directory, GrailsProjectConfig config, String[] arguments, Properties props) {
             this.name = name;
             this.directory = directory;
-            this.environment = env;
+            this.config = config;
             this.arguments = arguments.clone();
-            this.props = new Properties(props);
+            this.props = props != null ? new Properties(props) : new Properties();
         }
 
         /**
@@ -343,13 +329,8 @@ public final class GrailsRuntime {
             return directory;
         }
 
-        /**
-         * Returns the grails environment.
-         *
-         * @return the grails environment
-         */
-        public GrailsEnvironment getEnvironment() {
-            return environment;
+        public GrailsProjectConfig getProjectConfig() {
+            return config;
         }
 
         /**
@@ -373,6 +354,13 @@ public final class GrailsRuntime {
     }
 
     private static class GrailsCallable implements Callable<Process> {
+
+        // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
+        private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
+
+        private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername"; // NOI18N
+
+        private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
         private final CommandDescriptor descriptor;
 
@@ -399,14 +387,25 @@ public final class GrailsRuntime {
             LOGGER.log(Level.FINEST, "About to run: {0}", descriptor.getName());
 
             Properties props = new Properties(descriptor.getProps());
-            if (descriptor.getEnvironment() != null && descriptor.getEnvironment().isCustom()) {
-                props.setProperty("grails.env", descriptor.getEnvironment().toString()); // NOI18N
+            GrailsEnvironment env = descriptor.getProjectConfig() != null
+                    ? descriptor.getProjectConfig().getEnvironment()
+                    : null;
+
+            if (env != null && env.isCustom()) {
+                props.setProperty("grails.env", env.toString()); // NOI18N
             }
 
+            if (descriptor.getProjectConfig() != null) {
+                String port = descriptor.getProjectConfig().getPort();
+                if (port != null) {
+                    props.setProperty("server.port", port); // NOI18N
+                }
+            }
+            String proxyString = getNetBeansHttpProxy(props);
+
             StringBuilder command = new StringBuilder();
-            command.append(createJvmArguments(props));
-            if (descriptor.getEnvironment() != null && !descriptor.getEnvironment().isCustom()) {
-                command.append(" ").append(descriptor.getEnvironment().toString());
+            if (env != null && !env.isCustom()) {
+                command.append(" ").append(env.toString());
             }
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
@@ -423,22 +422,28 @@ public final class GrailsRuntime {
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
                     grailsExecutable.getAbsolutePath(), command.toString());
 
-
             String javaHome = null;
-            Collection<FileObject> dirs = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders();
+            JavaPlatform javaPlatform;
+            if (descriptor.getProjectConfig() != null) {
+                javaPlatform = descriptor.getProjectConfig().getJavaPlatform();
+            } else {
+                javaPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+            }
+
+            Collection<FileObject> dirs = javaPlatform.getInstallFolders();
             if (dirs.size() == 1) {
                 File file = FileUtil.toFile(dirs.iterator().next());
                 if (file != null) {
                     javaHome = file.getAbsolutePath();
                 }
             }
-            if (javaHome == null) {
-                javaHome = System.getProperty("java.home");
-            }
 
             String[] envp = new String[] {
                 "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N
-                "JAVA_HOME=" + javaHome // NOI18N
+                "JAVA_HOME=" + javaHome, // NOI18N
+                "http_proxy=" + proxyString, // NOI18N
+                "HTTP_PROXY=" + proxyString, // NOI18N
+                "JAVA_OPTS=" + createJvmArguments(props)
             };
 
             // no executable check before java6
@@ -457,6 +462,58 @@ public final class GrailsRuntime {
 
             checkForServer(descriptor, process);
             return process;
+        }
+
+        /**
+         * FIXME: get rid of the whole method as soon as some NB Proxy API is
+         * available.
+         */
+        private static String getNetBeansHttpProxy(Properties props) {
+            String host = System.getProperty("http.proxyHost"); // NOI18N
+            if (host == null) {
+                return null;
+            }
+
+            String portHttp = System.getProperty("http.proxyPort"); // NOI18N
+            int port;
+
+            try {
+                port = Integer.parseInt(portHttp);
+            } catch (NumberFormatException e) {
+                port = 8080;
+            }
+
+            Preferences prefs = NbPreferences.root().node("org/netbeans/core"); // NOI18N
+            boolean useAuth = prefs.getBoolean(USE_PROXY_AUTHENTICATION, false);
+
+            String auth = "";
+            if (useAuth) {
+                String username = prefs.get(PROXY_AUTHENTICATION_USERNAME, "");
+                String password = prefs.get(PROXY_AUTHENTICATION_PASSWORD, "");
+
+                auth = username + ":" + password + '@'; // NOI18N
+
+                if (!props.contains("http.proxyUser")) { // NOI18N
+                    props.setProperty("http.proxyUser", prefs.get(PROXY_AUTHENTICATION_USERNAME, "")); // NOI18N
+                }
+                if (!props.contains("http.proxyPassword")) { // NOI18N
+                    props.setProperty("http.proxyPassword", prefs.get(PROXY_AUTHENTICATION_PASSWORD, "")); // NOI18N
+                }
+            }
+
+            if (!props.contains("http.proxyHost")) { // NOI18N
+                props.setProperty("http.proxyHost", host); // NOI18N
+            }
+            if (!props.contains("http.proxyPort")) { // NOI18N
+                props.setProperty("http.proxyPort", Integer.toString(port)); // NOI18N
+            }
+
+            // Gem requires "http://" in front of the port name if it's not already there
+            if (host.indexOf(':') == -1) {
+                host = "http://" + auth + host; // NOI18N
+            }
+
+            return host + ":" + port; // NOI18N
         }
 
     }

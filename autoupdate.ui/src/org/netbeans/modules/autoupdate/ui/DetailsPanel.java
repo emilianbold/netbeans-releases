@@ -170,6 +170,12 @@ public class DetailsPanel extends JTextPane  {
     javax.swing.JEditorPane getDetails() {
         return this;
     }
+
+    @Override
+    public void setText(String t) {
+        super.setText(t);
+        validate();        
+    }
     
     HeaderPanel getHeader() {
         return header;

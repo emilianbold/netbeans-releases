@@ -94,7 +94,6 @@ public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase 
      */
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeWelcome"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeAllDocuments"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("openProjects"));
@@ -109,22 +108,6 @@ public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase 
 //        err = System.out;
         err = getLog();
         log = getRef();
-    }
-    
-    /**
-     * Close Welcome.
-     */
-    public void closeWelcome(){
-        try {
-            // "Start Page"
-            String startPage = Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
-            TopComponentOperator tComponent = new TopComponentOperator(startPage);
-            new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-            tComponent.close();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
     }
     
     /**

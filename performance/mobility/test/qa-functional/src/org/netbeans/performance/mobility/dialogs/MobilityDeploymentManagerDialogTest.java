@@ -41,14 +41,26 @@
 
 package org.netbeans.performance.mobility.dialogs;
 
-import org.netbeans.jellytools.Bundle;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
 
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class MobilityDeploymentManagerDialogTest extends  MobilityToolsDialogsTest {
+public class MobilityDeploymentManagerDialogTest extends  PerformanceTestCase {
+
+    private NbDialogOperator manager;
+    protected String cmdName, wzdName;
+    private String toolsMenuPath;
+
     /**
      * Creates a new instance of MobilityDeploymentManagerDialog
      * @param testName the name of the test
@@ -56,7 +68,7 @@ public class MobilityDeploymentManagerDialogTest extends  MobilityToolsDialogsTe
     public MobilityDeploymentManagerDialogTest(String testName) {
         super(testName);
         cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
-
+        expectedTime = WINDOW_OPEN;
     }
 
     /**
@@ -66,6 +78,42 @@ public class MobilityDeploymentManagerDialogTest extends  MobilityToolsDialogsTe
      */
     public MobilityDeploymentManagerDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");
+        expectedTime = WINDOW_OPEN;
     }
+    
+        public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(MobilityDeploymentManagerDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testMobilityDeploymentManagerDialog() {
+        doMeasurement();
+    }
+
+    @Override
+    public void initialize() {
+        toolsMenuPath = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools") + "|";
+        if (wzdName == null) wzdName = cmdName;
+    }
+
+    public void prepare() {
+    }
+
+    public ComponentOperator open() {
+        new ActionNoBlock(toolsMenuPath+cmdName,null).performMenu();
+        manager = new NbDialogOperator(wzdName);
+        return null;
+    }
+
+    @Override
+    public void close() {
+        if (manager != null ) {
+            manager.close();
+        }
+    }
+
 }

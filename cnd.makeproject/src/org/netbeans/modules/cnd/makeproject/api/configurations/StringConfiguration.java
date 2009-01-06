@@ -116,10 +116,10 @@ public class StringConfiguration {
     }
 
     @Override
-    public Object clone() {
-	StringConfiguration clone = new StringConfiguration(master, def);
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	return clone;
+    public StringConfiguration clone() {
+        StringConfiguration clone = new StringConfiguration(master, def);
+        clone.setValue(getValue());
+        clone.setModified(getModified());
+        return clone;
     }
 }

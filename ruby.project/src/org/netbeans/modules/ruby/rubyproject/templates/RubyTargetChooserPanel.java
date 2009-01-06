@@ -246,6 +246,25 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
     }
 
+    private String pathToSpecHelper(WizardDescriptor wizard) {
+        FileObject specHelper = project.getProjectDirectory().getFileObject("spec/spec_helper.rb");//NOI18N
+        if (specHelper == null) {
+            return null;
+        }
+        FileObject targetFolder = getTargetFolderFromGUI(wizard);
+        if (!FileUtil.isParentOf(specHelper.getParent(), targetFolder)
+                && !specHelper.getParent().equals(targetFolder)) {
+            return null;
+        }
+        String path = "/"; //NOI18N
+        FileObject parent = targetFolder;
+        while (!parent.equals(specHelper.getParent())) {
+            path += "../"; //NOI18N
+            parent = parent.getParent();
+        }
+        return "File.expand_path(File.dirname(__FILE__) + '" + path + specHelper.getName() + "')"; //NOI18N
+    }
+
     public void storeSettings(WizardDescriptor settings) { 
         Object value = settings.getValue();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value) ||
@@ -262,7 +281,14 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             if (type == Type.SPEC) {
                 wizard.putProperty("classname", gui.getClassName()); // NOI18N
                 String name = RubyUtils.camelToUnderlinedName(gui.getClassName());
+                String pathToRequire = pathToSpecHelper(wizard);
+                if (pathToRequire == null) {
+                    pathToRequire = "'" + name + "'";
+                }
                 wizard.putProperty("classfile", name); // NOI18N
+                // file_to_require includes quoting, classfile not (storing it
+                // for users to use).
+                wizard.putProperty("file_to_require", pathToRequire); // NOI18N
                 wizard.putProperty("classfield", name); // NOI18N
             } else if (type == Type.CLASS || 
                     type == Type.TEST) {

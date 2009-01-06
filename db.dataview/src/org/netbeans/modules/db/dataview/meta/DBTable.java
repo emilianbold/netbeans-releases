@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
  * Represent Database Table
@@ -172,39 +173,51 @@ public final class DBTable extends DBObject<DBModel> {
         return columns;
     }
 
+    public DBColumn getColumn(String name) {
+        Collection<DBColumn> list = columns.values();
+        for (DBColumn dBColumn : list) {
+            if (dBColumn.getName().equalsIgnoreCase(name)) {
+                return dBColumn;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String getDisplayName() {
-        return this.getFullyQualifiedName();
+        return this.getFullyQualifiedName(false);
     }
 
     public List<DBForeignKey> getForeignKeys() {
         return new ArrayList<DBForeignKey>(foreignKeys.values());
     }
 
-    public String getFullyQualifiedName() {
+    public String getFullyQualifiedName(boolean quoteAlways) {
         StringBuilder buf = new StringBuilder(50);
 
-        if (catalog != null && catalog.trim().length() != 0) {
-            buf.append(quoter.quoteIfNeeded(catalog.trim()));
+        if (!DataViewUtils.isNullString(catalog)) {
+            buf.append(quoteAlways ? quoter.quoteAlways(catalog.trim()) : quoter.quoteIfNeeded(catalog.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
 
-        if (schema != null && schema.trim().length() != 0) {
-            buf.append(quoter.quoteIfNeeded(schema.trim()));
+        if (!DataViewUtils.isNullString(schema)) {
+            buf.append(quoteAlways ? quoter.quoteAlways(schema.trim()) : quoter.quoteIfNeeded(schema.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
-        if(quoter!=null)
-        buf.append(quoter.quoteIfNeeded(name.trim()));
-        else
+        if (quoter != null) {
+            buf.append(quoteAlways ? quoter.quoteAlways(name.trim()) : quoter.quoteIfNeeded(name.trim()));
+        } else {
             buf.append(name);
+        }
         return buf.toString();
     }
 
-    public String getQualifiedName() {
-        if(quoter!=null)
-        return quoter.quoteIfNeeded(name.trim());
-        else
+    public String getQualifiedName(boolean quoteAlways) {
+        if (quoter != null) {
+            return quoteAlways ? quoter.quoteAlways(name.trim()) : quoter.quoteIfNeeded(name.trim());
+        } else {
             return name.trim();
+        }
     }
 
     public String getName() {
@@ -243,16 +256,16 @@ public final class DBTable extends DBObject<DBModel> {
         return myHash;
     }
 
-    public void setName(String newName){
+    public void setName(String newName) {
         name = newName;
         setDisplayName(newName);
     }
-    
-    public void setCatalogName(String newName){
+
+    public void setCatalogName(String newName) {
         catalog = newName;
     }
-    
-    public void setSchemaName(String newName){
+
+    public void setSchemaName(String newName) {
         schema = newName;
     }
 
@@ -271,7 +284,7 @@ public final class DBTable extends DBObject<DBModel> {
 
     @Override
     public String toString() {
-        return getFullyQualifiedName();
+        return getFullyQualifiedName(false);
     }
 
     final class ColumnOrderComparator implements Comparator<DBColumn> {

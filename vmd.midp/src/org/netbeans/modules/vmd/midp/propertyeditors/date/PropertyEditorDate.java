@@ -224,6 +224,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
             Date date = getFormatter(inputMode).parse(text);
             super.setValue(MidpTypes.createLongValue(date.getTime()));
         } catch (ParseException ex) {
+            ex.printStackTrace();
         }
     }
 

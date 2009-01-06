@@ -1,0 +1,969 @@
+=============================================
+<file-top>: Module : OffsetRange[22,29392>
+False [bound][private][data][read][node=Name]
+FunctionTestCase [bound][class][def][node=ClassDef]
+None [private][read][UNRESOLVED][node=Name]
+TestCase [bound][class][def][read][node=ClassDef]
+TestLoader [bound][class][def][read][called][node=ClassDef]
+TestProgram [bound][private][class][def][read][node=ClassDef]
+TestResult [bound][class][def][read][called][node=ClassDef]
+TestSuite [bound][class][def][read][node=ClassDef]
+TextTestRunner [bound][class][def][read][called][node=ClassDef]
+True [bound][private][data][read][node=Name]
+_TextTestResult [bound][private][class][def][read][called][node=ClassDef]
+_WritelnDecorator [bound][private][class][def][read][called][node=ClassDef]
+__all__ [bound][data][read][node=Name]
+__author__ [bound][private][data][node=Name]
+__email__ [bound][private][data][node=Name]
+__metaclass__ [bound][private][data][node=Name]
+__name__ [private][read][UNRESOLVED][node=Name]
+__unittest [bound][private][data][node=Name]
+__version__ [bound][private][data][node=Name]
+_makeLoader [bound][private][function][def][read][called][node=FunctionDef]
+_strclass [bound][private][function][def][read][called][node=FunctionDef]
+cmp [private][read][UNRESOLVED][node=Name]
+defaultTestLoader [bound][data][read][node=Name]
+findTestCases [bound][function][def][node=FunctionDef]
+getTestCaseNames [bound][function][def][node=FunctionDef]
+isinstance [bound][private][function][def][read][called][node=FunctionDef]
+main [bound][class][read][alias][called][node=ClassDef]
+makeSuite [bound][function][def][node=FunctionDef]
+os [bound][imported][private][data][read][node=Import]
+sys [bound][imported][private][data][read][node=Import]
+time [bound][imported][private][data][read][node=Import]
+traceback [bound][imported][private][data][read][node=Import]
+type [private][read][UNRESOLVED][node=Name]
+types [bound][imported][private][data][read][node=Import]
+
+    =============================================
+    isinstance: FunctionDef : OffsetRange[2570,3180>
+    __builtin__ [bound][imported][private][data][read][node=Import]
+    cls [bound][private][data][read][node=Name]
+    clsinfo [bound][param][private][data][read][node=Name]
+    list [free][private][read][node=Name]
+    obj [bound][param][private][data][read][node=Name]
+    tuple [free][private][read][node=Name]
+    type [free][private][read][called][node=Name]
+    types [free][private][read][node=Name]
+
+    =============================================
+    _strclass: FunctionDef : OffsetRange[3202,3275>
+    cls [bound][param][private][data][read][node=Name]
+
+    =============================================
+    class TestResult: ClassDef : OffsetRange[3291,6032>
+    __init__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    _count_relevant_tb_levels [bound][private][function][def][node=FunctionDef]
+    _exc_info_to_string [bound][private][function][def][node=FunctionDef]
+    _is_relevant_tb_level [bound][private][function][def][node=FunctionDef]
+    addError [bound][function][def][node=FunctionDef]
+    addFailure [bound][function][def][node=FunctionDef]
+    addSuccess [bound][function][def][node=FunctionDef]
+    startTest [bound][function][def][node=FunctionDef]
+    stop [bound][function][def][node=FunctionDef]
+    stopTest [bound][function][def][node=FunctionDef]
+    wasSuccessful [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    errors : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    failures : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    shouldStop : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    testsRun : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[3797,3927>
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        startTest: FunctionDef : OffsetRange[3928,4057>
+        self [bound][param][data][read][node=Name]
+        test [bound][param][data][unused][node=Name]
+        ------ Attributes ---------------------------------------
+        testsRun : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        stopTest: FunctionDef : OffsetRange[4058,4151>
+        self [bound][param][data][unused][node=Name]
+        test [bound][param][data][unused][node=Name]
+
+        =============================================
+        addError: FunctionDef : OffsetRange[4152,4383>
+        err [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _exc_info_to_string : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        errors : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addFailure: FunctionDef : OffsetRange[4384,4610>
+        err [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _exc_info_to_string : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        failures : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addSuccess: FunctionDef : OffsetRange[4611,4712>
+        self [bound][param][data][unused][node=Name]
+        test [bound][param][data][unused][node=Name]
+
+        =============================================
+        wasSuccessful: FunctionDef : OffsetRange[4713,4858>
+        len [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        errors : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        failures : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        stop: FunctionDef : OffsetRange[4859,4963>
+        True [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+
+        =============================================
+        _exc_info_to_string: FunctionDef : OffsetRange[4964,5546>
+        err [bound][param][data][read][node=Name]
+        exctype [bound][data][read][node=Name]
+        length [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tb [bound][data][read][node=Name]
+        test [bound][param][data][read][node=Name]
+        traceback [free][read][node=Name]
+        value [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _count_relevant_tb_levels : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        _is_relevant_tb_level : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _is_relevant_tb_level: FunctionDef : OffsetRange[5547,5647>
+        self [bound][param][data][unused][node=Name]
+        tb [bound][param][data][read][node=Name]
+
+        =============================================
+        _count_relevant_tb_levels: FunctionDef : OffsetRange[5648,5843>
+        length [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tb [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _is_relevant_tb_level : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[5844,6032>
+        _strclass [free][read][called][node=Name]
+        len [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        errors : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        failures : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testsRun : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class TestCase: ClassDef : OffsetRange[6032,13849>
+    AssertionError [free][read][node=Name]
+    None [free][read][node=Name]
+    __call__ [bound][function][def][node=FunctionDef]
+    __init__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __str__ [bound][function][def][node=FunctionDef]
+    _exc_info [bound][private][function][def][node=FunctionDef]
+    assertAlmostEqual [bound][function][alias][node=FunctionDef]
+    assertAlmostEquals [bound][function][alias][node=FunctionDef]
+    assertEqual [bound][function][alias][node=FunctionDef]
+    assertEquals [bound][function][alias][node=FunctionDef]
+    assertFalse [bound][function][alias][node=FunctionDef]
+    assertNotAlmostEqual [bound][function][alias][node=FunctionDef]
+    assertNotAlmostEquals [bound][function][alias][node=FunctionDef]
+    assertNotEqual [bound][function][alias][node=FunctionDef]
+    assertNotEquals [bound][function][alias][node=FunctionDef]
+    assertRaises [bound][function][alias][node=FunctionDef]
+    assertTrue [bound][function][alias][node=FunctionDef]
+    assert_ [bound][function][alias][node=FunctionDef]
+    countTestCases [bound][function][def][node=FunctionDef]
+    debug [bound][function][def][node=FunctionDef]
+    defaultTestResult [bound][function][def][node=FunctionDef]
+    fail [bound][function][def][node=FunctionDef]
+    failIf [bound][function][def][read][node=FunctionDef]
+    failIfAlmostEqual [bound][function][def][read][node=FunctionDef]
+    failIfEqual [bound][function][def][read][node=FunctionDef]
+    failUnless [bound][function][def][read][node=FunctionDef]
+    failUnlessAlmostEqual [bound][function][def][read][node=FunctionDef]
+    failUnlessEqual [bound][function][def][read][node=FunctionDef]
+    failUnlessRaises [bound][function][def][read][node=FunctionDef]
+    failureException [bound][data][node=Name]
+    id [bound][function][def][node=FunctionDef]
+    run [bound][function][def][node=FunctionDef]
+    setUp [bound][function][def][node=FunctionDef]
+    shortDescription [bound][function][def][node=FunctionDef]
+    tearDown [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    _testMethodDoc : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    _testMethodName : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[7252,7817>
+        AttributeError [free][read][node=Name]
+        ValueError [free][read][node=Name]
+        getattr [free][read][called][node=Name]
+        methodName [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        testMethod [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        setUp: FunctionDef : OffsetRange[7818,7928>
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        tearDown: FunctionDef : OffsetRange[7929,8042>
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        countTestCases: FunctionDef : OffsetRange[8043,8090>
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        defaultTestResult: FunctionDef : OffsetRange[8091,8152>
+        TestResult [free][read][called][node=Name]
+        self [bound][param][data][unused][node=Name]
+
+        =============================================
+        shortDescription: FunctionDef : OffsetRange[8153,8521>
+        None [free][read][node=Name]
+        doc [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _testMethodDoc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        id: FunctionDef : OffsetRange[8522,8615>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        _testMethodName : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __str__: FunctionDef : OffsetRange[8616,8716>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        _testMethodName : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[8717,8846>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        _testMethodName : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        run: FunctionDef : OffsetRange[8847,9885>
+        False [free][read][node=Name]
+        KeyboardInterrupt [free][read][node=Name]
+        None [free][read][node=Name]
+        True [free][read][node=Name]
+        getattr [free][read][called][node=Name]
+        ok [bound][data][read][node=Name]
+        result [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        testMethod [bound][data][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _exc_info : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        _testMethodName : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        defaultTestResult : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        setUp : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        tearDown : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __call__: FunctionDef : OffsetRange[9886,9964>
+        args [bound][param][data][read][node=arguments]
+        kwds [bound][param][data][read][node=arguments]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        run : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        debug: FunctionDef : OffsetRange[9965,10146>
+        getattr [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _testMethodName : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        setUp : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        tearDown : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        _exc_info: FunctionDef : OffsetRange[10147,10555>
+        exctype [bound][data][read][node=Name]
+        excvalue [bound][data][read][node=Name]
+        self [bound][param][data][unused][node=Name]
+        sys [free][read][node=Name]
+        tb [bound][data][read][node=Name]
+
+        =============================================
+        fail: FunctionDef : OffsetRange[10556,10683>
+        msg [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failIf: FunctionDef : OffsetRange[10684,10823>
+        expr [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failUnless: FunctionDef : OffsetRange[10824,10979>
+        expr [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failUnlessRaises: FunctionDef : OffsetRange[10980,11722>
+        args [bound][param][data][read][node=arguments]
+        callableObj [bound][param][data][read][called][node=Name]
+        excClass [bound][param][data][read][node=Name]
+        excName [bound][data][read][node=Name]
+        hasattr [free][read][called][node=Name]
+        kwargs [bound][param][data][read][node=arguments]
+        self [bound][param][data][read][node=Name]
+        str [free][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failUnlessEqual: FunctionDef : OffsetRange[11723,12016>
+        first [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failIfEqual: FunctionDef : OffsetRange[12017,12300>
+        first [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failUnlessAlmostEqual: FunctionDef : OffsetRange[12301,12888>
+        first [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        places [bound][param][data][read][node=Name]
+        round [free][read][called][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        failIfAlmostEqual: FunctionDef : OffsetRange[12889,13508>
+        first [bound][param][data][read][node=Name]
+        msg [bound][param][data][read][node=Name]
+        places [bound][param][data][read][node=Name]
+        round [free][read][called][node=Name]
+        second [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        failureException : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class TestSuite: ClassDef : OffsetRange[13849,15757>
+    __call__ [bound][function][def][node=FunctionDef]
+    __init__ [bound][function][def][node=FunctionDef]
+    __iter__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][read][node=FunctionDef]
+    __str__ [bound][function][alias][node=FunctionDef]
+    addTest [bound][function][def][node=FunctionDef]
+    addTests [bound][function][def][node=FunctionDef]
+    countTestCases [bound][function][def][node=FunctionDef]
+    debug [bound][function][def][node=FunctionDef]
+    run [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    _tests : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[14316,14404>
+        self [bound][param][data][read][node=Name]
+        tests [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        addTests : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[14405,14503>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __iter__: FunctionDef : OffsetRange[14528,14585>
+        iter [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        countTestCases: FunctionDef : OffsetRange[14586,14731>
+        cases [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addTest: FunctionDef : OffsetRange[14732,15166>
+        TestCase [free][read][node=Name]
+        TestSuite [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        callable [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        issubclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][param][data][read][node=Name]
+        type [free][read][node=Name]
+        types [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addTests: FunctionDef : OffsetRange[15167,15378>
+        TypeError [free][read][called][node=Name]
+        basestring [free][read][node=Name]
+        isinstance [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][data][read][node=Name]
+        tests [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        addTest : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        run: FunctionDef : OffsetRange[15379,15542>
+        result [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][data][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __call__: FunctionDef : OffsetRange[15543,15621>
+        args [bound][param][data][read][node=arguments]
+        kwds [bound][param][data][read][node=arguments]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        run : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        debug: FunctionDef : OffsetRange[15622,15757>
+        self [bound][param][data][read][node=Name]
+        test [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _tests : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class FunctionTestCase: ClassDef : OffsetRange[15757,17312>
+    None [free][read][node=Name]
+    __init__ [bound][function][def][node=FunctionDef]
+    __repr__ [bound][function][def][node=FunctionDef]
+    __str__ [bound][function][def][node=FunctionDef]
+    id [bound][function][def][node=FunctionDef]
+    runTest [bound][function][def][node=FunctionDef]
+    setUp [bound][function][def][node=FunctionDef]
+    shortDescription [bound][function][def][node=FunctionDef]
+    tearDown [bound][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    __description : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __setUpFunc : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __tearDownFunc : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    __testFunc : SymInfo[155651 0 0][bound][func-global][private][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[16134,16410>
+        TestCase [free][read][node=Name]
+        description [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        setUp [bound][param][data][read][node=Name]
+        tearDown [bound][param][data][read][node=Name]
+        testFunc [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __init__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        setUp: FunctionDef : OffsetRange[16411,16504>
+        None [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __setUpFunc : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        tearDown: FunctionDef : OffsetRange[16505,16607>
+        None [free][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __tearDownFunc : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        runTest: FunctionDef : OffsetRange[16608,16657>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __testFunc : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        id: FunctionDef : OffsetRange[16658,16716>
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __testFunc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __str__: FunctionDef : OffsetRange[16717,16821>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __testFunc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        __repr__: FunctionDef : OffsetRange[16822,16927>
+        _strclass [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __class__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __testFunc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        shortDescription: FunctionDef : OffsetRange[16928,17312>
+        None [free][read][node=Name]
+        doc [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __description : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+        __testFunc : SymInfo[16514 0 0][func-global][private][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class TestLoader: ClassDef : OffsetRange[17312,21193>
+    None [free][read][node=Name]
+    TestSuite [free][read][node=Name]
+    cmp [free][read][node=Name]
+    getTestCaseNames [bound][function][def][node=FunctionDef]
+    loadTestsFromModule [bound][function][def][node=FunctionDef]
+    loadTestsFromName [bound][function][def][node=FunctionDef]
+    loadTestsFromNames [bound][function][def][node=FunctionDef]
+    loadTestsFromTestCase [bound][function][def][node=FunctionDef]
+    sortTestMethodsUsing [bound][data][node=Name]
+    suiteClass [bound][data][node=Name]
+    testMethodPrefix [bound][data][node=Name]
+
+        =============================================
+        loadTestsFromTestCase: FunctionDef : OffsetRange[17553,18085>
+        TestSuite [free][read][node=Name]
+        TypeError [free][read][called][node=Name]
+        hasattr [free][read][called][node=Name]
+        issubclass [free][read][called][node=Name]
+        map [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        testCaseClass [bound][param][data][read][node=Name]
+        testCaseNames [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        getTestCaseNames : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        suiteClass : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        loadTestsFromModule: FunctionDef : OffsetRange[18086,18504>
+        TestCase [free][read][node=Name]
+        dir [free][read][called][node=Name]
+        getattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        issubclass [free][read][called][node=Name]
+        module [bound][param][data][read][node=Name]
+        name [bound][data][read][node=Name]
+        obj [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        tests [bound][data][read][node=Name]
+        type [free][read][node=Name]
+        types [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        loadTestsFromTestCase : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        suiteClass : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        loadTestsFromName: FunctionDef : OffsetRange[18505,20125>
+        ImportError [free][read][node=Name]
+        None [free][read][node=Name]
+        TestCase [free][read][node=Name]
+        TestSuite [free][read][node=Name]
+        ValueError [free][read][node=Name]
+        __import__ [free][read][called][node=Name]
+        callable [free][read][called][node=Name]
+        getattr [free][read][called][node=Name]
+        isinstance [free][read][called][node=Name]
+        issubclass [free][read][called][node=Name]
+        module [bound][param][data][read][node=Name]
+        name [bound][param][data][read][node=Name]
+        obj [bound][data][read][called][node=Name]
+        parent [bound][data][read][called][node=Name]
+        part [bound][data][read][node=Name]
+        parts [bound][data][read][node=Name]
+        parts_copy [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        test [bound][data][read][node=Name]
+        type [free][read][called][node=Name]
+        types [free][read][node=Name]
+        ------ Attributes ---------------------------------------
+        loadTestsFromModule : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        loadTestsFromTestCase : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        loadTestsFromNames: FunctionDef : OffsetRange[20126,20438>
+        _[565_18] [bound][private][data][unused][node=ListComp]
+        module [bound][param][data][read][node=Name]
+        name [bound][data][read][node=Name]
+        names [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        suites [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        loadTestsFromName : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        suiteClass : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        getTestCaseNames: FunctionDef : OffsetRange[20439,21193>
+        baseclass [bound][data][read][node=Name]
+        callable [free][node=null]
+        dir [free][read][called][node=Name]
+        filter [free][read][called][node=Name]
+        getattr [free][node=null]
+        isTestMethod [bound][function][def][read][node=FunctionDef]
+        self [bound][param][data][read][node=Name]
+        testCaseClass [bound][param][data][read][node=Name]
+        testFnName [bound][data][read][node=Name]
+        testFnNames [bound][data][read][node=Name]
+        ---------------------------------------------
+        inner_free: {callable=PRESENT, getattr=PRESENT}
+        ------ Attributes ---------------------------------------
+        getTestCaseNames : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        sortTestMethodsUsing : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testMethodPrefix : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+            =============================================
+            isTestMethod: FunctionDef : OffsetRange[20581,20769>
+            attrname [bound][param][data][read][node=Name]
+            callable [free][read][called][node=Name]
+            getattr [free][read][called][node=Name]
+            prefix [bound][param][data][read][node=Name]
+            testCaseClass [bound][param][data][read][node=Name]
+
+    =============================================
+    _makeLoader: FunctionDef : OffsetRange[21462,21691>
+    TestLoader [free][private][read][called][node=Name]
+    loader [bound][private][data][read][node=Name]
+    prefix [bound][param][private][data][read][node=Name]
+    sortUsing [bound][param][private][data][read][node=Name]
+    suiteClass [bound][param][private][data][read][node=Name]
+
+    =============================================
+    getTestCaseNames: FunctionDef : OffsetRange[21691,21826>
+    _makeLoader [free][read][called][node=Name]
+    prefix [bound][param][data][read][node=Name]
+    sortUsing [bound][param][data][read][node=Name]
+    testCaseClass [bound][param][data][read][node=Name]
+
+    =============================================
+    makeSuite: FunctionDef : OffsetRange[21826,22000>
+    _makeLoader [free][read][called][node=Name]
+    prefix [bound][param][data][read][node=Name]
+    sortUsing [bound][param][data][read][node=Name]
+    suiteClass [bound][param][data][read][node=Name]
+    testCaseClass [bound][param][data][read][node=Name]
+
+    =============================================
+    findTestCases: FunctionDef : OffsetRange[22000,22332>
+    _makeLoader [free][read][called][node=Name]
+    module [bound][param][data][read][node=Name]
+    prefix [bound][param][data][read][node=Name]
+    sortUsing [bound][param][data][read][node=Name]
+    suiteClass [bound][param][data][read][node=Name]
+
+    =============================================
+    class _WritelnDecorator: ClassDef : OffsetRange[22332,22708>
+    None [free][private][read][node=Name]
+    __getattr__ [bound][private][function][def][node=FunctionDef]
+    __init__ [bound][private][function][def][node=FunctionDef]
+    writeln [bound][private][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    stream : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[22436,22496>
+        self [bound][param][private][data][read][node=Name]
+        stream [bound][param][private][data][read][node=Name]
+
+        =============================================
+        __getattr__: FunctionDef : OffsetRange[22497,22571>
+        attr [bound][param][private][data][read][node=Name]
+        getattr [free][private][read][called][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        writeln: FunctionDef : OffsetRange[22572,22708>
+        arg [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        write : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class _TextTestResult: ClassDef : OffsetRange[22708,24622>
+    __init__ [bound][private][function][def][node=FunctionDef]
+    addError [bound][private][function][def][node=FunctionDef]
+    addFailure [bound][private][function][def][node=FunctionDef]
+    addSuccess [bound][private][function][def][node=FunctionDef]
+    getDescription [bound][private][function][def][node=FunctionDef]
+    printErrorList [bound][private][function][def][node=FunctionDef]
+    printErrors [bound][private][function][def][node=FunctionDef]
+    separator1 [bound][private][data][node=Name]
+    separator2 [bound][private][data][node=Name]
+    startTest [bound][private][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    descriptions : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    dots : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    showAll : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    stream : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[22915,23148>
+        TestResult [free][private][read][node=Name]
+        descriptions [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        stream [bound][param][private][data][read][node=Name]
+        verbosity [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        __init__ : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        getDescription: FunctionDef : OffsetRange[23149,23314>
+        self [bound][param][private][data][read][node=Name]
+        str [free][private][read][called][node=Name]
+        test [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        descriptions : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        startTest: FunctionDef : OffsetRange[23315,23508>
+        TestResult [free][private][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        test [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        getDescription : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        showAll : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        startTest : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addSuccess: FunctionDef : OffsetRange[23509,23705>
+        TestResult [free][private][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        test [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        addSuccess : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        dots : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        showAll : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addError: FunctionDef : OffsetRange[23706,23911>
+        TestResult [free][private][read][node=Name]
+        err [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        test [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        addError : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        dots : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        showAll : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        addFailure: FunctionDef : OffsetRange[23912,24120>
+        TestResult [free][private][read][node=Name]
+        err [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        test [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        addFailure : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        dots : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        showAll : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        printErrors: FunctionDef : OffsetRange[24121,24321>
+        self [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        dots : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        errors : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        failures : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        printErrorList : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        showAll : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        printErrorList: FunctionDef : OffsetRange[24322,24622>
+        err [bound][private][data][read][node=Name]
+        errors [bound][param][private][data][read][node=Name]
+        flavour [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        test [bound][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        getDescription : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        separator1 : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        separator2 : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class TextTestRunner: ClassDef : OffsetRange[24622,26349>
+    __init__ [bound][function][def][node=FunctionDef]
+    _makeResult [bound][private][function][def][node=FunctionDef]
+    run [bound][function][def][node=FunctionDef]
+    sys [free][read][node=Name]
+    ------ Attributes ---------------------------------------
+    descriptions : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    stream : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    verbosity : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[24860,25056>
+        _WritelnDecorator [free][read][called][node=Name]
+        descriptions [bound][param][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        stream [bound][param][data][read][node=Name]
+        verbosity [bound][param][data][read][node=Name]
+
+        =============================================
+        _makeResult: FunctionDef : OffsetRange[25057,25163>
+        _TextTestResult [free][read][called][node=Name]
+        self [bound][param][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        descriptions : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        verbosity : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        run: FunctionDef : OffsetRange[25164,26349>
+        errored [bound][data][read][node=Name]
+        failed [bound][data][read][node=Name]
+        len [free][read][node=Name]
+        map [free][read][called][node=Name]
+        result [bound][data][read][node=Name]
+        run [bound][data][read][node=Name]
+        self [bound][param][data][read][node=Name]
+        startTime [bound][data][read][node=Name]
+        stopTime [bound][data][read][node=Name]
+        test [bound][param][data][read][called][node=Name]
+        time [free][read][node=Name]
+        timeTaken [bound][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        _makeResult : SymInfo[20866 0 0][func-global][private][function][read][called][UNRESOLVED][node=Attribute]
+        stream : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+    =============================================
+    class TestProgram: ClassDef : OffsetRange[26349,29118>
+    None [free][private][read][node=Name]
+    USAGE [bound][private][data][node=Name]
+    __init__ [bound][private][function][def][node=FunctionDef]
+    createTests [bound][private][function][def][node=FunctionDef]
+    defaultTestLoader [free][private][read][node=Name]
+    parseArgs [bound][private][function][def][node=FunctionDef]
+    runTests [bound][private][function][def][node=FunctionDef]
+    usageExit [bound][private][function][def][node=FunctionDef]
+    ------ Attributes ---------------------------------------
+    defaultTest : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    module : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    progName : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    test : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    testLoader : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    testNames : SymInfo[8195 0 0][bound][func-global][data][member][generator][unused][node=Attribute]
+    testRunner : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+    verbosity : SymInfo[139267 0 0][bound][func-global][data][member][generator][bound-in-constructor][unused][node=Attribute]
+
+        =============================================
+        __init__: FunctionDef : OffsetRange[27056,27721>
+        None [free][private][read][node=Name]
+        __import__ [free][private][read][called][node=Name]
+        argv [bound][param][private][data][read][node=Name]
+        defaultTest [bound][param][private][data][read][node=Name]
+        getattr [free][private][read][called][node=Name]
+        module [bound][param][private][data][read][node=Name]
+        os [free][private][read][node=Name]
+        part [bound][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        sys [free][private][read][node=Name]
+        testLoader [bound][param][private][data][read][node=Name]
+        testRunner [bound][param][private][data][read][node=Name]
+        type [free][private][read][called][node=Name]
+        ------ Attributes ---------------------------------------
+        module : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        parseArgs : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        runTests : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        usageExit: FunctionDef : OffsetRange[27722,27844>
+        msg [bound][param][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        sys [free][private][read][node=Name]
+        ------ Attributes ---------------------------------------
+        USAGE : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        __dict__ : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        parseArgs: FunctionDef : OffsetRange[27845,28729>
+        None [free][private][read][node=Name]
+        args [bound][private][data][read][node=Name]
+        argv [bound][param][private][data][read][node=Name]
+        getopt [bound][imported][private][data][read][node=Import]
+        len [free][private][read][called][node=Name]
+        msg [bound][private][data][read][node=Name]
+        opt [bound][private][data][read][node=Name]
+        options [bound][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        value [bound][private][data][unused][node=Name]
+        ------ Attributes ---------------------------------------
+        createTests : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+        defaultTest : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        module : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testLoader : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        usageExit : SymInfo[4482 0 0][func-global][function][read][called][UNRESOLVED][node=Attribute]
+
+        =============================================
+        createTests: FunctionDef : OffsetRange[28730,28896>
+        self [bound][param][private][data][read][node=Name]
+        ------ Attributes ---------------------------------------
+        module : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testLoader : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testNames : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+
+        =============================================
+        runTests: FunctionDef : OffsetRange[28897,29118>
+        None [free][private][read][node=Name]
+        TextTestRunner [free][private][read][called][node=Name]
+        result [bound][private][data][read][node=Name]
+        self [bound][param][private][data][read][node=Name]
+        sys [free][private][read][node=Name]
+        ------ Attributes ---------------------------------------
+        test : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        testRunner : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+        verbosity : SymInfo[130 0 0][func-global][read][UNRESOLVED][node=Attribute]
+

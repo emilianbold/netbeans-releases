@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
             </xml-rule>
         </resolver>
     </file>
-    <!--file>
+    <file>
         <ext name="xml"/>
         <resolver mime="text/x-maven-settings+xml">
             <xml-rule>
@@ -73,6 +73,6 @@ made subject to such option by the copyright holder.
                 </element>
             </xml-rule>
         </resolver>
-    </file-->
+    </file>
     
 </MIME-resolver>

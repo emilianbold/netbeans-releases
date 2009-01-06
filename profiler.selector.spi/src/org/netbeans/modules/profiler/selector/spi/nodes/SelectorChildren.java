@@ -45,12 +45,10 @@ import java.util.List;
 
 
 /**
- *
+ * Support for lazily loaded tree node children
  * @author Jaroslav Bachorik
  */
 public abstract class SelectorChildren<T extends SelectorNode> {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
     public static final SelectorChildren<SelectorNode> LEAF = new SelectorChildren() {
         private final List<SelectorNode> LEAFLIST = new ArrayList<SelectorNode>();
 
@@ -60,27 +58,36 @@ public abstract class SelectorChildren<T extends SelectorNode> {
     };
 
 
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
     private List<?extends SelectorNode> children;
     private T nodeParent;
 
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of SelectorChildren */
+    /** Creates a new instance of SelectorChildren with no parent*/
     public SelectorChildren() {
     }
 
+    /**
+     * Creates a new instance of {@linkplain SelectorChildren} with the given parent
+     * @param parent The parent to attach the children to
+     */
     public SelectorChildren(T parent) {
         nodeParent = parent;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
+    /**
+     * Retrieves the number of child nodes
+     * @return Returns the actual number of child nodes if they have been
+     *         already calculated; -1 otherwise
+     */
     public int getNodeCount() {
         return getNodeCount(false);
     }
 
+    /**
+     * Retrieves the number of child nodes
+     * @param forceRefresh A flag indicating whether to force child nodes calculation
+     * @return Returns the actual number of child nodes if they have been
+     *         already calculated; -1 otherwise
+     */
     public int getNodeCount(boolean forceRefresh) {
         if (forceRefresh) {
             getNodes();
@@ -93,28 +100,38 @@ public abstract class SelectorChildren<T extends SelectorNode> {
         return children.size();
     }
 
+    /**
+     * Calculates the child nodes - can take a while
+     * @return Returns the list of child nodes
+     */
     public List<?extends SelectorNode> getNodes() {
         if (children == null) {
-            //      ProgressHandle ph = IDEUtils.indeterminateProgress(NbBundle.getMessage(SelectorChildren.class, "SelectorChildren_ResolvingChildrenMessage", nodeParent != null ? nodeParent.toString() : ""), 100); // NOI18N
-
-            //      try {
             children = prepareChildren(nodeParent);
-
-            //      } finally {
-            //        ph.finish();
-            //      }
         }
 
         return children;
     }
 
+    /**
+     * Will attach the children to the given parent
+     * @param parent The parent to attach the children to
+     */
     public void setParent(T parent) {
         nodeParent = parent;
     }
 
+    /**
+     * Cleans up the calculated child nodes -
+     * it should be used to force reloading of modified children
+     */
     public void reset() {
         children = null;
     }
 
+    /**
+     * This method is called when the child nodes are to be calculated
+     * @param parent The parent node
+     * @return Returns the list of child nodes
+     */
     protected abstract List<?extends SelectorNode> prepareChildren(T parent);
 }

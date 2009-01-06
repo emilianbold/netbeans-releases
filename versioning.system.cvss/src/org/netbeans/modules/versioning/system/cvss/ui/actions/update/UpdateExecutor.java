@@ -200,12 +200,15 @@ public class UpdateExecutor extends ExecutorSupport {
         
         cvs.setParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING, null);
         if (hasConflict) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"), 
-                    NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-        
+             SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"),
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                }
+             });
+        }        
         for (Iterator i = filesystems.iterator(); i.hasNext();) {
             FileSystem fileSystem = (FileSystem) i.next();
             try {

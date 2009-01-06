@@ -105,17 +105,7 @@ public class ApplicationWidget extends WadlComponentWidget {
         String typeOfOperation ="";
         Image image = ImageUtilities.loadImage(IMAGE_NOTIFICATION);
         headerLabelWidget = new ImageLabelWidget(getScene(), image, NbBundle.getMessage(
-                ApplicationWidget.class, "LBL_Resources")) {
-            private Object key = new Object();
-            protected void notifyAdded() {
-                super.notifyAdded();
-                getObjectScene().addObject(key,headerLabelWidget);
-            }
-            protected void notifyRemoved() {
-                super.notifyRemoved();
-                getObjectScene().removeObject(key);
-            }
-        };
+                ApplicationWidget.class, "LBL_Resources"));
         headerLabelWidget.setToolTipText(typeOfOperation);
         getHeaderWidget().addChild(headerLabelWidget);
         getHeaderWidget().addChild(new Widget(getScene()),1);
@@ -136,36 +126,6 @@ public class ApplicationWidget extends WadlComponentWidget {
         buttons.addChild(getExpanderWidget());
 
         getHeaderWidget().addChild(buttons);
-    }
-
-    protected void collapseWidget() {
-        if(buttons!=null && buttons.getParentWidget()!=null) {
-            getHeaderWidget().revalidate(true);
-            buttons.removeChild(getExpanderWidget());
-            getHeaderWidget().removeChild(buttons);
-            getHeaderWidget().addChild(getExpanderWidget());
-        }
-        super.collapseWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
-    }
-
-    protected void expandWidget() {
-        if(buttons!=null && buttons.getParentWidget()==null) {
-            getHeaderWidget().revalidate(true);
-            getHeaderWidget().removeChild(getExpanderWidget());
-            buttons.addChild(getExpanderWidget());
-            getHeaderWidget().addChild(buttons);
-        }
-        super.expandWidget();
-        // set this operation as selected and focused
-        if(hashKey()!=null) {
-            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
-            getObjectScene().setFocusedObject(hashKey());
-        }
     }
 
     @Override

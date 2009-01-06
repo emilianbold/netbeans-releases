@@ -98,11 +98,12 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     }
 
     
-    /** Overrides superclass method. 
+    /**
     * It sets the cursot at the beginnig of edited cell, in case of searching it highlights the found text.
     * At the end it request for focus so the editor component (JTextField) has it, not the table.
     * This is also a hack with reason to figure out which cell is going to be edited, if a key or a value.
     */
+    @Override
     public Component getTableCellEditorComponent(JTable table,
         Object value, boolean isSelected, int row, int column) {
             
@@ -155,7 +156,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         }
         
 
-        /** Overrides superclass method. */
+        @Override
         public void setValue(Object x) {
             // PENDING - due to a compiler error explicitly do "super" code instead of calling super
             this.value = x;
@@ -174,7 +175,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             }
         }
 
-        /** Overrides superclass method. */
+        @Override
         public Object getCellEditorValue() {
             String value = ((JTextField)getComponent()).getText();
             

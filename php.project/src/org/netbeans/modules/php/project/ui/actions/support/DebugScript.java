@@ -31,7 +31,7 @@ import java.io.File;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
@@ -93,6 +93,6 @@ public class DebugScript  extends RunScript {
     @Override
     protected ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
         ExternalProcessBuilder ret = super.initProcessBuilder(processBuilder);
-        return ret.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        return ret.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); //NOI18N
     }
 }

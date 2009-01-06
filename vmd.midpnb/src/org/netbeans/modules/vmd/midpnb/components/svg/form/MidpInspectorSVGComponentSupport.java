@@ -35,20 +35,10 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignEvent;
-import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.PresenterEvent;
-import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 
 /**
  * @author Karol Harezlak

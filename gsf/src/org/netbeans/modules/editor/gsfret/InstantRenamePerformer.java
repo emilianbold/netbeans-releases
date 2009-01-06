@@ -170,7 +170,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
-        if (inSync) {
+        if (inSync || region == null) {
             return;
         }
 
@@ -189,7 +189,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-        if (inSync) {
+        if (inSync || region == null) {
             return;
         }
 

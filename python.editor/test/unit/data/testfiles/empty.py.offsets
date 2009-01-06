@@ -1,0 +1,6 @@
+
+#! /usr/bin/python
+
+<Module><Print>print <Str>"Hello World!"</Str></Print></Module>
+
+

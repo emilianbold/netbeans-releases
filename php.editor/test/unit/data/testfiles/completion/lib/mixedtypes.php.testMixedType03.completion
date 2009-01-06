@@ -1,0 +1,5 @@
+Code completion result for source line:
+getBook()->|author;
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   Author|null author              [PUBLIC]   Book
+VARIABLE   string title                    [PUBLIC]   Book

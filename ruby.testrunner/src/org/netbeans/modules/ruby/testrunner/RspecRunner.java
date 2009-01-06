@@ -51,6 +51,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
@@ -59,18 +63,20 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
-import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+
 
 /**
  * Test runner for RSpec tests.
@@ -90,6 +96,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     private static final String NETBEANS_SPEC_OPTS_SUFFIX = "netbeans"; //NOI18N
     private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + "." + NETBEANS_SPEC_OPTS_SUFFIX; // NOI18N
     public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
+
     /**
      * The name of the system property that specifies whether a warning message should
      * be displayed when using spec/spec.opts instead of spec/spec.opts.netbeans.
@@ -154,7 +161,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST, new RubyTestRunnerNodeFactory());
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -171,6 +178,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         RubyExecutionDescriptor desc = null;
         String charsetName = null;
+        File spec = getSpec(project);
+        if (spec == null) {
+            DialogDisplayer.getDefault().notify(
+                    new Message(NbBundle.getMessage(RspecRunner.class, "MSG_SpecNotFound"),
+                    Message.ERROR_MESSAGE));
+            return;
+        }
         desc = new RubyExecutionDescriptor(platform,
                 name,
                 FileUtil.toFile(project.getProjectDirectory()),
@@ -182,9 +196,16 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+        }
+
         TestSession session = new TestSession(name,
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
 
         addSpecOptsWarningIfNeeded(session, opts);
 
@@ -215,9 +236,6 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         if (spec != null) {
             return new File(spec);
         }
-        // this should not happen as the presence of the binary
-        // should be checked before invoking this test runner
-        assert false : "Could not find RSpec binary"; //NOI18N
         return null;
     }
 
@@ -320,7 +338,8 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
         addSpecOptsWarningIfNeeded(session, specOpts);
         
         Manager manager = Manager.getInstance();

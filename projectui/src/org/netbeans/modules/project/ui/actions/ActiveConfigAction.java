@@ -111,6 +111,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         configListCombo = new JComboBox();
         configListCombo.setRenderer(new ConfigCellRenderer());
         configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
+        configListCombo.setFocusable(false);
         configurationsListChanged(null);
         configListCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

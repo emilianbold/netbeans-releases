@@ -55,7 +55,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
-import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 
 /**
  *

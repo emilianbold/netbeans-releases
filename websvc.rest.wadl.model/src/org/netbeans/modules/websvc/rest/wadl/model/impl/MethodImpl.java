@@ -30,7 +30,7 @@ public class MethodImpl extends NamedImpl implements Method {
 
     public void addRequest(Request request) {
 //        insertAtIndex(REQUEST_PROPERTY, request, 0, Request.class);
-        addAfter(REQUEST_PROPERTY, request, TypeCollection.FOR_METHOD.types());
+        addAfter(REQUEST_PROPERTY, request, TypeCollection.FOR_REQUEST.types());
     }
 
     public void removeRequest(Request request) {
@@ -42,7 +42,7 @@ public class MethodImpl extends NamedImpl implements Method {
     }
 
     public void addResponse(Response response) {
-        addAfter(RESPONSE_PROPERTY, response, TypeCollection.FOR_METHOD.types());
+        addAfter(RESPONSE_PROPERTY, response, TypeCollection.FOR_RESPONSE.types());
     }
 
     public void removeResponse(Response response) {

@@ -1,6 +1,9 @@
+GLOBAL_CONSTANT = 'Global Constant'
+
 module Colors
 
   module Converter
+    VERSION = 1234
     # module definition
   end
 
@@ -8,7 +11,15 @@ module Colors
   GREEN = "#00FF00"
   BLUE  = "#0000FF"
 
+  def red
+    return RED
+  end
+
 end
 
-Colors::RED.byte
-Colors::InnerColors
+Colors::RED.bytes
+Colors::Converter::VERSION
+puts GLOBAL_CONSTANT
+
+b = Colors::BLUE
+puts b.downcase

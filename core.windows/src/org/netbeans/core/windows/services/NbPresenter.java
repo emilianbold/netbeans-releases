@@ -94,6 +94,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.core.windows.Constants;
 import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
@@ -328,6 +329,14 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 }
 
                 notificationLine = new FixedHeightLabel ();
+                NotificationLineSupport nls = descriptor.getNotificationLineSupport ();
+                if (nls.getInformationMessage () != null) {
+                    updateNotificationLine (MSG_TYPE_INFO, nls.getInformationMessage ());
+                } else if (nls.getWarningMessage () != null) {
+                    updateNotificationLine (MSG_TYPE_WARNING, nls.getWarningMessage ());
+                } else if (nls.getErrorMessage () != null) {
+                    updateNotificationLine (MSG_TYPE_ERROR, nls.getErrorMessage ());
+                }
                 JPanel notificationPanel = new JPanel ();
                 GroupLayout layout = new GroupLayout(notificationPanel);
                 notificationPanel.setLayout(layout);
@@ -341,6 +350,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 layout.setVerticalGroup(
                     layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );

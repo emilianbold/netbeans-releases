@@ -199,8 +199,9 @@ public class JavaSourceHelper {
     }
 
     public static String getPackageName(JavaSource source) {
-        final String[] packageName = new String[1];
+        if(source == null) return "";
 
+        final String[] packageName = new String[1];
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 

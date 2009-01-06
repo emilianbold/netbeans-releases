@@ -74,7 +74,7 @@ public class MasterMatcherTest extends NbTestCase {
         c.putClientProperty(MasterMatcher.PROP_CARET_BIAS, MasterMatcher.B_FORWARD);
         
         TestMatcher.origin = new int [] { 7, 7 };
-        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(300);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
@@ -91,7 +91,7 @@ public class MasterMatcherTest extends NbTestCase {
         c.putClientProperty(MasterMatcher.PROP_SEARCH_DIRECTION, MasterMatcher.D_BACKWARD);
         c.putClientProperty(MasterMatcher.PROP_CARET_BIAS, MasterMatcher.B_BACKWARD);
         
-        MasterMatcher.get(c).highlight(d, 11, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 11, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(300);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
@@ -120,7 +120,7 @@ public class MasterMatcherTest extends NbTestCase {
         TestMatcher.origin = new int [] { 2, 3 };
         TestMatcher.matches = new int [] { 10, 11 };
         
-        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(300);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
@@ -156,13 +156,13 @@ public class MasterMatcherTest extends NbTestCase {
         {
         BlockingMatcher.blockInFindOrigin = true;
         
-        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(300);
         BlockingMatcher first = BlockingMatcher.lastMatcher;
         assertNotNull("No first matcher", first);
         assertTrue("Should be blocking", first.blocking);
         
-        MasterMatcher.get(c).highlight(d, 8, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 8, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(2000);
         BlockingMatcher second = BlockingMatcher.lastMatcher;
         assertNotNull("No second matcher", second);
@@ -176,13 +176,13 @@ public class MasterMatcherTest extends NbTestCase {
         {
         BlockingMatcher.blockInFindOrigin = false;
         
-        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(300);
         BlockingMatcher first = BlockingMatcher.lastMatcher;
         assertNotNull("No first matcher", first);
         assertTrue("First matcher should be blocking", first.blocking);
         
-        MasterMatcher.get(c).highlight(d, 8, bag, EAS, EAS);
+        MasterMatcher.get(c).highlight(d, 8, bag, EAS, EAS, EAS, EAS);
         Thread.sleep(2000);
         BlockingMatcher second = BlockingMatcher.lastMatcher;
         assertNotNull("No second matcher", second);

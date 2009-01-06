@@ -1,1 +1,1 @@
-select * from simpletable;
+select * from simpletable

@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.cnd.api.model.deep;
 
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+
 /**
  * Represents a label pseudo statement.
  * Do not represent the statement that follows label, just the label itself
  * @author Vladimir Kvashin
  */
-public interface CsmLabel extends CsmStatement {
+public interface CsmLabel extends CsmStatement, CsmNamedElement {
 
     /** Gets label name (without trailing ":") */
     CharSequence getLabel();

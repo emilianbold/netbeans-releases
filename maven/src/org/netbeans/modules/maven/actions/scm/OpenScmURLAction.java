@@ -41,8 +41,10 @@ package org.netbeans.modules.maven.actions.scm;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import javax.swing.AbstractAction;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 
@@ -59,16 +61,17 @@ import org.openide.util.NbBundle;
 public class OpenScmURLAction extends AbstractAction {
 
     private Artifact artifact;
+    private List<ArtifactRepository> repos;
 
-    public OpenScmURLAction(Artifact artifact) {
+    public OpenScmURLAction(Artifact artifact, List<ArtifactRepository> repos) {
         putValue(NAME, NbBundle.getMessage(OpenScmURLAction.class, "LBL_OpenURL"));
         this.artifact = artifact;
-
+        this.repos = repos;
 
     }
 
     public void actionPerformed(ActionEvent e) {
-        Scm scm = ActionsUtil.readMavenProject(artifact).getScm();
+        Scm scm = ActionsUtil.readMavenProject(artifact, repos).getScm();
         try {
 
             URLDisplayer.getDefault().showURL(new URL(scm.getUrl()));
@@ -81,7 +84,7 @@ public class OpenScmURLAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact);
+        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
         return readMavenProject != null && readMavenProject.getScm() != null && readMavenProject.getScm().getUrl() != null;
     }
 }

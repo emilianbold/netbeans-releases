@@ -52,6 +52,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicBorders;
@@ -216,6 +218,14 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         this.properties = props;
         this.configuration = configuration;
         this.srcRoot = props.getSourceRoot();
+        if (srcRoot == null) {
+            //Issue 153666 - getting projects instantiated w/ nonexistent source
+            //roots.  props.toString() will call project.toString(), hopefully
+            //provide some better info
+            Logger.getLogger(getClass().getName()).log (Level.INFO,
+                    "Source root null for " + props); //NOI18N
+            srcRoot = FileUtil.createMemoryFileSystem().getRoot();
+        }
         treeView.setSrcRoot(srcRoot);
         vps.register(defaultCheck, configuration, this);
     }

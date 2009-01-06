@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 public class ParametersWidget extends AbstractTitledWidget implements TabWidget {
     
     private transient MethodModel method;
+    private transient boolean nameEditable;
 
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
@@ -73,9 +74,10 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
      * @param scene 
      * @param method 
      */
-    public ParametersWidget(ObjectScene scene, MethodModel method) {
+    public ParametersWidget(ObjectScene scene, MethodModel method, boolean nameEditable) {
         super(scene,0,RADIUS,0,BORDER_COLOR);
         this.method = method;
+        this.nameEditable = nameEditable;
         createContent();
     }
     
@@ -84,7 +86,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     }
     
     private void createContent() {
-        model = new ParametersTableModel(method);
+        model = new ParametersTableModel(method, nameEditable);
         populateContentWidget(getContentWidget());
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,1,1,1));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 

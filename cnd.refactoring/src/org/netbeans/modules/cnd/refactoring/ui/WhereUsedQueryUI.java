@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -215,6 +216,8 @@ public class WhereUsedQueryUI implements RefactoringUI {
             objName = ((CsmReference)csmObj).getText().toString();
         } else if (CsmKindUtilities.isNamedElement(csmObj)) {
             objName = ((CsmNamedElement)csmObj).getName().toString();
+        } else if (CsmKindUtilities.isInclude(csmObj)) {
+            objName = ((CsmInclude)csmObj).getIncludeName().toString();
         } else if (csmObj != null) {
             objName = "<UNNAMED ELEMENT>"; // NOI18N
         } else {

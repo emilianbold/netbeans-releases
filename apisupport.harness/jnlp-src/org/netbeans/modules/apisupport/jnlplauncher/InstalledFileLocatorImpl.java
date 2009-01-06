@@ -42,18 +42,25 @@
 package org.netbeans.modules.apisupport.jnlplauncher;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Special locator for JNLP mode.
- * Currently just locates JARs with the special META-INF/clusterpath/$relpath
- * entry inserted by common.xml -> <makenjnlp>.
+ * Locates files in userdir; JARs with the special META-INF/clusterpath/$relpath entry;
+ * and JARs present in extra-files.jar.
  * @author Jesse Glick
  */
+@ServiceProvider(service=InstalledFileLocator.class, supersedes="org.netbeans.core.startup.InstalledFileLocatorImpl")
 public class InstalledFileLocatorImpl extends InstalledFileLocator {
 
     public InstalledFileLocatorImpl() {}
@@ -100,6 +107,31 @@ public class InstalledFileLocatorImpl extends InstalledFileLocator {
                         return jar;
                     }
                 }
+            }
+            try {
+                InputStream is = loader.getResourceAsStream("META-INF/files/" + relativePath);
+                if (is != null) {
+                    try {
+                        // XXX could try to cache previously created files
+                        File temp = File.createTempFile("nbjnlp-", relativePath.replaceFirst("^.+/", ""));
+                        temp.deleteOnExit();
+                        OutputStream os = new FileOutputStream(temp);
+                        try {
+                            byte[] buf = new byte[4096];
+                            int read;
+                            while ((read = is.read(buf)) != -1) {
+                                os.write(buf, 0, read);
+                            }
+                        } finally {
+                            os.close();
+                        }
+                        return temp;
+                    } finally {
+                        is.close();
+                    }
+                }
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
             }
         }
         return null;

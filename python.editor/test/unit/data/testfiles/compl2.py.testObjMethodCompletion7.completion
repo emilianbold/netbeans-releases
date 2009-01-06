@@ -1,0 +1,76 @@
+Code completion result for source line:
+print os.|r
+(QueryType=COMPLETION, NameKind=PREFIX)
+MODULE     altsep                                     
+MODULE     curdir                                     
+MODULE     defpath                                    
+MODULE     pardir                                     
+MODULE     path                                       
+MODULE     pathsep                                    
+MODULE     sep                                        
+PACKAGE    os.path                                    
+CLASS      stat_result                                
+METHOD     access(path, mode)                         
+METHOD     chdir(path)                                
+METHOD     chmod(path, mode)                          
+METHOD     close(fd)                                  
+METHOD     fdopen(fd, mode, bufsize)                  
+METHOD     getcwd()                                   
+METHOD     getegid()                                  
+METHOD     getenv(key, default)                       
+METHOD     geteuid()                                  
+METHOD     getgid()                                   
+METHOD     getlogin()                                 
+METHOD     getpgrp()                                  
+METHOD     getpid()                                   
+METHOD     getppid()                                  
+METHOD     getuid()                                   
+METHOD     isatty(fileno)                             
+METHOD     listdir(path)                              
+METHOD     lseek(fd, pos, how)                        
+METHOD     lstat(path)                                
+METHOD     makedirs(path, mode)                       
+METHOD     mkdir(path, mode)                          
+METHOD     open(filename, flag, mode)                 
+METHOD     popen(args, kwargs)                        
+METHOD     popen2(cmd, mode, bufsize)                 
+METHOD     popen3(cmd, mode, bufsize)                 
+METHOD     popen4(cmd, mode, bufsize)                 
+METHOD     putenv(key, value)                         
+METHOD     read(fd, buffersize)                       
+METHOD     remove(path)                               
+METHOD     removedirs(name)                           
+METHOD     rename(path, newpath)                      
+METHOD     renames(old, new)                          
+METHOD     rmdir(path)                                
+METHOD     setpgrp()                                  
+METHOD     setsid()                                   
+METHOD     stat(path)                                 
+METHOD     strerror(code)                             
+METHOD     system(args, kwargs)                       
+METHOD     unlink(path)                               
+METHOD     unsetenv(key)                              
+METHOD     utime(path, times)                         
+METHOD     walk(top, topdown, onerror)                
+METHOD     write(fd, string)                          
+VARIABLE   EX_OK                                      
+VARIABLE   F_OK                                       
+VARIABLE   O_APPEND                                   
+VARIABLE   O_CREAT                                    
+VARIABLE   O_EXCL                                     
+VARIABLE   O_RDONLY                                   
+VARIABLE   O_RDWR                                     
+VARIABLE   O_SYNC                                     
+VARIABLE   O_TRUNC                                    
+VARIABLE   O_WRONLY                                   
+VARIABLE   R_OK                                       
+VARIABLE   SEEK_CUR                                   
+VARIABLE   SEEK_END                                   
+VARIABLE   SEEK_SET                                   
+VARIABLE   W_OK                                       
+VARIABLE   X_OK                                       
+VARIABLE   __all__                                    
+VARIABLE   environ                                    
+VARIABLE   error                                      
+VARIABLE   linesep                                    
+VARIABLE   name                                       

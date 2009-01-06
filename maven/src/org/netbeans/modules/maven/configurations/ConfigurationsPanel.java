@@ -82,7 +82,6 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
 //        addProfileConfigurations();
         
         initUI(handle.isConfigurationsEnabled());
-        createListModel();
         lstConfigurations.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -97,16 +96,22 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         
         lstConfigurations.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
-                if (conf == null || conf.isProfileBased() || conf.isProfileBased()) {
-                    btnEdit.setEnabled(false);
-                    btnRemove.setEnabled(false);
-                } else {
-                    btnEdit.setEnabled(true);
-                    btnRemove.setEnabled(true);
-                }
+                checkButtonEnablement();
             }
+
         });
+        createListModel();
+    }
+
+    private void checkButtonEnablement() {
+        ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
+        if (conf == null || conf.isProfileBased() || conf.isDefault()) {
+            btnEdit.setEnabled(false);
+            btnRemove.setEnabled(false);
+        } else {
+            btnEdit.setEnabled(true);
+            btnRemove.setEnabled(true);
+        }
     }
 
     private void createListModel() {
@@ -343,6 +348,9 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private void initUI(boolean configsEnabled) {
 //        cbProfiles.setEnabled(configsEnabled);
         initListUI(configsEnabled);
+        if (configsEnabled) {
+            checkButtonEnablement();
+        }
     }
 
 

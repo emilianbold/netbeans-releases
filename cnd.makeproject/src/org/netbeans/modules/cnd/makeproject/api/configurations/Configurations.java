@@ -245,6 +245,9 @@ public class Configurations {
     }
 
     public void setActive(int index) {
+        if (index < 0) {
+            return;
+        }
         Configuration old = getActive();
         checkValidIndex(index);
         Configuration def = configurations.get(index);

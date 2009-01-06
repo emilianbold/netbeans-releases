@@ -331,14 +331,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public Object clone() {
         ItemConfiguration i = new ItemConfiguration(getConfiguration(), getItem());
 
-        i.setExcluded((BooleanConfiguration) getExcluded().clone());
+        i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
 
-        i.setCustomToolConfiguration((CustomToolConfiguration) getCustomToolConfiguration().clone());
-        i.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
-        i.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
-        i.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
-        i.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
+        i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+        i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+        i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
         return i;
     }
 
@@ -392,7 +392,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return sheet;
     }
 
-    private class ToolNodeProp extends Node.Property {
+    private class ToolNodeProp extends Node.Property<Integer> {
 
         public ToolNodeProp() {
             super(Integer.class);
@@ -403,13 +403,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return getString("ToolTxt1");
         }
 
-        public Object getValue() {
+        public Integer getValue() {
             return Integer.valueOf(getTool());
         }
 
-        public void setValue(Object v) {
-            String newTool = (String) v;
-            setTool(newTool);
+        public void setValue(Integer v) {
+//            String newTool = (String) v;
+//            setTool(newTool);
+            setTool(v);
         }
 
         public boolean canWrite() {
@@ -443,7 +444,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            setValue(text);
+//            setValue(text);
+            setValue(Tool.getTool(text));
         }
 
         @Override

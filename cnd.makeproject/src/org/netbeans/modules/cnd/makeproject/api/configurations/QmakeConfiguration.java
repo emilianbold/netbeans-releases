@@ -46,15 +46,14 @@ import org.openide.util.NbBundle;
 /**
  * @author Alexey Vladykin
  */
-public class QmakeConfiguration {
+public class QmakeConfiguration implements Cloneable {
 
-    private StringConfiguration template;
-    private StringConfiguration target;
+    public static final String DEBUG_FLAG = "debug"; // NOI18N
+    public static final String RELEASE_FLAG = "release"; // NOI18N
+
     private StringConfiguration config;
 
     public QmakeConfiguration() {
-        template = new StringConfiguration(null, "app"); // NOI18N
-        target = new StringConfiguration(null, "dist/qtapp"); // NOI18N
         config = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -65,24 +64,35 @@ public class QmakeConfiguration {
         basic.setName("QmakeGeneral"); // NOI18N
         basic.setDisplayName(getString("QmakeGeneralTxt")); // NOI18N
         basic.setShortDescription(getString("QmakeGeneralHint")); // NOI18N
-        basic.put(new StringNodeProp(template, "TEMPLATE", getString("QmakeTemplateTxt"), getString("QmakeTemplateHint"))); // NOI18N
-        basic.put(new StringNodeProp(target, "TARGET", getString("QmakeTargetTxt"), getString("QmakeTargetHint"))); // NOI18N
         basic.put(new StringNodeProp(config, "CONFIG", getString("QmakeConfigTxt"), getString("QmakeConfigHint"))); // NOI18N
         sheet.put(basic);
 
         return sheet;
     }
 
-    public StringConfiguration getTemplate() {
-        return template;
-    }
-
-    public StringConfiguration getTarget() {
-        return target;
-    }
-
     public StringConfiguration getConfig() {
         return config;
+    }
+
+    public void setConfig(StringConfiguration config) {
+        this.config = config;
+    }
+
+    public void assign(QmakeConfiguration other) {
+        getConfig().setValue(other.getConfig().getValue());
+    }
+
+    @Override
+    public QmakeConfiguration clone() {
+        try {
+            QmakeConfiguration clone = (QmakeConfiguration) super.clone();
+            clone.setConfig(getConfig().clone());
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            // should not happen while this class implements Cloneable
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     private static String getString(String s) {

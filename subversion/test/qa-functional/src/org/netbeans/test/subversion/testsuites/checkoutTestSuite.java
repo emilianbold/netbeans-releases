@@ -43,7 +43,6 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.main.checkout.CheckoutContentTest;
-import org.netbeans.test.subversion.main.checkout.CheckoutUITest;
 import org.netbeans.test.subversion.main.checkout.ImportUITest;
 import org.netbeans.test.subversion.utils.svnExistsChecker;
 
@@ -70,7 +69,7 @@ public class checkoutTestSuite extends JellyTestCase {
         if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(CheckoutContentTest.class, "testCheckoutProject")
-                    .addTest(ImportUITest.class, "testCommitStep")
+//                    .addTest(ImportUITest.class, "testCommitStep")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());

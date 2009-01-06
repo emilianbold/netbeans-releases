@@ -806,13 +806,37 @@ public final class UpdateTracking {
             
             document.getDocumentElement().normalize();
 
+            OutputStream os = null;
             try {
-                OutputStream os = new FileOutputStream( file );
-                XMLUtil.write(document, os);            
-                os.close();
+                os = new FileOutputStream(file);
             } catch (Exception e) {
                 e.printStackTrace();
-            }        
+                //#154904
+                if (!file.delete()) {
+                    new IOException("Corresponding update would not be installed since it is not possible to modify or delete update tracking file " + file).printStackTrace();
+                } else {
+                    new IOException("Update tracking file was deleted since permissions does not allow to modify it: " + file).printStackTrace();
+                    try {
+                        os = new FileOutputStream(file);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            if (os != null) {
+                try {
+                    XMLUtil.write(document, os);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
 
         void deleteUnusedFiles() {

@@ -47,7 +47,7 @@ import org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.message.MessageBean
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.session.SessionBeansNode;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 

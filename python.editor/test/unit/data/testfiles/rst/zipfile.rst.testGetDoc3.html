@@ -1,0 +1,27 @@
+<html><body><pre><b>ZipFile.write</b><font color="#808080">(filename[, arcname[, compress_type]])</font></pre>
+<hr>
+   Write the file named <b>filename</b> to the archive, giving it the archive name
+   <b>arcname</b> (by default, this will be the same as <b>filename</b>, but without a drive
+   letter and with leading path separators removed).  If given, <b>compress_type</b>
+   overrides the value given for the <b>compression</b> parameter to the constructor for
+   the new entry.  The archive must be open with mode <code>'w'</code> or <code>'a'</code> -- calling
+   <a href="meth:write">write</a> on a ZipFile created with mode <code>'r'</code> will raise a
+   <a href="exc:RuntimeError">RuntimeError</a>.  Calling  <a href="meth:write">write</a> on a closed ZipFile will raise a
+   <a href="exc:RuntimeError">RuntimeError</a>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      There is no official file name encoding for ZIP files. If you have unicode file
+      names, you must convert them to byte strings in your desired encoding before
+      passing them to <a href="meth:write">write</a>. WinZip interprets all file names as encoded in
+      CP437, also known as DOS Latin.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      Archive names should be relative to the archive root, that is, they should not
+      start with a path separator.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      If <code>arcname</code> (or <code>filename</code>, if <code>arcname</code> is  not given) contains a null
+      byte, the name of the file in the archive will be truncated at the null byte.
+</div>
+</body></html>

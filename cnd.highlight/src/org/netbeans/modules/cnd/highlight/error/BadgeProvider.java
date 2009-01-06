@@ -75,6 +75,13 @@ public class BadgeProvider {
         synchronized (listLock){
             boolean oldState = storage.contains(project);
             ProjectFiles: for( CsmFile file : project.getAllFiles() ) {
+                if (!file.getErrors().isEmpty()) {
+                    if (!storage.contains(file)) {
+                        storage.add(file);
+                        badgeStateChanged = true;
+                    }
+                    continue ProjectFiles;
+                }
                 for (CsmInclude incl : file.getIncludes()) {
                     if (incl.getIncludeFile() == null) {
                         if (!storage.contains(file)) {
@@ -106,14 +113,22 @@ public class BadgeProvider {
         synchronized (listLock){
             boolean oldState = storage.contains(project);
             boolean badFile = false;
-            for (CsmInclude incl : file.getIncludes()){
-                if (incl.getIncludeFile() == null) {
-                    if (!storage.contains(file)){
-                        storage.add(file);
-                        badgeStateChanged = true;
+            if (!file.getErrors().isEmpty()) {
+                badFile = true;
+                if (!storage.contains(file)) {
+                    storage.add(file);
+                    badgeStateChanged = true;
+                }
+            } else {
+                for (CsmInclude incl : file.getIncludes()){
+                    if (incl.getIncludeFile() == null) {
+                        if (!storage.contains(file)){
+                            storage.add(file);
+                            badgeStateChanged = true;
+                        }
+                        badFile = true;
+                        break;
                     }
-                    badFile = true;
-                    break;
                 }
             }
             if (!badFile && storage.contains(file)){

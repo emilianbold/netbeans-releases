@@ -449,7 +449,7 @@ public class PropertySheet extends JPanel {
         final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
 
         if (loggable) {
-            PropUtils.log(PropertySheet.class, "SetNodes " + Arrays.asList(nodes));
+            PropUtils.log(PropertySheet.class, "SetNodes " + (null == nodes ? "<null>" : Arrays.asList(nodes)));
         }
 
         //Performance - check equality and avoid some extra repaints - repainting

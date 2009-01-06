@@ -38,28 +38,17 @@
  */
 package org.netbeans.modules.vmd.midp.codegen;
 
-import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
-import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetConnectorCD;
@@ -71,8 +60,6 @@ import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  *

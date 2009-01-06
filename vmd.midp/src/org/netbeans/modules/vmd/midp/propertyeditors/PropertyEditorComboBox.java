@@ -123,6 +123,17 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         return instance;
     }
 
+    @Override
+    public void setAsText(String text) {
+        if (canWrite()) {
+            if (text.equals(NULL_TEXT)) {
+                super.setValue(NULL_VALUE);
+            } else  {
+                saveValue(text);
+            }
+        }
+    }
+    
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, valueLabel);
@@ -174,6 +185,8 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     public String getTextForPropertyValue() {
         return null;
     }
+
+
 
     public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {

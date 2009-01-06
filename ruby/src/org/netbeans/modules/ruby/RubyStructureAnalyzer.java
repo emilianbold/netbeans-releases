@@ -67,6 +67,7 @@ import org.jruby.nb.ast.FCallNode;
 import org.jruby.nb.ast.GlobalAsgnNode;
 import org.jruby.nb.ast.InstAsgnNode;
 import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
@@ -101,7 +102,6 @@ import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -383,7 +383,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc != null) {
-                addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                try {
+                    doc.readLock(); // For Utilities.getRowStart access
+                    addFolds(doc, analysisResult.getElements(), folds, codefolds);
+                } finally {
+                    doc.readUnlock();
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -553,28 +558,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
         case CONSTDECLNODE: {
             ConstDeclNode constNode = (ConstDeclNode) node;
-            Node valueNode = constNode.getValueNode();
 
             AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
                     ElementKind.CONSTANT);
 
-            if (info != null) {
-                int astOffset = node.getPosition().getStartOffset();
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                FileObject fileObject = info.getFileObject();
-                // pass RubyIndex cautiously to prevent dangerous mutual recursion between
-                // RubyIndexer, RubyTypeAnalyzer and few other. Be sure to run ruby.hints tests
-                RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(null, constNode, valueNode, astOffset, -1, doc, fileObject);
-                Set<? extends String> types = analyzer.getTypes(constNode.getName());
-                if (types != null) {
-                    for (String type : types) {
-                        if (type != null) {
-                            co.setType(type); // TODO should *add* type
-                        }
-                    }
-                }
-            }
-
+            co.setType(RubyTypeInferencer.inferTypesOfRHS(constNode, null));
             co.setIn(in);
 
             if (parent != null) {
@@ -654,6 +642,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 if (!found) {
                     AstElement co = new AstNameElement(info, node, name,
                             ElementKind.VARIABLE);
+                    assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
+                    co.setType(RubyTypeInferencer.inferTypesOfRHS(node, null));
                     co.setIn(in);
                     structure.add(co);
                 }
@@ -1044,9 +1034,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node.getType() != null) {
+            RubyType type = node.getType();
+            if (type.isKnown()) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(node.getType());
+                formatter.appendText(type.asIndexedString());
             }
 
             return formatter.getText();

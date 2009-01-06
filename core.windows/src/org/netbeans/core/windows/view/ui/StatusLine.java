@@ -85,7 +85,7 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
                 if (startTime != 0L) {
                     Color c = UIManager.getColor("Label.foreground");
                     if (c != null) {
-                        int alpha = 256 * (int)(t - startTime) / 2000;
+                        int alpha = 256 * (int)(Math.max(0, t - startTime)) / 2000;
                         StatusLine.this.setForeground(
                                 new Color(c.getRed(), c.getGreen(), c.getBlue(), 255 - Math.min(255, alpha)));
                     }

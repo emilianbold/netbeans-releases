@@ -64,6 +64,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignProperty;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
+import org.openide.awt.Mnemonics;
 
 public class PropertyBindingPanel extends JPanel implements BindingTargetCallback {
 
@@ -86,16 +87,12 @@ public class PropertyBindingPanel extends JPanel implements BindingTargetCallbac
             jbInit();
             curExprLabel.setLabelFor(curExprTextField);
             newExprLabel.setLabelFor(newExprTextField);
-            curExprLabel.setDisplayedMnemonic(bundle.getMessage("currBindingForPropDisplayedMnemonic").charAt(0)); //NOI18N
-            newExprLabel.setDisplayedMnemonic(bundle.getMessage("newBindingForPropDisplayedMnemonic").charAt(0)); //NOI18N
             curExprTextField.getAccessibleContext().setAccessibleName(bundle.getMessage("CURR_EXP_ACCESS_NAME"));
             curExprTextField.getAccessibleContext().setAccessibleDescription(bundle.getMessage("CURR_EXP_ACCESS_DESC"));
             newExprTextField.getAccessibleContext().setAccessibleName(bundle.getMessage("NEW_EXP_ACCESS_NAME"));
             newExprTextField.getAccessibleContext().setAccessibleDescription(bundle.getMessage("NEW_EXP_ACCESS_DESC"));
             clearButton.getAccessibleContext().setAccessibleDescription(bundle.getMessage("CLEAR_BUTTON_ACCESS_DESC"));
             applyButton.getAccessibleContext().setAccessibleDescription(bundle.getMessage("APPLY_BUTTON_ACCESS_DESC"));
-            clearButton.setMnemonic(bundle.getMessage("CLEAR_BUTTON_MNEMONIC").charAt(0));
-            applyButton.setMnemonic(bundle.getMessage("APPLY_BUTTON_MNEMONIC").charAt(0));
 
         } catch (Exception e) {
           e.printStackTrace();
@@ -169,7 +166,7 @@ public class PropertyBindingPanel extends JPanel implements BindingTargetCallbac
         String pt = p != null ? p.getPropertyDescriptor().getName() : "<font color=\"red\">" + bundle.getMessage("pickOneBrackets") + "</font>"; //NOI18N
         DesignBean b = getSourceBean();
 //        String bt = b != null ? b.getInstanceName() : "<font color=\"red\">" + bundle.getMessage("pickOneBrackets") + "</font>"; //NOI18N
-        curExprLabel.setText("<html>" + bundle.getMessage("currBindingForProp", pt) + "</html>"); //NOI18N
+        Mnemonics.setLocalizedText(curExprLabel, "<html>" + bundle.getMessage("currBindingForProp", pt) + "</html>"); // NOI18N
         String nx = newExprTextField.getText();
         applyButton.setEnabled(b != null && p != null && nx != null && !"".equals(nx)); //NOI18N
         if (p != null) {
@@ -265,8 +262,8 @@ public class PropertyBindingPanel extends JPanel implements BindingTargetCallbac
             }
         });
         String boldRedPickOne = "<b><font color=\"red\">" + bundle.getMessage("pickOneBrackets") + "</font></b>"; //NOI18N
-        curExprLabel.setText("<html>" + bundle.getMessage("currBindingForProp", boldRedPickOne) + "</html>"); //NOI18N
-        newExprLabel.setText(bundle.getMessage("newBindExpr")); //NOI18N
+        Mnemonics.setLocalizedText(curExprLabel, "<html>" + bundle.getMessage("currBindingForProp", boldRedPickOne) + "</html>"); // NOI18N
+        Mnemonics.setLocalizedText(newExprLabel, bundle.getMessage("newBindExpr"));
         curExprLabel.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (e.getClickCount() == 3 && e.isMetaDown()) {
@@ -274,13 +271,13 @@ public class PropertyBindingPanel extends JPanel implements BindingTargetCallbac
                 }
             }
         });
-        clearButton.setText(bundle.getMessage("clear"));  //NOI18N
+        Mnemonics.setLocalizedText(clearButton, bundle.getMessage("clear"));
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doClearExpr();
             }
         });
-        applyButton.setText(bundle.getMessage("apply"));  //NOI18N
+        Mnemonics.setLocalizedText(applyButton, bundle.getMessage("apply"));
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doApplyExpr();

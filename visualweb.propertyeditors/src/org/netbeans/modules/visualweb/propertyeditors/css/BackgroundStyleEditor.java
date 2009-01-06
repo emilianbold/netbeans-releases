@@ -204,7 +204,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         setBackgroundColor();
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -282,9 +282,8 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         colorPanel.add(imageFileField, gridBagConstraints);
         imageFileField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IMAGE_FIELD_ACCESS_DESC")); // NOI18N
 
-        lineHeightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BACKGROUND_IMAGE_MNEMONIC").charAt(0));
         lineHeightLabel.setLabelFor(imageFileField);
-        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lineHeightLabel, org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE")); // NOI18N
         lineHeightLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -293,9 +292,8 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(lineHeightLabel, gridBagConstraints);
 
-        imageTileLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BACKGROUNDTILE_MNEMONIC").charAt(0));
         imageTileLabel.setLabelFor(repeatComboBox);
-        imageTileLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(imageTileLabel, org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -303,9 +301,8 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(imageTileLabel, gridBagConstraints);
 
-        imageScrollLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BACKGROUND_SCROLL_MNEMONIC").charAt(0));
         imageScrollLabel.setLabelFor(scrollComboBox);
-        imageScrollLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(imageScrollLabel, org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

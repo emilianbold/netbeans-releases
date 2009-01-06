@@ -1,0 +1,283 @@
+<html><body>
+<h2><a href="mod:platform">platform</a> ---  Access to underlying platform's identifying data.
+</h2>
+<a href="module:platform">platform</a><br>
+   Retrieves as much platform identifying data as possible.
+<br>Module Author:</b> Marc-Andre Lemburg &lt;mal@egenix.com>
+<br>Section Author:</b> Bjorn Pettersen &lt;bpettersen@corp.fairisaac.com>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.3
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+   Specific platforms listed alphabetically, with Linux included in the Unix
+   section.
+</div>
+<h3>Cross Platform
+</h3>
+<a href="func:architecture(executable=sys.executable, bits='', linkage='')">architecture(executable=sys.executable, bits='', linkage='')</a>
+
+<br><br>
+   Queries the given executable (defaults to the Python interpreter binary) for
+   various architecture information.
+
+<br><br>
+   Returns a tuple <code>(bits, linkage)</code> which contain information about the bit
+   architecture and the linkage format used for the executable. Both values are
+   returned as strings.
+
+<br><br>
+   Values that cannot be determined are returned as given by the parameter presets.
+   If bits is given as <code>''</code>, the :cfunc:`sizeof(pointer)` (or
+   :cfunc:`sizeof(long)` on Python version &lt; 1.5.2) is used as indicator for the
+   supported pointer size.
+
+<br><br>
+   The function relies on the system's :file:<code>file</code> command to do the actual work.
+   This is available on most if not all Unix  platforms and some non-Unix platforms
+   and then only if the executable points to the Python interpreter.  Reasonable
+   defaults are used when the above needs are not met.
+
+<br><br>
+<a href="func:machine()">machine()</a>
+
+<br><br>
+   Returns the machine type, e.g. <code>'i386'</code>. An empty string is returned if the
+   value cannot be determined.
+
+<br><br>
+<a href="func:node()">node()</a>
+
+<br><br>
+   Returns the computer's network name (may not be fully qualified!). An empty
+   string is returned if the value cannot be determined.
+
+<br><br>
+<a href="func:platform(aliased=0, terse=0)">platform(aliased=0, terse=0)</a>
+
+<br><br>
+   Returns a single string identifying the underlying platform with as much useful
+   information as possible.
+
+<br><br>
+   The output is intended to be *human readable* rather than machine parseable. It
+   may look different on different platforms and this is intended.
+
+<br><br>
+   If <b>aliased</b> is true, the function will use aliases for various platforms that
+   report system names which differ from their common names, for example SunOS will
+   be reported as Solaris.  The <a href="func:system_alias">system_alias</a> function is used to implement
+   this.
+
+<br><br>
+   Setting <b>terse</b> to true causes the function to return only the absolute minimum
+   information needed to identify the platform.
+
+<br><br>
+<a href="func:processor()">processor()</a>
+
+<br><br>
+   Returns the (real) processor name, e.g. <code>'amdk6'</code>.
+
+<br><br>
+   An empty string is returned if the value cannot be determined. Note that many
+   platforms do not provide this information or simply return the same value as for
+   <a href="func:machine">machine</a>.  NetBSD does this.
+
+<br><br>
+<a href="func:python_build()">python_build()</a>
+
+<br><br>
+   Returns a tuple <code>(buildno, builddate)</code> stating the Python build number and
+   date as strings.
+
+<br><br>
+<a href="func:python_compiler()">python_compiler()</a>
+
+<br><br>
+   Returns a string identifying the compiler used for compiling Python.
+
+<br><br>
+<a href="func:python_branch()">python_branch()</a>
+
+<br><br>
+   Returns a string identifying the Python implementation SCM branch.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="func:python_implementation()">python_implementation()</a>
+   Returns a string identifying the Python implementation. Possible return values
+   are: 'CPython', 'IronPython', 'Jython'
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="func:python_revision()">python_revision()</a>
+   Returns a string identifying the Python implementation SCM revision.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="func:python_version()">python_version()</a>
+   Returns the Python version as string <code>'major.minor.patchlevel'</code>
+
+<br><br>
+   Note that unlike the Python <code>sys.version</code>, the returned value will always
+   include the patchlevel (it defaults to 0).
+
+<br><br>
+<a href="func:python_version_tuple()">python_version_tuple()</a>
+
+<br><br>
+   Returns the Python version as tuple <code>(major, minor, patchlevel)</code> of strings.
+
+<br><br>
+   Note that unlike the Python <code>sys.version</code>, the returned value will always
+   include the patchlevel (it defaults to <code>'0'</code>).
+
+<br><br>
+<a href="func:release()">release()</a>
+
+<br><br>
+   Returns the system's release, e.g. <code>'2.2.0'</code> or <code>'NT'</code> An empty string is
+   returned if the value cannot be determined.
+
+<br><br>
+<a href="func:system()">system()</a>
+
+<br><br>
+   Returns the system/OS name, e.g. <code>'Linux'</code>, <code>'Windows'</code>, or <code>'Java'</code>. An
+   empty string is returned if the value cannot be determined.
+
+<br><br>
+<a href="func:system_alias(system, release, version)">system_alias(system, release, version)</a>
+
+<br><br>
+   Returns <code>(system, release, version)</code> aliased to common marketing names used
+   for some systems.  It also does some reordering of the information in some cases
+   where it would otherwise cause confusion.
+
+<br><br>
+<a href="func:version()">version()</a>
+
+<br><br>
+   Returns the system's release version, e.g. <code>'#3 on degas'</code>. An empty string is
+   returned if the value cannot be determined.
+
+<br><br>
+<a href="func:uname()">uname()</a>
+
+<br><br>
+   Fairly portable uname interface. Returns a tuple of strings ``(system, node,
+   release, version, machine, processor)`` identifying the underlying platform.
+
+<br><br>
+   Note that unlike the <a href="func:os.uname">os.uname</a> function this also returns possible
+   processor information as additional tuple entry.
+
+<br><br>
+   Entries which cannot be determined are set to <code>''</code>.
+
+<br><br>
+<h3>Java Platform
+</h3>
+<a href="func:java_ver(release='', vendor='', vminfo=('','',''), osinfo=('','',''))">java_ver(release='', vendor='', vminfo=('','',''), osinfo=('','',''))</a>
+
+<br><br>
+   Version interface for JPython.
+
+<br><br>
+   Returns a tuple <code>(release, vendor, vminfo, osinfo)</code> with <b>vminfo</b> being a
+   tuple <code>(vm_name, vm_release, vm_vendor)</code> and <b>osinfo</b> being a tuple
+   <code>(os_name, os_version, os_arch)</code>. Values which cannot be determined are set to
+   the defaults given as parameters (which all default to <code>''</code>).
+
+<br><br>
+<h3>Windows Platform
+</h3>
+<a href="func:win32_ver(release='', version='', csd='', ptype='')">win32_ver(release='', version='', csd='', ptype='')</a>
+
+<br><br>
+   Get additional version information from the Windows Registry and return a tuple
+   <code>(version, csd, ptype)</code> referring to version number, CSD level and OS type
+   (multi/single processor).
+
+<br><br>
+   As a hint: <b>ptype</b> is <code>'Uniprocessor Free'</code> on single processor NT machines
+   and <code>'Multiprocessor Free'</code> on multi processor machines. The *'Free'* refers
+   to the OS version being free of debugging code. It could also state *'Checked'*
+   which means the OS version uses debugging code, i.e. code that checks arguments,
+   ranges, etc.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      Note: this function works best with Mark Hammond's
+      <a href="mod:win32all">win32all</a> package installed, but also on Python 2.3 and
+      later (support for this was added in Python 2.6). It obviously
+      only runs on Win32 compatible platforms.
+</div>
+<h3>Win95/98 specific
+</h3>
+<a href="func:popen(cmd, mode='r', bufsize=None)">popen(cmd, mode='r', bufsize=None)</a>
+
+<br><br>
+   Portable <a href="func:popen">popen</a> interface.  Find a working popen implementation
+   preferring <a href="func:win32pipe.popen">win32pipe.popen</a>.  On Windows NT, <a href="func:win32pipe.popen">win32pipe.popen</a>
+   should work; on Windows 9x it hangs due to bugs in the MS C library.
+
+<br><br>
+<h3>Mac OS Platform
+</h3>
+<a href="func:mac_ver(release='', versioninfo=('','',''), machine='')">mac_ver(release='', versioninfo=('','',''), machine='')</a>
+
+<br><br>
+   Get Mac OS version information and return it as tuple ``(release, versioninfo,
+   machine)<code> with *versioninfo* being a tuple </code>(version, dev_stage,
+   non_release_version)``.
+
+<br><br>
+   Entries which cannot be determined are set to <code>''</code>.  All tuple entries are
+   strings.
+
+<br><br>
+   Documentation for the underlying :cfunc:<code>gestalt</code> API is available online at
+   http://www.rgaros.nl/gestalt/.
+
+<br><br>
+<h3>Unix Platforms
+</h3>
+<a href="func:dist(distname='', version='', id='', supported_dists=('SuSE','debian','redhat','mandrake',...))">dist(distname='', version='', id='', supported_dists=('SuSE','debian','redhat','mandrake',...))</a>
+
+<br><br>
+   This is another name for <a href="func:linux_distribution">linux_distribution</a>.
+
+<br><br>
+<a href="func:linux_distribution(distname='', version='', id='', supported_dists=('SuSE','debian','redhat','mandrake',...), full_distribution_name=1)">linux_distribution(distname='', version='', id='', supported_dists=('SuSE','debian','redhat','mandrake',...), full_distribution_name=1)</a>
+
+<br><br>
+   Tries to determine the name of the Linux OS distribution name.
+
+<br><br>
+   <code>supported_dists</code> may be given to define the set of Linux distributions to
+   look for. It defaults to a list of currently supported Linux distributions
+   identified by their release file name.
+
+<br><br>
+   If <code>full_distribution_name</code> is true (default), the full distribution read
+   from the OS is returned. Otherwise the short name taken from
+   <code>supported_dists</code> is used.
+
+<br><br>
+   Returns a tuple <code>(distname,version,id)</code> which defaults to the args given as
+   parameters.  <code>id</code> is the item in parentheses after the version number.  It
+   is usually the version codename.
+
+<br><br>
+<a href="func:libc_ver(executable=sys.executable, lib='', version='', chunksize=2048)">libc_ver(executable=sys.executable, lib='', version='', chunksize=2048)</a>
+
+<br><br>
+   Tries to determine the libc version against which the file executable (defaults
+   to the Python interpreter) is linked.  Returns a tuple of strings ``(lib,
+   version)`` which default to the given parameters in case the lookup fails.
+
+<br><br>
+   Note that this function has intimate knowledge of how different libc versions
+   add symbols to the executable is probably only usable for executables compiled
+   using :program:<code>gcc</code>.
+
+<br><br>
+   The file is read and scanned in chunks of <b>chunksize</b> bytes.
+</body></html>

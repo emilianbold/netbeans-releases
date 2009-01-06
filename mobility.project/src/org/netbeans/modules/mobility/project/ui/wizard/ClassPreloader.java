@@ -139,13 +139,14 @@ public final class ClassPreloader implements Runnable {
         "org.netbeans.spi.java.project.support.ui.PackageView", //NOI18N
         "org.netbeans.spi.java.project.support.ui.PackageRootNode", //NOI18N
         "org.netbeans.modules.editor.SimpleIndentEngine", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$AntAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$BuildConfigurationAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$CleanAndBuildConfigurationAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$CleanConfigurationAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$DeployConfigurationAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$SetConfigurationAction", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.NodeActions$AddConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.Actions", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.AntAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.BuildConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.CleanAndBuildConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.CleanConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.DeployConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.SetConfigurationAction", //NOI18N
+        "org.netbeans.modules.mobility.project.ui.actions.AddConfigurationAction", //NOI18N
         "freemarker.template.TemplateScalarModel", //NOI18N
         "freemarker.template.TemplateSequenceModel", //NOI18N
         "freemarker.template.TemplateHashModelEx", //NOI18N
@@ -167,7 +168,6 @@ public final class ClassPreloader implements Runnable {
         "org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor", //NOI18N
         "org.netbeans.modules.palette.ui.AutoscrollSupport", //NOI18N
         "org.apache.lucene.index.IndexCommitPoint", //NOI18N
-        "org.netbeans.modules.mobility.project.ui.ConfigurationsProvider", //NOI18N
         "org.netbeans.modules.mobility.deployment.ricoh.RicohDeploymentProperties", //NOI18N
         "org.netbeans.modules.xml.text.indent.DTDFormatter", //NOI18N
         "org.netbeans.editor.TokenItem", //NOI18N

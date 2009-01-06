@@ -123,7 +123,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         return currentIndex;
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -149,9 +149,9 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         downButton = new javax.swing.JButton();
         fontSelectionCombo = new javax.swing.JComboBox();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new java.awt.BorderLayout(5, 5));
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         currentFontFamilyPanel.setLayout(new java.awt.GridBagLayout());
 
         fontFaceList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -160,9 +160,9 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
                 fontFaceListValueChanged(evt);
             }
         });
-
         fontFamilyScroll.setViewportView(fontFaceList);
-        fontFaceList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_FAMILY_LIST_ACCESS_DESC"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle"); // NOI18N
+        fontFaceList.getAccessibleContext().setAccessibleDescription(bundle.getString("FONT_FAMILY_LIST_ACCESS_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -175,29 +175,25 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
 
         newDeleteButtonPanel.setLayout(new java.awt.GridLayout(0, 1, 0, 5));
 
-        newButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("NEW_FONT_BUTTON_MNEMONIC").charAt(0));
-        newButton.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "NEW"));
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "NEW")); // NOI18N
         newButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
-
         newDeleteButtonPanel.add(newButton);
-        newButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ADD_FONT_FAMILY_ACCESS_DESC"));
+        newButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ADD_FONT_FAMILY_ACCESS_DESC")); // NOI18N
 
-        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("DELETE_FONT_BUTTON_MNEMONIC").charAt(0));
-        deleteButton.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "DELETE"));
+        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "DELETE")); // NOI18N
         deleteButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });
-
         newDeleteButtonPanel.add(deleteButton);
-        deleteButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("DELETE_FONT_FAMILY_ACCESS_DESC"));
+        deleteButton.getAccessibleContext().setAccessibleDescription(bundle.getString("DELETE_FONT_FAMILY_ACCESS_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -208,7 +204,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
 
         currentFontFamiliesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("CURRENT_FONTS").charAt(0));
         currentFontFamiliesLabel.setLabelFor(fontFaceList);
-        currentFontFamiliesLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "CURRENT_FONTS"));
+        currentFontFamiliesLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "CURRENT_FONTS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -219,15 +215,15 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         fontFamilyEditor.setLayout(new java.awt.GridBagLayout());
 
         availableFontScroll.setPreferredSize(new java.awt.Dimension(200, 138));
+
         availableFontList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 availableFontListValueChanged(evt);
             }
         });
-
         availableFontScroll.setViewportView(availableFontList);
-        availableFontList.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("AVAILABLE_FONT_LIST_ACCESS_NAME"));
-        availableFontList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("AVAILABLE_FONT_LIST_ACCESS_DESC"));
+        availableFontList.getAccessibleContext().setAccessibleName(bundle.getString("AVAILABLE_FONT_LIST_ACCESS_NAME")); // NOI18N
+        availableFontList.getAccessibleContext().setAccessibleDescription(bundle.getString("AVAILABLE_FONT_LIST_ACCESS_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,14 +235,14 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         fontFamilyEditor.add(availableFontScroll, gridBagConstraints);
 
         selectedFontScroll.setPreferredSize(new java.awt.Dimension(200, 130));
+
         selectedFontList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 selectedFontListValueChanged(evt);
             }
         });
-
         selectedFontScroll.setViewportView(selectedFontList);
-        selectedFontList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("SELECTED_FONT_LIST_ACCESS_DESC"));
+        selectedFontList.getAccessibleContext().setAccessibleDescription(bundle.getString("SELECTED_FONT_LIST_ACCESS_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -258,7 +254,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         fontFamilyEditor.add(selectedFontScroll, gridBagConstraints);
 
         availableLabel.setLabelFor(fontSelectionCombo);
-        availableLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "AVAILABLE"));
+        availableLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "AVAILABLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -267,7 +263,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         fontFamilyEditor.add(availableLabel, gridBagConstraints);
 
         selectedLabel.setLabelFor(selectedFontList);
-        selectedLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "SELECTED"));
+        selectedLabel.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "SELECTED")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -275,35 +271,31 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         fontFamilyEditor.add(selectedLabel, gridBagConstraints);
-        selectedLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("SELECTED_FONT_LIST_ACCESS_DESC"));
+        selectedLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("SELECTED_FONT_LIST_ACCESS_DESC")); // NOI18N
 
         addRemoveButtonPanel.setLayout(new java.awt.GridLayout(2, 1, 0, 5));
 
-        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ADD_FONT_BUTTON_MNEMONIC").charAt(0));
         addButton.setText(">");
-        addButton.setToolTipText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "Add_selected_fonts"));
+        addButton.setToolTipText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "Add_selected_fonts")); // NOI18N
         addButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         addRemoveButtonPanel.add(addButton);
-        addButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ADD_FONT_ACCESS_NAME"));
+        addButton.getAccessibleContext().setAccessibleName(bundle.getString("ADD_FONT_ACCESS_NAME")); // NOI18N
 
-        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("REMOVE_FONT_BUTTON_MNEMONIC").charAt(0));
         removeButton.setText("<");
-        removeButton.setToolTipText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "Remove_selected_fonts"));
+        removeButton.setToolTipText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "Remove_selected_fonts")); // NOI18N
         removeButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         addRemoveButtonPanel.add(removeButton);
-        removeButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("REMOVE_FONT_ACCESS_NAME"));
+        removeButton.getAccessibleContext().setAccessibleName(bundle.getString("REMOVE_FONT_ACCESS_NAME")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -314,29 +306,25 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
 
         upDownPanel.setLayout(new java.awt.GridLayout(0, 1, 0, 5));
 
-        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("UP_FONT_BUTTON_MNEMONIC").charAt(0));
-        upButton.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "UP"));
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "UP")); // NOI18N
         upButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upButtonActionPerformed(evt);
             }
         });
-
         upDownPanel.add(upButton);
-        upButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("MOVE_FONT_UP_ACCESS_NAME"));
+        upButton.getAccessibleContext().setAccessibleDescription(bundle.getString("MOVE_FONT_UP_ACCESS_NAME")); // NOI18N
 
-        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("DOWN_FONT_BUTTON_MNEMONIC").charAt(0));
-        downButton.setText(org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "DOWN"));
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(FontFamilyEditorDialog.class, "DOWN")); // NOI18N
         downButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downButtonActionPerformed(evt);
             }
         });
-
         upDownPanel.add(downButton);
-        downButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("MOVE_FONT_DOWN_ACCESS_NAME"));
+        downButton.getAccessibleContext().setAccessibleDescription(bundle.getString("MOVE_FONT_DOWN_ACCESS_NAME")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -350,17 +338,15 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
                 fontSelectionComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 10);
         fontFamilyEditor.add(fontSelectionCombo, gridBagConstraints);
-        fontSelectionCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("AVAILABLE_FONT_COMBO_ACCESS_DESC"));
+        fontSelectionCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("AVAILABLE_FONT_COMBO_ACCESS_DESC")); // NOI18N
 
         add(fontFamilyEditor, java.awt.BorderLayout.SOUTH);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed

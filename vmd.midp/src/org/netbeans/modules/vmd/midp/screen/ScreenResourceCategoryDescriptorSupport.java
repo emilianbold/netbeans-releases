@@ -44,7 +44,6 @@ import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescri
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 /**

@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.dbgp.SessionProgress;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -72,7 +73,6 @@ import org.openide.util.Exceptions;
  *
  */
 public class SessionId {
-    private static final String PREFIX      = "netbeans-xdebug";         // NOI18N
     private static final String SLASH       = "/";                     // NOI18N
     private static final String BACK_SLASH  = "\\";                    // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SessionId.class.getName());
@@ -82,7 +82,7 @@ public class SessionId {
 
 
     public SessionId( FileObject fileObject ) {
-        myId = PREFIX;//+ mySessionsCount;
+        myId = getSessionPrefix();//+ mySessionsCount;
         mySessionsCount++;
         myFileObject = fileObject;
         myDebugFile = fileObject;
@@ -101,7 +101,7 @@ public class SessionId {
     }
 
     public String getSessionPrefix() {
-        return PREFIX;
+        return PhpOptions.getInstance().getDebuggerSessionId();
     }
 
     public synchronized void setFileUri( String uri ) {

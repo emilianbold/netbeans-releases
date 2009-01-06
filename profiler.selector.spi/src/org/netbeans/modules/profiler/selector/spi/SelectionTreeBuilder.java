@@ -40,57 +40,127 @@
 
 package org.netbeans.modules.profiler.selector.spi;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import java.util.Collections;
 import java.util.List;
 
 
 /**
- *
+ * {@linkplain SelectionTreeBuilder} takes care of building a tree representing
+ * the project logical model. The tree is composed of {@linkplain SelectorNode}
+ * nodes.
  * @author Jaroslav Bachorik
  */
-public interface SelectionTreeBuilder {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
+public abstract class SelectionTreeBuilder {
     public static final SelectionTreeBuilder NULL = new SelectionTreeBuilder() {
-        public boolean isDefault() {
-            return false;
-        }
-
-        public String getDisplayName() {
-            return "YOU SHOULD NOT SEE THIS"; // NOI18N
-        }
-
-        public String getID() {
-            return "NULL";
-        }
-
-        public boolean isPreferred(Project project) {
-            return false;
-        }
-
-        public List<SelectorNode> buildSelectionTree(Project project, boolean includeSubprojects) {
+        public List<SelectorNode> buildSelectionTree() {
             return Collections.emptyList();
         }
 
-        public boolean supports(Project project) {
-            return false;
+        @Override
+        public int estimatedNodeCount() {
+            return 0;
         }
     };
 
+    public static class Type {
+        final public String id;
+        final public String displayName;
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+        public Type(String id, String displayName) {
+            this.id = id;
+            this.displayName = displayName;
+        }
 
-    boolean isDefault();
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Type other = (Type) obj;
+            if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+                return false;
+            }
+            if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
+                return false;
+            }
+            return true;
+        }
 
-    String getDisplayName();
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 11 * hash + (this.id != null ? this.id.hashCode() : 0);
+            hash = 11 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+            return hash;
+        }
 
-    String getID();
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+    
+    private Type type = new Type("NULL", "YOU SHOULD NOT SEE THIS"); // NOI18N
+    private boolean preferredFlag;
 
-    boolean isPreferred(Project project);
+    public SelectionTreeBuilder() {
+        this(new Type("NULL", "YOU SHOULD NOT SEE THIS"), false); // NOI18N
+    }
+    public SelectionTreeBuilder(Type builderType, boolean isPreferred) {
+        this.type = builderType;
+        this.preferredFlag = isPreferred;
+    }
 
-    List<SelectorNode> buildSelectionTree(Project project, boolean includeSubprojects);
+    final public boolean isPreferred() {
+        return preferredFlag;
+    }
 
-    boolean supports(Project project);
+    final public void setPreferred(boolean isPreferred) {
+        preferredFlag = isPreferred;
+    }
+
+    /**
+     * Each builder *MUST* have a human readable name
+     * @return Returns the human readable builder name
+     */
+    final public String getDisplayName() {
+        return type.displayName;
+    }
+
+    /**
+     * Each builder *MUST* have a unique ID
+     * @return Returns an ID string
+     */
+    final public String getID() {
+        return type.id;
+    }
+
+    final public Type getType() {
+        return type;
+    }
+
+    /**
+     * Builds the tree composed of {@linkplain SelectorNode} nodes
+     * @return Returns a list of top-level nodes
+     */
+    abstract public List<? extends SelectorNode> buildSelectionTree();
+    /**
+     * 
+     * @return Returns the estimated number of top level
+     *         nodes that will be created when calling
+     *         {@linkplain SelectionTreeBuilder#buildSelectionTree()} method
+     */
+    abstract public int estimatedNodeCount();
+
+    @Override
+    /**
+     * By default the {@linkplain SelectionTreeBuilder#displayName} is used
+     */
+    public String toString() {
+        return type.displayName;
+    }
 }

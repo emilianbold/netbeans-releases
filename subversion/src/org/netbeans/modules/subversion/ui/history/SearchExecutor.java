@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -84,26 +84,28 @@ class SearchExecutor implements Runnable {
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
         criteria = master.getCriteria();
-        
-        pathToRoot = new HashMap<String, File>(); 
+    }
+
+    private void populatePathToRoot() {
+        pathToRoot = new HashMap<String, File>();
         try {
             if (searchingUrl()) {
                 String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
-                pathToRoot.put(rootPath, master.getRoots()[0]); 
+                pathToRoot.put(rootPath, master.getRoots()[0]);
             } else {
                 workFiles = new HashMap<SVNUrl, Set<File>>();
                 for (File file : master.getRoots()) {
                     populatePathToRoot(file);
-                    
+
                     SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
                     Set<File> set = workFiles.get(rootUrl);
                     if (set == null) {
                         set = new HashSet<File>(2);
                         workFiles.put(rootUrl, set);
                     }
-                    set.add(file);                    
+                    set.add(file);
                 }
-            }                
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -117,7 +119,7 @@ class SearchExecutor implements Runnable {
         int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
         pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
                        new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
-        
+
         File[] files = file.listFiles();
         if(files == null || files.length == 0) {
             return; 
@@ -160,6 +162,7 @@ class SearchExecutor implements Runnable {
 
     
     public void run() {
+        populatePathToRoot();
 
         final SVNRevision fromRevision = criteria.getFrom();
         final SVNRevision toRevision = criteria.getTo();

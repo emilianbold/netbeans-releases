@@ -41,13 +41,14 @@
 
 package org.netbeans.performance.mobility.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -66,6 +67,7 @@ public class ProjectPropertiesDialogTest  extends PerformanceTestCase {
         targetProject = "MobileApplicationVisualMIDlet";
         TITLE = "MobileApplicationVisualMIDlet";
     }
+
     public ProjectPropertiesDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -85,18 +87,15 @@ public class ProjectPropertiesDialogTest  extends PerformanceTestCase {
         doMeasurement();
     }
 
-
     @Override
     public void initialize() {
-        log(":: initialize");
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);        
     }
+
     public void prepare() {
-        log(":: prepare");
     }
 
     public ComponentOperator open() {
-        log(":: open");
         new PropertiesAction().performPopup(testNode);
         return new NbDialogOperator(TITLE);
     }

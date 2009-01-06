@@ -52,20 +52,20 @@ public class MakefileWizardDescriptorPanel implements WizardDescriptor.Panel {
     /** Serial version number */
     static final long serialVersionUID = -7154324322016837684L;
 
-    private Vector listvec;
+    private Vector<ChangeListener> listvec;
 
     private MakefileWizardPanel panel = null;
     private String helpString = "Construct_make_create"; // NOI18N
 
     MakefileWizardDescriptorPanel(MakefileWizardPanel panel, String helpString) {
-	this.panel = panel;
-	this.helpString = helpString;
+        this.panel = panel;
+        this.helpString = helpString;
     }
 
 
     /** Get the component for this panel */
     public Component getComponent() {
-	return panel;
+        return panel;
     }
 
 
@@ -73,7 +73,7 @@ public class MakefileWizardDescriptorPanel implements WizardDescriptor.Panel {
      *  Default help for those panels which do not currently have a help topic.
      */
     public HelpCtx getHelp() {
-	return new HelpCtx(helpString);
+        return new HelpCtx(helpString);
     }
 
 
@@ -81,22 +81,22 @@ public class MakefileWizardDescriptorPanel implements WizardDescriptor.Panel {
      *  The default validation method. Most panels don't do validation so don't
      *  need to override this.
      */
-    public boolean isValid() { 
-	return panel.isPanelValid(); 
+    public boolean isValid() {
+        return panel.isPanelValid();
     }
 
     public void addChangeListener(ChangeListener listener) {
-	if (listvec == null) {
-	    listvec = new Vector(1);
-	}
-	listvec.add(listener);
-    }    
+        if (listvec == null) {
+            listvec = new Vector<ChangeListener>(1);
+        }
+        listvec.add(listener);
+    }
   
 
     public void removeChangeListener(ChangeListener listener) {
-	if (listvec != null) {
-	    listvec.remove(listener);
-	}
+        if (listvec != null) {
+            listvec.remove(listener);
+        }
     }
 
 
@@ -108,6 +108,6 @@ public class MakefileWizardDescriptorPanel implements WizardDescriptor.Panel {
     }    
 
     public void putClientProperty(Object key, Object value) {
-	panel.putClientProperty(key, value);
+        panel.putClientProperty(key, value);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,10 +49,12 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -61,9 +63,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -72,6 +76,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -81,6 +86,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
@@ -93,6 +99,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,7 +109,7 @@ import org.openide.util.NbBundle;
 public class EqualsHashCodeGenerator implements CodeGenerator {
 
     private static final String ERROR = "<error>"; //NOI18N
-        
+
     public static class Factory implements CodeGenerator.Factory {
         
         public List<? extends CodeGenerator> create(Lookup context) {
@@ -360,31 +367,32 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         generateEqualsAndHashCode(wc, path, e, h, -1);
     }
     
-    private static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
+    static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
+            Scope scope = wc.getTrees().getScope(path);
             if (hashCodeFields != null) {
                 if (index >= 0) {
-                    nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+                    nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
                 } else {
-                    nue = make.addClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+                    nue = make.addClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
                 }
             }
             if (equalsFields != null) {
                 if (index >= 0) {
-                    nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+                    nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
                 } else {
-                    nue = make.addClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+                    nue = make.addClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
                 }
             }
             wc.rewrite(path.getLeaf(), nue);
         }        
     }
-    
-    private static MethodTree createEqualsMethod(WorkingCopy wc, Iterable<? extends VariableElement> equalsFields, DeclaredType type) {
+
+    private static MethodTree createEqualsMethod(WorkingCopy wc, Iterable<? extends VariableElement> equalsFields, DeclaredType type, Scope scope) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", make.Type(wc.getElements().getTypeElement("java.lang.Object").asType()), null)); //NOI18N
@@ -399,22 +407,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         statements.add(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "other", make.Type(type), make.TypeCast(make.Type(type), make.Identifier("obj")))); //NOI18N
         for (VariableElement ve : equalsFields) {
             TypeMirror tm = ve.asType();
-            if (tm.getKind().isPrimitive() || tm.getKind() == TypeKind.DECLARED && ((DeclaredType)tm).asElement().getKind() == ElementKind.ENUM) {
-                //if (this.<var> != other.<var>) return false;                
-                statements.add(make.If(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.MemberSelect(make.Identifier("other"), ve.getSimpleName())), make.Return(make.Identifier("false")), null)); //NOI18N
-            } else if (tm.getKind().equals(TypeKind.DECLARED) && ((DeclaredType)tm).asElement().getKind().isClass() && ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) {
-                //if ((this.<var> == null) ? (other.<var> != null) : !this.<var>.equals(other.<var>)) return false;
-                ExpressionTree exp1 = make.Parenthesized(make.Binary(Tree.Kind.EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null"))); //NOI18N
-                ExpressionTree exp2 = make.Parenthesized(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("other"), ve.getSimpleName()), make.Identifier("null"))); //NOI18N
-                ExpressionTree exp3 = make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "equals"), Collections.singletonList(make.MemberSelect(make.Identifier("other"), ve.getSimpleName())))); //NOI18N
-                statements.add(make.If(make.ConditionalExpression(exp1, exp2, exp3), make.Return(make.Identifier("false")), null)); //NOI18N
-            } else {
-                //if (this.<var> != other.<var> && (this.<var> == null || !this.<var>.equals(other.<var>))) return false;                
-                ExpressionTree exp1 = make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.MemberSelect(make.Identifier("other"), ve.getSimpleName())); //NOI18N
-                ExpressionTree exp2 = make.Binary(Tree.Kind.EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")); //NOI18N
-                ExpressionTree exp3 = make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "equals"), Collections.singletonList(make.MemberSelect(make.Identifier("other"), ve.getSimpleName())))); //NOI18N
-                statements.add(make.If(make.Binary(Tree.Kind.CONDITIONAL_AND, exp1, make.Parenthesized(make.Binary(Tree.Kind.CONDITIONAL_OR, exp2, exp3))), make.Return(make.Identifier("false")), null)); //NOI18N
-            }
+            ExpressionTree condition = prepareExpression(wc, EQUALS_PATTERNS, tm, ve, scope);
+
+            statements.add(make.If(condition, make.Return(make.Identifier("false")), null)); //NOI18N
         }
         statements.add(make.Return(make.Identifier("true")));
         BlockTree body = make.Block(statements, false);
@@ -423,7 +418,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         return make.Method(modifiers, "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree> emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }    
     
-    private static MethodTree createHashCodeMethod(WorkingCopy wc, Iterable<? extends VariableElement> hashCodeFields, DeclaredType type) {
+    private static MethodTree createHashCodeMethod(WorkingCopy wc, Iterable<? extends VariableElement> hashCodeFields, DeclaredType type, Scope scope) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);        
 
@@ -434,7 +429,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N        
         for (VariableElement ve : hashCodeFields) {
             ExpressionTree variableRead;
-            switch (ve.asType().getKind()) {
+            TypeMirror tm = ve.asType();
+            switch (tm.getKind()) {
                 case BYTE:
                 case CHAR:
                 case SHORT:
@@ -460,10 +456,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     variableRead = make.Parenthesized(make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0))); //NOI18N
                     break;
                 default:
-                    variableRead = make.Parenthesized(
-                            make.ConditionalExpression(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")), //NOI18N
-                            make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "hashCode"), Collections.<ExpressionTree>emptyList()), //NOI18N
-                            make.Literal(0)));
+                    variableRead = prepareExpression(wc, HASH_CODE_PATTERNS, tm, ve, scope);
             }
             statements.add(make.ExpressionStatement(make.Assignment(make.Identifier("hash"), make.Binary(Tree.Kind.PLUS, make.Binary(Tree.Kind.MULTIPLY, make.Literal(multiplyNumber), make.Identifier("hash")), variableRead)))); //NOI18N
         }
@@ -484,8 +477,14 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
         return true;
     }
+
+    static int randomNumber = -1;
     
     private static int generatePrimeNumber(int lowerLimit, int higherLimit) {
+        if (randomNumber > 0) {
+            return randomNumber;
+        }
+        
         Random r = new Random(System.currentTimeMillis());
         int proposed = r.nextInt(higherLimit - lowerLimit) + lowerLimit;        
         while (!isPrimeNumber(proposed))
@@ -513,6 +512,65 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         ModifiersTree modifiers = make.Modifiers(mods, annotations);
 
         return modifiers;
+    }
+
+    private static KindOfType detectKind(CompilationInfo info, TypeMirror tm) {
+        if (tm.getKind().isPrimitive() || tm.getKind() == TypeKind.DECLARED && ((DeclaredType)tm).asElement().getKind() == ElementKind.ENUM) {
+            return KindOfType.PRIMITIVE;
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            return ((ArrayType) tm).getComponentType().getKind().isPrimitive() ? KindOfType.ARRAY_PRIMITIVE : KindOfType.ARRAY;
+        }
+
+        if (tm.getKind().equals(TypeKind.DECLARED) && ((DeclaredType)tm).asElement().getKind().isClass() && ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) {
+            return KindOfType.STRING;
+        }
+
+        return KindOfType.OTHER;
+    }
+    
+    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<KindOfType, String> patterns, TypeMirror tm, VariableElement ve, Scope scope) {
+        KindOfType kind = detectKind(wc, tm);
+        String pattern = patterns.get(kind);
+
+        assert pattern != null;
+        
+        String conditionText = MapFormat.format(pattern, Collections.singletonMap("VAR", ve.getSimpleName().toString()));
+        ExpressionTree exp = wc.getTreeUtilities().parseExpression(conditionText, new SourcePositions[1]);
+
+        exp = GeneratorUtilities.get(wc).importFQNs(exp);
+        wc.getTreeUtilities().attributeTree(exp, scope);
+        
+        return exp;
+    }
+    
+    private enum KindOfType {
+        PRIMITIVE, //also enum
+        ARRAY_PRIMITIVE,
+        ARRAY,
+        STRING,
+        OTHER;
+    }
+
+    private static final Map<KindOfType, String> EQUALS_PATTERNS;
+    private static final Map<KindOfType, String> HASH_CODE_PATTERNS;
+
+    static {
+        EQUALS_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+
+        EQUALS_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR} != other.{VAR}");
+        EQUALS_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.equals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(KindOfType.STRING, "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
+        EQUALS_PATTERNS.put(KindOfType.OTHER, "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
+
+        HASH_CODE_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+
+        HASH_CODE_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.hashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepHashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(KindOfType.STRING, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(KindOfType.OTHER, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
     }
 
 }

@@ -76,7 +76,6 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.napi.gsfret.source.WorkingCopy;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -107,10 +106,10 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
-    private WhereUsedQuery refactoring;
-    private RubyElementCtx searchHandle;
+    private final WhereUsedQuery refactoring;
+    private final RubyElementCtx searchHandle;
     private Set<IndexedClass> subclasses;
-    private String targetName;
+    private final String targetName;
     
     /** Creates a new instance of WhereUsedQuery */
     public RubyWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -182,10 +181,9 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     // Find overrides of the class
                     RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
                     String fqn = AstUtilities.getFqnName(tph.getPath());
-                    Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
+                    subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
 
-                    if (classes.size() > 0) {
-                        subclasses = classes;
+                    if (subclasses.size() > 0) {
 //                        for (IndexedClass clz : classes) {
 //                            FileObject fo = clz.getFileObject();
 //                            if (fo != null) {

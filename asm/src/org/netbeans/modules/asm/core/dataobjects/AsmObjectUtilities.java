@@ -123,7 +123,7 @@ public class AsmObjectUtilities {
 
             public void run() {
                 try {
-                    text[0] = doc.getText(0, doc.getLength() - 1);
+                    text[0] = doc.getLength() == 0 ? "" : doc.getText(0, doc.getLength() - 1);
                 } catch (BadLocationException ex) {
                     text[0] = "";
                     LOGGER.log(Level.INFO, "Impossible error with getText()"); // NOI18N
@@ -135,7 +135,9 @@ public class AsmObjectUtilities {
     }
 
     public static String getText(FileObject fo) {
-
+        if (fo == null) {
+            return "";
+        }
         InputStream is = null;
 
         try {

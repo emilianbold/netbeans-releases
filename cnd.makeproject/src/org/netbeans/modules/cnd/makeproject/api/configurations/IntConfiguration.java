@@ -139,7 +139,7 @@ public class IntConfiguration {
     }
 
     @Override
-    public Object clone() {
+    public IntConfiguration clone() {
         IntConfiguration clone = new IntConfiguration(master, def, names, options);
         clone.setValue(getValue());
         clone.setModified(getModified());

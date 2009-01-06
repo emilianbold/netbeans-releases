@@ -233,7 +233,7 @@ public final class RootCD extends ComponentDescriptor {
         public boolean select (FlowDescriptor descriptor, int modifiers) {
             DesignDocument document = descriptor.getRepresentedComponent ().getDocument ();
             PaletteController controller = PaletteSupport.getPaletteController (document);
-            Lookup category = controller.getSelectedCategory ();
+            //Lookup category = controller.getSelectedCategory ();
             Lookup item = controller.getSelectedItem ();
             boolean ret = false;
 

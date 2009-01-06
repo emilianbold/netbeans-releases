@@ -1,0 +1,36 @@
+import math as _math
+--------------------
+HINT:Unused Import
+FIX:Remove Unused Import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports
+import urimport
+---------------
+HINT:Unused Import
+FIX:Remove Unused Import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports
+import extract1b
+----------------
+HINT:Unused Import
+FIX:Remove Unused Import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports
+from foo import Sym1, Sym2
+--------------------------
+HINT:Some symbols are unused ([Sym1])
+FIX:Remove [Sym1] from import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports
+from bar import Sym4
+--------------------
+HINT:Unused Import
+FIX:Remove Unused Import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports
+from foo import Sym7, Sym8
+--------------------------
+HINT:Unused Import
+FIX:Remove Unused Import
+FIX:Remove All Unused Imports
+FIX:Clean up and Organize Imports

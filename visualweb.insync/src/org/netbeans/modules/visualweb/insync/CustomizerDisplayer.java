@@ -59,6 +59,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Customizer2;
 import javax.swing.JDialog;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.openide.awt.Mnemonics;
 
 /**
  * Class responsible for handling live customizers. It will display a live customizer, and also
@@ -125,8 +126,8 @@ public class CustomizerDisplayer
         Object[] options = null;
         Object[] closingOptions = null;
         if (customizer.isApplyCapable()) {
-            applyButton = new JButton(NbBundle.getMessage(CustomizerDisplayer.class, "Apply")); // NOI18N
-            applyButton.setMnemonic(NbBundle.getMessage(CustomizerDisplayer.class, "Apply_mnemonic").charAt(0));
+            applyButton = new JButton();
+            Mnemonics.setLocalizedText(applyButton, NbBundle.getMessage(CustomizerDisplayer.class, "TXT_Apply"));
             applyButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerDisplayer.class, "APPLY_ACCESS_NAME"));
             applyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDisplayer.class, "APPLY_ACCESS_DESC"));
             boolean enabled = customizer.isModified(); // in case changes aren't cached
@@ -141,8 +142,8 @@ public class CustomizerDisplayer
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.CANCEL_OPTION };
         } else {
-            closeButton = new JButton(NbBundle.getMessage(CustomizerDisplayer.class, "Close")); // NOI18N
-            closeButton.setMnemonic(NbBundle.getMessage(CustomizerDisplayer.class, "Close_mnemonic").charAt(0));
+            closeButton = new JButton();
+            Mnemonics.setLocalizedText(closeButton, NbBundle.getMessage(CustomizerDisplayer.class, "TXT_Close"));
             closeButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerDisplayer.class, "CLOSE_ACCESS_NAME"));
             closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDisplayer.class, "CLOSE_ACCESS_DESC"));
             options = new Object[] {

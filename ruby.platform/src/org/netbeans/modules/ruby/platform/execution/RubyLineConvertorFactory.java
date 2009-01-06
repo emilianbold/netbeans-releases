@@ -118,10 +118,10 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
      */
     public static List<LineConvertor> getStandardConvertors(FileLocator locator) {
         List<LineConvertor> result = new ArrayList<LineConvertor>(4);
-        result.add(LineConvertors.filePattern(locator, RAILS_RECOGNIZER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RAILS_RECOGNIZER, null, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN_MY, null, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER, null, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN, null, 1, 2));
         return result;
     }
 

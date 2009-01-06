@@ -1,0 +1,11 @@
+__all__ = [ "MyPublikClass", "MyPublicClass" ]
+            ---------------
+HINT:"MyPublikClass" defined in __all__ does not exist!
+__all__.extend(["makedirs", "removedirs", "renames"])
+                                          ---------
+HINT:"makedirs" defined in __all__ does not exist!
+HINT:"removedirs" defined in __all__ does not exist!
+HINT:"renames" defined in __all__ does not exist!
+__all__.append("three")
+               -------
+HINT:"three" defined in __all__ does not exist!

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.Color;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
@@ -78,11 +79,13 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5593346955414591271L;
+    private static final long serialVersionUID = -5593389531357591271L;
+    private static final String NO_CONFIG = "no-config"; // NOI18N
+    private static final String MISSING_CONFIG = "missing-config"; // NOI18N
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
-            new RemoteConfiguration.Empty("no-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
+            new RemoteConfiguration.Empty(NO_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
-            new RemoteConfiguration.Empty("missing-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
+            new RemoteConfiguration.Empty(MISSING_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProjectProperties properties;
@@ -177,6 +180,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
         updateRemoteConnectionHint();
+
+        // preserve permissions
+        preservePermissionsCheckBox.addActionListener(new CheckBoxUpdater(
+                PhpProjectProperties.REMOTE_PERMISSIONS, preservePermissionsCheckBox));
     }
 
     @Override
@@ -219,6 +226,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         }
         uploadFilesComboBox.setSelectedItem(uploadFiles);
+
+        boolean preservePermissions = Boolean.parseBoolean(getValue(PhpProjectProperties.REMOTE_PERMISSIONS));
+        preservePermissionsCheckBox.setSelected(preservePermissions);
     }
 
     @Override
@@ -287,7 +297,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection == null
-                    || "".equals(remoteConnection) // NOI18N
+                    || NO_CONFIG.equals(remoteConnection)
                     || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one
@@ -338,6 +348,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesLabel = new JLabel();
         uploadFilesComboBox = new JComboBox();
         uploadFilesHintLabel = new JLabel();
+        preservePermissionsCheckBox = new JCheckBox();
+        preservePermissionsLabel = new JLabel();
 
         setFocusTraversalPolicy(null);
 
@@ -392,6 +404,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
         uploadFilesHintLabel.setEnabled(false);
 
+
+        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text")); // NOI18N
+        preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
+        Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
+        preservePermissionsLabel.setEnabled(false);
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
@@ -413,22 +431,29 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(urlTextField, GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                            .add(urlTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
-                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(indexFileBrowseButton))
-                            .add(argsTextField, GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                            .add(urlHintLabel)
+                            .add(argsTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                             .add(GroupLayout.LEADING, uploadFilesHintLabel)
                             .add(layout.createSequentialGroup()
-                                .add(remoteConnectionComboBox, 0, 132, Short.MAX_VALUE)
+                                .add(remoteConnectionComboBox, 0, 225, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(manageRemoteConnectionButton))
-                            .add(GroupLayout.LEADING, uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, uploadFilesComboBox, 0, 229, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, runAsComboBox, 0, 229, Short.MAX_VALUE))
+                            .add(GroupLayout.LEADING, uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, uploadFilesComboBox, 0, 322, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, runAsComboBox, 0, 322, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, urlHintLabel, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
                         .add(0, 0, 0))))
+            .add(layout.createSequentialGroup()
+                .add(preservePermissionsCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(21, 21, 21)
+                .add(preservePermissionsLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
@@ -471,6 +496,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(uploadFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(uploadFilesHintLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(preservePermissionsCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(preservePermissionsLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -534,6 +563,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JLabel indexFileLabel;
     private JTextField indexFileTextField;
     private JButton manageRemoteConnectionButton;
+    private JCheckBox preservePermissionsCheckBox;
+    private JLabel preservePermissionsLabel;
     private JComboBox remoteConnectionComboBox;
     private JLabel remoteConnectionHintLabel;
     private JLabel remoteConnectionLabel;
@@ -594,6 +625,23 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             String value = comboBoxConvertor.convert(field);
             RunAsRemoteWeb.this.putValue(propName, value);
             RunAsRemoteWeb.this.markAsModified(label, propName, value);
+            validateFields();
+        }
+    }
+
+    private class CheckBoxUpdater implements ActionListener {
+        private final JCheckBox field;
+        private final String propName;
+
+        public CheckBoxUpdater(String propName, JCheckBox field) {
+            this.field = field;
+            this.propName = propName;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String value = Boolean.toString(field.isSelected());
+            RunAsRemoteWeb.this.putValue(propName, value);
+            RunAsRemoteWeb.this.markAsModified(field, propName, value);
             validateFields();
         }
     }

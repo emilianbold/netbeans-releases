@@ -42,7 +42,10 @@ package org.netbeans.api.java.source.gen;
 
 import java.io.*;
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.Collections;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.*;
@@ -73,6 +76,7 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody2"));
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody3"));
 //        suite.addTest(new EnumTest("testConstantAddition"));
+//        suite.addTest(new EnumTest("testImplementsChange153066"));
         return suite;
     }
 
@@ -931,6 +935,59 @@ public class EnumTest extends GeneratorTest {
                         workingCopy.rewrite(vt, copy);
                     }
                 }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testImplementsChange153066() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public class Test {\n" +
+            "    public enum Test {\n"+//implements Runnable {\n" +
+            "        A, B, C;\n" +
+            "        public void run() {}\n" +
+            "    }\n}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\nimport java.lang.Object;\n\n" +
+            "public class Test {\n" +
+            "    public enum Test {\n"+//implements Runnable {\n" +
+            "        A, B, C;\n" +
+            "        public void run() {}\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        Element type = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getType()));
+
+                        if (type != null) {
+                            workingCopy.rewrite(node.getType(), make.Identifier("Test.Test"));
+                            return null;
+                        } else {
+                            return super.visitVariable(node, p);
+                        }
+                    }
+                }.scan(cut, null);
+
+                //ensure the whole file is rewritten:
+                workingCopy.rewrite(cut, make.addCompUnitImport(cut, make.Import(make.Identifier("java.lang.Object"), false)));
             }
 
         };

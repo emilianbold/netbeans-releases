@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -51,6 +52,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -94,13 +97,27 @@ public class RunScript extends Command implements Displayable {
                         }
                     };
                 }
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(true).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                        .controllable(isControllable())
+                        .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
+                        .inputVisible(true)
+                        .showProgress(true)
+                        .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
                 final ExecutionService service = ExecutionService.newService(getBuilder(phpInterpreter, scriptFile),
                         descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
                 final Future<Integer> result = service.run();
+                // #155251
+                /*try {
+                    result.get();
+                } catch (ExecutionException exc) {
+                    Throwable cause = exc.getCause();
+                    assert cause != null;
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(
+                            cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                }*/
                 return new Cancellable() {
                     public boolean cancel() {
                         return result.cancel(true);
@@ -189,7 +206,7 @@ public class RunScript extends Command implements Displayable {
             try {
                 PhpOptions options = PhpOptions.getInstance();
                 if (options.isOpenResultInBrowser()) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURI().toURL());
                 }
                 if (options.isOpenResultInEditor()) {
                     FileObject fo = FileUtil.toFileObject(tmpFile);

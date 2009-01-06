@@ -73,7 +73,10 @@ public final class JavaIdentifiers {
         if (packageName.startsWith(".") || packageName.endsWith(".")) {// NOI18N
             return false;
         }
-        
+        if(packageName.equals("java") || packageName.startsWith("java.")) {//NOI18N
+            return false;
+        }
+
         String[] tokens = packageName.split("\\."); //NOI18N
         if (tokens.length == 0) {
             return Utilities.isJavaIdentifier(packageName);

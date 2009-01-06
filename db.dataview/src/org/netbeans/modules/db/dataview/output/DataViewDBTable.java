@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +56,7 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewDBTable {
+public class DataViewDBTable {
 
     private final DBTable[] dbTables;
     private final List<DBColumn> columns;
@@ -73,9 +72,9 @@ class DataViewDBTable {
             cols.addAll(tbl.getColumnList());
         }
         Collections.sort(cols, new ColumnOrderComparator());
-        columns = Collections.unmodifiableList(cols);        
+        columns = Collections.unmodifiableList(cols);
     }
-    
+
     public DBTable geTable(int index) {
         return dbTables[index];
     }
@@ -88,8 +87,8 @@ class DataViewDBTable {
         return dbTables != null && dbTables.length == 1 && !dbTables[0].getName().equals("");
     }
 
-    public String getFullyQualifiedName(int index) {
-        return dbTables[index].getFullyQualifiedName();
+    public String getFullyQualifiedName(int index, boolean quoteAlways) {
+        return dbTables[index].getFullyQualifiedName(quoteAlways);
     }
 
     public DBColumn getColumn(int index) {
@@ -104,8 +103,8 @@ class DataViewDBTable {
         return columns.get(index).getName();
     }
 
-    public String getQualifiedName(int index) {
-        return columns.get(index).getQualifiedName();
+    public String getQualifiedName(int index, boolean quoteAlways) {
+        return columns.get(index).getQualifiedName(quoteAlways);
     }
 
     public int getColumnCount() {
@@ -130,7 +129,7 @@ class DataViewDBTable {
         }
         return columnTooltipStr;
     }
-    
+
     final class ColumnOrderComparator implements Comparator<DBColumn> {
 
         private ColumnOrderComparator() {
@@ -139,5 +138,5 @@ class DataViewDBTable {
         public int compare(DBColumn col1, DBColumn col2) {
             return col1.getOrdinalPosition() - col2.getOrdinalPosition();
         }
-    }    
+    }
 }

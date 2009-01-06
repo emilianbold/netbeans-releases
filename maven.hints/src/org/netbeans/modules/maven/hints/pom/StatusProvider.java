@@ -61,16 +61,19 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -95,11 +98,26 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private Document document;
         private POMModel model;
         private Project project;
+        private FileChangeListener listener;
 
         StatusProviderImpl(Document doc) {
             this.document = doc;
+            listener = new FileChangeAdapter() {
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            checkHints();
+                        }
+                    });
+                }
+            };
             initializeModel();
-            checkHints();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    checkHints();
+                }
+            });
         }
 
 
@@ -108,6 +126,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             assert model != null;
             try {
                 model.sync();
@@ -141,21 +162,18 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private void initializeModel() {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             if (fo != null) {
-                ModelSource ms = Utilities.createModelSource(fo, true);
+                ModelSource ms = Utilities.createModelSource(fo);
                 model = POMModelFactory.getDefault().getModel(ms);
                 model.setAutoSyncActive(false);
                 project = FileOwnerQuery.getOwner(fo);
-//                //TODO weak listener
-                fo.addFileChangeListener(new FileChangeAdapter() {
-                    @Override
-                    public void fileChanged(FileEvent fe) {
-                        checkHints();
-                    }
-                });
+                fo.addFileChangeListener(FileUtil.weakFileChangeListener(listener, fo));
             }
         }
 
         static List<ErrorDescription> findHints(POMModel model, Project project, int selectionStart, int selectionEnd) {
+            if (!model.getModelSource().isEditable()) {
+                return new ArrayList<ErrorDescription>();
+            }
             try {
                 model.sync();
                 model.refresh();
@@ -205,7 +223,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     EditorCookie ed = dobj.getCookie(EditorCookie.class);
                     if (ed != null) {
                         JEditorPane[] panes = ed.getOpenedPanes();
-                        if (panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
+                        if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
                             HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
                             ok = true;
                         }

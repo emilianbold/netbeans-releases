@@ -64,10 +64,6 @@ public class EnterpriseSetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-    
     public void testAddApplicationServer() {
         CommonUtilities.addApplicationServer();
     }

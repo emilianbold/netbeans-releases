@@ -29,7 +29,7 @@ public class ResourcesImpl extends NamedImpl implements Resources {
     }
 
     public void addResource(Resource resource) {
-        addAfter(RESOURCE_PROPERTY, resource, TypeCollection.FOR_RESOURCES.types());
+        addAfter(RESOURCE_PROPERTY, resource, TypeCollection.FOR_RESOURCE.types());
     }
 
     public void removeResource(Resource resource) {

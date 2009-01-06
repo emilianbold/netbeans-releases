@@ -365,7 +365,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         newDataBuffer.append(PROFILER_IMPORT_STRING);
         newDataBuffer.append(buildScript.substring(importIndex + STANDARD_IMPORT_STRING.length() + 1));
 
-        final FileObject buildFile = ProjectUtilities.findBuildFile(project); // NOI18N
+        FileObject buildFile = getProjectBuildScript(project);
         FileLock lock = null;
         OutputStreamWriter writer = null;
 

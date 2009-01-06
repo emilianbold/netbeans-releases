@@ -1,0 +1,26 @@
+Code completion result for source line:
+raise D|uplicateSectionError(section)
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      DOMException                               
+CLASS      DOMStringSizeErr                           
+CLASS      DecimalException                           
+CLASS      DeprecationWarning                         
+CLASS      DistutilsArgError                          
+CLASS      DistutilsClassError                        
+CLASS      DistutilsError                             
+CLASS      DistutilsExecError                         
+CLASS      DistutilsFileError                         
+CLASS      DistutilsGetoptError                       
+CLASS      DistutilsInternalError                     
+CLASS      DistutilsModuleError                       
+CLASS      DistutilsOptionError                       
+CLASS      DistutilsPlatformError                     
+CLASS      DistutilsSetupError                        
+CLASS      DistutilsTemplateError                     
+CLASS      DivisionByZero                             
+CLASS      DivisionImpossible              [PRIVATE]  
+CLASS      DivisionUndefined               [PRIVATE]  
+CLASS      DocTestFailure                             
+CLASS      DomstringSizeErr                           
+CLASS      DuplicateSectionError                      

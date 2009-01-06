@@ -46,7 +46,6 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.InvalidException;
@@ -150,10 +149,7 @@ public final class NbProblemDisplayer {
                 if (polite != null) {
                     return polite;
                 } else {
-                    Set others = m.getManager().getModules();
-                    Iterator it = others.iterator();
-                    while (it.hasNext()) {
-                        Module other = (Module)it.next();
+                    for (Module other : m.getManager().getModules()) {
                         if (other.provides(dep.getName())) {
                             return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_require_disabled", dep.getName());
                         }

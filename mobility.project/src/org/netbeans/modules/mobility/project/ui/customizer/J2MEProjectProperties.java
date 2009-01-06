@@ -149,7 +149,7 @@ public class J2MEProjectProperties implements ProjectProperties {
         initPropertyDescriptors();
         read();
     }
-    
+
     public synchronized void setActiveConfiguration(final ProjectConfiguration cfg) {
         put(DefaultPropertiesDescriptor.CONFIG_ACTIVE, cfg == null || configHelper.getDefaultConfiguration().equals(cfg)? "" : cfg.getDisplayName()); //NOI18N
     }
@@ -253,6 +253,11 @@ public class J2MEProjectProperties implements ProjectProperties {
     
     public FileObject getSourceRoot() {
         return antProjectHelper.resolveFileObject(antProjectHelper.getStandardPropertyEvaluator().getProperty("src.dir")); //NOI18N
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "{project=" + project + " properties=" + properties + '}'; //NOI18N
     }
     
     /** Reads all the properties of the project and converts them to objects
@@ -521,6 +526,13 @@ public class J2MEProjectProperties implements ProjectProperties {
             this.rawValue = rawValue;
             this.value = rawValue==null ? null : propertyDesciptor.getPropertyParser().decode( rawValue, antProjectHelper, refHelper );
             this.newValue = null;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "[rawvalue=" + rawValue + ", value=" +
+                    value + ", newValue=" + newValue + ", newValueEncoded=" +
+                    newValueEncoded + " modified=" + modified + "]";
         }
         
         public PropertyDescriptor getPropertyDescriptor() {

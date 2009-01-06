@@ -47,7 +47,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class AddFolderAction extends NodeAction<File> {
+public final class AddFolderAction extends NodeAction<File> {
 
     private static File lastFile = null;
 

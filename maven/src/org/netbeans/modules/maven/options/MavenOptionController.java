@@ -83,7 +83,7 @@ class MavenOptionController extends OptionsPanelController {
         if (mavenFO != null) {
             FileObject settingsFO = mavenFO.getFileObject("settings.xml");
             if (settingsFO != null) {
-                source = Utilities.createModelSource(settingsFO, true);
+                source = Utilities.createModelSource(settingsFO);
             }
         }
         if (source == null) {
@@ -152,7 +152,7 @@ class MavenOptionController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(MavenAdvancedOption.class);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {

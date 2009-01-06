@@ -60,9 +60,11 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
     private ExtenderController controller = ExtenderController.create();
     private WizardDescriptor wizardDescriptor;
     private PanelSupportedFrameworksVisual component;
+    private NewWebProjectWizardIterator iterator = null;
     
     /** Create the wizard panel descriptor. */
-    public PanelSupportedFrameworks() {
+    public PanelSupportedFrameworks(NewWebProjectWizardIterator iterator) {
+        this.iterator = iterator;
     }
     
     public boolean isFinishPanel() {
@@ -84,6 +86,10 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
     }
     
     public boolean isValid() {
+
+        if(iterator.isIstantiating == true)
+            return false;
+
         getComponent();
         return component.valid(wizardDescriptor);
     }

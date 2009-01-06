@@ -159,9 +159,7 @@ public class EjbDataSourcesSelectionPanel extends JPanel {
 
         buttonPanel.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
 
-        selectAllButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("SELECT_ALL_BUTTON_MNEMONIC").charAt(0));
-        selectAllButton.setText(bundle.getString("SELECT_ALL_BUTTON_LABEL")); // NOI18N
-        selectAllButton.setPreferredSize(null);
+        org.openide.awt.Mnemonics.setLocalizedText(selectAllButton, org.openide.util.NbBundle.getMessage(EjbDataSourcesSelectionPanel.class, "SELECT_ALL_BUTTON_LABEL")); // NOI18N
         selectAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectAllButtonActionPerformed(evt);
@@ -170,9 +168,7 @@ public class EjbDataSourcesSelectionPanel extends JPanel {
         buttonPanel.add(selectAllButton);
         selectAllButton.getAccessibleContext().setAccessibleDescription(bundle.getString("SELECT_ALL_BUTTON_DESC")); // NOI18N
 
-        clearAllButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CLEAR_BUTTON_MNEMONIC").charAt(0));
-        clearAllButton.setText(bundle.getString("CLEAR_BUTTON_LABEL")); // NOI18N
-        clearAllButton.setPreferredSize(null);
+        org.openide.awt.Mnemonics.setLocalizedText(clearAllButton, org.openide.util.NbBundle.getMessage(EjbDataSourcesSelectionPanel.class, "CLEAR_BUTTON_LABEL")); // NOI18N
         clearAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearAllButtonActionPerformed(evt);

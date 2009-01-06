@@ -101,7 +101,6 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     private final String TITLE_CUSTOMIZE_PROPERTIES_DIALOG = "";//Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_Customizer_dialog_title");   // The same string as last one
     private final String TITLE_DIALOG_CONFIRM_OBJECT_DELETION = "";//Bundle.getStringTrimmed("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");    // String : Confirm Object deletion
     private final String TITLE_DELETE_MORE_LOCALES_CONFIRMATION_DIALOG = "";//Bundle.getStringTrimmed("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectsTitle");    // String : Confirm Multiple Object Deletion
-    private final String TITLE_WELCOME = "";//Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle", "LBL_Tab_Title"); // String Welcome
     private final String TITLE_PROPERTIES_WINDOW_TABLE = "";//Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_FMT_GlobalProperties");  // String : Properties of
     private final String TITLE_PROPERTIES_WINDOW_TAB = "";//Bundle.getStringTrimmed("org.openide.nodes.Bundle", "Properties");    // String : Properties
     private final String BUTTON_NAME_NEW_PROPERTY = "";//Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "LBL_AddPropertyButton"); // String : New Property
@@ -735,17 +734,6 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         tco.close();
         // There is problem while writing tests becasuse we must have opened some source files.
         //new EditorWindowOperator().close();
-        /*
-        JTabbedPaneOperator jTabbedPaneOperator = new EditorWindowOperator().tbpEditorTabbedPane();
-        if ( jTabbedPaneOperator != null && jTabbedPaneOperator.findPage(this.TITLE_WELCOME) < 0 ) {
-        CloseViewAction cva = new CloseViewAction();
-        //jTabbedPaneOperator.selectPage(fileName);
-        cva.performPopup(jTabbedPaneOperator);
-        } else {
-        // close whole editor becase there is no tabs in editor
-        new EditorWindowOperator().close();
-        }
-         */
         // open classic editor from popup menu in Explorer window
         //ExplorerOperator explorerOperator = new ExplorerOperator();
         //RepositoryTabOperator eplorer = new RepositoryTabOperator();

@@ -144,7 +144,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private String projectName;
     private ResourceModel model;
     private FileObject rjsDir;
-    private InputStream wis;
+    private FileObject wadl;
     private String folderName;
     private String baseUrl;
     private String proxyUrl;
@@ -162,11 +162,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.baseEncoding = FileEncodingQuery.getEncoding(rootFolder);
     }
 
-    public ClientStubsGenerator(FileObject rootFolder, String folderName, InputStream wis,
+    public ClientStubsGenerator(FileObject rootFolder, String folderName, FileObject wadl,
             boolean overwrite) throws IOException {
         this.rootFolder = rootFolder;
         this.folderName = folderName;
-        this.wis = wis;
+        this.wadl = wadl;
         this.overwrite = overwrite;
         this.projectName = "NewProject";
         this.baseEncoding = FileEncodingQuery.getEncoding(rootFolder);
@@ -305,8 +305,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 path = path.substring(0, path.length()-2);
             setBaseUrl((url.endsWith("/")?url:url+"/") + findAppContext(getProject()) + (path.startsWith("/")?path:"/"+path));
             setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + findAppContext(targetPrj) + PROXY_URL);
-        } else if(wis != null) {
-            this.model = new ClientStubModel().createModel(wis);
+        } else if(wadl != null) {
+            this.model = new ClientStubModel().createModel(wadl);
             this.model.build();
             String url = ((WadlModeler)this.model).getBaseUrl();
             if(url == null)

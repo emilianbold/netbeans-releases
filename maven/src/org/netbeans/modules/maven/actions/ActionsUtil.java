@@ -38,13 +38,14 @@
  */
 package org.netbeans.modules.maven.actions;
 
-import java.io.File;
+import java.util.List;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.extension.ExtensionScanningException;
-import org.apache.maven.project.InvalidProjectModelException;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.reactor.MavenExecutionException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.Exceptions;
 
@@ -56,33 +57,17 @@ public class ActionsUtil {
 
     
     
-    public static MavenProject readMavenProject(Artifact artifact) {
-        MavenProject mavenProject = null;
+    public static MavenProject readMavenProject(Artifact artifact, List<ArtifactRepository> remoteRepos) {
 
-        String absolutePath = artifact.getFile().getAbsolutePath();
-        String extension = artifact.getArtifactHandler().getExtension();
-
-        String pomPath = absolutePath.substring(0, absolutePath.length() - extension.length());
-        pomPath += "pom";//NOI18N
-        File file = new File(pomPath);
-        if (file.exists()) {
-            try {
-
-                mavenProject = EmbedderFactory.getProjectEmbedder().
-                        readProject(file);
-
-            } catch (InvalidProjectModelException ex) {
-                //ignore nexus is falling ???
-            } catch (ProjectBuildingException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExtensionScanningException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (MavenExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
+        MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+        try {
+            MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
+            return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+        } catch (ProjectBuildingException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ComponentLookupException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        return mavenProject;
+        return new MavenProject();
     }
 }

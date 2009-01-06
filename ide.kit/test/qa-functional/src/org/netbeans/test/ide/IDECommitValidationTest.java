@@ -52,6 +52,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.ide.CountingSecurityManager.Mode;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -104,13 +105,15 @@ public class IDECommitValidationTest extends JellyTestCase {
             allowedFiles.add(line);
         }
 
-        CountingSecurityManager.initialize(null, allowedFiles);
+        CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
         
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
-        // too easy to break: conf = conf.addTest("testReflectionUsage");
+        /* too easy to break:
+        conf = conf.addTest("testReflectionUsage");
         conf = conf.addTest("testWriteAccess");
+         */
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");

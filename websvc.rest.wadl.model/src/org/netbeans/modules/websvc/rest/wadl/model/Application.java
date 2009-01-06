@@ -76,7 +76,8 @@ public interface Application extends Nameable<WadlComponent>, ReferenceableWadlC
     public Collection<Method> getMethod();
     public void addMethod(Method m);
     public void removeMethod(Method m);
-    
+
+    public Collection<RepresentationType> getRepresentationType();
     public Collection<Representation> getRepresentation();
     public void addRepresentation(Representation rep);
     void removeRepresentation(Representation rep);

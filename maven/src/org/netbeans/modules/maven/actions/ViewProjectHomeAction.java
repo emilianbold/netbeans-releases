@@ -41,9 +41,11 @@ package org.netbeans.modules.maven.actions;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
@@ -56,19 +58,20 @@ import org.openide.util.NbBundle;
 public class ViewProjectHomeAction extends AbstractAction {
 
     private Artifact artifact;
+    private List<ArtifactRepository> repos;
 
-    public ViewProjectHomeAction(Artifact artifact) {
+    public ViewProjectHomeAction(Artifact artifact, List<ArtifactRepository> repos) {
         this.artifact = artifact;
+        this.repos = repos;
         putValue(Action.NAME, NbBundle.getMessage(ViewProjectHomeAction.class, "LBL_View_ProjectHome"));
-        MavenProject mp = ActionsUtil.readMavenProject(artifact);
+        MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
         //enable only if url persent
         setEnabled(mp != null && mp.getUrl() != null);
     }
 
     public void actionPerformed(ActionEvent event) {
-        MavenProject mp = ActionsUtil.readMavenProject(artifact);
+        MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
         try {
-
             URLDisplayer.getDefault().showURL(new URL(mp.getUrl()));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);

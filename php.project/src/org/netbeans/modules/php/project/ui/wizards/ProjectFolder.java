@@ -196,7 +196,6 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(projectFolderBrowseButton)))
                 .add(0, 0, 0))
-        
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -208,8 +207,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
                     .add(projectFolderLabel)
                     .add(projectFolderBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(projectFolderScrollPane, GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE))
-        
+                .add(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, 85, GroupLayout.PREFERRED_SIZE))
         );
 
         projectFolderCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleName")); // NOI18N

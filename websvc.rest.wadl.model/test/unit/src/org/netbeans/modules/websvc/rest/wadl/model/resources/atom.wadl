@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+       xsi:schemaLocation="http://research.sun.com/wadl/2006/10 https://wadl.dev.java.net/wadl20061109.xsd"
+       xmlns="http://research.sun.com/wadl/2006/10"
+       xmlns:app="http://purl.org/atom/app#"
+       xmlns:atom="http://www.w3.org/2005/Atom">
+
+    <grammars>
+        <include href="http://purl.org/atom/app.xsd"/>
+    </grammars>
+
+    <resources base="http://example.org/">
+        <resource path="reilly/main"  type="http://purl.org/atom/app.wadl#entry_feed" app:member-type="entry"/>
+        <resource path="reilly/pic"  type="http://purl.org/atom/app.wadl#media_feed"  app:member-type="media"/>
+    </resources>
+    
+    <resource_type id="entry_feed">
+        <method href="#getFeed"/>
+        <method href="#addEntryCollectionMember"/>
+    </resource_type>
+
+    <resource_type id="media_feed">
+        <method href="#getFeed"/>
+        <method href="#addEntryCollectionMember"/>
+        <method href="#addMediaCollectionMember"/>
+    </resource_type>
+
+    <representation id="entry" mediaType="application/atom+xml" element="atom:entry"/>
+
+    <representation id="feed" mediaType="application/atom+xml" element="atom:feed">
+        <param name="first_link" style="plain"  path="/atom:feed/atom:link[@rel=’first’]">
+            <link resource_type="#entry_feed" rel="first"/>
+        </param>
+        <param name="next_link" style="plain"  path="/atom:feed/atom:link[@rel=’next’]">
+            <link resource_type="#entry_feed" rel="next" rev="previous"/>
+        </param>
+        <param name="prev_link" style="plain"  path="/atom:feed/atom:link[@rel=’previous’]">
+            <link resource_type="#entry_feed" rel="previous" rev="next"/>
+        </param>
+        <param name="last_link" style="plain"  path="/atom:feed/atom:link[@rel=’last’]">
+            <link resource_type="#entry_feed" rel="last"/>
+        </param>
+    </representation>
+
+    <method name="GET" id="getFeed">
+        <response>
+            <representation href="#feed"/>
+        </response>
+    </method>
+
+    <method name="POST" id="addEntryCollectionMember">
+        <request>
+            <representation href="#entry"/>
+        </request>
+    </method>
+
+    <method name="POST" id="addMediaCollectionMember">
+        <request>
+            <representation href="#entry"/>
+            <representation />
+        </request>
+    </method>
+
+</application>

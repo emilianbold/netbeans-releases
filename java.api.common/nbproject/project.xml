@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.12</specification-version>
+                        <specification-version>3.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -194,6 +194,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>

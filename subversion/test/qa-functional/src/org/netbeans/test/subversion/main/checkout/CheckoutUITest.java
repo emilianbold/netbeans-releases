@@ -75,7 +75,7 @@ public class CheckoutUITest extends JellyTestCase{
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
@@ -356,15 +356,15 @@ public class CheckoutUITest extends JellyTestCase{
         RepositoryBrowserOperator rbo = wdso.browseRepository();
         rbo.verify();
         //Try to select folders
-        rbo.selectFolder("branches");
-        rbo.selectFolder("tags");
-        rbo.selectFolder("trunk");
-        rbo.selectFolder("trunk|JavaApp|src|javaapp");
+//        rbo.selectFolder("branches");
+//        rbo.selectFolder("tags");
+//        rbo.selectFolder("trunk");
+//        rbo.selectFolder("trunk|JavaApp|src|javaapp");
         rbo.ok();
         
         assertEquals("Wrong folder selection!!!", "trunk/JavaApp/src/javaapp", wdso.getRepositoryFolder());
         rbo = wdso.browseRepository();
-        rbo.selectFolder("trunk|JavaApp");
+//        rbo.selectFolder("trunk|JavaApp");
         rbo.ok();
         assertEquals("Wrong folder selection!!!", "trunk/JavaApp", wdso.getRepositoryFolder());
         wdso.setLocalFolder("/tmp");

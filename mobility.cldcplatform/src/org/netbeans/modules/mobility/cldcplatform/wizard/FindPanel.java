@@ -58,14 +58,20 @@ import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.netbeans.spi.mobility.cldcplatform.CustomCLDCPlatformConfigurator;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Adam Sotona
  */
 final public class FindPanel extends javax.swing.JPanel implements SearchRunnable.Notifier {
-    
-    static File DEFAULT_DIR = null;
     
     static final String PROP_PLATFORM_FOLDERS = "PlatformFolders"; // NOI18N
     
@@ -166,23 +172,105 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (searchTask != null && !searchTask.isFinished()) return;
-        if (DEFAULT_DIR == null) {
-            final File[] roots = File.listRoots();
-            if (roots.length > 0) DEFAULT_DIR = roots[0];
-        }
-        final LocationChooser jfc = new LocationChooser(DEFAULT_DIR);
-        jfc.setDialogType(JFileChooser.OPEN_DIALOG);
-        jfc.setControlButtonsAreShown(true);
-        jfc.setDialogTitle(NbBundle.getMessage(FindPanel.class, "Title_FindPanel_Choose_To_Search")); //NOI18N
-        if (jfc.showDialog(this, NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Search")) == JFileChooser.APPROVE_OPTION) { //NOI18N
-            searchRunnable = new SearchRunnable(this, jfc.getSelectedFile(), -1);
+        String aDescription = NbBundle.getMessage(FindPanel.class, "AD_LocationChooser"); //NOI18N
+        String title = NbBundle.getMessage(FindPanel.class, "Title_FindPanel_Choose_To_Search"); //NOI18N
+        Badger badger = new Badger();
+        File dir;
+        if ((dir = new FileChooserBuilder(getClass().getName()).setDirectoriesOnly(true).
+                setTitle(title).
+                setAccessibleDescription(aDescription).
+                setBadgeProvider(badger).
+                setDefaultWorkingDirectory(File.listRoots().length > 0 ? File.listRoots()[0] : null).
+                setFileFilter(badger).showOpenDialog()) != null) {
+
+            searchRunnable = new SearchRunnable(this, dir, -1);
             jButton1.setEnabled(false);
             showError(NbBundle.getMessage(FindPanel.class, "WARN_SearchInProgress"));//NOI18N
             searchTask = RequestProcessor.getDefault().post(searchRunnable);
         }
-        DEFAULT_DIR = jfc.getSelectedFile();
     }//GEN-LAST:event_jButton1ActionPerformed
-    
+
+    private static final class Badger extends FileFilter implements FileChooserBuilder.BadgeProvider {
+        final Icon badge = new ImageIcon (ImageUtilities.loadImage(
+                "org/netbeans/modules/java/platform/resources/platformBadge.gif"));
+
+        public boolean accept(File f) {
+            return f.isDirectory();
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(Badger.class, "TXT_PlatformFolder"); //NOI18N
+        }
+        
+        public Icon getBadge(File file) {
+            if (isPlatformDir (file)) {
+                return badge;
+            }
+            return null;
+        }
+
+        public int getXOffset() {
+            return -1;
+        }
+
+        public int getYOffset() {
+            return -1;
+        }
+
+        private boolean isPlatformDir(File f) {
+            //XXX: Workaround of hard NFS mounts on Solaris.
+            final int osId = Utilities.getOperatingSystem();
+            if (osId == Utilities.OS_SOLARIS || osId == Utilities.OS_SUNOS) {
+                return false;
+            }
+            FileObject fo = (f != null) ? convertToValidDir(f) : null;
+            if (fo != null) {
+                //XXX: Workaround of /net folder on Unix, the folders in the root are not badged as platforms.
+                // User can still select them.
+                try {
+                    if (Utilities.isUnix() && (fo.getParent() == null ||
+                        fo.getFileSystem().getRoot().equals(fo.getParent()))) {
+                        return false;
+                    }
+                } catch (FileStateInvalidException e) {
+                    return false;
+                }
+                return isPossibleJ2MEPlatform(FileUtil.toFile(fo));
+            }
+            return false;
+        }
+
+        public boolean isPossibleJ2MEPlatform(final File directory) {
+            Collection <? extends CustomCLDCPlatformConfigurator> customConfigurators = Lookup.getDefault().lookupAll(CustomCLDCPlatformConfigurator.class);
+            for ( CustomCLDCPlatformConfigurator pc : customConfigurators )
+                if (pc.isPossiblePlatform(directory)) return true;
+            final FileObject dir = FileUtil.toFileObject(directory);
+            return dir != null && J2MEPlatform.findTool("emulator", Collections.singletonList(dir)) != null // NOI18N
+                    && J2MEPlatform.findTool("preverify", Collections.singletonList(dir)) != null; //NOI18N
+        }
+
+        private static FileObject convertToValidDir(File f) {
+            FileObject fo;
+            File testFile = new File(f.getPath());
+            if (testFile == null || testFile.getParent() == null) {
+                // BTW this means that roots of file systems can't be project
+                // directories.
+                return null;
+            }
+
+            /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
+             * its used testFile instead of dir.
+             */
+            if (!testFile.isDirectory()) {
+                return null;
+            }
+
+            fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            return fo;
+        }
+
+    }
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

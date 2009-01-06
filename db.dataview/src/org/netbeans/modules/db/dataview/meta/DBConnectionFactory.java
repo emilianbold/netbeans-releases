@@ -96,14 +96,14 @@ public final class DBConnectionFactory {
             } else {
                 return showConnectionDialog(dbConn);
             }
-        } catch (Exception ex) {
-            mLogger.log(Level.WARNING, "Failed to set connection:" + ex);
-            this.ex = ex;
+        } catch (Exception e) {
+            mLogger.log(Level.WARNING, "Failed to set connection:" + e); // NOI18N
+            this.ex = e;
             return null;
         }
     }
 
-    public Throwable getLastException(){
+    public Throwable getLastException() {
         return ex;
     }
 
@@ -111,7 +111,13 @@ public final class DBConnectionFactory {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
 
             public Void run() {
-                ConnectionManager.getDefault().showConnectionDialog(dbConn);
+                if(dbConn == null){
+                    return null;
+                }
+                Connection conn = dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
+                if(conn == null) {
+                    ConnectionManager.getDefault().showConnectionDialog(dbConn);
+                }
                 return null;
             }
         });

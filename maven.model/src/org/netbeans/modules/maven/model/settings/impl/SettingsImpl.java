@@ -57,6 +57,7 @@ import org.w3c.dom.Element;
  */
 public class SettingsImpl extends SettingsComponentImpl implements Settings {
 
+    @SuppressWarnings("unchecked")
     private static final Class<SettingsComponent>[] ORDER = new Class[] {
         ProfileImpl.List.class,
         MirrorImpl.List.class,
@@ -288,6 +289,20 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
             childs.removeListChild(mirror);
         }
     }
+
+    public Mirror findMirrorById(String id) {
+        assert id != null;
+        java.util.List<Mirror> mirrors = getMirrors();
+        if (mirrors != null) {
+            for (Mirror m : mirrors) {
+                if (id.equals(m.getId())) {
+                    return m;
+                }
+            }
+        }
+        return null;
+    }
+
 
     public String getLocalRepository() {
         return getChildElementText(getModel().getSettingsQNames().LOCALREPOSITORY.getQName());

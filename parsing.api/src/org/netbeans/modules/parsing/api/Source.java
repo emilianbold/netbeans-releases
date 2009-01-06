@@ -60,7 +60,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -167,6 +166,11 @@ public final class Source {
             Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
             Source source = sourceRef == null ? null : sourceRef.get();
 
+            //#154813: the file may have been moved:
+            if (source != null && source.getFileObject() != null && !source.getFileObject().isValid()) {
+                source = null;
+            }
+            
             if (source == null) {
                 FileObject fileObject = NbEditorUtilities.getFileObject(document);
                 if (fileObject != null) {
@@ -306,7 +310,8 @@ public final class Source {
     
     private int taskCount;
     private volatile Parser cachedParser;
-    private ASourceModificationEvent  sourceModificationEvent;
+    private volatile ASourceModificationEvent  sourceModificationEvent;
+    private final ASourceModificationEvent unspecifiedSourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
     private Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
@@ -500,24 +505,17 @@ public final class Source {
         @Override
         public void setSourceModification (Source source, int startOffset, int endOffset) {
             assert source != null;
-            synchronized (source) {
-                if (source.sourceModificationEvent == null) {
-                    source.sourceModificationEvent = new ASourceModificationEvent (this, startOffset, endOffset);
-                } else {
-                    source.sourceModificationEvent.startOffset = startOffset;
-                    source.sourceModificationEvent.endOffset = endOffset;
-                }
-            }
+            source.sourceModificationEvent = new ASourceModificationEvent (source, startOffset, endOffset);
         }
 
         @Override
         public SourceModificationEvent getSourceModificationEvent (Source source) {
-            if (source.sourceModificationEvent == null)
-                synchronized (source) {
-                    if (source.sourceModificationEvent == null)
-                        source.sourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
-                }
-            return source.sourceModificationEvent;
+            assert source != null;
+            SourceModificationEvent event = source.sourceModificationEvent;
+            if (event == null) {
+                event = source.unspecifiedSourceModificationEvent;
+            }
+            return event;
         }
 
         @Override

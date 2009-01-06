@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-class PostgreSQLAdapter implements RailsDatabaseConfiguration {
+class PostgreSQLAdapter extends RailsDatabaseConfiguration {
 
     PostgreSQLAdapter() {
     }

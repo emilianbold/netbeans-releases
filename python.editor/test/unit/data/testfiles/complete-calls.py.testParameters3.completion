@@ -1,0 +1,6 @@
+Code completion result for source line:
+y.foo(x|yz)
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       foo(param3, ...)                           
+------------------------------------
+METHOD     xrange(start, stop, step)                  

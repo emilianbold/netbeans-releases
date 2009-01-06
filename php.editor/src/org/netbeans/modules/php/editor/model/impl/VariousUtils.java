@@ -42,13 +42,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -87,6 +87,7 @@ import org.openide.filesystems.FileObject;
  */
 public class VariousUtils {
 
+    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:";
     public static final String FUNCTION_TYPE_PREFIX = "fn:";
     public static final String METHOD_TYPE_PREFIX = "mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:";
@@ -319,6 +320,163 @@ public class VariousUtils {
             }
         }
         return Collections.<TypeScope>emptyList();
+    }
+
+    public static Stack<? extends ModelElement> getElemenst(ModelScope topScope, VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
+        Stack<ModelElement> emptyStack = new Stack<ModelElement>();
+        Stack<ModelElement> retval = new Stack<ModelElement>();
+        Stack<String> stack = new Stack<String>();
+        TypeScope type = null;
+        if (semiTypeName != null && semiTypeName.contains("@")) {
+            String operation = null;
+            String[] fragments = semiTypeName.split("[@:]");
+            int len = fragments.length;
+            for (int i = 0; i < len; i++) {
+                String frag = fragments[i];
+                if (frag.trim().length() == 0) {
+                    continue;
+                }
+                if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
+                    operation = VariousUtils.METHOD_TYPE_PREFIX;
+                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.FUNCTION_TYPE_PREFIX;
+                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.VAR_TYPE_PREFIX;
+                } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.FIELD_TYPE_PREFIX;
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                    assert operation == null;
+                    operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                } else {
+                    if (operation == null) {
+                        assert i == 0;
+                        stack.push(frag);
+                    } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
+                        String clsName = stack.isEmpty() ? null : stack.pop();
+                        if (clsName == null) {
+                            return emptyStack;
+                        }
+                        ClassScope cls = ModelUtils.getFirst(CachedModelSupport.getClasses(clsName,topScope));
+                        if (cls == null) {
+                            return emptyStack;
+                        }
+                        MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
+                        if (meth == null) {
+                            return emptyStack;
+                        } else {
+                            retval.push(meth);
+                        }
+                        type = ModelUtils.getFirst(meth.getReturnTypes());
+                        if (type == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        stack.push(type.getName());
+                        operation = null;
+                    } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
+                        FunctionScope fnc = ModelUtils.getFirst(CachedModelSupport.getFunctions(frag, topScope));
+                        if (fnc == null) {
+                            semiTypeName = null;
+                            break;
+                        } else {
+                            retval.push(fnc);
+                        }
+                        type = ModelUtils.getFirst(fnc.getReturnTypes());
+                        if (type == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        stack.push(type.getName());
+                        operation = null;
+                    } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
+                        ClassScope cls = ModelUtils.getFirst(CachedModelSupport.getClasses(frag, topScope));
+                        if (cls == null) {
+                            semiTypeName = null;
+                            break;
+                        } else {
+                            MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getMethods(cls, "__construct",topScope, PHPIndex.ANY_ATTR));//NOI18N
+                            if (meth != null) {
+                                retval.push(meth);
+                            } else {
+                                return emptyStack;
+                            }
+                        }
+                        stack.push(cls.getName());
+                        operation = null;
+                    } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
+                        String[] frgs = frag.split("\\.");
+                        assert frgs.length == 2;
+                        String clsName = frgs[0];
+                        if (clsName == null) {
+                            return emptyStack;
+                        }
+                        ClassScope cls = ModelUtils.getFirst(CachedModelSupport.getClasses(clsName, topScope));
+                        if (cls == null) {
+                            return emptyStack;
+                        }
+                        MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getMethods(cls, frgs[1],topScope, PHPIndex.ANY_ATTR));
+                                //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
+                        if (meth == null) {
+                            return emptyStack;
+                        } else {
+                            retval.push(meth);
+                        }
+                        type = ModelUtils.getFirst(meth.getReturnTypes());
+                        if (type == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        stack.push(type.getName());
+                        operation = null;
+                    } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)) {
+                        type = null;
+                        if (varScope instanceof MethodScope) {//NOI18N
+                            MethodScope mScope = (MethodScope) varScope;
+                            if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
+                                type = (ClassScope) mScope.getInScope();
+                            }
+                            if (type != null) {
+                                stack.push(type.getName());
+                                operation = null;
+                            }
+                        }
+                        if (type == null) {
+                            List<? extends VariableName> variables = varScope.getVariables(frag);
+                            if (!variables.isEmpty()) {
+                                VariableName varName = ModelUtils.getFirst(variables);
+                                type = varName != null ? ModelUtils.getFirst(varName.getTypes(offset)) : null;
+                                if (varName != null) {
+                                    retval.push(varName);
+                                }
+                                if (type != null) {
+                                    stack.push(type.getName());
+                                } else {
+                                    semiTypeName = null;
+                                    break;
+                                }
+                                operation = null;
+                            }
+                        }
+                    } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
+                        //TODO: not implemented yet
+                        return emptyStack;
+                    } else {
+                        throw new UnsupportedOperationException(operation);
+                    }
+                }
+            }
+            if (stack.size() == 1) {
+                semiTypeName = stack.pop();
+            }
+        //throw new UnsupportedOperationException("Not supported yet.");
+        }
+        return retval;
     }
 
     private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {

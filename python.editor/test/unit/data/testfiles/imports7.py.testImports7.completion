@@ -1,0 +1,60 @@
+Code completion result for source line:
+from sys import |r
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     displayhook(value)                         
+METHOD     exc_clear()                                
+METHOD     exc_info()                                 
+METHOD     excepthook(type, value, traceb             
+METHOD     exit(arg)                                  
+METHOD     getcheckinterval()                         
+METHOD     getdefaultencoding()                       
+METHOD     getdlopenflags()                           
+METHOD     getfilesystemencoding()                    
+METHOD     getprofile()                               
+METHOD     getrecursionlimit()                        
+METHOD     getrefcount(object)                        
+METHOD     getsizeof(object, default)                 
+METHOD     gettrace()                                 
+METHOD     getwindowsversion()                        
+METHOD     setcheckinterval(interval)                 
+METHOD     setdefaultencoding(name)                   
+METHOD     setdlopenflags(n)                          
+METHOD     setprofile(profilefunc)                    
+METHOD     setrecursionlimit(limit)                   
+METHOD     settrace(tracefunc)                        
+METHOD     settscdump(on_flag)                        
+VARIABLE   __displayhook__                            
+VARIABLE   __stdin__                                  
+VARIABLE   api_version                                
+VARIABLE   argv                                       
+VARIABLE   builtin_module_names                       
+VARIABLE   byteorder                                  
+VARIABLE   copyright                                  
+VARIABLE   dllhandle                                  
+VARIABLE   dont_write_bytecode                        
+VARIABLE   ---exc_type                ---             
+VARIABLE   exec_prefix                                
+VARIABLE   executable                                 
+VARIABLE   ---exitfunc                ---             
+VARIABLE   flags                                      
+VARIABLE   float_info                                 
+VARIABLE   hexversion                                 
+VARIABLE   last_type                                  
+VARIABLE   maxint                                     
+VARIABLE   maxsize                                    
+VARIABLE   maxunicode                                 
+VARIABLE   modules                                    
+VARIABLE   path                                       
+VARIABLE   platform                                   
+VARIABLE   prefix                                     
+VARIABLE   ps1                                        
+VARIABLE   py3kwarning                                
+VARIABLE   stdin                                      
+VARIABLE   subversion                                 
+VARIABLE   tracebacklimit                             
+VARIABLE   version                                    
+VARIABLE   version_info                               
+VARIABLE   warnoptions                                
+VARIABLE   winver                                     
+------------------------------------
+KEYWORD    * Import All Exported Symbols              

@@ -1,0 +1,65 @@
+Error:CLASS:[PRIVATE]:ESCAPED{Error}:
+  __init__:CONSTRUCTOR:[PRIVATE]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{msg}}):
+  __repr__:METHOD:[PRIVATE]:ESCAPED{__repr__}(PARAMETERS{ESCAPED{self}}):
+  message:ATTRIBUTE:[]:ESCAPED{message}:
+NoSectionError:CLASS:[]:ESCAPED{NoSectionError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  section:ATTRIBUTE:[]:ESCAPED{section}:
+DuplicateSectionError:CLASS:[]:ESCAPED{DuplicateSectionError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  section:ATTRIBUTE:[]:ESCAPED{section}:
+NoOptionError:CLASS:[]:ESCAPED{NoOptionError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{section}}):
+  option:ATTRIBUTE:[]:ESCAPED{option}:
+  section:ATTRIBUTE:[]:ESCAPED{section}:
+InterpolationError:CLASS:[]:ESCAPED{InterpolationError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{msg}}):
+  option:ATTRIBUTE:[]:ESCAPED{option}:
+  section:ATTRIBUTE:[]:ESCAPED{section}:
+InterpolationMissingOptionError:CLASS:[PRIVATE]:ESCAPED{InterpolationMissingOptionError}:
+  __init__:CONSTRUCTOR:[PRIVATE]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{rawval}ESCAPED{,}ESCAPED{reference}}):
+  reference:ATTRIBUTE:[]:ESCAPED{reference}:
+InterpolationSyntaxError:CLASS:[]:ESCAPED{InterpolationSyntaxError}:
+InterpolationDepthError:CLASS:[]:ESCAPED{InterpolationDepthError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{rawval}}):
+ParsingError:CLASS:[]:ESCAPED{ParsingError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{filename}}):
+  append:METHOD:[]:ESCAPED{append}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{lineno}ESCAPED{,}ESCAPED{line}}):
+  errors:ATTRIBUTE:[]:ESCAPED{errors}:
+  filename:ATTRIBUTE:[]:ESCAPED{filename}:
+MissingSectionHeaderError:CLASS:[]:ESCAPED{MissingSectionHeaderError}:
+  __init__:CONSTRUCTOR:[]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{filename}ESCAPED{,}ESCAPED{lineno}ESCAPED{,}ESCAPED{line}}):
+  filename:ATTRIBUTE:[]:ESCAPED{filename}:
+  line:ATTRIBUTE:[]:ESCAPED{line}:
+  lineno:ATTRIBUTE:[]:ESCAPED{lineno}:
+RawConfigParser:CLASS:[PRIVATE]:ESCAPED{RawConfigParser}:
+  __init__:CONSTRUCTOR:[PRIVATE]:ESCAPED{__init__}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{defaults}}):
+  _defaults:ATTRIBUTE:[]:ESCAPED{_defaults}:
+  _get:METHOD:[PRIVATE]:ESCAPED{_get}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{conv}ESCAPED{,}ESCAPED{option}}):
+  _read:METHOD:[PRIVATE]:ESCAPED{_read}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{fp}ESCAPED{,}ESCAPED{fpname}}):
+  _sections:ATTRIBUTE:[]:ESCAPED{_sections}:
+  add_section:METHOD:[PRIVATE]:ESCAPED{add_section}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  defaults:METHOD:[PRIVATE]:ESCAPED{defaults}(PARAMETERS{ESCAPED{self}}):
+  get:METHOD:[PRIVATE]:ESCAPED{get}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  getboolean:METHOD:[PRIVATE]:ESCAPED{getboolean}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  getfloat:METHOD:[PRIVATE]:ESCAPED{getfloat}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  getint:METHOD:[PRIVATE]:ESCAPED{getint}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  has_option:METHOD:[PRIVATE]:ESCAPED{has_option}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  has_section:METHOD:[PRIVATE]:ESCAPED{has_section}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  items:METHOD:[PRIVATE]:ESCAPED{items}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  options:METHOD:[PRIVATE]:ESCAPED{options}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  optionxform:METHOD:[PRIVATE]:ESCAPED{optionxform}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{optionstr}}):
+  read:METHOD:[PRIVATE]:ESCAPED{read}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{filenames}}):
+  readfp:METHOD:[PRIVATE]:ESCAPED{readfp}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{fp}ESCAPED{,}ESCAPED{filename}}):
+  remove_option:METHOD:[PRIVATE]:ESCAPED{remove_option}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}}):
+  remove_section:METHOD:[PRIVATE]:ESCAPED{remove_section}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}}):
+  sections:METHOD:[PRIVATE]:ESCAPED{sections}(PARAMETERS{ESCAPED{self}}):
+  set:METHOD:[PRIVATE]:ESCAPED{set}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{value}}):
+  write:METHOD:[PRIVATE]:ESCAPED{write}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{fp}}):
+ConfigParser:CLASS:[]:ESCAPED{ConfigParser}:
+  _interpolate:METHOD:[PRIVATE]:ESCAPED{_interpolate}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{rawval}ESCAPED{,}ESCAPED{vars}}):
+  get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{raw}ESCAPED{,}ESCAPED{vars}}):
+  items:METHOD:[]:ESCAPED{items}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{raw}ESCAPED{,}ESCAPED{vars}}):
+SafeConfigParser:CLASS:[]:ESCAPED{SafeConfigParser}:
+  _interpolate:METHOD:[PRIVATE]:ESCAPED{_interpolate}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{rawval}ESCAPED{,}ESCAPED{vars}}):
+  _interpolate_some:METHOD:[PRIVATE]:ESCAPED{_interpolate_some}(PARAMETERS{ESCAPED{self}ESCAPED{,}ESCAPED{option}ESCAPED{,}ESCAPED{accum}ESCAPED{,}ESCAPED{rest}ESCAPED{,}ESCAPED{section}ESCAPED{,}ESCAPED{map}ESCAPED{,}ESCAPED{depth}}):

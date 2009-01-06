@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import com.sun.perseus.j2d.Path;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -431,7 +430,14 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     }
 
     public void run() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (wrapper == null || wrapper.getComponent() == null) {
+            return;
+        }
+        final DesignComponent component = wrapper.getComponent();
+        if (component == null) {
+            return;
+        }
+        DesignDocument document = component.getDocument();
         if (document != null) {
             updateModel(document);
         }

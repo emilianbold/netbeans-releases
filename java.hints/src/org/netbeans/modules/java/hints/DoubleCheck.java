@@ -44,7 +44,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -57,6 +60,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,14 +88,15 @@ public class DoubleCheck extends AbstractHint {
         }
 
         SynchronizedTree synch = (SynchronizedTree)e;
-        IfTree outer = findOuterIf(compilationInfo, treePath);
+        TreePath outer = findOuterIf(compilationInfo, treePath);
         if (outer == null) {
             return null;
         }
 
         IfTree same = null;
+        TreePath block = new TreePath(treePath, synch.getBlock());
         for (StatementTree statement : synch.getBlock().getStatements()) {
-            if (sameIf(statement, outer)) {
+            if (sameIfAndValidate(compilationInfo, new TreePath(block, statement), outer)) {
                 same = (IfTree)statement;
                 break;
             }
@@ -103,11 +108,9 @@ public class DoubleCheck extends AbstractHint {
             return null;
         }
 
-        TreePath outerPath = compilationInfo.getTrees().getPath(compilationInfo.getCompilationUnit(), outer);
-
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
             TreePathHandle.create(treePath, compilationInfo),
-            TreePathHandle.create(outerPath, compilationInfo),
+            TreePathHandle.create(outer, compilationInfo),
             compilationInfo.getFileObject()
         ));
 
@@ -153,7 +156,7 @@ public class DoubleCheck extends AbstractHint {
         return null;
     }    
 
-    private IfTree findOuterIf(CompilationInfo compilationInfo, TreePath treePath) {
+    private TreePath findOuterIf(CompilationInfo compilationInfo, TreePath treePath) {
         while (!stop) {
             treePath = treePath.getParentPath();
             if (treePath == null) {
@@ -162,7 +165,7 @@ public class DoubleCheck extends AbstractHint {
             Tree leaf = treePath.getLeaf();
             
             if (leaf.getKind() == Kind.IF) {
-                return (IfTree)leaf;
+                return treePath;
             }
             
             if (leaf.getKind() == Kind.BLOCK) {
@@ -179,12 +182,15 @@ public class DoubleCheck extends AbstractHint {
         return null;
     }
 
-    private boolean sameIf(StatementTree statement, IfTree second) {
+    private boolean sameIfAndValidate(CompilationInfo info, TreePath statementTP, TreePath secondTP) {
+        StatementTree statement = (StatementTree) statementTP.getLeaf();
+        
         if (statement.getKind() != Kind.IF) {
             return false;
         }
         
         IfTree first = (IfTree)statement;
+        IfTree second = (IfTree) secondTP.getLeaf();
         
         if (first.getElseStatement() != null) {
             return false;
@@ -193,27 +199,30 @@ public class DoubleCheck extends AbstractHint {
             return false;
         }
         
-        ExpressionTree varFirst = equalToNull(first.getCondition());
-        ExpressionTree varSecond = equalToNull(second.getCondition());
+        TreePath varFirst = equalToNull(new TreePath(statementTP, first.getCondition()));
+        TreePath varSecond = equalToNull(new TreePath(secondTP, second.getCondition()));
         
         if (varFirst == null || varSecond == null) {
             return false;
         }
+
+        Element firstVariable = info.getTrees().getElement(varFirst);
+        Element secondVariable = info.getTrees().getElement(varSecond);
         
-        if (varFirst.getKind() == Kind.IDENTIFIER && varSecond.getKind() == Kind.IDENTIFIER) {
-            IdentifierTree idFirst = (IdentifierTree)varFirst;
-            IdentifierTree idSecond = (IdentifierTree)varSecond;
-            
-            return idFirst.getName().equals(idSecond.getName());
+        if (firstVariable != null && firstVariable.equals(secondVariable)) {
+            return    getSourceLevel(info).compareTo(SOURCE_LEVEL_1_5) < 0
+                   || !firstVariable.getModifiers().contains(Modifier.VOLATILE);
         }
         
         return false;
     }
     
-    private ExpressionTree equalToNull(ExpressionTree t) {
+    private TreePath equalToNull(TreePath tp) {
+        ExpressionTree t = (ExpressionTree) tp.getLeaf();
         if (t.getKind() == Kind.PARENTHESIZED) {
             ParenthesizedTree p = (ParenthesizedTree)t;
             t = p.getExpression();
+            tp = new TreePath(tp, t);
         }
         
         if (t.getKind() != Kind.EQUAL_TO) {
@@ -221,13 +230,25 @@ public class DoubleCheck extends AbstractHint {
         }
         BinaryTree bt = (BinaryTree)t;
         if (bt.getLeftOperand().getKind() == Kind.NULL_LITERAL && bt.getRightOperand().getKind() != Kind.NULL_LITERAL) {
-            return bt.getRightOperand();
+            return new TreePath(tp, bt.getRightOperand());
         }
         if (bt.getLeftOperand().getKind() != Kind.NULL_LITERAL && bt.getRightOperand().getKind() == Kind.NULL_LITERAL) {
-            return bt.getLeftOperand();
+            return new TreePath(tp, bt.getLeftOperand());
         }
         return null;
     }
+
+    private static SpecificationVersion getSourceLevel(CompilationInfo info) {
+        String sl = SourceLevelQuery.getSourceLevel(info.getFileObject());
+
+        if (sl == null) {
+            return SOURCE_LEVEL_1_5;
+        }
+        
+        return new SpecificationVersion(sl);
+    }
+
+    private static final SpecificationVersion SOURCE_LEVEL_1_5 = new SpecificationVersion("1.5");
     
     private static final class FixImpl implements Fix, Task<WorkingCopy> {
         private TreePathHandle synchHandle;

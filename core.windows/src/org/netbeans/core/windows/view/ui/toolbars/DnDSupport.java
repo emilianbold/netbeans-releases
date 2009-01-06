@@ -248,9 +248,9 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
                 isToolbarDrag = false;
                 isButtonDrag = true;
                 dragSourceButtonIndex = sourceToolbar.getComponentIndex(c);
-            } else if( c.getParent() instanceof ToolbarContainer ) {
+            } else if( Boolean.TRUE.equals( ((JComponent) c).getClientProperty(ToolbarContainer.PROP_DRAGGER) ) ) {
                 //dragging the whole toolbar
-                final ToolbarContainer container = (ToolbarContainer) c.getParent();
+                final ToolbarContainer container = (ToolbarContainer) c.getParent().getParent();
                 sourceContainer = container;
                 sourceRow = (ToolbarRow) container.getParent();
                 t = new ExTransferable.Single(toolbarDataFlavor) {

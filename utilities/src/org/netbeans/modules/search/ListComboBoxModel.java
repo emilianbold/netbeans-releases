@@ -113,7 +113,8 @@ final class ListComboBoxModel implements ComboBoxModel {
             return;
         }
 
-        for (ListDataListener l : listeners) {
+        ListDataListener[] arrayListeners = listeners.toArray(new ListDataListener[0]);
+        for (ListDataListener l : arrayListeners) {
             l.contentsChanged(event);
         }
     }

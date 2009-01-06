@@ -472,11 +472,16 @@ final class CloseButtonTabbedPane extends JTabbedPane {
                 case MouseEvent.MOUSE_RELEASED:
                     if ((r.contains(p) && tab.pressedCloseButtonIndex >= 0)
                             || (e.getButton() == MouseEvent.BUTTON2 && index == tab.pressedCloseButtonIndex)) {
-                        Component tc =
-                            tab.getComponentAt(tab.pressedCloseButtonIndex);
+                        
+                        Component tc = null;
+                        Component[] components = tab.getComponents();
+                        if( tab.pressedCloseButtonIndex >= 0
+                                && tab.pressedCloseButtonIndex < components.length ) {
+                            tc = components[tab.pressedCloseButtonIndex];
+                        }
                         tab.reset();
-
-                        tab.fireCloseRequest(tc);
+                        if( null != tc )
+                            tab.fireCloseRequest(tc);
                         e.consume();
                         return;
                     }

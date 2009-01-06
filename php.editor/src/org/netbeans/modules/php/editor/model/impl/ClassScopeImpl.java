@@ -51,7 +51,6 @@ import java.util.Set;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -64,12 +63,6 @@ import org.openide.util.Union2;
 final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     private Union2<String, List<ClassScopeImpl>> superClass;
-
-    ClzConstantElementImpl createElement(ClassConstantDeclarationInfo clsConst) {
-        ClzConstantElementImpl retval = ClzConstantElementImpl.createClzConstantElementImpl(this, clsConst);
-        addElement(retval);
-        return retval;
-    }
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -186,64 +179,32 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-    public List<? extends ClzConstantElementImpl> getAllConstants() {
-        return getConstants();
-    }
 
-    public List<? extends ClzConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, final String... queryName) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
-            return indexScopeImpl.getConstants(this, queryName);
-        }
-
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
-                        queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
-            }
-        });
-    }
-
+    @Override
     public List<? extends MethodScope> getAllInheritedMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getAllMethods());
         IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
+        if (indexScopeImpl == null) {
+            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
+        }
         PHPIndex index = indexScopeImpl.getIndex();
-        Set<? extends ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
-        for (ClassScope clz : superClasses) {
-            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+        ClassScope clz = ModelUtils.getFirst(getSuperClasses());
+        List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
+        interfaces.addAll(getInterfaces());
+        while(clz != null) {
+            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
+            interfaces.addAll(clz.getInterfaces());
+            clz = ModelUtils.getFirst(clz.getSuperClasses());
+        }
+        
+        for (InterfaceScope ifaceScope : interfaces) {
+            allMethods.addAll(ifaceScope.getAllInheritedMethods());
         }
         return allMethods;
-    }
-
-    public List<? extends ClzConstantElementImpl> getInheritedConstants(String queryName) {
-        List<ClzConstantElementImpl> allConstants = new ArrayList<ClzConstantElementImpl>();
-        allConstants.addAll(getConstants(queryName));
-        if (allConstants.isEmpty()) {
-            IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-            indexScopeImpl = ((indexScopeImpl != null) ? indexScopeImpl : ((FileScope) ModelUtils.getModelScope(this)).getIndexScope());
-            PHPIndex index = indexScopeImpl.getIndex();
-            ClassScope clz = this;
-            while (clz != null && allConstants.isEmpty()) {
-                clz = ModelUtils.getFirst(clz.getSuperClasses());
-                if (clz != null) {
-                    Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), queryName, NameKind.PREFIX);
-                    for (IndexedConstant indexedConstant : indexedConstants) {
-                        //assert clz.getName().equals(indexedConstant.getIn()) : clz.getName() + " versus " + indexedConstant.getIn();
-                        allConstants.add(new ClzConstantElementImpl((ClassScopeImpl) clz, indexedConstant));
-                    }
-                }
-            }
-        }
-        return allConstants;
     }
 
     public List<? extends FieldElementImpl> getInheritedFields(String queryName) {
@@ -271,26 +232,6 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         return allFields;
     }
 
-    public List<? extends MethodScopeImpl> getInheritedMethods(String queryName) {
-        List<MethodScopeImpl> allMethods = new ArrayList<MethodScopeImpl>();
-        allMethods.addAll(getMethods(queryName));
-        if (allMethods.isEmpty()) {
-            IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-            indexScopeImpl = ((indexScopeImpl != null) ? indexScopeImpl : ((FileScope) ModelUtils.getModelScope(this)).getIndexScope());
-            PHPIndex index = indexScopeImpl.getIndex();
-            ClassScope clz = this;
-            while (clz != null && allMethods.isEmpty()) {
-                clz = ModelUtils.getFirst(clz.getSuperClasses());
-                if (clz != null) {
-                    Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), queryName, NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                    for (IndexedFunction indexedFunction : indexedFunctions) {
-                        allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
-                    }
-                }
-            }
-        }
-        return allMethods;
-    }
 
     public List<? extends ClassScope> getSuperClassesChain() {
         Set<ClassScope> set = new HashSet<ClassScope>();
@@ -304,5 +245,30 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
             collectSuperClassesChain(result, superCls);
         }
         return result;
+    }
+
+    @Override
+    public String getNormalizedName() {
+        return super.getNormalizedName()+getSuperClassName();
+    }
+
+    @NonNull
+    String getSuperClassName() {
+        List<? extends ClassScope> retval = null;
+        retval = superClass.hasSecond() ? superClass.second() : null;
+        if (retval == null) {
+            assert superClass.hasFirst();
+            String superClasName = superClass.first();
+            if (superClasName != null) {
+                return superClasName;
+
+            }
+        } else if (retval.size() > 0) {
+            ClassScope cls = ModelUtils.getFirst(retval);
+            if (cls != null) {
+                return cls.getName();
+            }
+        }
+        return "";//NOI18N
     }
 }

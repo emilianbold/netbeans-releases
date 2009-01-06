@@ -49,7 +49,7 @@
 package org.netbeans.lib.terminalemulator;
 
 
-class RegionManager {
+public class RegionManager {
     private ActiveRegion root = new ActiveRegion(null, new Coord(), false);
     private ActiveRegion parent = null;
     private ActiveRegion region = root;

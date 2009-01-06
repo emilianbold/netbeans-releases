@@ -52,6 +52,16 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ExceptionEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.ExceptionRequestWrapper;
+import org.openide.util.Exceptions;
 
 /**
 * Implementation of breakpoint on method.
@@ -81,7 +91,8 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     
     protected void classLoaded (ReferenceType referenceType) {
         try {
-            ExceptionRequest er = getEventRequestManager ().createExceptionRequest (
+            ExceptionRequest er = EventRequestManagerWrapper.createExceptionRequest (
+                getEventRequestManager(),
                 referenceType, 
                 (breakpoint.getCatchType () & 
                     ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0, 
@@ -90,49 +101,64 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             );
             addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
             addEventRequest (er);
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
     }
     
-    protected ExceptionRequest createEventRequest(EventRequest oldRequest) {
+    protected ExceptionRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         ExceptionRequest excRequest = (ExceptionRequest) oldRequest;
-        ExceptionRequest er = getEventRequestManager ().createExceptionRequest (
-                excRequest.exception(),
-                excRequest.notifyCaught(),
-                excRequest.notifyUncaught()
+        ExceptionRequest er = EventRequestManagerWrapper.createExceptionRequest (
+                getEventRequestManager(),
+                ExceptionRequestWrapper.exception(excRequest),
+                ExceptionRequestWrapper.notifyCaught(excRequest),
+                ExceptionRequestWrapper.notifyUncaught(excRequest)
             );
         addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
         return er;
     }
     
-    private void addFilters(ExceptionRequest er, String[] classFilters, String[] classExclusionFilters) {
+    private void addFilters(ExceptionRequest er, String[] classFilters, String[] classExclusionFilters) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         int i, k = classFilters.length;
         for (i = 0; i < k; i++) {
-            er.addClassFilter (classFilters [i]);
+            ExceptionRequestWrapper.addClassFilter (er, classFilters [i]);
         }
         k = classExclusionFilters.length;
         for (i = 0; i < k; i++) {
-            er.addClassExclusionFilter (classExclusionFilters [i]);
+            ExceptionRequestWrapper.addClassExclusionFilter (er, classExclusionFilters [i]);
         }
     }
 
     public boolean processCondition(Event event) {
         if (event instanceof ExceptionEvent) {
-            return processCondition(event, breakpoint.getCondition (),
-                    ((ExceptionEvent) event).thread(), null);
+            try {
+                return processCondition(event, breakpoint.getCondition (),
+                        LocatableEventWrapper.thread((ExceptionEvent) event), null);
+            } catch (InternalExceptionWrapper ex) {
+                return true;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return true;
+            }
         } else {
             return true; // Empty condition, always satisfied.
         }
     }
 
     public boolean exec (Event event) {
-        if (event instanceof ExceptionEvent)
-            return perform (
-                event,
-                ((ExceptionEvent) event).thread (),
-                ((ExceptionEvent) event).location().declaringType(),
-                ((ExceptionEvent) event).exception ()
-            );
+        if (event instanceof ExceptionEvent) {
+            ExceptionEvent ee = (ExceptionEvent) event;
+            try {
+                return perform(
+                        event,
+                        LocatableEventWrapper.thread(ee),
+                        LocationWrapper.declaringType(LocatableWrapper.location(ee)),
+                        ExceptionEventWrapper.exception(ee));
+            } catch (InternalExceptionWrapper ex) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
+            }
+        }
         return super.exec (event);
     }
 }

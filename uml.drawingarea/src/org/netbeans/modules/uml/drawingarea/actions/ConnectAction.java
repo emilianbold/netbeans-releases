@@ -85,6 +85,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return sourceWidget != null;
     }
 
+    @Override
     public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) 
     {
         if (isLocked ())
@@ -109,6 +110,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return State.REJECTED;
     }
 
+    @Override
     public WidgetAction.State mouseReleased (Widget widget, WidgetAction.WidgetMouseEvent event) {
         Point point = event.getPoint ();
         boolean state = move (widget, point);
@@ -148,12 +150,16 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         sourceWidget = null;
         targetWidget = null;
         startingPoint = null;
-        connectionWidget.setSourceAnchor (null);
-        connectionWidget.setTargetAnchor (null);
-        interractionLayer.removeChild (connectionWidget);
+        if(connectionWidget!=null)
+        {
+            connectionWidget.setSourceAnchor (null);
+            connectionWidget.setTargetAnchor (null);
+            interractionLayer.removeChild (connectionWidget);
+        }
         connectionWidget = null;
     }
 
+    @Override
     public WidgetAction.State mouseDragged (Widget widget, WidgetAction.WidgetMouseEvent event) {
         return move (widget, event.getPoint ()) ? State.createLocked (widget, this) : State.REJECTED;
     }
@@ -250,6 +256,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return true;
     }
 
+    @Override
     public State keyPressed (Widget widget, WidgetKeyEvent event) 
     {
         if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) 

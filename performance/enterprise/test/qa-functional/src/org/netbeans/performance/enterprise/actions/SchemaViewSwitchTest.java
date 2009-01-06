@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,51 +41,42 @@
 
 package org.netbeans.performance.enterprise.actions;
 
-import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
-import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class SchemaViewSwitchTest extends PerformanceTestCase  {
 
+    private static String category, project;
     private XMLSchemaComponentOperator schema;
-    private static String category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture";
-    private static String project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
-    private static String testProjectName = "TestProject2";
+    private static String testProjectName;
     private static String testSchemaName = "XMLTestSchema2";    
-    
     
     /** Creates a new instance of SchemaViewSwitch */
     public SchemaViewSwitchTest(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;           
     }
     
     public SchemaViewSwitchTest(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;                
     }    
@@ -99,40 +89,21 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
         return suite;
     }
 
-    @Override
-    public void initialize(){
-        log(":: initialize");
-        String ParentPath = CommonUtilities.getTempDir() + "createdProjects";
-
-        createProject(ParentPath,testProjectName);
-        addSchemaDoc(testProjectName,testSchemaName);
+    public void testSchemaViewSwitch() {
+        doMeasurement();
     }
 
-    private void createProject(String path, String projectName) {
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-        log(":: selecting category: "+category);
-        wizard.selectCategory(category);
-
-        log(":: selecting project: "+project);
-        wizard.selectProject(project);
-
-        wizard.next();
-
-        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
-
-        wizard_location.txtProjectName().setText("");
-        new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectName().typeText(projectName);
-        new EventTool().waitNoEvent(1000);
-        
-        wizard_location.txtProjectLocation().setText("");
-        new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectLocation().typeText(path);
-        
-        new EventTool().waitNoEvent(1000);
-
-        wizard_location.finish();
-    }     
+    @Override
+    public void initialize(){
+        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.resources.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture";
+        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.resources.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
+        testProjectName=CommonUtilities.createproject(category, project, true);
+        addSchemaDoc(testProjectName,testSchemaName);
+        String schemaDocPath = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources")+"|"+testSchemaName+".xsd";
+        Node schemaNode = new Node(new ProjectsTabOperator().getProjectRootNode(testProjectName),schemaDocPath);
+        schemaNode.performPopupActionNoBlock("Open");
+        schema = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaName+".xsd");
+    }
 
     private void addSchemaDoc( String projectName, String SchemaName) {
         Node pfn =  new Node(new ProjectsTabOperator().getProjectRootNode(projectName), org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources"));
@@ -143,25 +114,18 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("XML");
         wizard.selectFileType("XML Schema");
-
         wizard.next();
-
         NewFileNameLocationStepOperator location = new NewFileNameLocationStepOperator();
         location.setObjectName(SchemaName);
         location.finish();
     }    
 
     public void prepare() {
-        log(":: prepare");
-        String schemaDocPath = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources")+"|"+testSchemaName+".xsd";
-        Node schemaNode = new Node(new ProjectsTabOperator().getProjectRootNode(testProjectName),schemaDocPath);        
-        schemaNode.performPopupActionNoBlock("Open");      
-        schema = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaName+".xsd");
     }
 
     public ComponentOperator open() {
         schema.getDesignButton().pushNoBlock();
-        return schema;
+        return null;
     }
 
     @Override
@@ -171,11 +135,7 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
 
     @Override
     protected void shutdown() {
-        log("::shutdown");
-        
         new CloseAllDocumentsAction().performAPI();        
-
-//        ProjectSupport.closeProject(testProjectName);
     }
    
 }

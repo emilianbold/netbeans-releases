@@ -58,6 +58,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DiscoveryUtils {
+
     private DiscoveryUtils() {
     }
     public static final List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
@@ -277,12 +278,17 @@ public class DiscoveryUtils {
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){
+                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){ // NOI18N
                         value = value.substring(1,value.length()-1);  // NOI18N
                     } else {
-                        if (isScriptOutput && !isQuote && value.length() >= 2 &&
-                           (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
-                            value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                        if (!isQuote && value.length() >= 6 &&
+                           (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
+                            value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
+                            value = value.substring(2,value.length()-3)+"\"";  // NOI18N
+                        } else if (!isQuote && value.length() >= 4 &&
+                           (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
+                            value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                            value = value.substring(1,value.length()-2)+"\"";  // NOI18N
                         }
                     }
                     userMacros.put(macro.substring(0,i), value);
@@ -294,24 +300,28 @@ public class DiscoveryUtils {
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-isystem")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-include")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-imacros")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
+                path = removeQuotes(path);
                 userIncludes.add(path);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
@@ -320,6 +330,7 @@ public class DiscoveryUtils {
                 }
                 if (defaultSearchPath.startsWith("I,")){ // NOI18N
                     defaultSearchPath = defaultSearchPath.substring(2);
+                    defaultSearchPath = removeQuotes(defaultSearchPath);
                     userIncludes.add(defaultSearchPath);
                 }
             } else if (option.equals("-K")){ // NOI18N
@@ -379,7 +390,9 @@ public class DiscoveryUtils {
                 }
             // end of generation 2    
             } else if (option.equals("-fopenmp")){ // NOI18N
-                    userMacros.put("_OPENMP", null); // NOI18N
+                userMacros.put("_OPENMP", "200505"); // NOI18N
+            } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
+                userMacros.put("_OPENMP", null); // NOI18N
             } else if (option.startsWith("-")){ // NOI18N
                 // Skip option
             } else if (option.startsWith("ccfe")){ // NOI18N
@@ -409,6 +422,15 @@ public class DiscoveryUtils {
             }
         }
         return what;
+    }
+
+    private static String removeQuotes(String path) {
+        if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
+            path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N
+
+            path = path.substring(1, path.length() - 1); // NOI18N
+        }
+        return path;
     }
 
 }

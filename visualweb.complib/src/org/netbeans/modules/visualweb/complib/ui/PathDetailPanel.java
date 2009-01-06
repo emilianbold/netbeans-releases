@@ -52,6 +52,7 @@ import java.util.List;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.complib.IdeUtil;
+import org.openide.awt.Mnemonics;
 
 /**
  * Component library manager general purpose detail panel to show paths
@@ -70,19 +71,15 @@ public class PathDetailPanel extends javax.swing.JPanel {
      * @param descriptionKey
      * @param mnemonicKey
      */
-    public PathDetailPanel(List<File> path, String labelKey,
-            String descriptionKey, String mnemonicKey) {
+    public PathDetailPanel(List<File> path, String labelKey, String descriptionKey) {
         initComponents();
 
         try {
             String str = NbBundle.getMessage(PathDetailPanel.class, labelKey);
-            lblLibDesignTime.setText(str);
+            Mnemonics.setLocalizedText(lblLibDesignTime, str);
 
             str = NbBundle.getMessage(PathDetailPanel.class, descriptionKey);
             tpnlDescription.setText(str);
-
-            str = NbBundle.getMessage(PathDetailPanel.class, mnemonicKey);
-            lblLibDesignTime.setDisplayedMnemonic(str.charAt(0));
         } catch (Exception e) {
             IdeUtil.logWarning(e);
         }

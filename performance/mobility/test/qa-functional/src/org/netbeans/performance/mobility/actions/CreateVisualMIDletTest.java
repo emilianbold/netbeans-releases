@@ -38,31 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.mobility.actions;
 
 import java.awt.Container;
 import javax.swing.JComponent;
-import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
-
-import org.netbeans.performance.mobility.window.MIDletEditorOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.performance.mobility.window.MIDletEditorOperator;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test Create Visual MIDlet
  *
@@ -81,7 +80,7 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
     public CreateVisualMIDletTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 5000;
     }
 
     /**
@@ -92,7 +91,7 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
     public CreateVisualMIDletTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 5000;
     }
 
     public static NbTestSuite suite() {
@@ -109,7 +108,7 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-//        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
+
         new CloseAllDocumentsAction().performAPI();
 
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
@@ -145,8 +144,6 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("Visual MIDlet"); //NOI18N
         wizard.next();
-
-        new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         midletName = "VisualMIDlet_" + System.currentTimeMillis();
         location.txtObjectName().setText(midletName);
@@ -160,13 +157,11 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
     @Override
     public void close() {
         new Thread("Question dialog discarder") {
-
             @Override
             public void run() {
                 try {
                     new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
                 } catch (Exception e) {
-                    // There is no need to care about this exception as this dialog is optional 
                     e.printStackTrace();
                 }
             }
@@ -176,10 +171,7 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
         }
     }
 
-    @Override
-    protected void shutdown() {
-//         ProjectSupport.closeProject(testProjectName);
+    public void shutdown() {
+        repaintManager().resetRegionFilters();
     }
-
-
 }

@@ -1,0 +1,81 @@
+
+
+Document 0
+Searchable Keys:
+  class : Formatter
+  class-ig : formatter
+  in : string
+  member : check_unused_args;F;|DOCUMENTED|DOC_ONLY|;used_args,args,kwargs;
+  member : convert_field;F;|DOCUMENTED|DOC_ONLY|;value,conversion;
+  member : format;F;|DOCUMENTED|DOC_ONLY|;format_string,*args,*kwargs;
+  member : format_field;F;|DOCUMENTED|DOC_ONLY|;value,format_spec;
+  member : get_field;F;|DOCUMENTED|DOC_ONLY|;field_name,args,kwargs;
+  member : get_value;F;|DOCUMENTED|DOC_ONLY|;key,args,kwargs;
+  member : parse;F;|DOCUMENTED|DOC_ONLY|;format_string;
+  member : vformat;F;|DOCUMENTED|DOC_ONLY|;format_string,args,kwargs;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : Template
+  class-ig : template
+  in : string
+  member : Template;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;template;
+  member : safe_substitute;F;|DOCUMENTED|DOC_ONLY|;mapping,**kws;
+  member : substitute;F;|DOCUMENTED|DOC_ONLY|;mapping,**kws;
+  member : template;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  item : Formatter;C;|DOCUMENTED|DOC_ONLY|;
+  item : Template;C;|DOCUMENTED|DOC_ONLY|;
+  item : ascii_letters;D;|DOCUMENTED|DOC_ONLY|;
+  item : ascii_lowercase;D;|DOCUMENTED|DOC_ONLY|;
+  item : ascii_uppercase;D;|DOCUMENTED|DOC_ONLY|;
+  item : atof;F;|DOCUMENTED|DEPRECATED|DOC_ONLY|;s;
+  item : atoi;F;|DOCUMENTED|DEPRECATED|DOC_ONLY|;s,base;
+  item : atol;F;|DOCUMENTED|DEPRECATED|DOC_ONLY|;s,base;
+  item : capitalize;F;|DOCUMENTED|DOC_ONLY|;word;
+  item : capwords;F;|DOCUMENTED|DOC_ONLY|;s;
+  item : count;F;|DOCUMENTED|DOC_ONLY|;s,sub,start,end;
+  item : digits;D;|DOCUMENTED|DOC_ONLY|;
+  item : expandtabs;F;|DOCUMENTED|DOC_ONLY|;s,tabsize;
+  item : find;F;|DOCUMENTED|DOC_ONLY|;s,sub,start,end;
+  item : hexdigits;D;|DOCUMENTED|DOC_ONLY|;
+  item : index;F;|DOCUMENTED|DOC_ONLY|;s,sub,start,end;
+  item : join;F;|DOCUMENTED|DOC_ONLY|;words,sep;
+  item : joinfields;F;|DOCUMENTED|DOC_ONLY|;words,sep;
+  item : letters;D;|DOCUMENTED|DOC_ONLY|;
+  item : ljust;F;|DOCUMENTED|DOC_ONLY|;s,width;
+  item : lower;F;|DOCUMENTED|DOC_ONLY|;s;
+  item : lowercase;D;|DOCUMENTED|DOC_ONLY|;
+  item : lstrip;F;|DOCUMENTED|DOC_ONLY|;s,chars;
+  item : maketrans;F;|DOCUMENTED|DOC_ONLY|;from,to;
+  item : octdigits;D;|DOCUMENTED|DOC_ONLY|;
+  item : printable;D;|DOCUMENTED|DOC_ONLY|;
+  item : punctuation;D;|DOCUMENTED|DOC_ONLY|;
+  item : replace;F;|DOCUMENTED|DOC_ONLY|;str,old,new,maxreplace;
+  item : rfind;F;|DOCUMENTED|DOC_ONLY|;s,sub,start,end;
+  item : rindex;F;|DOCUMENTED|DOC_ONLY|;s,sub,start,end;
+  item : rsplit;F;|DOCUMENTED|DOC_ONLY|;s,sep,maxsplit;
+  item : rstrip;F;|DOCUMENTED|DOC_ONLY|;s,chars;
+  item : split;F;|DOCUMENTED|DOC_ONLY|;s,sep,maxsplit;
+  item : splitfields;F;|DOCUMENTED|DOC_ONLY|;s,sep,maxsplit;
+  item : strip;F;|DOCUMENTED|DOC_ONLY|;s,chars;
+  item : swapcase;F;|DOCUMENTED|DOC_ONLY|;s;
+  item : translate;F;|DOCUMENTED|DOC_ONLY|;s,table,deletechars;
+  item : upper;F;|DOCUMENTED|DOC_ONLY|;s;
+  item : uppercase;D;|DOCUMENTED|DOC_ONLY|;
+  item : whitespace;D;|DOCUMENTED|DOC_ONLY|;
+  item : zfill;F;|DOCUMENTED|DOC_ONLY|;s,width;
+  module : string
+
+Not Searchable Keys:
+  modattrs : S

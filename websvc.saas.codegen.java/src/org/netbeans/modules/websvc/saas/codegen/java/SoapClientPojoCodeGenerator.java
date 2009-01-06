@@ -76,6 +76,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -292,10 +293,19 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
      */
     protected String getWSInvocationCode(SoapClientOperationInfo info) throws IOException {
         //Collect java names for invocation code
-        final String serviceJavaName = info.getService().getJavaName();
+        String serviceJavaName = info.getService().getJavaName();
         String portJavaName = info.getPort().getJavaName();
         String operationJavaName = info.getOperation().getJavaName();
         String portGetterMethod = info.getPort().getPortGetter();
+        String pkgName = (((WsdlSaas)getBean().getSaas()).getWsdlData()).getJaxWsDescriptor().getPackageName();
+        if(pkgName != null) {
+            if(serviceJavaName.lastIndexOf(".") != -1)
+                serviceJavaName = serviceJavaName.substring(serviceJavaName.lastIndexOf(".")+1);
+            serviceJavaName = pkgName+"."+serviceJavaName;
+            if(portJavaName.lastIndexOf(".") != -1)
+                portJavaName = portJavaName.substring(portJavaName.lastIndexOf(".")+1);
+            portJavaName = pkgName+"."+portJavaName;
+        }
         String serviceFieldName = findNewName(serviceJavaName + " " + VAR_NAMES_SERVICE, VAR_NAMES_SERVICE); //NOI18N
         String returnTypeName = info.getOperation().getReturnTypeName();
         List<WSParameter> outArguments = info.getOutputParameters();
@@ -344,6 +354,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
         final boolean[] generateWsRefInjection = {false};
+        final String serviceJName = serviceJavaName;
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             private Kind VARIABLE;
@@ -371,7 +382,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                             TypeElement typeEl = JavaSourceHelper.getTypeElement(controller, typeTreePath);
                             if (typeEl != null) {
                                 String variableType = typeEl.getQualifiedName().toString();
-                                if (serviceJavaName.equals(variableType)) {
+                                if (serviceJName.equals(variableType)) {
                                     serviceFName[0] = var.getName().toString();
                                     generateWsRefInjection[0] = false;
                                     injectionExists = true;

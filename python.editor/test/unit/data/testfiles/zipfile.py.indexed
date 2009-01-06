@@ -1,0 +1,178 @@
+
+
+Document 0
+Searchable Keys:
+  class : BadZipfile
+  class-ig : badzipfile
+  extends : Exception
+  in : zipfile
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  class : LargeZipFile
+  class-ig : largezipfile
+  extends : Exception
+  in : zipfile
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  class : PyZipFile
+  class-ig : pyzipfile
+  extends : ZipFile
+  in : zipfile
+  member : _get_codename;F;|PRIVATE|;self,pathname,basename;
+  member : writepy;F;;self,pathname,basename;
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  class : ZipFile
+  class-ig : zipfile
+  in : zipfile
+  member : NameToInfo;D;;
+  member : _GetContents;F;|PRIVATE|;self;
+  member : _RealGetContents;F;|PRIVATE|;self;
+  member : __del__;F;;self;
+  member : __init__;c;|CONSTRUCTOR|;self,file,mode,compression,allowZip64;
+  member : _allowZip64;D;|PRIVATE|;
+  member : _didModify;D;|PRIVATE|;
+  member : _filePassed;D;|PRIVATE|;
+  member : _writecheck;F;|PRIVATE|;self,zinfo;
+  member : close;F;;self;
+  member : comment;D;;
+  member : compression;D;;
+  member : debug;D;;
+  member : filelist;D;;
+  member : filename;D;;
+  member : fp;D;;
+  member : fp;D;;
+  member : getinfo;F;;self,name;
+  member : infolist;F;;self;
+  member : mode;D;;
+  member : namelist;F;;self;
+  member : printdir;F;;self;
+  member : read;F;;self,name;
+  member : start_dir;D;;
+  member : testzip;F;;self;
+  member : write;F;;self,filename,arcname,compress_type;
+  member : writestr;F;;self,zinfo_or_arcname,bytes;
+
+Not Searchable Keys:
+
+
+Document 4
+Searchable Keys:
+  class : ZipInfo
+  class-ig : zipinfo
+  extends : object
+  in : zipfile
+  member : FileHeader;F;;self;
+  member : __init__;c;|CONSTRUCTOR|;self,filename,date_time;
+  member : __slots__;D;;
+  member : _decodeExtra;F;|PRIVATE|;self;
+  member : comment;D;;
+  member : compress_size;D;;
+  member : compress_type;D;;
+  member : create_system;D;;
+  member : create_version;D;;
+  member : date_time;D;;
+  member : external_attr;D;;
+  member : extra;D;;
+  member : extract_version;D;;
+  member : file_size;D;;
+  member : filename;D;;
+  member : flag_bits;D;;
+  member : header_offset;D;;
+  member : internal_attr;D;;
+  member : orig_filename;D;;
+  member : reserved;D;;
+  member : volume;D;;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  class : error
+  class-ig : error
+  extends : Exception
+  in : zipfile
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  item : BadZipfile;C;;
+  item : LargeZipFile;C;;
+  item : PyZipFile;C;;
+  item : ZIP64_LIMIT;D;|PRIVATE|;
+  item : ZIP_DEFLATED;D;;
+  item : ZIP_STORED;D;;
+  item : ZipFile;C;;
+  item : ZipInfo;C;;
+  item : _CD_COMMENT_LENGTH;D;|PRIVATE|;
+  item : _CD_COMPRESSED_SIZE;D;|PRIVATE|;
+  item : _CD_COMPRESS_TYPE;D;|PRIVATE|;
+  item : _CD_CRC;D;|PRIVATE|;
+  item : _CD_CREATE_SYSTEM;D;|PRIVATE|;
+  item : _CD_CREATE_VERSION;D;|PRIVATE|;
+  item : _CD_DATE;D;|PRIVATE|;
+  item : _CD_DISK_NUMBER_START;D;|PRIVATE|;
+  item : _CD_EXTERNAL_FILE_ATTRIBUTES;D;|PRIVATE|;
+  item : _CD_EXTRACT_SYSTEM;D;|PRIVATE|;
+  item : _CD_EXTRACT_VERSION;D;|PRIVATE|;
+  item : _CD_EXTRA_FIELD_LENGTH;D;|PRIVATE|;
+  item : _CD_FILENAME_LENGTH;D;|PRIVATE|;
+  item : _CD_FLAG_BITS;D;|PRIVATE|;
+  item : _CD_INTERNAL_FILE_ATTRIBUTES;D;|PRIVATE|;
+  item : _CD_LOCAL_HEADER_OFFSET;D;|PRIVATE|;
+  item : _CD_SIGNATURE;D;|PRIVATE|;
+  item : _CD_TIME;D;|PRIVATE|;
+  item : _CD_UNCOMPRESSED_SIZE;D;|PRIVATE|;
+  item : _EndRecData64;F;|PRIVATE|;fpin,offset,endrec;
+  item : _EndRecData;F;|PRIVATE|;fpin;
+  item : _FH_COMPRESSED_SIZE;D;|PRIVATE|;
+  item : _FH_COMPRESSION_METHOD;D;|PRIVATE|;
+  item : _FH_CRC;D;|PRIVATE|;
+  item : _FH_EXTRACT_SYSTEM;D;|PRIVATE|;
+  item : _FH_EXTRACT_VERSION;D;|PRIVATE|;
+  item : _FH_EXTRA_FIELD_LENGTH;D;|PRIVATE|;
+  item : _FH_FILENAME_LENGTH;D;|PRIVATE|;
+  item : _FH_GENERAL_PURPOSE_FLAG_BITS;D;|PRIVATE|;
+  item : _FH_LAST_MOD_DATE;D;|PRIVATE|;
+  item : _FH_LAST_MOD_TIME;D;|PRIVATE|;
+  item : _FH_SIGNATURE;D;|PRIVATE|;
+  item : _FH_UNCOMPRESSED_SIZE;D;|PRIVATE|;
+  item : __all__;D;;
+  item : binascii;I;|PRIVATE|;
+  item : cStringIO;I;|PRIVATE|;
+  item : error;C;;
+  item : is_zipfile;F;;filename;
+  item : main;F;|PRIVATE|;args;
+  item : os;I;|PRIVATE|;
+  item : stringCentralDir;D;|PRIVATE|;
+  item : stringEndArchive64;D;|PRIVATE|;
+  item : stringEndArchive64Locator;D;|PRIVATE|;
+  item : stringEndArchive;D;|PRIVATE|;
+  item : stringFileHeader;D;|PRIVATE|;
+  item : struct;I;|PRIVATE|;
+  item : structCentralDir;D;|PRIVATE|;
+  item : structEndArchive64;D;|PRIVATE|;
+  item : structEndArchive64Locator;D;|PRIVATE|;
+  item : structEndArchive;D;|PRIVATE|;
+  item : structFileHeader;D;|PRIVATE|;
+  item : sys;I;|PRIVATE|;
+  item : time;I;|PRIVATE|;
+  item : zlib;I;|PRIVATE|;
+  module : zipfile
+
+Not Searchable Keys:

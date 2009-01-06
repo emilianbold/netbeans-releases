@@ -1,0 +1,453 @@
+<html><body>
+<h2><a href="mod:zipfile">zipfile</a> --- Work with ZIP archives
+</h2>
+<a href="module:zipfile">zipfile</a><br>
+   Read and write ZIP-format archive files.
+<br>Module Author:</b> James C. Ahlstrom &lt;jim@interet.com>
+<br>Section Author:</b> James C. Ahlstrom &lt;jim@interet.com>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  1.6
+</div>
+The ZIP file format is a common archive and compression standard. This module
+provides tools to create, read, write, append, and list a ZIP file.  Any
+advanced use of this module will require an understanding of the format, as
+defined in `PKZIP Application Note
+&lt;http://www.pkware.com/documents/casestudies/APPNOTE.TXT>`_.
+
+<br><br>
+This module does not currently handle multi-disk ZIP files, or ZIP files
+which have appended comments (although it correctly handles comments
+added to individual archive members---for which see the <code>zipinfo-objects</code>
+documentation). It can handle ZIP files that use the ZIP64 extensions
+(that is ZIP files that are more than 4 GByte in size).  It supports
+decryption of encrypted files in ZIP archives, but it currently cannot
+create an encrypted file.  Decryption is extremely slow as it is
+implemented in native python rather than C.
+
+<br><br>
+For other archive formats, see the <a href="mod:bz2">bz2</a>, <a href="mod:gzip">gzip</a>, and
+<a href="mod:tarfile">tarfile</a> modules.
+
+<br><br>
+The module defines the following items:
+
+<br><br>
+.. exception:: BadZipfile
+
+<br><br>
+   The error raised for bad ZIP files (old name: <code>zipfile.error</code>).
+
+<br><br>
+.. exception:: LargeZipFile
+
+<br><br>
+   The error raised when a ZIP file would require ZIP64 functionality but that has
+   not been enabled.
+
+<br><br>
+<a href="class:ZipFile">ZipFile</a>
+
+<br><br>
+   The class for reading and writing ZIP files.  See section
+   <code>zipfile-objects</code> for constructor details.
+
+<br><br>
+<a href="class:PyZipFile">PyZipFile</a>
+
+<br><br>
+   Class for creating ZIP archives containing Python libraries.
+
+<br><br>
+<a href="class:ZipInfo([filename[, date_time]])">ZipInfo([filename[, date_time]])</a>
+
+<br><br>
+   Class used to represent information about a member of an archive. Instances
+   of this class are returned by the <a href="meth:getinfo">getinfo</a> and <a href="meth:infolist">infolist</a>
+   methods of <a href="class:ZipFile">ZipFile</a> objects.  Most users of the <a href="mod:zipfile">zipfile</a> module
+   will not need to create these, but only use those created by this
+   module. <b>filename</b> should be the full name of the archive member, and
+   <b>date_time</b> should be a tuple containing six fields which describe the time
+   of the last modification to the file; the fields are described in section
+   <code>zipinfo-objects</code>.
+
+<br><br>
+<a href="func:is_zipfile(filename)">is_zipfile(filename)</a>
+
+<br><br>
+   Returns <code>True</code> if <b>filename</b> is a valid ZIP file based on its magic number,
+   otherwise returns <code>False</code>.  This module does not currently handle ZIP files
+   which have appended comments.
+
+<br><br>
+<a href="data:ZIP_STORED">ZIP_STORED</a>
+
+<br><br>
+   The numeric constant for an uncompressed archive member.
+
+<br><br>
+<a href="data:ZIP_DEFLATED">ZIP_DEFLATED</a>
+
+<br><br>
+   The numeric constant for the usual ZIP compression method.  This requires the
+   zlib module.  No other compression methods are currently supported.
+<div style="margin: 5px 5px; background: #ddffdd; border-size: 1px; padding: 5px"><b>See Also</b>: 
+
+<br><br>
+   `PKZIP Application Note &lt;http://www.pkware.com/documents/casestudies/APPNOTE.TXT>`_
+      Documentation on the ZIP file format by Phil Katz, the creator of the format and
+      algorithms used.
+
+<br><br>
+   `Info-ZIP Home Page &lt;http://www.info-zip.org/>`_
+      Information about the Info-ZIP project's ZIP archive programs and development
+      libraries.
+</div>
+<h3>ZipFile Objects
+</h3>
+<a href="class:ZipFile(file[, mode[, compression[, allowZip64]]])">ZipFile(file[, mode[, compression[, allowZip64]]])</a>
+
+<br><br>
+   Open a ZIP file, where <b>file</b> can be either a path to a file (a string) or a
+   file-like object.  The <b>mode</b> parameter should be <code>'r'</code> to read an existing
+   file, <code>'w'</code> to truncate and write a new file, or <code>'a'</code> to append to an
+   existing file.  If <b>mode</b> is <code>'a'</code> and <b>file</b> refers to an existing ZIP file,
+   then additional files are added to it.  If <b>file</b> does not refer to a ZIP file,
+   then a new ZIP archive is appended to the file.  This is meant for adding a ZIP
+   archive to another file, such as :file:`python.exe`.  Using ::
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+      <span style="">cat</span> <span style="">myzip</span><span style="">.</span><span style="">zip</span> <span style="">>></span> <span style="">python</span><span style="">.</span><span style="">exe</span><span style="color:#000000;"><br></span></pre>
+   also works, and at least :program:<code>WinZip</code> can read such files. If <b>mode</b> is
+   <code>a</code> and the file does not exist at all, it is created. <b>compression</b> is the
+   ZIP compression method to use when writing the archive, and should be
+   :const:<code>ZIP_STORED</code> or :const:<code>ZIP_DEFLATED</code>; unrecognized values will cause
+   <a href="exc:RuntimeError">RuntimeError</a> to be raised.  If :const:<code>ZIP_DEFLATED</code> is specified but the
+   <a href="mod:zlib">zlib</a> module is not available, <a href="exc:RuntimeError">RuntimeError</a> is also raised.  The
+   default is :const:<code>ZIP_STORED</code>.  If <b>allowZip64</b> is <code>True</code> zipfile will create
+   ZIP files that use the ZIP64 extensions when the zipfile is larger than 2 GB. If
+   it is  false (the default) <a href="mod:zipfile">zipfile</a> will raise an exception when the ZIP
+   file would require ZIP64 extensions. ZIP64 extensions are disabled by default
+   because the default :program:<code>zip</code> and :program:<code>unzip</code> commands on Unix (the
+   InfoZIP utilities) don't support these extensions.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+      If the file does not exist, it is created if the mode is 'a'.
+</div>
+<a href="meth:ZipFile.close()">ZipFile.close()</a>
+   Close the archive file.  You must call <a href="meth:close">close</a> before exiting your program
+   or essential records will not be written.
+
+<br><br>
+<a href="meth:ZipFile.getinfo(name)">ZipFile.getinfo(name)</a>
+
+<br><br>
+   Return a <a href="class:ZipInfo">ZipInfo</a> object with information about the archive member
+   <b>name</b>.  Calling <a href="meth:getinfo">getinfo</a> for a name not currently contained in the
+   archive will raise a <a href="exc:KeyError">KeyError</a>.
+
+<br><br>
+<a href="meth:ZipFile.infolist()">ZipFile.infolist()</a>
+
+<br><br>
+   Return a list containing a <a href="class:ZipInfo">ZipInfo</a> object for each member of the
+   archive.  The objects are in the same order as their entries in the actual ZIP
+   file on disk if an existing archive was opened.
+
+<br><br>
+<a href="meth:ZipFile.namelist()">ZipFile.namelist()</a>
+
+<br><br>
+   Return a list of archive members by name.
+
+<br><br>
+<a href="meth:ZipFile.open(name[, mode[, pwd]])">ZipFile.open(name[, mode[, pwd]])</a>
+
+<br><br>
+   Extract a member from the archive as a file-like object (ZipExtFile). <b>name</b> is
+   the name of the file in the archive, or a <a href="class:ZipInfo">ZipInfo</a> object. The <b>mode</b>
+   parameter, if included, must be one of the following: <code>'r'</code> (the  default),
+   <code>'U'</code>, or <code>'rU'</code>. Choosing <code>'U'</code> or  <code>'rU'</code> will enable universal newline
+   support in the read-only object. <b>pwd</b> is the password used for encrypted files.
+   Calling  <a href="meth:open">open</a> on a closed ZipFile will raise a  <a href="exc:RuntimeError">RuntimeError</a>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      The file-like object is read-only and provides the following methods:
+      <a href="meth:read">read</a>, <a href="meth:readline">readline</a>, <a href="meth:readlines">readlines</a>, <a href="meth:__iter__">__iter__</a>,
+      <a href="meth:next">next</a>.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      If the ZipFile was created by passing in a file-like object as the  first
+      argument to the constructor, then the object returned by <a href="meth:.open">.open</a> shares the
+      ZipFile's file pointer.  Under these  circumstances, the object returned by
+      <a href="meth:.open">.open</a> should not  be used after any additional operations are performed
+      on the  ZipFile object.  If the ZipFile was created by passing in a string (the
+      filename) as the first argument to the constructor, then  <a href="meth:.open">.open</a> will
+      create a new file object that will be held by the ZipExtFile, allowing it to
+      operate independently of the  ZipFile.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      The <a href="meth:open">open</a>, <a href="meth:read">read</a> and <a href="meth:extract">extract</a> methods can take a filename
+      or a <a href="class:ZipInfo">ZipInfo</a> object.  You will appreciate this when trying to read a
+      ZIP file that contains members with duplicate names.
+</div>
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:ZipFile.extract(member[, path[, pwd]])">ZipFile.extract(member[, path[, pwd]])</a>
+   Extract a member from the archive to the current working directory; <b>member</b>
+   must be its full name or a <a href="class:ZipInfo">ZipInfo</a> object).  Its file information is
+   extracted as accurately as possible.  <b>path</b> specifies a different directory
+   to extract to.  <b>member</b> can be a filename or a <a href="class:ZipInfo">ZipInfo</a> object.
+   <b>pwd</b> is the password used for encrypted files.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:ZipFile.extractall([path[, members[, pwd]]])">ZipFile.extractall([path[, members[, pwd]]])</a>
+   Extract all members from the archive to the current working directory.  <b>path</b> 
+   specifies a different directory to extract to.  <b>members</b> is optional and must
+   be a subset of the list returned by <a href="meth:namelist">namelist</a>.  <b>pwd</b> is the password
+   used for encrypted files.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:ZipFile.printdir()">ZipFile.printdir()</a>
+   Print a table of contents for the archive to <code>sys.stdout</code>.
+
+<br><br>
+<a href="meth:ZipFile.setpassword(pwd)">ZipFile.setpassword(pwd)</a>
+
+<br><br>
+   Set <b>pwd</b> as default password to extract encrypted files.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Added</b>:  2.6
+</div>
+<a href="meth:ZipFile.read(name[, pwd])">ZipFile.read(name[, pwd])</a>
+   Return the bytes of the file <b>name</b> in the archive.  <b>name</b> is the name of the
+   file in the archive, or a <a href="class:ZipInfo">ZipInfo</a> object.  The archive must be open for
+   read or append. <b>pwd</b> is the password used for encrypted  files and, if specified,
+   it will override the default password set with <a href="meth:setpassword">setpassword</a>.  Calling
+   <a href="meth:read">read</a> on a closed ZipFile  will raise a <a href="exc:RuntimeError">RuntimeError</a>.
+<div style="margin: 5px 5px; background: #dddddd; border-size: 1px; padding: 5px"><b>Version Changed</b>:  2.6
+      <b>pwd</b> was added, and <b>name</b> can now be a <a href="class:ZipInfo">ZipInfo</a> object.
+</div>
+<a href="meth:ZipFile.testzip()">ZipFile.testzip()</a>
+   Read all the files in the archive and check their CRC's and file headers.
+   Return the name of the first bad file, or else return <code>None</code>. Calling
+   <a href="meth:testzip">testzip</a> on a closed ZipFile will raise a <a href="exc:RuntimeError">RuntimeError</a>.
+
+<br><br>
+<a href="meth:ZipFile.write(filename[, arcname[, compress_type]])">ZipFile.write(filename[, arcname[, compress_type]])</a>
+
+<br><br>
+   Write the file named <b>filename</b> to the archive, giving it the archive name
+   <b>arcname</b> (by default, this will be the same as <b>filename</b>, but without a drive
+   letter and with leading path separators removed).  If given, <b>compress_type</b>
+   overrides the value given for the <b>compression</b> parameter to the constructor for
+   the new entry.  The archive must be open with mode <code>'w'</code> or <code>'a'</code> -- calling
+   <a href="meth:write">write</a> on a ZipFile created with mode <code>'r'</code> will raise a
+   <a href="exc:RuntimeError">RuntimeError</a>.  Calling  <a href="meth:write">write</a> on a closed ZipFile will raise a
+   <a href="exc:RuntimeError">RuntimeError</a>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      There is no official file name encoding for ZIP files. If you have unicode file
+      names, you must convert them to byte strings in your desired encoding before
+      passing them to <a href="meth:write">write</a>. WinZip interprets all file names as encoded in
+      CP437, also known as DOS Latin.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      Archive names should be relative to the archive root, that is, they should not
+      start with a path separator.
+</div>
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+      If <code>arcname</code> (or <code>filename</code>, if <code>arcname</code> is  not given) contains a null
+      byte, the name of the file in the archive will be truncated at the null byte.
+</div>
+<a href="meth:ZipFile.writestr(zinfo_or_arcname, bytes)">ZipFile.writestr(zinfo_or_arcname, bytes)</a>
+   Write the string <b>bytes</b> to the archive; <b>zinfo_or_arcname</b> is either the file
+   name it will be given in the archive, or a <a href="class:ZipInfo">ZipInfo</a> instance.  If it's
+   an instance, at least the filename, date, and time must be given.  If it's a
+   name, the date and time is set to the current date and time. The archive must be
+   opened with mode <code>'w'</code> or <code>'a'</code> -- calling  <a href="meth:writestr">writestr</a> on a ZipFile
+   created with mode <code>'r'</code>  will raise a <a href="exc:RuntimeError">RuntimeError</a>.  Calling
+   <a href="meth:writestr">writestr</a> on a closed ZipFile will raise a <a href="exc:RuntimeError">RuntimeError</a>.
+<div style="margin: 5px 5px; background: #ffdddd; border-size: 1px; padding: 5px"><b>NOTE</b>: 
+
+<br><br>
+      When passing a <a href="class:ZipInfo">ZipInfo</a> instance as the <b>zinfo_or_acrname</b> parameter, 
+      the compression method used will be that specified in the <b>compress_type</b> 
+      member of the given <a href="class:ZipInfo">ZipInfo</a> instance.  By default, the 
+      <a href="class:ZipInfo">ZipInfo</a> constructor sets this member to :const:<code>ZIP_STORED</code>.
+</div>
+The following data attributes are also available:
+<a href="attr:ZipFile.debug">ZipFile.debug</a>
+
+<br><br>
+   The level of debug output to use.  This may be set from <code>0</code> (the default, no
+   output) to <code>3</code> (the most output).  Debugging information is written to
+   <code>sys.stdout</code>.
+
+<br><br>
+<a href="attr:ZipFile.comment">ZipFile.comment</a>
+
+<br><br>
+   The comment text associated with the ZIP file.  If assigning a comment to a 
+   <a href="class:ZipFile">ZipFile</a> instance created with mode 'a' or 'w', this should be a 
+   string no longer than 65535 bytes.  Comments longer than this will be 
+   truncated in the written archive when <a href="meth:ZipFile.close">ZipFile.close</a> is called.
+
+<br><br>
+
+<br><br>
+<h3>PyZipFile Objects
+</h3>
+The <a href="class:PyZipFile">PyZipFile</a> constructor takes the same parameters as the
+<a href="class:ZipFile">ZipFile</a> constructor.  Instances have one method in addition to those of
+<a href="class:ZipFile">ZipFile</a> objects.
+
+<br><br>
+<a href="meth:PyZipFile.writepy(pathname[, basename])">PyZipFile.writepy(pathname[, basename])</a>
+
+<br><br>
+   Search for files :file:`\*.py` and add the corresponding file to the archive.
+   The corresponding file is a :file:`\*.pyo` file if available, else a
+   :file:`\*.pyc` file, compiling if necessary.  If the pathname is a file, the
+   filename must end with :file:`.py`, and just the (corresponding
+   :file:`\*.py[co]`) file is added at the top level (no path information).  If the
+   pathname is a file that does not end with :file:`.py`, a <a href="exc:RuntimeError">RuntimeError</a>
+   will be raised.  If it is a directory, and the directory is not a package
+   directory, then all the files :file:`\*.py[co]` are added at the top level.  If
+   the directory is a package directory, then all :file:`\*.py[co]` are added under
+   the package name as a file path, and if any subdirectories are package
+   directories, all of these are added recursively.  <b>basename</b> is intended for
+   internal use only.  The <a href="meth:writepy">writepy</a> method makes archives with file names
+   like this::
+
+
+<pre style="border-color: #dddddd; border-style: solid; border-width: 1px; color:#000000;">
+      <span style="">string</span><span style="">.</span><span style="">pyc</span>                                <span style="color:#969696;"># Top level name </span><span style="color:#000000;"><br></span>      <span style="">test</span><span style="">/</span><span style="">__init__</span><span style="">.</span><span style="">pyc</span>                         <span style="color:#969696;"># Package directory </span><span style="color:#000000;"><br></span>      <span style="">test</span><span style="">/</span><span style="">test_support</span><span style="">.</span><span style="">pyc</span>                          <span style="color:#969696;"># Module test.test_support</span><span style="color:#000000;"><br></span>      <span style="">test</span><span style="">/</span><span style="">bogus</span><span style="">/</span><span style="">__init__</span><span style="">.</span><span style="">pyc</span>                   <span style="color:#969696;"># Subpackage directory </span><span style="color:#000000;"><br></span>      <span style="">test</span><span style="">/</span><span style="">bogus</span><span style="">/</span><span style="">myfile</span><span style="">.</span><span style="">pyc</span>                     <span style="color:#969696;"># Submodule test.bogus.myfile</span><span style="color:#000000;"><br></span></pre>
+<h3>ZipInfo Objects
+</h3>
+Instances of the <a href="class:ZipInfo">ZipInfo</a> class are returned by the <a href="meth:getinfo">getinfo</a> and
+<a href="meth:infolist">infolist</a> methods of <a href="class:ZipFile">ZipFile</a> objects.  Each object stores
+information about a single member of the ZIP archive.
+
+<br><br>
+Instances have the following attributes:
+
+<br><br>
+<a href="attr:ZipInfo.filename">ZipInfo.filename</a>
+
+<br><br>
+   Name of the file in the archive.
+
+<br><br>
+<a href="attr:ZipInfo.date_time">ZipInfo.date_time</a>
+
+<br><br>
+   The time and date of the last modification to the archive member.  This is a
+   tuple of six values:
+
+<br><br>
+<pre>   +-------+--------------------------+
+   | Index | Value                    |
+   +=======+==========================+
+   | ``0`` | Year                     |
+   +-------+--------------------------+
+   | ``1`` | Month (one-based)        |
+   +-------+--------------------------+
+   | ``2`` | Day of month (one-based) |
+   +-------+--------------------------+
+   | ``3`` | Hours (zero-based)       |
+   +-------+--------------------------+
+   | ``4`` | Minutes (zero-based)     |
+   +-------+--------------------------+
+   | ``5`` | Seconds (zero-based)     |
+   +-------+--------------------------+
+</pre>
+<a href="attr:ZipInfo.compress_type">ZipInfo.compress_type</a>
+
+<br><br>
+   Type of compression for the archive member.
+
+<br><br>
+<a href="attr:ZipInfo.comment">ZipInfo.comment</a>
+
+<br><br>
+   Comment for the individual archive member.
+
+<br><br>
+<a href="attr:ZipInfo.extra">ZipInfo.extra</a>
+
+<br><br>
+   Expansion field data.  The `PKZIP Application Note
+   &lt;http://www.pkware.com/documents/casestudies/APPNOTE.TXT>`_ contains
+   some comments on the internal structure of the data contained in this string.
+
+<br><br>
+<a href="attr:ZipInfo.create_system">ZipInfo.create_system</a>
+
+<br><br>
+   System which created ZIP archive.
+
+<br><br>
+<a href="attr:ZipInfo.create_version">ZipInfo.create_version</a>
+
+<br><br>
+   PKZIP version which created ZIP archive.
+
+<br><br>
+<a href="attr:ZipInfo.extract_version">ZipInfo.extract_version</a>
+
+<br><br>
+   PKZIP version needed to extract archive.
+
+<br><br>
+<a href="attr:ZipInfo.reserved">ZipInfo.reserved</a>
+
+<br><br>
+   Must be zero.
+
+<br><br>
+<a href="attr:ZipInfo.flag_bits">ZipInfo.flag_bits</a>
+
+<br><br>
+   ZIP flag bits.
+
+<br><br>
+<a href="attr:ZipInfo.volume">ZipInfo.volume</a>
+
+<br><br>
+   Volume number of file header.
+
+<br><br>
+<a href="attr:ZipInfo.internal_attr">ZipInfo.internal_attr</a>
+
+<br><br>
+   Internal attributes.
+
+<br><br>
+<a href="attr:ZipInfo.external_attr">ZipInfo.external_attr</a>
+
+<br><br>
+   External file attributes.
+
+<br><br>
+<a href="attr:ZipInfo.header_offset">ZipInfo.header_offset</a>
+
+<br><br>
+   Byte offset to the file header.
+
+<br><br>
+<a href="attr:ZipInfo.CRC">ZipInfo.CRC</a>
+
+<br><br>
+   CRC-32 of the uncompressed file.
+
+<br><br>
+<a href="attr:ZipInfo.compress_size">ZipInfo.compress_size</a>
+
+<br><br>
+   Size of the compressed data.
+
+<br><br>
+<a href="attr:ZipInfo.file_size">ZipInfo.file_size</a>
+
+<br><br>
+   Size of the uncompressed file.
+</body></html>

@@ -852,9 +852,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
             if (makeConfiguration.isQmakeConfiguration()) {
                 includeMakefileDescription = false;
-                includeCompilerDescription = false;
                 includeArchiveDescription = false;
-                includeLinkerDescription = false;
             }
         }
 

@@ -74,6 +74,7 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
     private static final String IMAGE_PARAMS =
             "org/netbeans/modules/websvc/rest/wadl/design/view/resources/param.png"; // NOI18N 
     private transient T parent;
+    private transient T ancestor;
     private transient Collection<Param> params;
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
@@ -93,14 +94,16 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
      * @param scene 
      * @param method 
      */
-    public ParametersWidget(String title, ParamStyle type, ObjectScene scene, T parent, Collection<Param> params, WadlModel wadlModel) throws IOException {
+    public ParametersWidget(String title, ParamStyle type, ObjectScene scene, 
+            T parent, T ancestor, Collection<Param> params, WadlModel wadlModel) throws IOException {
         super(scene, RADIUS, RADIUS, RADIUS / 2, BORDER_COLOR);
         this.title = title;
         this.type = type;
         this.parent = parent;
+        this.ancestor = ancestor;
         this.params = params;
         this.wadlModel = wadlModel;
-        addParam = new AddParamAction(type, parent, wadlModel);
+        addParam = new AddParamAction(type, parent, ancestor, wadlModel);
         addParam.addPropertyChangeListener(this);
 
         removeAction = new RemoveParamAction(parent, wadlModel);
@@ -156,13 +159,13 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
             parentWidget.removeChild(parameterTable);
             isReplaceInAction = false;
         }
+        if (noParamsWidget != null && noParamsWidget.getParentWidget() == parentWidget) {
+            parentWidget.removeChild(noParamsWidget);
+        }
         if (model.getRowCount() > 0) {
             parameterTable = new TableWidget(getScene(), model);
             parentWidget.addChild(parameterTable);
         } else {
-            if (noParamsWidget != null) {
-                parentWidget.removeChild(noParamsWidget);
-            }
             noParamsWidget = new LabelWidget(getScene(),
                     NbBundle.getMessage(ParametersWidget.class, "LBL_ParamNone"));
             noParamsWidget.setAlignment(LabelWidget.Alignment.CENTER);

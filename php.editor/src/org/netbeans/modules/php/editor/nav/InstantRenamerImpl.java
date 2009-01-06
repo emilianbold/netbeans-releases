@@ -60,13 +60,13 @@ import org.netbeans.modules.php.editor.model.VariableName;
  * @author Jan Lahoda, Radek Matous
  */
 public class InstantRenamerImpl implements InstantRenamer {
-    private List<Occurence<? extends ModelElement>> allOccurences = Collections.emptyList();
+    private List<Occurence> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
         //TODO: put some comments into status line if false is returned
         allOccurences.clear();
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
-        Occurence<? extends ModelElement> caretOccurence = occurencesSupport.getOccurence();
+        Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
             ModelElement decl = caretOccurence.getDeclaration();
             if (caretOccurence.getAllDeclarations().size() > 1) {
@@ -74,7 +74,7 @@ public class InstantRenamerImpl implements InstantRenamer {
             }
             if (decl instanceof VariableName) {
                 VariableName varName = (VariableName) decl;
-                if (!varName.isGloballyVisible()) {                    
+                if (!varName.isGloballyVisible() && !varName.representsThis()) {
                     return checkAll(caretOccurence);
                 }
             } else if (decl instanceof MethodScope) {
@@ -96,17 +96,17 @@ public class InstantRenamerImpl implements InstantRenamer {
 
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
         Set<OffsetRange> retval = new HashSet<OffsetRange>();
-        for (Occurence<? extends ModelElement> occurence : allOccurences) {
-            retval.add(occurence.getOffsetRange());
+        for (Occurence occurence : allOccurences) {
+            retval.add(occurence.getOccurenceRange());
         }
         allOccurences.clear();
         return retval != null ? retval : Collections.<OffsetRange>emptySet();
     }
 
-    private boolean checkAll(Occurence<? extends ModelElement> caretOccurence) {
-        List<Occurence<? extends ModelElement>> collected = new ArrayList<Occurence<? extends ModelElement>>();
-        List<Occurence<? extends ModelElement>> all = caretOccurence.getAllOccurences();
-        for (Occurence<? extends ModelElement> occurence : all) {
+    private boolean checkAll(Occurence caretOccurence) {
+        List<Occurence> collected = new ArrayList<Occurence>();
+        List<Occurence> all = caretOccurence.getAllOccurences();
+        for (Occurence occurence : all) {
             if (occurence.getAllDeclarations().size() == 1 ) {
                 collected.add(occurence);
             } else {

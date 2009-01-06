@@ -67,10 +67,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -85,6 +87,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -592,6 +595,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         menu.add(new SkipTestsAction(taProperties));
         menu.add(new DebugMavenAction(taProperties));
         menu.add(new EnvVarAction(taProperties));
+        menu.add(new PluginPropertyAction(taProperties, txtGoals, project));
         menu.show(btnAddProps, btnAddProps.getSize().width, 0);
 
     }//GEN-LAST:event_btnAddPropsActionPerformed
@@ -1015,6 +1019,46 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
     }
 
+    static class PluginPropertyAction extends AbstractAction {
+        private JTextArea area;
+        private JTextField goals;
+        private NbMavenProjectImpl project;
+
+        PluginPropertyAction(JTextArea area, JTextField goals, NbMavenProjectImpl prj) {
+            putValue(Action.NAME, "Plugin Expression Property");
+            this.area = area;
+            this.goals = goals;
+            this.project = prj;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
+            if (provider != null) {
+                AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
+                DialogDescriptor dd = new DialogDescriptor(panel, "Add Plugin Expression Property");
+                dd.setOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
+                dd.setClosingOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
+                DialogDisplayer.getDefault().notify(dd);
+                if (dd.getValue() == panel.getOkButton()) {
+                    String expr = panel.getSelectedExpression();
+                    if (expr != null) {
+                        String props = area.getText();
+                        String sep = "\n";//NOI18N
+                        if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
+                            sep = "";//NOI18N
+                        }
+                        props = props + sep + expr + "="; //NOI18N
+                        area.setText(props);
+                        area.setSelectionStart(props.length() - (expr + "=").length()); //NOI18N
+                        area.setSelectionEnd(props.length());
+                        area.requestFocusInWindow();
+                    }
+                }
+            }
+        }
+    }
+
+
     static class EnvVarAction extends AbstractAction {
         private JTextArea area;
 
@@ -1033,6 +1077,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             area.setText(props);
             area.setSelectionStart(props.length() - "Env.FOO=bar".length()); //NOI18N
             area.setSelectionEnd(props.length());
+            area.requestFocusInWindow();
         }
     }
 
@@ -1046,6 +1091,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             if (select) {
                 area.setSelectionStart(begin);
                 area.setSelectionEnd(begin + replace.length());
+                area.requestFocusInWindow();
             }
         } else {
             String sep = "\n";//NOI18N
@@ -1057,6 +1103,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             if (select) {
                 area.setSelectionStart(props.length() - replace.length());
                 area.setSelectionEnd(props.length());
+                area.requestFocusInWindow();
             }
         }
 

@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -68,12 +69,12 @@ class CachedModelSupport {
     private List<InterfaceScopeImpl> ifaceScopes = new ArrayList<InterfaceScopeImpl>();
     private List<ConstantElementImpl> constantScopes = new ArrayList<ConstantElementImpl>();
     private List<FunctionScopeImpl> fncScopes = new ArrayList<FunctionScopeImpl>();
-    private Map<ClassScopeImpl, List<MethodScopeImpl>> methodScopes =
-            new LinkedHashMap <ClassScopeImpl,List<MethodScopeImpl>>();
-    private Map<ClassScopeImpl, List<FieldElementImpl>> fldElems =
-            new LinkedHashMap <ClassScopeImpl,List<FieldElementImpl>>();
-    private Map<ClassScopeImpl, List<ClzConstantElementImpl>> clzConstantElems =
-            new LinkedHashMap <ClassScopeImpl,List<ClzConstantElementImpl>>();
+    private Map<TypeScopeImpl, List<MethodScopeImpl>> methodScopes =
+            new LinkedHashMap <TypeScopeImpl,List<MethodScopeImpl>>();
+    private Map<TypeScopeImpl, List<FieldElementImpl>> fldElems =
+            new LinkedHashMap <TypeScopeImpl,List<FieldElementImpl>>();
+    private Map<TypeScopeImpl, List<ClzConstantElementImpl>> clzConstantElems =
+            new LinkedHashMap <TypeScopeImpl,List<ClzConstantElementImpl>>();
 
 
     void clearCaches() {
@@ -126,14 +127,14 @@ class CachedModelSupport {
     }
 
     //TODO: modifiers not taken into account
-    static List<? extends MethodScope> getInheritedMethods(ClassScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
+    static List<? extends MethodScope> getInheritedMethods(TypeScope typeScope, String methodName, ModelElement elem, final int... modifiers) {
         List<? extends MethodScope> retval;
         ModelScopeImpl top = (ModelScopeImpl) ModelUtils.getModelScope(elem);
         CachedModelSupport modelSupport = top.getCachedModelSupport();
         if (modelSupport != null) {
-            retval = modelSupport.getInheritedMergedMethods((ClassScopeImpl)clsScope, methodName);
+            retval = modelSupport.getInheritedMergedMethods((TypeScopeImpl)typeScope, methodName);
         } else {
-            retval = clsScope.getInheritedMethods(methodName);
+            retval = typeScope.getInheritedMethods(methodName);
         }
         return retval;
     }
@@ -158,6 +159,18 @@ class CachedModelSupport {
             retval = modelSupport.getMergedClasses(className);
         } else {
             retval = top.getClasses(className);
+        }
+        return retval;
+    }
+
+    static List<? extends InterfaceScope> getInterfaces(String ifaceName, ModelElement elem) {
+        List<? extends InterfaceScope> retval;
+        ModelScopeImpl top = (ModelScopeImpl) ModelUtils.getModelScope(elem);
+        CachedModelSupport modelSupport = top.getCachedModelSupport();
+        if (modelSupport != null) {
+            retval = modelSupport.getMergedIfaces(ifaceName);
+        } else {
+            retval = top.getInterfaces(ifaceName);
         }
         return retval;
     }
@@ -228,18 +241,18 @@ class CachedModelSupport {
     }
 
 
-    private List<? extends MethodScope> getInheritedMergedMethods(ClassScopeImpl clsScope, String methodName) {
-        List<? extends MethodScopeImpl> methods = getCachedMethods(clsScope, methodName);
+    private List<? extends MethodScope> getInheritedMergedMethods(TypeScopeImpl typeScope, String methodName) {
+        List<? extends MethodScopeImpl> methods = getCachedMethods(typeScope, methodName);
         if (methods.isEmpty()) {
-            methods = (clsScope != null ? clsScope.getInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
+            methods = (typeScope != null ? typeScope.getInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
             if (methods.isEmpty()) {
                 IndexScopeImpl indexScope = fileScope.getIndexScope();
-                methods = (clsScope != null ? indexScope.getInheritedMethods(clsScope,methodName) : Collections.<MethodScopeImpl>emptyList());
+                methods = (typeScope != null ? indexScope.getInheritedMethods(typeScope,methodName) : Collections.<MethodScopeImpl>emptyList());
             }
             if (!methods.isEmpty()) {
-                List<MethodScopeImpl> methList = methodScopes.get(clsScope);
+                List<MethodScopeImpl> methList = methodScopes.get(typeScope);
                 if (methList == null) {
-                    methodScopes.put(clsScope, methList = new ArrayList<MethodScopeImpl>());
+                    methodScopes.put(typeScope, methList = new ArrayList<MethodScopeImpl>());
                 }
                 methList.add(ModelUtils.getFirst(methods));
             }
@@ -263,9 +276,29 @@ class CachedModelSupport {
                 }
             }
         }
-        return methods;
-
+        return methods;   
     }
+
+    private List<? extends InterfaceScope> getMergedIfaces(String ifaceName) {
+        List<? extends InterfaceScopeImpl> ifaces = getCachedInterfaces(ifaceName);
+        if (ifaces.isEmpty()) {
+            ifaces = (ifaceName != null ? fileScope.getInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
+            if (ifaces.isEmpty()) {
+                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                ifaces = (ifaceName != null ? indexScope.getInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
+                //TODO: ModelUtils.getFirst
+                InterfaceScopeImpl ifce = ModelUtils.getFirst(ifaces);
+                if (ifce != null) {
+                    ifaceScopes.add(ifce);
+                    methodScopes.put(ifce, new ArrayList<MethodScopeImpl>());
+                    fldElems.put(ifce, new ArrayList<FieldElementImpl>());
+                    clzConstantElems.put(ifce, new ArrayList<ClzConstantElementImpl>());
+                }
+            }
+        }
+        return ifaces;
+    }
+
     private List<? extends ClassScope> getMergedClasses(String clzName) {
         List<? extends ClassScopeImpl> classes = getCachedClasses(clzName);
         if (classes.isEmpty()) {            
@@ -332,6 +365,19 @@ class CachedModelSupport {
     }
 
 
+    private List<? extends InterfaceScopeImpl> getCachedInterfaces(final String... queryName) {
+        return getCachedInterfaces(NameKind.EXACT_NAME, queryName);
+    }
+
+    private List<? extends InterfaceScopeImpl> getCachedInterfaces(final NameKind nameKind, final String... queryName) {
+        return ScopeImpl.filter(ifaceScopes, new ScopeImpl.ElementFilter() {
+            public boolean isAccepted(ModelElementImpl element) {
+                return element.getPhpKind().equals(PhpKind.IFACE) &&
+                        (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
+            }
+        });
+    }
+
     private List<? extends ClassScopeImpl> getCachedClasses(final String... queryName) {
         return getCachedClasses(NameKind.EXACT_NAME, queryName);
     }
@@ -376,13 +422,13 @@ class CachedModelSupport {
         });
     }
 
-    private List<? extends MethodScopeImpl> getCachedMethods(ClassScopeImpl clsScope, final String queryName, final int... modifiers) {
-        return getCachedMethods(NameKind.EXACT_NAME, clsScope, queryName, modifiers);
+    private List<? extends MethodScopeImpl> getCachedMethods(TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+        return getCachedMethods(NameKind.EXACT_NAME, typeScope, queryName, modifiers);
     }
 
     private List<? extends MethodScopeImpl> getCachedMethods(final NameKind nameKind, 
-            ClassScopeImpl clsScope, final String queryName, final int... modifiers) {
-        List<MethodScopeImpl> toFilter = methodScopes.get(clsScope);
+            TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+        List<MethodScopeImpl> toFilter = methodScopes.get(typeScope);
         if (toFilter == null) return Collections.emptyList();
         return ScopeImpl.filter(toFilter, new ScopeImpl.ElementFilter() {
             public boolean isAccepted(ModelElementImpl element) {

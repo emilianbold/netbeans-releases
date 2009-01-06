@@ -1,0 +1,15 @@
+Code completion result for source line:
+s|elf.section = section
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   section                                    
+VARIABLE   self                                       
+------------------------------------
+CLASS      set                                        
+METHOD     set(iterable)                              
+METHOD     setattr(object, name, value)               
+METHOD     slice(start, stop, step)                   
+METHOD     sorted(iterable, cmp, key, rev             
+METHOD     staticmethod(function)                     
+METHOD     str(object)                                
+METHOD     sum(iterable, start)                       
+METHOD     super(type, object-or-type)                

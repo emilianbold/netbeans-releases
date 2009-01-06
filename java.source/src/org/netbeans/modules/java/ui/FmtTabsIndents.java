@@ -65,6 +65,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         absoluteLabelIndentCheckBox.putClientProperty(OPTION_ID, absoluteLabelIndent);
         indentTopLevelClassMembersCheckBox.putClientProperty(OPTION_ID, indentTopLevelClassMembers);
         indentCasesFromSwitchCheckBox.putClientProperty(OPTION_ID, indentCasesFromSwitch);
+        addLeadingStarInCommentCheckBox.putClientProperty(OPTION_ID, addLeadingStarInComment);
 //        rightMarginField.putClientProperty(OPTION_ID, rightMargin);
     }
     
@@ -119,6 +120,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         absoluteLabelIndentCheckBox = new javax.swing.JCheckBox();
         indentTopLevelClassMembersCheckBox = new javax.swing.JCheckBox();
         indentCasesFromSwitchCheckBox = new javax.swing.JCheckBox();
+        addLeadingStarInCommentCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabsAndIndents")); // NOI18N
         setOpaque(false);
@@ -138,6 +140,9 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(indentCasesFromSwitchCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentCasesFromSwitch")); // NOI18N
         indentCasesFromSwitchCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        org.openide.awt.Mnemonics.setLocalizedText(addLeadingStarInCommentCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_AddLeadingStarInComment")); // NOI18N
+        addLeadingStarInCommentCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -153,6 +158,9 @@ public class FmtTabsIndents extends javax.swing.JPanel {
             .add(indentCasesFromSwitchCheckBox)
             .add(indentTopLevelClassMembersCheckBox)
             .add(absoluteLabelIndentCheckBox)
+            .add(layout.createSequentialGroup()
+                .add(addLeadingStarInCommentCheckBox)
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {continuationIndentSizeField, labelIndentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -174,6 +182,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .add(indentTopLevelClassMembersCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(indentCasesFromSwitchCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(addLeadingStarInCommentCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

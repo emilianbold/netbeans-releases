@@ -10,6 +10,12 @@
 --RESOLVED TO:
     MACROS #define 'MEMORY_H' [43:1/2122-43:17/2138]
 ==============================================================
+'include', tokenID=preprocessor_include, offset=2140 [44:2/2140-44:9/2147]
+--OWNER:
+    INCLUDE "module.h" [44:1/2139-44:20/2158]
+--RESOLVED TO:
+    INCLUDE "module.h" [44:1/2139-44:20/2158]
+==============================================================
 '"module.h"', tokenID=preprocessor_user_include, offset=2148 [44:10/2148-44:20/2158]
 --OWNER:
     INCLUDE "module.h" [44:1/2139-44:20/2158]

@@ -1,0 +1,46 @@
+=============================================
+<file-top>: Module : OffsetRange[0,625>
+MyClass [bound][class][def][node=ClassDef]
+SuperClass [read][UNRESOLVED][node=Name]
+module1 [bound][imported][data][node=Import]
+module2 [bound][imported][data][node=Import]
+module4 [bound][imported][data][node=Import]
+myfunc [bound][function][def][node=FunctionDef]
+toplevelvar [bound][data][read][node=Name]
+toplevelvar2 [bound][data][node=Name]
+toplevelvar3 [bound][data][node=Name]
+toplevelvar4 [bound][data][node=Name]
+
+    =============================================
+    myfunc: FunctionDef : OffsetRange[125,219>
+    funcparam [bound][param][data][unused][node=Name]
+    localvar [bound][data][unused][node=Name]
+    toplevelvar4 [bound][data][read][node=Name]
+
+    =============================================
+    class MyClass: ClassDef : OffsetRange[219,625>
+    mymethod [bound][function][def][node=FunctionDef]
+    othermethod [bound][function][def][node=FunctionDef]
+    var_in_class [bound][data][node=Name]
+
+        =============================================
+        mymethod: FunctionDef : OffsetRange[271,581>
+        in_method [bound][data][read][node=Name]
+        myfunc [bound][function][def][node=FunctionDef]
+        param1 [bound][param][data][unused][node=Name]
+        param2 [bound][param][data][unused][node=Name]
+        self [bound][param][data][unused][node=Name]
+        toplevelvar [free][read][node=Name]
+        toplevelvar3 [bound][data][unused][node=Name]
+        var_in_class [free][read][node=Name]
+
+            =============================================
+            myfunc: FunctionDef : OffsetRange[459,581>
+            in_func [bound][data][read][node=Name]
+            in_method [bound][data][read][node=Name]
+
+        =============================================
+        othermethod: FunctionDef : OffsetRange[582,625>
+        param3 [bound][param][data][unused][node=Name]
+        self [bound][param][data][unused][node=Name]
+

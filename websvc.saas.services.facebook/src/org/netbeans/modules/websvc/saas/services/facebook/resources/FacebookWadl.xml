@@ -2353,7 +2353,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.users.getinfo" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:users_getInfo_response"/>
+                    <representation mediaType="text/xml" element="f:users_getinfo_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>

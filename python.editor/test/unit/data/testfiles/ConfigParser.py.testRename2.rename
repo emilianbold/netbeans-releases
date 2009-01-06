@@ -1,0 +1,5 @@
+358:             for (|>key<|, value) in self._defaults.items():
+359:                 fp.write("%s = %s\n" % (|>key<|, str(value).replace('\n', '\n\t')))
+363:             for (|>key<|, value) in self._sections[section].items():
+364:                 if |>key<| != "__name__":
+366:                              (|>key<|, str(value).replace('\n', '\n\t')))

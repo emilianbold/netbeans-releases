@@ -67,7 +67,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 49;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 50;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -78,9 +78,12 @@ public final class RepositoryUtils {
 
     public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
-        Persistent out = get(key);
-        assert out == null || (out instanceof CsmIdentifiable);
-        return (T) out;
+        Persistent obj = get(key);
+        assert obj == null || (obj instanceof CsmIdentifiable);
+        // we are sure in type, because of uid type
+        @SuppressWarnings("unchecked")
+        T out = (T)obj;
+        return out;
     }
 
     public static Persistent tryGet(Key key) {

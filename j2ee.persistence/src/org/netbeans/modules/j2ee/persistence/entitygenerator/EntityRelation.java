@@ -83,6 +83,7 @@ public class EntityRelation {
         roles[1] = roleB;
     }
     
+    @Override
     public String toString() {
         return "\nrelation name " + getRelationName() + // NOI18N
                 "\nroleA = \n\t" + getRoleA() + // NOI18N
@@ -118,6 +119,10 @@ public class EntityRelation {
         
         public String className() {
             return this.classStr;
+        }
+        
+        public String getShortName() {
+            return this.classStr.replace("java.util.", "").trim(); //NOI18N
         }
     }
 }

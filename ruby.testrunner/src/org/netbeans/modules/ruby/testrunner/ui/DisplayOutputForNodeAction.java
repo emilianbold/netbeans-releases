@@ -38,36 +38,39 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.awt.event.ActionEvent;
-import java.util.List;
-import javax.swing.AbstractAction;
-
-/**
- *
- * @author Erno Mononen
- */
-final class DisplayOutputForNodeAction extends AbstractAction {
-
-    private final List<OutputLine> output;
-    private final TestSession session;
-
-    public DisplayOutputForNodeAction(List<OutputLine> output, TestSession session) {
-        this.output = output;
-        this.session = session;
-    }
-
-
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return "display";
-        }
-        return super.getValue(key);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        Manager manager = Manager.getInstance();
-        for (OutputLine ol : output) {
-            manager.displayOutput(session, ol.getLine(), ol.isError());
-        }
-    }
-}
+//import java.awt.event.ActionEvent;
+//import java.util.List;
+//import javax.swing.AbstractAction;
+//import org.netbeans.modules.gsf.testrunner.Manager;
+//import org.netbeans.modules.gsf.testrunner.TestSession;
+////import org.netbeans.modules.gsf.testrunner.output.OutputLine;
+//
+///**
+// *
+// * @author Erno Mononen
+// */
+//final class DisplayOutputForNodeAction extends AbstractAction {
+//
+//    private final List<OutputLine> output;
+//    private final TestSession session;
+//
+//    public DisplayOutputForNodeAction(List<OutputLine> output, TestSession session) {
+//        this.output = output;
+//        this.session = session;
+//    }
+//
+//
+//    public Object getValue(String key) {
+//        if (NAME.equals(key)) {
+//            return "display";
+//        }
+//        return super.getValue(key);
+//    }
+//
+//    public void actionPerformed(ActionEvent e) {
+//        Manager manager = Manager.getInstance();
+//        for (OutputLine ol : output) {
+//            manager.displayOutput(session, ol.getLine(), ol.isError());
+//        }
+//    }
+//}

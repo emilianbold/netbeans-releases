@@ -22,7 +22,11 @@ testresult() {
     echo '<testsuite errors="0" failures="'$FAILURES'" name="hg.'$2'" tests="1" time="1">' >>$FILE
     echo '  <properties>' >>$FILE
     echo '  </properties>' >>$FILE
-    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
+    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1">' >>$FILE
+    if [ "$FAILURES" -gt "0" ]; then
+        echo '  <failure message="Failed"/>' >>$FILE
+    fi
+    echo '  </testcase>' >>$FILE
     echo '  <system-out><![CDATA[' >>$FILE
     echo "$3" >>$FILE
     echo ']]></system-out>' >>$FILE
@@ -45,6 +49,7 @@ dobuild() {
 
     ant build $ANT_PARAM || exit 2
     ant commit-validation $ANT_PARAM || exit 3
+    ant check-sigtests-release $ANT_PARAM || exit 35
     ant build-test-dist $ANT_PARAM || exit 4
 
     testmodule openide.awt || exit 5
@@ -57,6 +62,18 @@ dobuild() {
     fi
 }
 
+rollback() {
+  EXIT="$?"
+  if [ -n "$BASETIP" ]; then
+    echo "Script failed with exitcode $EXIT rolling back to $BASETIP"
+    hg update -C
+    hg --config extensions.mq= strip -n "$BASETIP"
+    hg pull -r "$BASETIP"
+  else
+    echo "No rollback, exitcode $EXIT"
+  fi
+}
+
 if [ -z "$TMP" ]; then
   TMP="/tmp"
 fi
@@ -65,6 +82,9 @@ ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
+
+BASETIP=`hg id -i | tr -d "+"`
+trap rollback EXIT
 
 hg up -C tip
 hg --config extensions.purge= clean --all
@@ -83,7 +103,7 @@ if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
 else
     echo Build is not stable, exiting
     testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
-    echo >"nbbuild/no-outgoing-changes-no-build.zip"
+    echo >"nbbuild/downstream-builder-not-stable-no-push.zip"
     exit 0
 fi
 
@@ -128,9 +148,9 @@ fi
 
 if dobuild && hg push "$push_url"; then
     echo "Build and push successful"
+    unset BASETIP
     exit 0
 else
-    echo "Failure, rolling back own commits"
-    hg rollback
+    echo "Failure, rolling back own commits to $BASETIP"
     exit 1
 fi

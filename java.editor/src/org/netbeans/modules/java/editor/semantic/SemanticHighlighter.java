@@ -542,7 +542,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             Element el = info.getTrees().getElement(getCurrentPath());
             
             if (el != null && el.getKind().isField()) {
-                handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.READ));
+                handlePossibleIdentifier(getCurrentPath(), d == null ? EnumSet.of(UseTypes.READ) : d);
             }
 	    
 	    if (el != null && (el.getKind().isClass() || el.getKind().isInterface()) && 

@@ -56,15 +56,16 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -88,6 +89,10 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -105,7 +110,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             return name;
         }
     };
-    private static final ResourceBundle bundle = NbBundle.getBundle( J2MECustomizer.class );
     
     public static final String ADD_CONFIG_DIALOG = "AddConfigDialog"; // NOI18N
     
@@ -383,10 +387,19 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             btv.setPreferredSize( size );
             btv.setMaximumSize( size );
             this.add( btv, BorderLayout.CENTER );
+            //#154345 - with lazy children, we need to perform the selection
+            //once the children are actually initialized
+            rootNode.addNodeListener(new NL(rootNode));
             manager.setRootContext( rootNode );
             selectFirstNode();
             btv.expandAll();
             manager.addPropertyChangeListener( new ManagerChangeListener() );
+
+            JLabel waitLabel = new JLabel (NbBundle.getMessage(CategoryView.class,
+                    "MSG_LOADING")); //NOI18N
+            waitLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+            waitLabel.setVerticalTextPosition(SwingConstants.CENTER);
+            customizerPanel.add(waitLabel, BorderLayout.CENTER);
         }
         
         public ExplorerManager getExplorerManager() {
@@ -397,10 +410,49 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             return btv;
         }
         
+        @Override
         public void addNotify() {
             super.addNotify();
             btv.expandAll();
             
+        }
+
+        private final class NL extends NodeAdapter implements Runnable {
+            private final Node listenedTo;
+            private boolean done;
+            NL (Node listenedTo) {
+                this.listenedTo = listenedTo;
+            }
+
+            private void post() {
+                done = false;
+                RequestProcessor.getDefault().post(this, 150);
+            }
+
+            private void change() {
+                done = true;
+                listenedTo.removeNodeListener(this);
+                selectFirstNode();
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                change();
+            }
+
+            public void run() {
+                if (!done) {
+                    if (!J2MECustomizer.this.isShowing()) {
+                        return;
+                    }
+                    if (manager.getRootContext().getChildren().getNodesCount() > 1) {
+                        change();
+                    } else if (J2MECustomizer.this.isShowing()) {
+                        post();
+                    }
+                }
+            }
+
         }
         
         private void selectFirstNode() {
@@ -408,7 +460,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             final Children ch = manager.getRootContext().getChildren();
             if ( ch != null ) {
                 final Node nodes[] = ch.getNodes();
-                
                 if ( nodes != null && nodes.length > 1 ) {
                     try {
                         manager.setSelectedNodes( new Node[] { nodes[1] } );
@@ -419,7 +470,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             }
             
         }
-        
+
         public void updateCustomizerPanel() {
             final Object cfg = configurationCombo.getSelectedItem();
             final String configuration = configurationCombo.getSelectedIndex() == 0 || cfg == null || !(cfg instanceof ProjectConfiguration) ? null : ((ProjectConfiguration)cfg).getDisplayName();
@@ -556,8 +607,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         public boolean canRename() {
             return false;
         }
-
-        
     }
 
     private static final class ConfigurationChildFactory extends ChildFactory<DataFolder> {
@@ -580,7 +629,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         protected Node createNodeForKey(DataFolder key) {
             return new FNode(key.getNodeDelegate(), Children.create(new ConfigurationChildFactory(key), true));
         }
-
     }
     
     private static class ConfigurationCellRenderer extends DefaultListCellRenderer {
@@ -599,8 +647,4 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         }
         
     }
-    
-    private static class BuildPanel extends JPanel {}
-    
-    private static class JadPanel extends JPanel {}
 }

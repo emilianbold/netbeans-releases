@@ -1,0 +1,75 @@
+.t.e.s.t. Keywords
+and       del       from      not       while    
+as        elif      global    or        with     
+assert    else      if        pass      yield    
+break     except    import    print              
+class     exec      in        raise              
+continue  finally   is        return             
+def       for       lambda    try
+.e.o.f.
+
+.t.e.s.t. Decorators
+@staticmethod
+@classmethod
+.e.o.f.
+
+.t.e.s.t. Strings
+r'foo'
+UR'foo'
+u"foo"
+'foo\bbar'
+"foo\nbar"
+'''triple'''
+"""when no section matches a requested option."""
+"""triple"""
+.e.o.f.
+
+.t.e.s.t. Integers and Long Integers
+7     2147483647                        0177
+3L    79228162514264337593543950336L    0377L   0x100000000L
+      79228162514264337593543950336             0xdeadbeef
+.e.o.f.
+
+.t.e.s.t. Floating point numbers
+3.14    10.    .001    1e100    3.14e-10    0e0
+.e.o.f.
+
+.t.e.s.t. Imaginary literals
+3.14j   10.j    10j     .001j   1e100j  3.14e-10j
+.e.o.f.
+
+.t.e.s.t. Operators
++       -       *       **      /       //      %
+<<      >>      &       |       ^       ~
+<       >       <=      >=      ==      !=      <>
+.e.o.f.
+
+.t.e.s.t. Delimiters
+(       )       [       ]       {       }      @
+,       :       .       `       =       ;
++=      -=      *=      /=      //=     %=
+&=      |=      ^=      >>=     <<=     **=
+.e.o.f.
+
+.t.e.s.t. Comments
+# This is a line comment
+code()#More comments
+.e.o.f.
+
+.t.e.s.t. Identifiers
+a ab aB2 x
+yZ_
+z
+.e.o.f.
+
+.t.e.s.t. Joined Lines
+if 1900 < year < 2100 and 1 <= month <= 12 \
+   and 1 <= day <= 31 and 0 <= hour < 24 \
+   and 0 <= minute < 60 and 0 <= second < 60:   # Looks like a valid date
+        return 1
+.e.o.f.
+
+.t.e.s.t. Not an identifier, not a keyword
+2a
+None
+.e.o.f.

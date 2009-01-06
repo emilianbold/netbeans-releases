@@ -117,7 +117,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                             TypeElement e = handle.resolve(controller);
                             Elements elements = controller.getElements();
                             if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
-                                if (isOfKind(e, kinds))
+                                if (isOfKind(e, kinds) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())))
                                     delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
                             }
                         }
@@ -186,5 +186,11 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
             if (isOfKind(ee, kinds))
                 return true;
         return false;
+    }
+
+    private boolean isInDefaultPackage(Element e) {
+        while (e != null && e.getKind() != ElementKind.PACKAGE)
+            e = e.getEnclosingElement();
+        return e != null && e.getSimpleName().length() == 0;
     }
 }

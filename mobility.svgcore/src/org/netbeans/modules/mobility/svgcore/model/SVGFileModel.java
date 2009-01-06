@@ -68,6 +68,7 @@ import javax.swing.text.Element;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.editor.CharSeq;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
@@ -123,21 +124,17 @@ public final class SVGFileModel {
 
             synchronized (getTransactionMonitor()) {
                 SceneManager.log(Level.FINE, "Transaction started."); //NOI18N
+                Reformat formatting = Reformat.get(getDoc());
                 try {
                     updateModel();
-                    //assert SwingUtilities.isEventDispatchThread() : "Transaction must be called in AWT thread.";
-                    getDoc().getFormatter().reformatLock();
-                    getDoc().atomicLock();
-                    //checkModel();
+                    formatting.lock();
                     m_model.readLock();
-                    transaction();
-                } catch (Exception e) {
-                    SceneManager.error("Transaction failed.", e); //NOI18N
-                    getDoc().atomicUndo();
+
+                    runTransaction();
+                    
                 } finally {
                     m_model.readUnlock();
-                    getDoc().atomicUnlock();
-                    getDoc().getFormatter().reformatUnlock();
+                    formatting.unlock();
                     SceneManager.log(Level.FINE, "Transaction completed."); //NOI18N
                     if (decrementTransactionCounter() == 0) {
                         getSceneManager().setBusyState(TRANSACTION_TOKEN, false);
@@ -152,9 +149,36 @@ public final class SVGFileModel {
             }
         }
 
+        private void runTransaction() {
+            Runnable run = new Runnable() {
+
+                public void run() {
+                    try {
+                        transaction();
+                    } catch (Exception ex) {
+                        // throw RuntimeException to inform runAtomic that
+                        // run() hasn't finished correctly
+                        throw new FileModelTransactionException(ex);
+                    }
+                }
+            };
+            try {
+                getDoc().runAtomic(run);
+            } catch (FileModelTransactionException ex) {
+                SceneManager.error("Transaction failed.", ex.getCause()); //NOI18N
+            }
+        }
+
         protected abstract void transaction() throws Exception;
     }
-        
+
+    private static class FileModelTransactionException extends RuntimeException {
+
+        public FileModelTransactionException(Throwable cause) {
+            super(cause);
+        }
+    }
+
     private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping      m_mapping;
     private final List<ModelListener> m_modelListeners = new ArrayList<ModelListener>();
@@ -815,7 +839,7 @@ public final class SVGFileModel {
                             }
                         }
                         doc.insertString(insertPosition, str, null);
-                        doc.getFormatter().reformat(doc, insertPosition, insertPosition + str.length()+1);
+                        Reformat.get(doc).reformat(insertPosition, insertPosition + str.length()+1);
                     } else {
                         String docText = doc.getText(0, doc.getLength());
                         int startOff = svgRoot.getStartOffset();
@@ -828,14 +852,14 @@ public final class SVGFileModel {
                         if (c == '/') {
                             if (docText.charAt(insertPosition) == '<') {
                                 doc.insertString(insertPosition, insertString, null);
-                                doc.getFormatter().reformat(doc, insertPosition, insertPosition + insertString.length()+1);
+                                Reformat.get(doc).reformat(insertPosition, insertPosition + insertString.length()+1);
                             } else {
                                 StringBuilder sb = new StringBuilder(docText.substring(startOff, insertPosition + 1));
                                 sb.append(">\n"); //NOI18N
                                 sb.append(insertString);
                                 sb.append("\n</svg>"); //NOI18N
                                 doc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);
-                                doc.getFormatter().reformat(doc, insertPosition, doc.getLength());
+                                Reformat.get(doc).reformat(insertPosition, doc.getLength());
                             }
                         } else {
                             //TODO report invalid svg doc

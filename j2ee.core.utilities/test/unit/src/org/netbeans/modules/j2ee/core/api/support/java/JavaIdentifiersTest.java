@@ -66,6 +66,8 @@ public class JavaIdentifiersTest extends TestCase {
         assertFalse(JavaIdentifiers.isValidPackageName(" "));
         assertFalse(JavaIdentifiers.isValidPackageName("public"));
         assertFalse(JavaIdentifiers.isValidPackageName("int"));
+        assertFalse(JavaIdentifiers.isValidPackageName("java"));
+        assertFalse(JavaIdentifiers.isValidPackageName("java.something"));
     }
 
     public void testUnqualify() {

@@ -59,7 +59,6 @@ import org.openide.util.Parameters;
  */
 public final class PhpSourcePath {
     public static final String  MIME_TYPE = "text/x-php5"; // NOI18N
-    public static final String  DEBUG_SESSION =  "netbeans-xdebug"; // NOI18N
 
     private static final DefaultPhpSourcePath DEFAULT_PHP_SOURCE_PATH = new DefaultPhpSourcePath();
     private static FileObject phpStubsFolder = null;

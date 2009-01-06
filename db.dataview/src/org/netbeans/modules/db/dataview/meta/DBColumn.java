@@ -50,6 +50,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
     private boolean foreignKey;
     private int jdbcType;
+    private String typeName;
     private String columnName;
     private boolean nullable;
     private boolean editable = true;
@@ -59,13 +60,15 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     private int scale;
     private boolean generated;
     private int displaySize;
+    private String defaultValue;
 
-    public DBColumn(DBTable table, String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
+    public DBColumn(DBTable table, String colName, int sqlJdbcType, String dbTypeName, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
         super();
 
         setParentObject(table);
         columnName = colName;
         jdbcType = sqlJdbcType;
+        typeName = dbTypeName;
 
         precision = colPrecision;
         scale = colScale;
@@ -135,6 +138,10 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return jdbcType;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
     public String getName() {
         return this.columnName;
     }
@@ -151,14 +158,18 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return displaySize;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
     public void setDisplaySize(int displaySize) {
         this.displaySize = displaySize;
     }
 
-    public String getQualifiedName() {
+    public String getQualifiedName(boolean quoteAlways) {
         StringBuilder buf = new StringBuilder(50);
         DBTable table = this.getParentObject();
-        buf.append(table.getQuoter().quoteIfNeeded(columnName));
+        buf.append(quoteAlways ? table.getQuoter().quoteAlways(columnName) : table.getQuoter().quoteIfNeeded(columnName));
         return buf.toString();
     }
 
@@ -202,6 +213,14 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return generated;
     }
 
+    public boolean hasDefault() {
+        return defaultValue != null && defaultValue.trim().length() != 0;
+    }
+
+    void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     void setForeignKey(boolean newFlag) {
         foreignKey = newFlag;
     }
@@ -213,8 +232,8 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     void setPrimaryKey(boolean newFlag) {
         primaryKey = newFlag;
     }
-    
-    void setEditable(boolean editable){
+
+    void setEditable(boolean editable) {
         this.editable = editable;
     }
 }

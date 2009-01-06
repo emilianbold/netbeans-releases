@@ -68,7 +68,6 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
-import org.openide.util.Exceptions;
 
 /**
  * @author pvcs
@@ -84,7 +83,6 @@ public class LocalHistoryViewTest extends JellyTestCase {
     private static EditorOperator eo;
     private static Node node;
     private static String fileContent;
-    String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
 
@@ -95,18 +93,8 @@ public class LocalHistoryViewTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
 
-    }
-
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
     }
 
     public static void main(String[] args) {
@@ -127,11 +115,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
     }
 
     private void sleep(int timeInMs) {
-        try {
-            Thread.sleep(timeInMs);
-        } catch (InterruptedException ex) {
-            fail("Interrupted: stop thread in sleep(int tms) method");
-        }
+        new EventTool().waitNoEvent(timeInMs);
     }
 
     public void testLocalHistoryInvoke() {
@@ -141,7 +125,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
             ex.printStackTrace();
             fail("Unable to open project: " + PROJECT_NAME);
         }
-        new EventTool().waitNoEvent(5000);
+        sleep(5000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         node.performPopupAction("Open");
         eo = new EditorOperator("Main.java");
@@ -192,7 +176,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass.java");
         eo.deleteLine(5);
-        eo.insert(os_name, 12, 1);
+        eo.insert(TestKit.getOsName(), 12, 1);
         eo.saveDocument();
         fileContent = eo.getText();
         slho = ShowLocalHistoryOperator.invoke(node);
@@ -204,7 +188,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
 
     public void testLocalHistoryRevertDeleted() {
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
-        new EventTool().waitNoEvent(3000);
+        sleep(3000);
         node.performPopupActionNoBlock("Delete");
 //        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
         NbDialogOperator dialog = new NbDialogOperator("Delete");
@@ -224,7 +208,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo = new EditorOperator("NewClass.java");
         assertEquals("Content of file differs after revert!", fileContent, eo.getText());
         eo.deleteLine(5);
-        eo.insert(os_name, 12, 1);
+        eo.insert(TestKit.getOsName(), 12, 1);
         eo.save();
         sleep(1500);
         int versions = slho.getVersionCount();

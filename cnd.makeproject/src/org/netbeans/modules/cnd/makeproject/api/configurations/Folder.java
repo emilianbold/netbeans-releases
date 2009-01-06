@@ -151,7 +151,7 @@ public class Folder {
         return projectFiles;
     }
     
-    public Vector<Object> getElements() {
+    public Collection<Object> getElements() {
         return items;
     }
     

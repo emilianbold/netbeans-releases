@@ -1,0 +1,58 @@
+#!/bin/sh
+
+if [ x$BUILD_ID = x ]
+then
+    # Non-Hudson use.
+    if [ x$USERNAME = x ]
+    then
+        BUILD_ID=private
+    else
+        BUILD_ID=$USERNAME-private
+    fi
+    dir=`dirname $0`/../..
+    cd $dir
+else
+    hg up -C . # in case previous build mistakenly modified some source files
+    hg --config extensions.purge= clean --all || exit
+fi
+
+DIST=$PWD/nbbuild/dist
+rm -rf $DIST/
+
+# XXX should use hg id as the build number; timestamp is useless!
+
+# YYYYMMDDhhmmss timestamp
+BUILDNUMBER=`echo $BUILD_ID | tr -d _-` 
+BUILDNUM=$BUILD_TAG
+
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dcluster.config=python verify-libs-and-licenses build-nozip || exit 
+# Explicit clusters list: We can't just do cluster.config=python because various validation tests fail that seem to depend on other clusters.
+# Use the equivalent of ${clusters.config.standard.list}+nb.cluster.python
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dnb.clusters.list=nb.cluster.harness,nb.cluster.platform,nb.cluster.ide,nb.cluster.websvccommon,nb.cluster.java,nb.cluster.apisupport,nb.cluster.nb,nb.cluster.xml,nb.cluster.gsf,nb.cluster.enterprise,nb.cluster.profiler,nb.cluster.mobility,nb.cluster.visualweb,nb.cluster.identity,nb.cluster.webcommon,nb.cluster.soa,nb.cluster.ruby,nb.cluster.cnd,nb.cluster.php,nb.cluster.groovy,nb.cluster.python verify-libs-and-licenses build-nozip || exit 
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER verify-libs-and-licenses build-nozip || exit 
+
+cd nbbuild
+rm -f netbeans/nb.cluster.*
+# Do not delete. It is needed for tests to determine classpath.
+#rm -f netbeans/moduleCluster.properties
+# Do not delete. It contains 'hg id' of repository in time of build.
+#rm -f netbeans/build_info
+
+BASENAME=netbeans-$BUILDNUM
+
+mkdir -p $DIST/zip/moduleclusters
+
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|ruby|cnd|php|groovy)" | zip -q $DIST/zip/$BASENAME-python.zip -@ || exit
+
+# Run unit tests
+ant -f ../python.editor/build-python.xml runtests
+
+#Run commit validation tests
+ant -f ../core.windows/build.xml -Dtest.config=commit -Dcontinue.after.failing.tests=true test
+
+#need two extra modules to be compiled to run one more commit validation test suite
+ant -f ../libs.javacapi/build.xml
+ant -f ../libs.javacimpl/build.xml
+ant -f ../o.n.core/build.xml -Dtest.config=commit -Dcontinue.after.failing.tests=true test
+
+

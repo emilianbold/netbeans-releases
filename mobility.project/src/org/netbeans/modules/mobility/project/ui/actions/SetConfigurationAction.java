@@ -47,7 +47,7 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class SetConfigurationAction extends Single<Node> {
+public final class SetConfigurationAction extends Single<Node> {
 
     private SetConfigurationAction() {
         super(Node.class);

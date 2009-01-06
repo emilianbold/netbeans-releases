@@ -1,0 +1,10 @@
+"""My module"""
+import definitions
+from definitions import DecimalException
+from definitions import OtherClass
+#import unused1
+    
+x.otherMethodInClass()
+x = DecimalException();
+y = OtherClass();
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+    <tocitem text="Python Development" target="org.netbeans.modules.python.help.about">
+        <tocitem text="About Python Development in NetBeans" target="org.netbeans.modules.python.help.about"/>
+        <tocitem text="Getting Started" target="org.netbeans.modules.python.help.getstarted">
+            <tocitem text="New Python Application" target="org.netbeans.modules.python.help.getstarted"/>
+
+            <tocitem text="Runnning Python Applications" target="org.netbeans.modules.python.help.run"/>
+            
+            <tocitem text="Python Platforms" target="org.netbeans.modules.python.help.platforms"/>
+           
+        
+            <tocitem text="Using Python Console" target="org.netbeans.modules.python.help.pyconsole"/>
+        </tocitem>
+                <tocitem text="Debugging Python applications" target="org.netbeans.modules.python.help.pydebug"/>
+    </tocitem>
+
+</toc>

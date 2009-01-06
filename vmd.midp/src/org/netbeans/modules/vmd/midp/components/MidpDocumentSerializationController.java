@@ -57,7 +57,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 
 
 /**

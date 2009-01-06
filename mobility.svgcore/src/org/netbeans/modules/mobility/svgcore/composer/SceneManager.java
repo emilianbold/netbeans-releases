@@ -179,7 +179,7 @@ public final class SceneManager {
     private boolean                               m_busyCursorOn = false;
         
     /** persistent properties */
-    private boolean  m_isReadOnly   = true;
+    private boolean  m_isReadOnly   = false;
             float    m_zoomRatio    = (float)1.0;
     
     public static interface SelectionListener {
