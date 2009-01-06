@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -175,7 +174,7 @@ public final class GeneratedFilesHelper {
      * @see #getBuildScriptState
      */
     public static final int FLAG_OLD_STYLESHEET = 2 << 3;
-    
+
     /**
      * The build script exists, but nothing else is known about it.
      * This flag is mutually exclusive with {@link #FLAG_MISSING} but
@@ -819,6 +818,7 @@ public final class GeneratedFilesHelper {
             super(os, 4096);
         }
         
+        @Override
         public void write(byte[] b, int off, int len) throws IOException {
             if (isActive) {
                 for (int i = off; i < off + len; i++) {
@@ -830,6 +830,7 @@ public final class GeneratedFilesHelper {
             }
         }
 
+        @Override
         public void write(int b) throws IOException {
             if (isActive) {
                 if (b == '\n' && last != '\r') {
