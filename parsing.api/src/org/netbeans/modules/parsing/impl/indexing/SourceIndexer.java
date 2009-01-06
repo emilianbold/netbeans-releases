@@ -41,10 +41,13 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,6 +61,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Indexer of {@link Source} with possible embeddings
@@ -76,8 +80,9 @@ public class SourceIndexer {
         this.cache = cache;
     }
 
-    protected void index(Iterable<? extends Indexable> files) {
+    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) {
         //todo: Replace with multi source when done
+        deleted (deleted);
         for (final Indexable dirty : files) {
             try {
                 final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
@@ -117,6 +122,24 @@ public class SourceIndexer {
             }
         }        
     }
+
+    private void deleted (final Collection<? extends Indexable> deleted) {
+        final Set<String> allMimeTypes = getAllMimeTypes();
+        for (String mimeType : allMimeTypes) {
+            final EmbeddingIndexerFactory factory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
+            if (factory != null) {
+                embeddedIndexers.put(mimeType, factory);
+                factory.filesDeleted(deleted);
+            }
+        }
+    }
+
+    private static Set<String> getAllMimeTypes () {
+        return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
+    }
+
+    //For unit tests
+    public static Set<String> allMimeTypes;
 
     private EmbeddingIndexerFactory findIndexer (final String mimeType) {
         assert mimeType != null;

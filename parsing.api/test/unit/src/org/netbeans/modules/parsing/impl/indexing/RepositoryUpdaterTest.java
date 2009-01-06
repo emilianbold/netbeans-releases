@@ -99,7 +99,6 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -151,6 +150,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
+        Set<String> mt = new HashSet<String>();
+        mt.add(EMIME);
+        SourceIndexer.allMimeTypes = mt;
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -366,7 +368,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
         indexerFactory.indexer.setExpectedFile(customFiles);
-        eindexerFactory.indexer.setExpectedFile(embeddedFiles);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0]);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -384,7 +386,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
@@ -400,7 +402,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         Thread.sleep(5000); //Wait for file system time
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
         File file = new File (embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
@@ -410,6 +412,27 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
         assertEquals(0, indexerFactory.indexer.getCount());
         assertEquals(1, eindexerFactory.indexer.getCount());
+
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        Thread.sleep(5000); //Wait for file system time
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
+        file = new File (embeddedFiles[0].toURI());
+        file.setLastModified(System.currentTimeMillis());
+        file = new File (embeddedFiles[1].toURI());
+        file.delete();
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertEquals(0, indexerFactory.indexer.getCount());
+        assertEquals(1, eindexerFactory.indexer.getCount());
+        assertEquals(0, eindexerFactory.indexer.expectedDeleted.size());
     }
 
 
@@ -759,6 +782,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return 1;
         }
 
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted) {
+            
+        }
+
     }
 
     private static class FooIndexer extends CustomIndexer {
@@ -814,6 +842,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return 1;
         }
 
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted) {
+            for (Indexable i : deleted) {
+                indexer.expectedDeleted.remove(i.getURL());
+            }
+        }
+
     }
 
     private static class EmbIndexer extends EmbeddingIndexer {
@@ -821,10 +856,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private Set<URL> expectedFiles = new HashSet<URL>();
         private CountDownLatch latch;
         private volatile int counter;
+        private Set<URL> expectedDeleted = new HashSet<URL>();
 
-        public void setExpectedFile (URL... files) {
+        public void setExpectedFile (URL[] files, URL[] deleted) {
             expectedFiles.clear();
             expectedFiles.addAll(Arrays.asList(files));
+            expectedDeleted.clear();
+            expectedDeleted.addAll(Arrays.asList(deleted));
             counter = 0;
             latch = new CountDownLatch(expectedFiles.size());
         }
@@ -849,7 +887,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
+        }        
 
     }
 

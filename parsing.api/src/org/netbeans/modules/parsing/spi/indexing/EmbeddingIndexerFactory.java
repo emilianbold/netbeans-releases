@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.util.Collection;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -54,6 +55,13 @@ public abstract class EmbeddingIndexerFactory {
      * @return an indexer
      */
     public abstract EmbeddingIndexer createIndexer (final Indexable indexable, final Snapshot snapshot);
+
+
+    /**
+     * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
+     * @param deleted the collection of deleted {@link Indexable}s
+     */
+    public abstract void filesDeleted (Collection<? extends Indexable> deleted);
     
 
     /**

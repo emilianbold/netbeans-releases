@@ -414,6 +414,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 try {
                     final Crawler crawler = new FileObjectCrawler(rootFo);
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                    final Collection<Indexable> deleted = crawler.getDeletedResources();
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     //First use custom indexers
                     for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
@@ -421,6 +422,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
                         if (factory != null) {
                             try {
+                                factory.filesDeleted(deleted);
                                 final CustomIndexer indexer = factory.createIndexer();
                                 final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
                                 SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
@@ -435,7 +437,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         toIndex.addAll(data);
                     }
                     final SourceIndexer si = new SourceIndexer(root,cacheRoot);
-                    si.index(toIndex);
+                    si.index(toIndex, deleted);
                 } finally {
                     SupportAccessor.getInstance().endTrans();
                 }
