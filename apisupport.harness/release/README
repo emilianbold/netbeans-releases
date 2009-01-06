@@ -707,7 +707,7 @@ release.dir - "${basedir}/release"; location of a directory full of files to
 copy unmodified to the output cluster. Since 6.0 beta2 also applies to module
 suite projects.
 
-run.app.exe - "bin\nb.exe"; name of Windows launcher to start (inside
+run.app.exe - "bin\netbeans.exe"; name of Windows launcher to start (inside
 ${netbeans.dest.dir}) if trying to run the application for interactive testing.
 Only relevant if ${app.name} is unset.
 

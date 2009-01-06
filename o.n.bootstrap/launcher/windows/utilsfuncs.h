@@ -41,35 +41,26 @@
  * Author: Tomas Holy
  */
 
-#include "platformlauncher.h"
-#include "utilsfuncs.h"
+#ifndef _UTILSFUNCS_H
+#define	_UTILSFUNCS_H
 
-PlatformLauncher launcher;
+#include <windows.h>
+#include <string>
 
-extern "C" BOOL APIENTRY DllMain(HANDLE hModule,
-        DWORD ul_reason_for_call,
-        LPVOID lpReserved
-        ) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH:
-            break;
-        case DLL_THREAD_ATTACH:
-            break;
-        case DLL_THREAD_DETACH:
-            break;
-        case DLL_PROCESS_DETACH:
-            launcher.onExit();
-            break;
-    }
-    return TRUE;
-}
+bool disableFolderVirtualization(HANDLE hProcess);
+bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, std::string &value);
+bool getDwordFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, DWORD &value);
+bool dirExists(const char *path);
+bool fileExists(const char *path);
+bool normalizePath(char *path);
+bool createPath(const char *path);
+char * getCurrentModulePath(char *path, int pathLen);
+char * skipWhitespaces(char *str);
+char * trimWhitespaces(char *str);
+void logMsg(const char *format, ...);
+void logErr(bool appendSysError, bool showMsgBox, const char *format, ...);
+bool checkLoggingArg(int argc, char *argv[], bool delFile);
+bool setUpProcess(int &argc, char *argv[]);
 
-#define NBEXEC_EXPORT extern "C" __declspec(dllexport)
+#endif	/* _UTILSFUNCS_H */
 
-NBEXEC_EXPORT int startPlatform(int argc, char *argv[]) {
-    DWORD retCode = 0;
-    if (!launcher.start(argv, argc, &retCode)) {
-        return -1;
-    }
-    return retCode;
-}
