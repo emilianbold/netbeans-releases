@@ -320,6 +320,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         private Properties props = new Properties();
         private String publicId;
 
+        @Override
         public org.xml.sax.InputSource resolveEntity(String publicId, String systemId)
         throws SAXException {
             if (this.publicId != null && this.publicId.equals (publicId)) {
@@ -329,6 +330,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             }
         }
 
+        @Override
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attribs) throws SAXException {
             if (ELM_PROPERTY.equals(qName)) {
                 String propertyName = attribs.getValue(ATR_PROPERTY_NAME);
