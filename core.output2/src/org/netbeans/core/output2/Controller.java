@@ -218,10 +218,6 @@ public class Controller { //XXX public only for debug access to logging code
             result.getActionMap ().put (javax.swing.text.DefaultEditorKit.copyAction, this.copyAction);
         }
 
-        if (result != null) {
-            win.setSelectedTab(result);
-        }
-
         return result;
     }
 
@@ -246,7 +242,6 @@ public class Controller { //XXX public only for debug access to logging code
         
         if (LOG) log ("Adding and selecting new tab " + result);
         win.add (result);
-        win.setSelectedTab(result);
         //Make sure names are boldfaced for all open streams - if the tabbed
         //pane was just added in, it will just have used the name of the 
         //component, which won't contain html
@@ -1102,7 +1097,11 @@ public class Controller { //XXX public only for debug access to logging code
                 if (!win.isOpened()) {
                     win.open();
                 }
-                win.requestActive();
+                if (io.isFocusTaken()) {
+                    win.requestActive();
+                } else {
+                    win.requestVisible();
+                }
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
                         //It was hidden

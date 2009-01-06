@@ -273,7 +273,7 @@ class FileMapStorage implements Storage {
             cont = this.contents;
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = fileChannel();
-                mappedStart = Math.max((long)0, (long)(start - (MAX_MAP_RANGE /2)));
+                mappedStart = Math.max((long)0, start - (MAX_MAP_RANGE /2));
                 long prevMappedRange = mappedRange;
                 long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
                 mappedRange = Math.min(ch.size(), start + map);
