@@ -1141,13 +1141,9 @@ final class NbInstaller extends ModuleInstaller {
         }
         DateAndManifest entry = cache.get(jar);
         if (entry != null) {
-            if (entry.date == jar.lastModified()) {
-                // Cache hit.
-                MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
-                return entry.manifest;
-            } else {
-                MANIFEST_LOG.fine("Wrong timestamp for " + jar + " in manifest cache");
-            }
+            // Cache hit.
+            MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
+            return entry.manifest;
         } else {
             MANIFEST_LOG.fine("No entry for " + jar + " in manifest cache");
         }
