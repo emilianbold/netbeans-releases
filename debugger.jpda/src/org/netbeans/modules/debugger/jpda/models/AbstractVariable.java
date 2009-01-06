@@ -102,6 +102,7 @@ import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -226,6 +227,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             throw new InvalidExpressionException(e);
         } catch (VMDisconnectedExceptionWrapper e) {
             return ;
+        } catch (UnsupportedOperationExceptionWrapper e) {
+            throw new InvalidExpressionException(e);
         }
         // set new value to remote veriable
         setValue (value);

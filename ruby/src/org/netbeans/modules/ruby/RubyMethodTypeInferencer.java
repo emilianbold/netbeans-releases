@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby;
 
@@ -57,15 +57,16 @@ final class RubyMethodTypeInferencer {
         return inferTypeFor((CallNode) knowledge.getTarget(), knowledge);
     }
 
-    static RubyType inferTypeFor(final CallNode nodeToInfer, final ContextKnowledge knowledge) {
+    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge) {
         return new RubyMethodTypeInferencer(nodeToInfer, knowledge).inferType();
     }
 
-    private CallNode nodeToInfer;
+    private Node callNodeToInfer;
     private ContextKnowledge knowledge;
 
-    private RubyMethodTypeInferencer(final CallNode nodeToInfer, final ContextKnowledge knowledge) {
-        this.nodeToInfer = nodeToInfer;
+    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge) {
+        assert AstUtilities.isCall(nodeToInfer) : "Must be a call node";
+        this.callNodeToInfer = nodeToInfer;
         this.knowledge = knowledge;
     }
 
@@ -74,8 +75,24 @@ final class RubyMethodTypeInferencer {
     }
 
     private RubyType inferType() {
-        String name = nodeToInfer.getName();
-        Node receiver = nodeToInfer.getReceiverNode();
+        String name = AstUtilities.getName(callNodeToInfer);
+        Node receiver = null;
+        switch (callNodeToInfer.nodeId) {
+            case CALLNODE:
+                receiver = ((CallNode) callNodeToInfer).getReceiverNode();
+                break;
+            case FCALLNODE:
+                // TODO: receiver is self;
+                break;
+            case VCALLNODE:
+                receiver = null;
+                break;
+            default:
+                throw new IllegalArgumentException("Illegal node passed: " + callNodeToInfer);
+        }
+        if (receiver == null) {
+            return RubyType.createUnknown();
+        }
         RubyType receiverType = getReceiverType(receiver);
         // If you call Foo.new I'm going to assume the type of the expression if "Foo"
         if ("new".equals(name)) { // NOI18N
@@ -92,7 +109,7 @@ final class RubyMethodTypeInferencer {
                     // it's an item, and for find(1,2,3) it's an array etc.
                     // There are other find signatures which define other
                     // semantics
-                    return pickFinderType(nodeToInfer, name, receiverType);
+                    return pickFinderType((CallNode) callNodeToInfer, name, receiverType);
                 }
             }
         }
@@ -155,7 +172,7 @@ final class RubyMethodTypeInferencer {
     }
 
     private RubyType getReceiverType(final Node receiver) {
-        RubyType type = RubyTypeInferencer.inferTypes(receiver, knowledge);
+        RubyType type = new RubyTypeInferencer(knowledge).inferType(receiver);
         if (!type.isKnown() && receiver instanceof INameNode) {
             // TODO - compute fqn (packages etc.)
             type = RubyType.create(((INameNode) receiver).getName());
