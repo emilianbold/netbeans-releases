@@ -9,12 +9,13 @@ import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-${COMMENTICON}import org.openide.util.Utilities;
+${COMMENTICON}import org.openide.util.ImageUtilities;
+import org.netbeans.api.settings.ConvertAsProperties;
 
 /**
  * Top component which displays something.
  */
-@org.netbeans.api.settings.ConvertAsProperties(
+@ConvertAsProperties(
     dtd="-//${PACKAGENAME}//${TEMPLATENAME}//EN",
     autostore=false
 )
@@ -30,7 +31,7 @@ ${COMMENTICON}    static final String ICON_PATH = "${ICONPATH}";
         initComponents();
         setName(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "CTL_${TEMPLATENAME}TopComponent"));
         setToolTipText(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "HINT_${TEMPLATENAME}TopComponent"));
-${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
+${COMMENTICON}        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         ${KEEPPREFSIZE}
     }
 
