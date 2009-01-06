@@ -199,6 +199,14 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(\"foo\", \"bar\", inval^id)", true);
     }
 
+    public void testDecorators1() throws Exception {
+        checkCompletion("testfiles/emptydecorators.py", "@^", true);
+    }
+
+    public void testDecorators2() throws Exception {
+        checkCompletion("testfiles/decorators.py", "@c^", true);
+    }
+
     // -------------------------
     // Unstable tests:
     // -------------------------
