@@ -340,6 +340,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Procedure">
                 <folder name="NodeProviders">
+                    <file name="ProcedureParamNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ProcedureParamNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
