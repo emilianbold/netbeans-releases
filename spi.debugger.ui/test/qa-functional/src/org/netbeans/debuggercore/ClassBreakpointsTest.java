@@ -235,7 +235,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
             dialog.ok();
-            new EventTool().waitNoEvent(500);
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText("Thread main stopped.");
@@ -268,6 +268,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             NbDialogOperator dialog = Utilities.newBreakpoint(154);
             setBreakpointType(dialog, "Class");
             dialog.ok();
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped.");
             new ContinueAction().perform();
