@@ -39,27 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
+
+import java.util.*;
 
 import org.netbeans.api.lexer.Token;
+import org.w3c.dom.*;
+import org.netbeans.modules.xml.spi.dom.*;
 
-/**
- * CDATA section representation.
- */
-public class CDATASection extends Text {
+public class EmptyTag extends Tag {
 
-    /**
-     * Create content text node.
-     */
-    public CDATASection(XMLSyntaxSupport support, Token from, int to) {
-        super( support, from, to );
+    public EmptyTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
+        super( support, from, to, name, attribs );
     }
 
-    /**
-     * Create attribute text node.
-     */
-    CDATASection(XMLSyntaxSupport syntax, Token from, Attr parent) {
-        super( syntax, from, parent);
+    public boolean hasChildNodes() {
+        return false;
+    }
+
+    public NodeList getChildNodes() {
+        return NodeListImpl.EMPTY;
+    }
+    
+    protected Tag getEndTag() {
+        return this;
+    }
+    
+    protected Tag getStartTag() {
+        return this;
+    }
+    
+    public String toString() {
+        StringBuffer ret = new StringBuffer( "EmptyTag(\"" + name + "\" " );
+        ret.append(getAttributes().toString());
+        return ret.toString() + " " + first() + ")";
     }
     
 }

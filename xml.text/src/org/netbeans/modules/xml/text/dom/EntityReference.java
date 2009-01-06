@@ -39,84 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
-
-import org.netbeans.modules.xml.spi.dom.*;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
- * Read-only PI DOM node.
+ * It should in future promote to EntityReference implementation.
+ * Holds entity reference.
+ * <p>
+ * Difference from DOM: it's also created for well known entities and
+ * character entities.
  *
- * @author  Petr Kuzel
+ * @author Petr Kuzel
  */
-public final class ProcessingInstruction extends SyntaxNode {
-    
-    
-    /** Creates a new instance of ProcessingInstructionImpl */
-    public ProcessingInstruction(XMLSyntaxSupport syntax, Token from, int to) {
-        super(syntax, from, to);
+public final class EntityReference extends SyntaxNode implements org.w3c.dom.EntityReference  {
+
+    EntityReference(XMLSyntaxSupport syntax, Token token, int to) {
+        super(syntax, token, to);
     }
-    
-    /**
-     * A code representing the type of the underlying object, as defined above.
-     */
-    public short getNodeType() {
-        return Node.PROCESSING_INSTRUCTION_NODE;
-    }
-    
-    /**
-     * The target of this processing instruction. XML defines this as being
-     * the first token following the markup that begins the processing
-     * instruction.
-     * @return implementation may return "xml" as it consider it a PI
-     */
-    public String getTarget() {
+
+    public String getNodeName() {
 //        TokenItem target = first().getNext();
 //        if (target != null) {
-//            return target.getImage();
+//            String tokenImage = target.getImage();
+//            return tokenImage.substring(1, tokenImage.length()-1);
 //        } else {
 //            return "";  //??? or null
 //        }
         return null;
     }
-    
-    public String getNodeName() {
-        return getTarget();
+
+    public short getNodeType() {
+        return Node.ENTITY_REFERENCE_NODE;
     }
-    
-    /**
-     * The content of this processing instruction. This is from the first non
-     * white space character after the target to the character immediately
-     * preceding the <code>?&gt;</code>.
-     * @return may return ""
-     */
-    public String getData() {
-//        StringBuffer buf = new StringBuffer();
-//        TokenItem next = first().getNext();
-//        while (next != null && next.getTokenID() != XMLDefaultTokenContext.PI_CONTENT) {
-//            next = next.getNext();
-//        }
-//        if (next == null) return "";  //??? or null
-//        do {
-//            buf.append(next.getImage());
-//            next = next.getNext();
-//        } while (next != null && next.getTokenID() == XMLDefaultTokenContext.PI_CONTENT);
-//        return buf.toString();
-        return null;
+
+    public String toString() {
+        return "Ref(" + getNodeName() + ")";
     }
-    
-    public String getNodeValue() {
-        return getData();
-    }
-    
-    /**
-     * Once again we are read-only implemetation!
-     */
-    public void setData(String data) throws DOMException {
-        throw new ROException();
-    }
-    
 }
+

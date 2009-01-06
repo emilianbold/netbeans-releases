@@ -39,43 +39,82 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.xml.spi.dom.ROException;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
- * It should in future promote to EntityReference implementation.
- * Holds entity reference.
- * <p>
- * Difference from DOM: it's also created for well known entities and
- * character entities.
+ * Read-only DOM Comment node.
  *
  * @author Petr Kuzel
  */
-public final class EntityReference extends SyntaxNode implements org.w3c.dom.EntityReference  {
+public class Comment extends SyntaxNode implements org.w3c.dom.Comment {
 
-    EntityReference(XMLSyntaxSupport syntax, Token token, int to) {
-        super(syntax, token, to);
-    }
-
-    public String getNodeName() {
-//        TokenItem target = first().getNext();
-//        if (target != null) {
-//            String tokenImage = target.getImage();
-//            return tokenImage.substring(1, tokenImage.length()-1);
-//        } else {
-//            return "";  //??? or null
-//        }
-        return null;
-    }
-
-    public short getNodeType() {
-        return Node.ENTITY_REFERENCE_NODE;
+    public Comment(XMLSyntaxSupport support, Token from, int to) {
+        super( support, from, to );
     }
 
     public String toString() {
-        return "Ref(" + getNodeName() + ")";
+        return "Comment" + super.toString() + "<!--" + getData() + "-->";
     }
+    
+    public String getNodeValue() throws org.w3c.dom.DOMException {
+        return getData();  
+    }
+    
+    public String getNodeName() {
+        return "#comment";  //NOI18N
+    }
+    
+    public short getNodeType() {
+        return Node.COMMENT_NODE;
+    }
+    
+    public Text splitText(int offset) {
+        throw new ROException();
+    }
+ 
+    /**
+     * @return data without delimiters
+     */
+    public String getData() {
+//        String data = first().getImage();  //??? it is always one image
+//        return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N
+        return null;
+    }
+
+    public void setData(String data) {
+        throw new ROException();
+    }
+    
+    public int getLength() {
+        return getData().length();
+    }
+    
+    public String substringData(int offset, int count) {
+        return getData().substring(offset, offset + count + 1);
+    }
+
+    public void appendData(String arg) {
+        throw new ROException();
+    }
+    
+    public void insertData(int offset, String arg) {
+        throw new ROException();
+    }
+
+
+    public void deleteData(int offset, int count) {
+        throw new ROException();
+    }                           
+
+    public void replaceData(int offset, int count, String arg) {
+        throw new ROException();
+    }
+
+    
 }
 
