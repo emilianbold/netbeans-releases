@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 
 /**
  *
@@ -58,14 +59,14 @@ public class ProcedureListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureListNode instance
      */
-    public static ProcedureListNode create(NodeDataLookup dataLookup) {
-        ProcedureListNode node = new ProcedureListNode(dataLookup);
+    public static ProcedureListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ProcedureListNode node = new ProcedureListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private ProcedureListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ProcedureListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
     
     protected void initialize() {

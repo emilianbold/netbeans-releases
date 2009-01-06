@@ -60,14 +60,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -267,7 +262,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
             DataObject dao = getDataObject(file);
-            NativeFileItem.Language lang = getLanguage(file, dao);
+            NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dao);
             NativeProject prototype = null;
             for (CsmProject csmProject : model.projects()) {
                 Object p = csmProject.getPlatformProject();
@@ -362,34 +357,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         private void addFile(File file) {
             DataObject dobj = getDataObject(file);
-            NativeFileItem.Language lang = getLanguage(file, dobj);
+            NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dobj);
             NativeFileItem item = new NativeFileItemImpl(file, this, lang);
             //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
             this.files.add(item);
-        }
-
-        static NativeFileItem.Language getLanguage(File file, DataObject dobj) {
-            if (dobj == null) {
-                String path = file.getAbsolutePath();
-                if (CCDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-                    return NativeFileItem.Language.CPP;
-                } else if (CDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-                    return NativeFileItem.Language.C;
-                } else if (HDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
-                    return NativeFileItem.Language.C_HEADER;
-                } else {
-                    return NativeFileItem.Language.OTHER;
-                }
-            } else if (dobj instanceof CCDataObject) {
-                return NativeFileItem.Language.CPP;
-            } else if (dobj instanceof HDataObject) {
-                return NativeFileItem.Language.C_HEADER;
-            } else if (dobj instanceof CDataObject) {
-                return NativeFileItem.Language.C;
-            } else {
-                return NativeFileItem.Language.OTHER;
-            }
         }
 
         private static DataObject getDataObject(File file) {

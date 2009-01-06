@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.Properties;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -82,6 +83,7 @@ import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RowModel;
 import org.netbeans.swing.outline.TreePathSupport;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -153,7 +155,7 @@ public class OutlineView extends JScrollPane {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
-        outline = new OutlineViewOutline(model);
+        outline = new OutlineViewOutline(model, rowModel);
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
@@ -190,7 +192,7 @@ public class OutlineView extends JScrollPane {
             }
 
         });
-        TableColumnSelector tcs = (TableColumnSelector) Lookup.getDefault().lookup(TableColumnSelector.class);
+        TableColumnSelector tcs = Lookup.getDefault ().lookup (TableColumnSelector.class);
         if (tcs != null) {
             outline.setColumnSelector(tcs);
         }
@@ -406,7 +408,7 @@ public class OutlineView extends JScrollPane {
             }
             TreeNode tn = Visualizer.findVisualizer(arr[i]);
             if (tn != null) {
-                ArrayList al = new ArrayList();
+                ArrayList<TreeNode> al = new ArrayList<TreeNode> ();
                 while (tn != null) {
                     al.add(tn);
                     tn = tn.getParent();
@@ -462,14 +464,14 @@ public class OutlineView extends JScrollPane {
      */
     private JPopupMenu createPopup(Point p) {
         int[] selRows = outline.getSelectedRows();
-        ArrayList al = new ArrayList(selRows.length);
+        ArrayList<Node> al = new ArrayList<Node> (selRows.length);
         for (int i = 0; i < selRows.length; i++) {
             Node n = getNodeFromRow(selRows[i]);
             if (n != null) {
                 al.add(n);
             }
         }
-        Node[] arr = (Node[])al.toArray(new Node[al.size()]);
+        Node[] arr = al.toArray (new Node[al.size ()]);
         if (arr.length == 0) {
             // hack to show something even when no rows are selected
             arr = new Node[] { manager.getRootContext() };
@@ -764,14 +766,14 @@ public class OutlineView extends JScrollPane {
 
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
             int selectedRows[] = outline.getSelectedRows();
-            ArrayList selectedNodes = new ArrayList(selectedRows.length);
+            ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
             for (int i = 0; i < selectedRows.length;i++) {
                 Node n = getNodeFromRow(selectedRows[i]);
                 if (n != null) {
                     selectedNodes.add(n);
                 }
             }
-            callSelectionChanged((Node[])selectedNodes.toArray(new Node[selectedNodes.size()]));
+            callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 
         public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
@@ -792,17 +794,39 @@ public class OutlineView extends JScrollPane {
      * for sorting the rows.
      */
     private static class OutlineViewOutline extends Outline {
-        public OutlineViewOutline(OutlineModel mdl) {
+        private final PropertiesRowModel rowModel;
+        private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
+        public OutlineViewOutline(OutlineModel mdl, PropertiesRowModel rowModel) {
             super(mdl);
-            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "ACN_ColumnsSelector")); //NOI18N
+            this.rowModel = rowModel;
+            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "CTL_ColumnsSelector")); //NOI18N
         }
         
         @Override
         public Object transformValue(Object value) {
+            if (value instanceof OutlineViewOutlineColumn) {
+                OutlineViewOutlineColumn c = (OutlineViewOutlineColumn) value;
+                String dn = c.getRawColumnName ();
+                if (dn == null) {
+                    dn = c.getHeaderValue ().toString ();
+                }
+                String desc = c.getShortDescription (null);
+                if (desc == null) {
+                    return dn;
+                }
+                return NbBundle.getMessage (OutlineView.class, "OutlineViewOutline_NameAndDesc", dn, desc); // NOI18N
+            } else if (COLUMNS_SELECTOR_HINT.equals (value)) {
+                return NbBundle.getMessage (OutlineView.class, COLUMNS_SELECTOR_HINT);
+            } else if (value instanceof AbstractButton) {
+                AbstractButton b = (AbstractButton) value;
+                Mnemonics.setLocalizedText (b, b.getText ());
+                return b;
+            }
             return PropertiesRowModel.getValueFromProperty(value);
         }
-        
+
         @Override
+        @SuppressWarnings("unchecked")
         public boolean editCellAt(int row, int column, EventObject e) {
             Object o = getValueAt(row, column);
             if (o instanceof Node.Property) { // && (e == null || e instanceof KeyEvent)) {
@@ -828,6 +852,7 @@ public class OutlineView extends JScrollPane {
                     Node.Property p = (Node.Property)o;
                     if( !Boolean.TRUE.equals(p.getValue("suppressCustomEditor") ) ) { //NOI18N
                         PropertyPanel panel = new PropertyPanel(p);
+                        @SuppressWarnings("deprecation")
                         PropertyEditor ed = panel.getPropertyEditor();
 
                         if ((ed != null) && ed.supportsCustomEditor()) {
@@ -890,6 +915,30 @@ public class OutlineView extends JScrollPane {
                 OutlineViewOutlineHeaderRenderer ovohr = new OutlineViewOutlineHeaderRenderer(orig);
                 return ovohr;
             }
+
+            public String getShortDescription (String defaultValue) {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (getModelIndex () == 0) {
+                    // 1st column
+                    return defaultValue;
+                }
+                return rowModel.getShortDescription (getModelIndex () - 1);
+            }
+
+            public String getRawColumnName () {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (getModelIndex () == 0) {
+                    return null;
+                }
+                return rowModel.getRawColumnName (getModelIndex () - 1);
+            }
+
             /** This is here to compute and set the header tooltip. */
             class OutlineViewOutlineHeaderRenderer implements TableCellRenderer {
                 private TableCellRenderer orig;
@@ -899,16 +948,7 @@ public class OutlineView extends JScrollPane {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (tooltip == null) {
-                        TableModel model = getModel();
-                        if (model.getRowCount() <= 0) {
-                            // now rows --> we cannot compute the header tooltip
-                            return oc;
-                        }
-                        Object sampleValue = model.getValueAt(0, getModelIndex());
-                        if (sampleValue instanceof Node.Property) {
-                            Node.Property prop = (Node.Property)sampleValue;
-                            tooltip = prop.getShortDescription();
-                        }
+                        tooltip = getShortDescription (value.toString ());
                     }
                     if ((tooltip != null) && (oc instanceof JComponent)) {
                         JComponent jc = (JComponent)oc;

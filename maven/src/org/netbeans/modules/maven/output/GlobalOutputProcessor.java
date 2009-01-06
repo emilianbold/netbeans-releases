@@ -39,8 +39,12 @@
 package org.netbeans.modules.maven.output;
 
 import java.util.regex.Pattern;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.openide.util.NbBundle;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * processing start, end and steps of build process
@@ -48,7 +52,8 @@ import org.netbeans.modules.maven.api.output.OutputVisitor;
  */
 public class GlobalOutputProcessor implements OutputProcessor {
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
-    private final Pattern DOWNLOAD = Pattern.compile("^(\\d+)/(\\d+)[MKb]$");
+    private final Pattern DOWNLOAD = Pattern.compile("^(\\d+)/(\\d*)[MKb\\?]$"); //NOI18N
+    private final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
     
     /** Creates a new instance of GlobalOutputProcessor */
     public GlobalOutputProcessor() {
@@ -61,6 +66,18 @@ public class GlobalOutputProcessor implements OutputProcessor {
     public void processLine(String line, OutputVisitor visitor) {
         if (DOWNLOAD.matcher(line).matches()) {
             visitor.skipLine();
+            return;
+        }
+        if (LOW_MVN.matcher(line).matches()) {
+            visitor.setLine(line + NbBundle.getMessage(GlobalOutputProcessor.class, "TXT_ChangeSettings"));
+            visitor.setOutputListener(new OutputListener() {
+                public void outputLineSelected(OutputEvent ev) {}
+                public void outputLineAction(OutputEvent ev) {
+                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+                }
+                public void outputLineCleared(OutputEvent ev) {}
+            });
+            return;
         }
     }
 

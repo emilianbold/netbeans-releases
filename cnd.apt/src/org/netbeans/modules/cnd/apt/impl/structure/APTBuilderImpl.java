@@ -367,6 +367,9 @@ public final class APTBuilderImpl {
             case APT.Type.INCLUDE_NEXT:
                 light = new APTIncludeNextNode((APTIncludeNextNode)apt);
                 break;
+            case APT.Type.ERROR:
+                light = new APTErrorNode((APTErrorNode) apt);
+                break;
             case APT.Type.FILE:
                 light = new APTFileNode((APTFileNode)apt);
                 break;
@@ -390,6 +393,7 @@ public final class APTBuilderImpl {
             case APT.Type.FILE:
             case APT.Type.DEFINE:
             case APT.Type.UNDEF:
+            case APT.Type.ERROR:
                 return true;
         }
         return false;        

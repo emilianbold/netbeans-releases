@@ -596,9 +596,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarAssignment_16() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarA2->^", false);
     }
-    public void testVarAssignment_17() throws Exception {
+    /*public void testVarAssignment_17() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarCErr->^", false);
-    }
+    }*/
     public void testVarAssignment_18() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$aParam2->^", false);
     }
@@ -644,6 +644,22 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testMixedType03() throws Exception {
         checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
+    }
+
+    public void testVarTypeCommentVariable01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $^", false);
+    }
+
+    public void testVarTypeCommentVariable02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hell^", false);
+    }
+
+    public void testVarTypeCommentType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello ^", false);
+    }
+
+    public void testVarTypeCommentType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello Te^", false);
     }
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {

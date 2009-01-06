@@ -40,6 +40,11 @@
  */
 
 package org.netbeans.modules.mobility.project;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -52,7 +57,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -64,9 +75,13 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * Helper class implementing ProjectConfigurationProvider for Ant based projects.
@@ -340,28 +355,116 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * Fire property change with PROP_CONFIGURATION_ACTIVE to all listeners.
      * @param configuration new active ProjectConfiguration
      */
-    public final void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
-        final ProjectConfiguration oldAC = activeConfiguration;
-        activeConfiguration = null;
-        
-        final EditableProperties ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(PROJ_PROP_CONFIGURATION_ACTIVE, (configuration == null || configuration.equals(getDefaultConfiguration())) ? "" : configuration.getDisplayName()); //NOI18N
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Object>() {
-                public Object run() {
-                    h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    return null;
+    public final void setActiveConfiguration(final ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectConfigurationsHelper.class,
+            "TTL_CHANGE_CONFIG")); //NOI18N
+        //First do this to get outside ProjectManager.mutex()
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
+                JLabel lbl = ProgressHandleFactory.createMainLabelComponent(handle);
+                JPanel pnl = new JPanel(new BorderLayout());
+                pnl.add (lbl, BorderLayout.NORTH);
+                pnl.add (comp, BorderLayout.SOUTH);
+                String title = NbBundle.getMessage(ProjectConfigurationsHelper.class,
+                        "MSG_CHANGE_CONFIG"); //NOI18N
+                JDialog dlg = new JDialog (WindowManager.getDefault().getMainWindow());
+                dlg.setModal(true);
+                dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+                dlg.setTitle(title);
+                dlg.getContentPane().setLayout(new BorderLayout());
+                dlg.getContentPane().add(pnl, BorderLayout.CENTER);
+                dlg.setLocationRelativeTo(dlg.getParent());
+                RequestProcessor.Task task = p.getRequestProcessor().post(new ConfigurationChanger(handle, configuration, dlg));
+                try {
+                    //50ms not noticable to the user - we can wait this long
+                    //before showing a dialog - simple projects will be fast.
+                    task.waitFinished(50);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
-            ProjectManager.getDefault().saveProject(p);
-        } catch (MutexException me) {
-            ErrorManager.getDefault().notify(me.getException());
+                if (!task.isFinished()) {
+                    dlg.pack();
+                    dlg.setVisible(true);
+                }
+            }
+        });
+
+    }
+    
+    private final class ConfigurationChanger extends WindowAdapter implements Runnable {
+        private final ProgressHandle handle;
+        private final ProjectConfiguration configuration;
+        private final Dialog dlg;
+        private volatile boolean done;
+        ConfigurationChanger(ProgressHandle handle, ProjectConfiguration config, Dialog dlg) {
+            this.configuration = config;
+            this.handle = handle;
+            this.dlg = dlg;
+            handle.start();
+            handle.switchToIndeterminate();
+            dlg.addWindowListener(this);
+        }
+
+        @Override
+        public void windowOpened(WindowEvent e) {
+            //This can happen:
+            //Task completes and tries to hide the dialog before it actually
+            //gets on screen.  So we also listen to the window and make sure
+            //it doesn't show up *after* the task has completed
+            if (done) {
+                runOnEQ();
+            }
+        }
+
+        public void run() {
+            if (!EventQueue.isDispatchThread()) {
+                try {
+                    runOffEQ();
+                } finally {
+                    handle.finish();
+                    EventQueue.invokeLater(this);
+                }
+                done = true;
+            } else {
+                runOnEQ();
+            }
+        }
+
+        private void runOnEQ() {
+            dlg.setVisible(false);
+            dlg.dispose();
+        }
+
+        private void runOffEQ() {
+            final ProjectConfiguration oldAC = activeConfiguration;
+            activeConfiguration = null;
+
+            final EditableProperties ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            ep.put(PROJ_PROP_CONFIGURATION_ACTIVE, (configuration == null ||
+                    configuration.equals(getDefaultConfiguration())) ? "" : configuration.getDisplayName()); //NOI18N
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Object>() {
+                    public Object run() {
+                        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                        return null;
+                    }
+                });
+                ProjectManager.getDefault().saveProject(p);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            } catch (MutexException me) {
+                Exceptions.printStackTrace(me);
+            }
+
+            final ProjectConfiguration newAC = getActiveConfiguration();
+            if ((oldAC != null) ? (!oldAC.equals(newAC)) : (newAC != null)) {
+                psp.firePropertyChange(PROP_CONFIGURATION_ACTIVE, oldAC, newAC);
+            }
         }
         
-        final ProjectConfiguration newAC = getActiveConfiguration();
-        if ((oldAC != null) ? (!oldAC.equals(newAC)) : (newAC != null))
-            psp.firePropertyChange(PROP_CONFIGURATION_ACTIVE, oldAC, newAC);
     }
+
     
     public void configurationXmlChanged(final AntProjectEvent ev) {
     }

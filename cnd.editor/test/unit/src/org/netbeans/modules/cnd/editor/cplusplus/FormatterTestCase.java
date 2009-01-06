@@ -28,10 +28,8 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 
 /**
  * Class was taken from java
@@ -4830,6 +4828,80 @@ public class FormatterTestCase extends EditorBase {
         assertDocumentText("Incorrect arry init formatting",
                 "int Ar[] = {1, 2, 3,\n" +
                 "    4, 5};\n"
+                );
+    }
+
+    // IZ#156015:'Format' works wrongly with 'while'
+    public void testIZ156015() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "    int main() {\n" +
+                "    \n" +
+                "    do {\n" +
+                "        int i;\n" +
+                "    } while(0);\n" +
+                "\n" +
+                "    while(0) {\n" +
+                "        int i;\n" +
+                "    }\n" +
+                "    \n" +
+                "    return (0);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#156015:'Format' works wrongly with 'while'",
+                "int main() {\n" +
+                "\n" +
+                "    do {\n" +
+                "        int i;\n" +
+                "    } while (0);\n" +
+                "\n" +
+                "    while (0) {\n" +
+                "        int i;\n" +
+                "    }\n" +
+                "\n" +
+                "    return (0);\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#156015:'Format' works wrongly with 'while'
+    public void testIZ156015_2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "    int main() {\n" +
+                "    \n" +
+                "    if (0) do {\n" +
+                "        int i;\n" +
+                "    } while(0);\n" +
+                "\n" +
+                "    while(0) {\n" +
+                "        int i;\n" +
+                "    }\n" +
+                "    \n" +
+                "    return (0);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#156015:'Format' works wrongly with 'while'",
+                "int main() {\n" +
+                "\n" +
+                "    if (0) do {\n" +
+                "            int i;\n" +
+                "        } while (0);\n" +
+                "\n" +
+                "    while (0) {\n" +
+                "        int i;\n" +
+                "    }\n" +
+                "\n" +
+                "    return (0);\n" +
+                "}\n"
                 );
     }
 }

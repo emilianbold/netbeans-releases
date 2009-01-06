@@ -20,7 +20,7 @@
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="cbCommandLine" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="112" max="32767" attributes="0"/>
+                      <EmptySpace pref="119" max="32767" attributes="0"/>
                       <Component id="btnSetup" min="-2" pref="210" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -43,10 +43,10 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="comConfiguration" pref="350" max="32767" attributes="0"/>
+                              <Component id="comConfiguration" pref="357" max="32767" attributes="0"/>
                           </Group>
                           <Component id="lblMappings" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" alignment="0" pref="452" max="32767" attributes="1"/>
+                          <Component id="jScrollPane1" alignment="0" pref="459" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -54,7 +54,7 @@
                           <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="jScrollPane2" alignment="0" pref="582" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="589" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

@@ -87,18 +87,20 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         YamlParserResult ypr = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
-        if (ypr == null || ypr.getObject() == null) {
+        if (ypr == null || ypr.getRootNodes().size() == 0) {
             this.semanticHighlights = Collections.emptyMap();
             return;
         }
 
-        Node root = ypr.getObject();
+        List<Node> rootNodes = ypr.getRootNodes();
 
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
-        addHighlights(ypr, root, highlights, seen, 0);
+        for (Node root : rootNodes) {
+            addHighlights(ypr, root, highlights, seen, 0);
+        }
 
         this.semanticHighlights = highlights;
     }

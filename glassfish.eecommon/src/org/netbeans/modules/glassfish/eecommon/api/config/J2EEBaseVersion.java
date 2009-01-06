@@ -58,7 +58,6 @@ public abstract class J2EEBaseVersion implements Comparable {
     private final int numericModuleVersion;
 
     // This is the j2ee/javaee spec version, string and numeric form.
-    private final String j2eeSpecVersion; // e.g. "1.4" (j2ee 1.4), "5.0" (javaee 5)
     private final int numericSpecVersion;
 
     
@@ -67,7 +66,6 @@ public abstract class J2EEBaseVersion implements Comparable {
     protected J2EEBaseVersion(String moduleVersion, int nv, String specVersion, int nsv) {
         j2eeModuleVersion = moduleVersion;
         numericModuleVersion = nv;
-        j2eeSpecVersion = specVersion;
         numericSpecVersion = nsv;
     }
 

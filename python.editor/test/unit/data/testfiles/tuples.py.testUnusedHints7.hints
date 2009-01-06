@@ -1,0 +1,31 @@
+    for x, y in None:
+        -
+HINT:Unused Variable x
+    for z in None:
+        -
+HINT:Unused Variable z
+    (a, b) = None
+     -
+HINT:Unused Variable a
+    c = None
+    -
+HINT:Unused Variable c
+    for dirpath, dirnames, filenames in os.walk(src): # dirnames unused
+                           ---------
+HINT:Unused Variable dirnames
+HINT:Unused Variable dirpath
+HINT:Unused Variable filenames
+    for i, (name, path) in enumerate(result): # i unused
+                  ----
+HINT:Unused Variable i
+HINT:Unused Variable name
+HINT:Unused Variable path
+    aliases, entry = cmdutil.findcmd(command, table) # aliases unused
+             -----
+HINT:Unused Variable aliases
+HINT:Unused Variable entry
+    for rev, node, fnode in self._hgtagsnodes(): # rev & node unused
+                   -----
+HINT:Unused Variable fnode
+HINT:Unused Variable node
+HINT:Unused Variable rev

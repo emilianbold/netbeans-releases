@@ -73,14 +73,14 @@ public class DbUtil {
     private static final String __DriverClass = "driverClass";    
     
     
-    public static final String[] VendorsDBNameProp = {
+    static final String[] VendorsDBNameProp = {
         "sun_db2", "sun_oracle", "sun_msftsql", "db2", "microsoft_sql", 
         "post-gre-sql", "mysql", "datadirect_sql", "datadirect_db2",
         "datadirect_informix", "datadirect_sybase", "datadirect_oracle",
         "jtds_sql", "jtds_sybase", "informix"
     };
     
-    public static final String[] Reqd_DBName = {
+    static final String[] Reqd_DBName = {
         "sun_db2", "sun_msftsql", "datadirect_sql", "microsoft_sql", 
         "datadirect_db2", "datadirect_informix", "datadirect_sybase"
     };

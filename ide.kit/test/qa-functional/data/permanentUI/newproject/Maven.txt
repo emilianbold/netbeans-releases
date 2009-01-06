@@ -1,0 +1,4 @@
+Maven
+    Maven Project
+    Maven Web Application
+    Maven Project with Existing POM

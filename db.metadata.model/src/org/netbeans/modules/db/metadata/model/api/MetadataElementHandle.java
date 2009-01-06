@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.openide.util.Parameters;
 
 /**
  * Represents the handle of a metadata element.
@@ -67,6 +68,10 @@ public class MetadataElementHandle<T extends MetadataElement> {
     private static final int PROCEDURE = 2;
     private static final int COLUMN = 3;
     private static final int PARAMETER = 3;
+    private static final int INDEX = 3;
+    private static final int FOREIGN_KEY = 3;
+    private static final int FOREIGN_KEY_COLUMN = 4;
+    private static final int INDEX_COLUMN = 4;
 
     // The hierarchy of names for this element (e.g. ["mycatalog","myschema","mytable","mycolumn"])
     //
@@ -89,17 +94,21 @@ public class MetadataElementHandle<T extends MetadataElement> {
      * @return the handle for the given metadata element.
      */
     public static <T extends MetadataElement> MetadataElementHandle<T> create(T element) {
+        Parameters.notNull("element", element);
         List<String> names = new ArrayList<String>();
         List<Kind> kinds = new ArrayList<Kind>();
         MetadataElement current = element;
         while (current != null) {
-            names.add(current.getName());
+            names.add(current.getInternalName());
             kinds.add(Kind.of(current));
             current = current.getParent();
         }
         Collections.reverse(names);
         Collections.reverse(kinds);
-        return new MetadataElementHandle<T>(names.toArray(new String[names.size()]), kinds.toArray(new Kind[kinds.size()]));
+        String[] namesArray = names.toArray(new String[names.size()]);
+        Kind[] kindsArray = kinds.toArray(new Kind[kinds.size()]);
+
+        return new MetadataElementHandle<T>(namesArray,kindsArray);
     }
 
     // For use in unit tests.
@@ -172,8 +181,18 @@ public class MetadataElementHandle<T extends MetadataElement> {
                 return (T) resolveProcedure(metadata);
             case COLUMN:
                 return (T) resolveColumn(metadata);
+            case PRIMARY_KEY:
+                return (T) resolvePrimaryKey(metadata);
             case PARAMETER:
                 return (T) resolveParameter(metadata);
+            case FOREIGN_KEY:
+                return (T) resolveForeignKey(metadata);
+            case INDEX:
+                return (T) resolveIndex(metadata);
+            case FOREIGN_KEY_COLUMN:
+                return (T) resolveForeignKeyColumn(metadata);
+            case INDEX_COLUMN:
+                return (T) resolveIndexColumn(metadata);
             default:
                 throw new IllegalStateException("Unhandled kind " + kinds[kinds.length -1]);
         }
@@ -220,6 +239,15 @@ public class MetadataElementHandle<T extends MetadataElement> {
         return null;
     }
 
+    private PrimaryKey resolvePrimaryKey(Metadata metadata) {
+        Table table = resolveTable(metadata);
+        if (table != null) {
+            return table.getPrimaryKey();
+        }
+
+        return null;
+    }
+
     private Column resolveColumn(Metadata metadata) {
         // A column can be part of a number of different metadata elements.
         // Find out which one and resolve appropriately
@@ -255,6 +283,41 @@ public class MetadataElementHandle<T extends MetadataElement> {
         return null;
     }
 
+    private Index resolveIndex(Metadata metadata) {
+        Table table = resolveTable(metadata);
+        if (table != null) {
+            return table.getIndex(names[INDEX]);
+        }
+        return null;
+    }
+
+    private ForeignKey resolveForeignKey(Metadata metadata) {
+        Table table = resolveTable(metadata);
+        if (table != null) {
+            return table.getForeignKeyByInternalName(names[FOREIGN_KEY]);
+        }
+
+        return null;
+    }
+
+    private ForeignKeyColumn resolveForeignKeyColumn(Metadata metadata) {
+        ForeignKey key = resolveForeignKey(metadata);
+        if (key != null) {
+            return key.getColumn(names[FOREIGN_KEY_COLUMN]);
+        }
+
+        return null;
+    }
+
+    private IndexColumn resolveIndexColumn(Metadata metadata) {
+        Index index = resolveIndex(metadata);
+        if (index != null) {
+            return index.getColumn(names[INDEX_COLUMN]);
+        }
+
+        return null;
+    }
+
     // Not private becuase it's used in unit tests
     enum Kind {
 
@@ -264,7 +327,12 @@ public class MetadataElementHandle<T extends MetadataElement> {
         VIEW(View.class),
         PROCEDURE(Procedure.class),
         PARAMETER(Parameter.class),
-        COLUMN(Column.class);
+        COLUMN(Column.class),
+        PRIMARY_KEY(PrimaryKey.class),
+        FOREIGN_KEY(ForeignKey.class),
+        INDEX(Index.class),
+        FOREIGN_KEY_COLUMN(ForeignKeyColumn.class),
+        INDEX_COLUMN(IndexColumn.class);
 
         public static Kind of(MetadataElement element) {
             return of(element.getClass());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,7 +49,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
-import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
 /**
@@ -89,7 +88,7 @@ class NodeRenderDataProvider implements RenderDataProvider {
         boolean expanded = false;
         if (o instanceof TreeNode) {
             TreeNode tn = (TreeNode)o;
-            ArrayList al = new ArrayList();
+            ArrayList<TreeNode> al = new ArrayList<TreeNode> ();
             while (tn != null) {
                 al.add(tn);
                 tn = tn.getParent();

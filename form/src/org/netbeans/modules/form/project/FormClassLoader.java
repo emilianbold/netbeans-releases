@@ -43,6 +43,7 @@ package org.netbeans.modules.form.project;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 import org.openide.ErrorManager;
 
 /**
@@ -154,4 +155,14 @@ final class FormClassLoader extends ClassLoader {
             url = systemClassLoader.getResource(name);
         return url;
     }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        Enumeration<URL> e = projectClassLoader != null ? projectClassLoader.getResources(name) : null;
+        if (e == null) {
+            e = systemClassLoader.getResources(name);
+        }
+        return e;
+    }
+
 }

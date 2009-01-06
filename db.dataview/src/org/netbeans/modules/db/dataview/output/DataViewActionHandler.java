@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Dimension;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -76,12 +77,31 @@ class DataViewActionHandler {
         return doCalculation;
     }
 
-    void cancelEditPerformed() {
+    void cancelEditPerformed(boolean selectedOnly) {
+
         synchronized (dataView) {
-            dataView.getUpdatedRowContext().resetUpdateState();
-            dataView.setRowsInTableModel();
-            dataViewUI.setCancelEnabled(false);
-            dataViewUI.setCommitEnabled(false);
+            if (selectedOnly) {
+                DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
+                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                int[] rows = rsTable.getSelectedRows();
+                for (int i = 0; i < rows.length; i++) {
+                    int row = rows[i];
+                    for (int col = 0, CNT = rsTable.getColumnCount(); col < CNT; col++) {
+                        dataViewUI.resetValueAt(row, col);
+                    }
+                    updatedRowCtx.removeUpdateForSelectedRow(row);
+                }
+
+                if (updatedRowCtx.getUpdateKeys().isEmpty()) {
+                    dataViewUI.setCancelEnabled(false);
+                    dataViewUI.setCommitEnabled(false);
+                }
+            } else {
+                dataView.getUpdatedRowContext().removeAllUpdates();
+                dataView.setRowsInTableModel();
+                dataViewUI.setCancelEnabled(false);
+                dataViewUI.setCommitEnabled(false);
+            }
         }
     }
 
@@ -132,6 +152,8 @@ class DataViewActionHandler {
     void insertActionPerformed() {
         InsertRecordDialog dialog = new InsertRecordDialog(dataView);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setMinimumSize(new Dimension((screenSize.width - 50) / 2, (screenSize.height - 50) / 2));
         dialog.setVisible(true);
     }
 

@@ -45,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Map;
@@ -79,13 +78,16 @@ public class ThreadsTest extends JellyTestCase {
             }
             allowedThreads.add(line);
         }
+        // System threads
+        allowedThreads.add("Finalizer");
+        allowedThreads.add("AWT-Windows");
     }
     
     public static Test suite() throws IOException {
 
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             ThreadsTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(false);
+        ).clusters(".*").enableModules(".*").gui(true).reuseUserDir(false);
 
         conf = conf.addTest("testThreads");
         
@@ -96,7 +98,7 @@ public class ThreadsTest extends JellyTestCase {
         try {
             assertThreads();
         } catch (Error e) {
-            e.printStackTrace(getLog("report.txt"));
+            e.printStackTrace(getLog("threads-report.txt"));
             throw e;
         }
     }
@@ -104,10 +106,10 @@ public class ThreadsTest extends JellyTestCase {
     public void assertThreads() {
         Map<Thread, StackTraceElement[]> data = Thread.getAllStackTraces();
         StringWriter msgs = new StringWriter();
-        PrintWriter pw = new PrintWriter(msgs);
         boolean fail = false;
+        msgs.append("assertThreads:\n");
         for (Thread t : data.keySet()) {
-            if (!allowedThreads.contains(t.getName())) {
+            if (!acceptThread(t, data.get(t))) {
                 msgs.append("assertThread: ").append(t.getName()).append('\n');
                 for (StackTraceElement s : data.get(t)) {
                     msgs.append("    ").append(s.toString()).append('\n');
@@ -116,6 +118,21 @@ public class ThreadsTest extends JellyTestCase {
             }
         }
         assertFalse(msgs.toString(), fail);
+    }
+
+    public boolean acceptThread(Thread t, StackTraceElement[] stack) {
+        if (allowedThreads.contains(t.getName())) {
+            return true;
+        }
+        for (StackTraceElement elem : stack) {
+            if (elem.toString().startsWith("org.openide.util.RequestProcessor$Processor.run")) {
+                return true;
+            }
+            if (elem.toString().startsWith("sun.awt.image.ImageFetcher.run")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

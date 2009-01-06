@@ -57,6 +57,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,6 +78,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -111,8 +113,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
 
     public ErrorIncludeDialog(Set<CsmFile> files) {
         List<CsmInclude> includes = new ArrayList<CsmInclude>();
+        List<CsmErrorDirective> errors = new ArrayList<CsmErrorDirective>();
         for(CsmFile file:files){
-            boolean hasFailed = false;
+            Collection<CsmErrorDirective> fileErrors = file.getErrors();
+            boolean hasFailed = !fileErrors.isEmpty();
+            errors.addAll(fileErrors);
             for(CsmInclude incl : file.getIncludes()){
                 if (incl.getIncludeFile() == null){
                     includes.add(incl);
@@ -131,7 +136,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             checkHighlightModel(files);
         }
 
-        createComponents(includes);
+        createComponents(includes, errors);
         setPreferredSize(new Dimension(NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeW", 500), // NOI18N
                                        NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240))); // NOI18N
         setMinimumSize(new Dimension(320, 240));
@@ -181,7 +186,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         CsmListeners.getDefault().addModelListener(errors);
     }
     
-    private void createComponents(List<CsmInclude> includes) {
+    private void createComponents(List<CsmInclude> includes, List<CsmErrorDirective> errors) {
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -190,7 +195,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         add(createIncludesPane(), c);
         getAccessibleContext().setAccessibleName(i18n("ErrorIncludeDialog_AccessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(i18n("ErrorIncludeDialog_AccessibleDescription")); // NOI18N
-        model = new ErrorIncludesModel(includes);
+        model = new ErrorIncludesModel(includes, errors);
         leftList.setModel(model);
         addListeners();
         if (TRACE_ERROR_STATISTIC) {
@@ -466,20 +471,20 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 if (!e.getValueIsAdjusting()) {
                     int selected = leftList.getSelectedIndex();
                     if (selected >=0){
-                        List<CsmInclude> files;
+                        List<CsmOffsetable> errors;
                         if (baseProject != null && baseProject.isValid()) {
-                            files = model.getElementList(selected);
+                            errors = model.getElementList(selected);
                         } else {
-                            files = Collections.<CsmInclude>emptyList();
+                            errors = Collections.<CsmOffsetable>emptyList();
                         }
-                        ErrorFilesModel m = new ErrorFilesModel(files);
+                        ErrorFilesModel m = new ErrorFilesModel(errors);
                         rightList.setModel(m);
-                        if (files.size()>0) {
+                        if (errors.size()>0) {
                             rightList.setSelectedIndex(0);
                             rightList.invalidate();
                             rightList.repaint();
-                            CsmInclude incl = m.getElementInclude(0);
-                            guess(incl, (String)model.getElementAt(selected));
+                            CsmOffsetable error = m.getFailedDirective(0);
+                            guess(error, (String)model.getElementAt(selected));
                         } else {
                             guessList.setText("");
                         }
@@ -495,8 +500,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                     int selected = rightList.getSelectedIndex();
                     if (selected >=0 && baseProject != null && baseProject.isValid()){
                         ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
-                        CsmInclude incl = m.getElementInclude(selected);
-                        guess(incl, (String)model.getElementAt(leftList.getSelectedIndex()));
+                        CsmOffsetable error = m.getFailedDirective(selected);
+                        guess(error, (String)model.getElementAt(leftList.getSelectedIndex()));
                     } else {
                         guessList.setText("");
                     }
@@ -554,35 +559,40 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private void openElement(int selected){
         if (baseProject != null && baseProject.isValid()) {
             ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
-            final CsmInclude incl = m.getElementInclude(selected);
-            if (CsmKindUtilities.isOffsetable(incl)) {
-                CsmUtilities.openSource((CsmOffsetable)incl);
-            }
+            CsmOffsetable error = m.getFailedDirective(selected);
+            CsmUtilities.openSource(error);
         }
     }
     
-    private void guess(CsmInclude incl, String found){
+    private void guess(CsmOffsetable error, String found){
         StringBuilder buf = new StringBuilder();
-        if (searchBase == null){
-            searchBase = search(incl);
-        }
-        found = found.replace("<",""); // NOI18N
-        found = found.replace(">",""); // NOI18N
-        found = found.replace("\"",""); // NOI18N
-        found = found.replace("\\","/"); // NOI18N
-        if(found.indexOf('/')>=0){
-            found = found.substring(found.lastIndexOf('/')+1);
-        }
-        List result = (List)searchBase.get(found);
-        if (result != null){
-            for (Iterator it = result.iterator(); it.hasNext();) {
-                String elem = (String) it.next();
-                buf.append(elem+"\n"); // NOI18N
+        boolean handleIncludeError = CsmKindUtilities.isInclude(error);
+        if (handleIncludeError) {
+            if (searchBase == null) {
+                searchBase = search(error);
             }
+            found = found.replace("<",""); // NOI18N
+            found = found.replace(">",""); // NOI18N
+            found = found.replace("\"",""); // NOI18N
+            found = found.replace("\\","/"); // NOI18N
+            if(found.indexOf('/')>=0){
+                found = found.substring(found.lastIndexOf('/')+1);
+            }
+            List result = (List)searchBase.get(found);
+            if (result != null){
+                for (Iterator it = result.iterator(); it.hasNext();) {
+                    String elem = (String) it.next();
+                    buf.append(elem+"\n"); // NOI18N
+                }
+            }
+        } else {
+            buf.append(error.getText()).append("\n"); // NOI18N
         }
         guessList.setText(buf.toString());
-        CsmFile file = incl.getContainingFile();
-        getObjectFile(found, file.getAbsolutePath().toString());
+        CsmFile file = error.getContainingFile();
+        if (handleIncludeError) {
+            getObjectFile(found, file.getAbsolutePath().toString());
+        }
         if (file.isHeaderFile()){
             List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
             if (list.size()>0) {
@@ -717,8 +727,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         return fullName;
     }
 
-    private Map<String,List<String>> search(CsmInclude include){
-        CsmProject prj = include.getContainingFile().getProject();
+    private Map<String,List<String>> search(CsmOffsetable ppDirective){
+        CsmProject prj = ppDirective.getContainingFile().getProject();
         HashSet<String> set = new HashSet<String>();
         for (Iterator it = prj.getSourceFiles().iterator(); it.hasNext();){
             CsmFile file = (CsmFile)it.next();

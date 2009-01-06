@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,9 @@ import java.awt.Component;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -58,6 +60,8 @@ import javax.swing.tree.TreePath;
  * @author  Tim Boudreau
  */
 public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
+    private static int expansionHandleWidth = 0;
+    private static int expansionHandleHeight = 0;
     private boolean expanded = false;
     private boolean leaf = true;
     private boolean showHandle = true;
@@ -71,7 +75,10 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     /** Overridden to combine the expansion border (whose insets determine how
      * much a child tree node is shifted to the right relative to the ancestor
      * root node) with whatever border is set, as a CompoundBorder.  The expansion
-     * border is also responsible for drawing the expansion icon.  */
+     * border is also responsible for drawing the expansion icon.
+     * @param b the border to be rendered for this component
+     */
+    @Override
     public final void setBorder (Border b) {
         if (b == expansionBorder) {
             super.setBorder(b);
@@ -103,13 +110,19 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     static int getNestingWidth() {
         return getExpansionHandleWidth();
     }
-    
+
     static int getExpansionHandleWidth() {
-        return getExpandedIcon().getIconWidth();
+        if (expansionHandleWidth == 0) {
+            expansionHandleWidth = getExpandedIcon ().getIconWidth ();
+        }
+        return expansionHandleWidth;
     }
-    
+
     static int getExpansionHandleHeight() {
-        return getExpandedIcon().getIconHeight();
+        if (expansionHandleHeight == 0) {
+            expansionHandleHeight = getExpandedIcon ().getIconHeight ();
+        }
+        return expansionHandleHeight;
     }
     
     private void setNestingDepth (int i) {
@@ -168,12 +181,12 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         if (tbl.isTreeColumnIndex(column)) {
             AbstractLayoutCache layout = tbl.getLayoutCache();
             row = tbl.convertRowIndexToModel(row);
-            boolean leaf = tbl.getOutlineModel().isLeaf(value);
-            setLeaf(leaf);
+            boolean isleaf = tbl.getOutlineModel().isLeaf(value);
+            setLeaf(isleaf);
             setShowHandle(true);
             TreePath path = layout.getPathForRow(row);
-            boolean expanded = layout.isExpanded(path);
-            setExpanded (expanded);
+            boolean isExpanded = layout.isExpanded(path);
+            setExpanded (isExpanded);
             int nd = path.getPathCount() - (tbl.isRootVisible() ? 1 : 2);
             if (nd < 0) {
                 nd = 0;
@@ -204,8 +217,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 icon = rendata.getIcon(value);
             } 
             if (icon == null) {
-                if (!leaf) {
-                    if (expanded) {
+                if (!isleaf) {
+                    if (isExpanded) {
                         setIcon (getDefaultOpenIcon());
                     } else { // ! expanded
                         setIcon (getDefaultClosedIcon());
@@ -225,7 +238,20 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     }
     
     private static class ExpansionHandleBorder implements Border {
+
+        private static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
+
         private Insets insets = new Insets(0,0,0,0);
+        private static JLabel lExpandedIcon = null;
+        private static JLabel lCollapsedIcon = null;
+
+        {
+            if (isGtk) {
+                lExpandedIcon = new JLabel (getExpandedIcon (), SwingUtilities.TRAILING);
+                lCollapsedIcon = new JLabel (getCollapsedIcon (), SwingUtilities.TRAILING);
+            }
+        }
+
         public Insets getBorderInsets(Component c) {
             DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer) c;
             if (ren.isShowHandle()) {
@@ -260,7 +286,14 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     iconY = 0;
                 }
-                icon.paintIcon(c, g, iconX, iconY);
+                if (isGtk) {
+                    JLabel lbl = ren.isExpanded () ? lExpandedIcon : lCollapsedIcon;
+                    lbl.setSize (Math.max (getExpansionHandleWidth (), iconX + getExpansionHandleWidth ()), height);
+                    lbl.paint (g);
+                } else {
+                    icon.paintIcon(c, g, iconX, iconY);
+                }
+                
             }
         }
     }

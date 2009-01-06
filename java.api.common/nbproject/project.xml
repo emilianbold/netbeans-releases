@@ -194,6 +194,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>

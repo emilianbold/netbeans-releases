@@ -61,6 +61,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
@@ -561,6 +562,11 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             for (LineConvertor extra : extraConvertors) {
                 desc.addOutConvertor(extra);
             }
+        }
+
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
         }
 
         return desc;

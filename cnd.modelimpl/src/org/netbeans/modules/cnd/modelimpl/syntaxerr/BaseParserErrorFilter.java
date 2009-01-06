@@ -56,37 +56,41 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
     protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        RecognitionException prev = null;
-        for (RecognitionException e : exceptions) {
-            // Fix for IZ#143082: some syntax errors are reported twice.
-            // We assume that equal recognition exceptions are next to each other.
-            if (!equal(prev, e)) {
-                result.add(toErrorInfo(e, file));
+        if (!exceptions.isEmpty()){
+            CharSequence text = file.getText();
+            RecognitionException prev = null;
+            ContextCache prevLine = new ContextCache();
+            for (RecognitionException e : exceptions) {
+                // Fix for IZ#143082: some syntax errors are reported twice.
+                // We assume that equal recognition exceptions are next to each other.
+                if (!equal(prev, e)) {
+                    result.add(toErrorInfo(e, text, prevLine));
+                }
+                prev = e;
             }
-            prev = e;
         }
         return result;
     }
 
-    protected boolean equal(RecognitionException e1, RecognitionException e2) {
+    private boolean equal(RecognitionException e1, RecognitionException e2) {
         if ((e1 == null) != (e2 == null)) {
             return false;
         }
         return e1.getLine() == e2.getLine() && e1.getColumn() == e2.getColumn();
     }
 
-    protected CsmErrorInfo toErrorInfo(RecognitionException e, CsmFile file) {
-        return toErrorInfo(getMessage(e), e.getLine(), e.getColumn(), file, e.getTokenText());
+    private CsmErrorInfo toErrorInfo(RecognitionException e, CharSequence text, ContextCache prevLine) {
+        return toErrorInfo(getMessage(e), e.getLine(), e.getColumn(), text, prevLine, e.getTokenText());
     }
 
-    protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file) {
-        return toErrorInfo(message, line, column, file, null);
-    }
-
-    protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file, String tokenText) {
-        CharSequence text = file.getText();
+    private CsmErrorInfo toErrorInfo(String message, int line, int column, 
+            CharSequence text, ContextCache prevLine, String tokenText) {
         int start = 0;
         int currLine = 1;
+        if (prevLine.line <= line) {
+            start = prevLine.offset;
+            currLine = prevLine.line;
+        }
         char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
 
         while (start < text.length() && currLine < line) {
@@ -95,6 +99,9 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
                 currLine++;
             }
         }
+        prevLine.offset = start;
+        prevLine.line = currLine;
+
         //start += column;
         int end = start + 1;
         while (end < text.length()) {
@@ -118,7 +125,7 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
 
-    protected String getMessage(RecognitionException e) {
+    private String getMessage(RecognitionException e) {
         String tokenText = e.getTokenText();
         if (tokenText == null) {
             return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_PARSER_ERROR"); // NOI18N
@@ -129,5 +136,8 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return CsmErrorInfo.Severity.ERROR;
+    }
+    private static class ContextCache{
+        int offset,line=1;
     }
 }

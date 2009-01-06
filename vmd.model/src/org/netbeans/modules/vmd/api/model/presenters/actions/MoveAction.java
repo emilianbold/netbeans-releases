@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import javax.swing.KeyStroke;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -67,6 +68,11 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
 
     public static final Action createMoveUpAction(String arrayPropertyName) {
         return new MoveAction(arrayPropertyName, DISPLAY_NAME_MOVE_UP) {
+
+            {
+                putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke("control U"));
+            }
+
             protected void invokeMoveAction(List<PropertyValue> array, List<PropertyValue> newArray, PropertyValue currentValue) {
                 int index = array.indexOf(currentValue);
                 if (index != 0) {
@@ -80,6 +86,11 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
 
     public static final Action createMoveDownAction(String arrayPropertyName) {
         return new MoveAction( arrayPropertyName, DISPLAY_NAME_MOVE_DOWN) {
+
+            {
+                putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke("control D"));
+            }
+            
             protected void invokeMoveAction(List<PropertyValue> array, List<PropertyValue> newArray, PropertyValue currentValue) {
                 int index = array.indexOf(currentValue);
                 int minIndex = array.size() - index;

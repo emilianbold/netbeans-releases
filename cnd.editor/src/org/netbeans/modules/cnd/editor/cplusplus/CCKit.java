@@ -88,6 +88,10 @@ public class CCKit extends NbEditorKit {
 
     private InputAttributes lexerAttrs = null;
 
+    public CCKit() {
+        // default constructor needed to be created from services
+    }
+    
     @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
@@ -279,10 +283,12 @@ public class CCKit extends NbEditorKit {
                 Indent indent = Indent.get(doc);
                 indent.lock();
                 try {
+                    doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
                     indent.reindent(offset);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 } finally{
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
                     indent.unlock();
                 }
             }

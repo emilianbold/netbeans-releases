@@ -517,6 +517,7 @@ public class PrintASTVisitor implements Visitor {
 
     public void visit(Program program) {
         XMLPrintNode printNode = new XMLPrintNode(program, "Program");
+        printNode.addChildrenGroup("Comments", program.getComments());
         printNode.addChildrenGroup("Statements", program.getStatements());
         printNode.print(this);
     }
@@ -681,6 +682,12 @@ public class PrintASTVisitor implements Visitor {
     public void visit(PHPDocNode phpDocNode) {
         XMLPrintNode printNode = new XMLPrintNode(phpDocNode, "PHPDocNode",
                 new String[] {"value", phpDocNode.getValue()});
+        printNode.print(this);
+    }
+
+    public void visit(PHPVarComment node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PHPVarComment");
+        printNode.addChild("Variable", node.getVariable());
         printNode.print(this);
     }
 }

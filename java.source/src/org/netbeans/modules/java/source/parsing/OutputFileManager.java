@@ -135,7 +135,7 @@ public class OutputFileManager extends CachingFileManager {
                 }
                 else {
                     index = getActiveRoot (FileObjects.convertPackage2Folder(className));
-                }            
+                }
                 if (index == -1) {
                     //Deleted project
                     throw new InvalidSourcePath ();
@@ -232,6 +232,7 @@ public class OutputFileManager extends CachingFileManager {
         String name, parent = null;
 	int index = baseName.lastIndexOf('/');              //NOI18N        
 	if (index<0) {
+            parent = "";
             name = baseName;	    
 	}
 	else {

@@ -139,26 +139,26 @@ walk [bound][function][def][read][called][node=FunctionDef]
 
     =============================================
     execl: FunctionDef : OffsetRange[9801,9971>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     execv [free][read][called][node=Name]
     file [bound][param][data][read][node=Name]
 
     =============================================
     execle: FunctionDef : OffsetRange[9971,10198>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     env [bound][data][read][node=Name]
     execve [free][read][called][node=Name]
     file [bound][param][data][read][node=Name]
 
     =============================================
     execlp: FunctionDef : OffsetRange[10198,10407>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     execvp [free][read][called][node=Name]
     file [bound][param][data][read][node=Name]
 
     =============================================
     execlpe: FunctionDef : OffsetRange[10407,10677>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     env [bound][data][read][node=Name]
     execvpe [free][read][called][node=Name]
     file [bound][param][data][read][node=Name]
@@ -295,7 +295,7 @@ walk [bound][function][def][read][called][node=FunctionDef]
         dict [bound][param][data][read][node=Name]
         k [bound][data][read][node=Name]
         keys [bound][data][read][node=Name]
-        kwargs [bound][param][data][read][node=argumentsType]
+        kwargs [bound][param][data][read][node=arguments]
         self [bound][param][data][read][node=Name]
         v [bound][data][read][node=Name]
         ------ Attributes ---------------------------------------
@@ -340,7 +340,7 @@ walk [bound][function][def][read][called][node=FunctionDef]
         dict [bound][param][data][read][node=Name]
         k [bound][data][read][node=Name]
         keys [bound][data][read][node=Name]
-        kwargs [bound][param][data][read][node=argumentsType]
+        kwargs [bound][param][data][read][node=arguments]
         self [bound][param][data][read][node=Name]
         v [bound][data][read][node=Name]
         ------ Attributes ---------------------------------------
@@ -433,14 +433,14 @@ walk [bound][function][def][read][called][node=FunctionDef]
 
     =============================================
     spawnl: FunctionDef : OffsetRange[19289,19657>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     file [bound][param][data][read][node=Name]
     mode [bound][param][data][read][node=Name]
     spawnv [free][read][called][node=Name]
 
     =============================================
     spawnle: FunctionDef : OffsetRange[19658,20098>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     env [bound][data][read][node=Name]
     file [bound][param][data][read][node=Name]
     mode [bound][param][data][read][node=Name]
@@ -448,14 +448,14 @@ walk [bound][function][def][read][called][node=FunctionDef]
 
     =============================================
     spawnlp: FunctionDef : OffsetRange[20289,20724>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     file [bound][param][data][read][node=Name]
     mode [bound][param][data][read][node=Name]
     spawnvp [free][read][called][node=Name]
 
     =============================================
     spawnlpe: FunctionDef : OffsetRange[20725,21202>
-    args [bound][param][data][read][node=argumentsType]
+    args [bound][param][data][read][node=arguments]
     env [bound][data][read][node=Name]
     file [bound][param][data][read][node=Name]
     mode [bound][param][data][read][node=Name]

@@ -1,0 +1,21 @@
+Code completion result for source line:
+/* @var $hello Te|stType */
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      Test                                       issue142024.php
+CLASS      Test142234                                 issue142234.php
+CLASS      Test144409                                 issue144409.php
+CLASS      Test145692                                 issue145692.php
+CLASS      Test147179                                 issue147179.php
+CLASS      Test147883A                                issue147883.php
+CLASS      Test147883B                                issue147883.php
+CLASS      Test148219                                 issue148219.php
+CLASS      Test148856Class                            issue148856.php
+CLASS      Test154055                                 issue154055.php
+CLASS      TestCCOnMethods                            test_cc_on_methods.php
+CLASS      TestCCOnMethodsParentClass                 test_cc_on_methods.php
+CLASS      TestClass                                  function_return_type.php
+CLASS      TestIssue145206                            issue145206.php
+CLASS      TestIssue146176                            issue146176.php
+CLASS      TestOptionalArgsClass                      optional_args.php
+CLASS      teacher140784                              issue140784.php

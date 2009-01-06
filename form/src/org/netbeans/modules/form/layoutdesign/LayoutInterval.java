@@ -65,6 +65,8 @@ public final class LayoutInterval implements LayoutConstants {
     static final int ATTR_ALIGN_PRE = 64;
     static final int ATTR_ALIGN_POST = 128;
 
+    static final int ATTR_FORCED_DEFAULT = 256;
+
     static final int DESIGN_ATTRS = ATTR_DESIGN_CONTAINER_GAP
                                     | ATTR_DESIGN_RESIZING
                                     | ATTR_DESIGN_SUPPRESSED_RESIZING

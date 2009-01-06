@@ -59,13 +59,13 @@ import org.python.antlr.ast.Str;
  */
 public class PythonStructureScanner implements StructureScanner {
     public static PythonStructureItem create(SymbolTable scopes, ClassDef def) {
-        PythonStructureItem item = new PythonStructureItem(scopes, def, def.name, ElementKind.CLASS);
+        PythonStructureItem item = new PythonStructureItem(scopes, def, def.getInternalName(), ElementKind.CLASS);
 
         return item;
     }
 
     public static PythonStructureItem create(SymbolTable scopes, FunctionDef def) {
-        String name = def.name;
+        String name = def.getInternalName();
         ElementKind kind = ElementKind.METHOD;
         if ("__init__".equals(name)) { // NOI18N
             kind = ElementKind.CONSTRUCTOR;
@@ -116,20 +116,25 @@ public class PythonStructureScanner implements StructureScanner {
         //List<?extends AstElement> elements = ar.getElements();
         //List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
-        FoldVisitor visitor = new FoldVisitor(info);
-        List<OffsetRange> codeBlocks;
-        try {
-            visitor.visit(root);
-            codeBlocks = visitor.getCodeBlocks();
+        BaseDocument doc = (BaseDocument)info.getDocument();
+        if (doc != null) {
+            try {
+                doc.readLock(); // For Utilities.getRowEnd() access
+                FoldVisitor visitor = new FoldVisitor(info, doc);
+                visitor.visit(root);
+                List<OffsetRange> codeBlocks = visitor.getCodeBlocks();
 
-            Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-            folds.put("codeblocks", codeBlocks); // NOI18N
+                Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+                folds.put("codeblocks", codeBlocks); // NOI18N
 
-            return folds;
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyMap();
+                return folds;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                doc.readUnlock();
+            }
         }
+        return Collections.emptyMap();
     }
 
     public Configuration getConfiguration() {
@@ -141,10 +146,10 @@ public class PythonStructureScanner implements StructureScanner {
         private CompilationInfo info;
         private BaseDocument doc;
 
-        private FoldVisitor(CompilationInfo info) {
+        private FoldVisitor(CompilationInfo info, BaseDocument doc) {
             this.info = info;
 
-            this.doc = (BaseDocument)info.getDocument();
+            this.doc = doc;
         }
 
         private void addFoldRange(PythonTree node) {
@@ -203,7 +208,7 @@ public class PythonStructureScanner implements StructureScanner {
 
         @Override
         public Object visitClassDef(ClassDef def) throws Exception {
-            PythonStructureItem item = new PythonStructureItem(scopes, def, def.name, ElementKind.CLASS);
+            PythonStructureItem item = new PythonStructureItem(scopes, def, def.getInternalName(), ElementKind.CLASS);
             add(item);
 
             ScopeInfo scope = scopes.getScopeInfo(def);

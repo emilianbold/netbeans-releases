@@ -58,6 +58,7 @@ import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -81,6 +82,7 @@ public final class NbErrorManagerTest extends NbTestCase {
     }
     
     private ErrorManager err;
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
 
@@ -317,7 +319,8 @@ public final class NbErrorManagerTest extends NbTestCase {
         assertTrue(x.isLocalized());
         
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1895
     public void testPerPetrKuzelsRequestInIssue62836() throws Exception {
         class My extends Exception {
             public My() {
@@ -327,8 +330,8 @@ public final class NbErrorManagerTest extends NbTestCase {
         
         My my = new My();
         
-        err.notify(err.INFORMATIONAL, my);
-        err.notify(err.USER, my);
+        err.notify(ErrorManager.INFORMATIONAL, my);
+        err.notify(ErrorManager.USER, my);
         
         String output = readLog();
         // wait for a dialog to be shown
@@ -485,6 +488,7 @@ public final class NbErrorManagerTest extends NbTestCase {
             lastDescriptor = descriptor;
             return new JDialog() {
                 @SuppressWarnings("deprecation")
+                @Override
                 public void show() {}
             };
         }

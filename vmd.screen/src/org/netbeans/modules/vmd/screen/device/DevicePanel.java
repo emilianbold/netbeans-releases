@@ -176,6 +176,10 @@ public class DevicePanel extends JPanel {
     }
     
     public void reload() {
+
+        Component component = KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                getFocusOwner();
+
         DesignComponent editedScreen = controller.getEditedScreen();
         ScreenDisplayPresenter presenter = editedScreen != null ? editedScreen.getPresenter(ScreenDisplayPresenter.class) : null;
         if (presenter == null)
@@ -183,16 +187,15 @@ public class DevicePanel extends JPanel {
         displayPanel.setVisible(false);
         displayPanel.removeAll();
         displayPanel.setPreferredSize(null);
-        
-        JComponent comp = presenter.getView();
-        displayPanel.add(comp, BorderLayout.CENTER);
+
+        displayPanel.add(presenter.getView(), BorderLayout.CENTER);
         displayPanel.setBackground(getDeviceInfo().getDeviceTheme().getColor(DeviceTheme.Colors.BACKGROUND));
         
         presenter.reload(getDeviceInfo());
         
         //due to issues in GridBagLayout which ignores minSize, we need to compute necessary height for component
         int requiredHeight = 0;
-        Component[] content = comp.getComponents();
+        Component[] content = presenter.getView().getComponents();
         for (Component jComponent : content) {
             requiredHeight += jComponent.getPreferredSize().getHeight();
             //            GridBagConstraints constrains = ((GridBagLayout)comp.getLayout()).getConstraints(jComponent);
@@ -213,6 +216,10 @@ public class DevicePanel extends JPanel {
         displayPanel.validate();
         
         topPanel.reload();
+
+        if ( component != null ){
+            component.requestFocusInWindow();
+        }
     }
     
     public DesignComponent getDesignComponentAt(Point point) {

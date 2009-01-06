@@ -1062,10 +1062,10 @@ public class CPPParserEx extends CPPParser {
     }
     private static final int MAX_GUESS = 256;
     public static int MAX_GUESS_IDX = 0;
-    public static long[] guessingTimes = new long[MAX_GUESS];
-    public static long[] guessingCount = new long[MAX_GUESS];
-    public static long[] guessingFailures = new long[MAX_GUESS];
-    public static String[] guessingNames = new String[MAX_GUESS];
+    public static final long[] guessingTimes = new long[MAX_GUESS];
+    public static final long[] guessingCount = new long[MAX_GUESS];
+    public static final long[] guessingFailures = new long[MAX_GUESS];
+    public static final String[] guessingNames = new String[MAX_GUESS];
 
 
     static {

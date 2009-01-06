@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.rest.model.impl;
 
-import org.netbeans.modules.websvc.rest.model.impl.RestServiceDescriptionImpl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -52,13 +51,10 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -74,7 +70,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -178,33 +173,18 @@ public class RestServicesImpl implements RestServices {
         public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             //System.out.println("createObjects() type = " + type);
             //(new Exception()).printStackTrace();
-            if (Utils.checkForJsr311Bootstrap(type, project)) {
+            if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
                 return Collections.emptyList();
             }
-            
-            if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
-                boolean isRest = false;
-                if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH)) { // NOI18N
-                    isRest = true;
-                } else {
-                    for (Element element : type.getEnclosedElements()) {
-                        if (Utils.hasHttpMethod(element)) {
-                            isRest = true;
-                            break;
-                        }
-                    }
-                }
-                
-                if (isRest) {
-                    //System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
-                    return Collections.singletonList(new RestServiceDescriptionImpl(helper, type));
-                }
+            if (Utils.isRest(type, helper)) {
+                //System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
+                return Collections.singletonList(new RestServiceDescriptionImpl(helper, type));
             }
             return Collections.emptyList();
         }
         
         public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
-            if (Utils.checkForJsr311Bootstrap(type, project)) {
+            if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
                 return false;
             }
             //System.out.println("modifyObject type = " + type);
@@ -233,7 +213,7 @@ public class RestServicesImpl implements RestServices {
             helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
                     new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    if (Utils.checkForJsr311Bootstrap(type, project)) {
+                    if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
                         return;
                     }
                     if (!result.containsKey(type)) {

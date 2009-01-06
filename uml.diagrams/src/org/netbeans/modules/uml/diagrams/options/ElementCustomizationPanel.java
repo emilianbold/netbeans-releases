@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -37,11 +36,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
@@ -175,7 +174,7 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
             {
                 public void run()
                 {
-                    GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
+                    GraphLayout gLayout = new HierarchicalLayout();
                     gLayout.layoutGraph(scene);
                 }
             });
@@ -362,7 +361,7 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
                     widget.setVisible(true);
                 }
             } 
-            GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
+            GraphLayout gLayout = new HierarchicalLayout();
             gLayout.layoutGraph(scene);
         } else
         {

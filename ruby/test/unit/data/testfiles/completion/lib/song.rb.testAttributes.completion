@@ -33,6 +33,7 @@ METHOD     fail(exception, string, array)             Kernel
 METHOD     fail(string)                               Kernel
 METHOD     fork { }                                   Kernel
 METHOD     format(format_string, argument             Kernel
+METHOD     freeze                                     Object
 METHOD     frozen?                                    Object
 METHOD     getc                                       Kernel
 METHOD     gets(separator)                            Kernel

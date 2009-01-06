@@ -1,0 +1,170 @@
+#  stub => ""
+#  stub => []
+#  stub => $_
+#  stub => 0
+#  stub => 0.0
+#  stub => 0, 1
+#  stub => 0 or false
+#  stub => 0 or nil
+#  stub => 100, "b" => 200 }
+#  stub => 100, "b" => 200 }     #=> {"a"=>100, "b"=>200}
+#  stub => 100, "b" => 200 }   #=> {"a"=>100, "b"=>200}
+#  stub => 100, "b" => 200]   #=> {"a"=>100, "b"=>200}
+#  stub => 100, "b" => 200, "c" => 300 }
+#  stub => 100, c => 300 }
+#  stub => -1, 0, 1
+#  stub => -1, 0, +1
+#  stub => -1, 0, +1, or nil
+#  stub => [[1,1],[1,2],[2,1],[2,2]]
+#  stub => [[1],[2]]
+#  stub => [1, 2]
+#  stub => [1, 2, 3]
+#  stub => 12345
+#  stub => 123 Maple, Anytown NC
+#  stub => [[1,3,5],[1,3,6],[1,4,5],[1,4,6],
+#  stub => [[1,4],[1,5],[2,4],[2,5],[3,4],[3,5]]
+#  stub => 1, "c" => 2 }
+#  stub => 1, "c" => 2, 7 => 35 }
+#  stub => 1, "d" => 2, "f" => 35 }
+#  stub => 2
+#  stub => 20, "b" => 30, "c" => 10  }
+#  stub => 254, "c" => 300 }
+#  stub => 3
+#  stub => 300, "d" => 400 })   #=> {"c"=>300, "d"=>400}
+#  stub => [3, 4, 5, 0]
+#  stub => 35, "c" => 2, "a" => 1 }
+#  stub => 4
+#  stub => [4, 5, 0]
+#  stub => "a", 2 => "b", 3 => "c" }
+#  stub => a_class
+#  stub => aDir
+#  stub => a_hash
+#  stub => aHash
+#  stub => a_klass
+#  stub => an_array
+#  stub => anArray
+#  stub => anEnumerator
+#  stub => anIO
+#  stub => anObject
+#  stub => a_proc
+#  stub => array
+#  stub => array  or  nil
+#  stub => array or nil
+#  stub => a_str
+#  stub => aStructTms
+#  stub => "b"
+#  stub => binding
+#  stub => bool
+#  stub => boolean
+#  stub => class
+#  stub => class_or_module
+#  stub => [cur_limit, max_limit]
+#  stub => detail
+#  stub => dir
+#  stub => e
+#  stub => exception
+#  stub => false
+#  stub => "false"
+#  stub => "feline", "dog" => "canine", "cow" => "bovine" }
+#  stub => file
+#  stub => fixnum
+#  stub => fixnum, bignum
+#  stub => fixnum or nil
+#  stub => float
+#  stub => Float
+#  stub => flt
+#  stub => :foo
+#  stub => [ fraction, exponent ]
+#  stub => hash
+#  stub => [head, sep, tail]
+#  stub => hsh
+#  stub => instance_method(:do_a),
+#  stub => instance_method(:do_d),
+#  stub => instance_method(:do_e),
+#  stub => instance_method(:do_v)
+#  stub => int
+#  stub => integer
+#  stub => Integer
+#  stub => integer or nil
+#  stub => Integer or nil
+#  stub => int or nil
+#  stub => io
+#  stub => io or nil
+#  stub => ios
+#  stub => Joe Smith
+#  stub => key
+#  stub => matchdata
+#  stub => matchdata or nil
+#  stub => method
+#  stub => [min, max]
+#  stub => [min,max]
+#  stub => mod
+#  stub => name_error
+#  stub => new_method
+#  stub => new_regexp
+#  stub => new_str
+#  stub => new_str or nil
+#  stub => new_time
+#  stub => nil
+#  stub => "nil"
+#  stub => no_method_error
+#  stub => num
+#  stub => number
+#  stub => numeric
+#  stub => Numeric
+#  stub => numeric_result
+#  stub => num or nil
+#  stub => num or numeric
+#  stub => obj
+#  stub => !obj
+#  stub => object
+#  stub => obj or nil
+#  stub => old_seed
+#  stub => $_ or nil
+#  stub => other_big
+#  stub => outbuf
+#  stub => [ [pid1,status1], ...]
+#  stub => [pid, status]
+#  stub => prc
+#  stub => proc
+#  stub => range
+#  stub => regexp
+#  stub => result
+#  stub => rng
+#  stub => self
+#  stub => self or nil
+#  stub => stat
+#  stub => str
+#  stub => string
+#  stub => string, buffer, or nil
+#  stub => string, false or nil
+#  stub => string or nil
+#  stub => String or nil
+#  stub => str or nil
+#  stub => struct
+#  stub => StructClass
+#  stub => struct_tms
+#  stub => sym
+#  stub => symbol
+#  stub => system_call_error_subclass
+#  stub => system_exit
+#  stub => thgrp
+#  stub => thgrp or nil
+#  stub => thr
+#  stub => thread
+#  stub => time
+#  stub => true
+#  stub => "true"
+#  stub => [ true_array, false_array ]
+#  stub => true, false or nil
+#  stub => true, false, or nil
+#  stub => (true or false)
+#  stub => true or false
+#  stub => true or false    (obsolete)
+#  stub => unbound_method
+#  stub => value
+#  stub => #{value}") }
+#  stub => 100, "m" => 100, "y" => 300, "d" => 200, "a" => 0 }
+#  stub => 300, "a" => 100, "d" => 400, "c" => 300  }
+#  stub => 100, "a" => 200, "v" => 300, "e" => 400 }
+#  stub => 100, "b" => 200, "c" => 300, "d" => 400 }

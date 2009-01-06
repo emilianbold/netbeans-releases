@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="web.client.javascript.debugger.firefox.extension">
+<project basedir="." default="netbeans" name="web.client.tools.firefox.extension">
     <description>Builds, tests, and runs the project org.netbeans.modules.web.client.javascript.debugger.firefox.extension</description>
     <import file="../nbbuild/templates/projectized.xml"/>
     <!-- build netbeans-firefox-extension -->

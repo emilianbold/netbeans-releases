@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class LogReader {
-    private static boolean TRACE = false;
+    private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
     
     private String workingDir;
     private String baseWorkingDir;
@@ -301,23 +301,21 @@ public class LogReader {
             if (end >= line.length() || line.charAt(end)!='-') {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
-            } 
-            
-            else if (start > 0 && line.charAt(start-1)!='/') {
-                // suspected compiler invocation is not first command in line?? -- noway
-                String prefix = line.substring(0, start - 1).trim();
-                // wait! maybe it's called in condition?
-                if (!(line.charAt(start - 1) == ' ' && 
-                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
-                    // or it's a lib compiled by libtool? 
-                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
-                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
-                        // no, it's not a compile line
-                        li.compilerType = CompilerType.UNKNOWN;
-                        // I hope
-                        if (TRACE) {System.err.println("Suspicious line: " + line);}
-                    }
-                }
+//            } else if (start > 0 && line.charAt(start-1)!='/') {
+//                // suspected compiler invocation is not first command in line?? -- noway
+//                String prefix = line.substring(0, start - 1).trim();
+//                // wait! maybe it's called in condition?
+//                if (!(line.charAt(start - 1) == ' ' &&
+//                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
+//                    // or it's a lib compiled by libtool?
+//                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
+//                        if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
+//                            // no, it's not a compile line
+//                            li.compilerType = CompilerType.UNKNOWN;
+//                            // I hope
+//                            if (TRACE) {System.err.println("Suspicious line: " + line);}
+//                        }
+//                    }
             }
         }
         return li;
@@ -361,7 +359,10 @@ public class LogReader {
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
-            StringBuilder out = new StringBuilder(line.substring(0, i-1));
+            StringBuilder out = new StringBuilder();
+            if (i > 0) {
+                out.append(line.substring(0, i-1));
+            }
             line = line.substring(i+1);
             int j = line.indexOf('`'); //NOI18N
             if (j < 0) {

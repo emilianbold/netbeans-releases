@@ -215,7 +215,7 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
         }
 
         //then display the sub-resources
-        if(ref == null) {
+        if(getResourceRef() == null) {
             for (Resource r : getResource().getResource()) {
                 ResourceWidget resourceWidget = new ResourceWidget(getObjectScene(), this, r, getModel());
                 getContentWidget().addChild(resourceWidget);
@@ -250,7 +250,7 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
             List<Widget> removeList = new ArrayList<Widget>();
             for(Method m:methods){
                 for(Widget w:childs) {
-                    if(w instanceof MethodWidget && ((MethodWidget)w).getMethod().getName().equals(m.getName()) &&
+                    if(w instanceof MethodWidget && ((MethodWidget)w).getMethodName().equals(m.getName()) &&
                             (m.getId() == null || (m.getId() != null && ((MethodWidget)w).getMethod().getId().equals(m.getId())))) {
                         removeList.add(w);
                     }

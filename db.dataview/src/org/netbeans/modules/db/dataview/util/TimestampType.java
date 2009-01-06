@@ -54,10 +54,11 @@ import org.openide.util.NbBundle;
  * 
  * @author Ahimanikya Satapathy
  */
-public class TimestampType  {
+public class TimestampType {
     // Irrespective of the JVM's Locale lets pick a Locale for use on any JVM
     public static final Locale LOCALE = Locale.UK;
-    private final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
+    public final DateFormat[] TIMESTAMP_PARSING_FORMATS = new DateFormat[]{
+        DateFormat.getDateTimeInstance(),
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", LOCALE), // NOI18N
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", LOCALE), // NOI18N
         new SimpleDateFormat("yyyy-MM-dd", LOCALE), // NOI18N
@@ -77,6 +78,10 @@ public class TimestampType  {
             return null;
         } else if (value instanceof Timestamp) {
             return value;
+        } else if (value instanceof java.sql.Date) {
+            return new Timestamp(((java.sql.Date)value).getTime());
+        }  else if (value instanceof java.util.Date) {
+            return new Timestamp(((java.util.Date)value).getTime());
         } else if (value instanceof String) {
             java.util.Date dVal = null;
             int i = 0;
@@ -86,12 +91,11 @@ public class TimestampType  {
             }
 
             if (dVal == null) {
-                 throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
+                throw new DBException(NbBundle.getMessage(TimestampType.class, "LBL_invalid_timestamp"));
             }
             return new Timestamp(dVal.getTime());
         } else {
-                throw new DBException(NbBundle.getMessage(TimestampType.class,"LBL_invalid_timestamp"));
+            throw new DBException(NbBundle.getMessage(TimestampType.class, "LBL_invalid_timestamp"));
         }
     }
-
 }

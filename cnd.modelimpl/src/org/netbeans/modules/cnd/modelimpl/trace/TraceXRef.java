@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.OutputEvent;
@@ -188,13 +189,13 @@ public class TraceXRef extends TraceModel {
     @SuppressWarnings("deprecation")
     private static void setUp() {
         // this is the only way to init extension-based recognizer
-        FileUtil.setMIMEType("cc", "text/x-c++"); // NOI18N
-        FileUtil.setMIMEType("h", "text/x-c++"); // NOI18N
-        FileUtil.setMIMEType("c", "text/x-c"); // NOI18N
+        FileUtil.setMIMEType("cc", MIMENames.CPLUSPLUS_MIME_TYPE); // NOI18N
+        FileUtil.setMIMEType("h", MIMENames.HEADER_MIME_TYPE); // NOI18N
+        FileUtil.setMIMEType("c", MIMENames.C_MIME_TYPE); // NOI18N
 
-        JEditorPane.registerEditorKitForContentType("text/x-c++", "org.netbeans.modules.cnd.editor.cplusplus.CCKit"); // NOI18N
-
-        JEditorPane.registerEditorKitForContentType("text/x-c", "org.netbeans.modules.cnd.editor.cplusplus.CKit"); // NOI18N
+        JEditorPane.registerEditorKitForContentType(MIMENames.CPLUSPLUS_MIME_TYPE, "org.netbeans.modules.cnd.editor.cplusplus.CCKit"); // NOI18N
+        JEditorPane.registerEditorKitForContentType(MIMENames.HEADER_MIME_TYPE, "org.netbeans.modules.cnd.editor.cplusplus.HKit"); // NOI18N
+        JEditorPane.registerEditorKitForContentType(MIMENames.C_MIME_TYPE, "org.netbeans.modules.cnd.editor.cplusplus.CKit"); // NOI18N
     }
 
     private CsmFile getCsmFile(String path) {

@@ -54,6 +54,7 @@ public class IntNodeProp extends Node.Property {
     private boolean canWrite;
     IntEditor intEditor = null;
 
+    @SuppressWarnings("unchecked")
     public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
         super(Integer.class);
         this.intConfiguration = intConfiguration;

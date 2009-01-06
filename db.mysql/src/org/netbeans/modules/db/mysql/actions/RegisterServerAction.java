@@ -41,6 +41,7 @@ package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
+import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
@@ -73,7 +74,7 @@ public class RegisterServerAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        return !ServerNodeProvider.getDefault().isRegistered();
     }
 
     @Override

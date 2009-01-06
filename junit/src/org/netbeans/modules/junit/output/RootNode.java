@@ -135,12 +135,18 @@ final class RootNode extends AbstractNode {
     
     /**
      */
-    TestsuiteNode displayReport(final Report report) {
+    TestsuiteNode displayReport(final Report report, final int[] statistics) {
         assert EventQueue.isDispatchThread();
-        
+        assert statistics.length == 6;
         /* Called from the EventDispatch thread */
-        
-        updateStatistics(report);
+
+        totalTests = statistics[0];
+        failures = statistics[1];
+        errors = statistics[2];
+        detectedPassedTests = statistics[3];
+        interruptedTests = statistics[4];
+        elapsedTimeMillis = statistics[5];
+
         updateDisplayName();
         return children.displayReport(report);
     }
@@ -151,25 +157,10 @@ final class RootNode extends AbstractNode {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
-        
-        for (Report report : reports) {
-            updateStatistics(report);
-        }
         updateDisplayName();
         children.displayReports(reports);
     }
-    
-    /**
-     */
-    private void updateStatistics(final Report report) {
-        totalTests += report.totalTests;
-        failures += report.failures;
-        errors += report.errors;
-        detectedPassedTests += report.detectedPassedTests;
-        interruptedTests += report.interruptedTests;
-        elapsedTimeMillis += report.elapsedTimeMillis;
-    }
-    
+        
     /**
      */
     void setFiltered(final boolean filtered) {

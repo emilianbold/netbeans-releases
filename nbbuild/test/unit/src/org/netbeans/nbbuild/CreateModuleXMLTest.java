@@ -41,20 +41,11 @@
 package org.netbeans.nbbuild;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.jar.JarFile;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.types.Parameter;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -98,6 +89,38 @@ public class CreateModuleXMLTest extends NbTestCase {
         assertEquals("It one file", 1, files.length);
         assertEquals("Its name reflects the code name of the module", "org-my-module.xml_hidden", files[0]);
         
+    }
+
+    public void testGeneratesDataForDisabledModule() throws Exception {
+        Manifest m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <createmodulexml xmldir='" + output + "' >" +
+            "    <disabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </disabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        String[] files = output.list();
+        assertEquals("It one file", 1, files.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0]);
+
     }
     
     

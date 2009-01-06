@@ -112,13 +112,12 @@ final class RootNodeChildren extends Children.Array {
         assert EventQueue.isDispatchThread();
         assert (runningSuiteNode != null)
                == (live && (runningSuiteName != null));
-        
+
         TestsuiteNode correspondingNode;
         
         if (reports == null) {
             reports = new ArrayList<Report>(10);
         }
-        reports.add(report);
 
         final boolean isPassedSuite = updateStatistics(report);
         
@@ -138,7 +137,11 @@ final class RootNodeChildren extends Children.Array {
                 correspondingNode = null;
             }
         } else {
-            if (live && !(filtered && isPassedSuite)) {
+            if (live && 
+                    !(filtered && isPassedSuite)) {
+                if (reports.contains(report)) {
+                    removeSuite(report);
+                }
                 add(new Node[] {
                     correspondingNode = createNode(report)});
             } else {
@@ -148,6 +151,9 @@ final class RootNodeChildren extends Children.Array {
         
         assert runningSuiteName == null;
         assert runningSuiteNode == null;
+
+        if (!reports.contains(report))
+            reports.add(report);
         
         return correspondingNode;
     }
@@ -160,9 +166,14 @@ final class RootNodeChildren extends Children.Array {
         if (reports == null) {
             reports = new ArrayList<Report>(newReports);
         } else {
-            reports.addAll(newReports);
+            while(newReports.iterator().hasNext()) {
+                Report rep = newReports.iterator().next();
+                if (!reports.contains(rep)) {
+                    reports.add(rep);
+                }
+            }
         }
-        
+
         if (!live) {
             for (Report report : reports) {
                 updateStatistics(report);
@@ -206,10 +217,12 @@ final class RootNodeChildren extends Children.Array {
         /* Called from the EventDispatch thread */
         
         final boolean isPassedSuite = !report.containsFailed();
-        if (isPassedSuite) {
-            passedSuites++;
-        } else {
-            failedSuites++;
+        if (!reports.contains(report)) {
+            if (isPassedSuite) {
+                passedSuites++;
+            } else {
+                failedSuites++;
+            }
         }
         return isPassedSuite;
     }
@@ -246,19 +259,19 @@ final class RootNodeChildren extends Children.Array {
                                ? matchingNodesCount + 1
                                : matchingNodesCount;
         if (nodesCount != 0) {
-            final Node[] nodes = new Node[nodesCount];
+            final Node[] nods = new Node[nodesCount];
             final Iterator<Report> i = reports.iterator();
             int index = 0;
             while (index < matchingNodesCount) {
                 Report report = i.next();
                 if (!filterOn || report.containsFailed()) {
-                    nodes[index++] = createNode(report);
+                    nods[index++] = createNode(report);
                 }
             }
             if (runningSuiteNode != null) {
-                nodes[index++] = runningSuiteNode;
+                nods[index++] = runningSuiteNode;
             }
-            add(nodes);
+            add(nods);
         }
     }
     
@@ -294,7 +307,30 @@ final class RootNodeChildren extends Children.Array {
             addPassedSuites();
         }
     }
-    
+
+    /**
+     */
+    private void removeSuite(Report rep) {
+        assert EventQueue.isDispatchThread();
+        assert live;
+
+        final Node[] nods = getNodes();
+        for (int index = 0;
+                    index < nods.length;
+                    index++) {
+            TestsuiteNode node = (TestsuiteNode) nods[index];
+            Report report = node.getReport();
+            if (report == null) {
+                continue;
+            }
+            if (report.equals(rep)) {
+                remove(new Node[] {node});
+                break;
+            }
+        }
+    }
+
+
     /**
      */
     private void removePassedSuites() {
@@ -302,12 +338,12 @@ final class RootNodeChildren extends Children.Array {
         assert live;
         
         final Node[] nodesToRemove = new Node[passedSuites];
-        final Node[] nodes = getNodes();
+        final Node[] nods = getNodes();
         int nodesIndex = 0;
         for (int index = 0;
                     index < nodesToRemove.length;
                     nodesIndex++) {
-            TestsuiteNode node = (TestsuiteNode) nodes[nodesIndex];
+            TestsuiteNode node = (TestsuiteNode) nods[nodesIndex];
             Report report = node.getReport();
             if (report == null) {
                 continue;
@@ -318,12 +354,12 @@ final class RootNodeChildren extends Children.Array {
                 node.setFiltered(filtered);
             }
         }
-        while (nodesIndex < nodes.length) {
+        while (nodesIndex < nods.length) {
             Report report;
-            assert (report = ((TestsuiteNode) nodes[nodesIndex]).getReport())
+            assert (report = ((TestsuiteNode) nods[nodesIndex]).getReport())
                            == null
                    || report.containsFailed();
-            ((TestsuiteNode) nodes[nodesIndex++]).setFiltered(filtered);
+            ((TestsuiteNode) nods[nodesIndex++]).setFiltered(filtered);
         }
         remove(nodesToRemove);
     }

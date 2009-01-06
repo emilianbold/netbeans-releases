@@ -64,6 +64,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -159,9 +160,11 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
      */
     private File getNewFileName() {
         File newFile = null;
+        File currentFile = null;
         FileObject currentFileObject = getCurrentFileObject();
         if( null != currentFileObject ) {
             newFile = FileUtil.toFile( currentFileObject );
+            currentFile = newFile;
             if( null == newFile ) {
                 newFile = new File( currentFileObject.getNameExt() );
             }
@@ -174,22 +177,32 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
             chooser.setSelectedFile( newFile );
             FileUtil.preventFileChooserSymlinkTraversal( chooser, newFile.getParentFile() );
         }
+        File initialFolder = getInitialFolderFrom( newFile );
+        if( null != initialFolder )
+            chooser.setCurrentDirectory( initialFolder );
         File origFile = newFile;
-        if( JFileChooser.APPROVE_OPTION != chooser.showSaveDialog( WindowManager.getDefault().getMainWindow() ) ) {
-            return null;
+        while( true ) {
+            if( JFileChooser.APPROVE_OPTION != chooser.showSaveDialog( WindowManager.getDefault().getMainWindow() ) ) {
+                return null;
+            }
+            newFile = chooser.getSelectedFile();
+            if( null == newFile )
+                break;
+            if( newFile.equals( origFile ) ) {
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected"), //NOI18N
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected_Title"), //NOI18N
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.INFORMATION_MESSAGE,
+                        new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
+                DialogDisplayer.getDefault().notify( nd );
+            } else {
+                break;
+            }
         }
-        newFile = chooser.getSelectedFile();
-        if( null == newFile )
-            return null;
-        if( newFile.equals( origFile ) ) {
-            NotifyDescriptor nd = new NotifyDescriptor( 
-                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected"), //NOI18N
-                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected_Title"), //NOI18N
-                    NotifyDescriptor.DEFAULT_OPTION, 
-                    NotifyDescriptor.INFORMATION_MESSAGE, 
-                    new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
-            DialogDisplayer.getDefault().notifyLater( nd );
-            return null;
+        if( isFromUserDir(currentFile) ) {
+            File lastUsedDir = chooser.getCurrentDirectory();
+            NbPreferences.forModule(SaveAction.class).put("lastUsedDir", lastUsedDir.getAbsolutePath()); //NOI18N
         }
 
         return newFile;
@@ -203,6 +216,40 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
                 return dob.getPrimaryFile();
         }
         return null;
+    }
+
+    /**
+     * @param newFile File being 'saved as'
+     * @return Initial folder selected in file chooser. If the file is in netbeans
+     * user dir then user's os-dependent home dir or last used folder will be used
+     * instead of file's parent folder.
+     */
+    private File getInitialFolderFrom(File newFile) {
+        File res = new File(System.getProperty("user.home")); //NOI18N
+        if( null != newFile ) {
+            File parent = newFile.getParentFile();
+            if( isFromUserDir(parent) ) {
+                String strLastUsedDir = NbPreferences.forModule(SaveAction.class).get("lastUsedDir", res.getAbsolutePath()); //NOI18N
+                res = new File(strLastUsedDir);
+                if( !res.exists() || !res.isDirectory() ) {
+                    res = new File(System.getProperty("user.home")); //NOI18N
+                }
+            } else {
+                res = parent;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * @param file
+     * @return True if given file is netbeans user dir.
+     */
+    private boolean isFromUserDir( File file ) {
+        if( null == file )
+            return false;
+        File nbUserDir = new File(System.getProperty("netbeans.user")); //NOI18N
+        return file.getAbsolutePath().startsWith(nbUserDir.getAbsolutePath());
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {

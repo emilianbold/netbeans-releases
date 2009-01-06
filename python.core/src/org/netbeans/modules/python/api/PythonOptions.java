@@ -14,7 +14,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -44,16 +43,6 @@ public class PythonOptions {
     private static Color DBGSHELL_WARNING_COLOR_DEFAULT = Color.PINK ;
     public static String DBGSHELL_ERROR_COLOR = "dbg.dbgshell.error.color";
     private static Color DBGSHELL_ERROR_COLOR_DEFAULT = Color.RED ;
-    // pyint extension
-    public static String PYLINT_USE = "pylint.use";
-    public static String PYLINT_LOCATION = "pylint.location";
-    public static String PYLINT_OPTION = "pylint.option";
-    private static String _DEFAULT_PYLINT_OPTION_ = "--persistent=n --comment=n --disable-msg=C0103,W0312,W0511";
-    public static String PYLINT_FATAL = "pylint.fatal";
-    public static String PYLINT_ERROR = "pylint.error";
-    public static String PYLINT_WARNING = "pylint.warning";
-    public static String PYLINT_CONVENTION = "pylint.convention";
-    public static String PYLINT_REFACTOR = "pylint.refactor";
 
     private Preferences pref;
     private String defaultPython = "";
@@ -225,78 +214,6 @@ public class PythonOptions {
     public void setDbgShellErrorColor( Color color) {
         pref.put(DBGSHELL_ERROR_COLOR, colorToString( color ) )  ;
     }
-
-
-
-
-    // pylint options
-    public void setUsePyLint( boolean usePyLint ){
-        pref.putBoolean(PYLINT_USE, usePyLint);
-    }
-
-    public boolean getUsePylint(){
-        return pref.getBoolean(PYLINT_USE,false) ;
-    }
-
-    public void setPyLintFatal( boolean pylintFatal ){
-        pref.putBoolean(PYLINT_FATAL, pylintFatal);
-    }
-
-    public boolean getPylintFatal(){
-        return pref.getBoolean(PYLINT_FATAL,true) ;
-    }
-
-    public void setPyLintError( boolean pylintError ){
-        pref.putBoolean(PYLINT_ERROR, pylintError);
-    }
-
-    public boolean getPylintError(){
-        return pref.getBoolean(PYLINT_ERROR,true) ;
-    }
-
-    public void setPyLintWarning( boolean pylintWarning ){
-        pref.putBoolean(PYLINT_WARNING, pylintWarning);
-    }
-
-    public boolean getPylintWarning(){
-        return pref.getBoolean(PYLINT_WARNING,false) ;
-    }
-
-    public void setPyLintConvention( boolean pylintConvention ){
-        pref.putBoolean(PYLINT_CONVENTION, pylintConvention);
-    }
-
-    public boolean getPylintConvention(){
-        return pref.getBoolean(PYLINT_CONVENTION,false) ;
-    }
-
-    public String getPylintLocation(){
-        return pref.get(PYLINT_LOCATION,"") ;
-    }
-
-    public void setPyLintLocation( String pylintLocation ){
-        pref.put(PYLINT_LOCATION, pylintLocation);
-    }
-
-    public String getPylintOptions(){
-        return pref.get(PYLINT_OPTION ,_DEFAULT_PYLINT_OPTION_) ;
-    }
-
-    public void setPyLintOptions( String pylintLocation ){
-        pref.put(PYLINT_OPTION , _DEFAULT_PYLINT_OPTION_);
-    }
-
-    public void setPyLintRefactor( boolean pylintRefactor ){
-        pref.putBoolean(PYLINT_REFACTOR, pylintRefactor);
-    }
-
-    public boolean getPylintRefactor(){
-        return pref.getBoolean(PYLINT_REFACTOR,false) ;
-    }
-
-
-
-
 
 
 

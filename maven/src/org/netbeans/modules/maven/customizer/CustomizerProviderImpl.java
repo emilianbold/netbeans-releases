@@ -152,11 +152,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     private void init() throws XmlPullParserException, FileNotFoundException, IOException {
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
-        ModelSource source = Utilities.createModelSource(pom, true);
+        ModelSource source = Utilities.createModelSource(pom);
         POMModel model = POMModelFactory.getDefault().getModel(source);
         FileObject profilesFO = project.getProjectDirectory().getFileObject("profiles.xml");
         if (profilesFO != null) {
-            source = Utilities.createModelSource(profilesFO, true);
+            source = Utilities.createModelSource(profilesFO);
         } else {
             //the file doesn't exist. what now?
             File file = FileUtil.toFile(project.getProjectDirectory());

@@ -3362,9 +3362,11 @@ public class LayoutDesigner implements LayoutConstants {
 
     private void setDefaultSizeInContainer(LayoutInterval interval) {
         if (!interval.isGroup()) {
-            if (LayoutInterval.canResize(interval))
+            if (LayoutInterval.canResize(interval)) {
                 operations.resizeInterval(interval,
                         interval.getMinimumSize() != USE_PREFERRED_SIZE ? interval.getMinimumSize() : NOT_EXPLICITLY_DEFINED);
+                interval.setAttribute(LayoutInterval.ATTR_FORCED_DEFAULT);
+            }
         }
         else {
             for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
@@ -3666,7 +3668,7 @@ public class LayoutDesigner implements LayoutConstants {
         for (int i=0; i < DIM_COUNT; i++) {
             LayoutInterval li = component.getLayoutInterval(i);
             int defPref = li.getPreferredSize();
-            if (LayoutInterval.wantResizeInLayout(li) && defPref != 0) { // == 0 subordinate component (filling)
+            if (!li.hasAttribute(LayoutInterval.ATTR_FORCED_DEFAULT) && LayoutInterval.wantResizeInLayout(li) && defPref != 0) { // == 0 subordinate component (filling)
                 // resizing component with size-defining role in parent
                 int current = li.getCurrentSpace().size(i);
                 int pref = i == HORIZONTAL ? preferred.width : preferred.height;
@@ -3675,6 +3677,7 @@ public class LayoutDesigner implements LayoutConstants {
                 if (defPref != current)
                     operations.resizeInterval(li, current != pref ? current : NOT_EXPLICITLY_DEFINED);
             }
+            li.unsetAttribute(LayoutInterval.ATTR_FORCED_DEFAULT);
         }
     }
 

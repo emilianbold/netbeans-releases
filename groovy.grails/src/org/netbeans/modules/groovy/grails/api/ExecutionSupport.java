@@ -95,8 +95,8 @@ public final class ExecutionSupport {
                 FileUtil.createFolder(work);
                 String name = directory.getName();
 
-                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        "create-app", work, null, new String[] {name}); // NOI18N
+                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                        "create-app", work, null, new String[] {name}, null); // NOI18N
 
                 return runtime.createCommand(descriptor).call();
             }
@@ -113,14 +113,8 @@ public final class ExecutionSupport {
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
 
-                Properties props = new Properties();
-                String port = config.getPort();
-                if (port != null) {
-                    props.setProperty("server.port", port); // NOI18N
-                }
-
-                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        "run-app", directory, config.getEnvironment(), new String[] {}, props);
+                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                        "run-app", directory, config, new String[] {}, null);
 
                 return runtime.createCommand(descriptor).call();
             }
@@ -138,8 +132,8 @@ public final class ExecutionSupport {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
-                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        command, directory, config.getEnvironment(), arguments);
+                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                        command, directory, config, arguments, null);
                 return runtime.createCommand(descriptor).call();
             }
         };

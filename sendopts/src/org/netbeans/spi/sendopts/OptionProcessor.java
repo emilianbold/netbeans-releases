@@ -45,10 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.sendopts.CommandException;
 
-/** A subclass of this class shall be registered in 
- * <code>META-INF/services/org.netbeans.spi.sendopts.OptionProcessor</code>
- * file (see <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a> 
- * for description of how to do it and why) 
+/** A subclass of this class shall be registered using {@link org.openide.util.lookup.ServiceProvider}
  * in order to register it for participation on handling
  * and processing of command line options initiated by
  * {@link org.netbeans.api.sendopts.CommandLine#getDefault}'s

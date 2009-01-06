@@ -255,8 +255,8 @@ public class RemoteServerList implements ServerList {
         getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
     
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
-        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache);
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard) {
+        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache, tempUseWizard);
         
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true, 
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);

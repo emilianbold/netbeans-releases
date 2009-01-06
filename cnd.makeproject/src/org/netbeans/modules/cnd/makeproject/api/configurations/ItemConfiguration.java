@@ -392,7 +392,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return sheet;
     }
 
-    private class ToolNodeProp extends Node.Property {
+    private class ToolNodeProp extends Node.Property<Integer> {
 
         public ToolNodeProp() {
             super(Integer.class);
@@ -403,13 +403,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return getString("ToolTxt1");
         }
 
-        public Object getValue() {
+        public Integer getValue() {
             return Integer.valueOf(getTool());
         }
 
-        public void setValue(Object v) {
-            String newTool = (String) v;
-            setTool(newTool);
+        public void setValue(Integer v) {
+//            String newTool = (String) v;
+//            setTool(newTool);
+            setTool(v);
         }
 
         public boolean canWrite() {
@@ -443,7 +444,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            setValue(text);
+//            setValue(text);
+            setValue(Tool.getTool(text));
         }
 
         @Override
