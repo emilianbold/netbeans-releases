@@ -72,6 +72,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         }
     }
 
+    @Override
     public VariableNameImpl createElement(Program program, Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
         addElement(retval);

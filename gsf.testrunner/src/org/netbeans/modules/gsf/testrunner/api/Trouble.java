@@ -10,6 +10,7 @@ public final class Trouble {
     private String exceptionClsName;
     private String[] stackTrace;
     private Trouble nestedTrouble;
+    private ComparisonFailure comparisonFailure;
 
     public Trouble(boolean error) {
         super();
@@ -82,5 +83,42 @@ public final class Trouble {
      */
     public void setNestedTrouble(Trouble nestedTrouble) {
         this.nestedTrouble = nestedTrouble;
+    }
+
+    /**
+     * @return the comparison failure or <code>null</code>.
+     */
+    public ComparisonFailure getComparisonFailure() {
+        return comparisonFailure;
+    }
+
+    /**
+     * @param comparisonFailure the failure to set. May be <code>null</code>.
+     */
+    public void setComparisonFailure(ComparisonFailure comparisonFailure) {
+        this.comparisonFailure = comparisonFailure;
+    }
+
+    /**
+     * Represents a comparison failure for two Strings, e.g. an assert_equals failure.
+     */
+    public static final class ComparisonFailure {
+
+        private final String expected;
+        private final String actual;
+
+        public ComparisonFailure(String expected, String actual) {
+            this.expected = expected;
+            this.actual = actual;
+        }
+
+        public String getActual() {
+            return actual;
+        }
+
+        public String getExpected() {
+            return expected;
+        }
+
     }
 }

@@ -51,7 +51,7 @@ import java.awt.Image;
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
  * sophisticated (hopefuly).
  *
- * <p>It's registered in default lookup (META-INF/services).
+ * <p>It's registered using {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @author Maros Sandor
  */

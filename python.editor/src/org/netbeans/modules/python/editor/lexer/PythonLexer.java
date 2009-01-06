@@ -390,7 +390,6 @@ public final class PythonLexer implements Lexer<PythonTokenId> {
                 return createToken(PythonTokenId.ANY_OPERATOR, input.readLength());
             }
             case '~':
-            case '@':
             case '`':
             case ';':
                 return createToken(PythonTokenId.ANY_OPERATOR, input.readLength());
@@ -453,6 +452,23 @@ public final class PythonLexer implements Lexer<PythonTokenId> {
                     return createToken(PythonTokenId.STRING_BEGIN, 1);
                 }
             }
+            case '@': { // Decorator
+                // Identifier or keyword?
+                ch = input.read();
+                if (Character.isJavaIdentifierStart(ch)) {
+                    while (ch != EOF && Character.isJavaIdentifierPart(ch) && ch != '$') {
+                        ch = input.read();
+                    }
+                    input.backup(1);
+
+                    return createToken(PythonTokenId.DECORATOR, input.readLength());
+                }
+                input.backup(1); // Remove the peeked char
+
+                assert input.readLength() == 1;
+                return createToken(PythonTokenId.DECORATOR, 1);
+            }
+
             case 'r':
             case 'R':
             case 'u':

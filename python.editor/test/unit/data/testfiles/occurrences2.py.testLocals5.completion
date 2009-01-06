@@ -28,7 +28,6 @@ CLASS      AbstractFunctionCode
 CLASS      AbstractHTTPHandler                        
 CLASS      AbstractWriter                             
 CLASS      Add                                        
-CLASS      AddressList                                
 CLASS      And                                        
 CLASS      Application                                
 CLASS      ArgumentError                              
@@ -455,7 +454,6 @@ CLASS      Invert
 CLASS      IsqlCmd                                    
 CLASS      IsqlExit                                   
 CLASS      IterableUserDict                           
-CLASS      ItimerError                                
 CLASS      JSONDecoder                                
 CLASS      JSONEncoder                                
 CLASS      JavaSAXParser                              
@@ -465,6 +463,7 @@ CLASS      JyEntityResolverWrapper
 CLASS      JyErrorHandlerWrapper                      
 CLASS      JyInputSourceWrapper                       
 CLASS      JythonCompiler                             
+CLASS      JythonSignalHandler                        
 CLASS      KeyError                                   
 CLASS      KeyError                                   
 CLASS      KeyboardInterrupt                          
@@ -492,7 +491,6 @@ CLASS      ListNoteBook
 CLASS      Listener                                   
 CLASS      LittleEndianStructure                      
 CLASS      LoadError                                  
-CLASS      LoadSet                                    
 CLASS      LocalNameFinder                            
 CLASS      Location                                   
 CLASS      Locator                                    
@@ -688,6 +686,7 @@ CLASS      Random
 CLASS      Range                                      
 CLASS      RangeException                             
 CLASS      Rational                                   
+CLASS      RawConfigParser                            
 CLASS      RawIOBase                                  
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
@@ -1013,8 +1012,8 @@ CLASS      dispatcher
 CLASS      dispatcher_with_send                       
 CLASS      error                                      
 CLASS      error_data                                 
+CLASS      error_proto                                
 CLASS      error_reply                                
-CLASS      error_temp                                 
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   

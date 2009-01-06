@@ -68,8 +68,7 @@ import org.openide.util.RequestProcessor;
  * Please note that there is usually no need to implement this class directly,
  * as there are support classes for common {@link JavaSourceTaskFactory} implementations.
  *
- * This factory should be registered in the global lookup by listing its fully qualified
- * name in file <code>META-INF/services/org.netbeans.api.java.source.JavaSourceTaskFactory</code>.
+ * This factory should be registered in the global lookup using {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @see EditorAwareJavaSourceTaskFactory
  * @see CaretAwareJavaSourceTaskFactory

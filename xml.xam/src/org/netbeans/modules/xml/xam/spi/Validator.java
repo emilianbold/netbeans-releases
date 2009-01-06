@@ -48,7 +48,7 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 /**
  * Common interface for validation services on models and components.
  * Typical implementation would implement a domain-specific subtype and publish
- * the implemenation through META-INF/services.
+ * the implementation using {@link org.openide.util.lookup.ServiceProvider}.
  * Typical client would lookup and select applicable services for the validation
  * target model.
  *
