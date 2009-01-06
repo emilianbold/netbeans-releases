@@ -109,7 +109,7 @@ class Commandline {
         
         Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
-        try {        
+        try {
             cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
             if(canceled) return;
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
@@ -143,6 +143,10 @@ class Commandline {
             }     
             if(canceled) return;
             cli.waitFor();
+        } catch (InterruptedException ie) {
+            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
+        } catch (InterruptedIOException ie) {
+            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
         } catch (Throwable t) {
             if(canceled) {
                 Subversion.LOG.fine(t.getMessage());

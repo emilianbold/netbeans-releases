@@ -258,6 +258,7 @@ CLASS      EntityResolver
 CLASS      Enum                                       
 CLASS      EnvironmentError                           
 CLASS      EnvironmentError                           
+CLASS      Error                                      
 CLASS      ErrorDuringImport                          
 CLASS      ErrorHandler                               
 CLASS      ErrorPrinter                               
@@ -443,7 +444,6 @@ CLASS      Invert
 CLASS      IsqlCmd                                    
 CLASS      IsqlExit                                   
 CLASS      IterableUserDict                           
-CLASS      ItimerError                                
 CLASS      JSONDecoder                                
 CLASS      JSONEncoder                                
 CLASS      JavaSAXParser                              
@@ -453,6 +453,7 @@ CLASS      JyEntityResolverWrapper
 CLASS      JyErrorHandlerWrapper                      
 CLASS      JyInputSourceWrapper                       
 CLASS      JythonCompiler                             
+CLASS      JythonSignalHandler                        
 CLASS      KeyError                                   
 CLASS      KeyError                                   
 CLASS      KeyboardInterrupt                          
@@ -480,7 +481,6 @@ CLASS      ListNoteBook
 CLASS      Listener                                   
 CLASS      LittleEndianStructure                      
 CLASS      LoadError                                  
-CLASS      LoadSet                                    
 CLASS      LocalNameFinder                            
 CLASS      Location                                   
 CLASS      Locator                                    
@@ -1001,7 +1001,6 @@ CLASS      dispatcher
 CLASS      dispatcher_with_send                       
 CLASS      error                                      
 CLASS      error_data                                 
-CLASS      error_perm                                 
 CLASS      error_proto                                
 CLASS      error_reply                                
 CLASS      excel                                      

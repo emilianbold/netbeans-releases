@@ -19,15 +19,15 @@ Searchable Keys:
   field : identifier|STATIC
   fqn : Resolv::DNS::Message
   method : ==(other)
-  method : add_additional(name,ttl,data)
-  method : add_answer(name,ttl,data)
-  method : add_authority(name,ttl,data)
-  method : add_question(name,typeclass)
+  method : add_additional(name,ttl,data);;Array;
+  method : add_answer(name,ttl,data);;Array;
+  method : add_authority(name,ttl,data);;Array;
+  method : add_question(name,typeclass);;Array;
   method : decode(m)|STATIC|
-  method : each_additional
-  method : each_answer
-  method : each_authority
-  method : each_question
+  method : each_additional;;Array;
+  method : each_answer;;Array;
+  method : each_authority;;Array;
+  method : each_question;;Array;
   method : each_resource
   method : encode
   method : initialize(id)|PRIVATE|
@@ -108,12 +108,12 @@ Searchable Keys:
   class-ig : ipv4
   constant : Regex;Regexp
   fqn : Resolv::IPv4
-  method : ==(other)
+  method : ==(other);;TrueClass|FalseClass;
   method : create(arg)|STATIC|
   method : eql?(other)
-  method : hash
+  method : hash;;Fixnum;
   method : initialize(address)|PRIVATE|
-  method : inspect
+  method : inspect;;String;
   method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
@@ -135,14 +135,14 @@ Searchable Keys:
   constant : Regex_CompressedHex4Dec;Regexp
   constant : Regex_CompressedHex;Regexp
   fqn : Resolv::IPv6
-  method : ==(other)
+  method : ==(other);;TrueClass|FalseClass;
   method : create(arg)|STATIC|
   method : eql?(other)
-  method : hash
+  method : hash;;Fixnum;
   method : initialize(address)|PRIVATE|
-  method : inspect
+  method : inspect;;String;
   method : new(address)|PRIVATE|STATIC|
-  method : to_name
+  method : to_name;;Name;
   method : to_s
 
 Not Searchable Keys:
@@ -201,7 +201,7 @@ Searchable Keys:
   method : eql?(other)
   method : hash
   method : initialize(string)|PRIVATE|
-  method : inspect
+  method : inspect;;String;
   method : new(string)|PRIVATE|STATIC|
   method : to_s
 
@@ -398,13 +398,13 @@ Searchable Keys:
   fqn : Resolv::DNS::Config
   method : default_config_hash(filename)|STATIC|
   method : generate_candidates(name)
-  method : generate_timeouts
+  method : generate_timeouts;;Array;
   method : initialize(config_info)|PRIVATE|
   method : lazy_initialize
   method : new(config_info)|PRIVATE|STATIC|
   method : parse_resolv_conf(filename)|STATIC|
   method : resolv(name)
-  method : single?
+  method : single?;;Hash|NilClass;
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -451,11 +451,11 @@ Searchable Keys:
   method : each_resource(name,typeclass,&proc)
   method : extract_resources(msg,name,typeclass)
   method : getaddress(name)
-  method : getaddresses(name)
+  method : getaddresses(name);;Array;
   method : getname(address)
-  method : getnames(address)
+  method : getnames(address);;Array;
   method : getresource(name,typeclass)
-  method : getresources(name,typeclass)
+  method : getresources(name,typeclass);;Array;
   method : initialize(config_info)|PRIVATE|
   method : lazy_initialize
   method : new(config_info)|PRIVATE|STATIC|
@@ -508,9 +508,9 @@ Searchable Keys:
   method : each_address(name,&proc)
   method : each_name(address,&proc)
   method : getaddress(name)
-  method : getaddresses(name)
+  method : getaddresses(name);;Array;
   method : getname(address)
-  method : getnames(address)
+  method : getnames(address);;Array;
   method : initialize(filename)|PRIVATE|
   method : lazy_initialize
   method : new(filename)|PRIVATE|STATIC|
@@ -555,14 +555,14 @@ Searchable Keys:
   field : index
   field : limit
   fqn : Resolv::DNS::Message::MessageDecoder
-  method : get_bytes(len)
-  method : get_label
-  method : get_labels(limit)
-  method : get_length16
-  method : get_name
-  method : get_question
-  method : get_rr
-  method : get_string
+  method : get_bytes(len);;Array;
+  method : get_label;;Str;
+  method : get_labels(limit);;Array;
+  method : get_length16;;Array;
+  method : get_name;;Name;
+  method : get_question;;Array;
+  method : get_rr;;Array;
+  method : get_string;;Array;
   method : get_string_list
   method : get_unpack(template)
   method : initialize(data)|PRIVATE|
@@ -633,18 +633,18 @@ Searchable Keys:
   field : absolute
   field : labels
   fqn : Resolv::DNS::Name
-  method : ==(other)
+  method : ==(other);;FalseClass;
   method : [](i)
-  method : absolute?
+  method : absolute?;;TrueClass;
   method : create(arg)|STATIC|
-  method : hash
+  method : hash;;Integer;
   method : initialize(labels,absolute)|PRIVATE|
-  method : inspect
-  method : length
+  method : inspect;;String;
+  method : length;;Integer;
   method : new(labels,absolute)|PRIVATE|STATIC|
-  method : subdomain_of?(other)|DOCUMENTED|
-  method : to_a
-  method : to_s|DOCUMENTED|
+  method : subdomain_of?(other)|DOCUMENTED|;;FalseClass;
+  method : to_a;;Array;
+  method : to_s|DOCUMENTED|;;String;
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -780,17 +780,17 @@ Searchable Keys:
   constant : DefaultResolver;self
   field : resolvers
   fqn : Resolv
-  method : each_address(name)
+  method : each_address(name);;Array;
   method : each_address(name,&block)|STATIC|
-  method : each_name(address)
+  method : each_name(address);;Array;
   method : each_name(address,&proc)|STATIC|
   method : getaddress(name)
   method : getaddress(name)|STATIC|
-  method : getaddresses(name)
+  method : getaddresses(name);;Array;
   method : getaddresses(name)|STATIC|
   method : getname(address)
   method : getname(address)|STATIC|
-  method : getnames(address)
+  method : getnames(address);;Array;
   method : getnames(address)|STATIC|
   method : initialize(resolvers)|PRIVATE|
   method : new(resolvers)|PRIVATE|STATIC|
@@ -840,7 +840,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : eql?(other)
   method : get_class(type_value,class_value)|STATIC|
-  method : hash
+  method : hash;;Integer;
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -858,7 +858,7 @@ Searchable Keys:
   fqn : Resolv::DNS::Requester::UnconnectedUDP::Sender
   method : initialize(msg,data,sock,host,port,queue)|PRIVATE|
   method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
-  method : send
+  method : send;;Object;
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -872,7 +872,7 @@ Searchable Keys:
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::ConnectedUDP::Sender
-  method : send
+  method : send;;Object;
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -886,7 +886,7 @@ Searchable Keys:
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::TCP::Sender
-  method : send
+  method : send;;IO;
 
 Not Searchable Keys:
   attrs : |CLASS|
