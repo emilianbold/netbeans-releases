@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import java.io.File;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.execute.MavenJavaExecutor;
@@ -84,7 +87,16 @@ public final class RunUtils {
         return executeMavenImpl(config.getTaskDisplayName(), exec);
     }
 
-    
+    public static RunConfig createRunConfig(File execDir, Project prj, String displayName, List<String> goals)
+    {
+        BeanRunConfig brc = new BeanRunConfig();
+        brc.setExecutionName(displayName);
+        brc.setExecutionDirectory(execDir);
+        brc.setProject(prj);
+        brc.setTaskDisplayName(displayName);
+        brc.setGoals(goals);
+        return brc;
+    }
     
     private static ExecutorTask executeMavenImpl(String runtimeName, MavenExecutor exec) {
         ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, exec.getInputOutput());
