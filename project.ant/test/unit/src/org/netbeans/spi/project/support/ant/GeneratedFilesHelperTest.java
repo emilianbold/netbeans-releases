@@ -56,6 +56,8 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 import org.w3c.dom.Document;
@@ -229,6 +231,24 @@ public class GeneratedFilesHelperTest extends NbTestCase {
             }
             assertTrue("generated file has platform line endings", ok);
         }
+    }
+
+    public void testVersionSeeSawing() throws Exception { // #42735
+        URL xslt = GeneratedFilesHelperTest.class.getResource("data/build.xsl");
+        URL xslt2 = GeneratedFilesHelperTest.class.getResource("data/build2.xsl");
+        GeneratedFilesHelper.STYLESHEET_VERSIONS.put(xslt, new SpecificationVersion("1.0"));
+        GeneratedFilesHelper.STYLESHEET_VERSIONS.put(xslt2, new SpecificationVersion("1.1"));
+        assertTrue(gfh.refreshBuildScript("build.xml", xslt, true));
+        FileObject buildXml = projdir.getFileObject("build.xml");
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertTrue(gfh.refreshBuildScript("build.xml", xslt2, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt2, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
     }
     
     private class ExtImpl implements AntBuildExtenderImplementation {
