@@ -45,7 +45,7 @@ import org.netbeans.api.project.Project;
 /**
  * Factory of the OutputProcessors for given project, each build
  * asks this method again. Factory classes should be registered in
- * default <code>Lookup</code> (META-INF/services/org.mevenide.netbeans.api.output.OutputProcessorFactory)
+ * default <code>Lookup</code> (see {@link org.openide.util.lookup.ServiceProvider}).
  * @author  Milos Kleint 
  */
 

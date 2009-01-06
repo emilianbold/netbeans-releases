@@ -12,4 +12,12 @@ METHOD     read(name)
 METHOD     testzip()                                  
 METHOD     write(filename, arcname, compr             
 METHOD     writestr(zinfo_or_arcname, byt             
+VARIABLE   NameToInfo                                 
+VARIABLE   comment                                    
+VARIABLE   compression                                
+VARIABLE   debug                                      
+VARIABLE   filelist                                   
+VARIABLE   filename                                   
 VARIABLE   fp                                         
+VARIABLE   mode                                       
+VARIABLE   start_dir                                  

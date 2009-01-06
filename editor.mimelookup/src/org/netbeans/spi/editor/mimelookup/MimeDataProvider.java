@@ -48,8 +48,7 @@ import org.openide.util.Lookup;
  * Provides a <code>Lookup</code> for the specific <code>MimePath</code>.
  *
  * <p>The implementations of this interface should be registered among the services
- * in the default lookup, for details look at
- * <a href="http://openide.netbeans.org/lookup/index.html"> META-INF/services registration</a>.
+ * in the default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *
  *  @author Miloslav Metelka, Vita Stejskal
  */
